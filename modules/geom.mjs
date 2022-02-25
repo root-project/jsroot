@@ -13,7 +13,8 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont } from './base3d.mjs';
 
-import { geo, ClonedNodes } from './geobase.mjs';
+import { geo, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+         countNumShapes, getNodeKind } from './geobase.mjs';
 
 import { ObjectPainter, DrawOptions, createMenu, closeMenu,
          getColor, getRootColors, isPromise, addDrawFunc } from './painter.mjs';
@@ -504,10 +505,10 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Modify visibility of provided node by name */
    modifyVisisbility(name, sign) {
-      if (geo.getNodeKind(this.getGeometry()) !== 0) return;
+      if (getNodeKind(this.getGeometry()) !== 0) return;
 
       if (name == "")
-         return geo.SetBit(this.getGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
+         return setGeoBit(this.getGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
 
@@ -521,7 +522,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       this.findNodeWithVolume(regexp, function(arg) {
-         geo.setInvisibleAll(arg.node.fVolume, (sign !== "+"));
+         setInvisibleAll(arg.node.fVolume, (sign !== "+"));
          return exact ? arg : null; // continue search if not exact expression provided
       });
    }
@@ -1288,7 +1289,7 @@ class TGeoPainter extends ObjectPainter {
                   let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
                   const kindGeo = 0, kindEve = 1;
                   if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
-                     geo.SetBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
+                     setGeoBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
                      geo.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
                   } else if (resolve.obj && (resolve.node.kind === kindEve)) {
                      resolve.obj.fRnrSelf = false;
@@ -1683,7 +1684,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !JSROOT.batch_mode && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !JSROOT.batch_mode && JSROOT.browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
@@ -2674,7 +2675,7 @@ class TGeoPainter extends ObjectPainter {
             else
                this.cnt[this.last]++;
 
-            nshapes += geo.countNumShapes(this.clones.getNodeShape(node.id));
+            nshapes += countNumShapes(this.clones.getNodeShape(node.id));
 
             // for debugging - search if there some TGeoHalfSpace
             //if (geo.HalfSpace) {
@@ -3124,7 +3125,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!prnt) {
          prnt = this.getGeometry();
-         if (!prnt && (geo.getNodeKind(prnt)!==0)) return null;
+         if (!prnt && (getNodeKind(prnt) !== 0)) return null;
          itemname = this.geo_manager ? prnt.fName : "";
          first_level = true;
          volumes = [];
@@ -3163,7 +3164,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.geo_manager) result.prefix = result.obj.fName;
 
-      if (!script_name || (script_name.length < 3) || (geo.getNodeKind(result.obj)!==0))
+      if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
          return Promise.resolve(result);
 
       let mgr = {
@@ -3178,7 +3179,7 @@ class TGeoPainter extends ObjectPainter {
                    found: currnode,
                    fVolume: currnode ? currnode.node.fVolume : null,
                    InvisibleAll: function(flag) {
-                      geo.setInvisibleAll(this.fVolume, flag);
+                      setInvisibleAll(this.fVolume, flag);
                    },
                    Draw: function() {
                       if (!this.found || !this.fVolume) return;
@@ -4518,8 +4519,8 @@ geo.buildCompositeVolume = function(comp, maxlvl, side) {
    }
 
    let vol = JSROOT.create("TGeoVolume");
-   geo.SetBit(vol, geo.BITS.kVisThis, true);
-   geo.SetBit(vol, geo.BITS.kVisDaughters, true);
+   setGeoBit(vol, geo.BITS.kVisThis, true);
+   setGeoBit(vol, geo.BITS.kVisDaughters, true);
 
    if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
       vol.fName = side;
@@ -4533,15 +4534,15 @@ geo.buildCompositeVolume = function(comp, maxlvl, side) {
    vol.fName = "";
 
    let node1 = JSROOT.create("TGeoNodeMatrix");
-   geo.SetBit(node1, geo.BITS.kVisThis, true);
-   geo.SetBit(node1, geo.BITS.kVisDaughters, true);
+   setGeoBit(node1, geo.BITS.kVisThis, true);
+   setGeoBit(node1, geo.BITS.kVisDaughters, true);
    node1.fName = "Left";
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = geo.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
    let node2 = JSROOT.create("TGeoNodeMatrix");
-   geo.SetBit(node2, geo.BITS.kVisThis, true);
-   geo.SetBit(node2, geo.BITS.kVisDaughters, true);
+   setGeoBit(node2, geo.BITS.kVisThis, true);
+   setGeoBit(node2, geo.BITS.kVisDaughters, true);
    node2.fName = "Right";
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = geo.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
@@ -4561,7 +4562,7 @@ geo.buildOverlapVolume = function(overlap) {
 
    let vol = JSROOT.create("TGeoVolume");
 
-   geo.SetBit(vol, geo.BITS.kVisDaughters, true);
+   setGeoBit(vol, geo.BITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = "";
 
@@ -4590,9 +4591,9 @@ geo.buildOverlapVolume = function(overlap) {
    if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
       return obj.fRnrSelf ? " geovis_this" : "";
 
-   let vis = !geo.TestBit(obj, geo.BITS.kVisNone) &&
-             geo.TestBit(obj, geo.BITS.kVisThis),
-       chld = geo.TestBit(obj, geo.BITS.kVisDaughters);
+   let vis = !testGeoBit(obj, geo.BITS.kVisNone) &&
+             testGeoBit(obj, geo.BITS.kVisThis),
+       chld = testGeoBit(obj, geo.BITS.kVisDaughters);
 
    if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
@@ -4788,7 +4789,7 @@ geo.provideMenu = function(menu, item, hpainter) {
 
    }, ToggleMenuBit = arg => {
 
-      geo.ToggleBit(vol, arg);
+      toggleGeoBit(vol, arg);
       let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
       hpainter.forEachItem(m => {
          // update all items with that volume
@@ -4824,11 +4825,11 @@ geo.provideMenu = function(menu, item, hpainter) {
          menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
 
    } else {
-      menu.addchk(geo.TestBit(vol, geo.BITS.kVisNone), "Invisible",
+      menu.addchk(testGeoBit(vol, geo.BITS.kVisNone), "Invisible",
             geo.BITS.kVisNone, ToggleMenuBit);
-      menu.addchk(geo.TestBit(vol, geo.BITS.kVisThis), "Visible",
+      menu.addchk(testGeoBit(vol, geo.BITS.kVisThis), "Visible",
             geo.BITS.kVisThis, ToggleMenuBit);
-      menu.addchk(geo.TestBit(vol, geo.BITS.kVisDaughters), "Daughters",
+      menu.addchk(testGeoBit(vol, geo.BITS.kVisDaughters), "Daughters",
             geo.BITS.kVisDaughters, ToggleMenuBit);
    }
 
@@ -4868,9 +4869,9 @@ geo.updateBrowserIcons = function(obj, hpainter) {
 geo.browserIconClick = function(hitem, hpainter) {
    if (hitem._volume) {
       if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
-         geo.ToggleBit(hitem._volume, geo.BITS.kVisDaughters);
+         toggleGeoBit(hitem._volume, geo.BITS.kVisDaughters);
       else
-         geo.ToggleBit(hitem._volume, geo.BITS.kVisThis);
+         toggleGeoBit(hitem._volume, geo.BITS.kVisThis);
 
       geo.updateBrowserIcons(hitem._volume, hpainter);
 

@@ -445,6 +445,8 @@ async function jsroot_require(need) {
          arr.push(import("./io.mjs"));
       else if (name == "tree")
          arr.push(import("./tree.mjs"));
+      else if (name == "geobase")
+         arr.push(import("./geobase.mjs"));
       else if (name == "geom")
          arr.push(import("./geom.mjs"));
       else if (name == "math")

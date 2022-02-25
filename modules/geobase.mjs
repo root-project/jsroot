@@ -2,14 +2,13 @@
 
 import * as THREE from './three.mjs';
 
-import * as JSROOT from './core.mjs';
-
 import { ThreeBSP } from './csg.mjs';
 
+function JSROOT_BIT(n) { return 1 << n; }
 
-/** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geo').then(geo => ...)```
+
+/** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geobase').then(geo => ...)```
   * @namespace
-  * @alias JSROOT.GEO
   */
 let geo = {
    GradPerSegm: 6,      // grad per segment in cylinder/spherical symmetry shapes
@@ -24,63 +23,64 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
 /** @summary TGeo-related bits
   * @private */
 geo.BITS = {
-      kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overwritten
-      kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-      kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-      kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-      kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible (not used)
-      kVisStreamed     : JSROOT.BIT(5),           // true if attributes have been streamed
-      kVisTouched      : JSROOT.BIT(6),           // true if attributes are changed after closing geom
-      kVisOnScreen     : JSROOT.BIT(7),           // true if volume is visible on screen
-      kVisContainers   : JSROOT.BIT(12),          // all containers visible
-      kVisOnly         : JSROOT.BIT(13),          // just this visible
-      kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
-      kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
-   };
+   kVisOverride     : JSROOT_BIT(0),           // volume's vis. attributes are overwritten
+   kVisNone         : JSROOT_BIT(1),           // the volume/node is invisible, as well as daughters
+   kVisThis         : JSROOT_BIT(2),           // this volume/node is visible
+   kVisDaughters    : JSROOT_BIT(3),           // all leaves are visible
+   kVisOneLevel     : JSROOT_BIT(4),           // first level daughters are visible (not used)
+   kVisStreamed     : JSROOT_BIT(5),           // true if attributes have been streamed
+   kVisTouched      : JSROOT_BIT(6),           // true if attributes are changed after closing geom
+   kVisOnScreen     : JSROOT_BIT(7),           // true if volume is visible on screen
+   kVisContainers   : JSROOT_BIT(12),          // all containers visible
+   kVisOnly         : JSROOT_BIT(13),          // just this visible
+   kVisBranch       : JSROOT_BIT(14),          // only a given branch visible
+   kVisRaytrace     : JSROOT_BIT(15)           // raytracing flag
+};
 
 /** @summary Test fGeoAtt bits
   * @private */
-geo.TestBit = function(volume, f) {
+function testGeoBit(volume, f) {
    let att = volume.fGeoAtt;
    return att === undefined ? false : ((att & f) !== 0);
 }
 
 /** @summary Set fGeoAtt bit
   * @private */
-geo.SetBit = function(volume, f, value) {
+function setGeoBit(volume, f, value) {
    if (volume.fGeoAtt === undefined) return;
    volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
 }
 
 /** @summary Toggle fGeoAttBit
   * @private */
-geo.ToggleBit = function(volume, f) {
+function toggleGeoBit(volume, f) {
    if (volume.fGeoAtt !== undefined)
       volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
 }
 
 /** @summary Implementation of TGeoVolume::InvisibleAll
   * @private */
-geo.setInvisibleAll = function(volume, flag) {
+function setInvisibleAll(volume, flag) {
    if (flag===undefined) flag = true;
 
-   geo.SetBit(volume, geo.BITS.kVisThis, !flag);
-   // geo.SetBit(this, geo.BITS.kVisDaughters, !flag);
+   setGeoBit(volume, geo.BITS.kVisThis, !flag);
+   // setGeoBit(this, geo.BITS.kVisDaughters, !flag);
 
    if (volume.fNodes)
       for (let n = 0; n < volume.fNodes.arr.length; ++n) {
          let sub = volume.fNodes.arr[n].fVolume;
-         geo.SetBit(sub, geo.BITS.kVisThis, !flag);
-         // geo.SetBit(sub, geo.BITS.kVisDaughters, !flag);
+         setGeoBit(sub, geo.BITS.kVisThis, !flag);
+         // setGeoBit(sub, geo.BITS.kVisDaughters, !flag);
       }
 }
 
+const _warn_msgs = {};
+
 /** @summary method used to avoid duplication of warnings
  * @private */
-geo.warn = function(msg) {
-   if (geo._warn_msgs === undefined) geo._warn_msgs = {};
-   if (geo._warn_msgs[msg] !== undefined) return;
-   geo._warn_msgs[msg] = true;
+function geoWarn(msg) {
+   if (_warn_msgs[msg] !== undefined) return;
+   _warn_msgs[msg] = true;
    console.warn(msg);
 }
 
@@ -90,7 +90,7 @@ geo.warn = function(msg) {
  *        -1 - unsupported
  * @returns detected node kind
  * @private */
-geo.getNodeKind = function(obj) {
+function getNodeKind(obj) {
    if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
    return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
 }
@@ -98,16 +98,16 @@ geo.getNodeKind = function(obj) {
 /** @summary Returns number of shapes
   * @desc Used to count total shapes number in composites
   * @private */
-geo.countNumShapes = function(shape) {
+function countNumShapes(shape) {
    if (!shape) return 0;
    // if (shape._typename=="TGeoHalfSpace") geo.HalfSpace = true;
    if (shape._typename !== 'TGeoCompositeShape') return 1;
-   return geo.countNumShapes(shape.fNode.fLeft) + geo.countNumShapes(shape.fNode.fRight);
+   return countNumShapes(shape.fNode.fLeft) + countNumShapes(shape.fNode.fRight);
 }
 
 /** @summary Create normal to plane, defined with three points
   * @private */
-geo.produceNormal = function(x1,y1,z1,x2,y2,z2,x3,y3,z3) {
+function produceNormal(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
 
    let pA = new THREE.Vector3(x1,y1,z1),
        pB = new THREE.Vector3(x2,y2,z2),
@@ -668,15 +668,15 @@ function createArb8Buffer( shape, faces_limit ) {
          // try to identify two faces with same normal - very useful if one can create face4
          if (n===0) norm = new THREE.Vector3(0,0,1); else
          if (n===30) norm = new THREE.Vector3(0,0,-1); else {
-            let norm1 = geo.produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
-                                             vertices[i2], vertices[i2+1], vertices[i2+2],
-                                             vertices[i3], vertices[i3+1], vertices[i3+2]);
+            let norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
+                                      vertices[i2], vertices[i2+1], vertices[i2+2],
+                                      vertices[i3], vertices[i3+1], vertices[i3+2]);
 
             norm1.normalize();
 
-            let norm2 = geo.produceNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
-                                             vertices[i5], vertices[i5+1], vertices[i5+2],
-                                             vertices[i6], vertices[i6+1], vertices[i6+2]);
+            let norm2 = produceNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
+                                      vertices[i5], vertices[i5+1], vertices[i5+2],
+                                      vertices[i6], vertices[i6+1], vertices[i6+2]);
 
             norm2.normalize();
 
@@ -1317,7 +1317,7 @@ function createXtruBuffer( shape, faces_limit ) {
    // console.log('triangulate Xtru ' + shape.fShapeId);
    let faces = THREE.ShapeUtils.triangulateShape(pnts , []);
    if (faces.length < pnts.length-2) {
-      geo.warn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
+      geoWarn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
       faces = [];
    } else {
       nfaces += faces.length * 2;
@@ -1641,9 +1641,9 @@ geo.getNodeMatrix = function(kind, node) {
    } else if (node.fMatrix) {
       matrix = geo.createMatrix(node.fMatrix);
    } else if ((node._typename == "TGeoNodeOffset") && node.fFinder) {
-      let kPatternReflected = JSROOT.BIT(14);
+      let kPatternReflected = JSROOT_BIT(14);
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
-         geo.warn('Unsupported reflected pattern ' + node.fFinder._typename);
+         geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
 
       // if (node.fFinder._typename === 'TGeoPatternCylR') { }
       // if (node.fFinder._typename === 'TGeoPatternSphR') { }
@@ -1692,7 +1692,7 @@ geo.getNodeMatrix = function(kind, node) {
            break;
 
         default:
-           geo.warn('Unsupported pattern type ' + node.fFinder._typename);
+           geoWarn('Unsupported pattern type ' + node.fFinder._typename);
            break;
       }
    }
@@ -1855,10 +1855,10 @@ function createComposite( shape, faces_limit ) {
                      else return_bsp = true;
 
    if (matrix1 && (matrix1.determinant() < -0.9))
-      geo.warn('Axis reflection in left composite shape - not supported');
+      geoWarn('Axis reflection in left composite shape - not supported');
 
    if (matrix2 && (matrix2.determinant() < -0.9))
-      geo.warn('Axis reflections in right composite shape - not supported');
+      geoWarn('Axis reflections in right composite shape - not supported');
 
    if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
       geom1 = createHalfSpace(shape.fNode.fLeft);
@@ -1902,11 +1902,11 @@ function createComposite( shape, faces_limit ) {
       case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // "+"
       case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // "/"
       default:
-         geo.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+         geoWarn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
    }
 
    if (countGeometryFaces(bsp1) === 0) {
-      geo.warn('Zero faces in comp shape'
+      geoWarn('Zero faces in comp shape'
             + ' left: ' + shape.fNode.fLeft._typename +  ' ' + countGeometryFaces(geom1) + ' faces'
             + ' right: ' + shape.fNode.fRight._typename + ' ' + countGeometryFaces(geom2) + ' faces'
             + '  use first');
@@ -1999,7 +1999,7 @@ createGeometry = function( shape, limit ) {
          case "TGeoHalfSpace":
             if (limit < 0) return 1; // half space if just plane used in composite
             // no break here - warning should appear
-         default: geo.warn('unsupported shape type ' + shape._typename);
+         default: geoWarn('unsupported shape type ' + shape._typename);
       }
    } catch(e) {
       let place = "";
@@ -2008,7 +2008,7 @@ createGeometry = function( shape, limit ) {
          if (place.indexOf(e.message) >= 0) place = e.stack.split("\n")[1];
                                        else place = " at: " + place;
       }
-      geo.warn(shape._typename + " err: " + e.message + place);
+      geoWarn(shape._typename + " err: " + e.message + place);
    }
 
    return limit < 0 ? 0 : null;
@@ -2302,7 +2302,7 @@ class ClonedNodes {
 
          this.origin = [];
          sublevel = 1;
-         kind = geo.getNodeKind(obj);
+         kind = getNodeKind(obj);
       }
 
       if ((kind < 0) || !obj || ('_refid' in obj)) return;
@@ -2444,21 +2444,21 @@ class ClonedNodes {
             if (obj.fVolume) {
                if (on_screen) {
                   // on screen bits used always, childs always checked
-                  clone.vis = geo.TestBit(obj.fVolume, geo.BITS.kVisOnScreen) ? 99 : 0;
+                  clone.vis = testGeoBit(obj.fVolume, geo.BITS.kVisOnScreen) ? 99 : 0;
 
                   if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
 
                   if (copy_bits) {
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisNone, false);
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisThis, (clone.vis > 0));
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisDaughters, true);
+                     setGeoBit(obj.fVolume, geo.BITS.kVisNone, false);
+                     setGeoBit(obj.fVolume, geo.BITS.kVisThis, (clone.vis > 0));
+                     setGeoBit(obj.fVolume, geo.BITS.kVisDaughters, true);
                   }
                } else {
-                  clone.vis = !geo.TestBit(obj.fVolume, geo.BITS.kVisNone) &&
-                               geo.TestBit(obj.fVolume, geo.BITS.kVisThis) ? 99 : 0;
+                  clone.vis = !testGeoBit(obj.fVolume, geo.BITS.kVisNone) &&
+                               testGeoBit(obj.fVolume, geo.BITS.kVisThis) ? 99 : 0;
 
-                  if (!geo.TestBit(obj, geo.BITS.kVisDaughters) ||
-                      !geo.TestBit(obj.fVolume, geo.BITS.kVisDaughters)) clone.nochlds = true;
+                  if (!testGeoBit(obj, geo.BITS.kVisDaughters) ||
+                      !testGeoBit(obj.fVolume, geo.BITS.kVisDaughters)) clone.nochlds = true;
 
                   // node with childs only shown in case if it is last level in hierarchy
                   if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
@@ -3635,4 +3635,5 @@ geo.createFlippedMesh = createFlippedMesh;
 geo.getBoundingBox = getBoundingBox;
 geo.provideObjectInfo = provideObjectInfo;
 
-export { geo, ClonedNodes };
+export { geo, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
+         setInvisibleAll, countNumShapes, getNodeKind };

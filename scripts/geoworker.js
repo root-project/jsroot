@@ -22,6 +22,7 @@ onmessage = function(e) {
 
    if (typeof e.data != 'object') return;
 
+   // simple workaround to wait until modules are loaded
    if (!THREE || !ClonedNodes)
       return setTimeout(() => onmessage(e), 100);
 
@@ -39,9 +40,6 @@ onmessage = function(e) {
          delete e.data.clones;
          clones.sortmap = e.data.sortmap;
       }
-
-      // used in composite shape
-      // JSROOT.browser = e.data.browser;
 
       e.data.tm2 = new Date().getTime();
 
