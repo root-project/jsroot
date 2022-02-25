@@ -3943,29 +3943,21 @@ class HierarchyPainter extends BasePainter {
    /** @summary Apply loaded TStyle object
      * @desc One also can specify item name of JSON file name where style is loaded
      * @param {object|string} style - either TStyle object of item name where object can be load */
-   applyStyle(style) {
+   async applyStyle(style) {
       if (!style)
-         return Promise.resolve();
-
-      if (typeof style === 'object') {
-         if (style._typename === "TStyle")
-            JSROOT.extend(JSROOT.gStyle, style);
-         return Promise.resolve();
-      }
+         return;
 
       if (typeof style === 'string') {
-
          let item = this.findItem({ name: style, allow_index: true, check_keys: true });
-
-         if (item!==null)
-            return this.getObject(item).then(res => this.applyStyle(res.obj));
-
-         if (style.indexOf('.json') > 0)
-            return JSROOT.httpRequest(style, 'object')
-                         .then(res => this.applyStyle(res));
+         if (item !== null)
+            style = await this.getObject(item).then(res => res.obj);
+         else if (style.indexOf('.json') > 0)
+            style = await JSROOT.httpRequest(style, 'object');
       }
 
-      return Promise.resolve();
+      if (style && (typeof style === 'object') && (style._typename === "TStyle"))
+         JSROOT.extend(JSROOT.gStyle, style);
+
    }
 
    /** @summary Provides information abouf file item
