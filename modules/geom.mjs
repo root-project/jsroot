@@ -1776,14 +1776,13 @@ class TGeoPainter extends ObjectPainter {
          return true;
       }
 
-
       if (this.drawing_stage === 5) {
          // this is building of geometries,
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
             let job = { limit: this._current_face_limit, shapes: [] }, cnt = 0;
-            for (let n=0;n<this._build_shapes.length;++n) {
+            for (let n = 0; n < this._build_shapes.length; ++n) {
                let clone = null, item = this._build_shapes[n];
                // only submit not-done items
                if (item.ready || item.geom) {
@@ -3568,7 +3567,8 @@ class TGeoPainter extends ObjectPainter {
       this._worker_ready = false;
       this._worker_jobs = 0; // counter how many requests send to worker
 
-      this._worker = new Worker(JSROOT.source_dir + "scripts/JSRoot.geoworker.js");
+      // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
+      this._worker = new Worker(JSROOT.source_dir + "scripts/geoworker.js" /*, { type: "module" } */);
 
       this._worker.onmessage = e => {
 

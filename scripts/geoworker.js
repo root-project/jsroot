@@ -1,20 +1,15 @@
-JSROOT = {}; // just place holder for JSROOT.GEO functions
 
-JSROOT.BIT = function(n) { return 1 << (n); }
+let THREE,  ClonedNodes;
 
-let jscsg;
+import('../modules/three.mjs').then(handle => {
+   THREE = handle;
+   if (console) console.log(`geoworker started three.js r${THREE.REVISION}`);
+});
 
-// emulate behavour, only required for csg and geobase
-JSROOT.define = function(args, factory) {
-   if (args.length == 1)
-      jscsg = factory(THREE);
-   else
-      factory(THREE, jscsg);
-}
+import('../modules/geobase.mjs').then(handle => { ClonedNodes = handle.ClonedNodes; });
 
-importScripts("three.min.js", "JSRoot.csg.js", "JSRoot.geobase.js");
+// importScripts("three.min.js", "JSRoot.csg.js", "JSRoot.geobase.js");
 
-if (console) console.log(`geoworker started three.js r${THREE.REVISION}`);
 
 let clones = null;
 
@@ -27,6 +22,9 @@ onmessage = function(e) {
 
    if (typeof e.data != 'object') return;
 
+   if (!THREE || !ClonedNodes)
+      return setTimeout(() => onmessage(e), 100);
+
    e.data.tm1 = new Date().getTime();
 
    if (e.data.init) {
@@ -35,7 +33,7 @@ onmessage = function(e) {
       let nodes = e.data.clones;
       if (nodes) {
          // console.log('get clones ' + nodes.length);
-         clones = new JSROOT.GEO.ClonedNodes(null, nodes);
+         clones = new ClonedNodes(null, nodes);
          clones.setVisLevel(e.data.vislevel);
          clones.setMaxVisNodes(e.data.maxvisnodes);
          delete e.data.clones;
@@ -43,7 +41,7 @@ onmessage = function(e) {
       }
 
       // used in composite shape
-      JSROOT.browser = e.data.browser;
+      // JSROOT.browser = e.data.browser;
 
       e.data.tm2 = new Date().getTime();
 
@@ -56,7 +54,7 @@ onmessage = function(e) {
       let shapes = e.data.shapes, transferables = [];
 
       // build all shapes up to specified limit, also limit execution time
-      for (let n=0;n<100;++n) {
+      for (let n = 0; n < 100; ++n) {
          let res = clones.buildShapes(shapes, e.data.limit, 1000);
          if (res.done) break;
          postMessage({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });

@@ -531,6 +531,60 @@ function extend(tgt, src) {
    return tgt;
 }
 
+/** @summary Make deep clone of the object, including all sub-objects
+  * @returns {object} cloned object
+  * @private */
+function clone(src, map, nofunc) {
+   if (!src) return null;
+
+   if (!map) {
+      map = { obj: [], clones: [], nofunc: nofunc };
+   } else {
+      const i = map.obj.indexOf(src);
+      if (i >= 0) return map.clones[i];
+   }
+
+   let arr_kind = is_array_proto(Object.prototype.toString.apply(src));
+
+   // process normal array
+   if (arr_kind == 1) {
+      let tgt = [];
+      map.obj.push(src);
+      map.clones.push(tgt);
+      for (let i = 0; i < src.length; ++i)
+         if (typeof src[i] === 'object')
+            tgt.push(clone(src[i], map));
+         else
+            tgt.push(src[i]);
+
+      return tgt;
+   }
+
+   // process typed array
+   if (arr_kind == 2) {
+      let tgt = [];
+      map.obj.push(src);
+      map.clones.push(tgt);
+      for (let i = 0; i < src.length; ++i)
+         tgt.push(src[i]);
+
+      return tgt;
+   }
+
+   let tgt = {};
+   map.obj.push(src);
+   map.clones.push(tgt);
+
+   for (let k in src) {
+      if (typeof src[k] === 'object')
+         tgt[k] = clone(src[k], map);
+      else if (!map.nofunc || (typeof src[k]!=='function'))
+         tgt[k] = src[k];
+   }
+
+   return tgt;
+}
+
 /** @summary Adds specific methods to the object.
   * @desc JSROOT implements some basic methods for different ROOT classes.
   * @param {object} obj - object where methods are assigned
@@ -1746,6 +1800,7 @@ jsroot_require as define,
 jsroot_require as require,
 BIT,
 extend,
+clone,
 addMethods,
 parse,
 parseMulti,
