@@ -152,8 +152,9 @@
           //     }
           //  }
 
-            if (JSROOT.hpainter)
-               JSROOT.hpainter.cleanup();
+            let hh = await JSROOT.require('hierarchy');
+            if (hh.getHPainter())
+               hh.getHPainter().cleanup();
 
             let ph = await JSROOT.require('painter');
             ph.cleanup('viewer');

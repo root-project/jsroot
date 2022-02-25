@@ -926,3 +926,5 @@ Many function names where adjusted to naming conventions. Like:
 Remove direct support of require.js, probably loading of JSRoot.core.js will be possible but will not be guaranteed
 
 Remove minified scripts from distribution, one should load JSRoot.core.js. Deployed code will be minified automatically.
+
+JSROOT.hpainter -> JSROOT.require('hierarchy').then(hh => hh.getHPainter())

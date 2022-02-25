@@ -3,7 +3,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
+import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
          floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
 
 // import { mth } from './math.mjs';
@@ -4330,7 +4330,7 @@ class TASImagePainter extends ObjectPainter {
 /** @summary Draw JS image
   * @private */
 function drawJSImage(dom, obj, opt) {
-   let painter = new JSROOT.BasePainter(dom),
+   let painter = new BasePainter(dom),
        main = painter.selectDom(),
        img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
 
@@ -4343,7 +4343,7 @@ function drawJSImage(dom, obj, opt) {
 
    painter.setTopPainter();
 
-   return Promise.resolve(painter);
+   return painter;
 }
 
 

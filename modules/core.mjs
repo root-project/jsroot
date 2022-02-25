@@ -34,20 +34,19 @@ let _ = {
 
 let source_fullpath = "";
 
+const src = import.meta?.url;
+if (src && (typeof src == "string")) {
+   const pos = src.indexOf("modules/core.mjs");
+   if (pos >= 0) {
+      source_fullpath = src;
+      source_dir = source_fullpath.substr(0, pos);
+      console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
+   }
+}
+
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-   const src = import.meta.url;
-   console.log('src', src);
-   if (src && (typeof src == "string")) {
-      const pos = src.indexOf("modules/core.mjs");
-      if (pos >= 0) {
-         source_fullpath = src;
-         source_dir = source_fullpath.substr(0, pos);
-         console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
-      }
-   }
-
    browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
    browser.isFirefox = typeof InstallTrigger !== 'undefined';
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
@@ -1790,6 +1789,16 @@ function isRootCollection(lst, typename) {
           (typename === 'TObjArray') || (typename === 'TClonesArray');
 }
 
+/** @summary tag item in hierarchy painter as streamer info
+  * @desc this function used on THttpServer to mark streamer infos list
+  * as fictional TStreamerInfoList class, which has special draw function
+  * @private */
+function markAsStreamerInfo(h, item, obj) {
+   if (obj && (obj._typename == 'TList'))
+      obj._typename = 'TStreamerInfoList';
+}
+
+
 // Connects web window
 function connectWebWindow(arg) {
    return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
@@ -1867,5 +1876,6 @@ createTMultiGraph,
 getMethods,
 registerMethods,
 isRootCollection,
+markAsStreamerInfo,
 connectWebWindow };
 

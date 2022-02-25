@@ -2919,9 +2919,4 @@ async function drawTree() {
    return tree.Draw(args).then(obj => process_result(obj));
 };
 
-JSROOT.TSelector = TSelector;
-JSROOT.TDrawVariable = TDrawVariable;
-JSROOT.TDrawSelector = TDrawSelector;
-
 export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods, drawTree };
-
