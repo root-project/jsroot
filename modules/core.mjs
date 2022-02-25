@@ -45,8 +45,10 @@ if (src && (typeof src == "string")) {
   * @alias JSROOT.batch_mode */
 let batch_mode = nodejs;
 
-// FIXME: workaround, need better solution
-if (nodejs) import('atob').then(res => { _.atob = res.default; });
+if (nodejs) {
+   _.atob = await import('atob').then(hh => hh.default);
+   _.xhr2 = await import('xhr2').then(hh => hh.default);
+}
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -875,7 +877,7 @@ function findFunction(name) {
 /** @summary Method to create http request
   * @private */
 async function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
-   let xhr = nodejs ? await import('xhr2').then(hh => new hh.default()) : new XMLHttpRequest();
+   let xhr = nodejs ? new _.xhr2() : new XMLHttpRequest();
 
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
@@ -969,8 +971,6 @@ async function createHttpRequest(url, kind, user_accept_callback, user_reject_ca
 
    return xhr;
 }
-
-
 
 /** @summary Submit asynchronoues http request
   * @desc Following requests kind can be specified:
