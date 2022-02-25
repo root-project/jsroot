@@ -19,11 +19,7 @@ let source_dir = "";
 
 /** @summary Indicates if JSROOT runs inside Node.js
   * @memberof JSROOT */
-let nodejs = (typeof exports === 'object') && typeof module !== 'undefined';
-
-/** @summary Indicates if JSROOT runs in batch mode, can be changed if required
-  * @alias JSROOT.batch_mode */
-let batch_mode = nodejs;
+let nodejs = false;
 
 /** @summary internal data
   * @memberof JSROOT
@@ -42,7 +38,14 @@ if (src && (typeof src == "string")) {
       source_dir = source_fullpath.substr(0, pos);
       console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
    }
+   if (src.indexOf("file://") == 0) nodejs = true;
 }
+
+/** @summary Indicates if JSROOT runs in batch mode, can be changed if required
+  * @alias JSROOT.batch_mode */
+let batch_mode = nodejs;
+
+
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -967,6 +970,106 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
    return xhr;
 }
 
+/** @summary Method to create http request
+  * @private */
+async function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
+   let xhr = nodejs ? await import('xhr2').then(hh => new hh.default()) : new XMLHttpRequest();
+
+   xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
+   xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
+
+   if (!kind) kind = "buf";
+
+   let method = "GET", async = true, p = kind.indexOf(";sync");
+   if (p > 0) { kind = kind.substr(0,p); async = false; }
+   switch (kind) {
+      case "head": method = "HEAD"; break;
+      case "posttext": method = "POST"; kind = "text"; break;
+      case "postbuf":  method = "POST"; kind = "buf"; break;
+      case "post":
+      case "multi":  method = "POST"; kind = buf; break;
+   }
+
+   xhr.kind = kind;
+
+   if (settings.HandleWrongHttpResponse && (method == "GET") && (typeof xhr.addEventListener === 'function'))
+      xhr.addEventListener("progress", function(oEvent) {
+         if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
+            this.did_abort = true;
+            this.abort();
+            this.error_callback(Error('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation'), 598);
+         }
+      }.bind(xhr));
+
+   xhr.onreadystatechange = function() {
+
+      if (this.did_abort) return;
+
+      if ((this.readyState === 2) && this.expected_size) {
+         let len = parseInt(this.getResponseHeader("Content-Length"));
+         if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
+            this.did_abort = true;
+            this.abort();
+            return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'), 599);
+         }
+      }
+
+      if (this.readyState != 4) return;
+
+      if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
+          // in these special cases browsers not always set status
+          !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
+            return this.error_callback(Error('Fail to load url ' + url), this.status);
+      }
+
+      if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
+         // special handling of gzipped JSON objects in Node.js
+         return import('zlib').then(handle => {
+             let res = handle.unzipSync(Buffer.from(this.response)),
+                 obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+            return this.http_callback(parse(obj));
+         });
+
+      switch(this.kind) {
+         case "xml": return this.http_callback(this.responseXML);
+         case "text": return this.http_callback(this.responseText);
+         case "object": return this.http_callback(parse(this.responseText));
+         case "multi": return this.http_callback(parseMulti(this.responseText));
+         case "head": return this.http_callback(this);
+      }
+
+      // if no response type is supported, return as text (most probably, will fail)
+      if (this.responseType === undefined)
+         return this.http_callback(this.responseText);
+
+      if ((this.kind == "bin") && ('byteLength' in this.response)) {
+         // if string representation in requested - provide it
+
+         let filecontent = "", u8Arr = new Uint8Array(this.response);
+         for (let i = 0; i < u8Arr.length; ++i)
+            filecontent += String.fromCharCode(u8Arr[i]);
+
+         return this.http_callback(filecontent);
+      }
+
+      this.http_callback(this.response);
+   };
+
+   xhr.open(method, url, async);
+
+   if ((kind == "bin") || (kind == "buf"))
+      xhr.responseType = 'arraybuffer';
+
+   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0)) {
+      xhr.nodejs_checkzip = true;
+      xhr.responseType = 'arraybuffer';
+   }
+
+   return xhr;
+}
+
+
+
 /** @summary Submit asynchronoues http request
   * @desc Following requests kind can be specified:
   *    - "bin" - abstract binary data, result as string
@@ -988,7 +1091,7 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
    return new Promise(function(accept, reject) {
-      NewHttpRequest(url, kind, accept, reject).send(post_data || null);
+      createHttpRequest(url, kind, accept, reject).then(xhr => xhr.send(post_data || null));
    });
 }
 
@@ -1810,6 +1913,7 @@ toJSON,
 decodeUrl,
 findFunction,
 NewHttpRequest,
+createHttpRequest,
 httpRequest,
 loadScript,
 openFile,
