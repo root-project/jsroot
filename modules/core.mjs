@@ -876,7 +876,7 @@ function findFunction(name) {
 
 /** @summary Method to create http request
   * @private */
-async function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
+function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
    let xhr = nodejs ? new _.xhr2() : new XMLHttpRequest();
 
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
@@ -993,7 +993,8 @@ async function createHttpRequest(url, kind, user_accept_callback, user_reject_ca
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
    return new Promise(function(accept, reject) {
-      createHttpRequest(url, kind, accept, reject).then(xhr => xhr.send(post_data || null));
+      let xhr = createHttpRequest(url, kind, accept, reject);
+      xhr.send(post_data || null);
    });
 }
 

@@ -53,8 +53,7 @@ class LongPollSocket {
          }
       }
 
-      let req;
-      JSROOT.createHttpRequest(url, reqmode, function(res) {
+      let req = JSROOT.createHttpRequest(url, reqmode, function(res) {
          // this set to the request itself, res is response
 
          if (this.handle.req === this)
@@ -115,14 +114,12 @@ class LongPollSocket {
       }, function(/*err,status*/) {
          // console.log(`Get request error ${err} status ${status}`);
          this.handle.processRequest(null, "error");
-      }).then(xhr => {
-         req = xhr;
-         req.handle = this;
-         if (!this.req) this.req = req; // any request can be used for response, do not submit dummy until req is there
-         // if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
-         req.send(post);
       });
 
+      req.handle = this;
+      if (!this.req) this.req = req; // any request can be used for response, do not submit dummy until req is there
+      // if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
+      req.send(post);
    }
 
    /** @summary Process request */

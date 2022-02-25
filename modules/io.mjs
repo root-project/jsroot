@@ -2800,30 +2800,30 @@ class TFile {
          }
          if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
-         JSROOT.createHttpRequest(fullurl, "buf", read_callback).then(xhr => {
-            if (file.fAcceptRanges) {
-               xhr.setRequestHeader("Range", ranges);
-               xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
+         let xhr = JSROOT.createHttpRequest(fullurl, "buf", read_callback);
+
+         if (file.fAcceptRanges) {
+            xhr.setRequestHeader("Range", ranges);
+            xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
+         }
+
+         if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+            let sum1 = 0, sum2 = 0, sum_total = 0;
+            for (let n = 1; n < place.length; n += 2) {
+               sum_total += place[n];
+               if (n < first) sum1 += place[n];
+               if (n < last) sum2 += place[n];
             }
+            if (!sum_total) sum_total = 1;
 
-            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
-               let sum1 = 0, sum2 = 0, sum_total = 0;
-               for (let n = 1; n < place.length; n += 2) {
-                  sum_total += place[n];
-                  if (n < first) sum1 += place[n];
-                  if (n < last) sum2 += place[n];
-               }
-               if (!sum_total) sum_total = 1;
+            let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+            xhr.addEventListener("progress", function(oEvent) {
+               if (oEvent.lengthComputable)
+                  progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
+            });
+         }
 
-               let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
-               xhr.addEventListener("progress", function(oEvent) {
-                  if (oEvent.lengthComputable)
-                     progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
-               });
-            }
-
-            xhr.send(null);
-         });
+         xhr.send(null);
       }
 
       read_callback = function(res) {
