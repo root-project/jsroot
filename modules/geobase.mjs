@@ -22,7 +22,7 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
 
 /** @summary TGeo-related bits
   * @private */
-geo.BITS = {
+const geoBITS = {
    kVisOverride     : JSROOT_BIT(0),           // volume's vis. attributes are overwritten
    kVisNone         : JSROOT_BIT(1),           // the volume/node is invisible, as well as daughters
    kVisThis         : JSROOT_BIT(2),           // this volume/node is visible
@@ -63,14 +63,14 @@ function toggleGeoBit(volume, f) {
 function setInvisibleAll(volume, flag) {
    if (flag===undefined) flag = true;
 
-   setGeoBit(volume, geo.BITS.kVisThis, !flag);
-   // setGeoBit(this, geo.BITS.kVisDaughters, !flag);
+   setGeoBit(volume, geoBITS.kVisThis, !flag);
+   // setGeoBit(this, geoBITS.kVisDaughters, !flag);
 
    if (volume.fNodes)
       for (let n = 0; n < volume.fNodes.arr.length; ++n) {
          let sub = volume.fNodes.arr[n].fVolume;
-         setGeoBit(sub, geo.BITS.kVisThis, !flag);
-         // setGeoBit(sub, geo.BITS.kVisDaughters, !flag);
+         setGeoBit(sub, geoBITS.kVisThis, !flag);
+         // setGeoBit(sub, geoBITS.kVisDaughters, !flag);
       }
 }
 
@@ -2444,21 +2444,21 @@ class ClonedNodes {
             if (obj.fVolume) {
                if (on_screen) {
                   // on screen bits used always, childs always checked
-                  clone.vis = testGeoBit(obj.fVolume, geo.BITS.kVisOnScreen) ? 99 : 0;
+                  clone.vis = testGeoBit(obj.fVolume, geoBITS.kVisOnScreen) ? 99 : 0;
 
                   if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
 
                   if (copy_bits) {
-                     setGeoBit(obj.fVolume, geo.BITS.kVisNone, false);
-                     setGeoBit(obj.fVolume, geo.BITS.kVisThis, (clone.vis > 0));
-                     setGeoBit(obj.fVolume, geo.BITS.kVisDaughters, true);
+                     setGeoBit(obj.fVolume, geoBITS.kVisNone, false);
+                     setGeoBit(obj.fVolume, geoBITS.kVisThis, (clone.vis > 0));
+                     setGeoBit(obj.fVolume, geoBITS.kVisDaughters, true);
                   }
                } else {
-                  clone.vis = !testGeoBit(obj.fVolume, geo.BITS.kVisNone) &&
-                               testGeoBit(obj.fVolume, geo.BITS.kVisThis) ? 99 : 0;
+                  clone.vis = !testGeoBit(obj.fVolume, geoBITS.kVisNone) &&
+                               testGeoBit(obj.fVolume, geoBITS.kVisThis) ? 99 : 0;
 
-                  if (!testGeoBit(obj, geo.BITS.kVisDaughters) ||
-                      !testGeoBit(obj.fVolume, geo.BITS.kVisDaughters)) clone.nochlds = true;
+                  if (!testGeoBit(obj, geoBITS.kVisDaughters) ||
+                      !testGeoBit(obj.fVolume, geoBITS.kVisDaughters)) clone.nochlds = true;
 
                   // node with childs only shown in case if it is last level in hierarchy
                   if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
@@ -3635,5 +3635,5 @@ geo.createFlippedMesh = createFlippedMesh;
 geo.getBoundingBox = getBoundingBox;
 geo.provideObjectInfo = provideObjectInfo;
 
-export { geo, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
+export { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind };

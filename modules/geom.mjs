@@ -13,13 +13,13 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont } from './base3d.mjs';
 
-import { geo, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind } from './geobase.mjs';
-
 import { ObjectPainter, DrawOptions, createMenu, closeMenu,
          getColor, getRootColors, isPromise, addDrawFunc } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
+
+import { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+         countNumShapes, getNodeKind } from './geobase.mjs';
 
 JSROOT.loadScript('$$$style/JSRoot.geom');
 
@@ -88,6 +88,83 @@ function expandGeoObject(parent, obj) {
    return true;
 }
 
+
+/** @summary find item with 3d painter
+  * @private */
+function findItemWithPainter(hitem, funcname) {
+   while (hitem) {
+      if (hitem._painter && hitem._painter._camera) {
+         if (funcname && typeof hitem._painter[funcname] == 'function')
+            hitem._painter[funcname]();
+         return hitem;
+      }
+      hitem = hitem._parent;
+   }
+   return null;
+}
+
+/** @summary provide css style for geo object
+  * @private */
+function provideVisStyle(obj) {
+   if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
+      return obj.fRnrSelf ? " geovis_this" : "";
+
+   let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
+              testGeoBit(obj, geoBITS.kVisThis),
+       chld = testGeoBit(obj, geoBITS.kVisDaughters);
+
+   if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
+
+   if (vis && chld) return " geovis_all";
+   if (vis) return " geovis_this";
+   if (chld) return " geovis_daughters";
+   return "";
+}
+
+
+/** @summary update icons
+  * @private */
+function updateBrowserIcons(obj, hpainter) {
+   if (!obj || !hpainter) return;
+
+   hpainter.forEachItem(m => {
+      // update all items with that volume
+      if ((obj === m._volume) || (obj === m._geoobj)) {
+         m._icon = m._icon.split(" ")[0] + provideVisStyle(obj);
+         hpainter.updateTreeNode(m);
+      }
+   });
+}
+
+
+/** @summary provide icon name for the shape
+  * @private */
+function getShapeIcon(shape) {
+   switch (shape._typename) {
+      case "TGeoArb8": return "img_geoarb8";
+      case "TGeoCone": return "img_geocone";
+      case "TGeoConeSeg": return "img_geoconeseg";
+      case "TGeoCompositeShape": return "img_geocomposite";
+      case "TGeoTube": return "img_geotube";
+      case "TGeoTubeSeg": return "img_geotubeseg";
+      case "TGeoPara": return "img_geopara";
+      case "TGeoParaboloid": return "img_geoparab";
+      case "TGeoPcon": return "img_geopcon";
+      case "TGeoPgon": return "img_geopgon";
+      case "TGeoShapeAssembly": return "img_geoassembly";
+      case "TGeoSphere": return "img_geosphere";
+      case "TGeoTorus": return "img_geotorus";
+      case "TGeoTrd1": return "img_geotrd1";
+      case "TGeoTrd2": return "img_geotrd2";
+      case "TGeoXtru": return "img_geoxtru";
+      case "TGeoTrap": return "img_geotrap";
+      case "TGeoGtra": return "img_geogtra";
+      case "TGeoEltu": return "img_geoeltu";
+      case "TGeoHype": return "img_geohype";
+      case "TGeoCtub": return "img_geoctub";
+   }
+   return "img_geotube";
+}
 
 
 /**
@@ -508,7 +585,7 @@ class TGeoPainter extends ObjectPainter {
       if (getNodeKind(this.getGeometry()) !== 0) return;
 
       if (name == "")
-         return setGeoBit(this.getGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
+         return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
 
@@ -1289,11 +1366,11 @@ class TGeoPainter extends ObjectPainter {
                   let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
                   const kindGeo = 0, kindEve = 1;
                   if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
-                     setGeoBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
-                     geo.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
+                     setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
+                     updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
                   } else if (resolve.obj && (resolve.node.kind === kindEve)) {
                      resolve.obj.fRnrSelf = false;
-                     geo.updateBrowserIcons(resolve.obj, this._hpainter);
+                     updateBrowserIcons(resolve.obj, this._hpainter);
                   }
 
                   this.testGeomChanges();// while many volumes may disappear, recheck all of them
@@ -4519,8 +4596,8 @@ geo.buildCompositeVolume = function(comp, maxlvl, side) {
    }
 
    let vol = JSROOT.create("TGeoVolume");
-   setGeoBit(vol, geo.BITS.kVisThis, true);
-   setGeoBit(vol, geo.BITS.kVisDaughters, true);
+   setGeoBit(vol, geoBITS.kVisThis, true);
+   setGeoBit(vol, geoBITS.kVisDaughters, true);
 
    if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
       vol.fName = side;
@@ -4534,15 +4611,15 @@ geo.buildCompositeVolume = function(comp, maxlvl, side) {
    vol.fName = "";
 
    let node1 = JSROOT.create("TGeoNodeMatrix");
-   setGeoBit(node1, geo.BITS.kVisThis, true);
-   setGeoBit(node1, geo.BITS.kVisDaughters, true);
+   setGeoBit(node1, geoBITS.kVisThis, true);
+   setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = "Left";
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = geo.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
    let node2 = JSROOT.create("TGeoNodeMatrix");
-   setGeoBit(node2, geo.BITS.kVisThis, true);
-   setGeoBit(node2, geo.BITS.kVisDaughters, true);
+   setGeoBit(node2, geoBITS.kVisThis, true);
+   setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = "Right";
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = geo.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
@@ -4562,7 +4639,7 @@ geo.buildOverlapVolume = function(overlap) {
 
    let vol = JSROOT.create("TGeoVolume");
 
-   setGeoBit(vol, geo.BITS.kVisDaughters, true);
+   setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = "";
 
@@ -4583,116 +4660,6 @@ geo.buildOverlapVolume = function(overlap) {
    vol.fNodes.Add(node2);
 
    return vol;
-}
-
-/** @summary provide css style for geo object
-  * @private */
- geo.provideVisStyle = function(obj) {
-   if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
-      return obj.fRnrSelf ? " geovis_this" : "";
-
-   let vis = !testGeoBit(obj, geo.BITS.kVisNone) &&
-             testGeoBit(obj, geo.BITS.kVisThis),
-       chld = testGeoBit(obj, geo.BITS.kVisDaughters);
-
-   if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
-
-   if (vis && chld) return " geovis_all";
-   if (vis) return " geovis_this";
-   if (chld) return " geovis_daughters";
-   return "";
-}
-
-/** @summary create hierarchy item for geo object
-  * @private */
-geo.createItem = function(node, obj, name) {
-   let sub = {
-      _kind: "ROOT." + obj._typename,
-      _name: name ? name : geo.getObjectName(obj),
-      _title: obj.fTitle,
-      _parent: node,
-      _geoobj: obj,
-      _get: function(item /* ,itemname */) {
-          // mark object as belong to the hierarchy, require to
-          if (item._geoobj) item._geoobj.$geoh = true;
-          return Promise.resolve(item._geoobj);
-      }
-   }, volume, shape, subnodes, iseve = false;
-
-   if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
-   if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
-   if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-   if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
-      sub._title = "node:"  + obj._typename;
-      if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
-      volume = obj.fVolume;
-   } else if (obj._typename.indexOf("TGeoVolume")===0) {
-      volume = obj;
-   } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
-      iseve = true;
-      shape = obj.fShape;
-      subnodes = obj.fElements ? obj.fElements.arr : null;
-   } else if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
-      shape = obj;
-   }
-
-   if (volume) {
-      shape = volume.fShape;
-      subnodes = volume.fNodes ? volume.fNodes.arr : null;
-   }
-
-   if (volume || shape || subnodes) {
-      if (volume) sub._volume = volume;
-
-      if (subnodes) {
-         sub._more = true;
-         sub._expand = expandGeoObject;
-      } else
-      if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
-         sub._more = true;
-         sub._shape = shape;
-         sub._expand = function(node /*, obj */) {
-            geo.createItem(node, node._shape.fNode.fLeft, 'Left');
-            geo.createItem(node, node._shape.fNode.fRight, 'Right');
-            return true;
-         };
-      }
-
-      if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
-
-      if (shape) {
-         if (sub._title == "")
-            sub._title = shape._typename;
-
-         sub._icon = geo.getShapeIcon(shape);
-      } else {
-         sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
-      }
-
-      if (volume)
-         sub._icon += geo.provideVisStyle(volume);
-      else if (iseve)
-         sub._icon += geo.provideVisStyle(obj);
-
-      sub._menu = geo.provideMenu;
-      sub._icon_click  = geo.browserIconClick;
-   }
-
-   if (!node._childs) node._childs = [];
-
-   if (!sub._name)
-      if (typeof node._name === 'string') {
-         sub._name = node._name;
-         if (sub._name.lastIndexOf("s")===sub._name.length-1)
-            sub._name = sub._name.substr(0, sub._name.length-1);
-         sub._name += "_" + node._childs.length;
-      } else {
-         sub._name = "item_" + node._childs.length;
-      }
-
-   node._childs.push(sub);
-
-   return sub;
 }
 
 /** @summary create list entity for geo object
@@ -4772,25 +4739,25 @@ geo.provideMenu = function(menu, item, hpainter) {
 
       if (arg === 'self') {
          obj.fRnrSelf = !obj.fRnrSelf;
-         item._icon = item._icon.split(" ")[0] + geo.provideVisStyle(obj);
+         item._icon = item._icon.split(" ")[0] + provideVisStyle(obj);
          hpainter.updateTreeNode(item);
       } else {
          ScanEveVisible(obj, { assign: (arg === "true") }, true);
          hpainter.forEachItem(m => {
             // update all child items
             if (m._geoobj && m._icon) {
-               m._icon = item._icon.split(" ")[0] + geo.provideVisStyle(m._geoobj);
+               m._icon = item._icon.split(" ")[0] + provideVisStyle(m._geoobj);
                hpainter.updateTreeNode(m);
             }
          }, item);
       }
 
-      geo.findItemWithPainter(item, 'testGeomChanges');
+      findItemWithPainter(item, 'testGeomChanges');
 
    }, ToggleMenuBit = arg => {
 
       toggleGeoBit(vol, arg);
-      let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
+      let newname = item._icon.split(" ")[0] + provideVisStyle(vol);
       hpainter.forEachItem(m => {
          // update all items with that volume
          if (item._volume === m._volume) {
@@ -4800,14 +4767,14 @@ geo.provideMenu = function(menu, item, hpainter) {
       });
 
       hpainter.updateTreeNode(item);
-      geo.findItemWithPainter(item, 'testGeomChanges');
+      findItemWithPainter(item, 'testGeomChanges');
 
    };
 
-   if ((item._geoobj._typename.indexOf("TGeoNode")===0) && geo.findItemWithPainter(item))
+   if ((item._geoobj._typename.indexOf("TGeoNode")===0) && findItemWithPainter(item))
       menu.add("Focus", function() {
 
-        let drawitem = geo.findItemWithPainter(item);
+        let drawitem = findItemWithPainter(item);
 
         if (!drawitem) return;
 
@@ -4825,71 +4792,43 @@ geo.provideMenu = function(menu, item, hpainter) {
          menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
 
    } else {
-      menu.addchk(testGeoBit(vol, geo.BITS.kVisNone), "Invisible",
-            geo.BITS.kVisNone, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geo.BITS.kVisThis), "Visible",
-            geo.BITS.kVisThis, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geo.BITS.kVisDaughters), "Daughters",
-            geo.BITS.kVisDaughters, ToggleMenuBit);
+      menu.addchk(testGeoBit(vol, geoBITS.kVisNone), "Invisible",
+            geoBITS.kVisNone, ToggleMenuBit);
+      menu.addchk(testGeoBit(vol, geoBITS.kVisThis), "Visible",
+            geoBITS.kVisThis, ToggleMenuBit);
+      menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), "Daughters",
+            geoBITS.kVisDaughters, ToggleMenuBit);
    }
 
    return true;
 }
 
-/** @summary find item with 3d painter
-  * @private */
-geo.findItemWithPainter = function(hitem, funcname) {
-   while (hitem) {
-      if (hitem._painter && hitem._painter._camera) {
-         if (funcname && typeof hitem._painter[funcname] == 'function')
-            hitem._painter[funcname]();
-         return hitem;
-      }
-      hitem = hitem._parent;
-   }
-   return null;
-}
-
-/** @summary update icons
-  * @private */
-geo.updateBrowserIcons = function(obj, hpainter) {
-   if (!obj || !hpainter) return;
-
-   hpainter.forEachItem(m => {
-      // update all items with that volume
-      if ((obj === m._volume) || (obj === m._geoobj)) {
-         m._icon = m._icon.split(" ")[0] + geo.provideVisStyle(obj);
-         hpainter.updateTreeNode(m);
-      }
-   });
-}
-
 /** @summary handle click on browser icon
   * @private */
-geo.browserIconClick = function(hitem, hpainter) {
+function browserIconClick(hitem, hpainter) {
    if (hitem._volume) {
-      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
-         toggleGeoBit(hitem._volume, geo.BITS.kVisDaughters);
+      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length > 0))
+         toggleGeoBit(hitem._volume, geoBITS.kVisDaughters);
       else
-         toggleGeoBit(hitem._volume, geo.BITS.kVisThis);
+         toggleGeoBit(hitem._volume, geoBITS.kVisThis);
 
-      geo.updateBrowserIcons(hitem._volume, hpainter);
+      updateBrowserIcons(hitem._volume, hpainter);
 
-      geo.findItemWithPainter(hitem, 'testGeomChanges');
+      findItemWithPainter(hitem, 'testGeomChanges');
       return false; // no need to update icon - we did it ourself
    }
 
-   if (hitem._geoobj && (( hitem._geoobj._typename == "TEveGeoShapeExtract") || ( hitem._geoobj._typename == "ROOT::Experimental::REveGeoShapeExtract"))) {
+   if (hitem._geoobj && ((hitem._geoobj._typename == "TEveGeoShapeExtract") || (hitem._geoobj._typename == "ROOT::Experimental::REveGeoShapeExtract"))) {
       hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
-      geo.updateBrowserIcons(hitem._geoobj, hpainter);
-      geo.findItemWithPainter(hitem, 'testGeomChanges');
+      updateBrowserIcons(hitem._geoobj, hpainter);
+      findItemWithPainter(hitem, 'testGeomChanges');
       return false; // no need to update icon - we did it ourself
    }
 
 
    // first check that geo painter assigned with the item
-   let drawitem = geo.findItemWithPainter(hitem);
+   let drawitem = findItemWithPainter(hitem);
    if (!drawitem) return false;
 
    let newstate = drawitem._painter.extraObjectVisible(hpainter, hitem, true);
@@ -4898,44 +4837,109 @@ geo.browserIconClick = function(hitem, hpainter) {
    return (newstate!==undefined) ? true : false;
 }
 
-/** @summary provide icon name for the shape
+
+/** @summary create hierarchy item for geo object
   * @private */
-geo.getShapeIcon = function(shape) {
-   switch (shape._typename) {
-      case "TGeoArb8": return "img_geoarb8";
-      case "TGeoCone": return "img_geocone";
-      case "TGeoConeSeg": return "img_geoconeseg";
-      case "TGeoCompositeShape": return "img_geocomposite";
-      case "TGeoTube": return "img_geotube";
-      case "TGeoTubeSeg": return "img_geotubeseg";
-      case "TGeoPara": return "img_geopara";
-      case "TGeoParaboloid": return "img_geoparab";
-      case "TGeoPcon": return "img_geopcon";
-      case "TGeoPgon": return "img_geopgon";
-      case "TGeoShapeAssembly": return "img_geoassembly";
-      case "TGeoSphere": return "img_geosphere";
-      case "TGeoTorus": return "img_geotorus";
-      case "TGeoTrd1": return "img_geotrd1";
-      case "TGeoTrd2": return "img_geotrd2";
-      case "TGeoXtru": return "img_geoxtru";
-      case "TGeoTrap": return "img_geotrap";
-      case "TGeoGtra": return "img_geogtra";
-      case "TGeoEltu": return "img_geoeltu";
-      case "TGeoHype": return "img_geohype";
-      case "TGeoCtub": return "img_geoctub";
+geo.createItem = function(node, obj, name) {
+   let sub = {
+      _kind: "ROOT." + obj._typename,
+      _name: name ? name : geo.getObjectName(obj),
+      _title: obj.fTitle,
+      _parent: node,
+      _geoobj: obj,
+      _get: function(item /* ,itemname */) {
+          // mark object as belong to the hierarchy, require to
+          if (item._geoobj) item._geoobj.$geoh = true;
+          return Promise.resolve(item._geoobj);
+      }
+   }, volume, shape, subnodes, iseve = false;
+
+   if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
+   if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
+   if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
+   if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
+      sub._title = "node:"  + obj._typename;
+      if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
+      volume = obj.fVolume;
+   } else if (obj._typename.indexOf("TGeoVolume")===0) {
+      volume = obj;
+   } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
+      iseve = true;
+      shape = obj.fShape;
+      subnodes = obj.fElements ? obj.fElements.arr : null;
+   } else if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
+      shape = obj;
    }
-   return "img_geotube";
+
+   if (volume) {
+      shape = volume.fShape;
+      subnodes = volume.fNodes ? volume.fNodes.arr : null;
+   }
+
+   if (volume || shape || subnodes) {
+      if (volume) sub._volume = volume;
+
+      if (subnodes) {
+         sub._more = true;
+         sub._expand = expandGeoObject;
+      } else
+      if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
+         sub._more = true;
+         sub._shape = shape;
+         sub._expand = function(node /*, obj */) {
+            geo.createItem(node, node._shape.fNode.fLeft, 'Left');
+            geo.createItem(node, node._shape.fNode.fRight, 'Right');
+            return true;
+         };
+      }
+
+      if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
+
+      if (shape) {
+         if (sub._title == "")
+            sub._title = shape._typename;
+
+         sub._icon = getShapeIcon(shape);
+      } else {
+         sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
+      }
+
+      if (volume)
+         sub._icon += provideVisStyle(volume);
+      else if (iseve)
+         sub._icon += provideVisStyle(obj);
+
+      sub._menu = geo.provideMenu;
+      sub._icon_click  = browserIconClick;
+   }
+
+   if (!node._childs) node._childs = [];
+
+   if (!sub._name)
+      if (typeof node._name === 'string') {
+         sub._name = node._name;
+         if (sub._name.lastIndexOf("s")===sub._name.length-1)
+            sub._name = sub._name.substr(0, sub._name.length-1);
+         sub._name += "_" + node._childs.length;
+      } else {
+         sub._name = "item_" + node._childs.length;
+      }
+
+   node._childs.push(sub);
+
+   return sub;
 }
+
 
 /** @summary Get icon for the browser
   * @private */
-geo.getBrowserIcon = function(hitem, hpainter) {
+function getBrowserIcon(hitem, hpainter) {
    let icon = "";
    if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
    if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
    if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
    if (icon.length > 0) {
-      let drawitem = geo.findItemWithPainter(hitem);
+      let drawitem = findItemWithPainter(hitem);
       if (drawitem)
          if (drawitem._painter.extraObjectVisible(hpainter, hitem))
             icon += " geovis_this";
@@ -4945,7 +4949,7 @@ geo.getBrowserIcon = function(hitem, hpainter) {
 
 /** @summary Draw dummy geometry
   * @private */
-geo.drawDummy3DGeom = function(painter) {
+function drawDummy3DGeom(painter) {
 
    let extra = painter.getObject(),
        min = [-1, -1, -1], max = [1, 1, 1];
@@ -5134,8 +5138,9 @@ function build(obj, opt) {
 
 
 addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: expandGeoObject, opt: ";more;all;count" });
-addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
-addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
+addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
 
 
-export { geo, build, TGeoPainter, GeoDrawingControl, expandGeoObject, createGeoPainter, drawAxis3D };
+export { build, TGeoPainter, GeoDrawingControl,
+         expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom };
