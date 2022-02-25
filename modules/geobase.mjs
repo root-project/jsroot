@@ -10,11 +10,14 @@ function JSROOT_BIT(n) { return 1 << n; }
 /** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geobase').then(geo => ...)```
   * @namespace
   */
-let geo = {
-   GradPerSegm: 6,      // grad per segment in cylinder/spherical symmetry shapes
-   CompressComp: true,  // use faces compression in composite shapes
-   CompLimit: 20        // maximal number of components in composite shape
-};
+let GradPerSegm = 6;       // grad per segment in cylinder/spherical symmetry shapes
+let CompressComp = true;   // use faces compression in composite shapes
+
+function setGeoParams(segm, comp) {
+   GradPerSegm = segm;
+   CompressComp = comp;
+}
+
 
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
@@ -100,10 +103,44 @@ function getNodeKind(obj) {
   * @private */
 function countNumShapes(shape) {
    if (!shape) return 0;
-   // if (shape._typename=="TGeoHalfSpace") geo.HalfSpace = true;
    if (shape._typename !== 'TGeoCompositeShape') return 1;
    return countNumShapes(shape.fNode.fLeft) + countNumShapes(shape.fNode.fRight);
 }
+
+
+/** @summary Returns geo object name
+  * @desc Can appens some special suffixes
+  * @private */
+function getObjectName(obj) {
+   if (!obj || !obj.fName) return "";
+   return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
+}
+
+/** @summary Check duplicates
+  * @private */
+function checkDuplicates(parent, chlds) {
+   if (parent) {
+      if (parent.$geo_checked) return;
+      parent.$geo_checked = true;
+   }
+
+   let names = [], cnts = [];
+   for (let k = 0; k < chlds.length; ++k) {
+      let chld = chlds[k];
+      if (!chld || !chld.fName) continue;
+      if (!chld.$geo_suffix) {
+         let indx = names.indexOf(chld.fName);
+         if (indx>=0) {
+            let cnt = cnts[indx] || 1;
+            while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
+            chld.$geo_suffix = "#" + cnt;
+            cnts[indx] = cnt+1;
+         }
+      }
+      names.push(getObjectName(chld));
+   }
+}
+
 
 /** @summary Create normal to plane, defined with three points
   * @private */
@@ -856,7 +893,7 @@ function createTubeBuffer( shape, faces_limit) {
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
 
-   let radiusSegments = Math.max(4, Math.round(thetaLength/geo.GradPerSegm));
+   let radiusSegments = Math.max(4, Math.round(thetaLength/GradPerSegm));
 
    // external surface
    let numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
@@ -984,7 +1021,7 @@ function createTubeBuffer( shape, faces_limit) {
   * @memberof JSROOT.GEO
   * @private */
 function createEltuBuffer( shape , faces_limit ) {
-   let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm));
+   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm));
 
    if (faces_limit < 0) return radiusSegments*4;
 
@@ -1036,8 +1073,8 @@ function createEltuBuffer( shape , faces_limit ) {
   * @private */
 function createTorusBuffer( shape, faces_limit ) {
    let radius = shape.fR,
-       radialSegments = Math.max(6, Math.round(360/geo.GradPerSegm)),
-       tubularSegments = Math.max(8, Math.round(shape.fDphi/geo.GradPerSegm)),
+       radialSegments = Math.max(6, Math.round(360/GradPerSegm)),
+       tubularSegments = Math.max(8, Math.round(shape.fDphi/GradPerSegm)),
        numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
    if (faces_limit < 0) return numfaces;
@@ -1136,7 +1173,7 @@ function createPolygonBuffer( shape, faces_limit ) {
       radiusSegments = shape.fNedges;
       factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
-      radiusSegments = Math.max(5, Math.round(thetaLength/geo.GradPerSegm));
+      radiusSegments = Math.max(5, Math.round(thetaLength/GradPerSegm));
       factor = 1;
    }
 
@@ -1366,7 +1403,7 @@ function createXtruBuffer( shape, faces_limit ) {
   * @private */
 function createParaboloidBuffer( shape, faces_limit ) {
 
-   let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm)),
        heightSegments = 30;
 
    if (faces_limit > 0) {
@@ -1468,7 +1505,7 @@ function createHypeBuffer( shape, faces_limit ) {
    if ((shape.fTin===0) && (shape.fTout===0))
       return createTubeBuffer(shape, faces_limit);
 
-   let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm)),
        heightSegments = 30,
        numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
 
@@ -1571,7 +1608,7 @@ function createTessellatedBuffer( shape, faces_limit) {
 /** @summary Creates THREE.Matrix4 from TGeoMatrix
   * @memberof JSROOT.GEO
   * @private */
-geo.createMatrix = function(matrix) {
+function createMatrix(matrix) {
 
    if (!matrix) return null;
 
@@ -1619,9 +1656,8 @@ geo.createMatrix = function(matrix) {
 
 /** @summary Creates transformation matrix for TGeoNode
   * @desc created after node visibility flag is checked and volume cut is performed
-  * @memberof JSROOT.GEO
   * @private */
-geo.getNodeMatrix = function(kind, node) {
+function getNodeMatrix(kind, node) {
 
    let matrix = null;
 
@@ -1639,7 +1675,7 @@ geo.getNodeMatrix = function(kind, node) {
          matrix.setPosition(node.fTrans[12], node.fTrans[13], node.fTrans[14]);
       }
    } else if (node.fMatrix) {
-      matrix = geo.createMatrix(node.fMatrix);
+      matrix = createMatrix(node.fMatrix);
    } else if ((node._typename == "TGeoNodeOffset") && node.fFinder) {
       let kPatternReflected = JSROOT_BIT(14);
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
@@ -1705,7 +1741,7 @@ let createGeometry; // will be function to create geometry
 /** @summary Returns number of faces for provided geometry
  * @param {Object} geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
  * @private */
-geo.numGeometryFaces = function(geom) {
+function numGeometryFaces(geom) {
    if (!geom) return 0;
 
    if (geom instanceof ThreeBSP.Geometry)
@@ -1726,7 +1762,7 @@ geo.numGeometryFaces = function(geom) {
 /** @summary Returns number of faces for provided geometry
  * @param {Object} geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
  * @private */
-geo.numGeometryVertices = function(geom) {
+function numGeometryVertices(geom) {
    if (!geom) return 0;
 
    if (geom instanceof ThreeBSP.Geometry)
@@ -1744,7 +1780,6 @@ geo.numGeometryVertices = function(geom) {
 }
 
 /** @summary Returns geometry bounding box
-  * @memberof JSROOT.GEO
   * @private */
 function geomBoundingBox(geom) {
    if (!geom) return null;
@@ -1848,8 +1883,8 @@ function createComposite( shape, faces_limit ) {
              createGeometry(shape.fNode.fRight, -10);
 
    let geom1, geom2, bsp1, bsp2, return_bsp = false,
-       matrix1 = geo.createMatrix(shape.fNode.fLeftMat),
-       matrix2 = geo.createMatrix(shape.fNode.fRightMat);
+       matrix1 = createMatrix(shape.fNode.fLeftMat),
+       matrix2 = createMatrix(shape.fNode.fRightMat);
 
    if (faces_limit === 0) faces_limit = 4000;
                      else return_bsp = true;
@@ -1890,7 +1925,7 @@ function createComposite( shape, faces_limit ) {
       return geom1;
    }
 
-   bsp1 = new ThreeBSP.Geometry(geom1, matrix1, geo.CompressComp ? 0 : undefined);
+   bsp1 = new ThreeBSP.Geometry(geom1, matrix1, CompressComp ? 0 : undefined);
 
    bsp2 = new ThreeBSP.Geometry(geom2, matrix2, bsp1.maxid);
 
@@ -2175,7 +2210,7 @@ function createFrustum(source) {
 /** @summary Compares two stacks.
   * @returns {Number} length where stacks are the same
   * @private */
-geo.compareStacks = function(stack1, stack2) {
+function compareStacks(stack1, stack2) {
    if (!stack1 || !stack2) return 0;
    if (stack1 === stack2) return stack1.length;
    let len = Math.min(stack1.length, stack2.length);
@@ -2186,7 +2221,7 @@ geo.compareStacks = function(stack1, stack2) {
 
 /** @summary Checks if two stack arrays are identical
   * @private */
-geo.isSameStack = function(stack1, stack2) {
+function isSameStack(stack1, stack2) {
    if (!stack1 || !stack2) return false;
    if (stack1 === stack2) return true;
    if (stack1.length !== stack2.length) return false;
@@ -2196,12 +2231,10 @@ geo.isSameStack = function(stack1, stack2) {
 }
 
 
-// ====================================================================
 
 /**
   * @summary class for working with cloned nodes
   *
-  * @memberof JSROOT.GEO
   * @private
   */
 
@@ -2318,7 +2351,7 @@ class ClonedNodes {
          chlds = obj.fElements ? obj.fElements.arr : null;
 
       if (chlds !== null) {
-         geo.checkDuplicates(obj, chlds);
+         checkDuplicates(obj, chlds);
          for (let i = 0; i < chlds.length; ++i)
             this.createClones(chlds[i], sublevel + 1, kind);
       }
@@ -2351,7 +2384,7 @@ class ClonedNodes {
             if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
          }
 
-         let matrix = geo.getNodeMatrix(kind, obj);
+         let matrix = getNodeMatrix(kind, obj);
          if (matrix) {
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
             if (clone.matrix[0] === 1) {
@@ -2616,7 +2649,7 @@ class ClonedNodes {
    getNodeName(nodeid) {
       if (this.origin) {
          let obj = this.origin[nodeid];
-         return obj ? geo.getObjectName(obj) : "";
+         return obj ? getObjectName(obj) : "";
       }
       let node = this.nodes[nodeid];
       return node ? node.name : "";
@@ -2801,7 +2834,7 @@ class ClonedNodes {
       if (clone.kind === kindEve) {
          // special handling for EVE nodes
 
-         let prop = { name: geo.getObjectName(node), nname: geo.getObjectName(node), shape: node.fShape, material: null, chlds: null };
+         let prop = { name: getObjectName(node), nname: getObjectName(node), shape: node.fShape, material: null, chlds: null };
 
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
@@ -2820,7 +2853,7 @@ class ClonedNodes {
 
       let volume = node.fVolume;
 
-      let prop = { name: geo.getObjectName(volume), nname: geo.getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
 
       if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
@@ -3258,40 +3291,6 @@ class ClonedNodes {
    }
 }
 
-
-/** @summary Returns geo object name
-  * @desc Can appens some special suffixes
-  * @private */
-geo.getObjectName = function(obj) {
-   if (!obj || !obj.fName) return "";
-   return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
-}
-
-/** @summary Check duplicates
-  * @private */
-geo.checkDuplicates = function(parent, chlds) {
-   if (parent) {
-      if (parent.$geo_checked) return;
-      parent.$geo_checked = true;
-   }
-
-   let names = [], cnts = [];
-   for (let k = 0; k < chlds.length; ++k) {
-      let chld = chlds[k];
-      if (!chld || !chld.fName) continue;
-      if (!chld.$geo_suffix) {
-         let indx = names.indexOf(chld.fName);
-         if (indx>=0) {
-            let cnt = cnts[indx] || 1;
-            while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
-            chld.$geo_suffix = "#" + cnt;
-            cnts[indx] = cnt+1;
-         }
-      }
-      names.push(geo.getObjectName(chld));
-   }
-}
-
 /** @summary Create flipped mesh for the shape
  * @desc When transformation matrix includes one or several inversion of axis,
  * one should inverse geometry object, otherwise THREE.js cannot correctly draw it
@@ -3418,7 +3417,7 @@ function getBoundingBox(node, box3, local_coordinates) {
 
 /** @summary Cleanup shape entity
  * @private */
-geo.cleanupShape = function(shape) {
+function cleanupShape(shape) {
    if (!shape) return;
 
    if (shape.geom && (typeof shape.geom.dispose == 'function'))
@@ -3625,6 +3624,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       process(toplevel, 0, 1, 1000000);
 }
 
-export { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
-         setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
+export { setGeoParams, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
+         setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };

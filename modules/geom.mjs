@@ -18,17 +18,138 @@ import { ObjectPainter, DrawOptions, createMenu, closeMenu,
 
 import { ensureTCanvas } from './gpad.mjs';
 
-import { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
-         getBoundingBox, provideObjectInfo } from './geobase.mjs';
+         getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
 if (!JSROOT.batch_mode)
    await JSROOT.loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
-let createGeoPainter;
+let createGeoPainter, createItem, build;
+
+/** @summary Function used to build hierarchy of elements of overlap object
+  * @private */
+function buildOverlapVolume(overlap) {
+
+   let vol = JSROOT.create("TGeoVolume");
+
+   setGeoBit(vol, geoBITS.kVisDaughters, true);
+   vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
+   vol.fName = "";
+
+   let node1 = JSROOT.create("TGeoNodeMatrix");
+   node1.fName = overlap.fVolume1.fName || "Overlap1";
+   node1.fMatrix = overlap.fMatrix1;
+   node1.fVolume = overlap.fVolume1;
+   // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
+
+   let node2 = JSROOT.create("TGeoNodeMatrix");
+   node2.fName = overlap.fVolume2.fName || "Overlap2";
+   node2.fMatrix = overlap.fMatrix2;
+   node2.fVolume = overlap.fVolume2;
+   // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
+
+   vol.fNodes = JSROOT.create("TList");
+   vol.fNodes.Add(node1);
+   vol.fNodes.Add(node2);
+
+   return vol;
+}
+
+
+/** @summary Function used to build hierarchy of elements of composite shapes
+  * @private */
+function buildCompositeVolume(comp, maxlvl, side) {
+
+   if (maxlvl === undefined) maxlvl = 1;
+   if (!side) {
+      this.$comp_col_cnt = 0;
+      side = "";
+   }
+
+   let vol = JSROOT.create("TGeoVolume");
+   setGeoBit(vol, geoBITS.kVisThis, true);
+   setGeoBit(vol, geoBITS.kVisDaughters, true);
+
+   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
+      vol.fName = side;
+      vol.fLineColor = (this.$comp_col_cnt++ % 8) + 2;
+      vol.fShape = comp;
+      return vol;
+   }
+
+   if (side) side += "/";
+   vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
+   vol.fName = "";
+
+   let node1 = JSROOT.create("TGeoNodeMatrix");
+   setGeoBit(node1, geoBITS.kVisThis, true);
+   setGeoBit(node1, geoBITS.kVisDaughters, true);
+   node1.fName = "Left";
+   node1.fMatrix = comp.fNode.fLeftMat;
+   node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
+
+   let node2 = JSROOT.create("TGeoNodeMatrix");
+   setGeoBit(node2, geoBITS.kVisThis, true);
+   setGeoBit(node2, geoBITS.kVisDaughters, true);
+   node2.fName = "Right";
+   node2.fMatrix = comp.fNode.fRightMat;
+   node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
+
+   vol.fNodes = JSROOT.create("TList");
+   vol.fNodes.Add(node1);
+   vol.fNodes.Add(node2);
+
+   if (!side) delete this.$comp_col_cnt;
+
+   return vol;
+}
+
+
+/** @summary create list entity for geo object
+  * @private */
+function createList(parent, lst, name, title) {
+
+   if (!lst || !('arr' in lst) || (lst.arr.length==0)) return;
+
+   let item = {
+       _name: name,
+       _kind: "ROOT.TList",
+       _title: title,
+       _more: true,
+       _geoobj: lst,
+       _parent: parent,
+   };
+
+   item._get = function(item /*, itemname */) {
+      return Promise.resolve(item._geoobj || null);
+   };
+
+   item._expand = function(node, lst) {
+      // only childs
+
+      if ('fVolume' in lst)
+         lst = lst.fVolume.fNodes;
+
+      if (!('arr' in lst)) return false;
+
+      node._childs = [];
+
+      checkDuplicates(null, lst.arr);
+
+      for (let n in lst.arr)
+         createItem(node, lst.arr[n]);
+
+      return true;
+   };
+
+   if (!parent._childs) parent._childs = [];
+   parent._childs.push(item);
+}
+
 
 /** @summary Expand geo object
   * @private */
@@ -46,18 +167,18 @@ function expandGeoObject(parent, obj) {
    if (parent._childs) return true;
 
    if (ismanager) {
-      geo.createList(parent, obj.fMaterials, "Materials", "list of materials");
-      geo.createList(parent, obj.fMedia, "Media", "list of media");
-      geo.createList(parent, obj.fTracks, "Tracks", "list of tracks");
-      geo.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
-      geo.createItem(parent, obj.fMasterVolume);
+      createList(parent, obj.fMaterials, "Materials", "list of materials");
+      createList(parent, obj.fMedia, "Media", "list of media");
+      createList(parent, obj.fTracks, "Tracks", "list of tracks");
+      createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
+      createItem(parent, obj.fMasterVolume);
       return true;
    }
 
    if (isoverlap) {
-      geo.createItem(parent, obj.fVolume1);
-      geo.createItem(parent, obj.fVolume2);
-      geo.createItem(parent, obj.fMarker, 'Marker');
+      createItem(parent, obj.fVolume1);
+      createItem(parent, obj.fVolume2);
+      createItem(parent, obj.fMarker, 'Marker');
       return true;
    }
 
@@ -74,8 +195,8 @@ function expandGeoObject(parent, obj) {
 
    if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
       if (!parent._childs) {
-         geo.createItem(parent, shape.fNode.fLeft, 'Left');
-         geo.createItem(parent, shape.fNode.fRight, 'Right');
+         createItem(parent, shape.fNode.fLeft, 'Left');
+         createItem(parent, shape.fNode.fRight, 'Right');
       }
 
       return true;
@@ -83,10 +204,10 @@ function expandGeoObject(parent, obj) {
 
    if (!subnodes) return false;
 
-   geo.checkDuplicates(obj, subnodes);
+   checkDuplicates(obj, subnodes);
 
    for (let i = 0; i < subnodes.length; ++i)
-      geo.createItem(parent, subnodes[i]);
+      createItem(parent, subnodes[i]);
 
    return true;
 }
@@ -1485,7 +1606,7 @@ class TGeoPainter extends ObjectPainter {
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
-            if ((mesh instanceof THREE.Mesh) && geo.isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof THREE.Mesh) && isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
          active_mesh = active_mesh ? [ active_mesh ] : [];
@@ -2059,7 +2180,7 @@ class TGeoPainter extends ObjectPainter {
             let entry = this._more_nodes[n],
                 obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
             disposeThreejsObject(obj3d);
-            geo.cleanupShape(entry.server_shape);
+            cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
 
@@ -2750,20 +2871,12 @@ class TGeoPainter extends ObjectPainter {
          clones: this._clones,
          cnt: [],
          func: function(node) {
-            if (this.cnt[this.last]===undefined)
+            if (this.cnt[this.last] === undefined)
                this.cnt[this.last] = 1;
             else
                this.cnt[this.last]++;
 
             nshapes += countNumShapes(this.clones.getNodeShape(node.id));
-
-            // for debugging - search if there some TGeoHalfSpace
-            //if (geo.HalfSpace) {
-            //    let entry = this.CopyStack();
-            //    let res = painter._clones.resolveStack(entry.stack);
-            //    console.log('SAW HALF SPACE', res.name);
-            //    geo.HalfSpace = false;
-            //}
             return true;
          }
       };
@@ -3187,7 +3300,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw extra shape on the geometry */
    drawExtraShape(obj, itemname) {
-      let toplevel = geo.build(obj);
+      let toplevel = build(obj);
       if (!toplevel) return false;
 
       toplevel.geo_name = itemname;
@@ -4512,7 +4625,7 @@ class TGeoPainter extends ObjectPainter {
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
          extras = obj.fMarker; extras_path = "<prnt>/Marker";
-         obj = geo.buildOverlapVolume(obj);
+         obj = buildOverlapVolume(obj);
          if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
@@ -4524,7 +4637,7 @@ class TGeoPainter extends ObjectPainter {
          let maxlvl = 1;
          opt = opt.substr(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
-         obj = geo.buildCompositeVolume(shape, maxlvl);
+         obj = buildCompositeVolume(shape, maxlvl);
       }
 
       if (!obj && shape)
@@ -4556,19 +4669,14 @@ class TGeoPainter extends ObjectPainter {
 
 } // class TGeoPainter
 
+
 /** @summary Create geo painter
   * @private */
 createGeoPainter = function(dom, obj, opt) {
-   geo.GradPerSegm = JSROOT.settings.GeoGradPerSegm;
-   geo.CompressComp = JSROOT.settings.GeoCompressComp;
+
+   setGeoParams(JSROOT.settings.GeoGradPerSegm, JSROOT.settings.GeoCompressComp);
 
    let painter = new TGeoPainter(dom, obj);
-
-   // one could use TGeoManager setting, but for some example JSROOT does not build composites
-   // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
-   //   geo.GradPerSegm = 360/obj.fNsegments;
-
-   // painter.addToPadPrimitives(); // will add to pad primitives if any
 
    painter.options = painter.decodeOptions(opt); // indicator of initialization
 
@@ -4586,129 +4694,10 @@ createGeoPainter = function(dom, obj, opt) {
    return painter;
 }
 
-// ===============================================================================
-
-/** @summary Function used to build hierarchy of elements of composite shapes
-  * @private */
-geo.buildCompositeVolume = function(comp, maxlvl, side) {
-
-   if (maxlvl === undefined) maxlvl = 1;
-   if (!side) {
-      this.$comp_col_cnt = 0;
-      side = "";
-   }
-
-   let vol = JSROOT.create("TGeoVolume");
-   setGeoBit(vol, geoBITS.kVisThis, true);
-   setGeoBit(vol, geoBITS.kVisDaughters, true);
-
-   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
-      vol.fName = side;
-      vol.fLineColor = (this.$comp_col_cnt++ % 8) + 2;
-      vol.fShape = comp;
-      return vol;
-   }
-
-   if (side) side += "/";
-   vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
-   vol.fName = "";
-
-   let node1 = JSROOT.create("TGeoNodeMatrix");
-   setGeoBit(node1, geoBITS.kVisThis, true);
-   setGeoBit(node1, geoBITS.kVisDaughters, true);
-   node1.fName = "Left";
-   node1.fMatrix = comp.fNode.fLeftMat;
-   node1.fVolume = geo.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
-
-   let node2 = JSROOT.create("TGeoNodeMatrix");
-   setGeoBit(node2, geoBITS.kVisThis, true);
-   setGeoBit(node2, geoBITS.kVisDaughters, true);
-   node2.fName = "Right";
-   node2.fMatrix = comp.fNode.fRightMat;
-   node2.fVolume = geo.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
-
-   vol.fNodes = JSROOT.create("TList");
-   vol.fNodes.Add(node1);
-   vol.fNodes.Add(node2);
-
-   if (!side) delete this.$comp_col_cnt;
-
-   return vol;
-}
-
-/** @summary Function used to build hierarchy of elements of overlap object
-  * @private */
-geo.buildOverlapVolume = function(overlap) {
-
-   let vol = JSROOT.create("TGeoVolume");
-
-   setGeoBit(vol, geoBITS.kVisDaughters, true);
-   vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
-   vol.fName = "";
-
-   let node1 = JSROOT.create("TGeoNodeMatrix");
-   node1.fName = overlap.fVolume1.fName || "Overlap1";
-   node1.fMatrix = overlap.fMatrix1;
-   node1.fVolume = overlap.fVolume1;
-   // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
-
-   let node2 = JSROOT.create("TGeoNodeMatrix");
-   node2.fName = overlap.fVolume2.fName || "Overlap2";
-   node2.fMatrix = overlap.fMatrix2;
-   node2.fVolume = overlap.fVolume2;
-   // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
-
-   vol.fNodes = JSROOT.create("TList");
-   vol.fNodes.Add(node1);
-   vol.fNodes.Add(node2);
-
-   return vol;
-}
-
-/** @summary create list entity for geo object
-  * @private */
-geo.createList = function(parent, lst, name, title) {
-
-   if (!lst || !('arr' in lst) || (lst.arr.length==0)) return;
-
-   let item = {
-       _name: name,
-       _kind: "ROOT.TList",
-       _title: title,
-       _more: true,
-       _geoobj: lst,
-       _parent: parent,
-   };
-
-   item._get = function(item /*, itemname */) {
-      return Promise.resolve(item._geoobj || null);
-   };
-
-   item._expand = function(node, lst) {
-      // only childs
-
-      if ('fVolume' in lst)
-         lst = lst.fVolume.fNodes;
-
-      if (!('arr' in lst)) return false;
-
-      node._childs = [];
-
-      geo.checkDuplicates(null, lst.arr);
-
-      for (let n in lst.arr)
-         geo.createItem(node, lst.arr[n]);
-
-      return true;
-   };
-
-   if (!parent._childs) parent._childs = [];
-   parent._childs.push(item);
-}
 
 /** @summary provide menu for geo object
   * @private */
-geo.provideMenu = function(menu, item, hpainter) {
+function provideMenu(menu, item, hpainter) {
 
    if (!item._geoobj) return false;
 
@@ -4841,12 +4830,30 @@ function browserIconClick(hitem, hpainter) {
 }
 
 
+/** @summary Get icon for the browser
+  * @private */
+function getBrowserIcon(hitem, hpainter) {
+   let icon = "";
+   if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
+   if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
+   if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
+   if (icon.length > 0) {
+      let drawitem = findItemWithPainter(hitem);
+      if (drawitem)
+         if (drawitem._painter.extraObjectVisible(hpainter, hitem))
+            icon += " geovis_this";
+   }
+   return icon;
+}
+
+
+
 /** @summary create hierarchy item for geo object
   * @private */
-geo.createItem = function(node, obj, name) {
+createItem = function(node, obj, name) {
    let sub = {
       _kind: "ROOT." + obj._typename,
-      _name: name ? name : geo.getObjectName(obj),
+      _name: name ? name : getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,
       _geoobj: obj,
@@ -4890,8 +4897,8 @@ geo.createItem = function(node, obj, name) {
          sub._more = true;
          sub._shape = shape;
          sub._expand = function(node /*, obj */) {
-            geo.createItem(node, node._shape.fNode.fLeft, 'Left');
-            geo.createItem(node, node._shape.fNode.fRight, 'Right');
+            createItem(node, node._shape.fNode.fLeft, 'Left');
+            createItem(node, node._shape.fNode.fRight, 'Right');
             return true;
          };
       }
@@ -4912,7 +4919,7 @@ geo.createItem = function(node, obj, name) {
       else if (iseve)
          sub._icon += provideVisStyle(obj);
 
-      sub._menu = geo.provideMenu;
+      sub._menu = provideMenu;
       sub._icon_click  = browserIconClick;
    }
 
@@ -4933,22 +4940,6 @@ geo.createItem = function(node, obj, name) {
    return sub;
 }
 
-
-/** @summary Get icon for the browser
-  * @private */
-function getBrowserIcon(hitem, hpainter) {
-   let icon = "";
-   if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
-   if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
-   if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
-   if (icon.length > 0) {
-      let drawitem = findItemWithPainter(hitem);
-      if (drawitem)
-         if (drawitem._painter.extraObjectVisible(hpainter, hitem))
-            icon += " geovis_this";
-   }
-   return icon;
-}
 
 /** @summary Draw dummy geometry
   * @private */
@@ -5010,13 +5001,11 @@ function drawAxis3D() {
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @returns {object} THREE.Object3D with created model
   * @example
-  * JSROOT.require('geom')
-  *       .then(geo => {
-  *           let obj3d = geo.build(obj);
-  *           // this is three.js object and can be now inserted in the scene
-  *        });
+  * import { build } from './path_to_jsroot/modules/geom.mjs';
+  * let obj3d = build(obj);
+  * // this is three.js object and can be now inserted in the scene
   */
-function build(obj, opt) {
+build = function(obj, opt) {
 
    if (!obj) return null;
 
@@ -5046,7 +5035,7 @@ function build(obj, opt) {
    }
 
    if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
-      obj = geo.buildCompositeVolume(shape);
+      obj = buildCompositeVolume(shape);
 
    if (!obj && shape)
       obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
@@ -5143,7 +5132,6 @@ function build(obj, opt) {
 addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: expandGeoObject, opt: ";more;all;count" });
 addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
 addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
-
 
 export { build, TGeoPainter, GeoDrawingControl,
          expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };
