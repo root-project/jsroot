@@ -376,6 +376,12 @@ function getRGBfromTColor(col) {
    return rgb;
 }
 
+/** @summary Get list of colors
+  * @private */
+function getRootColors() {
+   return jsrp.root_colors;
+}
+
 /** @summary Add new colors from object array
   * @private */
 function extendRootColors(jsarr, objarr) {
@@ -4316,6 +4322,6 @@ export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMetho
          makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
          getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
-         getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor, createRootColors,
+         getColor, addColor, adoptRootColors, getRootColors, extendRootColors, getRGBfromTColor, createRootColors,
          getSvgLineStyle, compressSVG, drawingJSON, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

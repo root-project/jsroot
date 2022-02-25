@@ -2,12 +2,12 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { floatToString, DrawOptions, TAttLineHandler, TRandom,
          buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
 
-import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
-
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { RObjectPainter, RPavePainter, ensureRCanvas, CommMode } from './v7gpad.mjs';
 
 /** @summary assign methods for the RAxis objects
   * @private */
@@ -453,7 +453,7 @@ class RHistPainter extends RObjectPainter {
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
       }
 
-      if (this.isDisplayItem() && is_axes_zoomed && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+      if (this.isDisplayItem() && is_axes_zoomed && (this.v7CommMode() == CommMode.kNormal)) {
 
          let handle = this.prepareDraw({ only_indexes: true });
 
@@ -3742,7 +3742,6 @@ class RH2Painter extends RHistPainter {
 
 
 /** @summary draw RHistDisplayItem  object
-  * @memberof JSROOT.v7
   * @private */
 function drawHistDisplayItem(dom, obj, opt) {
    if (!obj)
@@ -3764,7 +3763,6 @@ function drawHistDisplayItem(dom, obj, opt) {
 /**
  * @summary Painter for RHistStats class
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3798,7 +3796,7 @@ class RHistStatsPainter extends RPavePainter {
          return true;
       }
 
-      if (this.v7CommMode() == JSROOT.v7.CommMode.kOffline) {
+      if (this.v7CommMode() == CommMode.kOffline) {
          let main = this.getMainPainter();
          if (!main || (typeof main.fillStatistic !== 'function')) return false;
          // we take statistic from main painter
@@ -3961,7 +3959,7 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary Redraw stats box */
    redraw(reason) {
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) &&
-          (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+          (this.v7CommMode() == CommMode.kNormal)) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.getObject().fShowMask // lines to show in stat box
@@ -3984,11 +3982,5 @@ class RHistStatsPainter extends RPavePainter {
 } // class RHistStatsPainter
 
 
-JSROOT.RHistPainter      = RHistPainter;
-JSROOT.RH1Painter        = RH1Painter;
-JSROOT.RH2Painter        = RH2Painter;
-JSROOT.RHistStatsPainter = RHistStatsPainter;
 
-JSROOT.v7.drawHistDisplayItem = drawHistDisplayItem;
-
-export { RHistPainter, RH1Painter, RH2Painter };
+export { RHistPainter, RH1Painter, RH2Painter, RHistStatsPainter, drawHistDisplayItem };

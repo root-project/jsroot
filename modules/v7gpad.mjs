@@ -2,25 +2,20 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
-         createMenu, closeMenu, isPromise, addColor, registerForResize,
+         createMenu, closeMenu, isPromise, addColor, getRootColors, registerForResize,
          getElementRect, chooseTimeFormat, selectActivePad, addDrawFunc,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
 
 import { TAxisPainter } from './gpad.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-
-/** @namespace
-  * @summary Collection of v7-related methods and classes
-  * @alias JSROOT.v7 */
 let v7 = {}; // placeholder for v7-relevant code
 
-JSROOT.v7 = v7;
-
-v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
+const CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
 let ensureRCanvas;
 
@@ -2621,7 +2616,7 @@ class RFramePainter extends RObjectPainter {
          return true;
 
       if (!this.addFrameInteractivity) {
-         let inter = JSROOT.require(['interactive']);
+         let inter = await JSROOT.require(['interactive']);
          inter.FrameInteractive.assign(this);
       }
       return this.addFrameInteractivity(for_second_axes);
@@ -3443,7 +3438,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Extract properties from TObjectDisplayItem */
    extractTObjectProp(snap) {
       if (snap.fColIndex && snap.fColValue) {
-         let colors = this.root_colors || jsrp.root_colors;
+         let colors = this.root_colors || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
             colors[snap.fColIndex[k]] = snap.fColValue[k];
        }
@@ -3658,10 +3653,10 @@ class RPadPainter extends RObjectPainter {
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * @returns {Promise} with pad painter*/
-   redrawPadSnap(snap) {
+   async redrawPadSnap(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
-      if (!snap || !snap.fPrimitives) return Promise.resolve(this);
+      if (!snap || !snap.fPrimitives) return this;
 
       // for the moment only window size attributes are provided
       // let padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
@@ -3683,23 +3678,20 @@ class RPadPainter extends RObjectPainter {
          if (this.batch_mode && this.iscan)
              this._fixed_size = true;
 
-         let layout_promise = Promise.resolve(true),
-             mainid = this.selectDom().attr("id");
+         let mainid = this.selectDom().attr("id");
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string"))
-            layout_promise = JSROOT.require('hierarchy').then(() => {
-               this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
-               this.brlayout.create(mainid, true);
-               this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-               registerForResize(this.brlayout);
-            });
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
+            let hh = await JSROOT.require('hierarchy');
+            this.brlayout = new hh.BrowserLayout(mainid, null, this);
+            this.brlayout.create(mainid, true);
+            this.setDom(this.brlayout.drawing_divid()); // need to create canvas
+            registerForResize(this.brlayout);
+         }
 
-         return layout_promise.then(() => {
-            this.createCanvasSvg(0);
-            this.addPadButtons(true);
+         this.createCanvasSvg(0);
+         this.addPadButtons(true);
 
-            return this.drawNextSnap(snap.fPrimitives);
-         });
+         return this.drawNextSnap(snap.fPrimitives);
       }
 
       // update only pad/canvas attributes
@@ -3757,16 +3749,15 @@ class RPadPainter extends RObjectPainter {
 
       let prev_name = this.selectCurrentPad(this.this_pad_name);
 
-      return this.drawNextSnap(snap.fPrimitives).then(() => {
-         this.selectCurrentPad(prev_name);
+      await this.drawNextSnap(snap.fPrimitives);
+      this.selectCurrentPad(prev_name);
 
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+      if (getActivePad() === this) {
+         let canp = this.getCanvPainter();
+         if (canp) canp.producePadEvent("padredraw", this);
+      }
 
-         return this;
-      });
+      return this;
    }
 
    /** @summary Create image for the pad
@@ -4840,7 +4831,6 @@ class RCanvasPainter extends RPadPainter {
 } // RCanvasPainter
 
 /** @summary draw RPadSnapshot object
-  * @memberof JSROOT.v7
   * @private */
 async function drawRPadSnapshot(dom, snap /*, opt*/) {
    let painter = new RCanvasPainter(dom, null);
@@ -5029,7 +5019,6 @@ class RPavePainter extends RObjectPainter {
 // =======================================================================================
 
 /** @summary Function used for direct draw of RFrameTitle
-  * @memberof JSROOT.v7
   * @private */
 function drawRFrameTitle(reason, drag) {
    let fp = this.getFramePainter();
@@ -5487,7 +5476,6 @@ class RPalettePainter extends RObjectPainter {
 
 
 /** @summary draw RFont object
-  * @memberof JSROOT.v7
   * @private */
 function drawRFont() {
    let font   = this.getObject(),
@@ -5531,6 +5519,6 @@ addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: RFram
 addDrawFunc({ name: "ROOT::Experimental::RFont", icon: "img_text", func: drawRFont, opt: "", direct: "v7", csstype: "font" });
 addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: RAxisPainter.draw, opt: "" });
 
-export { ensureRCanvas, drawRPadSnapshot,
+export { ensureRCanvas, drawRPadSnapshot, CommMode,
          RObjectPainter, RAxisPainter, RPavePainter, RFramePainter,
-         RPalettePainter, RPadPainter, RCanvasPainter, RPavePainter };
+         RPalettePainter, RPadPainter, RCanvasPainter };

@@ -8,7 +8,7 @@ import * as JSROOT from './core.mjs';
 
 import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
 
-import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
+import { RAxisPainter, RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
 import { RHistPainter, RH1Painter, RH2Painter } from './v7hist.mjs';
 
@@ -490,13 +490,13 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    // factor 1.1 used in ROOT for lego plots
    if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-   this.x_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.xaxis, "x_");
+   this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
    this.x_handle.setPadName(this.getPadName());
    this.x_handle.snapid = this.snapid;
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
    this.x_handle.assignFrameMembers(this,"x");
 
-   this.y_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.yaxis, "y_");
+   this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
    this.y_handle.setPadName(this.getPadName());
    this.y_handle.snapid = this.snapid;
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
@@ -504,7 +504,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    // this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-   this.z_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.zaxis, "z_");
+   this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
    this.z_handle.setPadName(this.getPadName());
    this.z_handle.snapid = this.snapid;
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
@@ -2969,8 +2969,6 @@ class RH3Painter extends RHistPainter {
    }
 
 } // class RH3Painter
-
-JSROOT.RH3Painter = RH3Painter;
 
 export { RH3Painter };
 

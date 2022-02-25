@@ -2,11 +2,12 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
 
 /** @summary draw RText object
-  * @memberof JSROOT.v7
   * @private */
 function drawText() {
    let text      = this.getObject(),
@@ -26,7 +27,6 @@ function drawText() {
 }
 
 /** @summary draw RLine object
-  * @memberof JSROOT.v7
   * @private */
 function drawLine() {
 
@@ -48,32 +48,30 @@ function drawLine() {
 }
 
 /** @summary draw RBox object
-  * @memberof JSROOT.v7
   * @private */
 function drawBox() {
 
-    let box          = this.getObject(),
-        pp           = this.getPadPainter(),
-        onframe      = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-        clipping     = onframe ? this.v7EvalAttr("clipping", false) : false,
-        p1           = pp.getCoordinate(box.fP1, onframe),
-        p2           = pp.getCoordinate(box.fP2, onframe);
+   let box          = this.getObject(),
+       pp           = this.getPadPainter(),
+       onframe      = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
+       clipping     = onframe ? this.v7EvalAttr("clipping", false) : false,
+       p1           = pp.getCoordinate(box.fP1, onframe),
+       p2           = pp.getCoordinate(box.fP2, onframe);
 
- this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+   this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
 
- this.createv7AttLine("border_");
+   this.createv7AttLine("border_");
 
- this.createv7AttFill();
+   this.createv7AttFill();
 
- this.draw_g
-     .append("svg:path")
-     .attr("d",`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
-     .call(this.lineatt.func)
-     .call(this.fillatt.func);
+   this.draw_g
+       .append("svg:path")
+       .attr("d",`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
+       .call(this.lineatt.func)
+       .call(this.fillatt.func);
 }
 
 /** @summary draw RMarker object
-  * @memberof JSROOT.v7
   * @private */
 function drawMarker() {
     let marker       = this.getObject(),
@@ -97,7 +95,6 @@ function drawMarker() {
 /**
  * @summary Painter for RLegend class
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -225,11 +222,5 @@ class RPaveTextPainter extends RPavePainter {
 } // class RPaveTextPainter
 
 
-JSROOT.v7.drawText      = drawText;
-JSROOT.v7.drawLine      = drawLine;
-JSROOT.v7.drawBox       = drawBox;
-JSROOT.v7.drawMarker    = drawMarker;
-JSROOT.RLegendPainter   = RLegendPainter;
-JSROOT.RPaveTextPainter = RPaveTextPainter;
-
-export { RLegendPainter, RPaveTextPainter };
+export { RLegendPainter, RPaveTextPainter,
+         drawText, drawLine, drawBox, drawMarker };

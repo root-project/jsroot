@@ -1,16 +1,14 @@
 
 import * as d3 from './d3.mjs';
 
-import { TAttMarkerHandler, getColor, getSvgLineStyle } from './painter.mjs';
-
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { TAttMarkerHandler, getColor, getRootColors, getSvgLineStyle } from './painter.mjs';
 
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors
   * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
   * @private */
 function getColorExec(col, method) {
-   let id = -1, arr = jsrp.root_colors;
+   let id = -1, arr = getRootColors();
    if (typeof col == "string") {
       if (!col || (col == "none")) id = 0; else
          for (let k = 1; k < arr.length; ++k)
