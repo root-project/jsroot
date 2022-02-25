@@ -45,7 +45,8 @@ if (src && (typeof src == "string")) {
   * @alias JSROOT.batch_mode */
 let batch_mode = nodejs;
 
-
+// FIXME: workaround, need better solution
+if (nodejs) import('atob').then(res => { _.atob = res.default; });
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -666,8 +667,7 @@ function parse(json) {
          if (value.b !== undefined) {
             // base64 coding
 
-            // FIXME: TODO: need async methods here
-            let atob_func = nodejs ? require('atob') : window.atob;
+            let atob_func = nodejs ? _.atob : window.atob;
 
             let buf = atob_func(value.b);
 
