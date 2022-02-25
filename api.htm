@@ -6,7 +6,6 @@
       <title>JavaScript ROOT API examples</title>
       <link rel="shortcut icon" href="./img/RootIcon.ico">
       <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-      <script type="text/javascript" src="./scripts/JSRoot.core.js"></script>
       <meta property="og:title" content="JSROOT API examples"/>
       <meta property="og:type" content="website"/>
       <meta property="og:description" content="Web page shows URL syntax and JSROOT API usage"/>
@@ -125,7 +124,9 @@
 
       <div id="srcviewer"></div>
 
-      <script>
+      <script type="module">
+         import * as JSROOT from './modules/core.mjs';
+
          let jsroot_path = "./", filepath = "../files/";
 
          document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;

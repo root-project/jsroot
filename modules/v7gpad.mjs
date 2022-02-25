@@ -4286,9 +4286,9 @@ class RCanvasPainter extends RPadPainter {
          return Promise.resolve(true);
       }
 
-      return JSROOT.require("hierarchy").then(() => {
+      return JSROOT.require("hierarchy").then(hh => {
 
-         let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
+         let grid = new hh.GridDisplay(origin.node(), layout_kind);
 
          if (mainid == undefined)
             mainid = (layout_kind.indexOf("vert") == 0) ? 0 : 1;

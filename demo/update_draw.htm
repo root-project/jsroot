@@ -68,7 +68,7 @@
       let layout = d.get("layout"), promise = Promise.resolve(this);
 
       if (layout)
-          promise = JSROOT.require('hierarchy').then(() => { mdi = new JSROOT.GridDisplay('drawing', layout); });
+          promise = JSROOT.require('hierarchy').then(handle => { mdi = new handle.GridDisplay('drawing', layout); });
 
       promise.then(() => {
          setInterval(updateGUI, monitor);
