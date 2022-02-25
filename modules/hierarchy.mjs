@@ -12,9 +12,6 @@ import { BasePainter, ObjectPainter, loadJSDOM,
 
 import { produceLegend } from './hist.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-
-
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @memberof JSROOT.Painter
@@ -4047,7 +4044,7 @@ function buildGUI(gui_element, gui_kind) {
 
 /** @summary Display streamer info
   * @private */
-jsrp.drawStreamerInfo = function(dom, lst) {
+function drawStreamerInfo(dom, lst) {
    let painter = new HierarchyPainter('sinfo', dom, 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
@@ -5105,7 +5102,7 @@ class BatchDisplay extends MDIDisplay {
 
 /** @summary Create painter to perform tree drawing on server side
   * @private */
-JSROOT.createTreePlayer = function(player) {
+function createTreePlayer(player) {
 
    player.draw_first = true;
 
@@ -5301,7 +5298,7 @@ JSROOT.createTreePlayer = function(player) {
 
 /** @summary function used with THttpServer to assign player for the TTree object
   * @private */
-JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
+function drawTreePlayer(hpainter, itemname, askey, asleaf) {
 
    let item = hpainter.findItem(itemname),
        top = hpainter.getTopOnlineItem(item),
@@ -5338,7 +5335,7 @@ JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
          }
       }
 
-   JSROOT.createTreePlayer(player);
+   createTreePlayer(player);
    player.configureOnline(itemname, url, askey, root_version, draw_expr);
    player.showPlayer();
 
@@ -5347,26 +5344,20 @@ JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
 
 /** @summary function used with THttpServer when tree is not yet loaded
   * @private */
-JSROOT.drawTreePlayerKey = function(hpainter, itemname) {
-   return JSROOT.drawTreePlayer(hpainter, itemname, true);
+function drawTreePlayerKey(hpainter, itemname) {
+   return drawTreePlayer(hpainter, itemname, true);
 }
 
 /** @summary function used with THttpServer when tree is not yet loaded
   * @private */
-JSROOT.drawLeafPlayer = function(hpainter, itemname) {
-   return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
+function drawLeafPlayer(hpainter, itemname) {
+   return drawTreePlayer(hpainter, itemname, false, true);
 }
 
-// export all functions and classes
-
-jsrp.drawList = drawList;
-
-jsrp.folderHierarchy = folderHierarchy;
-jsrp.taskHierarchy = taskHierarchy;
-jsrp.listHierarchy = listHierarchy;
-jsrp.objectHierarchy = objectHierarchy;
-jsrp.keysHierarchy = keysHierarchy;
 
 export { HierarchyPainter, BrowserLayout, BatchDisplay,
          MDIDisplay, CustomDisplay, GridDisplay, FlexibleDisplay,
-         buildNobrowserGUI, buildGUI, drawInspector };
+         buildNobrowserGUI, buildGUI,
+         drawInspector, drawStreamerInfo, drawList,
+         folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy,
+         createTreePlayer, drawTreePlayer, drawTreePlayerKey, drawLeafPlayer };

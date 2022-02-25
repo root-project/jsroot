@@ -1,3 +1,4 @@
+import * as JSROOT from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -2829,7 +2830,7 @@ JSROOT.treeHierarchy = function(node, obj) {
  * @desc just envelope for real TTree::Draw method which do the main job
  * Can be also used for the branch and leaf object
  * @private */
-JSROOT.drawTree = async function() {
+async function drawTree() {
 
    let painter = this,
        obj = this.getObject(),
@@ -2867,13 +2868,13 @@ JSROOT.drawTree = async function() {
    } else {
       if (!args) args = 'player';
 
-      if ((typeof args == 'string') && (args.indexOf('player') == 0))
-         return JSROOT.require("hierarchy").then(() => {
-            JSROOT.createTreePlayer(painter);
-            painter.configureTree(tree);
-            painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
-            return painter;
-         });
+      if ((typeof args == 'string') && (args.indexOf('player') == 0)) {
+         let hh = await JSROOT.require("hierarchy");
+         hh.createTreePlayer(painter);
+         painter.configureTree(tree);
+         painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
+         return painter;
+      }
 
       if (typeof args === 'string') args = { expr: args };
    }
@@ -2901,17 +2902,15 @@ JSROOT.drawTree = async function() {
       // redirect drawing to the player
       create_player = 1;
 
-      return JSROOT.require("hierarchy").then(() => {
-         JSROOT.createTreePlayer(painter);
-         painter.configureTree(tree);
-         painter.showPlayer(args);
-         create_player = 2;
-         return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
-            painter.setItemName("TreePlayer"); // item name used by MDI when process resize
-            if (finalResolve) finalResolve(objpainter);
-            return objpainter; // return painter for histogram
-         });
-      });
+      let hh = await JSROOT.require("hierarchy");
+      hh.createTreePlayer(painter);
+      painter.configureTree(tree);
+      painter.showPlayer(args);
+      create_player = 2;
+      let objpainter = await JSROOT.redraw(painter.drawid, obj);
+      painter.setItemName("TreePlayer"); // item name used by MDI when process resize
+      if (finalResolve) finalResolve(objpainter);
+      return objpainter; // return painter for histogram
    };
 
    args.progress = obj => process_result(obj, true);
@@ -2924,5 +2923,5 @@ JSROOT.TSelector = TSelector;
 JSROOT.TDrawVariable = TDrawVariable;
 JSROOT.TDrawSelector = TDrawSelector;
 
-export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods };
+export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods, drawTree };
 

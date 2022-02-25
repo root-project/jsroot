@@ -22,6 +22,10 @@ exports.decodeUrl = function(...args) {
    return jsroot_import().then(handle => handle.decodeUrl(...args));
 }
 
+exports.buildGUI = function(...args) {
+   return jsroot_import().then(handle => handle.buildGUI(...args));
+}
+
 
 // try to define global JSROOT
 if (typeof globalThis !== "undefined") {
