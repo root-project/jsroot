@@ -6,6 +6,7 @@ import * as JSROOT from './core.mjs';
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
+         TAttLineHandler,
          createMenu, closeMenu, registerForResize, getElementRect, isPromise,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
          adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
@@ -2622,9 +2623,9 @@ class TPadPainter extends ObjectPainter {
          svg_rect = this.iscan ? this.getCanvSvg().select(".canvas_fillrect") :
                                  this.svg_this_pad().select(".root_pad_border");
 
-      let lineatt = this.is_active_pad ? new JSROOT.TAttLineHandler({ style: 1, width: 1, color: "red" }) : this.lineatt;
+      let lineatt = this.is_active_pad ? new TAttLineHandler({ style: 1, width: 1, color: "red" }) : this.lineatt;
 
-      if (!lineatt) lineatt = new JSROOT.TAttLineHandler({ color: "none" });
+      if (!lineatt) lineatt = new TAttLineHandler({ color: "none" });
 
       svg_rect.call(lineatt.func);
    }

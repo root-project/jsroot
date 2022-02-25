@@ -488,7 +488,7 @@ class ColorPalette {
 class TAttMarkerHandler {
 
    /** @summary constructor
-     * @param {object} args - attributes, see {@link JSROOT.TAttMarkerHandler#setArgs} for details */
+     * @param {object} args - attributes, see {@link TAttMarkerHandler#setArgs} for details */
    constructor(args) {
       this.x0 = this.y0 = 0;
       this.color = 'black';
@@ -765,7 +765,7 @@ class TAttMarkerHandler {
 class TAttLineHandler {
 
    /** @summary constructor
-     * @param {object} attr - attributes, see {@link JSROOT.TAttLineHandler#setArgs} */
+     * @param {object} attr - attributes, see {@link TAttLineHandler#setArgs} */
    constructor(args) {
       this.func = this.apply.bind(this);
       this.used = true;
@@ -894,7 +894,7 @@ class TAttLineHandler {
 class TAttFillHandler {
 
    /** @summary constructor
-     * @param {object} args - arguments see {@link JSROOT.TAttFillHandler#setArgs} for more info
+     * @param {object} args - arguments see {@link TAttFillHandler#setArgs} for more info
      * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling */
    constructor(args) {
       this.color = "none";
@@ -2391,14 +2391,16 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Creates marker attributes object
      * @desc Can be used to produce markers in painter.
-     * See {@link JSROOT.TAttMarkerHandler} for more info.
+     * See {@link TAttMarkerHandler} for more info.
      * Instance assigned as this.markeratt data member, recognized by GED editor
-     * @param {object} args - either TAttMarker or see arguments of {@link JSROOT.TAttMarkerHandler}
+     * @param {object} args - either TAttMarker or see arguments of {@link TAttMarkerHandler}
      * @returns {object} created handler
      * @protected */
    createAttMarker(args) {
-      if (!args || (typeof args !== 'object')) args = { std: true }; else
-         if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined) args = { attr: args, std: false };
+      if (!args || (typeof args !== 'object'))
+         args = { std: true };
+      else if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined)
+         args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
       if (args.painter === undefined) args.painter = this;
@@ -2418,9 +2420,9 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Creates line attributes object.
      * @desc Can be used to produce lines in painter.
-     * See {@link JSROOT.TAttLineHandler} for more info.
+     * See {@link TAttLineHandler} for more info.
      * Instance assigned as this.lineatt data member, recognized by GED editor
-     * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler}
+     * @param {object} args - either TAttLine or see constructor arguments of {@link TAttLineHandler}
      * @protected */
    createAttLine(args) {
       if (!args || (typeof args !== 'object'))
@@ -2447,7 +2449,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Creates fill attributes object.
      * @desc Method dedicated to create fill attributes, bound to canvas SVG
      * otherwise newly created patters will not be usable in the canvas
-     * See {@link JSROOT.TAttFillHandler} for more info.
+     * See {@link TAttFillHandler} for more info.
      * Instance assigned as this.fillatt data member, recognized by GED editors
      * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
      * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
@@ -2988,7 +2990,7 @@ class ObjectPainter extends BasePainter {
          arg.simple_latex = arg.latex && (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
-            JSROOT.require(['latex']).then(ltx => {
+            JSROOT.require('latex').then(ltx => {
                if (arg.simple_latex || ltx.isPlainText(arg.text) || arg.plain) {
                   arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
@@ -3017,7 +3019,7 @@ class ObjectPainter extends BasePainter {
       arg.mj_node = arg.draw_g.append("svg:g")
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-      JSROOT.require(['latex'])
+      JSROOT.require('latex')
             .then(ltx => ltx.produceMathjax(this, arg.mj_node, arg))
             .then(() => {
                arg.ready = true;
