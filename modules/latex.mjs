@@ -1,8 +1,9 @@
 
 import * as d3 from './d3.mjs';
 
-import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
+import * as JSROOT from './core.mjs';
 
+import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
 
 const symbols_map = {
    // greek letters
