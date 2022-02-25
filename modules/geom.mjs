@@ -23,7 +23,69 @@ JSROOT.loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
-// ============================================================================================
+
+/** @summary Expand geo object
+  * @private */
+function expandGeoObject(parent, obj) {
+   if (!parent || !obj) return false;
+
+   let isnode = (obj._typename.indexOf('TGeoNode') === 0),
+       isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
+       ismanager = (obj._typename === 'TGeoManager'),
+       iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')),
+       isoverlap = (obj._typename === 'TGeoOverlap');
+
+   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
+
+   if (parent._childs) return true;
+
+   if (ismanager) {
+      geo.createList(parent, obj.fMaterials, "Materials", "list of materials");
+      geo.createList(parent, obj.fMedia, "Media", "list of media");
+      geo.createList(parent, obj.fTracks, "Tracks", "list of tracks");
+      geo.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
+      geo.createItem(parent, obj.fMasterVolume);
+      return true;
+   }
+
+   if (isoverlap) {
+      geo.createItem(parent, obj.fVolume1);
+      geo.createItem(parent, obj.fVolume2);
+      geo.createItem(parent, obj.fMarker, 'Marker');
+      return true;
+   }
+
+   let volume, subnodes, shape;
+
+   if (iseve) {
+      subnodes = obj.fElements ? obj.fElements.arr : null;
+      shape = obj.fShape;
+   } else {
+      volume = (isnode ? obj.fVolume : obj);
+      subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
+      shape = volume ? volume.fShape : null;
+   }
+
+   if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
+      if (!parent._childs) {
+         geo.createItem(parent, shape.fNode.fLeft, 'Left');
+         geo.createItem(parent, shape.fNode.fRight, 'Right');
+      }
+
+      return true;
+   }
+
+   if (!subnodes) return false;
+
+   geo.checkDuplicates(obj, subnodes);
+
+   for (let i = 0; i < subnodes.length; ++i)
+      geo.createItem(parent, subnodes[i]);
+
+   return true;
+}
+
+
 
 /**
   * @summary Toolbar for geometry painter
@@ -4581,7 +4643,7 @@ geo.createItem = function(node, obj, name) {
 
       if (subnodes) {
          sub._more = true;
-         sub._expand = geo.expandObject;
+         sub._expand = expandGeoObject;
       } else
       if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
          sub._more = true;
@@ -4878,67 +4940,6 @@ geo.getBrowserIcon = function(hitem, hpainter) {
    return icon;
 }
 
-/** @summary Expand geo object
-  * @private */
-geo.expandObject = function(parent, obj) {
-   if (!parent || !obj) return false;
-
-   let isnode = (obj._typename.indexOf('TGeoNode') === 0),
-       isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
-       ismanager = (obj._typename === 'TGeoManager'),
-       iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')),
-       isoverlap = (obj._typename === 'TGeoOverlap');
-
-   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
-
-   if (parent._childs) return true;
-
-   if (ismanager) {
-      geo.createList(parent, obj.fMaterials, "Materials", "list of materials");
-      geo.createList(parent, obj.fMedia, "Media", "list of media");
-      geo.createList(parent, obj.fTracks, "Tracks", "list of tracks");
-      geo.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
-      geo.createItem(parent, obj.fMasterVolume);
-      return true;
-   }
-
-   if (isoverlap) {
-      geo.createItem(parent, obj.fVolume1);
-      geo.createItem(parent, obj.fVolume2);
-      geo.createItem(parent, obj.fMarker, 'Marker');
-      return true;
-   }
-
-   let volume, subnodes, shape;
-
-   if (iseve) {
-      subnodes = obj.fElements ? obj.fElements.arr : null;
-      shape = obj.fShape;
-   } else {
-      volume = (isnode ? obj.fVolume : obj);
-      subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
-      shape = volume ? volume.fShape : null;
-   }
-
-   if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
-      if (!parent._childs) {
-         geo.createItem(parent, shape.fNode.fLeft, 'Left');
-         geo.createItem(parent, shape.fNode.fRight, 'Right');
-      }
-
-      return true;
-   }
-
-   if (!subnodes) return false;
-
-   geo.checkDuplicates(obj, subnodes);
-
-   for (let i = 0; i < subnodes.length; ++i)
-      geo.createItem(parent, subnodes[i]);
-
-   return true;
-}
-
 /** @summary Draw dummy geometry
   * @private */
 geo.drawDummy3DGeom = function(painter) {
@@ -4988,7 +4989,7 @@ jsrp.drawAxis3D = function() {
    console.error('no geometry painter found to toggle TAxis3D drawing');
 }
 
-addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
+addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: expandGeoObject, opt: ";more;all;count" });
 addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
@@ -4996,4 +4997,4 @@ JSROOT.TGeoPainter = TGeoPainter;
 
 jsrp.GeoDrawingControl = GeoDrawingControl;
 
-export { geo, TGeoPainter };
+export { geo, TGeoPainter, expandGeoObject };

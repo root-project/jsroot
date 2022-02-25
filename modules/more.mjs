@@ -1,6 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
          floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
 
@@ -8,11 +10,9 @@ import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, Dra
 
 import { ensureTCanvas } from './gpad.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-
 /** @summary Draw TText
   * @private */
-jsrp.drawText = function() {
+function drawText() {
    let text = this.getObject(),
        pp = this.getPadPainter(),
        w = pp.getPadWidth(),
@@ -90,7 +90,7 @@ jsrp.drawText = function() {
 
 /** @summary Draw TLine
   * @private */
-jsrp.drawLine = function() {
+function drawLine() {
 
    let line = this.getObject(),
        lineatt = new TAttLineHandler(line),
@@ -108,7 +108,7 @@ jsrp.drawLine = function() {
 
 /** @summary Draw TPolyLine
   * @private */
-jsrp.drawPolyLine = function() {
+function drawPolyLine() {
 
    // create svg:g container for polyline drawing
    this.createG();
@@ -136,7 +136,7 @@ jsrp.drawPolyLine = function() {
 
 /** @summary Draw TEllipse
   * @private */
-jsrp.drawEllipse = function() {
+function drawEllipse() {
 
    let ellipse = this.getObject();
 
@@ -223,7 +223,7 @@ jsrp.drawEllipse = function() {
 
 /** @summary Draw TPie
   * @private */
-jsrp.drawPie = function() {
+function drawPie() {
    let pie = this.getObject();
 
    // create svg:g container for ellipse drawing
@@ -263,7 +263,7 @@ jsrp.drawPie = function() {
 
 /** @summary Draw TBox
   * @private */
-jsrp.drawBox = function() {
+function drawBox() {
 
    let box = this.getObject(),
        opt = this.getDrawOpt(),
@@ -311,7 +311,7 @@ jsrp.drawBox = function() {
 
 /** @summary Draw TMarker
   * @private */
-jsrp.drawMarker = function() {
+function drawMarker() {
    let marker = this.getObject(),
        att = new TAttMarkerHandler(marker),
        kMarkerNDC = JSROOT.BIT(14),
@@ -332,7 +332,7 @@ jsrp.drawMarker = function() {
 
 /** @summary Draw TPolyMarker
   * @private */
-jsrp.drawPolyMarker = function() {
+function drawPolyMarker() {
 
    // create svg:g container for box drawing
    this.createG();
@@ -353,7 +353,7 @@ jsrp.drawPolyMarker = function() {
 
 /** @summary Draw TArrow
   * @private */
-jsrp.drawArrow = function() {
+function drawArrow() {
    let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14),
        oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
 
@@ -473,7 +473,7 @@ jsrp.drawArrow = function() {
 
 /** @summary Draw TRooPlot
   * @private */
-jsrp.drawRooPlot = function(dom, plot) {
+function drawRooPlot(dom, plot) {
 
    return JSROOT.draw(dom, plot._hist, "hist").then(hp => {
 
@@ -4329,7 +4329,7 @@ class TASImagePainter extends ObjectPainter {
 
 /** @summary Draw JS image
   * @private */
-jsrp.drawJSImage = function(dom, obj, opt) {
+function drawJSImage(dom, obj, opt) {
    let painter = new JSROOT.BasePainter(dom),
        main = painter.selectDom(),
        img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
@@ -4501,17 +4501,6 @@ class TRatioPlotPainter extends ObjectPainter {
 
 } // class TRatioPlotPainter
 
-
-JSROOT.TF1Painter = TF1Painter;
-JSROOT.TGraphPainter = TGraphPainter;
-JSROOT.TGraphPolargramPainter = TGraphPolargramPainter;
-JSROOT.TGraphPolarPainter = TGraphPolarPainter;
-JSROOT.TMultiGraphPainter = TMultiGraphPainter;
-JSROOT.TSplinePainter = TSplinePainter;
-JSROOT.TASImagePainter = TASImagePainter;
-JSROOT.TRatioPlotPainter = TRatioPlotPainter;
-JSROOT.TGraphTimePainter = TGraphTimePainter;
-JSROOT.TEfficiencyPainter = TEfficiencyPainter;
-JSROOT.TWebPaintingPainter = TWebPaintingPainter;
-
-export { TGraphPainter };
+export { TF1Painter, TGraphPainter, TGraphPolargramPainter, TGraphPolarPainter, TMultiGraphPainter,
+         TSplinePainter, TASImagePainter, TRatioPlotPainter, TGraphTimePainter, TEfficiencyPainter, TWebPaintingPainter,
+         drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox, drawMarker, drawPolyMarker, drawArrow, drawRooPlot, drawJSImage };

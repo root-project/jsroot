@@ -5514,14 +5514,14 @@ function drawRFont() {
 addDrawFunc({ name: "ROOT::Experimental::RHist1Drawable", icon: "img_histo1d", prereq: "v7hist", class: "RH1Painter", opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RHist2Drawable", icon: "img_histo2d", prereq: "v7hist", class: "RH2Painter", opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RHist3Drawable", icon: "img_histo3d", prereq: "v7hist3d", class: "RH3Painter", opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHistDisplayItem", opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: "v7", csstype: "text" });
+addDrawFunc({ name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", prereq: "v7hist", func: "drawHistDisplayItem", opt: "" });
+addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "drawText", opt: "", direct: "v7", csstype: "text" });
 addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawRFrameTitle, opt: "", direct: "v7", csstype: "title" });
 addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: RPalettePainter.draw, opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", prereq: "v7hist", class: "RHistStatsPainter", opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: "v7", csstype: "line" });
-addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: "v7", csstype: "box" });
-addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: "v7", csstype: "marker" });
+addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "drawLine", opt: "", direct: "v7", csstype: "line" });
+addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "drawBox", opt: "", direct: "v7", csstype: "box" });
+addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "drawMarker", opt: "", direct: "v7", csstype: "marker" });
 addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: RPavePainter.draw, opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", class: "RLegendPainter", opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", class: "RPaveTextPainter", opt: "" });
@@ -5529,14 +5529,6 @@ addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: RFram
 addDrawFunc({ name: "ROOT::Experimental::RFont", icon: "img_text", func: drawRFont, opt: "", direct: "v7", csstype: "font" });
 addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: RAxisPainter.draw, opt: "" });
 
-JSROOT.RObjectPainter = RObjectPainter;
-JSROOT.RAxisPainter = RAxisPainter;
-JSROOT.RFramePainter = RFramePainter;
-JSROOT.RPalettePainter = RPalettePainter;
-JSROOT.RPadPainter = RPadPainter;
-JSROOT.RCanvasPainter = RCanvasPainter;
-JSROOT.RPavePainter = RPavePainter;
-
-jsrp.drawRPadSnapshot = drawRPadSnapshot;
-
-export { ensureRCanvas, RObjectPainter, RPavePainter, RFramePainter };
+export { ensureRCanvas, drawRPadSnapshot,
+         RObjectPainter, RAxisPainter, RPavePainter, RFramePainter,
+         RPalettePainter, RPadPainter, RCanvasPainter, RPavePainter };
