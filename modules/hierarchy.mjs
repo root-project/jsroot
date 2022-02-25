@@ -4061,7 +4061,8 @@ class HierarchyPainter extends BasePainter {
 
       return new Promise(resolveFunc => {
 
-         let itemreq = JSROOT.NewHttpRequest(url, req_kind, obj => {
+         let itemreq;
+         JSROOT.createHttpRequest(url, req_kind, obj => {
 
             let func = null;
 
@@ -4076,9 +4077,10 @@ class HierarchyPainter extends BasePainter {
             }
 
             resolveFunc(obj);
+         }).then(xhr => {
+            itemreq = xhr;
+            xhr.send(null);
          });
-
-         itemreq.send(null);
       });
    }
 
