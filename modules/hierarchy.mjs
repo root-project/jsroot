@@ -4381,7 +4381,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (this.disp_kind == 'batch') {
-         if (JSROOT.nodejs) await loadJSDOM();
+         let handle = JSROOT.nodejs ? await loadJSDOM() : null;
          this.disp = new BatchDisplay(1200, 800, handle?.d3);
          return this.disp;
       }

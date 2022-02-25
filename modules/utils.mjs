@@ -1,5 +1,8 @@
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
+
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten
   * if no argument specified, any shown messages will be removed
