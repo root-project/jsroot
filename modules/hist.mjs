@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { mth } from './math.mjs';
+
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu, getColor } from './painter.mjs';
 
@@ -1176,7 +1178,7 @@ class TPavePainter extends ObjectPainter {
       if (print_fchi2 > 0)
          this.addText("#chi^2 / ndf = " + this.format(f1.fChisquare,"fit") + " / " + f1.fNDF);
       if (print_fprob > 0)
-         this.addText("Prob = "  + (('Math' in JSROOT) ? this.format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not load>"));
+         this.addText("Prob = "  + this.format(mth.Prob(f1.fChisquare, f1.fNDF)));
       if (print_fval > 0)
          for(let n = 0; n < f1.GetNumPars(); ++n) {
             let parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
@@ -1184,7 +1186,8 @@ class TPavePainter extends ObjectPainter {
             parvalue = (parvalue===undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
             if (parerr !== undefined) {
                parerr = this.format(parerr,"last");
-               if ((Number(parerr)===0) && (f1.GetParError(n) != 0)) parerr = this.format(f1.GetParError(n),"4.2g");
+               if ((Number(parerr)===0) && (f1.GetParError(n) != 0))
+                  parerr = this.format(f1.GetParError(n),"4.2g");
             }
 
             if ((print_ferrors > 0) && parerr)
