@@ -1,8 +1,8 @@
 import * as d3 from './d3.mjs';
 
-import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
+import * as JSROOT from './core.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
 let TooltipHandler = {
 

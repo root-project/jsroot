@@ -437,7 +437,7 @@ function drawArrow() {
    }
 
    if (!JSROOT.batch_mode)
-      return JSROOT.require(['interactive']).then(inter => {
+      return JSROOT.require('interactive').then(inter => {
 
          if (!this.moveStart)
             this.moveStart = function(x,y) {
@@ -2761,7 +2761,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                 .call(this.gridatt.func);
          }
 
-      if (!JSROOT.batch_mode) return;
+      if (JSROOT.batch_mode) return;
 
       let inter = await JSROOT.require(['interactive']);
 
