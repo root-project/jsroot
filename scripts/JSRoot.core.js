@@ -26,6 +26,10 @@ exports.buildGUI = function(...args) {
    return jsroot_import().then(handle => handle.buildGUI(...args));
 }
 
+exports.openFile= function(...args) {
+   return jsroot_import().then(handle => handle.openFile(...args));
+}
+
 
 // try to define global JSROOT
 if (typeof globalThis !== "undefined") {

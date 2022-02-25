@@ -9,7 +9,7 @@
    <div id="drawing" style="width:800px; height:600px"></div>
    <script type='text/javascript'>
       // json file stored in same folder, absolute address can be used as well
-      JSROOT.httpRequest("hpx.json", 'object')
+      JSROOT.httpRequest("https://jsroot.gsi.de/files/hpx.json", 'object')
             .then(obj => JSROOT.draw("drawing", obj, "hist"));
    </script>
 </body>
