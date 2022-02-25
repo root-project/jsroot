@@ -2,6 +2,8 @@
 
 import * as THREE from './three.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { ThreeBSP } from './csg.mjs';
 
 
@@ -2771,15 +2773,14 @@ class ClonedNodes {
    }
 
    /** @summary Provide different properties of draw entry nodeid
-    * @desc Only if node visible, material will be created*/
-   getDrawEntryProperties(entry) {
+     * @desc Only if node visible, material will be created */
+   getDrawEntryProperties(entry, root_colors) {
 
-      let clone = this.nodes[entry.nodeid];
-      let visible = true;
+      let clone = this.nodes[entry.nodeid], visible = true;
 
       if (clone.kind === kindShape) {
-         let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         let _opacity = entry.opacity || 1;
+         let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
+            _opacity = entry.opacity || 1;
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -2828,8 +2829,8 @@ class ClonedNodes {
       if (visible) {
 
          // TODO: maybe correctly extract ROOT colors here?
-         let _opacity = 1.0, jsrp = JSROOT.Painter,
-             root_colors = jsrp ? jsrp.root_colors : ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+         let _opacity = 1.0;
+         if (!root_colors) root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
@@ -3624,147 +3625,6 @@ geo.produceRenderOrder = function(toplevel, origin, method, clones) {
       process(toplevel, 0, 1, 1000000);
 }
 
-/** @summary Build three.js model for given geometry object
-  * @param {Object} obj - TGeo-related object
-  * @param {Object} [opt] - options
-  * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
-  * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
-  * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
-  * @param {boolean} [opt.doubleside=false] - use double-side material
-  * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
-  * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
-  * @returns {object} THREE.Object3D with created model
-  * @example
-  * JSROOT.require('geom')
-  *       .then(geo => {
-  *           let obj3d = geo.build(obj);
-  *           // this is three.js object and can be now inserted in the scene
-  *        });
-  */
-geo.build = function(obj, opt) {
-
-   if (!obj) return null;
-
-   if (!opt) opt = {};
-   if (!opt.numfaces) opt.numfaces = 100000;
-   if (!opt.numnodes) opt.numnodes = 1000;
-   if (!opt.frustum) opt.frustum = null;
-
-   opt.res_mesh = opt.res_faces = 0;
-
-   let shape = null, hide_top = false;
-
-   if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-      shape = obj; obj = null;
-   } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-      shape = obj.fShape;
-   } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-      shape = obj.fShape;
-   } else if (obj._typename === 'TGeoManager') {
-      obj = obj.fMasterVolume;
-      hide_top = !opt.showtop;
-      shape = obj.fShape;
-   } else if (obj.fVolume) {
-      shape = obj.fVolume.fShape;
-   } else {
-      obj = null;
-   }
-
-   if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
-      obj = geo.buildCompositeVolume(shape);
-
-   if (!obj && shape)
-      obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
-                { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-
-   if (!obj) return null;
-
-   if (obj._typename.indexOf('TGeoVolume') === 0)
-      obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
-
-   let clones = new ClonedNodes(obj);
-   clones.setVisLevel(opt.vislevel);
-   clones.setMaxVisNodes(opt.numnodes);
-
-   if (opt.dflt_colors)
-      clones.setDefaultColors(true);
-
-   let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
-   if (uniquevis <= 0)
-      clones.markVisibles(false, false, hide_top);
-   else
-      clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
-
-   clones.produceIdShifts();
-
-   // collect visible nodes
-   let res = clones.collectVisibles(opt.numfaces, opt.frustum);
-
-   let draw_nodes = res.lst;
-
-   // collect shapes
-   let shapes = clones.collectShapes(draw_nodes);
-
-   clones.buildShapes(shapes, opt.numfaces);
-
-   let toplevel = new THREE.Object3D();
-
-   for (let n = 0; n < draw_nodes.length; ++n) {
-      let entry = draw_nodes[n];
-      if (entry.done) continue;
-
-      let shape = shapes[entry.shapeid];
-      if (!shape.ready) {
-         console.warn('shape marked as not ready when should');
-         break;
-      }
-      entry.done = true;
-      shape.used = true; // indicate that shape was used in building
-
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         continue;
-      }
-
-      let prop = clones.getDrawEntryProperties(entry);
-
-      opt.res_mesh++;
-      opt.res_faces += shape.nfaces;
-
-      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
-
-      prop.material.wireframe = opt.wireframe;
-
-      prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
-
-      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new THREE.Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      mesh.name = clones.getNodeName(entry.nodeid);
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-         mesh.updateMatrixWorld();
-      }
-
-      // specify rendering order, required for transparency handling
-      //if (obj3d.$jsroot_depth !== undefined)
-      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
-      //else
-      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
-   }
-
-   return toplevel;
-}
 
 geo.projectGeometry = projectGeometry;
 geo.countGeometryFaces = countGeometryFaces;
@@ -3775,7 +3635,4 @@ geo.createFlippedMesh = createFlippedMesh;
 geo.getBoundingBox = getBoundingBox;
 geo.provideObjectInfo = provideObjectInfo;
 
-geo.ClonedNodes = ClonedNodes;
-JSROOT.GEO = geo;
-
-export { geo };
+export { geo, ClonedNodes };

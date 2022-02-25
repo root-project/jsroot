@@ -4,6 +4,8 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { showProgress } from './utils.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
@@ -11,19 +13,18 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont } from './base3d.mjs';
 
-import { geo } from './geobase.mjs';
+import { geo, ClonedNodes } from './geobase.mjs';
 
 import { ObjectPainter, DrawOptions, createMenu, closeMenu,
-         getColor, isPromise, addDrawFunc } from './painter.mjs';
+         getColor, getRootColors, isPromise, addDrawFunc } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
-
-const jsrp = JSROOT.Painter; // FIXME - workaround
 
 JSROOT.loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
+let createGeoPainter;
 
 /** @summary Expand geo object
   * @private */
@@ -1914,14 +1915,14 @@ class TGeoPainter extends ObjectPainter {
          if (entry.stack[0]===1) entry.custom_color = "blue";
       }
 
-      let mesh, prop = this._clones.getDrawEntryProperties(entry),
+      let prop = this._clones.getDrawEntryProperties(entry, getRootColors()),
           obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl);
 
       prop.material.wireframe = this.ctrl.wireframe;
 
       prop.material.side = this.ctrl.bothSides ? THREE.DoubleSide : THREE.FrontSide;
 
-      let matrix = obj3d.absMatrix || obj3d.matrixWorld;
+      let mesh, matrix = obj3d.absMatrix || obj3d.matrixWorld;
 
       if (matrix.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
@@ -3291,7 +3292,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones_owner = true;
 
-         this._clones = new geo.ClonedNodes(draw_obj);
+         this._clones = new ClonedNodes(draw_obj);
 
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
          if (this.geo_manager) {
@@ -4451,7 +4452,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!obj) return null;
 
-      let painter = jsrp.createGeoPainter(dom, obj, opt);
+      let painter = createGeoPainter(dom, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
@@ -4476,7 +4477,7 @@ class TGeoPainter extends ObjectPainter {
 
 /** @summary Create geo painter
   * @private */
-jsrp.createGeoPainter = function(dom, obj, opt) {
+createGeoPainter = function(dom, obj, opt) {
    geo.GradPerSegm = JSROOT.settings.GeoGradPerSegm;
    geo.CompressComp = JSROOT.settings.GeoCompressComp;
 
@@ -4981,7 +4982,7 @@ geo.drawDummy3DGeom = function(painter) {
 
 /** @summary Direct draw function for TAxis3D
   * @private */
-jsrp.drawAxis3D = function() {
+function drawAxis3D() {
    let main = this.getMainPainter();
 
    if (main && (typeof main.setAxesDraw == 'function'))
@@ -4990,12 +4991,150 @@ jsrp.drawAxis3D = function() {
    console.error('no geometry painter found to toggle TAxis3D drawing');
 }
 
+/** @summary Build three.js model for given geometry object
+  * @param {Object} obj - TGeo-related object
+  * @param {Object} [opt] - options
+  * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
+  * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
+  * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
+  * @param {boolean} [opt.doubleside=false] - use double-side material
+  * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
+  * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
+  * @returns {object} THREE.Object3D with created model
+  * @example
+  * JSROOT.require('geom')
+  *       .then(geo => {
+  *           let obj3d = geo.build(obj);
+  *           // this is three.js object and can be now inserted in the scene
+  *        });
+  */
+function build(obj, opt) {
+
+   if (!obj) return null;
+
+   if (!opt) opt = {};
+   if (!opt.numfaces) opt.numfaces = 100000;
+   if (!opt.numnodes) opt.numnodes = 1000;
+   if (!opt.frustum) opt.frustum = null;
+
+   opt.res_mesh = opt.res_faces = 0;
+
+   let shape = null, hide_top = false;
+
+   if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+      shape = obj; obj = null;
+   } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+      shape = obj.fShape;
+   } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+      shape = obj.fShape;
+   } else if (obj._typename === 'TGeoManager') {
+      obj = obj.fMasterVolume;
+      hide_top = !opt.showtop;
+      shape = obj.fShape;
+   } else if (obj.fVolume) {
+      shape = obj.fVolume.fShape;
+   } else {
+      obj = null;
+   }
+
+   if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
+      obj = geo.buildCompositeVolume(shape);
+
+   if (!obj && shape)
+      obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
+                { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+   if (!obj) return null;
+
+   if (obj._typename.indexOf('TGeoVolume') === 0)
+      obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+   let clones = new ClonedNodes(obj);
+   clones.setVisLevel(opt.vislevel);
+   clones.setMaxVisNodes(opt.numnodes);
+
+   if (opt.dflt_colors)
+      clones.setDefaultColors(true);
+
+   let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
+   if (uniquevis <= 0)
+      clones.markVisibles(false, false, hide_top);
+   else
+      clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
+
+   clones.produceIdShifts();
+
+   // collect visible nodes
+   let res = clones.collectVisibles(opt.numfaces, opt.frustum);
+
+   // collect shapes
+   let shapes = clones.collectShapes(res.lst);
+
+   clones.buildShapes(shapes, opt.numfaces);
+
+   let toplevel = new THREE.Object3D();
+
+   for (let n = 0; n < res.lst.length; ++n) {
+      let entry = res.lst[n];
+      if (entry.done) continue;
+
+      let shape = shapes[entry.shapeid];
+      if (!shape.ready) {
+         console.warn('shape marked as not ready when should');
+         break;
+      }
+      entry.done = true;
+      shape.used = true; // indicate that shape was used in building
+
+      if (!shape.geom || (shape.nfaces === 0)) {
+         // node is visible, but shape does not created
+         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
+         continue;
+      }
+
+      let prop = clones.getDrawEntryProperties(entry, getRootColors());
+
+      opt.res_mesh++;
+      opt.res_faces += shape.nfaces;
+
+      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
+
+      prop.material.wireframe = opt.wireframe;
+
+      prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
+
+      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
+
+      if (matrix.determinant() > -0.9) {
+         mesh = new THREE.Mesh(shape.geom, prop.material);
+      } else {
+         mesh = createFlippedMesh(shape, prop.material);
+      }
+
+      mesh.name = clones.getNodeName(entry.nodeid);
+
+      obj3d.add(mesh);
+
+      if (obj3d.absMatrix) {
+         mesh.matrix.copy(obj3d.absMatrix);
+         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+         mesh.updateMatrixWorld();
+      }
+
+      // specify rendering order, required for transparency handling
+      //if (obj3d.$jsroot_depth !== undefined)
+      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
+      //else
+      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
+   }
+
+   return toplevel;
+}
+
+
 addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: expandGeoObject, opt: ";more;all;count" });
 addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
-JSROOT.TGeoPainter = TGeoPainter;
 
-jsrp.GeoDrawingControl = GeoDrawingControl;
-
-export { geo, TGeoPainter, expandGeoObject };
+export { geo, build, TGeoPainter, GeoDrawingControl, expandGeoObject, createGeoPainter, drawAxis3D };
