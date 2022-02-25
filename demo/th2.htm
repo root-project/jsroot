@@ -3,12 +3,13 @@
 <head>
    <meta charset="UTF-8">
    <title>Create, draw and update TH2 object</title>
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
 </head>
 <body>
    <div id="object_draw" style="width: 800px; height:600px"></div>
 
-   <script type='text/javascript'>
+   <script type='module'>
+      import * as JSROOT from '../modules/core.mjs';
+
       let cnt = 0;
       function updateGUI() {
          let histo = JSROOT.createHistogram("TH2I", 20, 20);

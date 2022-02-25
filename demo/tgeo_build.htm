@@ -16,16 +16,18 @@
    </head>
    <body>
 
-      <!-- use three.js from JSROOT -->
-      <!-- script src="https://threejs.org/build/three.js"></script-->
-
       <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
 
-      <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
+      <script type='module'>
 
-      <script>
+         import * as JSROOT from '../modules/core.mjs';
 
-         let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null, d;
+         import * as THREE from '../modules/three.mjs';
+
+         import { build, produceRenderOrder } from '../modules/geom.mjs';
+
+         let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null,
+            d = JSROOT.decodeUrl();
 
          function add_geometry(obj) {
 
@@ -40,7 +42,7 @@
                opt.dflt_colors = true;
 
             // function demonstrate creation of three.js model
-            let obj3d = JSROOT.GEO.build(obj, opt);
+            let obj3d = build(obj, opt);
 
             if (!obj3d) return;
             scene.remove( dummy );
@@ -94,70 +96,62 @@
             }
 
             // set rendering order for transparent volumes, create with JSROOT
-            JSROOT.GEO.produceRenderOrder(scene, camera.position, 'dflt');
+            produceRenderOrder(scene, camera.position, 'dflt');
 
             renderer.render( scene, camera );
          }
 
-         function init() {
+          container = document.createElement( 'div' );
+          document.body.appendChild( container );
 
-             d = JSROOT.decodeUrl();
+          camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, geom_size*5 );
+          camera.position.y = geom_size;
 
-             container = document.createElement( 'div' );
-             document.body.appendChild( container );
+          scene = new THREE.Scene();
+          scene.add( new THREE.AmbientLight( 0x404040 ) );
 
-             camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, geom_size*5 );
-             camera.position.y = geom_size;
+          let light = new THREE.DirectionalLight( 0xffffff );
+          light.position.set( 0, 1, 0 );
+          scene.add( light );
 
-             scene = new THREE.Scene();
-             scene.add( new THREE.AmbientLight( 0x404040 ) );
 
-             let light = new THREE.DirectionalLight( 0xffffff );
-             light.position.set( 0, 1, 0 );
-             scene.add( light );
+          // first draw dummy object, seen in the beginning
+          let material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, color: 'red', vertexColors: false });
+          dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
+          // object.position.set( 200, 0, 200 );
+          scene.add( dummy );
 
-             // ------------------- reading geometry object --------------------------
+          renderer = new THREE.WebGLRenderer( { antialias: true } );
+          renderer.setPixelRatio( window.devicePixelRatio );
+          renderer.setSize( window.innerWidth, window.innerHeight );
 
-             let filename = d.get("file") || "https://root.cern/js/files/geom/simple_alice.json.gz";
+          container.appendChild( renderer.domElement );
 
-             // filename = "https://root.cern/files/tank.root";
+          stats = new Stats();
+          container.appendChild( stats.dom );
 
-             if (filename.indexOf(".root")>0) {
-                // load geometry from ROOT file
-                let itemname = d.get("item") || "geom";
-                JSROOT.openFile(filename)
-                      .then(file => file.readObject(itemname))
-                      .then(add_geometry);
-             } else {
-                // load geometry from JSON as object
-                JSROOT.httpRequest(filename, 'object').then(add_geometry);
-             }
+          window.addEventListener( 'resize', onWindowResize, false );
 
-             // ------------------- end of reading geometry object --------------------------
+          // ------------------- reading geometry object --------------------------
 
-             // dummy object, seen in the beginning
-             let material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, color: 'red', vertexColors: false });
-             dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
-             // object.position.set( 200, 0, 200 );
-             scene.add( dummy );
+          let filename = d.get("file") || "https://root.cern/js/files/geom/simple_alice.json.gz";
 
-             renderer = new THREE.WebGLRenderer( { antialias: true } );
-             renderer.setPixelRatio( window.devicePixelRatio );
-             renderer.setSize( window.innerWidth, window.innerHeight );
+          // filename = "https://root.cern/files/tank.root";
 
-             container.appendChild( renderer.domElement );
-
-             stats = new Stats();
-             container.appendChild( stats.dom );
-
-             //
-             window.addEventListener( 'resize', onWindowResize, false );
-
-             animate();
+          if (filename.indexOf(".root")>0) {
+             // load geometry from ROOT file
+             let itemname = d.get("item") || "geom";
+             JSROOT.openFile(filename)
+                   .then(file => file.readObject(itemname))
+                   .then(add_geometry);
+          } else {
+             // load geometry from JSON as object
+              JSROOT.httpRequest(filename, 'object').then(add_geometry);
           }
 
-          JSROOT.require('geom').then(init);
+          // ------------------- end of reading geometry object --------------------------
 
+          animate();
 
       </script>
 

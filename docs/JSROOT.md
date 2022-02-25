@@ -796,8 +796,10 @@ Any supported TGeo object can be drawn with normal JSROOR.draw() function.
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
 
+
+    import { build } from './path_to_jsroot/modules/geom.mjs';
     let opt = { numfaces: 100000 };
-    let obj3d = JSROOT.GEO.build(obj, opt);
+    let obj3d = build(obj, opt);
     scene.add( obj3d );
 
 Following options can be specified:
@@ -808,10 +810,11 @@ Following options can be specified:
    - wireframe - show wireframe for created object (default - off)
    - dflt_colors - assign default ROOT colors for the volumes
 
-When transparent volumes appeared in the model, one could use JSROOT.GEO.produceRenderOrder() function
+When transparent volumes appeared in the model, one could use `produceRenderOrder()` function
 to correctly set rendering order. It should be used as:
 
-    JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
+    import { produceRenderOrder } from './path_to_jsroot/modules/geom.mjs';
+    produceRenderOrder(scene, camera.position, 'box');
 
 Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.
 

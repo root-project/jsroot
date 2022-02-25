@@ -3436,7 +3436,7 @@ geo.cleanupShape = function(shape) {
  * @param toplevel - top element
  * @param origin - camera position used to provide sorting
  * @param method - name of sorting method like "pnt", "ray", "size", "dflt"  */
-geo.produceRenderOrder = function(toplevel, origin, method, clones) {
+function produceRenderOrder(toplevel, origin, method, clones) {
 
    let raycast = new THREE.Raycaster();
 
@@ -3631,9 +3631,8 @@ geo.countGeometryFaces = countGeometryFaces;
 geo.createGeometry = createGeometry;
 geo.createProjectionMatrix = createProjectionMatrix;
 geo.createFrustum = createFrustum;
-geo.createFlippedMesh = createFlippedMesh;
 geo.getBoundingBox = getBoundingBox;
 geo.provideObjectInfo = provideObjectInfo;
 
 export { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
-         setInvisibleAll, countNumShapes, getNodeKind };
+         setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh };

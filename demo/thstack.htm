@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
    <meta charset="UTF-8">
-
    <title>Create and update THStack object</title>
-
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-
 </head>
-
 <body>
   <h3>Text Before </h3>
 
@@ -17,16 +11,18 @@
 
   <h3>Text After</h3>
 
-  <script type='text/javascript'>
+  <script type='module'>
 
-     function CreateStack(loop) {
+     import { draw, redraw, createHistogram, createTHStack } from '../modules/core.mjs';
+
+     function createStack(loop) {
 
        let histos = [];
 
-       for (var n=0;n<5;n++) {
+       for (let n = 0; n < 5; n++) {
            // time to time exclude one histogram to see how THStack update is working
            if ((loop % 5 == 3) && (n == 1)) continue;
-           let hist = JSROOT.createHistogram("TH1I", 11);
+           let hist = createHistogram("TH1I", 11);
            hist.fName ="hist"+n;
            hist.Fill(n*2+1,10);
            if (loop%5 === n) hist.Fill(n*2+1,2);
@@ -34,15 +30,15 @@
            histos.push(hist);
         }
 
-        let stack = JSROOT.createTHStack(...histos);
+        let stack = createTHStack(...histos);
         stack.fTitle = "Testing THStack update " + loop;
         return stack;
      }
 
-     JSROOT.draw("object_draw", CreateStack(0), "nostack");
+     draw("object_draw", createStack(0), "nostack");
 
-     var cnt = 0;
-     setInterval(() => JSROOT.redraw("object_draw", CreateStack(++cnt), "nostack"), 2000);
+     let cnt = 0;
+     setInterval(() => redraw("object_draw", createStack(++cnt), "nostack"), 2000);
 
   </script>
 

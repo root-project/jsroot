@@ -19,7 +19,7 @@ import { ObjectPainter, DrawOptions, createMenu, closeMenu,
 import { ensureTCanvas } from './gpad.mjs';
 
 import { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind } from './geobase.mjs';
+         countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh } from './geobase.mjs';
 
 JSROOT.loadScript('$$$style/JSRoot.geom');
 
@@ -2004,7 +2004,7 @@ class TGeoPainter extends ObjectPainter {
       if (matrix.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
       } else {
-         mesh = geo.createFlippedMesh(shape, prop.material);
+         mesh = createFlippedMesh(shape, prop.material);
       }
 
       obj3d.add(mesh);
@@ -3554,7 +3554,7 @@ class TGeoPainter extends ObjectPainter {
       this._last_camera_position = origin; // remember current camera position
 
       if (!this.ctrl.project && this._webgl)
-         geo.produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
+         produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
 
    /** @summary Call 3D rendering of the geometry
@@ -5143,4 +5143,4 @@ addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIc
 
 
 export { build, TGeoPainter, GeoDrawingControl,
-         expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom };
+         expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };
