@@ -160,12 +160,8 @@ class TRandom {
 // ============================================================================================
 
 
-/** @namespace
-  * @summary Collection of Painter-related methods and classes */
-let jsrp = {
-   root_colors: [],
-};
-
+/** @summary list of global root colors */
+let gbl_colors_list = [];
 
 const root_line_styles = [
       "", "", "3,3", "1,2",
@@ -355,7 +351,7 @@ function createRootColors() {
       }
    });
 
-   jsrp.root_colors = colorMap;
+   gbl_colors_list = colorMap;
 }
 
 /** @summary Produces rgb code for TColor object
@@ -383,7 +379,7 @@ function getRGBfromTColor(col) {
 /** @summary Get list of colors
   * @private */
 function getRootColors() {
-   return jsrp.root_colors;
+   return gbl_colors_list;
 }
 
 /** @summary Add new colors from object array
@@ -391,8 +387,8 @@ function getRootColors() {
 function extendRootColors(jsarr, objarr) {
    if (!jsarr) {
       jsarr = [];
-      for (let n = 0; n < jsrp.root_colors.length; ++n)
-         jsarr[n] = jsrp.root_colors[n];
+      for (let n = 0; n < gbl_colors_list.length; ++n)
+         jsarr[n] = gbl_colors_list[n];
    }
 
    if (!objarr) return jsarr;
@@ -421,14 +417,14 @@ function extendRootColors(jsarr, objarr) {
   * List of colors typically stored together with TCanvas primitives
   * @private */
 function adoptRootColors(objarr) {
-   extendRootColors(jsrp.root_colors, objarr);
+   extendRootColors(gbl_colors_list, objarr);
 }
 
 /** @summary Return ROOT color by index
   * @desc Color numbering corresponds typical ROOT colors
   * @returns {String} with RGB color code or existing color name like 'cyan' */
 function getColor(indx) {
-   return jsrp.root_colors[indx];
+   return gbl_colors_list[indx];
 }
 
 /** @summary Add new color
@@ -436,7 +432,7 @@ function getColor(indx) {
   * @param {array} [lst] - optional colors list, to which add colors
   * @returns {number} index of new color */
 function addColor(rgb, lst) {
-   if (!lst) lst = jsrp.root_colors;
+   if (!lst) lst = gbl_colors_list;
    let indx = lst.indexOf(rgb);
    if (indx >= 0) return indx;
    lst.push(rgb);
@@ -2018,7 +2014,7 @@ class ObjectPainter extends BasePainter {
 
       if (!jsarr) {
          let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : gbl_colors_list;
       }
 
       return jsarr[indx];
@@ -2032,7 +2028,7 @@ class ObjectPainter extends BasePainter {
       let jsarr = this.root_colors;
       if (!jsarr) {
          let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : gbl_colors_list;
       }
       let indx = jsarr.indexOf(color);
       if (indx >= 0) return indx;
@@ -3605,7 +3601,7 @@ function getActivePad() {
 
 /** @summary Generic text drawing
   * @private */
-jsrp.drawRawText = function(dom, txt /*, opt*/) {
+function drawRawText(dom, txt /*, opt*/) {
 
    let painter = new BasePainter(dom);
    painter.txt = txt;
@@ -3760,8 +3756,8 @@ let drawFuncs = { lst: [
    { name: "TWebPainting", icon: "img_graph", prereq: "more", class: "TWebPaintingPainter" },
    { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: "drawTPadSnapshot" },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
-   { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
-   { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
+   { name: "kind:Text", icon: "img_text", func: drawRawText },
+   { name: "TObjString", icon: "img_text", func: drawRawText },
    { name: "TF1", icon: "img_tf1", prereq: "more", class: "TF1Painter" },
    { name: "TF2", icon: "img_tf2", prereq: "more", func: "drawTF2" },
    { name: "TSpline3", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
@@ -3989,7 +3985,7 @@ function canDraw(classname) {
 }
 
 /** @summary Set default draw option for provided class */
-jsrp.setDefaultDrawOpt = function(classname, opt) {
+function setDefaultDrawOpt(classname, opt) {
    let handle = getDrawHandle("ROOT." + classname, 0);
    if (handle)
       handle.dflt = opt;
@@ -4319,7 +4315,7 @@ export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMetho
          getElementRect,
          draw, redraw, cleanup, resize,
          makeSVG, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
-         getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
+         getDrawSettings, getDrawHandle, canDraw, addDrawFunc, setDefaultDrawOpt,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          getColor, addColor, adoptRootColors, getRootColors, extendRootColors, getRGBfromTColor, createRootColors,
          getSvgLineStyle, compressSVG, drawingJSON, readStyleFromURL,
