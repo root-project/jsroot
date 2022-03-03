@@ -912,7 +912,6 @@ class StandaloneMenu extends JSRootMenu {
 /**
  * @summary Context menu class using Bootstrap
  *
- * @memberof JSROOT.Painter
  * @desc Use {@link createMenu} to create instance of the menu
  * @private
  */
@@ -1157,8 +1156,7 @@ function createMenu(evnt, handler, menuname) {
 }
 
 /** @summary Close previousely created and shown JSROOT menu
-  * @param {string} [menuname] - optional menu name
-  * @memberof JSROOT.Painter */
+  * @param {string} [menuname] - optional menu name */
 function closeMenu(menuname) {
    let x = document.getElementById(menuname || 'root_ctx_menu');
    if (x) { x.parentNode.removeChild(x); return true; }

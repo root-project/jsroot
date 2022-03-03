@@ -858,10 +858,7 @@ function decodeUrl(url) {
    return res;
 }
 
-/** @summary Find function with given name.
-  * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
-  * If function starts with ., it should belong to JSROOT.Painter
-  * @private */
+/** @summary Find function with given name */
 function findFunction(name) {
    if (typeof name === 'function') return name;
    if (typeof name !== 'string') return null;

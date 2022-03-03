@@ -45,7 +45,6 @@ const createGrayPalette = () => {
 };
 
 /** @summary Create color palette
-  * @memberof JSROOT.Painter
   * @private */
 function getColorPalette(id) {
    id = id || JSROOT.settings.Palette;
@@ -1395,7 +1394,6 @@ class TPavePainter extends ObjectPainter {
   * @desc Should be called when all other objects are painted
   * Invoked when item "$legend" specified in JSROOT URL string
   * @returns {Object} Promise with TLegend painter
-  * @memberof JSROOT.Painter
   * @private */
 function produceLegend(dom, opt) {
    let main_painter = getElementMainPainter(dom),

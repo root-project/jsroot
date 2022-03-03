@@ -4971,8 +4971,7 @@ class TCanvasPainter extends TPadPainter {
 /** @summary Ensure TCanvas and TFrame for the painter object
  * @param {Object} painter  - painter object to process
  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
- * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters
- * @memberof JSROOT.Painter */
+ * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
 ensureTCanvas = async function(painter, frame_kind) {
    if (!painter)
       throw Error('Painter not provided in ensureTCanvas');
@@ -4992,7 +4991,6 @@ ensureTCanvas = async function(painter, frame_kind) {
 }
 
 /** @summary draw TPad snapshot from TWebCanvas
-  * @memberof JSROOT.Painter
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt*/) {
    let can = JSROOT.create("TCanvas"),

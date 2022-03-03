@@ -10,7 +10,6 @@ import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle }
 const HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
- * @memberOf JSROOT.Painter
  * @param {value} [render3d] - preconfigured value, will be used if applicable
  * @returns {value} - rendering kind, see JSROOT.constants.Render3D
  * @private */
@@ -277,7 +276,6 @@ function assign3DHandler(painter) {
 }
 
 /** @summary Creates renderer for the 3D drawings
-  * @memberOf JSROOT.Painter
   * @param {value} width - rendering width
   * @param {value} height - rendering height
   * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
@@ -460,7 +458,6 @@ JSROOT._.processSvgWorkarounds = function(svg, keep_workarounds) {
 /**
  * @summary Tooltip handler for 3D drawings
  *
- * @memberof JSROOT.Painter
  * @private
  */
 
@@ -1397,8 +1394,7 @@ class PointsCreator {
 
 /** @summary Create material for 3D line
   * @desc Takes into account dashed properties
-  * @private
-  * @memberof JSROOT.Painter */
+  * @private */
 function create3DLineMaterial(painter, arg) {
    if (!painter || !arg) return null;
 
@@ -1445,7 +1441,6 @@ function before3DDraw(painter, obj) {
 }
 
 /** @summary direct draw function for TPolyMarker3D object
-  * @memberof JSROOT.Painter
   * @private */
 async function drawPolyMarker3D() {
 

@@ -160,8 +160,7 @@ class TRandom {
 // ============================================================================================
 
 /** @namespace
-  * @summary Collection of Painter-related methods and classes
-  * @alias JSROOT.Painter */
+  * @summary Collection of Painter-related methods and classes */
 let jsrp = {
    root_colors: [],
    root_line_styles: ["", "", "3,3", "1,2",
@@ -194,14 +193,12 @@ let jsrp = {
 };
 
 /** @summary Check if object is a Promise
-  * @memberof JSROOT.Painter
   * @private */
 function isPromise(obj) {
    return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
 }
 
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
-  * @memberof JSROOT.Painter
   * @private */
 function toHex(num,scale) {
    let s = Math.round(num*(scale || 255)).toString(16);
@@ -3838,7 +3835,6 @@ function addDrawFunc(args) {
   * kind string like "Command" or "Text"
   * selector can be used to search for draw handle with specified option (string)
   * or just sequence id
-  * @memberof JSROOT.Painter
   * @private */
 function getDrawHandle(kind, selector) {
 
@@ -3934,7 +3930,6 @@ jsrp.addStreamerInfos = function(lst) {
 }
 
 /** @summary Provide draw settings for specified class or kind
-  * @memberof JSROOT.Painter
   * @private */
 function getDrawSettings(kind, selector) {
    let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };

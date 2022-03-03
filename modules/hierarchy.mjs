@@ -14,7 +14,6 @@ import { produceLegend } from './hist.mjs';
 
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
-  * @memberof JSROOT.Painter
   * @private */
 function drawList(dom, lst, opt) {
    if (!lst || !lst.arr)
@@ -47,7 +46,6 @@ function drawList(dom, lst, opt) {
 // ===================== hierarchy scanning functions ==================================
 
 /** @summary Create hierarchy elements for TFolder object
-  * @memberof JSROOT.Painter
   * @private */
 function folderHierarchy(item, obj) {
 
@@ -69,7 +67,6 @@ function folderHierarchy(item, obj) {
 }
 
 /** @summary Create hierarchy elements for TTask object
-  * @memberof JSROOT.Painter
   * @private */
 function taskHierarchy(item, obj) {
    // function can be used for different derived classes
@@ -95,7 +92,6 @@ function taskHierarchy(item, obj) {
 }
 
 /** @summary Create hierarchy elements for TList object
-  * @memberof JSROOT.Painter
   * @private */
 function listHierarchy(folder, lst) {
    if (!JSROOT.isRootCollection(lst)) return false;
@@ -175,7 +171,6 @@ function listHierarchy(folder, lst) {
 }
 
 /** @summary Create hierarchy of TKey lists in file or sub-directory
-  * @memberof JSROOT.Painter
   * @private */
 function keysHierarchy(folder, keys, file, dirname) {
 
@@ -229,7 +224,6 @@ function keysHierarchy(folder, keys, file, dirname) {
 }
 
 /** @summary Create hierarchy for arbitrary object
-  * @memberof JSROOT.Painter
   * @private */
 function objectHierarchy(top, obj, args) {
    if (!top || (obj===null)) return false;
@@ -471,7 +465,6 @@ function objectHierarchy(top, obj, args) {
 }
 
 /** @summary Create hierarchy for streamer info object
-  * @memberof JSROOT.Painter
   * @private */
 function createStreamerInfoContent(lst) {
    let h = { _name : "StreamerInfo", _childs : [] };
@@ -523,7 +516,6 @@ function createStreamerInfoContent(lst) {
 }
 
 /** @summary Create hierarchy for object inspector
-  * @memberof JSROOT.Painter
   * @private */
 function createInspectorContent(obj) {
    let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
