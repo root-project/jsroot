@@ -3886,7 +3886,7 @@ function getDrawHandle(kind, selector) {
 /** @summary Scan streamer infos for derived classes
   * @desc Assign draw functions for such derived classes
   * @private */
-jsrp.addStreamerInfos = function(lst) {
+function addStreamerInfosForPainter(lst) {
    if (!lst) return;
 
    function CheckBaseClasses(si, lvl) {
@@ -3925,7 +3925,7 @@ jsrp.addStreamerInfos = function(lst) {
       let newhandle = JSROOT.extend({}, handle);
       // delete newhandle.for_derived; // should we disable?
       newhandle.name = si.fName;
-      drawFuncs.lst.push(newhandle);
+      addDrawFunc(newhandle);
    }
 }
 
@@ -4305,10 +4305,12 @@ createRootColors();
 if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 jsrp.getColor = getColor;
-jsrp.getDrawSettings = getDrawSettings;
 jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
 jsrp.addDrawFunc = addDrawFunc;
+
+// to avoid cross-dependnecy between io.mjs and painter.mjs
+JSROOT._.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,

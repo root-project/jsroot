@@ -3183,8 +3183,8 @@ class TFile {
 
       this.fStreamerInfos = lst;
 
-      if (JSROOT.Painter && typeof JSROOT.Painter.addStreamerInfos === 'function')
-         JSROOT.Painter.addStreamerInfos(lst);
+      if (JSROOT._.addStreamerInfosForPainter)
+         JSROOT._.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {
          let si = lst.arr[k];
