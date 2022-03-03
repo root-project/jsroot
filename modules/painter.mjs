@@ -159,14 +159,20 @@ class TRandom {
 
 // ============================================================================================
 
+
 /** @namespace
   * @summary Collection of Painter-related methods and classes */
 let jsrp = {
    root_colors: [],
-   root_line_styles: ["", "", "3,3", "1,2",
+};
+
+
+const root_line_styles = [
+      "", "", "3,3", "1,2",
       "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
-      "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"],
-   root_markers: [
+      "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"];
+
+const root_markers = [
       0, 1, 2, 3, 4,           //  0..4
       5, 106, 107, 104, 1,     //  5..9
       1, 1, 1, 1, 1,           // 10..14
@@ -176,21 +182,23 @@ let jsrp = {
       30, 3, 32, 127, 128,     // 30..34
       35, 36, 37, 38, 137,     // 35..39
       40, 140, 42, 142, 44,    // 40..44
-      144, 46, 146, 148, 149], // 45..49
-   root_fonts: ['Arial', 'iTimes New Roman',
+      144, 46, 146, 148, 149]; // 45..49
+
+const root_fonts = ['Arial', 'iTimes New Roman',
       'bTimes New Roman', 'biTimes New Roman', 'Arial',
       'oArial', 'bArial', 'boArial', 'Courier New',
       'oCourier New', 'bCourier New', 'boCourier New',
       'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol',
-      'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'],
-   // taken from symbols.html, counted only for letters and digits
- root_fonts_aver_width: [0.5778,0.5314,
+      'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'];
+
+ // taken from symbols.html, counted only for letters and digits
+const root_fonts_aver_width = [0.5778,0.5314,
       0.5809, 0.5540, 0.5778,
       0.5783,0.6034,0.6030,0.6003,
       0.6004,0.6003,0.6005,
       0.5521,0.5521,0.5664,0.5314,
-      0.5664,0.5495,0.5748,0.5578]
-};
+      0.5664,0.5495,0.5748,0.5578];
+
 
 /** @summary Check if object is a Promise
   * @private */
@@ -438,8 +446,8 @@ function addColor(rgb, lst) {
 /** @summary Get svg string for specified line style
   * @private */
 function getSvgLineStyle(indx) {
-   if ((indx < 0) || (indx >= jsrp.root_line_styles.length)) indx = 11;
-   return jsrp.root_line_styles[indx];
+   if ((indx < 0) || (indx >= root_line_styles.length)) indx = 11;
+   return root_line_styles[indx];
 }
 
 
@@ -591,8 +599,7 @@ class TAttMarkerHandler {
 
       this.optimized = false;
 
-      let marker_kind = jsrp.root_markers[this.style];
-      if (marker_kind === undefined) marker_kind = 104;
+      let marker_kind = root_markers[this.style] ?? 104;
       let shape = marker_kind % 100;
 
       this.fill = (marker_kind >= 100);
@@ -792,7 +799,7 @@ class TAttLineHandler {
       this.color = (args.width === 0) ? 'none' : args.color;
       this.width = args.width;
       this.style = args.style;
-      this.pattern = args.pattern || jsrp.root_line_styles[this.style] || null;
+      this.pattern = args.pattern || root_line_styles[this.style] || null;
 
       if (args.can_excl) {
          this.excl_side = this.excl_width = 0;
@@ -866,7 +873,7 @@ class TAttLineHandler {
       if (width !== undefined) this.width = width;
       if (style !== undefined) {
          this.style = style;
-         this.pattern = jsrp.root_line_styles[this.style] || null;
+         this.pattern = root_line_styles[this.style] || null;
       }
       this.changed = true;
    }
@@ -1227,7 +1234,7 @@ class FontHandler {
       if (fontIndex !== null) {
 
          let indx = Math.floor(fontIndex / 10),
-             fontName = jsrp.root_fonts[indx] || "Arial";
+             fontName = root_fonts[indx] || "Arial";
 
          while (fontName.length > 0) {
             if (fontName[0] === 'b')
@@ -1242,7 +1249,7 @@ class FontHandler {
          }
 
          this.name = fontName;
-         this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
+         this.aver_width = root_fonts_aver_width[indx] || 0.55;
       } else {
          this.name = name;
          this.style = style || null;
@@ -4304,11 +4311,6 @@ createRootColors();
 
 if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-jsrp.getColor = getColor;
-jsrp.toHex = toHex;
-jsrp.floatToString = floatToString;
-jsrp.addDrawFunc = addDrawFunc;
-
 // to avoid cross-dependnecy between io.mjs and painter.mjs
 JSROOT._.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
@@ -4316,7 +4318,7 @@ export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMetho
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect,
          draw, redraw, cleanup, resize,
-         makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
+         makeSVG, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
          getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          getColor, addColor, adoptRootColors, getRootColors, extendRootColors, getRGBfromTColor, createRootColors,
