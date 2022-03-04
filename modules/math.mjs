@@ -2035,4 +2035,19 @@ mth.crystalball_cdf = crystalball_cdf;
 mth.crystalball_cdf_c = crystalball_cdf_c;
 mth.ChebyshevN = ChebyshevN;
 
-export { mth };
+export { mth,
+
+gamma, gamma as tgamma, gamma as Gamma,
+Polynomialeval, Polynomial1eval, stirf,
+gamma_pdf, ndtri, normal_quantile, normal_quantile_c, lognormal_cdf_c, lognormal_cdf,
+igami, igamc, igam, lgam, lgamma, erfc, erf,
+beta_pdf, inc_beta, inc_beta as BetaIncomplete,
+pseries, incbet, incbi, beta_quantile,  chisquared_cdf_c,
+beta, inc_gamma, inc_gamma_c, landau_pdf, beta_cdf_c, Landau,
+fdistribution_pdf, fdistribution_pdf as FDist,
+fdistribution_cdf, fdistribution_cdf as FDistI,
+fdistribution_cdf_c,
+normal_cdf_c, normal_cdf_c as gaussian_cdf_c,
+normal_cdf, normal_cdf as gaussian_cdf,
+lognormal_pdf, normal_pdf, crystalball_function, crystalball_pdf,  crystalball_cdf, crystalball_cdf_c, ChebyshevN
+};
