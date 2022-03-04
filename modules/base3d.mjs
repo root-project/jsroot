@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser } from './core.mjs';
+import { browser, settings } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -123,7 +123,7 @@ function createSVGRenderer(as_is, precision, doc) {
  * @returns {value} - rendering kind, see JSROOT.constants.Render3D
  * @private */
 function getRender3DKind(render3d) {
-   if (!render3d) render3d = JSROOT.batch_mode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+   if (!render3d) render3d = JSROOT.batch_mode ? settings.Render3DBatch : settings.Render3D;
    let rc = JSROOT.constants.Render3D;
 
    if (render3d == rc.Default) render3d = JSROOT.batch_mode ? rc.WebGLImage : rc.WebGL;
@@ -159,8 +159,8 @@ let Handling3DDrawings = {
          // all non-webgl elements can be embedded into SVG as is
          if (can3d !== JSROOT.constants.Render3D.WebGL)
             can3d = JSROOT.constants.Embed3D.EmbedSVG;
-         else if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
-            can3d = JSROOT.settings.Embed3D;
+         else if (settings.Embed3D != JSROOT.constants.Embed3D.Default)
+            can3d = settings.Embed3D;
          else if (browser.isFirefox)
             can3d = JSROOT.constants.Embed3D.Embed;
          else if (browser.chromeVersion > 95)
@@ -699,7 +699,7 @@ class TooltipFor3D {
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    let control = null,
-       enable_zoom = JSROOT.settings.Zooming && JSROOT.settings.ZoomMouse,
+       enable_zoom = settings.Zooming && settings.ZoomMouse,
        enable_select = (typeof painter.processMouseClick == "function");
 
    function control_mousedown(evnt) {
@@ -817,7 +817,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    // assign own handler before creating OrbitControl
 
-   if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
+   if (settings.Zooming && settings.ZoomWheel)
       renderer.domElement.addEventListener('wheel', control_mousewheel);
 
    if (enable_zoom || enable_select) {
@@ -830,7 +830,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enableDamping = false;
    control.dampingFactor = 1.0;
    control.enableZoom = true;
-   control.enableKeys = JSROOT.settings.HandleKeys;
+   control.enableKeys = settings.HandleKeys;
 
    if (lookat) {
       control.target.copy(lookat);
@@ -858,7 +858,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enable_select = enable_select;
 
    control.cleanup = function() {
-      if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
+      if (settings.Zooming && settings.ZoomWheel)
          this.domElement.removeEventListener('wheel', control_mousewheel);
       if (this.enable_zoom || this.enable_select) {
          this.domElement.removeEventListener('pointerdown', control_mousedown);
@@ -1568,7 +1568,7 @@ async function drawPolyMarker3D() {
       ++numselect;
    }
 
-   if ((JSROOT.settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
+   if ((settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
       step = Math.floor(numselect/sizelimit);
       if (step <= 2) step = 2;
    }

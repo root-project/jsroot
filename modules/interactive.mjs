@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { browser } from './core.mjs';
+import { browser, settings } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag,
          pointer as d3_pointer, pointers as d3_pointers } from './d3.mjs';
@@ -290,8 +290,8 @@ let TooltipHandler = {
          }
 
          if (was_empty)
-            if (JSROOT.settings.TooltipAnimation > 0)
-               group.transition().duration(JSROOT.settings.TooltipAnimation).attrTween("opacity", translateFn());
+            if (settings.TooltipAnimation > 0)
+               group.transition().duration(settings.TooltipAnimation).attrTween("opacity", translateFn());
             else
                group.attr('opacity', 1);
       }
@@ -363,7 +363,7 @@ function detectRightButton(event) {
 
 /** @summary Add drag for interactive rectangular elements for painter */
 function addDragHandler(_painter, arg) {
-   if (!JSROOT.settings.MoveResize || JSROOT.batch_mode) return;
+   if (!settings.MoveResize || JSROOT.batch_mode) return;
 
    let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
    if (pp && pp._fast_drawing) return;
@@ -595,7 +595,7 @@ function addMoveHandler(painter, enabled) {
 
    if (enabled === undefined) enabled = true;
 
-   if (!JSROOT.settings.MoveResize || JSROOT.batch_mode || !painter.draw_g) return;
+   if (!settings.MoveResize || JSROOT.batch_mode || !painter.draw_g) return;
 
    if (!enabled) {
       if (painter.draw_g.property("assigned_move")) {
@@ -711,7 +711,7 @@ let FrameInteractive = {
          // add extra handlers for second axes
          let svg_x2 = svg.selectAll(".x2axis_container"),
              svg_y2 = svg.selectAll(".y2axis_container");
-         if (JSROOT.settings.ContextMenu) {
+         if (settings.ContextMenu) {
             svg_x2.on("contextmenu", evnt => this.showContextMenu("x2", evnt));
             svg_y2.on("contextmenu", evnt => this.showContextMenu("y2", evnt));
          }
@@ -723,7 +723,7 @@ let FrameInteractive = {
       let svg_x = svg.selectAll(".xaxis_container"),
           svg_y = svg.selectAll(".yaxis_container");
 
-      this.can_zoom_x = this.can_zoom_y = JSROOT.settings.Zooming;
+      this.can_zoom_x = this.can_zoom_y = settings.Zooming;
 
       if (pp && pp.options) {
          if (pp.options.NoZoomX) this.can_zoom_x = false;
@@ -741,19 +741,19 @@ let FrameInteractive = {
          this.touch_cnt = 0;
       }
 
-      if (JSROOT.settings.Zooming && !this.projection) {
-         if (JSROOT.settings.ZoomMouse) {
+      if (settings.Zooming && !this.projection) {
+         if (settings.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
          }
-         if (JSROOT.settings.ZoomWheel)
+         if (settings.ZoomWheel)
             svg.on("wheel", this.mouseWheel.bind(this));
       }
 
-      if (browser.touches && ((JSROOT.settings.Zooming && JSROOT.settings.ZoomTouch && !this.projection) || JSROOT.settings.ContextMenu))
+      if (browser.touches && ((settings.Zooming && settings.ZoomTouch && !this.projection) || settings.ContextMenu))
          svg.on("touchstart", this.startTouchZoom.bind(this));
 
-      if (JSROOT.settings.ContextMenu) {
+      if (settings.ContextMenu) {
          if (browser.touches) {
             svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
             svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
@@ -783,7 +783,7 @@ let FrameInteractive = {
    /** @summary Handle key press */
    processKeyPress(evnt) {
       let main = this.selectDom();
-      if (!JSROOT.settings.HandleKeys || main.empty() || (this.enabledKeys === false)) return;
+      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false)) return;
 
       let key = "";
       switch (evnt.keyCode) {
@@ -819,7 +819,7 @@ let FrameInteractive = {
       }
 
       if (zoom.dleft || zoom.dright) {
-         if (!JSROOT.settings.Zooming) return false;
+         if (!settings.Zooming) return false;
          // in 3dmode with orbit control ignore simple arrows
          if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
@@ -1123,7 +1123,7 @@ let FrameInteractive = {
 
             this.getFrameSvg().on("touchcancel", null)
                             .on("touchend", null, true);
-         } else if (JSROOT.settings.ContextMenu) {
+         } else if (settings.ContextMenu) {
             this.zoom_curr = arr[0];
             this.getFrameSvg().on("touchcancel", this.endTouchSel.bind(this))
                             .on("touchend", this.endTouchSel.bind(this));
@@ -1132,7 +1132,7 @@ let FrameInteractive = {
          }
       }
 
-      if ((arr.length != 2) || !JSROOT.settings.Zooming || !JSROOT.settings.ZoomTouch) return;
+      if ((arr.length != 2) || !settings.Zooming || !settings.ZoomTouch) return;
 
       evnt.preventDefault();
       evnt.stopPropagation();
@@ -1643,7 +1643,7 @@ let PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
 
          ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
-             .property("buttons_state", (JSROOT.settings.ToolBar!=='popup'))
+             .property("buttons_state", (settings.ToolBar!=='popup'))
              .on("click", () => toggleButtonsVisibility(this, 'toggle'))
              .on("mouseenter", () => toggleButtonsVisibility(this, 'enable'))
              .on("mouseleave", () => toggleButtonsVisibility(this, 'disable'));

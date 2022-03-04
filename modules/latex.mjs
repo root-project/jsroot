@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { loadScript } from './core.mjs';
+import { loadScript, settings } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -433,7 +433,7 @@ const parseLatex = (node, arg, label, curr) => {
             else
                elem.text(s);
 
-            let rect = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
+            let rect = !JSROOT.nodejs && !settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
                           { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
 
             if (curr.x) elem.attr("x", curr.x);

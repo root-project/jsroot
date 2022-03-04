@@ -80,7 +80,7 @@ _.is_array_proto = is_array_proto;
   * @alias JSROOT.constants
   * @private */
 let constants = {
-   /** @summary Kind of 3D rendering, used for {@link JSROOT.settings.Render3D}
+   /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
      * @namespace
      * @private */
    Render3D: {
@@ -99,7 +99,7 @@ let constants = {
          return this.Default;
       }
    },
-   /** @summary Way to embed 3D into SVG, used for {@link JSROOT.settings.Embed3D}
+   /** @summary Way to embed 3D into SVG, used for {@link settings.Embed3D}
      * @namespace
      * @private */
    Embed3D: {
@@ -120,7 +120,7 @@ let constants = {
          return this.Default;
       }
    },
-   /** @summary How to use latex in text drawing, used for {@link JSROOT.settings.Latex}
+   /** @summary How to use latex in text drawing, used for {@link settings.Latex}
      * @namespace
      * @private */
    Latex: {

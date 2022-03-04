@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, settings } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -705,7 +705,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Fill menu entries for palette */
    fillPaletteMenu(menu) {
-      menu.addPaletteMenu(this.options.Palette || JSROOT.settings.Palette, arg => {
+      menu.addPaletteMenu(this.options.Palette || settings.Palette, arg => {
          // TODO: rewrite for RPalette functionality
          this.options.Palette = parseInt(arg);
          this.redraw(); // redraw histogram
@@ -1235,7 +1235,7 @@ class RH1Painter extends RHistPainter {
           right = handle.i2,
           di = handle.stepi,
           histo = this.getHisto(),
-          want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip,
+          want_tooltip = !JSROOT.batch_mode && settings.Tooltip,
           xaxis = this.getAxis("x"),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -1437,7 +1437,7 @@ class RH1Painter extends RHistPainter {
       }
 
       let close_path = "",
-          fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && options.Hist && JSROOT.settings.Tooltip && !draw_markers && !show_line;
+          fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line;
       if (!this.fillatt.empty() || fill_for_interactive) {
          let h0 = height + 3;
          if (fill_for_interactive) {

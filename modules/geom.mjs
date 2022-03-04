@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -534,7 +534,7 @@ class TGeoPainter extends ObjectPainter {
          this.initVRMode();
       }
 
-      if (JSROOT.settings.ContextMenu)
+      if (settings.ContextMenu)
       buttonList.push({
          name: 'menu',
          title: 'Show context menu',
@@ -1723,7 +1723,7 @@ class TGeoPainter extends ObjectPainter {
 
       let painter = this;
 
-      this.setTooltipAllowed(JSROOT.settings.Tooltip);
+      this.setTooltipAllowed(settings.Tooltip);
 
       this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
@@ -4687,7 +4687,7 @@ class TGeoPainter extends ObjectPainter {
   * @private */
 createGeoPainter = function(dom, obj, opt) {
 
-   setGeoParams(JSROOT.settings.GeoGradPerSegm, JSROOT.settings.GeoCompressComp);
+   setGeoParams(settings.GeoGradPerSegm, settings.GeoCompressComp);
 
    let painter = new TGeoPainter(dom, obj);
 

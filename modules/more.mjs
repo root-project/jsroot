@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT } from './core.mjs';
+import { gStyle, BIT, settings } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -1308,7 +1308,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns true if graph drawing can be optimize */
    canOptimize() {
-      return (JSROOT.settings.OptimizeDraw > 0) && !this.options.NoOpt;
+      return (settings.OptimizeDraw > 0) && !this.options.NoOpt;
    }
 
    /** @summary Returns optimized bins - if optimization enabled */
@@ -1675,7 +1675,7 @@ class TGraphPainter extends ObjectPainter {
          if (options.skip_errors_x0 || options.skip_errors_y0)
             visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
 
-         if (!JSROOT.batch_mode && JSROOT.settings.Tooltip && main_block)
+         if (!JSROOT.batch_mode && settings.Tooltip && main_block)
             visible.append("svg:path")
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
@@ -1703,7 +1703,7 @@ class TGraphPainter extends ObjectPainter {
 
          this.markeratt.resetPos();
 
-         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
+         let want_tooltip = !JSROOT.batch_mode && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
              hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
@@ -2482,7 +2482,7 @@ class TGraphPainter extends ObjectPainter {
       painter.decodeOptions(opt, true);
       painter.createBins();
       painter.createStat();
-      if (!JSROOT.settings.DragGraphs && !graph.TestBit(kNotEditable))
+      if (!settings.DragGraphs && !graph.TestBit(kNotEditable))
          graph.InvertBit(kNotEditable);
 
       let promise = Promise.resolve();
@@ -2789,7 +2789,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       d3_select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
-      if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
+      if (settings.Zooming && settings.ZoomWheel)
          interactive.on("wheel", evnt => this.mouseWheel(evnt));
    }
 

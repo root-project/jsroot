@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { settings } from './core.mjs';
+
 import { select as d3_select } from './d3.mjs';
 
 
@@ -15,7 +17,7 @@ function showProgress(msg, tmout) {
    let id = "jsroot_progressbox",
        box = d3_select("#" + id);
 
-   if (!JSROOT.settings.ProgressBox) return box.remove();
+   if (!settings.ProgressBox) return box.remove();
 
    if ((arguments.length == 0) || !msg) {
       if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();

@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser } from './core.mjs';
+import { gStyle, BIT, browser, settings } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -50,7 +50,7 @@ const createGrayPalette = () => {
 /** @summary Create color palette
   * @private */
 function getColorPalette(id) {
-   id = id || JSROOT.settings.Palette;
+   id = id || settings.Palette;
    if ((id > 0) && (id < 10)) return createGrayPalette();
    if (id < 51) return createDefaultPalette();
    if (id > 113) id = 57;
@@ -377,9 +377,9 @@ class TPavePainter extends ObjectPainter {
          inter.addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
                                       minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
-                        ctxmenu: browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
+                        ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
 
-         if (this.UseContextMenu && JSROOT.settings.ContextMenu)
+         if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
          if (pt._typename == "TPaletteAxis")
@@ -926,7 +926,7 @@ class TPavePainter extends ObjectPainter {
                   d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
-            if (JSROOT.settings.Zooming)
+            if (settings.Zooming)
                r.on("dblclick", () => this.getFramePainter().unzoom("z"));
          }
 
@@ -1021,12 +1021,12 @@ class TPavePainter extends ObjectPainter {
                           .on("mouseup.colzoomRect", endRectSel, true);
       };
 
-      if (JSROOT.settings.Zooming)
+      if (settings.Zooming)
          this.draw_g.selectAll(".axis_zoom")
                     .on("mousedown", startRectSel)
                     .on("dblclick", () => this.getFramePainter().unzoom("z"));
 
-      if (JSROOT.settings.ZoomWheel)
+      if (settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
                let pos = d3_pointer(evnt, this.draw_g.node()),
                    coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width;
@@ -1470,7 +1470,7 @@ class THistDrawOptions {
               System: CoordSystem.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
-              Optimize: JSROOT.settings.OptimizeDraw, adjustFrame: false,
+              Optimize: settings.OptimizeDraw, adjustFrame: false,
               Mode3D: false, x3dscale: 1, y3dscale: 1,
               Render3D: JSROOT.constants.Render3D.Default,
               FrontBox: true, BackBox: true,
@@ -2629,7 +2629,7 @@ class THistPainter extends ObjectPainter {
       if (this.options.PadStats || !histo) return null;
 
       if (!force && !this.options.ForceStat) {
-         if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !JSROOT.settings.AutoStat) return null;
+         if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !settings.AutoStat) return null;
 
          if ((this.options.Axis > 0) || !this.isMainPainter()) return null;
       }
@@ -3141,7 +3141,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Fill menu entries for palette */
    fillPaletteMenu(menu) {
-      menu.addPaletteMenu(this.options.Palette || JSROOT.settings.Palette, arg => {
+      menu.addPaletteMenu(this.options.Palette || settings.Palette, arg => {
          this.options.Palette = parseInt(arg);
          this.getHistPalette(true);
          this.redraw(); // redraw histogram
@@ -3902,7 +3902,7 @@ class TH1Painter extends THistPainter {
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
           histo = this.getHisto(),
-          want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip,
+          want_tooltip = !JSROOT.batch_mode && settings.Tooltip,
           xaxis = histo.fXaxis,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -4060,7 +4060,7 @@ class TH1Painter extends THistPainter {
 
       // check if we should draw markers or error marks directly, skipping optimization
       if (do_marker || do_err)
-         if (!JSROOT.settings.OptimizeDraw || ((right-left < 50000) && (JSROOT.settings.OptimizeDraw == 1))) {
+         if (!settings.OptimizeDraw || ((right-left < 50000) && (settings.OptimizeDraw == 1))) {
             for (i = left; i < right; ++i) {
                if (extract_bin(i)) {
                   if (path_marker !== null)

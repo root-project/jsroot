@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, settings } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -1390,7 +1390,7 @@ RH1Painter.prototype.draw3D = async function(reason) {
       await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
       main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
+      main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1 });
    }
 
    if (main.mode3d) {
@@ -1437,7 +1437,7 @@ RH2Painter.prototype.draw3D = async function(reason) {
       await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
       main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
+      main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2 });
    }
 
    if (main.mode3d) {
@@ -2840,7 +2840,7 @@ class RH3Painter extends RHistPainter {
       await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
+      main.drawXYZ(main.toplevel, { zoom: settings.Zooming, ndim: 3 });
 
       await this.drawingBins(reason);
       await this.draw3DBins(); // called when bins received from server, must be reentrant

@@ -1,6 +1,7 @@
 import * as JSROOT from './core.mjs';
 
-import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, source_dir } from './core.mjs';
+import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
+         browser, source_dir, settings } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -212,7 +213,7 @@ function keysHierarchy(folder, keys, file, dirname) {
             keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
          }
       } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
-         if (JSROOT.settings.SkipStreamerInfos) continue;
+         if (settings.SkipStreamerInfos) continue;
          item._name = 'StreamerInfo';
          item._kind = "ROOT.TStreamerInfoList";
          item._title = "List of streamer infos for binary I/O";
@@ -277,7 +278,7 @@ function objectHierarchy(top, obj, args) {
    }
 
    let isarray = (JSROOT._.is_array_proto(proto) > 0) && obj.length,
-       compress = isarray && (obj.length > JSROOT.settings.HierarchyLimit),  arrcompress = false;
+       compress = isarray && (obj.length > settings.HierarchyLimit),  arrcompress = false;
 
    if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
 
@@ -2560,7 +2561,7 @@ class HierarchyPainter extends BasePainter {
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append("div");
-         if (arg && (arg >= (hitem._parent._show_limit || JSROOT.settings.HierarchyLimit))) break_list = true;
+         if (arg && (arg >= (hitem._parent._show_limit || settings.HierarchyLimit))) break_list = true;
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
@@ -2633,15 +2634,15 @@ class HierarchyPainter extends BasePainter {
       }
 
       if ('disp_kind' in h) {
-         if (JSROOT.settings.DragAndDrop && can_click)
+         if (settings.DragAndDrop && can_click)
            this.enableDrag(d3a, itemname);
 
-         if (JSROOT.settings.ContextMenu && can_menu)
+         if (settings.ContextMenu && can_menu)
             d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
 
          d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
             .on("mouseleave", function() { h.tree_mouseover(false, this); });
-      } else if (hitem._direct_context && JSROOT.settings.ContextMenu)
+      } else if (hitem._direct_context && settings.ContextMenu)
          d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
 
       let element_name = hitem._name, element_title = "";
@@ -2903,7 +2904,7 @@ class HierarchyPainter extends BasePainter {
 
          if (indx < 0) return console.error('internal error');
 
-         prnt._show_limit = (prnt._show_limit || JSROOT.settings.HierarchyLimit) * 2;
+         prnt._show_limit = (prnt._show_limit || settings.HierarchyLimit) * 2;
 
          for (let n = indx+1; n < prnt._childs.length; ++n) {
             let chld = prnt._childs[n];
@@ -4378,7 +4379,7 @@ class HierarchyPainter extends BasePainter {
          this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
 
       this.disp.cleanupFrame = this.cleanupFrame.bind(this);
-      if (JSROOT.settings.DragAndDrop)
+      if (settings.DragAndDrop)
           this.disp.setInitFrame(this.enableDrop.bind(this));
 
       return this.disp;
@@ -4939,7 +4940,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
       online = drawing = true;
 
    if (myDiv.attr("ignoreurl") === "true")
-      JSROOT.settings.IgnoreUrlOptions = true;
+      settings.IgnoreUrlOptions = true;
 
    readStyleFromURL();
 
@@ -4988,7 +4989,7 @@ function buildGUI(gui_element, gui_kind) {
    if (gui_kind == "online") online = true;
 
    if (myDiv.attr("ignoreurl") === "true")
-      JSROOT.settings.IgnoreUrlOptions = true;
+      settings.IgnoreUrlOptions = true;
 
    if (decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
       return buildNobrowserGUI(gui_element, gui_kind);

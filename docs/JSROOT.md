@@ -590,45 +590,57 @@ JSROOT can be used in arbitrary HTML pages and disaplay data, produced without R
 Many different examples of JSROOT API usage can be found on [JSROOT API examples](https://root.cern/js/latest/api.htm) page.
 
 
-### Scripts loading
+### Import JSROOT functionality
 
-Before JSROOT can be used, all appropriate functionality should be loaded.
-HTML pages where JSROOT is used should include the `JSRoot.core.js` script.
-The `<head>` section of the HTML page should have the following line:
+Major JSROOT functions are locates in `core.mjs` module and can be imported like:
 
-    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.js"></script>
+    <script type='module'>
+       import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+       let filename = "https://root.cern/js/files/hsimple.root";
+       let file = await openFile(filename);
+       let obj = await file.readObject("hpxpy;1");
+       draw("drawing", obj, "colz");
+   </script>
 
-Here, the default location of JSROOT is specified. One could have a local copy on the file system or on a private web server. When JSROOT is used with THttpServer, the address looks like:
+Here the default location `https://root.cern/js/latest/` is specified. One could have a local copy on the file system or on a private web server.
+When JSROOT is used with THttpServer, the address looks like:
 
-    <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRoot.core.js"></script>
+    <script type='module'>
+       import { openFile, draw } from 'http://your_root_server:8080/jsrootsys/modules/core.mjs';
+       ...
+   </script>
 
-Loading core script is enough to get main ROOT functionality - loading files and drawing objects.
-If some extra components should be loaded, one have to use `JSROOT.require()` function like:
+Loading core module is enough to get main ROOT functionality - loading files and drawing objects.
+One also can load some components directly like:
 
-```
-    JSROOT.require('hierarchy').then(() => {
-       let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
+    <script type='module'>
+       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/HierarchyPainter.mjs';
+
+       let h = new HierarchyPainter("example", "myTreeDiv");
 
        // configure 'simple' in provided <div> element
        // one also can specify "grid2x2" or "flex" or "tabs"
        h.setDisplay("simple", "myMainDiv");
 
        // open file and display element
-       h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
-   })
-```
+       await h.openRootFile("../../files/hsimple.root");
+       await h.display("hpxpy;1","colz");
+   </script>
 
-After script loading one can configure different parameters in `JSROOT.gStyle` object.
+
+After script loading one can configure different parameters in `gStyle` object.
 It is instance of the `TStyle` object and behaves like `gStyle` variable in ROOT. For instance,
 to change stat format using to display value in stats box:
 
-    JSROOT.gStyle.fStatFormat = "7.5g"
+    import { gStyle } from 'https://root.cern/js/latest/modules/core.mjs';
+    gStyle.fStatFormat = "7.5g";
 
 There is also `JSROOT.settings` object which contains all other JSROOT settings. For instance,
 one can configure custom format for different axes:
 
-    JSROOT.settings.XValuesFormat = "4.2g"
-    JSROOT.settings.YValuesFormat = "6.1f"
+    import { settings } from 'https://root.cern/js/latest/modules/core.mjs';
+    settings.XValuesFormat = "4.2g";
+    settings.YValuesFormat = "6.1f";
 
 
 ### Use of JSON

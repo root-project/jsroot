@@ -2,7 +2,7 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl, browser } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, browser, settings } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -235,97 +235,97 @@ function closeMenu(menuname) {
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-   let d = decodeUrl(url), g = gStyle, s = JSROOT.settings;
+   let d = decodeUrl(url);
 
    if (d.has("optimize")) {
-      s.OptimizeDraw = 2;
+      settings.OptimizeDraw = 2;
       let optimize = d.get("optimize");
       if (optimize) {
          optimize = parseInt(optimize);
-         if (Number.isInteger(optimize)) s.OptimizeDraw = optimize;
+         if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
       }
    }
 
    let inter = d.get("interactive");
    if (inter === "nomenu")
-      s.ContextMenu = false;
+      settings.ContextMenu = false;
    else if (inter !== undefined) {
-      if (!inter || (inter == "1")) inter = "111111"; else
-         if (inter == "0") inter = "000000";
+      if (!inter || (inter == "1"))
+         inter = "111111";
+      else if (inter == "0")
+         inter = "000000";
       if (inter.length === 6) {
          switch(inter[0]) {
-            case "0": g.ToolBar = false; break;
-            case "1": g.ToolBar = 'popup'; break;
-            case "2": g.ToolBar = true; break;
+            case "0": gStyle.ToolBar = false; break;
+            case "1": gStyle.ToolBar = 'popup'; break;
+            case "2": gStyle.ToolBar = true; break;
          }
          inter = inter.substr(1);
       }
       if (inter.length == 5) {
-         s.Tooltip = parseInt(inter[0]);
-         s.ContextMenu = (inter[1] != '0');
-         s.Zooming = (inter[2] != '0');
-         s.MoveResize = (inter[3] != '0');
-         s.DragAndDrop = (inter[4] != '0');
+         settings.Tooltip = parseInt(inter[0]);
+         settings.ContextMenu = (inter[1] != '0');
+         settings.Zooming = (inter[2] != '0');
+         settings.MoveResize = (inter[3] != '0');
+         settings.DragAndDrop = (inter[4] != '0');
       }
    }
 
    let tt = d.get("tooltip");
    if ((tt == "off") || (tt == "false") || (tt == "0"))
-      s.Tooltip = false;
+      settings.Tooltip = false;
    else if (d.has("tooltip"))
-      s.Tooltip = true;
+      settings.Tooltip = true;
 
    if (d.has("bootstrap") || d.has("bs"))
-      s.Bootstrap = true;
-
-   // s.Bootstrap = true;
+      settings.Bootstrap = true;
 
    let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
 
    if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
    if (latex !== null)
-      s.Latex = JSROOT.constants.Latex.fromString(latex);
+      settings.Latex = JSROOT.constants.Latex.fromString(latex);
 
-   if (d.has("nomenu")) s.ContextMenu = false;
-   if (d.has("noprogress")) s.ProgressBox = false;
+   if (d.has("nomenu")) settings.ContextMenu = false;
+   if (d.has("noprogress")) settings.ProgressBox = false;
    if (d.has("notouch")) browser.touches = false;
-   if (d.has("adjframe")) s.CanAdjustFrame = true;
+   if (d.has("adjframe")) settings.CanAdjustFrame = true;
 
    let optstat = d.get("optstat"), optfit = d.get("optfit");
-   if (optstat) g.fOptStat = parseInt(optstat);
-   if (optfit) g.fOptFit = parseInt(optfit);
-   g.fStatFormat = d.get("statfmt", g.fStatFormat);
-   g.fFitFormat = d.get("fitfmt", g.fFitFormat);
+   if (optstat) gStyle.fOptStat = parseInt(optstat);
+   if (optfit) gStyle.fOptFit = parseInt(optfit);
+   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
+   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
 
    if (d.has("toolbar")) {
       let toolbar = d.get("toolbar", ""), val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
-      if (toolbar.indexOf('left') >= 0) { s.ToolBarSide = 'left'; val = 'popup'; }
-      if (toolbar.indexOf('right') >= 0) { s.ToolBarSide = 'right'; val = 'popup'; }
-      if (toolbar.indexOf('vert') >= 0) { s.ToolBarVert = true; val = 'popup'; }
+      if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
+      if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
+      if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
       if (toolbar.indexOf('show') >= 0) val = true;
-      s.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
+      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
    }
 
    if (d.has("skipsi") || d.has("skipstreamerinfos"))
-      s.SkipStreamerInfos = true;
+      settings.SkipStreamerInfos = true;
 
    if (d.has("nodraggraphs"))
-      s.DragGraphs = false;
+      settings.DragGraphs = false;
 
    if (d.has("palette")) {
       let palette = parseInt(d.get("palette"));
-      if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) s.Palette = palette;
+      if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
    }
 
    let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
        geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
-   if (render3d) s.Render3D = JSROOT.constants.Render3D.fromString(render3d);
-   if (embed3d) s.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
-   if (geosegm) s.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-   if (geocomp) s.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
+   if (render3d) settings.Render3D = JSROOT.constants.Render3D.fromString(render3d);
+   if (embed3d) settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
+   if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+   if (geocomp) settings.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
 
-   if (d.has("hlimit")) s.HierarchyLimit = parseInt(d.get("hlimit"));
+   if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
 }
 
 /** @summary Generates all root colors, used also in jstests to reset colors
@@ -1740,7 +1740,7 @@ class BasePainter {
       let main = this.selectDom(true),
          origin = this.selectDom('origin');
 
-      if (main.empty() || !JSROOT.settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
+      if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
       if (action === undefined) return true;
 
@@ -2875,7 +2875,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    _postprocessDrawText(arg, txt_node) {
       // complete rectangle with very rougth size estimations
-      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
+      arg.box = !JSROOT.nodejs && !settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
@@ -2975,8 +2975,8 @@ class ObjectPainter extends BasePainter {
       let use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
-         use_mathjax = (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
-                       ((JSROOT.settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
+         use_mathjax = (settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
+                       ((settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
 
       if (!use_mathjax || arg.nomathjax) {
 
@@ -2987,9 +2987,9 @@ class ObjectPainter extends BasePainter {
          if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
 
-         arg.plain = !arg.latex || (JSROOT.settings.Latex == JSROOT.constants.Latex.Off) || (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
+         arg.plain = !arg.latex || (settings.Latex == JSROOT.constants.Latex.Off) || (settings.Latex == JSROOT.constants.Latex.Symbols);
 
-         arg.simple_latex = arg.latex && (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
+         arg.simple_latex = arg.latex && (settings.Latex == JSROOT.constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
             JSROOT.require('latex').then(ltx => {
@@ -3386,13 +3386,13 @@ const AxisPainterMethods = {
       let res = "";
       if (value) {
          value = Math.round(value/Math.pow(base,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
+         if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? "#times" : "x");
       }
       if (Math.abs(base-Math.exp(1)) < 0.001)
          res += "e";
       else
          res += base.toString();
-      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
+      if (settings.Latex > JSROOT.constants.Latex.Symbols)
          return res + "^{" + order + "}";
       const superscript_symbols = {
             '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
@@ -3619,7 +3619,7 @@ function drawRawText(dom, txt /*, opt*/) {
       let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = "<undefined>";
 
-      let mathjax = this.txt.mathjax || (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
+      let mathjax = this.txt.mathjax || (settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
 
       if (!mathjax && !('as_is' in this.txt)) {
          let arr = txt.split("\n"); txt = "";

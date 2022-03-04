@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT } from './core.mjs';
+import { gStyle, BIT, settings } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -1425,7 +1425,7 @@ TH1Painter.prototype.draw3D = async function(reason) {
          await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
+         main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
       }
 
       if (main.mode3d) {
@@ -1479,7 +1479,7 @@ TH2Painter.prototype.draw3D = async function(reason) {
          await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+         main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
       }
 
       if (main.mode3d) {
@@ -2809,7 +2809,7 @@ class TH3Painter extends THistPainter {
          await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
+         main.drawXYZ(main.toplevel, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
          await this.draw3DBins();
 
          main.render3D();
@@ -3104,7 +3104,7 @@ class TGraph2DPainter extends ObjectPainter {
       };
 
       // try to define scale-down factor
-      if ((JSROOT.settings.OptimizeDraw > 0) && !fp.webgl) {
+      if ((settings.OptimizeDraw > 0) && !fp.webgl) {
          let numselected = countSelected(fp.scale_zmin, fp.scale_zmax),
              sizelimit = 50000;
 

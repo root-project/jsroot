@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, settings } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -750,7 +750,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, side) {
-      if (!JSROOT.settings.MoveResize || JSROOT.batch_mode) return;
+      if (!settings.MoveResize || JSROOT.batch_mode) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, alt_pos, curr_indx,
@@ -1084,7 +1084,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add zomming rect to axis drawing */
    addZoomingRect(axis_g, side, lgaps) {
-      if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
+      if (settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
          let sz = Math.max(lgaps[side], 10);
 
          let d = this.vertical ? "v" + this.gr_range + "h"+(-side*sz) + "v" + (-this.gr_range)
@@ -1313,7 +1313,7 @@ class RAxisPainter extends RObjectPainter {
       if (JSROOT.batch_mode) return promise;
 
       return promise.then(() => JSROOT.require('interactive')).then(inter => {
-         if (JSROOT.settings.ContextMenu)
+         if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
@@ -1330,7 +1330,7 @@ class RAxisPainter extends RObjectPainter {
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
-         if (JSROOT.settings.ZoomWheel)
+         if (settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
                evnt.stopPropagation();
                evnt.preventDefault();
@@ -1482,7 +1482,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Set active flag for frame - can block some events
     * @private */
    setFrameActive(on) {
-      this.enabledKeys = on && JSROOT.settings.HandleKeys ? true : false;
+      this.enabledKeys = on && settings.HandleKeys ? true : false;
       // used only in 3D mode
       if (this.control)
          this.control.enableKeys = this.enabledKeys;
@@ -1503,10 +1503,10 @@ class RFramePainter extends RObjectPainter {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let rect = this.getPadPainter().getPadRect();
-         this.fX1NDC = this.v7EvalLength("margins_left", rect.width, JSROOT.settings.FrameNDC.fX1NDC) / rect.width;
-         this.fY1NDC = this.v7EvalLength("margins_bottom", rect.height, JSROOT.settings.FrameNDC.fY1NDC) / rect.height;
-         this.fX2NDC = 1 - this.v7EvalLength("margins_right", rect.width, 1-JSROOT.settings.FrameNDC.fX2NDC) / rect.width;
-         this.fY2NDC = 1 - this.v7EvalLength("margins_top", rect.height, 1-JSROOT.settings.FrameNDC.fY2NDC) / rect.height;
+         this.fX1NDC = this.v7EvalLength("margins_left", rect.width, settings.FrameNDC.fX1NDC) / rect.width;
+         this.fY1NDC = this.v7EvalLength("margins_bottom", rect.height, settings.FrameNDC.fY1NDC) / rect.height;
+         this.fX2NDC = 1 - this.v7EvalLength("margins_right", rect.width, 1-settings.FrameNDC.fX2NDC) / rect.width;
+         this.fY2NDC = 1 - this.v7EvalLength("margins_top", rect.height, 1-settings.FrameNDC.fY2NDC) / rect.height;
       }
 
       if (!this.fillatt)
@@ -1646,7 +1646,7 @@ class RFramePainter extends RObjectPainter {
       let handle = this[axis+"_handle"];
 
       if (handle)
-         return handle.axisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
+         return handle.axisAsText(value, settings[axis.toUpperCase() + "ValuesFormat"]);
 
       return value.toPrecision(4);
    }
@@ -2617,7 +2617,7 @@ class RFramePainter extends RObjectPainter {
     * @private */
    async addInteractivity(for_second_axes) {
 
-      if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
+      if (JSROOT.batch_mode || (!settings.Zooming && !settings.ContextMenu))
          return true;
 
       if (!this.addFrameInteractivity) {
@@ -2941,15 +2941,15 @@ class RPadPainter extends RObjectPainter {
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter(this, null))
                  .on("mouseenter", () => this.showObjectStatus())
-                 .on("contextmenu", JSROOT.settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
+                 .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
          if (!JSROOT.batch_mode)
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
-                      .property('leftside', JSROOT.settings.ToolBarSide == 'left')
-                      .property('vertical', JSROOT.settings.ToolBarVert);
+                      .property('leftside', settings.ToolBarSide == 'left')
+                      .property('vertical', settings.ToolBarVert);
 
          factor = 0.66;
          if (this.pad && this.pad.fWinSize[0] && this.pad.fWinSize[1]) {
@@ -3011,7 +3011,7 @@ class RPadPainter extends RObjectPainter {
       frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
            .call(this.fillatt.func);
 
-      this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
+      this._fast_drawing = settings.SmallPad && ((rect.width < settings.SmallPad.width) || (rect.height < settings.SmallPad.height));
 
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
@@ -3108,10 +3108,10 @@ class RPadPainter extends RObjectPainter {
          if (!JSROOT.batch_mode)
             btns = svg_pad.append("svg:g")
                           .attr("class","btns_layer")
-                          .property('leftside', JSROOT.settings.ToolBarSide != 'left')
-                          .property('vertical', JSROOT.settings.ToolBarVert);
+                          .property('leftside', settings.ToolBarSide != 'left')
+                          .property('vertical', settings.ToolBarVert);
 
-         if (JSROOT.settings.ContextMenu)
+         if (settings.ContextMenu)
             svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
          if (!JSROOT.batch_mode)
@@ -3146,7 +3146,7 @@ class RPadPainter extends RObjectPainter {
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
+      this._fast_drawing = settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
 
        // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
@@ -4058,7 +4058,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
+      if (!settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -4081,7 +4081,7 @@ class RPadPainter extends RObjectPainter {
 
       this.addPadButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
 
-      if (JSROOT.settings.ContextMenu)
+      if (settings.ContextMenu)
          this.addPadButton("question", "Access context menus", "PadContextMenus");
 
       let add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw()
@@ -4229,7 +4229,7 @@ class RCanvasPainter extends RPadPainter {
    constructor(dom, canvas) {
       super(dom, canvas, true);
       this._websocket = null;
-      this.tooltip_allowed = JSROOT.settings.Tooltip;
+      this.tooltip_allowed = settings.Tooltip;
       this.v7canvas = true;
    }
 
@@ -4953,7 +4953,7 @@ class RPavePainter extends RObjectPainter {
 
          return JSROOT.require(['interactive']).then(inter => {
             // TODO: provide pave context menu as in v6
-            if (JSROOT.settings.ContextMenu && this.paveContextMenu)
+            if (settings.ContextMenu && this.paveContextMenu)
                this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
             inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
@@ -5341,7 +5341,7 @@ class RPalettePainter extends RObjectPainter {
                d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
-         if (JSROOT.settings.Zooming)
+         if (settings.Zooming)
             r.on("dblclick", () => framep.unzoom("z"));
       }
 
@@ -5354,7 +5354,7 @@ class RPalettePainter extends RObjectPainter {
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
-         if (JSROOT.settings.ContextMenu)
+         if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
@@ -5369,7 +5369,7 @@ class RPalettePainter extends RObjectPainter {
          inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
                                        minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
 
-         if (!JSROOT.settings.Zooming) return;
+         if (!settings.Zooming) return;
 
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
@@ -5449,7 +5449,7 @@ class RPalettePainter extends RObjectPainter {
                        .on("mousedown", startRectSel)
                        .on("dblclick", () => framep.unzoom("z"));
 
-            if (JSROOT.settings.ZoomWheel)
+            if (settings.ZoomWheel)
                this.draw_g.on("wheel", evnt => {
                   evnt.stopPropagation();
                   evnt.preventDefault();

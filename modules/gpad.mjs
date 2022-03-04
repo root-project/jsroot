@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT } from './core.mjs';
+import { gStyle, BIT, settings } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -455,7 +455,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.settings.MoveResize || JSROOT.batch_mode) return;
+      if (!settings.MoveResize || JSROOT.batch_mode) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
@@ -857,7 +857,7 @@ class TAxisPainter extends ObjectPainter {
 
       let labelMaxWidth = arr[1];
 
-      if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
+      if (settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
          let labelSize = arr[0],
              r = axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
@@ -1084,7 +1084,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Set active flag for frame - can block some events
      * @private */
    setFrameActive(on) {
-      this.enabledKeys = on && JSROOT.settings.HandleKeys ? true : false;
+      this.enabledKeys = on && settings.HandleKeys ? true : false;
       // used only in 3D mode where control is used
       if (this.control)
          this.control.enableKeys = this.enabledKeys;
@@ -1580,7 +1580,7 @@ class TFramePainter extends ObjectPainter {
       let handle = this[axis+"_handle"];
 
       if (handle)
-         return handle.axisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
+         return handle.axisAsText(value, settings[axis.toUpperCase() + "ValuesFormat"]);
 
       return value.toPrecision(4);
    }
@@ -1626,7 +1626,7 @@ class TFramePainter extends ObjectPainter {
 
       if (!disable_x_draw || !disable_y_draw) {
 
-         let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
+         let can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame;
 
          await draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? undefined : `translate(0,${h})`,
@@ -1716,7 +1716,7 @@ class TFramePainter extends ObjectPainter {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad) {
-            JSROOT.extend(this, JSROOT.settings.FrameNDC);
+            JSROOT.extend(this, settings.FrameNDC);
          } else {
             JSROOT.extend(this, {
                fX1NDC: pad.fLeftMargin,
@@ -2377,7 +2377,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive functionality to the frame
      * @private */
    async addInteractivity(for_second_axes) {
-      if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
+      if (JSROOT.batch_mode || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
       if (!this.addFrameInteractivity) {
@@ -2689,15 +2689,15 @@ class TPadPainter extends ObjectPainter {
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter())
                  .on("mouseenter", () => this.showObjectStatus())
-                 .on("contextmenu", JSROOT.settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
+                 .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
          if (!JSROOT.batch_mode)
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
-                      .property('leftside', JSROOT.settings.ToolBarSide == 'left')
-                      .property('vertical', JSROOT.settings.ToolBarVert);
+                      .property('leftside', settings.ToolBarSide == 'left')
+                      .property('vertical', settings.ToolBarVert);
 
          factor = 0.66;
          if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
@@ -2762,7 +2762,7 @@ class TPadPainter extends ObjectPainter {
          this.drawActiveBorder(frect);
       }
 
-      this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
+      this._fast_drawing = settings.SmallPad && ((rect.width < settings.SmallPad.width) || (rect.height < settings.SmallPad.height));
 
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
@@ -2849,14 +2849,14 @@ class TPadPainter extends ObjectPainter {
                     .on("dblclick", evnt => this.enlargePad(evnt))
                     .on("click", () => this.selectObjectPainter())
                     .on("mouseenter", () => this.showObjectStatus())
-                    .on("contextmenu", JSROOT.settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
+                    .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
          if (!JSROOT.batch_mode)
             btns = svg_pad.append("svg:g")
                           .attr("class","btns_layer")
-                          .property('leftside', JSROOT.settings.ToolBarSide != 'left')
-                          .property('vertical', JSROOT.settings.ToolBarVert);
+                          .property('leftside', settings.ToolBarSide != 'left')
+                          .property('vertical', settings.ToolBarVert);
       }
 
       this.createAttFill({ attr: this.pad });
@@ -2887,7 +2887,7 @@ class TPadPainter extends ObjectPainter {
          this.drawActiveBorder(svg_rect);
       }
 
-      this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
+      this._fast_drawing = settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
 
       // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
@@ -4143,7 +4143,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
+      if (!settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -4177,7 +4177,7 @@ class TPadPainter extends ObjectPainter {
 
       this.addPadButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
 
-      if (JSROOT.settings.ContextMenu)
+      if (settings.ContextMenu)
          this.addPadButton("question", "Access context menus", "PadContextMenus");
 
       let add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw()
@@ -4304,7 +4304,7 @@ class TCanvasPainter extends TPadPainter {
    constructor(dom, canvas) {
       super(dom, canvas, true);
       this._websocket = null;
-      this.tooltip_allowed = JSROOT.settings.Tooltip;
+      this.tooltip_allowed = settings.Tooltip;
    }
 
    /** @summary Cleanup canvas painter */
