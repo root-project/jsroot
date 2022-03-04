@@ -2,7 +2,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select, pointer as d3_pointer } from './d3.mjs';
+import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
 
 import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
@@ -438,7 +438,7 @@ function addDragHandler(_painter, arg) {
       return change_size || change_pos;
    };
 
-   let drag_move = d3.drag().subject(Object);
+   let drag_move = d3_drag().subject(Object);
 
    drag_move
       .on("start", function(evnt) {
@@ -507,7 +507,7 @@ function addDragHandler(_painter, arg) {
          }
       });
 
-   let drag_resize = d3.drag().subject(Object);
+   let drag_resize = d3_drag().subject(Object);
 
    drag_resize
       .on("start", function(evnt) {
@@ -597,7 +597,7 @@ function addMoveHandler(painter, enabled) {
 
    if (!enabled) {
       if (painter.draw_g.property("assigned_move")) {
-         let drag_move = d3.drag().subject(Object);
+         let drag_move = d3_drag().subject(Object);
          drag_move.on("start", null).on("drag", null).on("end", null);
          painter.draw_g
                .style("cursor", null)
@@ -609,7 +609,7 @@ function addMoveHandler(painter, enabled) {
 
    if (painter.draw_g.property("assigned_move")) return;
 
-   let drag_move = d3.drag().subject(Object),
+   let drag_move = d3_drag().subject(Object),
       not_changed = true, move_disabled = false;
 
    drag_move

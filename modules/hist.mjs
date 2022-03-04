@@ -1,9 +1,8 @@
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
+import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
+         chord as d3_chord, descending as d3_descending, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
 
 import { Prob } from './math.mjs';
 
@@ -6850,10 +6849,10 @@ class TH2Painter extends THistPainter {
 
       this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
 
-      const chord = d3.chord()
+      const chord = d3_chord()
          .padAngle(10 / innerRadius)
-         .sortSubgroups(d3.descending)
-         .sortChords(d3.descending);
+         .sortSubgroups(d3_descending)
+         .sortChords(d3_descending);
 
       const chords = chord(data);
 
@@ -6864,9 +6863,9 @@ class TH2Painter extends THistPainter {
          .data(chords.groups)
          .join("g");
 
-      const arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+      const arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius);
 
-      const ribbon = d3.ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
+      const ribbon = d3_ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
 
       function ticks({ startAngle, endAngle, value }) {
          const k = (endAngle - startAngle) / value;

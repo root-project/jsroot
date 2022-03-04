@@ -1,5 +1,3 @@
-import * as d3 from './d3.mjs';
-
 import { select as d3_select } from './d3.mjs';
 
 import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,

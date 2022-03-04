@@ -3,7 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select, color as d3_color, pointer as d3_pointer } from './d3.mjs';
+import { select as d3_select, color as d3_color,
+         pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -456,7 +457,7 @@ class TAxisPainter extends ObjectPainter {
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
-          drag_move = d3.drag().subject(Object);
+          drag_move = d3_drag().subject(Object);
 
       drag_move
          .on("start", evnt => {

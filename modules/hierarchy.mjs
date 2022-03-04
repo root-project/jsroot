@@ -1,8 +1,6 @@
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
 import { showProgress } from './utils.mjs';
 
@@ -1015,7 +1013,7 @@ class GridDisplay extends MDIDisplay {
            .style('cursor', handle.vertical ? "ns-resize" : "ew-resize");
 
       let pthis = this, drag_move =
-        d3.drag().on("start", function() { pthis.handleSeparator(this, "start"); })
+        d3_drag().on("start", function() { pthis.handleSeparator(this, "start"); })
                  .on("drag", function(evnt) { pthis.handleSeparator(this, evnt); })
                  .on("end", function() { pthis.handleSeparator(this, "end"); });
 
@@ -1328,7 +1326,7 @@ class FlexibleDisplay extends MDIDisplay {
       };
 
       let moving_frame = null, moving_div = null, doing_move = false,
-          drag_object = d3.drag().subject(Object), current = [];
+          drag_object = d3_drag().subject(Object), current = [];
       drag_object.on("start", function(evnt) {
          if (evnt.sourceEvent.target.type == "button")
             return mdi._clickButton(evnt.sourceEvent.target);
@@ -1755,7 +1753,7 @@ class BrowserLayout {
                        .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
                        .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
-      let drag_move = d3.drag().on("start", () => {
+      let drag_move = d3_drag().on("start", () => {
           this._hsepar_move = this._hsepar_position;
           hsepar.style('background-color', 'grey');
       }).on("drag", evnt => {
@@ -2009,7 +2007,7 @@ class BrowserLayout {
 
       if (kind === "float") {
          area.style('bottom', '40px').classed('jsroot_float_browser', true);
-        let drag_move = d3.drag().on("start", () => {
+        let drag_move = d3_drag().on("start", () => {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.substr(0,sl.length-2));
            this._float_top = parseInt(st.substr(0,st.length-2));
@@ -2028,7 +2026,7 @@ class BrowserLayout {
            this.setButtonsPosition();
         });
 
-        let drag_resize = d3.drag().on("start", () => {
+        let drag_resize = d3_drag().on("start", () => {
            let sw = area.style('width');
            this._float_width = parseInt(sw.substr(0,sw.length-2));
            this._float_height = area.node().clientHeight;
@@ -2059,7 +2057,7 @@ class BrowserLayout {
                .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
 
-        let drag_move = d3.drag().on("start", () => {
+        let drag_move = d3_drag().on("start", () => {
             this._vsepar_move = this._vsepar_position;
             vsepar.style('background-color', 'grey');
         }).on("drag", evnt => {

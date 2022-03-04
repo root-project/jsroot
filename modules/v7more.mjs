@@ -1,7 +1,5 @@
 /// JavaScript ROOT v7 graphics for different classes
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';

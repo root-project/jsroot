@@ -1,6 +1,4 @@
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
