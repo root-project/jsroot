@@ -5,14 +5,116 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
-         OrbitControls, Raycaster, CreateSVGRenderer } from './three.mjs';
+         OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
 import * as JSROOT from './core.mjs';
 
 import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
 
-
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
+
+function createSVGRenderer(as_is, precision, doc) {
+   if (as_is) {
+      if (doc !== undefined)
+         globalThis.docuemnt = doc;
+      let rndr = new SVGRenderer();
+      rndr.setPrecision(precision);
+      return rndr;
+   }
+
+   const excl_style1 = ";stroke-opacity:1;stroke-width:1;stroke-linecap:round",
+         excl_style2 = ";fill-opacity:1";
+
+   let doc_wrapper = {
+     svg_attr: {},
+     svg_style: {},
+     path_attr: {},
+     accPath: "",
+     createElementNS: function(ns,kind) {
+        if (kind == 'path')
+           return {
+              _wrapper: this,
+              setAttribute: function(name, value) {
+                 // cut useless fill-opacity:1 at the end of many SVG attributes
+                 if ((name=="style") && value) {
+                    let pos1 = value.indexOf(excl_style1);
+                    if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
+                       value = value.substr(0, value.length - excl_style1.length);
+                    let pos2 = value.indexOf(excl_style2);
+                    if ((pos2 >= 0) && (pos2 == value.length - excl_style2.length))
+                       value = value.substr(0, value.length - excl_style2.length);
+                 }
+                 this._wrapper.path_attr[name] = value;
+              }
+           }
+
+        if (kind != 'svg') {
+           console.error('not supported element for SVGRenderer', kind);
+           return null;
+        }
+
+        return {
+           _wrapper: this,
+           childNodes: [], // may be accessed - make dummy
+           style: this.svg_style, // for background color
+           setAttribute: function(name, value) {
+              this._wrapper.svg_attr[name] = value;
+           },
+           appendChild: function(node) {
+              this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
+              this._wrapper.path_attr = {};
+           },
+           removeChild: function(node) {
+              this.childNodes = [];
+           }
+        };
+     }
+   };
+
+   let originalDocument = globalThis.document;
+   globalThis.document = doc_wrapper;
+
+   let rndr = new SVGRenderer();
+
+   globalThis.document = originalDocument;
+
+   rndr.doc_wrapper = doc_wrapper; // use it to get final SVG code
+
+   rndr.originalRender = rndr.render;
+
+   rndr.render = function (scene, camera) {
+      let originalDocument = globalThis.document;
+      globalThis.document = this.doc_wrapper;
+
+      this.originalRender(scene, camera);
+
+      globalThis.document = originalDocument;
+   }
+
+   rndr.clearHTML = function() {
+      this.doc_wrapper.accPath = "";
+   }
+
+   rndr.makeOuterHTML = function() {
+
+      let wrap = this.doc_wrapper;
+
+      let _textSizeAttr = ' viewBox="' + wrap.svg_attr['viewBox'] + '" width="' + wrap.svg_attr['width'] + '" height="' + wrap.svg_attr['height'] + '"';
+
+      let _textClearAttr = '';
+
+      if (wrap.svg_style.backgroundColor) _textClearAttr = ' style="background:' + wrap.svg_style.backgroundColor + '"';
+
+      return '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr + _textClearAttr + '>' + wrap.accPath + '</svg>';
+   }
+
+   rndr.setPrecision(precision);
+
+   return rndr;
+}
+
+
+
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
  * @param {value} [render3d] - preconfigured value, will be used if applicable
@@ -304,7 +406,7 @@ async function createRender3D(width, height, render3d, args) {
 
    } else if (render3d == rc.SVG) {
       // SVG rendering
-      renderer = CreateSVGRenderer(false, 0, doc);
+      renderer = createSVGRenderer(false, 0, doc);
 
       if (JSROOT.batch_mode) {
          need_workaround = true;
@@ -1561,9 +1663,8 @@ function drawPolyLine3D() {
    return true;
 }
 
-
 export { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, drawPolyMarker3D, drawPolyLine3D,
-         InteractiveControl, PointsControl, PointsCreator };
+         InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };

@@ -7,7 +7,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, SphereGeometry, ShapeUtils,
-         Plane, Scene, PerspectiveCamera, PointLight, CreateSVGRenderer } from './three.mjs';
+         Plane, Scene, PerspectiveCamera, PointLight } from './three.mjs';
 
 import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, getDrawSettings } from './painter.mjs';
@@ -19,7 +19,7 @@ import { THistPainter, TH1Painter, TH2Painter } from './hist.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont } from './base3d.mjs';
+         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from './base3d.mjs';
 
 import { translateLaTeX } from './latex.mjs';
 
@@ -304,7 +304,7 @@ TFramePainter.prototype.render3D = function(tmout) {
    if (tmout === -1111) {
       // special handling for direct SVG renderer
       let doc = JSROOT._.get_document(),
-          rrr = CreateSVGRenderer(false, 0, doc);
+          rrr = createSVGRenderer(false, 0, doc);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);
       if (rrr.makeOuterHTML) {

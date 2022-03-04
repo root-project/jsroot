@@ -9,7 +9,7 @@ import { REVISION, DoubleSide,
          Scene, PointLight, PerspectiveCamera,
          Mesh, MeshBasicMaterial, MeshLambertMaterial, TextGeometry, SphereGeometry,
          LineSegments, LineBasicMaterial, LineDashedMaterial,
-         BufferAttribute, BufferGeometry, CreateSVGRenderer } from './three.mjs';
+         BufferAttribute, BufferGeometry } from './three.mjs';
 
 import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
 
@@ -20,7 +20,7 @@ import { RHistPainter, RH1Painter, RH2Painter } from './v7hist.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont } from './base3d.mjs';
+         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from './base3d.mjs';
 
 import { translateLaTeX } from './latex.mjs';
 
@@ -277,7 +277,7 @@ RFramePainter.prototype.render3D = function(tmout) {
       // special handling for direct SVG renderer
       // probably, here one can use canvas renderer - after modifications
       let doc = JSROOT._.get_document(),
-          rrr = CreateSVGRenderer(false, 0, doc);
+          rrr = createSVGRenderer(false, 0, doc);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);
       if (rrr.makeOuterHTML) {
