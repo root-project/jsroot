@@ -1505,7 +1505,7 @@ function gamma_pdf(x, alpha, theta, x0 = 0) {
 
 /** @summary tdistribution_cdf_c function
   * @private */
-mth.tdistribution_cdf_c = function(x, r, x0 = 0) {
+function tdistribution_cdf_c(x, r, x0 = 0) {
    let p    = x - x0,
        sign = (p > 0) ? 1. : -1;
    return .5 - .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
@@ -1513,7 +1513,7 @@ mth.tdistribution_cdf_c = function(x, r, x0 = 0) {
 
 /** @summary tdistribution_cdf function
   * @private */
-mth.tdistribution_cdf = function(x, r, x0 = 0) {
+function tdistribution_cdf(x, r, x0 = 0) {
    let p    = x - x0,
        sign = (p > 0) ? 1. : -1;
    return  .5 + .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
@@ -1521,26 +1521,26 @@ mth.tdistribution_cdf = function(x, r, x0 = 0) {
 
 /** @summary tdistribution_pdf function
   * @private */
-mth.tdistribution_pdf = function(x, r, x0 = 0) {
+function tdistribution_pdf(x, r, x0 = 0) {
    return (Math.exp (lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt (M_PI * r))
           * Math.pow ((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
 }
 
 /** @summary exponential_cdf_c function
   * @private */
-mth.exponential_cdf_c = function(x, lambda, x0 = 0) {
+function exponential_cdf_c(x, lambda, x0 = 0) {
    return ((x-x0) < 0) ? 1.0 : Math.exp(-lambda * (x-x0));
 }
 
 /** @summary exponential_cdf function
   * @private */
-mth.exponential_cdf = function(x, lambda, x0 = 0) {
+function exponential_cdf(x, lambda, x0 = 0) {
    return ((x-x0) < 0) ? 0.0 : -Math.expm1(-lambda * (x-x0));
 }
 
 /** @summary chisquared_pdf
   * @private */
-mth.chisquared_pdf = function(x,r,x0) {
+function chisquared_pdf(x,r,x0) {
    if (x0===undefined) x0 = 0;
    if ((x-x0) < 0) return 0.0;
    const a = r/2 -1.;
@@ -2008,8 +2008,8 @@ export {
    normal_cdf, normal_cdf as gaussian_cdf,
    lognormal_pdf, normal_pdf, crystalball_function, crystalball_pdf,  crystalball_cdf, crystalball_cdf_c,
 
-   Beta,
-   GammaDist, LaplaceDist, LaplaceDistI, LogNormal, Student, StudentI,
+   tdistribution_cdf_c, tdistribution_cdf, tdistribution_pdf, exponential_cdf_c, exponential_cdf, chisquared_pdf,
+   Beta, GammaDist, LaplaceDist, LaplaceDistI, LogNormal, Student, StudentI,
    gaus, gausn, gausxy, expo,
    Prob, Gaus, BreitWigner, BetaDist, BetaDistI, landau, landaun,
 
