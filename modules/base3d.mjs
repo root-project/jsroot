@@ -1,13 +1,18 @@
 import * as d3 from './d3.mjs';
 
-import * as THREE from './three.mjs';
+import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
+         CanvasTexture, TextureLoader,
+         BufferGeometry, BufferAttribute, Float32BufferAttribute,
+         Vector2, Vector3, Color, Points, PointsMaterial,
+         LineSegments, LineDashedMaterial, LineBasicMaterial,
+         OrbitControls, Raycaster, CreateSVGRenderer } from './three.mjs';
 
 import * as JSROOT from './core.mjs';
 
 import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
 
 
-const HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
+const HelveticerRegularFont = new Font(HelveticerRegularJson);
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
  * @param {value} [render3d] - preconfigured value, will be used if applicable
@@ -295,11 +300,11 @@ async function createRender3D(width, height, render3d, args) {
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
-      renderer = new THREE.WebGLRenderer(args);
+      renderer = new WebGLRenderer(args);
 
    } else if (render3d == rc.SVG) {
       // SVG rendering
-      renderer = THREE.CreateSVGRenderer(false, 0, doc);
+      renderer = CreateSVGRenderer(false, 0, doc);
 
       if (JSROOT.batch_mode) {
          need_workaround = true;
@@ -323,9 +328,9 @@ async function createRender3D(width, height, render3d, args) {
       args.context = gl;
       gl.canvas = args.canvas;
 
-      renderer = new THREE.WebGLRenderer(args);
+      renderer = new WebGLRenderer(args);
 
-      renderer.jsroot_output = new THREE.WebGLRenderTarget(width, height);
+      renderer.jsroot_output = new WebGLRenderTarget(width, height);
 
       renderer.setRenderTarget(renderer.jsroot_output);
 
@@ -333,7 +338,7 @@ async function createRender3D(width, height, render3d, args) {
 
    } else {
       // rendering with WebGL directly into svg image
-      renderer = new THREE.WebGLRenderer(args);
+      renderer = new WebGLRenderer(args);
       renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
       d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
    }
@@ -585,7 +590,7 @@ class TooltipFor3D {
 
 } // class TooltipFor3D
 
-/** @summary Create THREE.OrbitControl for painter
+/** @summary Create OrbitControls for painter
   * @private */
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
@@ -716,7 +721,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       renderer.domElement.addEventListener('pointerup', control_mouseup);
    }
 
-   control = new THREE.OrbitControls(camera, renderer.domElement);
+   control = new OrbitControls(camera, renderer.domElement);
 
    control.enableDamping = false;
    control.dampingFactor = 1.0;
@@ -735,7 +740,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.camera = camera;
    control.scene = scene;
    control.renderer = renderer;
-   control.raycaster = new THREE.Raycaster();
+   control.raycaster = new Raycaster();
    control.raycaster.params.Line.threshold = 10;
    control.raycaster.params.Points.threshold = 5;
    control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
@@ -799,8 +804,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      let sz = (this.renderer instanceof THREE.WebGLRenderer) ?
-                  this.renderer.getSize(new THREE.Vector2()) :
+      let sz = (this.renderer instanceof WebGLRenderer) ?
+                  this.renderer.getSize(new Vector2()) :
                   this.renderer.domElement;
 
       let pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
@@ -1136,20 +1141,20 @@ function disposeThreejsObject(obj, only_childs) {
 }
 
 
-/** @summary Create THREE.LineSegments mesh (or only geometry)
+/** @summary Create LineSegments mesh (or only geometry)
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
 function createLineSegments(arr, material, index, only_geometry) {
 
-   let geom = new THREE.BufferGeometry();
+   let geom = new BufferGeometry();
 
-   geom.setAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
-   if (index) geom.setIndex(  new THREE.BufferAttribute(index, 1) );
+   geom.setAttribute('position', arr instanceof Float32Array ? new BufferAttribute(arr, 3) : new Float32BufferAttribute(arr, 3));
+   if (index) geom.setIndex(new BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
 
-      let v1 = new THREE.Vector3(),
-          v2 = new THREE.Vector3(),
+      let v1 = new Vector3(),
+          v2 = new Vector3(),
           d = 0, distances = null;
 
       if (index) {
@@ -1172,19 +1177,19 @@ function createLineSegments(arr, material, index, only_geometry) {
             distances[n/3+1] = d;
          }
       }
-      geom.setAttribute( 'lineDistance', new THREE.BufferAttribute(distances, 1) );
+      geom.setAttribute( 'lineDistance', new BufferAttribute(distances, 1) );
    }
 
-   return only_geometry ? geom : new THREE.LineSegments(geom, material);
+   return only_geometry ? geom : new LineSegments(geom, material);
 }
 
 /** @summary Help structures for calculating Box mesh
   * @private */
 const Box3D = {
-    Vertices: [ new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
-                new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
-                new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
-                new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1) ],
+    Vertices: [ new Vector3(1, 1, 1), new Vector3(1, 1, 0),
+                new Vector3(1, 0, 1), new Vector3(1, 0, 0),
+                new Vector3(0, 1, 0), new Vector3(0, 1, 1),
+                new Vector3(0, 0, 0), new Vector3(0, 0, 1) ],
     Indexes: [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ],
     Normals: [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ],
     Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5]  // segments addresses Vertices
@@ -1287,17 +1292,17 @@ class PointsControl extends InteractiveControl {
       }
 
       if (!m.js_special) {
-         let geom = new THREE.BufferGeometry();
+         let geom = new BufferGeometry();
          geom.setAttribute( 'position', m.geometry.getAttribute("position"));
-         let material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
+         let material = new PointsMaterial({ size: m.material.size*2, color: color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
-         m.js_special = new THREE.Points(geom, material);
+         m.js_special = new Points(geom, material);
          m.js_special.jsroot_special = true; // special object, exclude from intersections
          m.add(m.js_special);
       }
 
-      m.js_special.material.color = new THREE.Color(color);
+      m.js_special.material.color = new Color(color);
       if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
    }
 
@@ -1322,8 +1327,8 @@ class PointsCreator {
       this.scale = scale || 1.;
 
       this.pos = new Float32Array(size*3);
-      this.geom = new THREE.BufferGeometry();
-      this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+      this.geom = new BufferGeometry();
+      this.geom.setAttribute('position', new BufferAttribute(this.pos, 3));
       this.indx = 0;
    }
 
@@ -1352,14 +1357,14 @@ class PointsCreator {
       if (args.style === 7) k = 0.7;
 
       const makePoints = (material) => {
-         let pnts = new THREE.Points(this.geom, material);
+         let pnts = new Points(this.geom, material);
          pnts.nvertex = 1;
          return pnts;
       };
 
       // this is plain creation of points, no need for texture loading
       if (k !== 1)
-         return makePoints(new THREE.PointsMaterial({ size: 3*this.scale * k, color: args.color }));
+         return makePoints(new PointsMaterial({ size: 3*this.scale * k, color: args.color }));
 
       let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
           w = handler.fill ? 1 : 7,
@@ -1378,15 +1383,15 @@ class PointsCreator {
          const ctx = canvas.getContext('2d');
 
          ctx.drawImage(img, 0, 0, 64, 64);
-         texture = new THREE.CanvasTexture(canvas);
+         texture = new CanvasTexture(canvas);
       } else {
          texture = await new Promise((resolveFunc, rejectFunc) => {
-            let loader = new THREE.TextureLoader();
+            let loader = new TextureLoader();
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }
 
-      return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }));
+      return makePoints(new PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }));
    }
 
 } // class PointsCreator
@@ -1413,9 +1418,9 @@ function create3DLineMaterial(painter, arg) {
        dash = style ? style.split(",") : [], material;
 
    if (dash && dash.length >= 2)
-      material = new THREE.LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
+      material = new LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
    else
-      material = new THREE.LineBasicMaterial({ color: lcolor });
+      material = new LineBasicMaterial({ color: lcolor });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
@@ -1498,7 +1503,7 @@ async function drawPolyMarker3D() {
 
    mesh.tooltip = function(intersect) {
       if (!Number.isInteger(intersect.index)) {
-         console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+         console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
          return null;
       }
       let indx = Math.floor(intersect.index / this.nvertex);
