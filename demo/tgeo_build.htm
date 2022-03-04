@@ -20,7 +20,7 @@
 
       <script type='module'>
 
-         import { decodeUrl } from '../modules/core.mjs';
+         import { decodeUrl, openFile, httpRequest } from '../modules/core.mjs';
 
          import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                   MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from '../modules/three.mjs';
@@ -142,12 +142,13 @@
           if (filename.indexOf(".root")>0) {
              // load geometry from ROOT file
              let itemname = d.get("item") || "geom";
-             JSROOT.openFile(filename)
-                   .then(file => file.readObject(itemname))
-                   .then(add_geometry);
+             let file = await openFile(filename);
+             let obj = await file.readObject(itemname);
+             add_geometry(obj);
           } else {
              // load geometry from JSON as object
-              JSROOT.httpRequest(filename, 'object').then(add_geometry);
+             let obj = await httpRequest(filename, 'object');
+             add_geometry(obj);
           }
 
           // ------------------- end of reading geometry object --------------------------
