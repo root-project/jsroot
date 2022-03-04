@@ -6,7 +6,7 @@ import * as JSROOT from './core.mjs';
 import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
          floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
 
-import { mth } from './math.mjs';
+import * as jsroot_math from './math.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -839,7 +839,7 @@ class TF1Painter extends ObjectPainter {
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
 
-      proivdeEvalPar(tf1, mth);
+      proivdeEvalPar(tf1, jsroot_math);
 
       if (!has_main || painter.second_x || painter.second_y)
          await JSROOT.draw(dom, painter.createDummyHisto(), aopt);
@@ -942,7 +942,7 @@ function createTF2Histogram(func, hist) {
   * @private */
 async function drawTF2(dom, func, opt) {
 
-   proivdeEvalPar(func, mth);
+   proivdeEvalPar(func, jsroot_math);
 
    let hist = createTF2Histogram(func);
    if (!hist) return;
@@ -969,7 +969,7 @@ async function drawTF2(dom, func, opt) {
 
    hpainter.updateObject = function(obj /*, opt*/) {
       if (!obj || (this.tf2_typename != obj._typename)) return false;
-      proivdeEvalPar(obj, mth);
+      proivdeEvalPar(obj, jsroot_math);
       createTF2Histogram(obj, this.getHisto());
       return true;
    }
@@ -3704,7 +3704,7 @@ class TEfficiencyPainter extends ObjectPainter {
       let painter = new TEfficiencyPainter(dom, eff);
       painter.ndim = ndim;
 
-      painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
+      painter.fBoundary = jsroot_math.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
       if (ndim == 1) {
          if (!opt) opt = "ap";

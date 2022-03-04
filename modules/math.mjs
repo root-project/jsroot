@@ -1420,6 +1420,8 @@ function inc_beta(x,a,b) {
    return incbet(a,b,x);
 }
 
+const BetaIncomplete = inc_beta;
+
 /** @summary ROOT::Math::beta_quantile
   * @private */
 function beta_quantile(z,a,b) {
@@ -1587,7 +1589,7 @@ function fdistribution_cdf(x, n, m, x0 = 0) {
 }
 
 /** @summary Prob function */
-mth.Prob = function(chi2, ndf) {
+function Prob(chi2, ndf) {
    if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
 
    if (chi2 <= 0) {
@@ -1600,44 +1602,44 @@ mth.Prob = function(chi2, ndf) {
 
 /** @summary Gaus function
   * @private */
-mth.Gaus = function(x, mean, sigma) {
+function Gaus(x, mean, sigma) {
    return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
 }
 
 /** @summary BreitWigner function
   * @private */
-mth.BreitWigner = function(x, mean, gamma) {
+function BreitWigner(x, mean, gamma) {
    return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
 }
 
 /** @summary Calculates Beta-function Gamma(p)*Gamma(q)/Gamma(p+q).
   * @private */
-mth.Beta = function(x,y) {
+function Beta(x,y) {
    return Math.exp(lgamma(x) + lgamma(y) - lgamma(x+y));
 }
 
 /** @summary GammaDist function
   * @private */
-mth.GammaDist = function(x, gamma, mu = 0, beta = 1) {
+function GammaDist(x, gamma, mu = 0, beta = 1) {
    if ((x < mu) || (gamma <= 0) || (beta <= 0)) return 0;
    return gamma_pdf(x, gamma, beta, mu);
 }
 
 /** @summary probability density function of Laplace distribution
   * @private */
-mth.LaplaceDist = function(x, alpha = 0, beta = 1) {
+function LaplaceDist(x, alpha = 0, beta = 1) {
    return Math.exp(-Math.abs((x-alpha)/beta)) / (2.*beta);
 }
 
 /** @summary distribution function of Laplace distribution
   * @private */
-mth.LaplaceDistI = function(x, alpha = 0, beta = 1) {
+function LaplaceDistI(x, alpha = 0, beta = 1) {
    return (x <= alpha) ? 0.5*Math.exp(-Math.abs((x-alpha)/beta)) : 1 - 0.5*Math.exp(-Math.abs((x-alpha)/beta));
 }
 
 /** @summary density function for Student's t- distribution
   * @private */
-mth.Student = function(T, ndf) {
+function Student(T, ndf) {
    if (ndf < 1) return 0;
 
    let r   = ndf,
@@ -1649,64 +1651,64 @@ mth.Student = function(T, ndf) {
 
 /** @summary cumulative distribution function of Student's
   * @private */
-mth.StudentI = function(T, ndf) {
+function StudentI(T, ndf) {
    let r = ndf;
 
-   return (T > 0) ? (1 - 0.5*mth.BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
-                  :  0.5*mth.BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
+   return (T > 0) ? (1 - 0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
+                  :  0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
 }
 
 /** @summary LogNormal function
   * @private */
-mth.LogNormal = function(x, sigma, theta = 0, m = 1) {
+function LogNormal(x, sigma, theta = 0, m = 1) {
    if ((x < theta) || (sigma <= 0) || (m <= 0)) return 0;
    return lognormal_pdf(x, Math.log(m), sigma, theta);
 }
 
 /** @summary Computes the probability density function of the Beta distribution
   * @private */
-mth.BetaDist = function(x, p, q) {
+function BetaDist(x, p, q) {
    if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
      return 0;
-   let beta = mth.Beta(p, q);
+   let beta = Beta(p, q);
    return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
 }
 
 /** @summary Computes the distribution function of the Beta distribution.
   * @private */
-mth.BetaDistI = function(x, p, q) {
+function BetaDistI(x, p, q) {
    if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
-   return mth.BetaIncomplete(x, p, q);
+   return BetaIncomplete(x, p, q);
 }
 
 /** @summary gaus function for TFormula */
-mth.gaus = function(f, x, i) {
+function gaus(f, x, i) {
    return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2));
 }
 
 /** @summary gausn function for TFormula */
-mth.gausn = function(f, x, i) {
+function gausn(f, x, i) {
    return mth.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
 }
 
 /** @summary gausxy function for TFormula */
-mth.gausxy = function(f, x, y, i) {
+function gausxy(f, x, y, i) {
    return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2))
                              * Math.exp(-0.5 * Math.pow((y-f.GetParValue(i+3)) / f.GetParValue(i+4), 2));
 }
 
 /** @summary expo function for TFormula */
-mth.expo = function(f, x, i) {
+function expo(f, x, i) {
    return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
 }
 
 /** @summary landau function for TFormula */
-mth.landau = function(f, x, i) {
+function landau(f, x, i) {
    return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
 }
 
 /** @summary landaun function for TFormula */
-mth.landaun = function(f, x, i) {
+function landaun(f, x, i) {
    return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
 }
 
@@ -1812,43 +1814,43 @@ function ChebyshevN(n, x, c) {
    return x * d1 - d2 + c[0];
 }
 
-mth.Chebyshev1 = function(x, c0, c1) {
+function Chebyshev1(x, c0, c1) {
    return c0 + c1*x;
 }
 
-mth.Chebyshev2 = function(x, c0, c1, c2) {
+function Chebyshev2(x, c0, c1, c2) {
    return c0 + c1*x + c2*(2.0*x*x - 1.0);
 }
 
-mth.Chebyshev3 = function(x, ...args) {
+function Chebyshev3(x, ...args) {
    return ChebyshevN(3, x, args);
 }
 
-mth.Chebyshev4 = function(x, ...args) {
+function Chebyshev4(x, ...args) {
    return ChebyshevN(4, x, args);
 }
 
-mth.Chebyshev5 = function(x, ...args) {
+function Chebyshev5(x, ...args) {
    return ChebyshevN(5, x, args);
 }
 
-mth.Chebyshev6 = function(x, ...args) {
+function Chebyshev6(x, ...args) {
    return ChebyshevN(6, x, args);
 }
 
-mth.Chebyshev7 = function(x, ...args) {
+function Chebyshev7(x, ...args) {
    return ChebyshevN(7, x, args);
 }
 
-mth.Chebyshev8 = function(x, ...args) {
+function Chebyshev8(x, ...args) {
    return ChebyshevN(8, x, args);
 }
 
-mth.Chebyshev9 = function(x, ...args) {
+function Chebyshev9(x, ...args) {
    return ChebyshevN(9, x, args);
 }
 
-mth.Chebyshev10 = function(x, ...args) {
+function Chebyshev10(x, ...args) {
    return ChebyshevN(10, x, args);
 }
 
@@ -1962,7 +1964,7 @@ function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
 
 /** @summary Return function to calculate boundary of TEfficiency
   * @private */
-mth.getTEfficiencyBoundaryFunc = function(option, isbayessian) {
+function getTEfficiencyBoundaryFunc(option, isbayessian) {
    const  kFCP = 0,       ///< Clopper-Pearson interval (recommended by PDG)
           kFNormal = 1,   ///< Normal approximation
           kFWilson = 2,   ///< Wilson interval
@@ -1991,63 +1993,29 @@ mth.getTEfficiencyBoundaryFunc = function(option, isbayessian) {
    return eff_ClopperPearson;
 }
 
+export {
+   gamma, gamma as tgamma, gamma as Gamma,
+   Polynomialeval, Polynomial1eval, stirf,
+   gamma_pdf, ndtri, normal_quantile, normal_quantile_c, lognormal_cdf_c, lognormal_cdf,
+   igami, igamc, igam, lgam, lgamma, erfc, erf,
+   beta_pdf, inc_beta, BetaIncomplete,
+   pseries, incbet, incbi, beta_quantile,  chisquared_cdf_c,
+   beta, inc_gamma, inc_gamma_c, landau_pdf, beta_cdf_c, Landau,
+   fdistribution_pdf, fdistribution_pdf as FDist,
+   fdistribution_cdf, fdistribution_cdf as FDistI,
+   fdistribution_cdf_c,
+   normal_cdf_c, normal_cdf_c as gaussian_cdf_c,
+   normal_cdf, normal_cdf as gaussian_cdf,
+   lognormal_pdf, normal_pdf, crystalball_function, crystalball_pdf,  crystalball_cdf, crystalball_cdf_c,
 
-mth.Polynomialeval = Polynomialeval;
-mth.Polynomial1eval = Polynomial1eval;
-mth.stirf = stirf;
-mth.gamma = mth.tgamma = mth.Gamma = gamma;
-mth.gamma_pdf = gamma_pdf;
-mth.ndtri = ndtri;
-mth.normal_quantile = normal_quantile;
-mth.normal_quantile_c = normal_quantile_c;
-mth.lognormal_cdf_c = lognormal_cdf_c;
-mth.lognormal_cdf = lognormal_cdf;
-mth.igami = igami;
-mth.igamc = igamc;
-mth.igam = igam;
-mth.erfc = erfc;
-mth.erf = erf;
-mth.beta_pdf = beta_pdf;
-mth.BetaIncomplete = mth.inc_beta = inc_beta;
-mth.pseries = pseries;
-mth.incbet = incbet;
-mth.incbi = incbi;
-mth.beta_quantile = beta_quantile;
-mth.lgam = lgam;
-mth.chisquared_cdf_c = chisquared_cdf_c;
-mth.lgamma = lgamma;
-mth.beta = beta;
-mth.inc_gamma = inc_gamma;
-mth.inc_gamma_c = inc_gamma_c;
-mth.landau_pdf = landau_pdf;
-mth.beta_cdf_c = beta_cdf_c;
-mth.Landau = Landau;
-mth.FDist = mth.fdistribution_pdf = fdistribution_pdf;
-mth.FDistI = mth.fdistribution_cdf = fdistribution_cdf;
-mth.fdistribution_cdf_c = fdistribution_cdf_c;
-mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
-mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
-mth.lognormal_pdf = lognormal_pdf;
-mth.normal_pdf = normal_pdf;
-mth.crystalball_function = crystalball_function;
-mth.crystalball_pdf = crystalball_pdf;
-mth.crystalball_cdf = crystalball_cdf;
-mth.crystalball_cdf_c = crystalball_cdf_c;
-mth.ChebyshevN = ChebyshevN;
+   Beta,
+   GammaDist, LaplaceDist, LaplaceDistI, LogNormal, Student, StudentI,
+   gaus, gausn, gausxy, expo,
+   Prob, Gaus, BreitWigner, BetaDist, BetaDistI, landau, landaun,
 
-export { mth,
+   ChebyshevN, Chebyshev1, Chebyshev2, Chebyshev3, Chebyshev4, Chebyshev5,
+   Chebyshev6, Chebyshev7, Chebyshev8, Chebyshev9, Chebyshev10,
 
-gamma, gamma as tgamma, gamma as Gamma,
-Polynomialeval, Polynomial1eval, stirf,
-gamma_pdf, ndtri, normal_quantile, normal_quantile_c, lognormal_cdf_c, lognormal_cdf,
-igami, igamc, igam, lgam, lgamma, erfc, erf,
-beta_pdf, inc_beta, inc_beta as BetaIncomplete,
-pseries, incbet, incbi, beta_quantile,  chisquared_cdf_c,
-beta, inc_gamma, inc_gamma_c, landau_pdf, beta_cdf_c, Landau,
-fdistribution_pdf, fdistribution_pdf as FDist,
-fdistribution_cdf, fdistribution_cdf as FDistI,
-fdistribution_cdf_c,
-normal_cdf_c, normal_cdf_c as gaussian_cdf_c,
-normal_cdf, normal_cdf as gaussian_cdf,
-lognormal_pdf, normal_pdf, crystalball_function, crystalball_pdf,  crystalball_cdf, crystalball_cdf_c, ChebyshevN
+
+   getTEfficiencyBoundaryFunc
 };
