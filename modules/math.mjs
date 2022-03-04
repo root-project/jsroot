@@ -1,7 +1,5 @@
 // Special mathematical functions
 
-let mth = {};
-
 const kMACHEP  = 1.11022302462515654042363166809e-16,
       kMINLOG  = -708.396418532264078748994506896,
       kMAXLOG  = 709.782712893383973096206318587,
@@ -161,6 +159,8 @@ function stirf(x) {
    return y;
 }
 
+let erf;
+
 /** @summary complementary error function
   * @private */
 function erfc(a) {
@@ -207,7 +207,7 @@ function erfc(a) {
       x = a;
 
    if( x < 1.0 )
-      return 1.0 - mth.erf(a);
+      return 1.0 - erf(a);
 
    z = -a * a;
 
@@ -236,7 +236,7 @@ function erfc(a) {
 
 /** @summary error function
   * @private */
-function erf(x) {
+erf = function(x) {
    if(Math.abs(x) > 1.0)
       return 1.0 - erfc(x);
 
@@ -255,8 +255,8 @@ function erf(x) {
    ];
 
    let z = x * x;
-   let y = x * Polynomialeval( z, erfT, 4 ) / Polynomial1eval( z, erfU, 5 );
-   return y;
+
+   return x * Polynomialeval(z, erfT, 4) / Polynomial1eval(z, erfU, 5);
 }
 
 /** @summary lognormal_cdf_c function */
@@ -510,6 +510,8 @@ function normal_quantile_c(z, sigma) {
    return - sigma * ndtri(z);
 }
 
+let igam;
+
 /** @summary igamc function
   * @private */
 function igamc(a,x) {
@@ -519,8 +521,8 @@ function igamc(a,x) {
 
    if (x <= 0) return 1.0;
 
-   if( (x < 1.0) || (x < a) )
-      return ( 1.0 - mth.igam(a,x) ); // have to use mth.igam while defined later
+   if((x < 1.0) || (x < a))
+      return (1.0 - igam(a,x));
 
    let ax = a * Math.log(x) - x - lgam(a);
    if( ax < -kMAXLOG )
@@ -572,7 +574,7 @@ function igamc(a,x) {
 
 /** @summary igam function
   * @private */
-function igam(a,x) {
+igam = function(a, x) {
 
    // LM: for negative values returns 1.0 instead of zero
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -712,24 +714,6 @@ function igami(a, y0) {
    return x;
 }
 
-/** @summary Probability density function of the beta distribution.
-  * @private */
-function beta_pdf(x,a,b) {
-  if (x < 0 || x > 1.0) return 0;
-  if (x == 0 ) {
-     if (a < 1) return Number.POSITIVE_INFINITY;
-     else if (a > 1) return  0;
-     else if ( a == 1) return b; // to avoid a nan from log(0)*0
-   }
-   if (x == 1 ) {
-      if (b < 1) return Number.POSITIVE_INFINITY;
-      else if (b > 1) return  0;
-      else if ( b == 1) return a; // to avoid a nan from log(0)*0
-   }
-   return Math.exp(mth.lgamma(a + b) - mth.lgamma(a) - mth.lgamma(b) +
-                    Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.) );
-}
-
 /** @summary landau_pdf function
   * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
   *  same algorithm is used in GSL
@@ -816,6 +800,25 @@ function inc_gamma(a,x) {
 function lgamma(z) {
    return lgam(z);
 }
+
+/** @summary Probability density function of the beta distribution.
+  * @private */
+function beta_pdf(x, a, b) {
+  if (x < 0 || x > 1.0) return 0;
+  if (x == 0 ) {
+     if (a < 1) return Number.POSITIVE_INFINITY;
+     else if (a > 1) return  0;
+     else if ( a == 1) return b; // to avoid a nan from log(0)*0
+   }
+   if (x == 1 ) {
+      if (b < 1) return Number.POSITIVE_INFINITY;
+      else if (b > 1) return  0;
+      else if ( b == 1) return a; // to avoid a nan from log(0)*0
+   }
+   return Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) +
+                    Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.));
+}
+
 
 /** @summary beta
   * @private */
@@ -1323,16 +1326,13 @@ function incbi(aa,bb,yy0) {
                dir -= 1;
             }
          }
-         //mtherr( "incbi", PLOSS );
-         if( x0 >= 1.0 )
-         {
+         //math_error( "incbi", PLOSS );
+         if( x0 >= 1.0 ) {
             x = 1.0 - kMACHEP;
             return process_done(); //goto done;
          }
-         if( x <= 0.0 )
-         {
-         // under:
-            //mtherr( "incbi", UNDERFLOW );
+         if( x <= 0.0 ) {
+            //math_error( "incbi", UNDERFLOW );
             x = 0.0;
             return process_done(); //goto done;
          }
@@ -1436,56 +1436,55 @@ function beta_cdf_c(x,a,b) {
 
 /** @summary chisquared_cdf
   * @private */
-mth.chisquared_cdf = function(x,r,x0) {
-   if (x0===undefined) x0 = 0;
+function chisquared_cdf(x,r,x0=0) {
    return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
 }
 
 /** @summary gamma_quantile_c function
   * @private */
-mth.gamma_quantile_c = function(z, alpha, theta) {
+function gamma_quantile_c(z, alpha, theta) {
    return theta * igami( alpha, z);
 }
 
 /** @summary gamma_quantile function
   * @private */
-mth.gamma_quantile = function(z, alpha, theta) {
+function gamma_quantile(z, alpha, theta) {
    return theta * igami( alpha, 1.- z);
 }
 
 /** @summary breitwigner_cdf_c function
   * @private */
-mth.breitwigner_cdf_c = function(x,gamma, x0 = 0) {
+function breitwigner_cdf_c(x,gamma, x0 = 0) {
    return 0.5 - Math.atan(2.0 * (x-x0) / gamma) / M_PI;
 }
 
 /** @summary breitwigner_cdf function
   * @private */
-mth.breitwigner_cdf = function(x, gamma, x0 = 0) {
+function breitwigner_cdf(x, gamma, x0 = 0) {
    return 0.5 + Math.atan(2.0 * (x-x0) / gamma) / M_PI;
 }
 
 /** @summary cauchy_cdf_c function
   * @private */
-mth.cauchy_cdf_c = function(x, b, x0 = 0) {
+function cauchy_cdf_c(x, b, x0 = 0) {
    return 0.5 - Math.atan( (x-x0) / b) / M_PI;
-}
-
-/** @summary cauchy_pdf function
-  * @private */
-mth.cauchy_pdf = function(x, b = 1, x0 = 0) {
-   return b/(M_PI * ((x-x0)*(x-x0) + b*b));
 }
 
 /** @summary cauchy_cdf function
   * @private */
-mth.cauchy_cdf = function(x, b, x0 = 0) {
+function cauchy_cdf(x, b, x0 = 0) {
    return 0.5 + Math.atan( (x-x0) / b) / M_PI;
+}
+
+/** @summary cauchy_pdf function
+  * @private */
+function cauchy_pdf(x, b = 1, x0 = 0) {
+   return b/(M_PI * ((x-x0)*(x-x0) + b*b));
 }
 
 /** @summary gaussian_pdf function
   * @private */
-mth.gaussian_pdf = function(x, sigma = 1, x0 = 0) {
+function gaussian_pdf(x, sigma = 1, x0 = 0) {
    let tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
@@ -1562,6 +1561,8 @@ function fdistribution_pdf(x, n, m, x0 = 0) {
                  + (n/2 -1) * Math.log(x-x0) - ((n+m)/2) * Math.log(m +  n*(x-x0)) );
 }
 
+let fdistribution_cdf;
+
 /** @summary fdistribution_cdf_c function
   * @private */
 function fdistribution_cdf_c(x, n, m, x0 = 0) {
@@ -1569,7 +1570,7 @@ function fdistribution_cdf_c(x, n, m, x0 = 0) {
 
    let z = m / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
-   if (z > 0.9 && n > 1 && m > 1) return 1. - mth.fdistribution_cdf(x, n, m, x0);
+   if (z > 0.9 && n > 1 && m > 1) return 1. - fdistribution_cdf(x, n, m, x0);
 
    // for the complement use the fact that IB(x,a,b) = 1. - IB(1-x,b,a)
    return inc_beta(m / (m + n * (x - x0)), .5 * m, .5 * n);
@@ -1577,7 +1578,7 @@ function fdistribution_cdf_c(x, n, m, x0 = 0) {
 
 /** @summary fdistribution_cdf function
   * @private */
-function fdistribution_cdf(x, n, m, x0 = 0) {
+fdistribution_cdf = function(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
    let z = n * (x - x0) / (m + n * (x - x0));
@@ -1688,7 +1689,7 @@ function gaus(f, x, i) {
 
 /** @summary gausn function for TFormula */
 function gausn(f, x, i) {
-   return mth.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
+   return gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
 }
 
 /** @summary gausxy function for TFormula */
@@ -2008,6 +2009,8 @@ export {
    normal_cdf, normal_cdf as gaussian_cdf,
    lognormal_pdf, normal_pdf, crystalball_function, crystalball_pdf,  crystalball_cdf, crystalball_cdf_c,
 
+   chisquared_cdf, gamma_quantile_c, gamma_quantile, breitwigner_cdf_c, breitwigner_cdf,
+   cauchy_cdf_c, cauchy_cdf, cauchy_pdf, gaussian_pdf,
    tdistribution_cdf_c, tdistribution_cdf, tdistribution_pdf, exponential_cdf_c, exponential_cdf, chisquared_pdf,
    Beta, GammaDist, LaplaceDist, LaplaceDistI, LogNormal, Student, StudentI,
    gaus, gausn, gausxy, expo,
