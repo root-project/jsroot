@@ -4229,10 +4229,10 @@ function loadJSDOM() {
       if (!JSROOT._.nodejs_window) {
          JSROOT._.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
          JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-         JSROOT._.nodejs_window.d3 = d3_select(JSROOT._.nodejs_document); //get d3 into the dom
+         JSROOT._.nodejs_body = d3_select(JSROOT._.nodejs_document).select('body'); //get d3 handle for body
       }
 
-      return { JSDOM: handle.JSDOM, doc: JSROOT._.nodejs_document, d3: JSROOT._.nodejs_window.d3 };
+      return { JSDOM: handle.JSDOM, doc: JSROOT._.nodejs_document, body: JSROOT._.nodejs_body };
    });
 }
 
@@ -4299,10 +4299,7 @@ function makeSVG(args) {
    if (!JSROOT.nodejs)
       return build(d3_select('body').append("div").style("visible", "hidden"));
 
-   if (JSROOT._.nodejs_document)
-      return build(JSROOT._.nodejs_window.d3_select('body').append('div'));
-
-   return loadJSDOM().then(handle => build(handle.d3_select('body').append('div')));
+   return loadJSDOM().then(handle => build(handle.body.append('div')));
 }
 
 createRootColors();

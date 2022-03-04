@@ -1503,12 +1503,12 @@ class FlexibleDisplay extends MDIDisplay {
 
 class BatchDisplay extends MDIDisplay {
 
-   constructor(width, height, jsdom_d3) {
+   constructor(width, height, jsdom_body) {
       super("$batch$");
       this.frames = []; // array of configured frames
       this.width = width || 1200;
       this.height = height || 800;
-      this.jsdom_d3 = jsdom_d3 || d3; // d3 handle associated with central JSDOM
+      this.jsdom_body = jsdom_body || d3_select('body'); // d3 body handle
    }
 
    forEachFrame(userfunc) {
@@ -1519,8 +1519,7 @@ class BatchDisplay extends MDIDisplay {
       this.beforeCreateFrame(title);
 
       let frame =
-         this.jsdom_d3_select('body')
-             .append('div')
+         this.jsdom_body.append('div')
              .style("visible", "hidden")
              .attr("width", this.width).attr("height", this.height)
              .style("width", this.width + "px").style("height", this.height + "px")
@@ -4366,7 +4365,7 @@ class HierarchyPainter extends BasePainter {
 
       if (this.disp_kind == 'batch') {
          let handle = JSROOT.nodejs ? await loadJSDOM() : null;
-         this.disp = new BatchDisplay(1200, 800, handle?.d3);
+         this.disp = new BatchDisplay(1200, 800, handle?.body);
          return this.disp;
       }
 
