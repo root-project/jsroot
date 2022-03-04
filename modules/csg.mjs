@@ -769,46 +769,36 @@ class Geometry {
 
 } // class Geometry
 
-
-let ThreeBSP = {
-
-   Vertex: Vertex,
-   Geometry: Geometry,
-   Polygon: Polygon,
-   createBufferGeometry: createBufferGeometry,
-
    /** @summary create geometry to make cut on specified axis */
-   createNormal(axis_name, pos, size) {
-      if (!size || (size < 10000)) size = 10000;
+function createNormal(axis_name, pos, size) {
+   if (!size || (size < 10000)) size = 10000;
 
-      let vert;
+   let vert;
 
-      switch(axis_name) {
-         case "x":
-            vert = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
-                     new Vertex(pos,    size, -3*size, 1, 0, 0),
-                     new Vertex(pos,    size,    size, 1, 0, 0) ];
-            break;
-         case "y":
-            vert = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
-                     new Vertex(   size,  pos,    size, 0, 1, 0),
-                     new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
-            break;
-         // case "z":
-         default:
-            vert = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
-                     new Vertex(   size, -3*size, pos, 0, 0, 1),
-                     new Vertex(   size,    size, pos, 0, 0, 1) ];
-      }
-
-      let polygon = new Polygon(vert);
-      polygon.calculateProperties();
-
-      let node = new Node([polygon]);
-
-      return new Geometry(node);
+   switch(axis_name) {
+      case "x":
+         vert = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
+                  new Vertex(pos,    size, -3*size, 1, 0, 0),
+                  new Vertex(pos,    size,    size, 1, 0, 0) ];
+         break;
+      case "y":
+         vert = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
+                  new Vertex(   size,  pos,    size, 0, 1, 0),
+                  new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
+         break;
+      // case "z":
+      default:
+         vert = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
+                  new Vertex(   size, -3*size, pos, 0, 0, 1),
+                  new Vertex(   size,    size, pos, 0, 0, 1) ];
    }
 
-};
+   let polygon = new Polygon(vert);
+   polygon.calculateProperties();
 
-export { ThreeBSP };
+   let node = new Node([polygon]);
+
+   return new Geometry(node);
+}
+
+export { createBufferGeometry, createNormal, Vertex, Geometry, Polygon };

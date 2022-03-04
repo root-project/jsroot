@@ -5,7 +5,8 @@ import { FrontSide, Object3D, Box3, Mesh, Vector2, Vector3, Matrix4,
          PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from './three.mjs';
 
-import { ThreeBSP } from './csg.mjs';
+import { createBufferGeometry, createNormal,
+         Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
 
 function JSROOT_BIT(n) { return 1 << n; }
 
@@ -13,8 +14,8 @@ function JSROOT_BIT(n) { return 1 << n; }
 /** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geobase').then(geo => ...)```
   * @namespace
   */
-let GradPerSegm = 6;       // grad per segment in cylinder/spherical symmetry shapes
-let CompressComp = true;   // use faces compression in composite shapes
+let GradPerSegm = 6,       // grad per segment in cylinder/spherical symmetry shapes
+    CompressComp = true;   // use faces compression in composite shapes
 
 function setGeoParams(segm, comp) {
    GradPerSegm = segm;
@@ -372,7 +373,7 @@ class GeometryCreator {
 
 // ================================================================================
 
-/** @summary Helper class for ThreeBSP geometry creation
+/** @summary Helper class for CsgGeometry creation
   *
   * @memberof JSROOT.GEO
   * @private
@@ -410,10 +411,10 @@ class PolygonsCreator{
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      this.v1 = new ThreeBSP.Vertex( x1, y1, z1, 0, 0, 0 );
-      this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2, 0, 0, 0 );
-      this.v3 = new ThreeBSP.Vertex( x3, y3, z3, 0, 0, 0 );
-      this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4, 0, 0, 0 );
+      this.v1 = new CsgVertex( x1, y1, z1, 0, 0, 0 );
+      this.v2 = (reduce===1) ? null : new CsgVertex( x2, y2, z2, 0, 0, 0 );
+      this.v3 = new CsgVertex( x3, y3, z3, 0, 0, 0 );
+      this.v4 = (reduce===2) ? null : new CsgVertex( x4, y4, z4, 0, 0, 0 );
 
       this.reduce = reduce;
 
@@ -424,7 +425,7 @@ class PolygonsCreator{
          let polygon;
 
          if (this.multi++ === 1) {
-            polygon = new ThreeBSP.Polygon;
+            polygon = new CsgPolygon;
 
             polygon.vertices.push(this.mnormal ? this.v2 : this.v3);
             this.polygons.push(polygon);
@@ -455,7 +456,7 @@ class PolygonsCreator{
 
       }
 
-      let polygon = new ThreeBSP.Polygon;
+      let polygon = new CsgPolygon;
 
       switch (reduce) {
          case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
@@ -1742,12 +1743,12 @@ function getNodeMatrix(kind, node) {
 let createGeometry; // will be function to create geometry
 
 /** @summary Returns number of faces for provided geometry
- * @param {Object} geom  - can be BufferGeometry, ThreeBSP_Geometry or interim array of polygons
+ * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
  * @private */
 function numGeometryFaces(geom) {
    if (!geom) return 0;
 
-   if (geom instanceof ThreeBSP.Geometry)
+   if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons();
 
    if (geom.type == 'BufferGeometry') {
@@ -1763,12 +1764,12 @@ function numGeometryFaces(geom) {
 }
 
 /** @summary Returns number of faces for provided geometry
- * @param {Object} geom  - can be BufferGeometry, ThreeBSP_Geometry or interim array of polygons
+ * @param {Object} geom  - can be Geometry, BufferGeometry, CsgGeometry or interim array of polygons
  * @private */
 function numGeometryVertices(geom) {
    if (!geom) return 0;
 
-   if (geom instanceof ThreeBSP.Geometry)
+   if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons() * 3;
 
    if (geom.type == 'BufferGeometry') {
@@ -1789,7 +1790,7 @@ function geomBoundingBox(geom) {
 
    let polygons = null;
 
-   if (geom instanceof ThreeBSP.Geometry)
+   if (geom instanceof CsgGeometry)
       polygons = geom.tree.collectPolygons([]);
    else if (geom.polygons)
       polygons = geom.polygons;
@@ -1855,13 +1856,13 @@ function createHalfSpace(shape, geom) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param geom  - can be BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+  * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @memberof JSROOT.GEO
   * @private */
 function countGeometryFaces(geom) {
    if (!geom) return 0;
 
-   if (geom instanceof ThreeBSP.Geometry)
+   if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons();
 
    if (geom.type == 'BufferGeometry') {
@@ -1922,15 +1923,15 @@ function createComposite( shape, faces_limit ) {
 
    if ((n1 + n2 >= faces_limit) || !geom2) {
       if (geom1.polygons)
-         geom1 = ThreeBSP.createBufferGeometry(geom1.polygons);
+         geom1 = createBufferGeometry(geom1.polygons);
       if (matrix1) geom1.applyMatrix4(matrix1);
       geom1._exceed_limit = true;
       return geom1;
    }
 
-   bsp1 = new ThreeBSP.Geometry(geom1, matrix1, CompressComp ? 0 : undefined);
+   bsp1 = new CsgGeometry(geom1, matrix1, CompressComp ? 0 : undefined);
 
-   bsp2 = new ThreeBSP.Geometry(geom2, matrix2, bsp1.maxid);
+   bsp2 = new CsgGeometry(geom2, matrix2, bsp1.maxid);
 
    // take over maxid from both geometries
    bsp1.maxid = bsp2.maxid;
@@ -1948,7 +1949,7 @@ function createComposite( shape, faces_limit ) {
             + ' left: ' + shape.fNode.fLeft._typename +  ' ' + countGeometryFaces(geom1) + ' faces'
             + ' right: ' + shape.fNode.fRight._typename + ' ' + countGeometryFaces(geom2) + ' faces'
             + '  use first');
-      bsp1 = new ThreeBSP.Geometry(geom1, matrix1);
+      bsp1 = new CsgGeometry(geom1, matrix1);
    }
 
    return return_bsp ? { polygons: bsp1.toPolygons() } : bsp1.toBufferGeometry();
@@ -1972,7 +1973,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
       return null; // not interesting
    }
 
-   let bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh),
+   let bsp1 = new CsgGeometry(geom, matrix, 0, flippedMesh),
        sizex = 2*Math.max(Math.abs(box.min.x), Math.abs(box.max.x)),
        sizey = 2*Math.max(Math.abs(box.min.y), Math.abs(box.max.y)),
        sizez = 2*Math.max(Math.abs(box.min.z), Math.abs(box.max.z)),
@@ -1984,7 +1985,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
       case "z": size = Math.max(sizex,sizey); break;
    }
 
-   let bsp2 = ThreeBSP.createNormal(projection, position, size);
+   let bsp2 = createNormal(projection, position, size);
 
    bsp1.cut_from_plane(bsp2);
 
@@ -1995,7 +1996,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
  * @desc
  *  - if limit === 0 (or undefined) returns BufferGeometry
  *  - if limit < 0 just returns estimated number of faces
- *  - if limit > 0 return list of ThreeBSP polygons (used only for composite shapes)
+ *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
  * @param {Object} shape - instance of TGeoShape object
  * @param {Number} limit - defines return value, see details
  * @memberof JSROOT.GEO
