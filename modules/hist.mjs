@@ -2,7 +2,7 @@
 import * as JSROOT from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
-         chord as d3_chord, descending as d3_descending, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
+         chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
 
 import { Prob } from './math.mjs';
 
@@ -6816,7 +6816,8 @@ class TH2Painter extends THistPainter {
           getColor = indx => palette.calcColor(indx, used.length),
           ndig = 0, tickStep = 1,
           formatValue = v => v.toString(),
-          formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig);
+          formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig),
+          d3_descending = (a,b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN; };
 
       if (!isint && fullsum < 10) {
          let lstep = Math.round(Math.log10(fullsum) - 2.3);
