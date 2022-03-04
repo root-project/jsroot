@@ -2,7 +2,7 @@
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
-import { httpRequest, createHttpRequest } from './core.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl } from './core.mjs';
 
 /**
  * @summary Class emulating web socket with long-poll http requests
@@ -666,11 +666,11 @@ function connectWebWindow(arg) {
       });
    }
 
-   let d = JSROOT.decodeUrl();
+   let d = decodeUrl();
 
    // special holder script, prevents headless chrome browser from too early exit
    if (d.has("headless") && d.get("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
-      JSROOT.loadScript("root_batch_holder.js?key=" + d.get("key"));
+      loadScript("root_batch_holder.js?key=" + d.get("key"));
 
    if (!arg.platform)
       arg.platform = d.get("platform");

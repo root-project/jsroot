@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, createHttpRequest, BIT } from './core.mjs';
+import { httpRequest, createHttpRequest, BIT, loadScript } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -45,12 +45,11 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
       // TObject bits
       kIsReferenced = BIT(4), kHasUUID = BIT(5);
 
-let jsrio;
 
-   /** @summary Custom streamers for root classes
-     * @desc map of user-streamer function like func(buf,obj)
-     * or alias (classname) which can be used to read that function
-     * or list of read functions */
+/** @summary Custom streamers for root classes
+  * @desc map of user-streamer function like func(buf,obj)
+  * or alias (classname) which can be used to read that function
+  * or list of read functions */
 const CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
@@ -2105,9 +2104,9 @@ function R__unzip(arr, tgtsize, noalert, src_shift) {
             };
 
             let promise = JSROOT.nodejs ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
-                                        : JSROOT.loadScript('../../zstd/zstd-codec.min.js')
-                                                .catch(() => JSROOT.loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                                                .then(() => handleZsdt(ZstdCodec));
+                                        : loadScript('../../zstd/zstd-codec.min.js')
+                                             .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
+                                             .then(() => handleZsdt(ZstdCodec));
             return promise.then(() => nextPortion());
          }
 

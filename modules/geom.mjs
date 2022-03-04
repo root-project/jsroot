@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -36,7 +36,7 @@ import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
 if (!JSROOT.batch_mode)
-   await JSROOT.loadScript('$$$style/JSRoot.geom');
+   await loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
@@ -759,7 +759,7 @@ class TGeoPainter extends ObjectPainter {
                    script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
-      let dd = JSROOT.decodeUrl();
+      let dd = decodeUrl();
       if (dd.get('_grid') == "true") res._grid = true;
       let _opt = dd.get('_debug');
       if (_opt == "true") { res._debug = true; res._grid = true; }
@@ -1156,7 +1156,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (on)
-         JSROOT.loadScript(JSROOT.source_dir + 'scripts/dat.gui.js')
+         loadScript(JSROOT.source_dir + 'scripts/dat.gui.js')
                .then(() => this.buildDatGui(globalThis.dat));
    }
 

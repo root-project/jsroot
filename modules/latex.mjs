@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { loadScript } from './core.mjs';
+
 import { select as d3_select } from './d3.mjs';
 
 import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
@@ -890,9 +892,9 @@ function loadMathjax() {
          }
       };
 
-      return JSROOT.loadScript('../../mathjax/3.2.0/es5/tex-svg.js')
-                   .catch(() => JSROOT.loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
-                   .then(() => promise);
+      return loadScript('../../mathjax/3.2.0/es5/tex-svg.js')
+               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
+               .then(() => promise);
    }
 
    let myJSDOM;

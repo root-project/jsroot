@@ -2,12 +2,12 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, loadScript, decodeUrl } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
 if (!JSROOT.batch_mode)
-   await JSROOT.loadScript('$$$style/JSRoot.painter');
+   await loadScript('$$$style/JSRoot.painter');
 
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert
@@ -235,7 +235,7 @@ function closeMenu(menuname) {
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-   let d = JSROOT.decodeUrl(url), g = gStyle, s = JSROOT.settings;
+   let d = decodeUrl(url), g = gStyle, s = JSROOT.settings;
 
    if (d.has("optimize")) {
       s.OptimizeDraw = 2;
@@ -4117,7 +4117,7 @@ async function draw(dom, obj, opt) {
    let hh = await JSROOT.require(handle.prereq);
 
    if (handle.script)
-      await JSROOT.loadScript(handle.script);
+      await loadScript(handle.script);
 
    if (funcname) {
       let func = hh?.[funcname] || JSROOT.findFunction(funcname);

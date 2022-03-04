@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { gStyle, httpRequest, createHttpRequest } from './core.mjs';
+import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -2802,7 +2802,7 @@ class HierarchyPainter extends BasePainter {
 
       this.setTopPainter(); //assign hpainter as top painter
 
-      if (status_item && !this.status_disabled && !JSROOT.decodeUrl().has('nostatus')) {
+      if (status_item && !this.status_disabled && !decodeUrl().has('nostatus')) {
          let func = JSROOT.findFunction(status_item._status);
          if (typeof func == 'function')
             return this.createStatusLine().then(sdiv => {
@@ -4108,7 +4108,7 @@ class HierarchyPainter extends BasePainter {
 
          return JSROOT.require(modules)
                .then(() => JSROOT.require(scripts))
-               .then(() => JSROOT.loadScript(styles))
+               .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
@@ -4448,7 +4448,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    startGUI(gui_div, url) {
 
-      let d = JSROOT.decodeUrl(url);
+      let d = decodeUrl(url);
 
       let GetOption = opt => {
          let res = d.get(opt, null);
@@ -4762,7 +4762,7 @@ class HierarchyPainter extends BasePainter {
       } else if (!this.no_select) {
          let myDiv = d3_select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
-             path = JSROOT.decodeUrl().get("path") || myDiv.attr("path") || "",
+             path = decodeUrl().get("path") || myDiv.attr("path") || "",
              arrFiles = files.split(';');
 
          guiCode += '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>' +
@@ -4943,7 +4943,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
 
    readStyleFromURL();
 
-   let d = JSROOT.decodeUrl(), guisize = d.get("divsize");
+   let d = decodeUrl(), guisize = d.get("divsize");
    if (guisize) {
       guisize = guisize.split("x");
       if (guisize.length != 2) guisize = null;
@@ -4990,7 +4990,7 @@ function buildGUI(gui_element, gui_kind) {
    if (myDiv.attr("ignoreurl") === "true")
       JSROOT.settings.IgnoreUrlOptions = true;
 
-   if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
+   if (decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
       return buildNobrowserGUI(gui_element, gui_kind);
 
    readStyleFromURL();
