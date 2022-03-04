@@ -2,6 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { httpRequest, createHttpRequest } from './core.mjs';
+
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
 
@@ -2755,7 +2757,7 @@ class TFile {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
          return this.readKeys();
 
-      return JSROOT.httpRequest(this.fURL, "head").then(res => {
+      return httpRequest(this.fURL, "head").then(res => {
          const accept_ranges = res.getResponseHeader("Accept-Ranges");
          if (!accept_ranges) this.fAcceptRanges = false;
          const len = res.getResponseHeader("Content-Length");
@@ -2800,7 +2802,7 @@ class TFile {
          }
          if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
-         let xhr = JSROOT.createHttpRequest(fullurl, "buf", read_callback);
+         let xhr = createHttpRequest(fullurl, "buf", read_callback);
 
          if (file.fAcceptRanges) {
             xhr.setRequestHeader("Range", ranges);

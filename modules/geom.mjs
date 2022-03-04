@@ -2,6 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { httpRequest } from './core.mjs';
+
 import { select as d3_select } from './d3.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
@@ -3418,7 +3420,7 @@ class TGeoPainter extends ObjectPainter {
 
       showProgress('Loading macro ' + script_name);
 
-      return JSROOT.httpRequest(script_name, "text").then(script => {
+      return httpRequest(script_name, "text").then(script => {
          let lines = script.split('\n'), indx = 0;
 
          while (indx < lines.length) {

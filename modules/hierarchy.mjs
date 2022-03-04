@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, httpRequest, createHttpRequest } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -2417,7 +2417,7 @@ class HierarchyPainter extends BasePainter {
             if (hitem && hitem._title) d3node.attr('title', "Executing " + hitem._title);
          }
 
-         return JSROOT.httpRequest(url + urlargs, 'text').then(res => {
+         return httpRequest(url + urlargs, 'text').then(res => {
             if (!d3node.empty()) {
                let col = ((res != null) && (res != 'false')) ? 'green' : 'red';
                if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
@@ -3860,13 +3860,13 @@ class HierarchyPainter extends BasePainter {
       this.forEachJsonFile(item => { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return Promise.resolve();
 
-      return JSROOT.httpRequest(filepath, 'object').then(res => {
+      return httpRequest(filepath, 'object').then(res => {
          let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
                return Promise.resolve(item._jsontmp);
-            return JSROOT.httpRequest(item._jsonfile, 'object')
+            return httpRequest(item._jsonfile, 'object')
                          .then(res => {
                              item._jsontmp = res;
                              return res;
@@ -3945,7 +3945,7 @@ class HierarchyPainter extends BasePainter {
          if (item !== null)
             style = await this.getObject(item).then(res => res.obj);
          else if (style.indexOf('.json') > 0)
-            style = await JSROOT.httpRequest(style, 'object');
+            style = await httpRequest(style, 'object');
       }
 
       if (style && (typeof style === 'object') && (style._typename === "TStyle"))
@@ -4046,7 +4046,7 @@ class HierarchyPainter extends BasePainter {
 
       return new Promise(resolveFunc => {
 
-         let itemreq = JSROOT.createHttpRequest(url, req_kind, obj => {
+         let itemreq = createHttpRequest(url, req_kind, obj => {
 
             let func = null;
 
@@ -4131,8 +4131,7 @@ class HierarchyPainter extends BasePainter {
          return AdoptHierarchy(h);
       }
 
-      return JSROOT.httpRequest(server_address + "h.json?compact=3", 'object')
-                   .then(hh => AdoptHierarchy(hh));
+      return httpRequest(server_address + "h.json?compact=3", 'object').then(hh => AdoptHierarchy(hh));
    }
 
    /** @summary Get properties for online item  - server name and relative name
@@ -4439,7 +4438,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async loadScripts(arr) {
       for (let k = 0; k < arr.length; ++k) {
-         let txt = await JSROOT.httpRequest(arr[k], 'text');
+         let txt = await httpRequest(arr[k], 'text');
          if (txt) eval(txt);
       }
    }
@@ -5254,7 +5253,7 @@ function createTreePlayer(player) {
       url += '&_ret_object_=' + hname;
 
       const submitDrawRequest = () => {
-         JSROOT.httpRequest(url, 'object').then(res => {
+         httpRequest(url, 'object').then(res => {
             cleanup(this.drawid);
             JSROOT.draw(this.drawid, res, option);
          });
@@ -5263,7 +5262,7 @@ function createTreePlayer(player) {
       if (this.askey) {
          // first let read tree from the file
          this.askey = false;
-         JSROOT.httpRequest(this.url + "/root.json", 'text').then(submitDrawRequest);
+         httpRequest(this.url + "/root.json", 'text').then(submitDrawRequest);
       } else {
          submitDrawRequest();
       }

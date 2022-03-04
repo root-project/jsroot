@@ -2,6 +2,8 @@
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
+import { httpRequest, createHttpRequest } from './core.mjs';
+
 /**
  * @summary Class emulating web socket with long-poll http requests
  *
@@ -53,7 +55,7 @@ class LongPollSocket {
          }
       }
 
-      let req = JSROOT.createHttpRequest(url, reqmode, function(res) {
+      let req = createHttpRequest(url, reqmode, function(res) {
          // this set to the request itself, res is response
 
          if (this.handle.req === this)
@@ -186,7 +188,7 @@ class FileDumpSocket {
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      JSROOT.httpRequest("protocol.json", "text").then(res => this.getProtocol(res));
+      httpRequest("protocol.json", "text").then(res => this.getProtocol(res));
    }
 
    /** @summary Get stored protocol */
@@ -218,7 +220,7 @@ class FileDumpSocket {
       // console.log("getting file", fname, "wait", this.wait_for_file);
       this.wait_for_file = true;
       this.cnt++;
-      JSROOT.httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
+      httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
          this.wait_for_file = false;
          if (!res) return;
          if (this.receiver.provideData)
