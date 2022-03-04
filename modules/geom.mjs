@@ -2,9 +2,19 @@
 
 import * as d3 from './d3.mjs';
 
-import * as THREE from './three.mjs';
-
 import * as JSROOT from './core.mjs';
+
+import { REVISION, DoubleSide, FrontSide,
+         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
+         Euler, Quaternion, MathUtils,
+         Mesh, MeshLambertMaterial, MeshBasicMaterial,
+         LineSegments, LineBasicMaterial, BufferAttribute,
+         TextGeometry, BufferGeometry, BoxBufferGeometry, CircleBufferGeometry,
+         SphereBufferGeometry, SphereGeometry, WireframeGeometry,
+         Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
+         TransformControls, WebGLRenderTarget,
+         PointLight, AmbientLight, HemisphereLight,
+         EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from './three.mjs';
 
 import { showProgress } from './utils.mjs';
 
@@ -394,9 +404,9 @@ class GeoDrawingControl extends InteractiveControl {
            };
          if (this.bloom) {
             c.layers.enable(_BLOOM_SCENE);
-            c.material.emissive = new THREE.Color(0x00ff00);
+            c.material.emissive = new Color(0x00ff00);
          } else {
-            c.material.color = new THREE.Color( col );
+            c.material.color = new Color( col );
             c.material.opacity = 1.;
          }
 
@@ -457,7 +467,7 @@ class TGeoPainter extends ObjectPainter {
       this.ctrl = {
          clipIntersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
-         ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
+         ssao: { enabled: false, output: SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
          bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          highlight: false,
@@ -480,12 +490,12 @@ class TGeoPainter extends ObjectPainter {
        ];
 
       this.ctrl.ssao.outputItems = [
-         {name: 'Default', value: THREE.SSAOPass.OUTPUT.Default},
-         {name: 'SSAO Only', value: THREE.SSAOPass.OUTPUT.SSAO},
-         {name: 'SSAO Only + Blur', value: THREE.SSAOPass.OUTPUT.Blur},
-         {name: 'Beauty', value: THREE.SSAOPass.OUTPUT.Beauty},
-         {name: 'Depth', value: THREE.SSAOPass.OUTPUT.Depth},
-         {name: 'Normal', value: THREE.SSAOPass.OUTPUT.Normal}
+         {name: 'Default', value: SSAOPass.OUTPUT.Default},
+         {name: 'SSAO Only', value: SSAOPass.OUTPUT.SSAO},
+         {name: 'SSAO Only + Blur', value: SSAOPass.OUTPUT.Blur},
+         {name: 'Beauty', value: SSAOPass.OUTPUT.Beauty},
+         {name: 'Depth', value: SSAOPass.OUTPUT.Depth},
+         {name: 'Normal', value: SSAOPass.OUTPUT.Normal}
       ];
 
       this.cleanup(true);
@@ -541,7 +551,7 @@ class TGeoPainter extends ObjectPainter {
          }
       });
 
-      let bkgr = new THREE.Color(this.ctrl.background);
+      let bkgr = new Color(this.ctrl.background);
 
       this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1);
 
@@ -552,13 +562,13 @@ class TGeoPainter extends ObjectPainter {
    initVRMode() {
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
-      this._dolly = new THREE.Group();
+      this._dolly = new Group();
       this._scene.add(this._dolly);
-      this._standingMatrix = new THREE.Matrix4();
+      this._standingMatrix = new Matrix4();
 
       // Raycaster temp variables to avoid one per frame allocation.
-      this._raycasterEnd = new THREE.Vector3();
-      this._raycasterOrigin = new THREE.Vector3();
+      this._raycasterEnd = new Vector3();
+      this._raycasterOrigin = new Vector3();
 
       navigator.getVRDisplays().then(displays => {
          let vrDisplay = displays[0];
@@ -575,14 +585,14 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Init VR controllers geometry
      * @private */
    initVRControllersGeometry() {
-      let geometry = new THREE.SphereGeometry(0.025, 18, 36),
-          material = new THREE.MeshBasicMaterial({ color: 'grey', vertexColors: false }),
-          rayMaterial = new THREE.MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
-          rayGeometry = new THREE.BoxBufferGeometry(0.001, 0.001, 2),
-          ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
-          ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
-          sphere1 = new THREE.Mesh(geometry, material),
-          sphere2 = new THREE.Mesh(geometry, material);
+      let geometry = new SphereGeometry(0.025, 18, 36),
+          material = new MeshBasicMaterial({ color: 'grey', vertexColors: false }),
+          rayMaterial = new MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
+          rayGeometry = new BoxBufferGeometry(0.001, 0.001, 2),
+          ray1Mesh = new Mesh(rayGeometry, rayMaterial),
+          ray2Mesh = new Mesh(rayGeometry, rayMaterial),
+          sphere1 = new Mesh(geometry, material),
+          sphere2 = new Mesh(geometry, material);
 
       this._controllersMeshes = [];
       this._controllersMeshes.push(sphere1);
@@ -737,7 +747,7 @@ class TGeoPainter extends ObjectPainter {
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
                   _count: false, wireframe: false,
-                   scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
+                   scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000,
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
@@ -814,7 +824,7 @@ class TGeoPainter extends ObjectPainter {
                if (getColor(col).toUpperCase() === d.part)
                   bckgr = getColor(col);
          }
-         if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
+         if (bckgr) res.background = "#" + new Color(bckgr).getHexString();
       }
 
       if (d.check('R3D_', true))
@@ -928,7 +938,7 @@ class TGeoPainter extends ObjectPainter {
 
                if (m1.equals(m2)) return true;
                if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
-                  flip = THREE.Vector3(1,1,-1);
+                  flip = Vector3(1,1,-1);
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
                }
@@ -1024,8 +1034,8 @@ class TGeoPainter extends ObjectPainter {
       if (!this._toplevel) return;
 
       let ctrl = this.ctrl,
-          translation = new THREE.Matrix4(),
-          vect2 = new THREE.Vector3();
+          translation = new Matrix4(),
+          vect2 = new Vector3();
 
       if (arg == "reset")
          ctrl.trans_z = ctrl.trans_radial = 0;
@@ -1050,14 +1060,14 @@ class TGeoPainter extends ObjectPainter {
 
          if (node.vect0 === undefined) {
             node.matrix0 = node.matrix.clone();
-            node.minvert = new THREE.Matrix4().copy(node.matrixWorld).invert();
+            node.minvert = new Matrix4().copy(node.matrixWorld).invert();
 
             let box3 = getBoundingBox(mesh, null, true),
                 signz = mesh._flippedMesh ? -1 : 1;
 
             // real center of mesh in local coordinates
-            node.vect0 = new THREE.Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
-            node.vect1 = new THREE.Vector3(0,0,0).applyMatrix4(node.minvert);
+            node.vect0 = new Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
+            node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
          }
 
          vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
@@ -1094,7 +1104,7 @@ class TGeoPainter extends ObjectPainter {
       this.render3D(0);
 
       if (this._toolbar) {
-         let bkgr = new THREE.Color(this.ctrl.background);
+         let bkgr = new Color(this.ctrl.background);
          this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       }
    }
@@ -1341,9 +1351,9 @@ class TGeoPainter extends ObjectPainter {
       if (this._bloomPass) return;
 
       this._camera.layers.enable( _BLOOM_SCENE );
-      this._bloomComposer = new THREE.EffectComposer( this._renderer );
-      this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
-      this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+      this._bloomComposer = new EffectComposer( this._renderer );
+      this._bloomComposer.addPass( new RenderPass( this._scene, this._camera ) );
+      this._bloomPass = new UnrealBloomPass(new Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85);
       this._bloomPass.threshold = 0;
       this._bloomPass.strength = this.ctrl.bloom.strength;
       this._bloomPass.radius = 0;
@@ -1372,15 +1382,15 @@ class TGeoPainter extends ObjectPainter {
    createSSAO() {
       if (!this._webgl) return;
 
-      // this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+      // this._depthRenderTarget = new WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: LinearFilter, magFilter: LinearFilter } );
       // Setup SSAO pass
       if (!this._ssaoPass) {
          if (!this._effectComposer) {
-            this._effectComposer = new THREE.EffectComposer( this._renderer );
-            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+            this._effectComposer = new EffectComposer( this._renderer );
+            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
          }
 
-         this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
+         this._ssaoPass = new SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
          this._ssaoPass.kernelRadius = 16;
          this._ssaoPass.renderToScreen = true;
 
@@ -1608,7 +1618,7 @@ class TGeoPainter extends ObjectPainter {
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
-            if ((mesh instanceof THREE.Mesh) && isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof Mesh) && isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
          active_mesh = active_mesh ? [ active_mesh ] : [];
@@ -1795,7 +1805,7 @@ class TGeoPainter extends ObjectPainter {
 
       if ( !this.ctrl._debug && !this.ctrl._grid ) return;
 
-      this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
+      this._tcontrols = new TransformControls( this._camera, this._renderer.domElement );
       this._scene.add( this._tcontrols );
       this._tcontrols.attach( this._toplevel );
       //this._tcontrols.setSize( 1.1 );
@@ -2123,12 +2133,12 @@ class TGeoPainter extends ObjectPainter {
 
       prop.material.wireframe = this.ctrl.wireframe;
 
-      prop.material.side = this.ctrl.bothSides ? THREE.DoubleSide : THREE.FrontSide;
+      prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
 
       let mesh, matrix = obj3d.absMatrix || obj3d.matrixWorld;
 
       if (matrix.determinant() > -0.9) {
-         mesh = new THREE.Mesh( shape.geom, prop.material );
+         mesh = new Mesh( shape.geom, prop.material );
       } else {
          mesh = createFlippedMesh(shape, prop.material);
       }
@@ -2153,14 +2163,14 @@ class TGeoPainter extends ObjectPainter {
       //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
 
       if (this.ctrl._debug || this.ctrl._full) {
-         let wfg = new THREE.WireframeGeometry( mesh.geometry ),
-             wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
-             helper = new THREE.LineSegments(wfg, wfm);
+         let wfg = new WireframeGeometry( mesh.geometry ),
+             wfm = new LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
+             helper = new LineSegments(wfg, wfm);
          obj3d.add(helper);
       }
 
       if (this.ctrl._bound || this.ctrl._full) {
-         let boxHelper = new THREE.BoxHelper( mesh );
+         let boxHelper = new BoxHelper( mesh );
          obj3d.add( boxHelper );
       }
 
@@ -2229,7 +2239,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Calculate geometry bounding box */
    getGeomBoundingBox(topitem, scalar) {
-      let box3 = new THREE.Box3(), check_any = !this._clones;
+      let box3 = new Box3(), check_any = !this._clones;
 
       if (!topitem) {
          box3.min.x = box3.min.y = box3.min.z = -1;
@@ -2240,12 +2250,12 @@ class TGeoPainter extends ObjectPainter {
       box3.makeEmpty();
 
       topitem.traverse(mesh => {
-         if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
-             (mesh.main_track && (mesh instanceof THREE.LineSegments)))
+         if (check_any || (mesh.stack && (mesh instanceof Mesh)) ||
+             (mesh.main_track && (mesh instanceof LineSegments)))
             getBoundingBox(mesh, box3);
       });
 
-      if (scalar !== undefined) box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
+      if (scalar !== undefined) box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
 
       return box3;
    }
@@ -2272,13 +2282,13 @@ class TGeoPainter extends ObjectPainter {
       }
 
       toplevel.traverse(mesh => {
-         if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
+         if (!(mesh instanceof Mesh) || !mesh.stack) return;
 
          let geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
-         let mesh2 = new THREE.Mesh( geom2, mesh.material.clone() );
+         let mesh2 = new Mesh( geom2, mesh.material.clone() );
 
          this._toplevel.add(mesh2);
 
@@ -2310,11 +2320,11 @@ class TGeoPainter extends ObjectPainter {
          this._camera._lights = this.ctrl.light.kind;
 
          switch (this._camera._lights) {
-            case "ambient" : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
-            case "hemisphere" : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
+            case "ambient" : this._camera.add(new AmbientLight(0xefefef, p)); break;
+            case "hemisphere" : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
             default: // 6 point lights
                for (let n = 0; n < 6; ++n)
-                  this._camera.add( new THREE.PointLight(0xefefef, p) );
+                  this._camera.add(new PointLight(0xefefef, p));
          }
       }
 
@@ -2354,14 +2364,14 @@ class TGeoPainter extends ObjectPainter {
        }
 
       if (this.ctrl.ortho_camera) {
-         this._camera =  new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
+         this._camera = new OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
       } else {
-         this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
-         this._camera.up = this.ctrl._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+         this._camera = new PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
+         this._camera.up = this.ctrl._yup ? new Vector3(0,1,0) : new Vector3(0,0,1);
       }
 
       // Light - add default point light, adjust later
-      let light = new THREE.PointLight(0xefefef, 1);
+      let light = new PointLight(0xefefef, 1);
       light.position.set(10, 10, 10);
       this._camera.add( light );
 
@@ -2376,8 +2386,8 @@ class TGeoPainter extends ObjectPainter {
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
          if (this.ctrl.outline && (typeof this.createOutline == "function")) {
-            this._effectComposer = new THREE.EffectComposer( this._renderer );
-            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+            this._effectComposer = new EffectComposer( this._renderer );
+            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
          } else if (this.ctrl.ssao.enabled) {
             this.createSSAO();
@@ -2391,9 +2401,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Initial scene creation */
    createScene(w, h) {
       // three.js 3D drawing
-      this._scene = new THREE.Scene();
-      this._scene.fog = new THREE.Fog(0xffffff, 1, 10000);
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
+      this._scene = new Scene();
+      this._scene.fog = new Fog(0xffffff, 1, 10000);
+      this._scene.overrideMaterial = new MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
       this._scene_width = w;
       this._scene_height = h;
@@ -2404,7 +2414,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._overall_size = 10;
 
-      this._toplevel = new THREE.Object3D();
+      this._toplevel = new Object3D();
 
       this._scene.add(this._toplevel);
 
@@ -2433,9 +2443,9 @@ class TGeoPainter extends ObjectPainter {
          // Clipping Planes
 
          this.ctrl.bothSides = false; // which material kind should be used
-         this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
-                              new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                              new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
+                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
          this.createSpecialEffects();
 
@@ -2480,7 +2490,7 @@ class TGeoPainter extends ObjectPainter {
                this.drawing_stage = 10;
                this.drawing_log = "build projection";
             } else {
-               this._full_geom = new THREE.Object3D();
+               this._full_geom = new Object3D();
             }
 
          } else {
@@ -2500,7 +2510,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary reset all kind of advanced features like SSAO or depth test changes */
    resetAdvanced() {
       this.ctrl.ssao.kernelRadius = 16;
-      this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
+      this.ctrl.ssao.output = SSAOPass.OUTPUT.Default;
 
       this.ctrl.depthTest = true;
       this.ctrl.clipIntersect = true;
@@ -2553,8 +2563,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl) return;
 
-      let pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
-          pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat),
+      let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
+          pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
           len1 = pos1.length(), len2 = pos2.length(),
           zoom = this.ctrl.zoom * len2 / len1 * 100;
 
@@ -2563,8 +2573,7 @@ class TGeoPainter extends ObjectPainter {
       pos1.normalize();
       pos2.normalize();
 
-      let quat = new THREE.Quaternion(),
-          euler = new THREE.Euler();
+      let quat = new Quaternion(), euler = new Euler();
 
       quat.setFromUnitVectors(pos1, pos2);
       euler.setFromQuaternion(quat, "YZX");
@@ -2581,8 +2590,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Calculates current zoom factor */
    calculateZoom() {
       if (this._camera0pos && this._camera && this._lookat) {
-         let pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
-             pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
+         let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
+             pos2 = new Vector3().add(this._camera.position).sub(this._lookat);
          return pos2.length() / pos1.length();
       }
 
@@ -2647,11 +2656,11 @@ class TGeoPainter extends ObjectPainter {
          let prev_zoom = this.calculateZoom();
          if (keep_zoom && prev_zoom) k = 2*prev_zoom;
 
-         let euler = new THREE.Euler( 0, this.ctrl.rotatey/180.*Math.PI, this.ctrl.rotatez/180.*Math.PI, 'YZX' );
+         let euler = new Euler( 0, this.ctrl.rotatey/180.*Math.PI, this.ctrl.rotatez/180.*Math.PI, 'YZX' );
 
          this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
-         this._camera.position.add(new THREE.Vector3(midx,midy,midz));
+         this._camera.position.add(new Vector3(midx,midy,midz));
 
          if (keep_zoom && prev_zoom) {
             let actual_zoom = this.calculateZoom();
@@ -2659,7 +2668,7 @@ class TGeoPainter extends ObjectPainter {
 
             this._camera.position.set(-k*max_all, 0, 0);
             this._camera.position.applyEuler(euler);
-            this._camera.position.add(new THREE.Vector3(midx,midy,midz));
+            this._camera.position.add(new Vector3(midx,midy,midz));
          }
 
       } else if (this.ctrl.ortho_camera) {
@@ -2676,8 +2685,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
       }
 
-      this._lookat = new THREE.Vector3(midx, midy, midz);
-      this._camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
+      this._lookat = new Vector3(midx, midy, midz);
+      this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
       this.changedLight(box);
@@ -2726,15 +2735,15 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.project || this.ctrl.ortho_camera)
          return this.adjustCameraPosition();
 
-      let box = new THREE.Box3();
+      let box = new Box3();
       if (focus === undefined) {
          box = this.getGeomBoundingBox(this._toplevel);
-      } else if (focus instanceof THREE.Mesh) {
+      } else if (focus instanceof Mesh) {
          box.setFromObject(focus);
       } else {
-         let center = new THREE.Vector3().setFromMatrixPosition(focus.matrix),
+         let center = new Vector3().setFromMatrixPosition(focus.matrix),
              node = focus.node,
-             halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
+             halfDelta = new Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
          box.min = center.clone().sub(halfDelta);
          box.max = center.clone().add(halfDelta);
       }
@@ -2748,11 +2757,11 @@ class TGeoPainter extends ObjectPainter {
 
       let position;
       if (this.ctrl._yup)
-         position = new THREE.Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+         position = new Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
       else
-         position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         position = new Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
-      let target = new THREE.Vector3(midx, midy, midz),
+      let target = new Vector3(midx, midy, midz),
           oldTarget = this._controls.target,
           // probably, reduce number of frames
           frames = 50, step = 0,
@@ -2842,11 +2851,11 @@ class TGeoPainter extends ObjectPainter {
 
       if ( this.ctrl._debug || this.ctrl._grid ) {
          if ( this.ctrl._full ) {
-            let boxHelper = new THREE.BoxHelper(this._toplevel);
+            let boxHelper = new BoxHelper(this._toplevel);
             this._scene.add( boxHelper );
          }
-         this._scene.add( new THREE.AxesHelper( 2 * this._overall_size ) );
-         this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
+         this._scene.add( new AxesHelper( 2 * this._overall_size ) );
+         this._scene.add( new GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
                "'T' translate | 'R' rotate | 'S' scale<br>" +
                "'+' increase size | '-' decrease size<br>" +
@@ -3064,7 +3073,7 @@ class TGeoPainter extends ObjectPainter {
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
          promise = Promise.all(parr).then(ress => ress.indexOf(true) >= 0);
-      } else if (obj._typename === 'THREE.Mesh') {
+      } else if (obj._typename === 'Mesh') {
          // adding mesh as is
          this.addToExtrasContainer(obj);
          promise = Promise.resolve(true);
@@ -3126,7 +3135,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if ((action!=="get") && !extras) {
-         extras = new THREE.Object3D();
+         extras = new Object3D();
          extras._extras = name;
          this._toplevel.add(extras);
       }
@@ -3172,7 +3181,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
@@ -3215,7 +3224,7 @@ class TGeoPainter extends ObjectPainter {
          pos += 6;
       }
 
-      let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line3d = createLineSegments(buf, lineMaterial);
 
       line3d.renderOrder = 1000000; // to bring line to the front
@@ -3253,7 +3262,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
@@ -3744,7 +3753,7 @@ class TGeoPainter extends ObjectPainter {
 
       if ((this.first_render_tm === 0) && measure) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
-         console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
+         console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
       afterRender3D(this._renderer);
@@ -3846,10 +3855,10 @@ class TGeoPainter extends ObjectPainter {
                   console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
                   origin.geom = null;
                } else {
-                  origin.geom = new THREE.BufferGeometry();
+                  origin.geom = new BufferGeometry();
 
-                  origin.geom.setAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
-                  origin.geom.setAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+                  origin.geom.setAttribute('position', new BufferAttribute(item.buf_pos, 3));
+                  origin.geom.setAttribute('normal', new BufferAttribute(item.buf_norm, 3));
                }
 
                origin.ready = true;
@@ -3947,27 +3956,27 @@ class TGeoPainter extends ObjectPainter {
             for (let k=0;k<6;++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
-         let lineMaterial = new THREE.LineBasicMaterial({ color: axiscol }),
+         let lineMaterial = new LineBasicMaterial({ color: axiscol }),
              mesh = createLineSegments(buf, lineMaterial);
 
          container.add(mesh);
 
-         let textMaterial = new THREE.MeshBasicMaterial({ color: axiscol, vertexColors: false });
+         let textMaterial = new MeshBasicMaterial({ color: axiscol, vertexColors: false });
 
          if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
            if ((this.ctrl._axis != 2) || (naxis===0)) {
-               let geom = ortho ? new THREE.CircleBufferGeometry(text_size*0.25) :
-                                  new THREE.SphereBufferGeometry(text_size*0.25);
-               mesh = new THREE.Mesh(geom, textMaterial);
+               let geom = ortho ? new CircleBufferGeometry(text_size*0.25) :
+                                  new SphereBufferGeometry(text_size*0.25);
+               mesh = new Mesh(geom, textMaterial);
                mesh.translateX((naxis===0) ? center[0] : buf[0]);
                mesh.translateY((naxis===1) ? center[1] : buf[1]);
                mesh.translateZ((naxis===2) ? center[2] : buf[2]);
                container.add(mesh);
            }
 
-         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
-         mesh = new THREE.Mesh(text3d, textMaterial);
-         let textbox = new THREE.Box3().setFromObject(mesh);
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         mesh = new Mesh(text3d, textMaterial);
+         let textbox = new Box3().setFromObject(mesh);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
@@ -4006,10 +4015,10 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new TextGeometry(Convert(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
-         mesh = new THREE.Mesh(text3d, textMaterial);
-         textbox = new THREE.Box3().setFromObject(mesh);
+         mesh = new Mesh(text3d, textMaterial);
+         textbox = new Box3().setFromObject(mesh);
 
          mesh.translateX(buf[0]);
          mesh.translateY(buf[1]);
@@ -4108,7 +4117,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this._toplevel) return;
       let flag = this.ctrl.depthTest;
       this._toplevel.traverse(node => {
-         if (node instanceof THREE.Mesh) {
+         if (node instanceof Mesh) {
             node.material.depthTest = flag;
          }
       });
@@ -4160,7 +4169,7 @@ class TGeoPainter extends ObjectPainter {
       this._clipCfg = clip_cfg;
 
       let any_clipping = !!panels, ci = this.ctrl.clipIntersect,
-          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
+          material_side = any_clipping ? DoubleSide : FrontSide;
 
       if (force_traverse || changed)
          this._scene.traverse(node => {
@@ -4514,16 +4523,16 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    ownedByTransformControls(child) {
       let obj = child.parent;
-      while (obj && !(obj instanceof THREE.TransformControls) )
+      while (obj && !(obj instanceof TransformControls) )
          obj = obj.parent;
-      return (obj && (obj instanceof THREE.TransformControls));
+      return (obj && (obj instanceof TransformControls));
    }
 
    /** @summary either change mesh wireframe or return current value
      * @returns undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj.hasOwnProperty("material") || (obj instanceof THREE.GridHelper)) return;
+      if (!obj.hasOwnProperty("material") || (obj instanceof GridHelper)) return;
 
       if (this.ownedByTransformControls(obj)) return;
 
@@ -5001,7 +5010,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
-  * @returns {object} THREE.Object3D with created model
+  * @returns {object} Object3D with created model
   * @example
   * import { build } from './path_to_jsroot/modules/geom.mjs';
   * let obj3d = build(obj);
@@ -5071,7 +5080,7 @@ build = function(obj, opt) {
 
    clones.buildShapes(shapes, opt.numfaces);
 
-   let toplevel = new THREE.Object3D();
+   let toplevel = new Object3D();
 
    for (let n = 0; n < res.lst.length; ++n) {
       let entry = res.lst[n];
@@ -5100,12 +5109,12 @@ build = function(obj, opt) {
 
       prop.material.wireframe = opt.wireframe;
 
-      prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
+      prop.material.side = opt.doubleside ? DoubleSide : FrontSide;
 
       let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
 
       if (matrix.determinant() > -0.9) {
-         mesh = new THREE.Mesh(shape.geom, prop.material);
+         mesh = new Mesh(shape.geom, prop.material);
       } else {
          mesh = createFlippedMesh(shape, prop.material);
       }
