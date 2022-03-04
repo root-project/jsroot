@@ -1,6 +1,6 @@
 /// CSG library for THREE.js
 
-import * as THREE from './three.mjs';
+import { BufferGeometry, BufferAttribute, Mesh } from './three.mjs';
 
 const EPSILON = 1e-5,
       COPLANAR = 0,
@@ -115,7 +115,7 @@ class Vertex {
 
    applyMatrix4(m) {
 
-      // input: THREE.Matrix4 affine matrix
+      // input: Matrix4 affine matrix
 
       let x = this.x, y = this.y, z = this.z, e = m.elements;
 
@@ -445,9 +445,9 @@ function createBufferGeometry(polygons) {
       }
    }
 
-   let geometry = new THREE.BufferGeometry();
-   geometry.setAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
-   geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
+   let geometry = new BufferGeometry();
+   geometry.setAttribute( 'position', new BufferAttribute( positions_buf, 3 ) );
+   geometry.setAttribute( 'normal', new BufferAttribute( normals_buf, 3 ) );
 
    // geometry.computeVertexNormals();
    return geometry;
@@ -457,18 +457,18 @@ function createBufferGeometry(polygons) {
 class Geometry {
 
    constructor(geometry, transfer_matrix, nodeid, flippedMesh) {
-      // Convert THREE.BufferGeometry to ThreeBSP
+      // Convert BufferGeometry to ThreeBSP
 
-      if ( geometry instanceof THREE.Mesh ) {
+      if ( geometry instanceof Mesh ) {
          // #todo: add hierarchy support
          geometry.updateMatrix();
          transfer_matrix = this.matrix = geometry.matrix.clone();
          geometry = geometry.geometry;
       } else if ( geometry instanceof Node ) {
          this.tree = geometry;
-         this.matrix = null; // new THREE.Matrix4;
+         this.matrix = null; // new Matrix4;
          return this;
-      } else if ( geometry instanceof THREE.BufferGeometry ) {
+      } else if ( geometry instanceof BufferGeometry ) {
          let pos_buf = geometry.getAttribute('position').array,
              norm_buf = geometry.getAttribute('normal').array,
              polygons = [], polygon, vert1, vert2, vert3;
@@ -531,21 +531,21 @@ class Geometry {
 
          vertex = geometry.vertices[ face.a ];
          if (useVertexNormals) normal = face.vertexNormals[0];
-         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
+         // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
          vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
          vertex = geometry.vertices[ face.b ];
          if (useVertexNormals) normal = face.vertexNormals[1];
-         //uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
+         //uvs = faceVertexUvs ? new Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
          vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
          vertex = geometry.vertices[ face.c ];
          if (useVertexNormals) normal = face.vertexNormals[2];
-         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
+         // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
          vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal, uvs */ );
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
@@ -722,7 +722,7 @@ class Geometry {
    }
 
    scale(x,y,z) {
-      // try to scale as THREE.BufferGeometry
+      // try to scale as BufferGeometry
       let polygons = this.tree.collectPolygons([]);
 
       for (let i = 0; i < polygons.length; ++i) {
@@ -757,7 +757,7 @@ class Geometry {
 
    toMesh( material ) {
       let geometry = this.toBufferGeometry(),
-         mesh = new THREE.Mesh( geometry, material );
+         mesh = new Mesh( geometry, material );
 
       if (this.matrix) {
          mesh.position.setFromMatrixPosition( this.matrix );
