@@ -1,6 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import * as JSROOT from './core.mjs';
 
 if (!JSROOT.batch_mode)
@@ -1541,7 +1543,7 @@ function getAbsPosInCanvas(sel, pos) {
          pos.x += sel.property("draw_x") || 0;
          pos.y += sel.property("draw_y") || 0;
       }
-      sel = d3.select(sel.node().parentNode);
+      sel = d3_select(sel.node().parentNode);
    }
    return pos;
 }
@@ -1583,17 +1585,17 @@ class BasePainter {
      * @returns {object} d3.select object for main element for drawing */
    selectDom(is_direct) {
 
-      if (!this.divid) return d3.select(null);
+      if (!this.divid) return d3_select(null);
 
       let res = this._selected_main;
       if (!res) {
          if (typeof this.divid == "string") {
             let id = this.divid;
             if (id[0] != '#') id = "#" + id;
-            res = d3.select(id);
+            res = d3_select(id);
             if (!res.empty()) this.divid = res.node();
          } else {
-            res = d3.select(this.divid);
+            res = d3_select(this.divid);
          }
          this._selected_main = res;
       }
@@ -1607,7 +1609,7 @@ class BasePainter {
       if (layout_selector) res = res.select(layout_selector);
 
       // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
+      if (!is_direct && !res.empty() && use_enlarge) res = d3_select("#jsroot_enlarge_div");
 
       return res;
    }
@@ -1749,12 +1751,12 @@ class BasePainter {
 
       if (action === 'toggle') action = (state === "off");
 
-      let enlarge = d3.select("#jsroot_enlarge_div");
+      let enlarge = d3_select("#jsroot_enlarge_div");
 
       if ((action === true) && (state !== "on")) {
          if (!enlarge.empty()) return false;
 
-         enlarge = d3.select(document.body)
+         enlarge = d3_select(document.body)
             .append("div")
             .attr("id", "jsroot_enlarge_div");
 
@@ -2145,7 +2147,7 @@ class ObjectPainter extends BasePainter {
 
       let cp = c.property('pad_painter');
       if (cp && cp.pads_cache && cp.pads_cache[pad_name])
-         return d3.select(cp.pads_cache[pad_name]);
+         return d3_select(cp.pads_cache[pad_name]);
 
       c = c.select(".primitives_layer .__root_pad_" + pad_name);
       if (cp) {
@@ -2170,12 +2172,12 @@ class ObjectPainter extends BasePainter {
 
       let node = svg.node().firstChild;
       while (node) {
-         let elem = d3.select(node);
+         let elem = d3_select(node);
          if (elem.classed(name)) return elem;
          node = node.nextSibling;
       }
 
-      return d3.select(null);
+      return d3_select(null);
    }
 
    /** @summary Method selects current pad name
@@ -2307,11 +2309,11 @@ class ObjectPainter extends BasePainter {
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
-         let elem = d3.select(node);
+         let elem = d3_select(node);
          if (elem.classed("root_frame")) return elem;
          node = node.nextSibling;
       }
-      return d3.select(null);
+      return d3_select(null);
    }
 
    /** @summary Returns frame painter for current pad
@@ -4227,7 +4229,7 @@ function loadJSDOM() {
       if (!JSROOT._.nodejs_window) {
          JSROOT._.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
          JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-         JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
+         JSROOT._.nodejs_window.d3 = d3_select(JSROOT._.nodejs_document); //get d3 into the dom
       }
 
       return { JSDOM: handle.JSDOM, doc: JSROOT._.nodejs_document, d3: JSROOT._.nodejs_window.d3 };
@@ -4269,7 +4271,7 @@ function makeSVG(args) {
              .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
          function clear_element() {
-            const elem = d3.select(this);
+            const elem = d3_select(this);
             if (elem.style('display')=="none") elem.remove();
          };
 
@@ -4295,12 +4297,12 @@ function makeSVG(args) {
    }
 
    if (!JSROOT.nodejs)
-      return build(d3.select('body').append("div").style("visible", "hidden"));
+      return build(d3_select('body').append("div").style("visible", "hidden"));
 
    if (JSROOT._.nodejs_document)
-      return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
+      return build(JSROOT._.nodejs_window.d3_select('body').append('div'));
 
-   return loadJSDOM().then(handle => build(handle.d3.select('body').append('div')));
+   return loadJSDOM().then(handle => build(handle.d3_select('body').append('div')));
 }
 
 createRootColors();

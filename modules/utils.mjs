@@ -2,6 +2,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten
@@ -12,7 +14,7 @@ import * as JSROOT from './core.mjs';
 function showProgress(msg, tmout) {
    if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
    let id = "jsroot_progressbox",
-       box = d3.select("#" + id);
+       box = d3_select("#" + id);
 
    if (!JSROOT.settings.ProgressBox) return box.remove();
 
@@ -22,7 +24,7 @@ function showProgress(msg, tmout) {
    }
 
    if (box.empty()) {
-      box = d3.select(document.body).append("div").attr("id", id);
+      box = d3_select(document.body).append("div").attr("id", id);
       box.append("p");
    }
 

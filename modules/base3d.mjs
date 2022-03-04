@@ -1,5 +1,7 @@
 import * as d3 from './d3.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
          CanvasTexture, TextureLoader,
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
@@ -244,7 +246,7 @@ let Handling3DDrawings = {
       let size = this.getSizeFor3d(can3d);
 
       if (size.can3d === 0) {
-         d3.select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
+         d3_select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
          this.getCanvSvg().style('display', null); // show SVG canvas
       } else {
          if (this.getPadSvg().empty()) return;
@@ -300,7 +302,7 @@ let Handling3DDrawings = {
      * @private */
    apply3dSize(size, onlyget) {
 
-      if (size.can3d < 0) return d3.select(null);
+      if (size.can3d < 0) return d3_select(null);
 
       let elem;
 
@@ -337,14 +339,14 @@ let Handling3DDrawings = {
       } else {
          let prnt = this.getCanvSvg().node().parentNode;
 
-         elem = d3.select(prnt).select("." + size.clname);
+         elem = d3_select(prnt).select("." + size.clname);
          if (onlyget) return elem;
 
          // force redraw by resize
          this.getCanvSvg().property('redraw_by_resize', true);
 
          if (elem.empty())
-            elem = d3.select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
+            elem = d3_select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
@@ -412,7 +414,7 @@ async function createRender3D(width, height, render3d, args) {
          need_workaround = true;
       } else {
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-         // d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+         // d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
       }
    } else if (JSROOT.nodejs) {
       // try to use WebGL inside node.js - need to create headless context
@@ -442,7 +444,7 @@ async function createRender3D(width, height, render3d, args) {
       // rendering with WebGL directly into svg image
       renderer = new WebGLRenderer(args);
       renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+      d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
    }
 
    if (need_workaround) {
@@ -465,7 +467,7 @@ async function createRender3D(width, height, render3d, args) {
    // apply size to dom element
    renderer.setJSROOTSize = function(width, height) {
       if ((this.jsroot_render3d === JSROOT.constants.Render3D.WebGLImage) && !JSROOT.batch_mode && !JSROOT.nodejs)
-         return d3.select(this.jsroot_dom).attr("width", width).attr("height", height);
+         return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
    };
 
    return renderer;
@@ -544,7 +546,7 @@ function afterRender3D(renderer) {
       JSROOT._.svg_3ds[renderer.workaround_id] = svg;
    } else {
       let dataUrl = renderer.domElement.toDataURL("image/png");
-      d3.select(renderer.jsroot_dom).attr("xlink:href", dataUrl);
+      d3_select(renderer.jsroot_dom).attr("xlink:href", dataUrl);
    }
 }
 

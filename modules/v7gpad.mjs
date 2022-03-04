@@ -4,6 +4,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
@@ -1061,7 +1063,7 @@ class RAxisPainter extends RObjectPainter {
 
         if (lbls_tilt)
            label_g.selectAll("text").each(function () {
-               let txt = d3.select(this), tr = txt.attr("transform");
+               let txt = d3_select(this), tr = txt.attr("transform");
                txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
            });
 
@@ -4293,8 +4295,8 @@ class RCanvasPainter extends RPadPainter {
          if (mainid == undefined)
             mainid = (layout_kind.indexOf("vert") == 0) ? 0 : 1;
 
-         main = d3.select(grid.getGridFrame(mainid));
-         sidebar = d3.select(grid.getGridFrame(1 - mainid));
+         main = d3_select(grid.getGridFrame(mainid));
+         sidebar = d3_select(grid.getGridFrame(1 - mainid));
 
          main.classed("central_panel", true).style('position','relative');
          sidebar.classed("side_panel", true).style('position','relative');
@@ -4771,7 +4773,7 @@ class RCanvasPainter extends RPadPainter {
 
          JSROOT.require('openui5').then(() => {
 
-            d3.select("#ged_placeholder").text("");
+            d3_select("#ged_placeholder").text("");
 
             sap.ui.define(["sap/ui/model/json/JSONModel", "sap/ui/core/mvc/XMLView"], (JSONModel,XMLView) => {
 
@@ -5331,9 +5333,9 @@ class RPalettePainter extends RObjectPainter {
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
-               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
+               d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill1'));
             }).on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+               d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (JSROOT.settings.Zooming)
@@ -5398,7 +5400,7 @@ class RPalettePainter extends RObjectPainter {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
-            d3.select(window).on("mousemove.colzoomRect", null)
+            d3_select(window).on("mousemove.colzoomRect", null)
                              .on("mouseup.colzoomRect", null);
             zoom_rect.remove();
             zoom_rect = null;
@@ -5432,7 +5434,7 @@ class RPalettePainter extends RObjectPainter {
             else
                zoom_rect.attr("x", sel1).attr("width", 1).attr("y", 0).attr("height", palette_height);
 
-            d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+            d3_select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);
 
             setTimeout(() => {

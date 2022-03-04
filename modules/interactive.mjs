@@ -2,6 +2,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
 let TooltipHandler = {
@@ -10,7 +12,7 @@ let TooltipHandler = {
      * @returns layer where frame tooltips are shown */
    hints_layer() {
       let pp = this.getCanvPainter();
-      return pp ? pp.getLayerSvg("info_layer") : d3.select(null);
+      return pp ? pp.getLayerSvg("info_layer") : d3_select(null);
    },
 
    /** @returns true if tooltip is shown, use to prevent some other action */
@@ -309,11 +311,11 @@ let TooltipHandler = {
       // if gap not very big, apply gapy coordinate to open view on the histogram
       if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
          if ((gapminx <= posx + actualw + 5) && (gapmaxx >= posx - 5))
-            svgs.attr("y", function() { return d3.select(this).property('gapy'); });
+            svgs.attr("y", function() { return d3_select(this).property('gapy'); });
       } else if ((viewmode !== 'single') && (curry > maxhinty)) {
          let shift = Math.max((maxhinty - curry - 10), minhinty);
          if (shift < 0)
-            svgs.attr("y", function() { return d3.select(this).property('curry') + shift; });
+            svgs.attr("y", function() { return d3_select(this).property('curry') + shift; });
       }
 
       if (actualw > 10)
@@ -460,7 +462,7 @@ function addDragHandler(_painter, arg) {
             path: `v${arg.height}h${arg.width}v${-arg.height}z`
          };
 
-         drag_rect = d3.select(painter.draw_g.node().parentNode).append("path")
+         drag_rect = d3_select(painter.draw_g.node().parentNode).append("path")
             .classed("zoom", true)
             .attr("d", `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style("cursor", "move")
@@ -528,10 +530,10 @@ function addDragHandler(_painter, arg) {
          handle.acc_x2 = handle.acc_x1 + arg.width;
          handle.acc_y2 = handle.acc_y1 + arg.height;
 
-         drag_rect = d3.select(painter.draw_g.node().parentNode)
+         drag_rect = d3_select(painter.draw_g.node().parentNode)
             .append("rect")
             .classed("zoom", true)
-            .style("cursor", d3.select(this).style("cursor"))
+            .style("cursor", d3_select(this).style("cursor"))
             .attr("x", handle.acc_x1)
             .attr("y", handle.acc_y1)
             .attr("width", handle.acc_x2 - handle.acc_x1)
@@ -545,7 +547,7 @@ function addDragHandler(_painter, arg) {
          evnt.sourceEvent.stopPropagation();
 
          let handle = drag_rect.property('drag_handle'),
-            dx = evnt.dx, dy = evnt.dy, elem = d3.select(this);
+            dx = evnt.dx, dy = evnt.dy, elem = d3_select(this);
 
          if (arg.no_change_x) dx = 0;
          if (arg.no_change_y) dy = 0;
@@ -906,7 +908,7 @@ let FrameInteractive = {
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
+      d3_select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
                        .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
 
       this.zoom_rect = null;
@@ -980,7 +982,7 @@ let FrameInteractive = {
 
       evnt.preventDefault();
 
-      d3.select(window).on("mousemove.zoomRect", null)
+      d3_select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
 
       let m = d3.pointer(evnt, this.getFrameSvg().node()), kind = this.zoom_kind;
@@ -1168,7 +1170,7 @@ let FrameInteractive = {
             .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
             .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
 
-      d3.select(window).on("touchmove.zoomRect", this.moveTouchZoom.bind(this))
+      d3_select(window).on("touchmove.zoomRect", this.moveTouchZoom.bind(this))
                        .on("touchcancel.zoomRect", this.endTouchZoom.bind(this))
                        .on("touchend.zoomRect", this.endTouchZoom.bind(this));
    },
@@ -1233,7 +1235,7 @@ let FrameInteractive = {
       if (this.zoom_kind < 100) return;
 
       evnt.preventDefault();
-      d3.select(window).on("touchmove.zoomRect", null)
+      d3_select(window).on("touchmove.zoomRect", null)
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
 
@@ -1581,7 +1583,7 @@ function toggleButtonsVisibility(handler, action) {
 
    group.selectAll('svg').each(function() {
       if (this===btn.node()) return;
-      d3.select(this).style('display', is_visible ? "" : "none");
+      d3_select(this).style('display', is_visible ? "" : "none");
    });
 }
 
@@ -1605,8 +1607,8 @@ let PadButtonsHandler = {
       let group = this.getLayerSvg("btns_layer", this.this_pad_name), found_func = "";
       if (!group.empty())
          group.selectAll("svg").each(function() {
-            if (d3.select(this).attr("key") === keyname)
-               found_func = d3.select(this).attr("name");
+            if (d3_select(this).attr("key") === keyname)
+               found_func = d3_select(this).attr("name");
          });
 
       return found_func;

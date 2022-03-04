@@ -2,6 +2,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { showProgress } from './utils.mjs';
 
 import { BasePainter, ObjectPainter, loadJSDOM,
@@ -659,7 +661,7 @@ class MDIDisplay extends BasePainter {
       let found_frame = null;
 
       this.forEachFrame(frame => {
-         if (d3.select(frame).attr('frame_title') == searchtitle)
+         if (d3_select(frame).attr('frame_title') == searchtitle)
             found_frame = frame;
       });
 
@@ -670,7 +672,7 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary Activate frame */
-   activateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
+   activateFrame(frame) { this.active_frame_title = d3_select(frame).attr('frame_title'); }
 
    /** @summary Return active frame */
    getActiveFrame() { return this.findFrame(this.active_frame_title); }
@@ -683,7 +685,7 @@ class MDIDisplay extends BasePainter {
 
       this.forEachPainter((painter, frame) => {
 
-         if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
+         if (only_frame_id && (d3_select(frame).attr('id') != only_frame_id)) return;
 
          if ((painter.getItemName()!==null) && (typeof painter.checkResize == 'function')) {
             // do not call resize for many painters on the same frame
@@ -729,7 +731,7 @@ class CustomDisplay extends MDIDisplay {
    forEachFrame(userfunc) {
       let ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
-         let node = d3.select("#"+ks[k]);
+         let node = d3_select("#"+ks[k]);
          if (!node.empty())
             userfunc(node.node());
       }
@@ -742,14 +744,14 @@ class CustomDisplay extends MDIDisplay {
       for (let k = 0; k < ks.length; ++k) {
          let items = this.frames[ks[k]];
          if (items.indexOf(title+";") >= 0)
-            return d3.select("#"+ks[k]).node();
+            return d3_select("#"+ks[k]).node();
       }
       return null;
    }
 
    cleanup() {
       super.cleanup();
-      this.forEachFrame(frame => d3.select(frame).html(""));
+      this.forEachFrame(frame => d3_select(frame).html(""));
    }
 
 } // class CustomDisplay
@@ -923,7 +925,7 @@ class GridDisplay extends MDIDisplay {
    /** @summary Handle interactive sepearator movement
      * @private */
    handleSeparator(elem, action) {
-      let separ = d3.select(elem),
+      let separ = d3_select(elem),
           parent = elem.parentNode,
           handle = separ.property('handle'),
           id = separ.property('separator_id'),
@@ -933,11 +935,11 @@ class GridDisplay extends MDIDisplay {
          let chld = parent.firstChild;
          while (chld) {
             if (chld.getAttribute("groupid") == grid)
-               return d3.select(chld);
+               return d3_select(chld);
             chld = chld.nextSibling;
          }
          // should never happen, but keep it here like
-         return d3.select(parent).select(`[groupid='${grid}']`);
+         return d3_select(parent).select(`[groupid='${grid}']`);
        }, setGroupSize = grid => {
           let name = handle.vertical ? 'height' : 'width',
               size = handle.groups[grid].size+'%';
@@ -1073,12 +1075,12 @@ class GridDisplay extends MDIDisplay {
          if (!this.simple_layout && this.framecnt)
             this.getcnt = (this.getcnt+1) % this.framecnt;
 
-         if (d3.select(frame).classed("jsroot_fixed_frame")) frame = null;
+         if (d3_select(frame).classed("jsroot_fixed_frame")) frame = null;
       }
 
       if (frame) {
          this.cleanupFrame(frame);
-         d3.select(frame).attr('frame_title', title);
+         d3_select(frame).attr('frame_title', title);
       }
 
       return this.afterCreateFrame(frame);
@@ -1129,7 +1131,7 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary return active frame */
    getActiveFrame() {
       let found = super.getActiveFrame();
-      if (found && d3.select(found.parentNode).property("state") != "min") return found;
+      if (found && d3_select(found.parentNode).property("state") != "min") return found;
 
       found = null;
       this.forEachFrame(frame => { found = frame; }, true);
@@ -1161,7 +1163,7 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary get frame state */
    getFrameState(frame) {
-      let main = d3.select(frame.parentNode);
+      let main = d3_select(frame.parentNode);
       return main.property("state");
    }
 
@@ -1172,7 +1174,7 @@ class FlexibleDisplay extends MDIDisplay {
          return { x: 0, y: 0, w: top.node().clientWidth, h: top.node().clientHeight };
       }
 
-      let main = d3.select(frame.parentNode), left = main.style('left'), top = main.style('top');
+      let main = d3_select(frame.parentNode), left = main.style('left'), top = main.style('top');
 
       return { x: parseInt(left.substr(0, left.length-2)), y: parseInt(top.substr(0, top.length-2)),
                w: main.node().clientWidth, h: main.node().clientHeight };
@@ -1180,7 +1182,7 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary change frame state */
    changeFrameState(frame, newstate,no_redraw) {
-      let main = d3.select(frame.parentNode),
+      let main = d3_select(frame.parentNode),
           state = main.property("state"),
           top = this.selectDom().select('.jsroot_flex_top');
 
@@ -1209,7 +1211,7 @@ class FlexibleDisplay extends MDIDisplay {
       }
 
       main.select(".jsroot_flex_header").selectAll("button").each(function(d) {
-         let btn = d3.select(this);
+         let btn = d3_select(this);
          if (((d.t == "minimize") && (newstate == "min")) ||
              ((d.t == "maximize") && (newstate == "max")))
                btn.html("&#x259E;").attr("title", "restore");
@@ -1258,8 +1260,8 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary handle button click
      * @private */
    _clickButton(btn) {
-      let kind = d3.select(btn).datum(),
-          main = d3.select(btn.parentNode.parentNode),
+      let kind = d3_select(btn).datum(),
+          main = d3_select(btn.parentNode.parentNode),
           frame = main.select(".jsroot_flex_draw").node();
 
       if (kind.t == "close") {
@@ -1307,7 +1309,7 @@ class FlexibleDisplay extends MDIDisplay {
          .style('height', Math.round(h * 0.58) + "px")
          .property("state", "normal")
          .select(".jsroot_flex_header")
-         .on("click", function() { mdi.activateFrame(d3.select(this.parentNode).select(".jsroot_flex_draw").node()); })
+         .on("click", function() { mdi.activateFrame(d3_select(this.parentNode).select(".jsroot_flex_draw").node()); })
          .selectAll("button")
          .data([{ n: '&#x2715;', t: "close" }, { n: '&#x2594;', t: "maximize" }, { n: '&#x2581;', t: "minimize" }])
          .enter()
@@ -1333,10 +1335,10 @@ class FlexibleDisplay extends MDIDisplay {
 
          if (detectRightButton(evnt.sourceEvent)) return;
 
-         let main = d3.select(this.parentNode);
+         let main = d3_select(this.parentNode);
          if(!main.classed("jsroot_flex_frame") || (main.property("state") == "max")) return;
 
-         doing_move = !d3.select(this).classed("jsroot_flex_resize");
+         doing_move = !d3_select(this).classed("jsroot_flex_resize");
          if (!doing_move && (main.property("state") == "min")) return;
 
          mdi.activateFrame(main.select(".jsroot_flex_draw").node());
@@ -1413,7 +1415,7 @@ class FlexibleDisplay extends MDIDisplay {
       this.forEachFrame(frame => arr.push(frame));
       arr.forEach(frame => {
          this.cleanupFrame(frame);
-         d3.select(frame.parentNode).remove();
+         d3_select(frame.parentNode).remove();
       });
    }
 
@@ -1441,7 +1443,7 @@ class FlexibleDisplay extends MDIDisplay {
         if (w > h) ny--; else nx--;
 
       arr.forEach((frame,i) => {
-         let main = d3.select(frame.parentNode);
+         let main = d3_select(frame.parentNode);
          if (kind == "cascade")
             main.style('left', (i*dx) + "px")
                 .style('top', (i*dy) + "px")
@@ -1466,7 +1468,7 @@ class FlexibleDisplay extends MDIDisplay {
       let arr = [];
       this.forEachFrame(f => arr.push(f));
       let active = this.getActiveFrame();
-      arr.sort((f1,f2) => { return  d3.select(f1).property('frame_cnt') < d3.select(f2).property('frame_cnt') ? -1 : 1; });
+      arr.sort((f1,f2) => { return  d3_select(f1).property('frame_cnt') < d3_select(f2).property('frame_cnt') ? -1 : 1; });
 
       createMenu(evnt, this).then(menu => {
          menu.add("header:Flex");
@@ -1476,7 +1478,7 @@ class FlexibleDisplay extends MDIDisplay {
          menu.add("Close all", () => this.closeAllFrames());
          menu.add("separator");
 
-         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + d3.select(f).attr("frame_title"), i,
+         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + d3_select(f).attr("frame_title"), i,
                       arg => {
                         let frame = arr[arg];
                         if (this.getFrameState(frame) == "min")
@@ -1517,7 +1519,7 @@ class BatchDisplay extends MDIDisplay {
       this.beforeCreateFrame(title);
 
       let frame =
-         this.jsdom_d3.select('body')
+         this.jsdom_d3_select('body')
              .append('div')
              .style("visible", "hidden")
              .attr("width", this.width).attr("height", this.height)
@@ -1541,9 +1543,9 @@ class BatchDisplay extends MDIDisplay {
    makeJSON(id, spacing) {
       let frame = this.frames[id];
       if (!frame) return;
-      let obj = d3.select(frame).property('_json_object_');
+      let obj = d3_select(frame).property('_json_object_');
       if (obj) {
-         d3.select(frame).property('_json_object_', null);
+         d3_select(frame).property('_json_object_', null);
          return JSROOT.toJSON(obj, spacing);
       }
    }
@@ -1552,7 +1554,7 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id) {
       let frame = this.frames[id];
       if (!frame) return;
-      let main = d3.select(frame);
+      let main = d3_select(frame);
       let has_workarounds = JSROOT._.svg_3ds && JSROOT._.processSvgWorkarounds;
       main.select('svg')
           .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -1595,7 +1597,7 @@ class BrowserLayout {
 
    /** @summary Selects main element */
    main() {
-      return d3.select("#" + this.gui_div);
+      return d3_select("#" + this.gui_div);
    }
 
    /** @summary Returns drawing divid */
@@ -1641,7 +1643,7 @@ class BrowserLayout {
 
    /** @summary Set browser content */
    setBrowserContent(guiCode) {
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
@@ -1654,14 +1656,14 @@ class BrowserLayout {
 
    /** @summary Check if there is browser content */
    hasContent() {
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return false;
       return !main.select(".jsroot_browser_area").empty();
    }
 
    /** @summary Delete content */
    deleteContent() {
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       this.createStatusLine(0, "delete");
@@ -1677,11 +1679,11 @@ class BrowserLayout {
 
    /** @summary Returns true when status line exists */
    hasStatus() {
-      let main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      let main = d3_select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return false;
 
       let id = this.gui_div + "_status",
-          line = d3.select("#"+id);
+          line = d3_select("#"+id);
 
       return !line.empty();
    }
@@ -1689,7 +1691,7 @@ class BrowserLayout {
    /** @summary Set browser title text
      * @desc Title also used for dragging of the float browser */
    setBrowserTitle(title) {
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (!main.empty())
          main.select(".jsroot_browser_title").text(title).style('cursor',this.browser_kind == 'flex' ? "move" : null);
    }
@@ -1706,12 +1708,12 @@ class BrowserLayout {
    /** @summary Creates status line */
    createStatusLine(height, mode) {
 
-      let main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      let main = d3_select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty())
          return Promise.resolve('');
 
       let id = this.gui_div + "_status",
-          line = d3.select("#"+id),
+          line = d3_select("#"+id),
           is_visible = !line.empty();
 
       if (mode==="toggle") { mode = !is_visible; } else
@@ -1742,7 +1744,7 @@ class BrowserLayout {
       if (mode === false)
          return Promise.resolve("");
 
-      let left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
+      let left_pos = d3_select("#" + this.gui_div + "_drawing").style('left');
 
       main.insert("div",".jsroot_browser_area")
           .attr("id",id)
@@ -1783,7 +1785,7 @@ class BrowserLayout {
 
       let frame_titles = ['object name','object title','mouse coordinates','object info'];
       for (let k = 0; k < 4; ++k)
-         d3.select(this.status_layout.getGridFrame(k))
+         d3_select(this.status_layout.getGridFrame(k))
            .attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
@@ -1797,7 +1799,7 @@ class BrowserLayout {
 
       if (!this.gui_div) return;
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
       if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
@@ -1823,13 +1825,13 @@ class BrowserLayout {
 
             this.last_hsepar_height = hsepar;
             elem.style('bottom', hsepar+'px').style('height', w+'px');
-            d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
+            d3_select("#" + this.gui_div + "_status").style('height', hsepar+'px');
             hlimit = (hsepar+w) + 'px';
          }
 
          this._hsepar_position = hsepar;
 
-         d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
+         d3_select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
       if (vsepar!==null) {
@@ -1837,9 +1839,9 @@ class BrowserLayout {
          if (vsepar < 50) vsepar = 50;
          this._vsepar_position = vsepar;
          main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
+         d3_select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
          main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
-         d3.select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
+         d3_select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
 
@@ -1868,13 +1870,13 @@ class BrowserLayout {
    toggleBrowserVisisbility(fast_close) {
       if (!this.gui_div || (typeof this.browser_visible==='string')) return;
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser"),
           area = main.select('.jsroot_browser_area');
 
       if (area.empty()) return;
 
       let vsepar = main.select(".jsroot_v_separator"),
-          drawing = d3.select("#" + this.gui_div + "_drawing"),
+          drawing = d3_select("#" + this.gui_div + "_drawing"),
           tgt = area.property('last_left'),
           tgt_separ = area.property('last_vsepar'),
           tgt_drawing = area.property('last_drawing');
@@ -1927,12 +1929,12 @@ class BrowserLayout {
    adjustBrowserSize(onlycheckmax) {
       if (!this.gui_div || (this.browser_kind !== "float")) return;
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       let area = main.select(".jsroot_browser_area"),
           cont = main.select(".jsroot_browser_hierarchy"),
-          chld = d3.select(cont.node().firstChild);
+          chld = d3_select(cont.node().firstChild);
 
       if (onlycheckmax) {
          if (area.node().parentNode.clientHeight - 10 < area.node().clientHeight)
@@ -1951,7 +1953,7 @@ class BrowserLayout {
    setButtonsPosition() {
       if (!this.gui_div) return;
 
-      let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+      let main = d3_select("#"+this.gui_div+" .jsroot_browser"),
           btns = main.select(".jsroot_browser_btns"),
           top = 7, left = 7;
 
@@ -1980,7 +1982,7 @@ class BrowserLayout {
          kind = (this.browser_kind === "float") ? "fix" : "float";
       }
 
-      let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+      let main = d3_select("#"+this.gui_div+" .jsroot_browser"),
           area = main.select(".jsroot_browser_area");
 
       if (this.browser_kind === "float") {
@@ -1994,9 +1996,9 @@ class BrowserLayout {
       } else if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
          area.style('left', '0px');
-         d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
+         d3_select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
          main.select(".jsroot_h_separator").style('left','0px');
-         d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
+         d3_select("#"+this.gui_div+"_status").style('left','0px'); // reset left
          this.checkResize();
       }
 
@@ -2394,7 +2396,7 @@ class HierarchyPainter extends BasePainter {
 
       let hitem = this.findItem(itemname),
           url = this.getOnlineItemUrl(hitem) + "/cmd.json",
-          d3node = d3.select(elem),
+          d3node = d3_select(elem),
           cmdargs = [];
 
       if ('_numargs' in hitem)
@@ -2752,7 +2754,7 @@ class HierarchyPainter extends BasePainter {
                        .attr("class",'jsroot_fastcmd_btn')
                        .attr("item", this.itemFullName(factcmds[n]))
                        .attr("title", factcmds[n]._title)
-                       .on("click", function() { h.executeCommand(d3.select(this).attr("item"), this); } );
+                       .on("click", function() { h.executeCommand(d3_select(this).attr("item"), this); } );
 
             if (factcmds[n]._icon)
                btn.style("background-image", `url("${factcmds[n]._icon}")`);
@@ -2816,7 +2818,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    updateTreeNode(hitem, d3cont) {
       if ((d3cont === undefined) || d3cont.empty())  {
-         d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
+         d3cont = d3_select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
             d3cont = this.selectDom().select("[item='" + name + "']");
@@ -2835,7 +2837,7 @@ class HierarchyPainter extends BasePainter {
    updateBackground(hitem, scroll_into_view) {
       if (!hitem || !hitem._d3cont) return;
 
-      let d3cont = d3.select(hitem._d3cont);
+      let d3cont = d3_select(hitem._d3cont);
 
       if (d3cont.empty()) return;
 
@@ -2884,7 +2886,7 @@ class HierarchyPainter extends BasePainter {
    tree_click(evnt, node, place) {
       if (!node) return;
 
-      let d3cont = d3.select(node.parentNode.parentNode),
+      let d3cont = d3_select(node.parentNode.parentNode),
           itemname = d3cont.attr('item'),
           hitem = itemname ? this.findItem(itemname) : null;
       if (!hitem) return;
@@ -2898,7 +2900,7 @@ class HierarchyPainter extends BasePainter {
          this.addItemHtml(hitem, d3cont, "update");
 
          let prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
-             d3chlds = d3.select(d3cont.node().parentNode);
+             d3chlds = d3_select(d3cont.node().parentNode);
 
          if (indx < 0) return console.error('internal error');
 
@@ -3012,7 +3014,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Handler for mouse-over event
      * @private */
    tree_mouseover(on, elem) {
-      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+      let itemname = d3_select(elem.parentNode.parentNode).attr('item'),
            hitem = this.findItem(itemname);
 
       if (!hitem) return;
@@ -3031,7 +3033,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    direct_contextmenu(evnt, elem) {
       evnt.preventDefault();
-      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+      let itemname = d3_select(elem.parentNode.parentNode).attr('item'),
            hitem = this.findItem(itemname);
       if (!hitem) return;
 
@@ -3049,7 +3051,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    tree_contextmenu(evnt, elem) {
       evnt.preventDefault();
-      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+      let itemname = d3_select(elem.parentNode.parentNode).attr('item'),
            hitem = this.findItem(itemname);
       if (!hitem) return;
 
@@ -3328,7 +3330,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             let frame = mdi.findFrame(frame_name, true);
-            d3.select(frame).html("");
+            d3_select(frame).html("");
             mdi.activateFrame(frame);
 
             return JSROOT.draw(frame, obj, drawopt)
@@ -3352,17 +3354,17 @@ class HierarchyPainter extends BasePainter {
      * @private  */
    enableDrop(frame) {
       let h = this;
-      d3.select(frame).on("dragover", function(ev) {
+      d3_select(frame).on("dragover", function(ev) {
          let itemname = ev.dataTransfer.getData("item"),
               ditem = h.findItem(itemname);
          if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf("ROOT.")==0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
       }).on("dragenter", function() {
-         d3.select(this).classed('jsroot_drag_area', true);
+         d3_select(this).classed('jsroot_drag_area', true);
       }).on("dragleave", function() {
-         d3.select(this).classed('jsroot_drag_area', false);
+         d3_select(this).classed('jsroot_drag_area', false);
       }).on("drop", function(ev) {
-         d3.select(this).classed('jsroot_drag_area', false);
+         d3_select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData("item");
          if (itemname) h.dropItem(itemname, this.getAttribute("id"));
       });
@@ -3371,7 +3373,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Remove all drop handlers on the frame
      * @private  */
    clearDrop(frame) {
-      d3.select(frame).on("dragover", null).on("dragenter", null).on("dragleave", null).on("drop", null);
+      d3_select(frame).on("dragover", null).on("dragenter", null).on("dragleave", null).on("drop", null);
    }
 
   /** @summary Drop item on specified element for drawing
@@ -3480,12 +3482,12 @@ class HierarchyPainter extends BasePainter {
 
       if ((options.length == 1) && (options[0] == "iotest")) {
          this.clearHierarchy();
-         d3.select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>");
+         d3_select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>");
 
          let tm0 = new Date();
          return this.getObject(items[0]).then(() => {
             let tm1 = new Date();
-            d3.select("#" + this.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
+            d3_select("#" + this.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return Promise.resolve(true);
          });
       }
@@ -3926,8 +3928,8 @@ class HierarchyPainter extends BasePainter {
          // make CORS warning
          if (JSROOT.batch_mode)
             console.error(`Fail to open ${filepath} - check CORS headers`);
-         else if (!d3.select("#gui_fileCORS").style("background","red").empty())
-            setTimeout(() => d3.select("#gui_fileCORS").style("background",''), 5000);
+         else if (!d3_select("#gui_fileCORS").style("background","red").empty())
+            setTimeout(() => d3_select("#gui_fileCORS").style("background",''), 5000);
          return false;
       }).finally(() => showProgress());
    }
@@ -4336,7 +4338,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    cleanupFrame(frame) {
 
-      d3.select(frame).attr("frame_title", null);
+      d3_select(frame).attr("frame_title", null);
 
       this.clearDrop(frame);
 
@@ -4736,7 +4738,7 @@ class HierarchyPainter extends BasePainter {
       if (!this.gui_div || this.exclude_browser || !this.brlayout)
          return Promise.resolve(false);
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
 
       // one requires top-level container
       if (main.empty())
@@ -4760,7 +4762,7 @@ class HierarchyPainter extends BasePainter {
                     '<div style="display:inline; vertical-align:middle; white-space: nowrap;">' +
                     '<label style="margin-right:5px"><input type="checkbox" name="monitoring" class="gui_monitoring"/>Monitoring</label>';
       } else if (!this.no_select) {
-         let myDiv = d3.select("#"+this.gui_div),
+         let myDiv = d3_select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
              path = JSROOT.decodeUrl().get("path") || myDiv.attr("path") || "",
              arrFiles = files.split(';');
@@ -4868,7 +4870,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Initialize browser elements */
    initializeBrowser() {
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty() || !this.brlayout) return;
 
       if (this.brlayout) this.brlayout.adjustBrowserSize();
@@ -4913,7 +4915,7 @@ class HierarchyPainter extends BasePainter {
    enableMonitoring(on) {
       this.setMonitoring(undefined, on);
 
-      let chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      let chkbox = d3_select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
       if (!chkbox.empty() && (chkbox.property('checked') !== on))
          chkbox.property('checked', on);
    }
@@ -4926,7 +4928,7 @@ class HierarchyPainter extends BasePainter {
   * @private */
 function buildNobrowserGUI(gui_element, gui_kind) {
 
-   let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
+   let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
    if (myDiv.empty()) {
       alert('no div for simple nobrowser gui found');
       return Promise.resolve(null);
@@ -4952,8 +4954,8 @@ function buildNobrowserGUI(gui_element, gui_kind) {
    if (guisize) {
       myDiv.style('position',"relative").style('width', guisize[0] + "px").style('height', guisize[1] + "px");
    } else {
-      d3.select('html').style('height','100%');
-      d3.select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
+      d3_select('html').style('height','100%');
+      d3_select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
    }
 
@@ -4981,7 +4983,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
   * @returns {Promise} when completed
   * @private  */
 function buildGUI(gui_element, gui_kind) {
-   let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
+   let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
    if (myDiv.empty()) return alert('no div for gui found');
 
    let online = false;
@@ -5302,7 +5304,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    let frame = mdi.findFrame(itemname, true);
    if (!frame) return null;
 
-   let divid = d3.select(frame).attr('id'),
+   let divid = d3_select(frame).attr('id'),
        player = new BasePainter(divid);
 
    if (item._childs && !asleaf)

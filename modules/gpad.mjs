@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
@@ -743,7 +745,7 @@ class TAxisPainter extends ObjectPainter {
 
       if (lbl_tilt)
          label_g[0].selectAll("text").each(function() {
-            let txt = d3.select(this), tr = txt.attr("transform");
+            let txt = d3_select(this), tr = txt.attr("transform");
             txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
          });
 
@@ -4364,8 +4366,8 @@ class TCanvasPainter extends TPadPainter {
          if (mainid == undefined)
             mainid = (layout_kind.indexOf("vert") == 0) ? 0 : 1;
 
-         main = d3.select(grid.getGridFrame(mainid));
-         sidebar = d3.select(grid.getGridFrame(1 - mainid));
+         main = d3_select(grid.getGridFrame(mainid));
+         sidebar = d3_select(grid.getGridFrame(1 - mainid));
 
          main.classed("central_panel", true).style('position','relative');
          sidebar.classed("side_panel", true).style('position','relative');
@@ -4719,7 +4721,7 @@ class TCanvasPainter extends TPadPainter {
 
          JSROOT.require('openui5').then(() => {
 
-            d3.select("#ged_placeholder").text("");
+            d3_select("#ged_placeholder").text("");
 
             sap.ui.define(["sap/ui/model/json/JSONModel", "sap/ui/core/mvc/XMLView"], (JSONModel,XMLView) => {
 

@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { Prob } from './math.mjs';
 
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
@@ -918,9 +920,9 @@ class TPavePainter extends ObjectPainter {
 
             if (this.isTooltipAllowed())
                r.on('mouseover', function() {
-                  d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
+                  d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill1'));
                }).on('mouseout', function() {
-                  d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+                  d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (JSROOT.settings.Zooming)
@@ -979,7 +981,7 @@ class TPavePainter extends ObjectPainter {
          if (!doing_zoom) return;
 
          evnt.preventDefault();
-         d3.select(window).on("mousemove.colzoomRect", null)
+         d3_select(window).on("mousemove.colzoomRect", null)
                           .on("mouseup.colzoomRect", null);
          zoom_rect.remove();
          zoom_rect = null;
@@ -1014,7 +1016,7 @@ class TPavePainter extends ObjectPainter {
                      .attr("height", s_height);
          }
 
-         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+         d3_select(window).on("mousemove.colzoomRect", moveRectSel)
                           .on("mouseup.colzoomRect", endRectSel, true);
       };
 

@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { select as d3_select } from './d3.mjs';
+
 import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
 
 const symbols_map = {
@@ -1178,7 +1180,7 @@ function produceMathjax(painter, mj_node, arg) {
    return loadMathjax()
           .then(() => MathJax.tex2svgPromise(mtext, options))
           .then(elem => {
-              let svg = d3.select(elem).select("svg");
+              let svg = d3_select(elem).select("svg");
               // when adding element to new node, it will be removed from original parent
               mj_node.append(function() { return svg.node(); });
 
