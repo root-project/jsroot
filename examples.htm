@@ -215,7 +215,7 @@
                let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
                testfile = testobj = null;
-               let ii = JSROOT.decodeUrl().get("interval");
+               let ii = await JSROOT.decodeUrl().get("interval");
                if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                     else testinterval = interval;
                if (running) return;
@@ -296,7 +296,7 @@
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
 
-               let d = JSROOT.decodeUrl(url),
+               let d = await JSROOT.decodeUrl(url),
                    layout = d.get("layout", "simple"),
                    nobrowser = d.has("nobrowser");
 

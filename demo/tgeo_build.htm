@@ -20,14 +20,15 @@
 
       <script type='module'>
 
-         import * as JSROOT from '../modules/core.mjs';
+         import { decodeUrl } from '../modules/core.mjs';
 
-         import * as THREE from '../modules/three.mjs';
+         import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
+                  MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from '../modules/three.mjs';
 
          import { build, produceRenderOrder } from '../modules/geom.mjs';
 
          let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null,
-            d = JSROOT.decodeUrl();
+            d = decodeUrl();
 
          function add_geometry(obj) {
 
@@ -48,9 +49,9 @@
             scene.remove( dummy );
             scene.add( obj3d );
 
-            let box3 = new THREE.Box3().setFromObject(obj3d);
+            let box3 = new Box3().setFromObject(obj3d);
 
-            geom_size = box3.getSize(new THREE.Vector3()).length();
+            geom_size = box3.getSize(new Vector3()).length();
 
             camera.far = geom_size*5;
             camera.updateProjectionMatrix();
@@ -104,24 +105,24 @@
           container = document.createElement( 'div' );
           document.body.appendChild( container );
 
-          camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, geom_size*5 );
+          camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, geom_size*5 );
           camera.position.y = geom_size;
 
-          scene = new THREE.Scene();
-          scene.add( new THREE.AmbientLight( 0x404040 ) );
+          scene = new Scene();
+          scene.add( new AmbientLight( 0x404040 ) );
 
-          let light = new THREE.DirectionalLight( 0xffffff );
+          let light = new DirectionalLight( 0xffffff );
           light.position.set( 0, 1, 0 );
           scene.add( light );
 
 
           // first draw dummy object, seen in the beginning
-          let material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, color: 'red', vertexColors: false });
-          dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
+          let material = new MeshLambertMaterial({ side: DoubleSide, color: 'red', vertexColors: false });
+          dummy = new Mesh( new TetrahedronGeometry( 75, 0 ), material );
           // object.position.set( 200, 0, 200 );
           scene.add( dummy );
 
-          renderer = new THREE.WebGLRenderer( { antialias: true } );
+          renderer = new WebGLRenderer( { antialias: true } );
           renderer.setPixelRatio( window.devicePixelRatio );
           renderer.setSize( window.innerWidth, window.innerHeight );
 
