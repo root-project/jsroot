@@ -2,6 +2,8 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
+import { gStyle } from './core.mjs';
+
 import * as JSROOT from './core.mjs';
 
 if (!JSROOT.batch_mode)
@@ -233,7 +235,7 @@ function closeMenu(menuname) {
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-   let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle, s = JSROOT.settings;
+   let d = JSROOT.decodeUrl(url), g = gStyle, s = JSROOT.settings;
 
    if (d.has("optimize")) {
       s.OptimizeDraw = 2;
@@ -3353,7 +3355,7 @@ const AxisPainterMethods = {
    formatLog(d, asticks, fmt) {
       let val = parseFloat(d), rnd = Math.round(val);
       if (!asticks)
-         return ((rnd === val) && (Math.abs(rnd) < 1e9)) ? rnd.toString() : floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+         return ((rnd === val) && (Math.abs(rnd) < 1e9)) ? rnd.toString() : floatToString(val, fmt || gStyle.fStatFormat);
       if (val <= 0) return null;
       let vlog = Math.log10(val), base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
@@ -3376,7 +3378,7 @@ const AxisPainterMethods = {
 
       if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
-      return floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+      return floatToString(val, fmt || gStyle.fStatFormat);
    },
 
    /** @summary Provide label for exponential form */

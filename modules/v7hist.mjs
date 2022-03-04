@@ -2,6 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { rgb as d3_rgb } from './d3.mjs';
 
 import { floatToString, DrawOptions, TAttLineHandler, TRandom,
@@ -583,7 +585,7 @@ class RHistPainter extends RObjectPainter {
 
       if (!args) args = {};
 
-      let nlevels = JSROOT.gStyle.fNumberContours,
+      let nlevels = gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
 
       if (args.scatter_plot) {
@@ -1292,7 +1294,7 @@ class RH1Painter extends RHistPainter {
       let use_minmax = ((right-left) > 3*width);
 
       if (options.ErrorKind === 1) {
-         let lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
+         let lw = this.lineatt.width + gStyle.fEndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
          dend = Math.floor((this.lineatt.width-1)/2);
@@ -1320,7 +1322,7 @@ class RH1Painter extends RHistPainter {
                let cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
 
                if (cont!==0) {
-                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, JSROOT.gStyle.fPaintTextFormat);
+                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, gStyle.fPaintTextFormat);
 
                   if (text_font.angle)
                      this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size/5), width: 0, height: 0, text: lbl, latex: 0 });
@@ -1525,7 +1527,7 @@ class RH1Painter extends RHistPainter {
          if (cont === Math.round(cont))
             tips.push(lbl + cont);
          else
-            tips.push(lbl + floatToString(cont, JSROOT.gStyle.fStatFormat));
+            tips.push(lbl + floatToString(cont, gStyle.fStatFormat));
       }
 
       return tips;
@@ -1872,7 +1874,7 @@ class RH1Painter extends RHistPainter {
       painter.setAsMainPainter();
 
       painter.options = { Hist: false, Bar: false, BarStyle: 0,
-                          Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
+                          Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
                           Zero: false, Mark: false,
                           Line: false, Fill: false, Lego: 0, Surf: 0,
                           Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
@@ -2782,7 +2784,7 @@ class RH2Painter extends RHistPainter {
 
             if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                          floatToString(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
+                          floatToString(bin.fContent, gStyle.fPaintTextFormat);
             } else {
                if (bin.fPoly) lbl = bin.fPoly.fName;
                if (lbl === "Graph") lbl = "";
@@ -2828,7 +2830,7 @@ class RH2Painter extends RHistPainter {
                binz = histo.getBinEntries(i+1, j+1);
 
             lbl = (binz === Math.round(binz)) ? binz.toString() :
-                      floatToString(binz, JSROOT.gStyle.fPaintTextFormat);
+                      floatToString(binz, gStyle.fPaintTextFormat);
 
             if (textFont.angle) {
                posx = Math.round(handle.grx[i] + binw*0.5);
@@ -3351,7 +3353,7 @@ class RH2Painter extends RHistPainter {
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
-         lines.push(lbl + floatToString(binz, JSROOT.gStyle.fStatFormat));
+         lines.push(lbl + floatToString(binz, gStyle.fStatFormat));
 
       return lines;
    }
@@ -3364,9 +3366,9 @@ class RH2Painter extends RHistPainter {
 
       lines.push("x = " + main.axisAsText("x", xaxis.GetBinCoord(p.bin)));
 
-      lines.push('mean y = ' + floatToString(p.meany, JSROOT.gStyle.fStatFormat))
-      lines.push('m25 = ' + floatToString(p.m25y, JSROOT.gStyle.fStatFormat))
-      lines.push('p25 = ' + floatToString(p.p25y, JSROOT.gStyle.fStatFormat))
+      lines.push('mean y = ' + floatToString(p.meany, gStyle.fStatFormat))
+      lines.push('m25 = ' + floatToString(p.m25y, gStyle.fStatFormat))
+      lines.push('p25 = ' + floatToString(p.p25y, gStyle.fStatFormat))
 
       return lines;
    }
@@ -3412,7 +3414,7 @@ class RH2Painter extends RHistPainter {
       if (bin.fContent === Math.round(bin.fContent))
          lines.push("content = " + bin.fContent);
       else
-         lines.push("content = " + floatToString(bin.fContent, JSROOT.gStyle.fStatFormat));
+         lines.push("content = " + floatToString(bin.fContent, gStyle.fStatFormat));
       return lines;
    }
 
@@ -3800,7 +3802,7 @@ class RHistStatsPainter extends RPavePainter {
          let main = this.getMainPainter();
          if (!main || (typeof main.fillStatistic !== 'function')) return false;
          // we take statistic from main painter
-         return main.fillStatistic(this, JSROOT.gStyle.fOptStat, JSROOT.gStyle.fOptFit);
+         return main.fillStatistic(this, gStyle.fOptStat, gStyle.fOptFit);
       }
 
       // show lines which are exists, maybe server request will be recieved later
@@ -3813,8 +3815,8 @@ class RHistStatsPainter extends RPavePainter {
       if (!fmt) fmt = "stat";
 
       switch(fmt) {
-         case "stat" : fmt = JSROOT.gStyle.fStatFormat; break;
-         case "fit": fmt = JSROOT.gStyle.fFitFormat; break;
+         case "stat" : fmt = gStyle.fStatFormat; break;
+         case "fit": fmt = gStyle.fFitFormat; break;
          case "entries": if ((Math.abs(value) < 1e9) && (Math.round(value) == value)) return value.toFixed(0); fmt = "14.7g"; break;
          case "last": fmt = this.lastformat; break;
       }

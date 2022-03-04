@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
 import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
@@ -1627,7 +1629,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (options.Errors) {
          // to show end of error markers, use line width attribute
-         let lw = lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
+         let lw = lineatt.width + gStyle.fEndErrorSize, bb = 0,
              vv = options.Ends ? `m0,${lw}v${-2*lw}` : "",
              hh = options.Ends ? `m${lw},0h${-2*lw}` : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh;
@@ -2411,7 +2413,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.create_stats = true;
 
-      let st = JSROOT.gStyle;
+      let st = gStyle;
 
       stats = JSROOT.create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
@@ -3211,12 +3213,12 @@ class TSplinePainter extends ObjectPainter {
       res.lines.push("y = " + funcs.axisAsText("y", yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
-         res.lines.push("B = " + floatToString(knot.fB, JSROOT.gStyle.fStatFormat));
-         res.lines.push("C = " + floatToString(knot.fC, JSROOT.gStyle.fStatFormat));
-         res.lines.push("D = " + floatToString(knot.fD, JSROOT.gStyle.fStatFormat));
+         res.lines.push("B = " + floatToString(knot.fB, gStyle.fStatFormat));
+         res.lines.push("C = " + floatToString(knot.fC, gStyle.fStatFormat));
+         res.lines.push("D = " + floatToString(knot.fD, gStyle.fStatFormat));
          if ((knot.fE!==undefined) && (knot.fF!==undefined)) {
-            res.lines.push("E = " + floatToString(knot.fE, JSROOT.gStyle.fStatFormat));
-            res.lines.push("F = " + floatToString(knot.fF, JSROOT.gStyle.fStatFormat));
+            res.lines.push("E = " + floatToString(knot.fE, gStyle.fStatFormat));
+            res.lines.push("F = " + floatToString(knot.fF, gStyle.fStatFormat));
          }
       }
 

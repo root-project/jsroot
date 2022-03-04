@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
@@ -47,7 +49,7 @@ function getTimeOffset(axis) {
    let dflt_time_offset = 788918400000;
    if (!axis) return dflt_time_offset;
    let idF = axis.fTimeFormat.indexOf('%F');
-   if (idF < 0) return JSROOT.gStyle.fTimeOffset * 1000;
+   if (idF < 0) return gStyle.fTimeOffset * 1000;
    let sof = axis.fTimeFormat.substr(idF + 2);
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
@@ -1528,7 +1530,7 @@ class TFramePainter extends ObjectPainter {
           pad = pp ? pp.getRootPad(true) : null,
           h = this.getFrameHeight(),
           w = this.getFrameWidth(),
-          grid_style = JSROOT.gStyle.fGridStyle;
+          grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
@@ -1539,7 +1541,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridx += `M${this.x_handle.ticks[n]},0v${h}`;
 
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("x") ? this.getAxis("x").fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis("x") ? this.getAxis("x").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
          if (gridx.length > 0)
@@ -1547,7 +1549,7 @@ class TFramePainter extends ObjectPainter {
                 .attr("class", "xgrid")
                 .attr("d", gridx)
                 .style("stroke", grid_color)
-                .style("stroke-width", JSROOT.gStyle.fGridWidth)
+                .style("stroke-width", gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
 
@@ -1560,7 +1562,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
 
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("y") ? this.getAxis("y").fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis("y") ? this.getAxis("y").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
          if (gridy.length > 0)
@@ -1568,7 +1570,7 @@ class TFramePainter extends ObjectPainter {
                 .attr("class", "ygrid")
                 .attr("d", gridy)
                 .style("stroke", grid_color)
-                .style("stroke-width",JSROOT.gStyle.fGridWidth)
+                .style("stroke-width",gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
    }
@@ -2915,7 +2917,7 @@ class TPadPainter extends ObjectPainter {
       if (!obj) return false;
 
       if (obj._typename == "TStyle") {
-         JSROOT.extend(JSROOT.gStyle, obj);
+         JSROOT.extend(gStyle, obj);
          return true;
       }
 
@@ -3477,7 +3479,7 @@ class TPadPainter extends ObjectPainter {
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
-         JSROOT.extend(JSROOT.gStyle, snap.fSnapshot);
+         JSROOT.extend(gStyle, snap.fSnapshot);
          return this.drawNextSnap(lst, indx); // call next
       }
 

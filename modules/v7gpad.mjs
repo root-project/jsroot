@@ -2,6 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
@@ -1593,8 +1595,8 @@ class RFramePainter extends RObjectPainter {
           w = this.getFrameWidth(),
           gridx = this.v7EvalAttr("gridX", false),
           gridy = this.v7EvalAttr("gridY", false),
-          grid_style = getSvgLineStyle(JSROOT.gStyle.fGridStyle),
-          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.getColor(JSROOT.gStyle.fGridColor) : "black";
+          grid_style = getSvgLineStyle(gStyle.fGridStyle),
+          grid_color = (gStyle.fGridColor > 0) ? this.getColor(gStyle.fGridColor) : "black";
 
       if (this.x_handle)
          this.x_handle.draw_grid = gridx;
@@ -1613,7 +1615,7 @@ class RFramePainter extends RObjectPainter {
                  .attr("class", "xgrid")
                  .attr("d", grid)
                  .style('stroke',grid_color)
-                 .style("stroke-width", JSROOT.gStyle.fGridWidth)
+                 .style("stroke-width", gStyle.fGridWidth)
                  .style("stroke-dasharray", grid_style);
       }
 
@@ -1634,7 +1636,7 @@ class RFramePainter extends RObjectPainter {
                .attr("class", "ygrid")
                .attr("d", grid)
                .style('stroke', grid_color)
-               .style("stroke-width", JSROOT.gStyle.fGridWidth)
+               .style("stroke-width", gStyle.fGridWidth)
                .style("stroke-dasharray", grid_style);
       }
    }
@@ -3584,7 +3586,7 @@ class RPadPainter extends RObjectPainter {
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
 
          if (snap.fKind == webSnapIds.kStyle) {
-            JSROOT.extend(JSROOT.gStyle, snap.fObject);
+            JSROOT.extend(gStyle, snap.fObject);
             return this.drawNextSnap(lst, indx);
          }
 

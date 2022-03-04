@@ -2,6 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { rgb as d3_rgb } from './d3.mjs';
 
 import { REVISION, DoubleSide,
@@ -2412,7 +2414,7 @@ class RH3Painter extends RHistPainter {
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
-         lines.push(lbl + floatToString(binz, JSROOT.gStyle.fStatFormat));
+         lines.push(lbl + floatToString(binz, gStyle.fStatFormat));
 
       return lines;
    }

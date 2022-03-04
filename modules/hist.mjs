@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
 
@@ -662,8 +664,8 @@ class TPavePainter extends ObjectPainter {
       let pave = this.getObject();
 
       switch(fmt) {
-         case "stat" : fmt = pave.fStatFormat || JSROOT.gStyle.fStatFormat; break;
-         case "fit": fmt = pave.fFitFormat || JSROOT.gStyle.fFitFormat; break;
+         case "stat" : fmt = pave.fStatFormat || gStyle.fStatFormat; break;
+         case "fit": fmt = pave.fFitFormat || gStyle.fFitFormat; break;
          case "entries": if ((Math.abs(value) < 1e9) && (Math.round(value) == value)) return value.toFixed(0); fmt = "14.7g"; break;
          case "last": fmt = this.lastformat; break;
       }
@@ -943,7 +945,7 @@ class TPavePainter extends ObjectPainter {
                   palette.fX2NDC -= shift/width;
                }
             } else {
-               let shift = Math.round((1.05 - JSROOT.gStyle.fTitleY)*height) - rect.y;
+               let shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
                if (shift > 0) {
                   this._pave_y += shift;
                   this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
@@ -1042,10 +1044,10 @@ class TPavePainter extends ObjectPainter {
       menu.add("header: " + pave._typename + "::" + pave.fName);
       if (this.isStats()) {
          menu.add("Default position", function() {
-            pave.fX2NDC = JSROOT.gStyle.fStatX;
-            pave.fX1NDC = pave.fX2NDC - JSROOT.gStyle.fStatW;
-            pave.fY2NDC = JSROOT.gStyle.fStatY;
-            pave.fY1NDC = pave.fY2NDC - JSROOT.gStyle.fStatH;
+            pave.fX2NDC = gStyle.fStatX;
+            pave.fX1NDC = pave.fX2NDC - gStyle.fStatW;
+            pave.fY2NDC = gStyle.fStatY;
+            pave.fY1NDC = pave.fY2NDC - gStyle.fStatH;
             pave.fInit = 1;
             this.interactiveRedraw(true, "pave_moved")
          });
@@ -1212,17 +1214,17 @@ class TPavePainter extends ObjectPainter {
       if (!main || (typeof main.fillStatistic !== 'function')) return false;
 
       let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
-      if (!Number.isInteger(dostat)) dostat = JSROOT.gStyle.fOptStat;
-      if (!Number.isInteger(dofit)) dofit = JSROOT.gStyle.fOptFit;
+      if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
+      if (!Number.isInteger(dofit)) dofit = gStyle.fOptFit;
 
       // we take statistic from main painter
       if (!main.fillStatistic(this, dostat, dofit)) return false;
 
       // adjust the size of the stats box with the number of lines
       let nlines = pave.fLines.arr.length,
-          stath = nlines * JSROOT.gStyle.StatFontSize;
-      if ((stath <= 0) || (JSROOT.gStyle.StatFont % 10 === 3)) {
-         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
+          stath = nlines * gStyle.StatFontSize;
+      if ((stath <= 0) || (gStyle.StatFont % 10 === 3)) {
+         stath = 0.25 * nlines * gStyle.StatH;
          pave.fY1NDC = pave.fY2NDC - stath;
       }
 
@@ -1333,7 +1335,7 @@ class TPavePainter extends ObjectPainter {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();
             } else if ((opt == "postitle") || painter.isDummyPos(pave)) {
-               let st = JSROOT.gStyle, fp = painter.getFramePainter();
+               let st = gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
                   if (!h) h = (y2-fp.fY2NDC)*0.7;
@@ -1457,7 +1459,7 @@ class THistDrawOptions {
             { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
               Bar: false, BarStyle: 0, Curve: false,
               Hist: true, Line: false, Fill: false,
-              Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
+              Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
@@ -1574,7 +1576,7 @@ class THistDrawOptions {
       if (d.check('SPEC')) this.Spec = true; // not used
 
       if (d.check('BASE0') || d.check('MIN0')) this.BaseLine = 0; else
-      if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
+      if (gStyle.fHistMinimumZero) this.BaseLine = 0;
 
       if (d.check('PIE')) this.Pie = true; // not used
 
@@ -2499,7 +2501,7 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter() || this.options.Same)
          return Promise.resolve(this);
 
-      let histo = this.getHisto(), st = JSROOT.gStyle,
+      let histo = this.getHisto(), st = gStyle,
           pp = this.getPadPainter(),
           tpainter = pp ? pp.findPainterFor(null, "title") : null,
           pt = tpainter ? tpainter.getObject() : null,
@@ -2632,7 +2634,7 @@ class THistPainter extends ObjectPainter {
          if ((this.options.Axis > 0) || !this.isMainPainter()) return null;
       }
 
-      let stats = this.findStat(), st = JSROOT.gStyle,
+      let stats = this.findStat(), st = gStyle,
           optstat = this.options.optstat, optfit = this.options.optfit;
 
       if (optstat !== undefined) {
@@ -3046,7 +3048,7 @@ class THistPainter extends ObjectPainter {
       if (custom_levels) {
          cntr.createCustom(custom_levels);
       } else {
-         if (nlevels < 2) nlevels = JSROOT.gStyle.fNumberContours;
+         if (nlevels < 2) nlevels = gStyle.fNumberContours;
          let pad = this.getPadPainter().getRootPad(true);
          cntr.createNormal(nlevels, pad ? pad.fLogz : 0, zminpositive);
       }
@@ -3812,7 +3814,7 @@ class TH1Painter extends THistPainter {
          }
 
          if (show_text && y) {
-            let lbl = (y === Math.round(y)) ? y.toString() : floatToString(y, JSROOT.gStyle.fPaintTextFormat);
+            let lbl = (y === Math.round(y)) ? y.toString() : floatToString(y, gStyle.fPaintTextFormat);
 
             if (pmain.swap_xy)
                this.drawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
@@ -3930,7 +3932,7 @@ class TH1Painter extends THistPainter {
 
       if (show_line) path_line = "";
 
-      dlw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
+      dlw = this.lineatt.width + gStyle.fEndErrorSize;
       if (this.options.ErrorKind === 1)
          dend = Math.floor((this.lineatt.width-1)/2);
 
@@ -4026,7 +4028,7 @@ class TH1Painter extends THistPainter {
                let cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
                if (cont!==0) {
-                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, JSROOT.gStyle.fPaintTextFormat);
+                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, gStyle.fPaintTextFormat);
 
                   if (text_angle)
                      this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
@@ -4240,7 +4242,7 @@ class TH1Painter extends THistPainter {
          if (cont === Math.round(cont))
             tips.push("entries = " + cont);
          else
-            tips.push("entries = " + floatToString(cont, JSROOT.gStyle.fStatFormat));
+            tips.push("entries = " + floatToString(cont, gStyle.fStatFormat));
       }
 
       return tips;
@@ -5795,7 +5797,7 @@ class TH2Painter extends THistPainter {
 
             if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                          floatToString(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
+                          floatToString(bin.fContent, gStyle.fPaintTextFormat);
             } else {
                if (bin.fPoly) lbl = bin.fPoly.fName;
                if (lbl === "Graph") lbl = "";
@@ -5844,12 +5846,12 @@ class TH2Painter extends THistPainter {
                binz = histo.getBinEntries(i+1, j+1);
 
             lbl = (binz === Math.round(binz)) ? binz.toString() :
-                      floatToString(binz, JSROOT.gStyle.fPaintTextFormat);
+                      floatToString(binz, gStyle.fPaintTextFormat);
 
             if (show_err) {
                errz = histo.getBinError(histo.getBin(i+1,j+1));
                lble = (errz === Math.round(errz)) ? errz.toString() :
-                            floatToString(errz, JSROOT.gStyle.fPaintTextFormat);
+                            floatToString(errz, gStyle.fPaintTextFormat);
                if (this.options.TextLine)
                   lbl += '\xB1' + lble;
                else
@@ -6935,11 +6937,11 @@ class TH2Painter extends THistPainter {
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      lines.push("entries = " + ((binz === Math.round(binz)) ? binz : floatToString(binz, JSROOT.gStyle.fStatFormat)));
+      lines.push("entries = " + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
 
       if ((this.options.TextKind == "E") || this.matchObjectType('TProfile2D')) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
-         lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, JSROOT.gStyle.fPaintTextFormat)));
+         lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
       }
 
       return lines;
@@ -6958,9 +6960,9 @@ class TH2Painter extends THistPainter {
       else
          lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
-      lines.push('m-25%  = ' + floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
-      lines.push('median = ' + floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
-      lines.push('m+25%  = ' + floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
+      lines.push('m-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat))
+      lines.push('median = ' + floatToString(p.fMedian, gStyle.fStatFormat))
+      lines.push('m+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat))
 
       return lines;
    }
@@ -7007,7 +7009,7 @@ class TH2Painter extends THistPainter {
       if (bin.fContent === Math.round(bin.fContent))
          lines.push("content = " + bin.fContent);
       else
-         lines.push("content = " + floatToString(bin.fContent, JSROOT.gStyle.fStatFormat));
+         lines.push("content = " + floatToString(bin.fContent, gStyle.fStatFormat));
       return lines;
    }
 

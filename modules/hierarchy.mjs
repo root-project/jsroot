@@ -1,5 +1,7 @@
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
 import { showProgress } from './utils.mjs';
@@ -3947,7 +3949,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (style && (typeof style === 'object') && (style._typename === "TStyle"))
-         JSROOT.extend(JSROOT.gStyle, style);
+         JSROOT.extend(gStyle, style);
 
    }
 

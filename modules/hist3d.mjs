@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { gStyle } from './core.mjs';
+
 import { rgb as d3_rgb } from './d3.mjs';
 
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
@@ -2387,7 +2389,7 @@ class TH3Painter extends THistPainter {
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else
-         lines.push("entries = " + floatToString(binz, JSROOT.gStyle.fStatFormat));
+         lines.push("entries = " + floatToString(binz, gStyle.fStatFormat));
 
       return lines;
    }
