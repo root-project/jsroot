@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser, settings } from './core.mjs';
+import { gStyle, BIT, browser, settings, constants } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -1472,7 +1472,7 @@ class THistDrawOptions {
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: settings.OptimizeDraw, adjustFrame: false,
               Mode3D: false, x3dscale: 1, y3dscale: 1,
-              Render3D: JSROOT.constants.Render3D.Default,
+              Render3D: constants.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
               minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
@@ -1611,7 +1611,7 @@ class THistDrawOptions {
       }
 
       if (d.check('R3D_', true))
-         this.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+         this.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
       if (d.check('SURF', true)) {
          this.Surf = d.partAsInt(10, 1);

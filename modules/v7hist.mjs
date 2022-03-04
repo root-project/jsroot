@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings } from './core.mjs';
+import { gStyle, settings, constants } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -1882,7 +1882,7 @@ class RH1Painter extends RHistPainter {
 
       let d = new DrawOptions(opt);
       if (d.check('R3D_', true))
-         painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+         painter.options.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
       let kind = painter.v7EvalAttr("kind", "hist"),
           sub = painter.v7EvalAttr("sub", 0),

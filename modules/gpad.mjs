@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings } from './core.mjs';
+import { gStyle, BIT, settings, constants } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -2890,7 +2890,7 @@ class TPadPainter extends ObjectPainter {
       this._fast_drawing = settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
 
       // special case of 3D canvas overlay
-      if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
+      if (svg_pad.property('can3d') === constants.Embed3D.Overlay)
           this.selectDom().select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
@@ -3300,7 +3300,7 @@ class TPadPainter extends ObjectPainter {
      * @private */
    needRedrawByResize() {
       let elem = this.svg_this_pad();
-      if (!elem.empty() && elem.property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
+      if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
 
       return this.painters.findIndex(objp => {
          if (typeof objp.needRedrawByResize === 'function')
@@ -3958,16 +3958,16 @@ class TPadPainter extends ObjectPainter {
 
          let can3d = main.access3dKind();
 
-         if ((can3d !== JSROOT.constants.Embed3D.Overlay) && (can3d !== JSROOT.constants.Embed3D.Embed)) return;
+         if ((can3d !== constants.Embed3D.Overlay) && (can3d !== constants.Embed3D.Embed)) return;
 
-         let sz2 = main.getSizeFor3d(JSROOT.constants.Embed3D.Embed); // get size and position of DOM element as it will be embed
+         let sz2 = main.getSizeFor3d(constants.Embed3D.Embed); // get size and position of DOM element as it will be embed
 
          let canvas = main.renderer.domElement;
          main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          let dataUrl = canvas.toDataURL("image/png");
 
          // remove 3D drawings
-         if (can3d === JSROOT.constants.Embed3D.Embed) {
+         if (can3d === constants.Embed3D.Embed) {
             item.foreign = item.prnt.select("." + sz2.clname);
             item.foreign.remove();
          }

@@ -2,7 +2,7 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl, browser, settings } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, browser, settings, constants } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -284,7 +284,7 @@ function readStyleFromURL(url) {
 
    if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
    if (latex !== null)
-      settings.Latex = JSROOT.constants.Latex.fromString(latex);
+      settings.Latex = constants.Latex.fromString(latex);
 
    if (d.has("nomenu")) settings.ContextMenu = false;
    if (d.has("noprogress")) settings.ProgressBox = false;
@@ -320,8 +320,8 @@ function readStyleFromURL(url) {
 
    let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
        geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
-   if (render3d) settings.Render3D = JSROOT.constants.Render3D.fromString(render3d);
-   if (embed3d) settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
+   if (render3d) settings.Render3D = constants.Render3D.fromString(render3d);
+   if (embed3d) settings.Embed3D = constants.Embed3D.fromString(embed3d);
    if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
    if (geocomp) settings.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
 
@@ -2975,8 +2975,8 @@ class ObjectPainter extends BasePainter {
       let use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
-         use_mathjax = (settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
-                       ((settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
+         use_mathjax = (settings.Latex == constants.Latex.AlwaysMathJax) ||
+                       ((settings.Latex == constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
 
       if (!use_mathjax || arg.nomathjax) {
 
@@ -2987,9 +2987,9 @@ class ObjectPainter extends BasePainter {
          if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
 
-         arg.plain = !arg.latex || (settings.Latex == JSROOT.constants.Latex.Off) || (settings.Latex == JSROOT.constants.Latex.Symbols);
+         arg.plain = !arg.latex || (settings.Latex == constants.Latex.Off) || (settings.Latex == constants.Latex.Symbols);
 
-         arg.simple_latex = arg.latex && (settings.Latex == JSROOT.constants.Latex.Symbols);
+         arg.simple_latex = arg.latex && (settings.Latex == constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
             JSROOT.require('latex').then(ltx => {
@@ -3392,7 +3392,7 @@ const AxisPainterMethods = {
          res += "e";
       else
          res += base.toString();
-      if (settings.Latex > JSROOT.constants.Latex.Symbols)
+      if (settings.Latex > constants.Latex.Symbols)
          return res + "^{" + order + "}";
       const superscript_symbols = {
             '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
@@ -3619,7 +3619,7 @@ function drawRawText(dom, txt /*, opt*/) {
       let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = "<undefined>";
 
-      let mathjax = this.txt.mathjax || (settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
+      let mathjax = this.txt.mathjax || (settings.Latex == constants.Latex.AlwaysMathJax);
 
       if (!mathjax && !('as_is' in this.txt)) {
          let arr = txt.split("\n"); txt = "";

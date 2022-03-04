@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -830,7 +830,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (d.check('R3D_', true))
-         res.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+         res.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
       if (d.check("MORE3")) res.more = 3;
       if (d.check("MORE")) res.more = 2;
@@ -2424,7 +2424,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._renderer = rdr;
 
-         this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
+         this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
 
          if (this._renderer.setPixelRatio && !JSROOT.nodejs)
             this._renderer.setPixelRatio(window.devicePixelRatio);
@@ -3558,7 +3558,7 @@ class TGeoPainter extends ObjectPainter {
                this._fit_main_area = (size.can3d === -1);
 
                return this.createScene(size.width, size.height);
-             }).then(dom => fp.add3dCanvas(size, dom, render3d === JSROOT.constants.Render3D.WebGL));
+             }).then(dom => fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL));
 
          } else {
             // activate worker
@@ -4144,7 +4144,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
-      if (this._renderer && this._renderer.jsroot_render3d === JSROOT.constants.Render3D.SVG) return;
+      if (this._renderer && this._renderer.jsroot_render3d === constants.Render3D.SVG) return;
 
       let clip = this.ctrl.clip, panels = [], changed = false,
           constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],

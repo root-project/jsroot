@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings } from './core.mjs';
+import { browser, settings, constants } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -120,11 +120,11 @@ function createSVGRenderer(as_is, precision, doc) {
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
  * @param {value} [render3d] - preconfigured value, will be used if applicable
- * @returns {value} - rendering kind, see JSROOT.constants.Render3D
+ * @returns {value} - rendering kind, see constants.Render3D
  * @private */
 function getRender3DKind(render3d) {
    if (!render3d) render3d = JSROOT.batch_mode ? settings.Render3DBatch : settings.Render3D;
-   let rc = JSROOT.constants.Render3D;
+   let rc = constants.Render3D;
 
    if (render3d == rc.Default) render3d = JSROOT.batch_mode ? rc.WebGLImage : rc.WebGL;
    if (JSROOT.batch_mode && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
@@ -157,17 +157,17 @@ let Handling3DDrawings = {
          // analyze which render/embed mode can be used
          can3d = getRender3DKind();
          // all non-webgl elements can be embedded into SVG as is
-         if (can3d !== JSROOT.constants.Render3D.WebGL)
-            can3d = JSROOT.constants.Embed3D.EmbedSVG;
-         else if (settings.Embed3D != JSROOT.constants.Embed3D.Default)
+         if (can3d !== constants.Render3D.WebGL)
+            can3d = constants.Embed3D.EmbedSVG;
+         else if (settings.Embed3D != constants.Embed3D.Default)
             can3d = settings.Embed3D;
          else if (browser.isFirefox)
-            can3d = JSROOT.constants.Embed3D.Embed;
+            can3d = constants.Embed3D.Embed;
          else if (browser.chromeVersion > 95)
          // version 96 works partially, 97 works fine
-            can3d = JSROOT.constants.Embed3D.Embed;
+            can3d = constants.Embed3D.Embed;
          else
-            can3d = JSROOT.constants.Embed3D.Overlay;
+            can3d = constants.Embed3D.Overlay;
       }
 
       let pad = this.getPadSvg(),
@@ -278,7 +278,7 @@ let Handling3DDrawings = {
       }
 
       if ((size.can3d > 0) && !webgl)
-         size.can3d = JSROOT.constants.Embed3D.EmbedSVG;
+         size.can3d = constants.Embed3D.EmbedSVG;
 
       this.access3dKind(size.can3d);
 
@@ -315,7 +315,7 @@ let Handling3DDrawings = {
 
          let svg = this.getPadSvg();
 
-         if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
+         if (size.can3d === constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
@@ -387,13 +387,13 @@ function assign3DHandler(painter) {
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
-  * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
+  * @param {value} render3d - render type, see {@link constants.Render3D}
   * @param {object} args - different arguments for creating 3D renderer
   * @private */
 
 async function createRender3D(width, height, render3d, args) {
 
-   let rc = JSROOT.constants.Render3D;
+   let rc = constants.Render3D;
 
    render3d = getRender3DKind(render3d);
 
@@ -466,7 +466,7 @@ async function createRender3D(width, height, render3d, args) {
 
    // apply size to dom element
    renderer.setJSROOTSize = function(width, height) {
-      if ((this.jsroot_render3d === JSROOT.constants.Render3D.WebGLImage) && !JSROOT.batch_mode && !JSROOT.nodejs)
+      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !JSROOT.batch_mode && !JSROOT.nodejs)
          return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
    };
 
@@ -505,7 +505,7 @@ function beforeRender3D(renderer) {
   * @private */
 function afterRender3D(renderer) {
 
-   let rc = JSROOT.constants.Render3D;
+   let rc = constants.Render3D;
    if (renderer.jsroot_render3d == rc.WebGL) return;
 
    if (renderer.jsroot_render3d == rc.SVG) {

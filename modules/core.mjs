@@ -157,14 +157,14 @@ let constants = {
    }
 };
 
-/** @summary Central JSROOT settings, independent from {@link JSROOT.gStyle}
+/** @summary Central JSROOT settings, independent from {@link gStyle}
   * @namespace */
 let settings = {
-   /** @summary Render of 3D drawing methods, see {@link JSROOT.constants.Render3D} for possible values */
+   /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants.Render3D.Default,
-   /** @summary Render of 3D drawing methods in batch mode, see {@link JSROOT.constants.Render3D} for possible values */
+   /** @summary Render of 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
    Render3DBatch: constants.Render3D.Default,
-   /** @summary Way to embed 3D drawing in SVG, see {@link JSROOT.constants.Embed3D} for possible values */
+   /** @summary Way to embed 3D drawing in SVG, see {@link constants.Embed3D} for possible values */
    Embed3D: constants.Embed3D.Default,
    /** @summary Enable or disable tooltips, default on */
    Tooltip: true,
@@ -208,7 +208,7 @@ let settings = {
    SmallPad: { width: 150, height: 100 },
    /** @summary Default color palette id  */
    Palette: 57,
-   /** @summary Configures Latex usage, see {@link JSROOT.constants.Latex} for possible values */
+   /** @summary Configures Latex usage, see {@link constants.Latex} for possible values */
    Latex: constants.Latex.Normal,
    /** @summary Grads per segment in TGeo spherical shapes like tube */
    GeoGradPerSegm: 6,
@@ -218,9 +218,9 @@ let settings = {
    IgnoreUrlOptions: false,
    /** @summary how many items shown on one level of hierarchy */
    HierarchyLimit: 250,
-   /** @summary custom format for all X values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
+   /** @summary custom format for all X values, when not specified {@link gStyle.fStatFormat} is used */
    XValuesFormat : undefined,
-   /** @summary custom format for all Y values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
+   /** @summary custom format for all Y values, when not specified {@link gStyle.fStatFormat} is used */
    YValuesFormat : undefined,
    /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
    ZValuesFormat : undefined,

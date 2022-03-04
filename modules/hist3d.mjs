@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings } from './core.mjs';
+import { gStyle, BIT, settings, constants } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -212,7 +212,7 @@ TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dsc
 
    this.renderer = await createRender3D(this.scene_width, this.scene_height, render3d);
 
-   this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
+   this.webgl = (render3d === constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
 
    this.first_render_tm = 0;
