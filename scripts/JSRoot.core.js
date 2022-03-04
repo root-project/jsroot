@@ -39,6 +39,6 @@ if (typeof globalThis !== "undefined") {
 }
 
 
-//openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
+//openuicfg // DO NOT DELETE, used to configure openui5 usage like _.openui5src = "nojsroot";
 
 }));

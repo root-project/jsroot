@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl, browser } from './core.mjs';
+import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, source_dir } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -3073,7 +3073,7 @@ class HierarchyPainter extends BasePainter {
             this.forEachRootFile(item => files.push(item._file.fFullURL));
 
             if (!this.getTopOnlineItem())
-               addr = JSROOT.source_dir + "index.htm";
+               addr = source_dir + "index.htm";
 
             if (this.isMonitoring())
                addr += separ() + "monitoring=" + this.getMonitoringInterval();
@@ -3144,8 +3144,8 @@ class HierarchyPainter extends BasePainter {
 
             if (fileprop && sett.opts && !fileprop.localfile) {
                let filepath = qualifyURL(fileprop.fileurl);
-               if (filepath.indexOf(JSROOT.source_dir) == 0)
-                  filepath = filepath.slice(JSROOT.source_dir.length);
+               if (filepath.indexOf(source_dir) == 0)
+                  filepath = filepath.slice(source_dir.length);
                filepath = fileprop.kind + "=" + filepath;
                if (fileprop.itemname.length > 0) {
                   let name = fileprop.itemname;
@@ -3154,7 +3154,7 @@ class HierarchyPainter extends BasePainter {
                }
 
                menu.addDrawMenu("Draw in new tab", sett.opts,
-                                arg => window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg));
+                                arg => window.open(source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg));
             }
 
             if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))

@@ -1,4 +1,4 @@
-import { loadScript } from './core.mjs';
+import { loadScript, source_dir, settings, _ } from './core.mjs';
 
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from './d3.mjs';
 
@@ -932,11 +932,11 @@ class BootstrapMenu extends JSRootMenu {
    loadBS(with_js) {
       let ext = 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/';
 
-      let promise = JSROOT._.bs_path ? Promise.resolve(true) :
-                      loadScript(JSROOT.source_dir + 'style/bootstrap.min.css')
-                            .then(() => { JSROOT._.bs_path = JSROOT.source_dir + 'scripts/'; })
-                            .catch(() => { JSROOT._.bs_path = ext + "js/"; return loadScript(ext + 'css/bootstrap.min.css'); });
-      return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(JSROOT._.bs_path + 'bootstrap.bundle.min.js'));
+      let promise = _.bs_path ? Promise.resolve(true) :
+                      loadScript(source_dir + 'style/bootstrap.min.css')
+                            .then(() => { _.bs_path = source_dir + 'scripts/'; })
+                            .catch(() => { _.bs_path = ext + "js/"; return loadScript(ext + 'css/bootstrap.min.css'); });
+      return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(_.bs_path + 'bootstrap.bundle.min.js'));
    }
 
    /** @summary Load bootstrap functionality */
@@ -1151,8 +1151,8 @@ class BootstrapMenu extends JSRootMenu {
   *          menu.show();
   *        }); */
 function createMenu(evnt, handler, menuname) {
-   let menu = JSROOT.settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
-                                        : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
+   let menu = settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
+                                 : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
    return menu.load();
 }
 

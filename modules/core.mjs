@@ -36,7 +36,7 @@ if (src && (typeof src == "string")) {
    if (pos >= 0) {
       source_fullpath = src;
       source_dir = source_fullpath.substr(0, pos);
-      console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
+      console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    }
    if (src.indexOf("file://") == 0) nodejs = true;
 }

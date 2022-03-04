@@ -3,7 +3,8 @@ import * as JSROOT from './core.mjs';
 
 import { browser } from './core.mjs';
 
-import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
+import { select as d3_select, drag as d3_drag,
+         pointer as d3_pointer, pointers as d3_pointers } from './d3.mjs';
 
 import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 

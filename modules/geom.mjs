@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -1156,7 +1156,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (on)
-         loadScript(JSROOT.source_dir + 'scripts/dat.gui.js')
+         loadScript(source_dir + 'scripts/dat.gui.js')
                .then(() => this.buildDatGui(globalThis.dat));
    }
 
@@ -1902,7 +1902,7 @@ class TGeoPainter extends ObjectPainter {
          let need_worker = !JSROOT.batch_mode && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
-         if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
+         if (need_worker && source_dir.indexOf("file://")==0) {
             console.log('disable worker for jsroot from file system');
             need_worker = false;
          }
@@ -3775,7 +3775,7 @@ class TGeoPainter extends ObjectPainter {
       this._worker_jobs = 0; // counter how many requests send to worker
 
       // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(JSROOT.source_dir + "scripts/geoworker.js" /*, { type: "module" } */);
+      this._worker = new Worker(source_dir + "scripts/geoworker.js" /*, { type: "module" } */);
 
       this._worker.onmessage = e => {
 
