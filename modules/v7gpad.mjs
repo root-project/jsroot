@@ -1,10 +1,11 @@
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
+import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
+         drag as d3_drag, timeFormat as d3_timeFormat,
+         scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
+         scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -434,10 +435,10 @@ class RAxisPainter extends RObjectPainter {
       }
 
       if (this.kind == 'time') {
-         this.func = d3.scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (_symlog && (_symlog > 0)) {
          this.symlog = _symlog;
-         this.func = d3.scaleSymlog().constant(_symlog).domain([smin,smax]);
+         this.func = d3_scaleSymlog().constant(_symlog).domain([smin,smax]);
       } else if (_log) {
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
@@ -448,9 +449,9 @@ class RAxisPainter extends RObjectPainter {
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
-         this.func = d3.scaleLog().base(this.logbase).domain([smin,smax]);
+         this.func = d3_scaleLog().base(this.logbase).domain([smin,smax]);
       } else {
-         this.func = d3.scaleLinear().domain([smin,smax]);
+         this.func = d3_scaleLinear().domain([smin,smax]);
       }
 
       this.scale_min = smin;
@@ -496,9 +497,9 @@ class RAxisPainter extends RObjectPainter {
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
-         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
+         this.tfunc1 = this.tfunc2 = d3_timeFormat(tf1);
          if (tf2!==tf1)
-            this.tfunc2 = d3.timeFormat(tf2);
+            this.tfunc2 = d3_timeFormat(tf2);
 
          this.format = this.formatTime;
 

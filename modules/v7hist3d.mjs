@@ -1,7 +1,5 @@
 /// ROOT7 histogram 3D graphics
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';

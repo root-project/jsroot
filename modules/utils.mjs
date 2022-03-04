@@ -1,4 +1,3 @@
-import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 

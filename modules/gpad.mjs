@@ -1,10 +1,10 @@
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
 
 import { select as d3_select, color as d3_color,
-         pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
+         pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
+         scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
+         scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -151,7 +151,7 @@ class TAxisPainter extends ObjectPainter {
       }
 
       if (this.kind == 'time') {
-         this.func = d3.scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (this.log) {
          this.logbase = this.log === 2 ? 2 : 10;
          if (smax <= 0) smax = 1;
@@ -168,16 +168,16 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = d3.scaleLog().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
+         this.func = d3_scaleLog().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
       } else if (this.symlog) {
          let v = Math.max(Math.abs(smin), Math.abs(smax));
          if (Number.isInteger(this.symlog) && (this.symlog > 0))
             v *= Math.pow(10,-1*this.symlog);
          else
             v *= 0.01;
-         this.func = d3.scaleSymlog().constant(v).domain([smin,smax]);
+         this.func = d3_scaleSymlog().constant(v).domain([smin,smax]);
       } else {
-         this.func = d3.scaleLinear().domain([smin,smax]);
+         this.func = d3_scaleLinear().domain([smin,smax]);
       }
 
       if (this.vertical ^ this.reverse) {
@@ -226,9 +226,9 @@ class TAxisPainter extends ObjectPainter {
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
-         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
+         this.tfunc1 = this.tfunc2 = d3_timeFormat(tf1);
          if (tf2!==tf1)
-            this.tfunc2 = d3.timeFormat(tf2);
+            this.tfunc2 = d3_timeFormat(tf2);
 
          this.format = this.formatTime;
 
