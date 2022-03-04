@@ -1775,13 +1775,6 @@ function _init() {
    return this;
 }
 
-//JSROOT._ = _;
-//JSROOT.browser = browser;
-//JSROOT.gStyle = gStyle;
-//JSROOT.create = create;
-//JSROOT.extend = extend;
-//JSROOT.addMethods = addMethods;
-
 
 _init();
 

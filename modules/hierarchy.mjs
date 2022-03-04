@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl } from './core.mjs';
+import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl, browser } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -1022,7 +1022,7 @@ class GridDisplay extends MDIDisplay {
       separ.call(drag_move).on("dblclick", function() { pthis.handleSeparator(this, "restore"); });
 
       // need to get touches events handling in drag
-      if (JSROOT.browser.touches && !main.on("touchmove"))
+      if (browser.touches && !main.on("touchmove"))
          main.on("touchmove", function() { });
    }
 
@@ -1631,7 +1631,7 @@ class BrowserLayout {
       if (br.empty()) return;
       let btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
       btns.style('position',"absolute").style("left","7px").style("top","7px");
-      if (JSROOT.browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+      if (browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
    }
 
@@ -1770,7 +1770,7 @@ class BrowserLayout {
       hsepar.call(drag_move);
 
       // need to get touches events handling in drag
-      if (JSROOT.browser.touches && !main.on("touchmove"))
+      if (browser.touches && !main.on("touchmove"))
          main.on("touchmove", function() { });
 
       if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
@@ -2075,7 +2075,7 @@ class BrowserLayout {
         vsepar.call(drag_move);
 
         // need to get touches events handling in drag
-        if (JSROOT.browser.touches && !main.on("touchmove"))
+        if (browser.touches && !main.on("touchmove"))
            main.on("touchmove", function() { });
 
         this.adjustSeparators(250, null, true, true);

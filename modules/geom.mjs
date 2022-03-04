@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -412,7 +412,7 @@ class GeoDrawingControl extends InteractiveControl {
             c.material.opacity = 1.;
          }
 
-         if (c.hightlightWidthScale && !JSROOT.browser.isWin)
+         if (c.hightlightWidthScale && !browser.isWin)
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
             c.material.size = c.origin.size * c.highlightScale;
@@ -1899,7 +1899,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !JSROOT.batch_mode && JSROOT.browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !JSROOT.batch_mode && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
@@ -3164,7 +3164,7 @@ class TGeoPainter extends ObjectPainter {
       let track_width = track.fLineWidth || 1,
           track_color = getColor(track.fLineColor) || "#ff00ff";
 
-      if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+      if (browser.isWin) track_width = 1; // not supported on windows
 
       let npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
@@ -3206,7 +3206,7 @@ class TGeoPainter extends ObjectPainter {
       let track_width = line.fLineWidth || 1,
           track_color = getColor(line.fLineColor) || "#ff00ff";
 
-      if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+      if (browser.isWin) track_width = 1; // not supported on windows
 
       let npoints = line.fN,
           fP = line.fP,
@@ -3246,7 +3246,7 @@ class TGeoPainter extends ObjectPainter {
       let track_width = track.fLineWidth || 1,
           track_color = getColor(track.fLineColor) || "#ff00ff";
 
-      if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+      if (browser.isWin) track_width = 1; // not supported on windows
 
       let buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
@@ -3800,7 +3800,7 @@ class TGeoPainter extends ObjectPainter {
       // send initialization message with clones
       this._worker.postMessage({
          init: true,   // indicate init command for worker
-         browser: JSROOT.browser,
+         browser,
          tm0: new Date().getTime(),
          vislevel: this._clones.getVisLevel(),
          maxvisnodes: this._clones.getMaxVisNodes(),

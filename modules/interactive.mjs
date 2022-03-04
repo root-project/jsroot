@@ -1,6 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
+import { browser } from './core.mjs';
+
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
 
 import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
@@ -674,7 +676,7 @@ let FrameInteractive = {
                  .on('mousemove', mouse_handler)
                  .on('mouseleave', close_handler);
 
-         if (JSROOT.browser.touches) {
+         if (browser.touches) {
             let touch_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
             main_svg.on("touchstart", touch_handler)
@@ -747,11 +749,11 @@ let FrameInteractive = {
             svg.on("wheel", this.mouseWheel.bind(this));
       }
 
-      if (JSROOT.browser.touches && ((JSROOT.settings.Zooming && JSROOT.settings.ZoomTouch && !this.projection) || JSROOT.settings.ContextMenu))
+      if (browser.touches && ((JSROOT.settings.Zooming && JSROOT.settings.ZoomTouch && !this.projection) || JSROOT.settings.ContextMenu))
          svg.on("touchstart", this.startTouchZoom.bind(this));
 
       if (JSROOT.settings.ContextMenu) {
-         if (JSROOT.browser.touches) {
+         if (browser.touches) {
             svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
             svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
          }

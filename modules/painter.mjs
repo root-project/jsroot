@@ -2,7 +2,7 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, browser } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -288,7 +288,7 @@ function readStyleFromURL(url) {
 
    if (d.has("nomenu")) s.ContextMenu = false;
    if (d.has("noprogress")) s.ProgressBox = false;
-   if (d.has("notouch")) JSROOT.browser.touches = false;
+   if (d.has("notouch")) browser.touches = false;
    if (d.has("adjframe")) s.CanAdjustFrame = true;
 
    let optstat = d.get("optstat"), optfit = d.get("optfit");

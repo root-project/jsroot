@@ -7,6 +7,8 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
+import { browser } from './core.mjs';
+
 import * as JSROOT from './core.mjs';
 
 import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
@@ -159,9 +161,9 @@ let Handling3DDrawings = {
             can3d = JSROOT.constants.Embed3D.EmbedSVG;
          else if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
             can3d = JSROOT.settings.Embed3D;
-         else if (JSROOT.browser.isFirefox)
+         else if (browser.isFirefox)
             can3d = JSROOT.constants.Embed3D.Embed;
-         else if (JSROOT.browser.chromeVersion > 95)
+         else if (browser.chromeVersion > 95)
          // version 96 works partially, 97 works fine
             can3d = JSROOT.constants.Embed3D.Embed;
          else
@@ -483,7 +485,7 @@ function cleanupRender3D(renderer) {
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (JSROOT.browser.isChrome && (typeof renderer.forceContextLoss == "function"))
+      if (browser.isChrome && (typeof renderer.forceContextLoss == "function"))
          renderer.forceContextLoss();
 
       if (typeof renderer.dispose == "function")

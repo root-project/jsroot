@@ -1,8 +1,8 @@
 /// Connections handling to RWebWindow
 
-import { closeCurrentWindow, showProgress } from './utils.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser } from './core.mjs';
 
-import { httpRequest, createHttpRequest, loadScript, decodeUrl } from './core.mjs';
+import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 /**
  * @summary Class emulating web socket with long-poll http requests
@@ -37,7 +37,7 @@ class LongPollSocket {
          this.connid = "close";
          reqmode = "text;sync"; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!JSROOT.browser.qt5) console.error("No connection");
+         if (!browser.qt5) console.error("No connection");
          return;
       } else {
          url += "?connection=" + this.connid;
@@ -72,7 +72,7 @@ class LongPollSocket {
 
             let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
-               if (!JSROOT.browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
+               if (!browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
                return this.handle.processRequest(null);
             }
 
@@ -669,16 +669,16 @@ function connectWebWindow(arg) {
    let d = decodeUrl();
 
    // special holder script, prevents headless chrome browser from too early exit
-   if (d.has("headless") && d.get("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
+   if (d.has("headless") && d.get("key") && (browser.isChromeHeadless || browser.isChrome))
       loadScript("root_batch_holder.js?key=" + d.get("key"));
 
    if (!arg.platform)
       arg.platform = d.get("platform");
 
    if (arg.platform == "qt5")
-      JSROOT.browser.qt5 = true;
+      browser.qt5 = true;
    else if (arg.platform == "cef3")
-      JSROOT.browser.cef3 = true;
+      browser.cef3 = true;
 
    if (arg.batch === undefined)
       arg.batch = d.has("headless");
@@ -689,9 +689,9 @@ function connectWebWindow(arg) {
       arg.socket_kind = d.get("ws");
 
    if (!arg.socket_kind) {
-      if (JSROOT.browser.qt5)
+      if (browser.qt5)
          arg.socket_kind = "rawlongpoll";
-      else if (JSROOT.browser.cef3)
+      else if (browser.cef3)
          arg.socket_kind = "longpoll";
       else
          arg.socket_kind = "websocket";
@@ -707,7 +707,7 @@ function connectWebWindow(arg) {
 
       if (window) {
          window.onbeforeunload = () => handle.close(true);
-         if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
+         if (browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
 
       handle.key = d.get("key");
