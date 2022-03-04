@@ -1208,7 +1208,7 @@ RHistPainter.prototype.drawLego = function() {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.faceIndex)) {
-            console.error(`intersect.faceIndex not provided, three.js version ${THREE.REVISION}, expected 136`);
+            console.error(`intersect.faceIndex not provided, three.js version ${THREE.REVISION}, expected 137`);
             return null;
          }
 
@@ -2003,7 +2003,7 @@ RH2Painter.prototype.drawError = function() {
 
     line.tooltip = function(intersect) {
        if (!Number.isInteger(intersect.index)) {
-          console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+          console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 137`);
           return null;
        }
 
@@ -2479,7 +2479,7 @@ class RH3Painter extends RHistPainter {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.index)) {
-            console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+            console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 137`);
             return null;
          }
 
@@ -2776,7 +2776,7 @@ class RH3Painter extends RHistPainter {
 
          combined_bins.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error(`intersect.faceIndex not provided, three.js version ${THREE.REVISION}, expected 136`);
+               console.error(`intersect.faceIndex not provided, three.js version ${THREE.REVISION}, expected 137`);
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);

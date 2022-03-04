@@ -1,9 +1,13 @@
 
 import * as d3 from './d3.mjs';
 
-import * as THREE from './three.mjs';
-
 import * as JSROOT from './core.mjs';
+
+import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
+         BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+         LineSegments, LineDashedMaterial, LineBasicMaterial,
+         TextGeometry, SphereGeometry, ShapeUtils,
+         Plane, Scene, PerspectiveCamera, PointLight, CreateSVGRenderer } from './three.mjs';
 
 import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, getDrawSettings } from './painter.mjs';
@@ -159,7 +163,7 @@ TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dsc
       delete this.toplevel;
       if (this.control) this.control.HideTooltip();
 
-      let newtop = new THREE.Object3D();
+      let newtop = new Object3D();
       this.scene.add(newtop);
       this.toplevel = newtop;
 
@@ -182,24 +186,24 @@ TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dsc
    if (y3dscale) this.size_y3d *= y3dscale;
 
    // three.js 3D drawing
-   this.scene = new THREE.Scene();
-   //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
+   this.scene = new Scene();
+   //scene.fog = new Fog(0xffffff, 500, 3000);
 
-   this.toplevel = new THREE.Object3D();
+   this.toplevel = new Object3D();
    this.scene.add(this.toplevel);
    this.scene_width = sz.width;
    this.scene_height = sz.height;
 
-   this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
+   this.camera = new PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
 
    this.camera_Phi = 30;
    this.camera_Theta = 30;
 
-   this.pointLight = new THREE.PointLight(0xffffff,1);
+   this.pointLight = new PointLight(0xffffff,1);
    this.camera.add(this.pointLight);
    this.pointLight.position.set(this.size_x3d/2, this.size_y3d/2, this.size_z3d/2);
-   this.lookat = new THREE.Vector3(0,0,0.8*this.size_z3d);
-   this.camera.up = new THREE.Vector3(0,0,1);
+   this.lookat = new Vector3(0,0,0.8*this.size_z3d);
+   this.camera.up = new Vector3(0,0,1);
    this.scene.add( this.camera );
 
    setCameraPosition(this, true);
@@ -299,10 +303,8 @@ TFramePainter.prototype.render3D = function(tmout) {
 
    if (tmout === -1111) {
       // special handling for direct SVG renderer
-      // probably, here one can use canvas renderer - after modifications
-      // let rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
       let doc = JSROOT._.get_document(),
-          rrr = THREE.CreateSVGRenderer(false, 0, doc);
+          rrr = CreateSVGRenderer(false, 0, doc);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);
       if (rrr.makeOuterHTML) {
@@ -347,7 +349,7 @@ TFramePainter.prototype.render3D = function(tmout) {
    if (this.first_render_tm === 0) {
       this.first_render_tm = tm2.getTime() - tm1.getTime();
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
-      console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
+      console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
    }
 }
 
@@ -408,7 +410,7 @@ TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
    if (tip.use_itself) {
       selfmesh.save_color = selfmesh.material.color;
-      selfmesh.material.color = new THREE.Color(tip.color);
+      selfmesh.material.color = new Color(tip.color);
       this.tooltip_selfmesh = selfmesh;
       changed = changed_self;
    } else {
@@ -417,7 +419,7 @@ TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
       const indicies = Box3D.Indexes,
             normals = Box3D.Normals,
             vertices = Box3D.Vertices,
-            color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
+            color = new Color(tip.color ? tip.color : 0xFF0000),
             opacity = tip.opacity || 1;
 
       let pos, norm;
@@ -425,11 +427,11 @@ TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
       if (!tooltip_mesh) {
          pos = new Float32Array(indicies.length*3);
          norm = new Float32Array(indicies.length*3);
-         const geom = new THREE.BufferGeometry();
-         geom.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-         geom.setAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-         const material = new THREE.MeshBasicMaterial({ color: color, opacity: opacity, vertexColors: false });
-         tooltip_mesh = new THREE.Mesh(geom, material);
+         const geom = new BufferGeometry();
+         geom.setAttribute( 'position', new BufferAttribute( pos, 3 ) );
+         geom.setAttribute( 'normal', new BufferAttribute( norm, 3 ) );
+         const material = new MeshBasicMaterial({ color: color, opacity: opacity, vertexColors: false });
+         tooltip_mesh = new Mesh(geom, material);
       } else {
          pos = tooltip_mesh.geometry.attributes.position.array;
          tooltip_mesh.geometry.attributes.position.needsUpdate = true;
@@ -539,15 +541,15 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-   let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
-       lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, vertexColors: false }),
+   let textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
+       lineMaterial = new LineBasicMaterial({ color: 0x000000, vertexColors: false }),
        ticklen = textsize*0.5, lbls = [], text_scale = 1,
        xticks = this.x_handle.createTicks(false, true),
        yticks = this.y_handle.createTicks(false, true),
        zticks = this.z_handle.createTicks(false, true);
 
    // main element, where all axis elements are placed
-   let top = new THREE.Object3D();
+   let top = new Object3D();
    top.axis_draw = true; // mark element as axis drawing
    toplevel.add(top);
 
@@ -565,7 +567,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major && lbl && (lbl.length > 0) && opts.draw) {
-         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -590,7 +592,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (xaxis && xaxis.fTitle && opts.draw) {
-      const text3d = new THREE.TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
@@ -616,36 +618,36 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      let positions, geom = new THREE.BufferGeometry();
+      let positions, geom = new BufferGeometry();
       if (kind === "z")
          positions = new Float32Array([0,0,0, ticklen*4,0,2*size_3d, ticklen*4,0,0, 0,0,0, 0,0,2*size_3d, ticklen*4,0,2*size_3d]);
       else
          positions = new Float32Array([-size_3d,0,0, size_3d,-ticklen*4,0, size_3d,0,0, -size_3d,0,0, -size_3d,-ticklen*4,0, size_3d,-ticklen*4,0]);
 
-      geom.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+      geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
       geom.computeVertexNormals();
 
-      let material = new THREE.MeshBasicMaterial({ transparent: true, vertexColors: false, side: THREE.DoubleSide, opacity: 0 }),
-          mesh = new THREE.Mesh(geom, material);
+      let material = new MeshBasicMaterial({ transparent: true, vertexColors: false, side: DoubleSide, opacity: 0 }),
+          mesh = new Mesh(geom, material);
       mesh.zoom = kind;
       mesh.size_3d = size_3d;
       mesh.use_y_for_z = use_y_for_z;
       if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
-      mesh.v1 = new THREE.Vector3(positions[0], positions[1], positions[2]);
-      mesh.v2 = new THREE.Vector3(positions[6], positions[7], positions[8]);
-      mesh.v3 = new THREE.Vector3(positions[3], positions[4], positions[5]);
+      mesh.v1 = new Vector3(positions[0], positions[1], positions[2]);
+      mesh.v2 = new Vector3(positions[6], positions[7], positions[8]);
+      mesh.v3 = new Vector3(positions[3], positions[4], positions[5]);
 
       mesh.globalIntersect = function(raycaster) {
          if (!this.v1 || !this.v2 || !this.v3) return undefined;
 
-         let plane = new THREE.Plane();
+         let plane = new Plane();
          plane.setFromCoplanarPoints(this.v1, this.v2, this.v3);
          plane.applyMatrix4(this.matrixWorld);
 
          let v1 = raycaster.ray.origin.clone(),
              v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1e10),
-             pnt = plane.intersectLine(new THREE.Line3(v1,v2), new THREE.Vector3());
+             pnt = plane.intersectLine(new Line3(v1,v2), new Vector3());
 
          if (!pnt) return undefined;
 
@@ -681,7 +683,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
             //            else gg.vertices[2].y = gg.vertices[3].y = -ticklen;
             if (kind==="z") pos[6] = pos[3] = pos[15] = ticklen;
                        else pos[4] = pos[16] = pos[13] = -ticklen;
-            tgtmesh = new THREE.Mesh(gg, new THREE.MeshBasicMaterial({ color: 0xFF00, side: THREE.DoubleSide, vertexColors: false }));
+            tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
          } else {
             gg = tgtmesh.geometry;
@@ -709,7 +711,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       return mesh;
    };
 
-   let xcont = new THREE.Object3D(), xtickslines;
+   let xcont = new Object3D(), xtickslines;
    xcont.position.set(0, grminy, grminz);
    xcont.rotation.x = 1/4*Math.PI;
    xcont.xyid = 2;
@@ -722,14 +724,14 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
-          m = new THREE.Matrix4();
+          m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
             0,          text_scale,  0,  (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
             0,          0,           1,  0,
             0,          0,           0,  1);
 
-      let mesh = new THREE.Mesh(lbl, textMaterial);
+      let mesh = new Mesh(lbl, textMaterial);
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -737,28 +739,28 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
    top.add(xcont);
 
-   xcont = new THREE.Object3D();
+   xcont = new Object3D();
    xcont.position.set(0, grmaxy, grminz);
    xcont.rotation.x = 3/4*Math.PI;
 
    if (opts.draw)
-      xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
+      xcont.add(new LineSegments(xtickslines.geometry, lineMaterial));
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = lbl.center ? lbl.grx + w/2 : grmaxx,
-          m = new THREE.Matrix4();
+          m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
             0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
             0,           0,         -1, 0,
             0,           0,          0, 1);
-      let mesh = new THREE.Mesh(lbl, textMaterial);
+      let mesh = new Mesh(lbl, textMaterial);
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
 
-   //xcont.add(new THREE.Mesh(ggg2, textMaterial));
+   //xcont.add(new Mesh(ggg2, textMaterial));
    xcont.xyid = 4;
    if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
    top.add(xcont);
@@ -779,7 +781,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major && opts.draw) {
-         const text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -802,7 +804,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (yaxis && yaxis.fTitle && opts.draw) {
-      const text3d = new THREE.TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
@@ -811,7 +813,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (!opts.use_y_for_z) {
-      let yticksline, ycont = new THREE.Object3D();
+      let yticksline, ycont = new Object3D();
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
@@ -823,14 +825,14 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry + w/2 : grmaxy,
-             m = new THREE.Matrix4();
+             m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
                -text_scale,  0, 0, posy,
                0, 0,  1, 0,
                0, 0,  0, 1);
 
-         let mesh = new THREE.Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, textMaterial);
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -839,22 +841,22 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (opts.zoom) ycont.add(createZoomMesh("y", this.size_y3d));
       top.add(ycont);
 
-      ycont = new THREE.Object3D();
+      ycont = new Object3D();
       ycont.position.set(grmaxx, 0, grminz);
       ycont.rotation.y = -3/4*Math.PI;
       if (opts.draw)
-         ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
+         ycont.add(new LineSegments(yticksline.geometry, lineMaterial));
 
       lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
-             m = new THREE.Matrix4();
+             m = new Matrix4();
          m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
                text_scale, 0, 0,  posy,
                0,         0, -1,  0,
                0, 0, 0, 1);
 
-         let mesh = new THREE.Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, textMaterial);
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -883,7 +885,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (lbl === null) { is_major = false; lbl = ""; }
 
       if (is_major && lbl && opts.draw) {
-         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -911,7 +913,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    if (zgridx && (zgridx.length > 0)) {
 
-      const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridx, material);
 
       lines1.position.set(0,grmaxy,0);
@@ -919,7 +921,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       lines1.visible = false;
       top.add(lines1);
 
-      const lines2 = new THREE.LineSegments(lines1.geometry, material);
+      const lines2 = new LineSegments(lines1.geometry, material);
       lines2.position.set(0,grminy,0);
       lines2.grid = 4; // mark as grid
       lines2.visible = false;
@@ -928,7 +930,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    if (zgridy && (zgridy.length > 0)) {
 
-      const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridy, material);
 
       lines1.position.set(grmaxx,0, 0);
@@ -936,7 +938,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       lines1.visible = false;
       top.add(lines1);
 
-      const lines2 = new THREE.LineSegments(lines1.geometry, material);
+      const lines2 = new LineSegments(lines1.geometry, material);
       lines2.position.set(grminx, 0, 0);
       lines2.grid = 1; // mark as grid
       lines2.visible = false;
@@ -945,21 +947,21 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, lineMaterial) : null;
    for (let n = 0; n < 4; ++n) {
-      zcont.push(new THREE.Object3D());
+      zcont.push(new Object3D());
 
       lbls.forEach(lbl => {
-         let m = new THREE.Matrix4();
+         let m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(-text_scale,          0,  0, 2*ticklen,
                          0,          0,  1, 0,
                          0, text_scale,  0, lbl.grz);
-         let mesh = new THREE.Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, textMaterial);
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       });
 
       if (zaxis && zaxis.fTitle && opts.draw) {
-         let text3d = new THREE.TextGeometry(translateLaTeX(zaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(translateLaTeX(zaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
@@ -967,17 +969,17 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
          text3d.rotateZ(Math.PI/2);
 
-         let m = new THREE.Matrix4();
+         let m = new Matrix4();
          m.set(-text_scale,          0,  0, 3*ticklen + maxzlblwidth,
                          0,          0,  1, 0,
                          0, text_scale,  0, posz);
-         let mesh = new THREE.Mesh(text3d, textMaterial);
+         let mesh = new Mesh(text3d, textMaterial);
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       }
 
       if (opts.draw && zticksline)
-         zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
+         zcont[n].add(n==0 ? zticksline : new LineSegments(zticksline.geometry, lineMaterial));
       if (opts.zoom) zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
 
       zcont[n].zid = n + 2;
@@ -998,12 +1000,12 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    let linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
    for(let n = 0; n < 2; ++n) {
-      let line = new THREE.LineSegments(linex_geom, lineMaterial);
+      let line = new LineSegments(linex_geom, lineMaterial);
       line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
       line.xyboxid = 2; line.bottom = (n == 0);
       top.add(line);
 
-      line = new THREE.LineSegments(linex_geom, lineMaterial);
+      line = new LineSegments(linex_geom, lineMaterial);
       line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
       line.xyboxid = 4; line.bottom = (n == 0);
       top.add(line);
@@ -1011,12 +1013,12 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    let liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
    for(let n = 0; n < 2; ++n) {
-      let line = new THREE.LineSegments(liney_geom, lineMaterial);
+      let line = new LineSegments(liney_geom, lineMaterial);
       line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
       line.xyboxid = 3; line.bottom = (n == 0);
       top.add(line);
 
-      line = new THREE.LineSegments(liney_geom, lineMaterial);
+      line = new LineSegments(liney_geom, lineMaterial);
       line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
       line.xyboxid = 1; line.bottom = (n == 0);
       top.add(line);
@@ -1024,7 +1026,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
    let linez_geom = createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
    for(let n = 0; n < 4; ++n) {
-      let line = new THREE.LineSegments(linez_geom, lineMaterial);
+      let line = new LineSegments(linez_geom, lineMaterial);
       line.zboxid = zcont[n].zid;
       line.position.copy(zcont[n].position);
       top.add(line);
@@ -1058,7 +1060,7 @@ THistPainter.prototype.draw3DBins = function() {
          // reduced line segments
          rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
          // reduced vertices
-         rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
+         rvertices = [ new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0) ],
          main = this.getFramePainter(),
          axis_zmin = main.z_handle.getScaleMin(),
          axis_zmax = main.z_handle.getScaleMax(),
@@ -1220,9 +1222,9 @@ THistPainter.prototype.draw3DBins = function() {
          }
       }
 
-      let geometry = new THREE.BufferGeometry();
-      geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-      geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+      let geometry = new BufferGeometry();
+      geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+      geometry.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
       // geometry.computeVertexNormals();
 
       let rootcolor = histo.fFillColor,
@@ -1235,8 +1237,8 @@ THistPainter.prototype.draw3DBins = function() {
          fcolor = 'white';
       }
 
-      let material = new THREE.MeshBasicMaterial({ color: fcolor, vertexColors: false }),
-          mesh = new THREE.Mesh(geometry, material);
+      let material = new MeshBasicMaterial({ color: fcolor, vertexColors: false }),
+          mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
       mesh.painter = this;
@@ -1248,7 +1250,7 @@ THistPainter.prototype.draw3DBins = function() {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.faceIndex)) {
-            console.error(`faceIndex not provided, three.js version ${THREE.REVISION}, expected 136`);
+            console.error(`faceIndex not provided, three.js version ${REVISION}, expected 137`);
             return null;
          }
 
@@ -1283,14 +1285,14 @@ THistPainter.prototype.draw3DBins = function() {
       main.toplevel.add(mesh);
 
       if (num2vertices > 0) {
-         const geom2 = new THREE.BufferGeometry();
-         geom2.setAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
-         geom2.setAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
+         const geom2 = new BufferGeometry();
+         geom2.setAttribute( 'position', new BufferAttribute( pos2, 3 ) );
+         geom2.setAttribute( 'normal', new BufferAttribute( norm2, 3 ) );
          //geom2.computeVertexNormals();
 
-         const color2 = (rootcolor < 2) ? new THREE.Color(0xFF0000) : new THREE.Color(d3.rgb(fcolor).darker(0.5).toString()),
-               material2 = new THREE.MeshBasicMaterial({ color: color2, vertexColors: false }),
-               mesh2 = new THREE.Mesh(geom2, material2);
+         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3.rgb(fcolor).darker(0.5).toString()),
+               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
+               mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
          mesh2.painter = this;
          mesh2.handle = mesh.handle;
@@ -1381,7 +1383,7 @@ THistPainter.prototype.draw3DBins = function() {
 
    // create boxes
    const lcolor = this.getColor(histo.fLineColor),
-         material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
+         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
@@ -1806,8 +1808,8 @@ TH2Painter.prototype.drawSurf = function() {
       if (pos[lvl]) {
          if (indx[lvl] !== nfaces[lvl]*9)
               console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
-         let geometry = new THREE.BufferGeometry();
-         geometry.setAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
+         let geometry = new BufferGeometry();
+         geometry.setAttribute( 'position', new BufferAttribute( pos[lvl], 3 ) );
          geometry.computeVertexNormals();
          if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
@@ -1819,11 +1821,11 @@ TH2Painter.prototype.drawSurf = function() {
             if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = this.getColor(48);
          }
          if (this.options.Surf === 14)
-            material = new THREE.MeshLambertMaterial({ color: fcolor, side: THREE.DoubleSide, vertexColors: false });
+            material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
          else
-            material = new THREE.MeshBasicMaterial({ color: fcolor, side: THREE.DoubleSide, vertexColors: false });
+            material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
 
-         let mesh = new THREE.Mesh(geometry, material);
+         let mesh = new Mesh(geometry, material);
 
          main.toplevel.add(mesh);
 
@@ -1836,7 +1838,7 @@ TH2Painter.prototype.drawSurf = function() {
          console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
       const lcolor = this.getColor(histo.fLineColor),
-            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
+            material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
             line = createLineSegments(lpos, material);
       line.painter = this;
       main.toplevel.add(line);
@@ -1847,8 +1849,8 @@ TH2Painter.prototype.drawSurf = function() {
          console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
 
       const material = (this.options.Surf === 1)
-                      ? new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
-                      : new THREE.LineBasicMaterial({ color: new THREE.Color(this.getColor(histo.fLineColor)) }),
+                      ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
+                      : new LineBasicMaterial({ color: new Color(this.getColor(histo.fLineColor)) }),
            line = createLineSegments(grid, material);
       line.painter = this;
       main.toplevel.add(line);
@@ -1878,11 +1880,11 @@ TH2Painter.prototype.drawSurf = function() {
 
              for (let i = iminus; i <= iplus; ++i)
                 if ((i === iminus) || (xp[i] !== xp[i-1]) || (yp[i] !== yp[i-1]))
-                   pnts.push(new THREE.Vector2(xp[i], yp[i]));
+                   pnts.push(new Vector2(xp[i], yp[i]));
 
              if (pnts.length < 3) return;
 
-             const faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+             const faces = ShapeUtils.triangulateShape(pnts , []);
 
              if (!faces || (faces.length === 0)) return;
 
@@ -1910,12 +1912,12 @@ TH2Painter.prototype.drawSurf = function() {
                 }
              }
 
-             const geometry = new THREE.BufferGeometry();
-             geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-             geometry.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
+             const geometry = new BufferGeometry();
+             geometry.setAttribute('position', new BufferAttribute(pos, 3));
+             geometry.setAttribute('normal', new BufferAttribute(norm, 3));
 
-             const material = new THREE.MeshBasicMaterial({ color: palette.getColor(colindx), side: THREE.DoubleSide, opacity: 0.5, vertexColors: false }),
-                   mesh = new THREE.Mesh(geometry, material);
+             const material = new MeshBasicMaterial({ color: palette.getColor(colindx), side: DoubleSide, opacity: 0.5, vertexColors: false }),
+                   mesh = new Mesh(geometry, material);
              mesh.painter = this;
              main.toplevel.add(mesh);
          }
@@ -1989,7 +1991,7 @@ TH2Painter.prototype.drawError = function() {
 
     // create lines
     const lcolor = this.getColor(histo.fLineColor),
-          material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
+          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
           line = createLineSegments(lpos, material);
 
     line.painter = this;
@@ -2000,7 +2002,7 @@ TH2Painter.prototype.drawError = function() {
 
     line.tooltip = function(intersect) {
        if (!Number.isInteger(intersect.index)) {
-          console.error(`segment index not provided, three.js version ${THREE.REVISION}, expected 136`);
+          console.error(`segment index not provided, three.js version ${REVISION}, expected 137`);
           return null;
        }
 
@@ -2087,7 +2089,7 @@ TH2Painter.prototype.drawPolyLego = function() {
                if (vert>0)
                   dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                if (dist2 > dist2limit) {
-                  pnts.push(new THREE.Vector2(currx, curry));
+                  pnts.push(new Vector2(currx, curry));
                   lastx = currx;
                   lasty = curry;
                }
@@ -2095,7 +2097,7 @@ TH2Painter.prototype.drawPolyLego = function() {
 
             try {
                if (pnts.length > 2)
-                  faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+                  faces = ShapeUtils.triangulateShape(pnts , []);
             } catch(e) {
                faces = null;
             }
@@ -2179,13 +2181,13 @@ TH2Painter.prototype.drawPolyLego = function() {
          }
       }
 
-      let geometry = new THREE.BufferGeometry();
-      geometry.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      let geometry = new BufferGeometry();
+      geometry.setAttribute( 'position', new BufferAttribute( pos, 3 ) );
       geometry.computeVertexNormals();
 
       let fcolor = this.fPalette.getColor(colindx);
-      let material = new THREE.MeshBasicMaterial({ color: fcolor, vertexColors: false });
-      let mesh = new THREE.Mesh(geometry, material);
+      let material = new MeshBasicMaterial({ color: fcolor, vertexColors: false });
+      let mesh = new Mesh(geometry, material);
 
       pmain.toplevel.add(mesh);
 
@@ -2460,7 +2462,7 @@ class TH3Painter extends THistPainter {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.index)) {
-            console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+            console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
             return null;
          }
 
@@ -2514,8 +2516,8 @@ class TH3Painter extends THistPainter {
          use_lambert = true;
          if (this.options.GLBox === 12) use_colors = true;
 
-         let geom = main.webgl ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+         let geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
+         geom.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
          geom.computeVertexNormals();
 
          let indx = geom.getIndex().array,
@@ -2721,17 +2723,17 @@ class TH3Painter extends THistPainter {
          let nseq = cols_sequence[ncol];
 
          // BufferGeometries that store geometry of all bins
-         let all_bins_buffgeom = new THREE.BufferGeometry();
+         let all_bins_buffgeom = new BufferGeometry();
 
          // Create mesh from bin buffergeometry
-         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
-         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
+         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
 
          if (use_colors) fillcolor = this.fPalette.getColor(ncol);
 
-         const material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity < 1), vertexColors: false })
-                                      : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, vertexColors: false }),
-              combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
+         const material = use_lambert ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity < 1), vertexColors: false })
+                                      : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, vertexColors: false }),
+              combined_bins = new Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
@@ -2745,7 +2747,7 @@ class TH3Painter extends THistPainter {
 
          combined_bins.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error(`intersect.faceIndex not provided, three.js version ${THREE.REVISION}, expected 136`);
+               console.error(`intersect.faceIndex not provided, three.js version ${REVISION}, expected 137`);
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
@@ -2773,7 +2775,7 @@ class TH3Painter extends THistPainter {
 
          if (helper_kind[nseq] > 0) {
             let lcolor = this.getColor(histo.fLineColor),
-                helper_material = new THREE.LineBasicMaterial({ color: lcolor }),
+                helper_material = new LineBasicMaterial({ color: lcolor }),
                 lines = null;
 
             if (helper_kind[nseq] === 1) {
@@ -3033,7 +3035,7 @@ class TGraph2DPainter extends ObjectPainter {
    /** @summary Function handles tooltips in the mesh */
    graph2DTooltip(intersect) {
       if (!Number.isInteger(intersect.index)) {
-         console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+         console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
          return null;
       }
 
@@ -3204,7 +3206,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length == iline)) {
             let lcolor = this.getColor(graph.fLineColor),
-                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
+                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
                 linemesh = createLineSegments(line, material);
             fp.toplevel.add(linemesh);
 
@@ -3222,7 +3224,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (err) {
             let lcolor = this.getColor(graph.fLineColor),
-                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
+                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
                 errmesh = createLineSegments(err, material);
             fp.toplevel.add(errmesh);
 
