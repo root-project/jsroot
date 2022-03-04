@@ -4147,14 +4147,14 @@ class TGeoPainter extends ObjectPainter {
       if (this._renderer && this._renderer.jsroot_render3d === constants.Render3D.SVG) return;
 
       let clip = this.ctrl.clip, panels = [], changed = false,
-          constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
+          clip_constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
           clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
       for (let k = 0; k < 3; ++k) {
          if (clip[k].enabled) clip_cfg += 2 << k;
-         if (this._clipPlanes[k].constant != constants[k]) {
+         if (this._clipPlanes[k].constant != clip_constants[k]) {
             changed = true;
-            this._clipPlanes[k].constant = constants[k];
+            this._clipPlanes[k].constant = clip_constants[k];
          }
       }
 
