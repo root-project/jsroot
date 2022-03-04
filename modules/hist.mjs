@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, BIT } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -1959,13 +1959,13 @@ class HistContour {
 /** histogram status bits
   * @private */
 let TH1StatusBits = {
-   kNoStats       : JSROOT.BIT(9),  // don't draw stats box
-   kUserContour   : JSROOT.BIT(10), // user specified contour levels
-   kCanRebin      : JSROOT.BIT(11), // can rebin axis
-   kLogX          : JSROOT.BIT(15), // X-axis in log scale
-   kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
-   kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
-   kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
+   kNoStats       : BIT(9),  // don't draw stats box
+   kUserContour   : BIT(10), // user specified contour levels
+   kCanRebin      : BIT(11), // can rebin axis
+   kLogX          : BIT(15), // X-axis in log scale
+   kIsZoomed      : BIT(16), // bit set when zooming on Y axis
+   kNoTitle       : BIT(17), // don't draw the histogram title
+   kIsAverage     : BIT(18)  // Bin contents are average (used by Add)
 };
 
 /**
@@ -2710,7 +2710,7 @@ class THistPainter extends ObjectPainter {
           return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
 
        if (func._typename === 'TF1')
-          return !func.TestBit(JSROOT.BIT(9));
+          return !func.TestBit(BIT(9));
 
        return func._typename !== 'TPaletteAxis';
    }

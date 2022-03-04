@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, BIT } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -25,7 +25,7 @@ function drawText() {
        fact = 1., textsize = text.fTextSize || 0.05,
        main = this.getFramePainter();
 
-   if (text.TestBit(JSROOT.BIT(14))) {
+   if (text.TestBit(BIT(14))) {
       // NDC coordinates
       this.isndc = true;
    } else if (main && !main.mode3d) {
@@ -96,7 +96,7 @@ function drawLine() {
 
    let line = this.getObject(),
        lineatt = new TAttLineHandler(line),
-       kLineNDC = JSROOT.BIT(14),
+       kLineNDC = BIT(14),
        isndc = line.TestBit(kLineNDC);
 
    // create svg:g container for line drawing
@@ -118,7 +118,7 @@ function drawPolyLine() {
    let polyline = this.getObject(),
        lineatt = new TAttLineHandler(polyline),
        fillatt = this.createAttFill(polyline),
-       kPolyLineNDC = JSROOT.BIT(14),
+       kPolyLineNDC = BIT(14),
        isndc = polyline.TestBit(kPolyLineNDC),
        cmd = "", func = this.getAxisToSvgFunc(isndc);
 
@@ -316,7 +316,7 @@ function drawBox() {
 function drawMarker() {
    let marker = this.getObject(),
        att = new TAttMarkerHandler(marker),
-       kMarkerNDC = JSROOT.BIT(14),
+       kMarkerNDC = BIT(14),
        isndc = marker.TestBit(kMarkerNDC);
 
    // create svg:g container for box drawing
@@ -356,7 +356,7 @@ function drawPolyMarker() {
 /** @summary Draw TArrow
   * @private */
 function drawArrow() {
-   let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14),
+   let arrow = this.getObject(), kLineNDC = BIT(14),
        oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
 
    this.wsize = Math.max(3, Math.round(Math.max(rect.width, rect.height) * arrow.fArrowSize*0.8));
@@ -932,7 +932,7 @@ function createTF2Histogram(func, hist) {
    hist.fMarkerColor = func.fMarkerColor;
    hist.fMarkerStyle = func.fMarkerStyle;
    hist.fMarkerSize = func.fMarkerSize;
-   const kNoStats = JSROOT.BIT(9);
+   const kNoStats = BIT(9);
    hist.fBits |= kNoStats;
 
    return hist;
@@ -980,7 +980,7 @@ async function drawTF2(dom, func, opt) {
 }
 
 
-const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
+const kNotEditable = BIT(18);   // bit set if graph is non editable
 
 /**
  * @summary Painter for TGraph object.
@@ -1265,7 +1265,7 @@ class TGraphPainter extends ObjectPainter {
       if (!histo) {
          histo = graph.fHistogram = JSROOT.createHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
-         let kNoStats = JSROOT.BIT(9);
+         let kNoStats = BIT(9);
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
       }
@@ -3518,11 +3518,11 @@ class TGraphTimePainter extends ObjectPainter {
 } // class TGraphTimePainter
 
 
-const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
-      kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
- //   kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
-      kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
-      kUseWeights       = JSROOT.BIT(18),  ///< Use weights
+const kIsBayesian       = BIT(14),  ///< Bayesian statistics are used
+      kPosteriorMode    = BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
+ //   kShortestInterval = BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
+      kUseBinPrior      = BIT(17),  ///< Use a different prior for each bin
+      kUseWeights       = BIT(18),  ///< Use weights
       getBetaAlpha      = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha,
       getBetaBeta       = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
 
@@ -3663,7 +3663,7 @@ class TEfficiencyPainter extends ObjectPainter {
       const eff = this.getObject(),
             nbinsx = hist.fXaxis.fNbins,
             nbinsy = hist.fYaxis.fNbins,
-            kNoStats = JSROOT.BIT(9);
+            kNoStats = BIT(9);
 
       for (let i = 0; i < nbinsx+2; ++i)
          for (let j = 0; j < nbinsy+2; ++j) {

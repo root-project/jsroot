@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, createHttpRequest } from './core.mjs';
+import { httpRequest, createHttpRequest, BIT } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -27,7 +27,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
       kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000,
 
       // constants of bits in version
-      kStreamedMemberWise = JSROOT.BIT(14),
+      kStreamedMemberWise = BIT(14),
 
       // constants used for coding type of STL container
       kNotSTL = 0, kSTLvector = 1, kSTLlist = 2, kSTLdeque = 3, kSTLmap = 4, kSTLmultimap = 5,
@@ -43,7 +43,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
       StlNames = ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
 
       // TObject bits
-      kIsReferenced = JSROOT.BIT(4), kHasUUID = JSROOT.BIT(5);
+      kIsReferenced = BIT(4), kHasUUID = BIT(5);
 
 let jsrio;
 
@@ -244,7 +244,7 @@ const CustomStreamers = {
          element.fXmin = buf.ntod();
          element.fXmax = buf.ntod();
          element.fFactor = buf.ntod();
-      } else if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
+      } else if ((ver > 3) && (element.fBits & BIT(6))) { // kHasRange
 
          let p1 = element.fTitle.indexOf("[");
          if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);

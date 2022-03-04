@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, BIT } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -3029,7 +3029,7 @@ class TGraph2DPainter extends ObjectPainter {
       histo.fZaxis.fXmax = uzmax;
       histo.fMinimum = uzmin;
       histo.fMaximum = uzmax;
-      let kNoStats = JSROOT.BIT(9);
+      let kNoStats = BIT(9);
       histo.fBits = histo.fBits | kNoStats;
       return histo;
    }

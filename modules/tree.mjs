@@ -1,5 +1,7 @@
 import * as JSROOT from './core.mjs';
 
+import { BIT } from './core.mjs';
+
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
          kUChar, kUShort, kUInt, kULong, kBits,
@@ -14,12 +16,12 @@ import * as jsroot_math from './math.mjs';
 const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
       kSTLNode = 4, kClonesMemberNode = 31, kSTLMemberNode = 41,
       // branch bits
-      // kDoNotProcess = JSROOT.BIT(10), // Active bit for branches
-      // kIsClone = JSROOT.BIT(11), // to indicate a TBranchClones
-      // kBranchObject = JSROOT.BIT(12), // branch is a TObject*
-      // kBranchAny = JSROOT.BIT(17), // branch is an object*
-      // kAutoDelete = JSROOT.BIT(15),
-      kDoNotUseBufferMap = JSROOT.BIT(22); // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
+      // kDoNotProcess = BIT(10), // Active bit for branches
+      // kIsClone = BIT(11), // to indicate a TBranchClones
+      // kBranchObject = BIT(12), // branch is a TObject*
+      // kBranchAny = BIT(17), // branch is an object*
+      // kAutoDelete = BIT(15),
+      kDoNotUseBufferMap = BIT(22); // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
 
 /**
  * @summary Class to read data from TTree

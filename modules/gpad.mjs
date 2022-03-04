@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle } from './core.mjs';
+import { gStyle, BIT } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -25,22 +25,22 @@ const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kSt
 let ensureTCanvas; // will be set later
 
 const EAxisBits = {
-   kDecimals: JSROOT.BIT(7),
-   kTickPlus: JSROOT.BIT(9),
-   kTickMinus: JSROOT.BIT(10),
-   kAxisRange: JSROOT.BIT(11),
-   kCenterTitle: JSROOT.BIT(12),
-   kCenterLabels: JSROOT.BIT(14),
-   kRotateTitle: JSROOT.BIT(15),
-   kPalette: JSROOT.BIT(16),
-   kNoExponent: JSROOT.BIT(17),
-   kLabelsHori: JSROOT.BIT(18),
-   kLabelsVert: JSROOT.BIT(19),
-   kLabelsDown: JSROOT.BIT(20),
-   kLabelsUp: JSROOT.BIT(21),
-   kIsInteger: JSROOT.BIT(22),
-   kMoreLogLabels: JSROOT.BIT(23),
-   kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT
+   kDecimals: BIT(7),
+   kTickPlus: BIT(9),
+   kTickMinus: BIT(10),
+   kAxisRange: BIT(11),
+   kCenterTitle: BIT(12),
+   kCenterLabels: BIT(14),
+   kRotateTitle: BIT(15),
+   kPalette: BIT(16),
+   kNoExponent: BIT(17),
+   kLabelsHori: BIT(18),
+   kLabelsVert: BIT(19),
+   kLabelsDown: BIT(20),
+   kLabelsUp: BIT(21),
+   kIsInteger: BIT(22),
+   kMoreLogLabels: BIT(23),
+   kOppositeTitle: BIT(32) // atrificial bit, not possible to set in ROOT
 };
 
 /** @summary Return time offset value for given TAxis object
@@ -4280,15 +4280,15 @@ class TPadPainter extends ObjectPainter {
 
 
 let TCanvasStatusBits = {
-   kShowEventStatus: JSROOT.BIT(15),
-   kAutoExec: JSROOT.BIT(16),
-   kMenuBar: JSROOT.BIT(17),
-   kShowToolBar: JSROOT.BIT(18),
-   kShowEditor: JSROOT.BIT(19),
-   kMoveOpaque: JSROOT.BIT(20),
-   kResizeOpaque: JSROOT.BIT(21),
-   kIsGrayscale: JSROOT.BIT(22),
-   kShowToolTips: JSROOT.BIT(23)
+   kShowEventStatus: BIT(15),
+   kAutoExec: BIT(16),
+   kMenuBar: BIT(17),
+   kShowToolBar: BIT(18),
+   kShowEditor: BIT(19),
+   kMoveOpaque: BIT(20),
+   kResizeOpaque: BIT(21),
+   kIsGrayscale: BIT(22),
+   kShowToolTips: BIT(23)
 };
 
 /**
