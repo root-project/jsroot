@@ -1,7 +1,7 @@
 
-import * as d3 from './d3.mjs';
-
 import * as JSROOT from './core.mjs';
+
+import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
 import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
          floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
@@ -300,12 +300,12 @@ function drawBox() {
       this.draw_g.append("svg:path")
                  .attr("d", side1)
                  .call(fillatt.func)
-                 .style("fill", d3.rgb(fillatt.color).brighter(0.5).formatHex());
+                 .style("fill", d3_rgb(fillatt.color).brighter(0.5).formatHex());
 
       this.draw_g.append("svg:path")
           .attr("d", side2)
           .call(fillatt.func)
-          .style("fill", d3.rgb(fillatt.color).darker(0.5).formatHex());
+          .style("fill", d3_rgb(fillatt.color).darker(0.5).formatHex());
    }
 }
 
@@ -1893,7 +1893,7 @@ class TGraphPainter extends ObjectPainter {
           msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
       this.draw_g.selectAll('.grpoint').each(function() {
-         let d = d3.select(this).datum();
+         let d = d3_select(this).datum();
          if (d===undefined) return;
          let dist2 = Math.pow(pnt.x - d.grx1, 2);
          if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
@@ -1930,7 +1930,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (findbin === null) return null;
 
-      let d = d3.select(findbin).datum(),
+      let d = d3_select(findbin).datum(),
           gr = this.getObject(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: d.grx1, y: d.gry1,
@@ -1961,7 +1961,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (hint.usepath) return this.showTooltipForPath(hint);
 
-      let d = d3.select(hint.d3bin).datum();
+      let d = d3_select(hint.d3bin).datum();
 
       let ttrect = this.draw_g.select(".tooltip_bin");
 
@@ -2601,7 +2601,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let pnt = null;
 
       if (kind !== 'leave') {
-         let pos = d3.pointer(evnt, interactive.node());
+         let pos = d3_pointer(evnt, interactive.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
 
@@ -2658,7 +2658,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          this.scale_rmax = this.zoom_rmax;
       }
 
-      this.r = d3.scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([ 0, this.szx ]);
+      this.r = scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([ 0, this.szx ]);
       this.angle = polar.fAxisAngle || 0;
 
       let ticks = this.r.ticks(5),
@@ -2785,7 +2785,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       interactive.attr("rx", this.szx).attr("ry", this.szy);
 
-      d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+      d3_select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
       if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
          interactive.on("wheel", evnt => this.mouseWheel(evnt));

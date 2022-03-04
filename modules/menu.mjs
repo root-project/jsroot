@@ -1,5 +1,4 @@
-
-import * as d3 from './d3.mjs';
+import { rgb as d3_rgb, select as d3_select, color as d3_color } from './d3.mjs';
 
 import { TAttMarkerHandler, getColor, getRootColors, getSvgLineStyle } from './painter.mjs';
 
@@ -23,7 +22,7 @@ function getColorExec(col, method) {
 
    if (id >= 50) {
       // for higher color numbers ensure that such color exists
-      let c = d3.color(col);
+      let c = d3_color(col);
       id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
    }
 
@@ -253,7 +252,7 @@ class JSRootMenu {
             fillcol = (coltxt == 'white') ? 'black' : 'white';
 
             if ((typeof value === 'string') && value && (value != 'auto') && (value[0] != '['))
-               match = (d3.rgb(value).toString() == d3.rgb(coltxt).toString());
+               match = (d3_rgb(value).toString() == d3_rgb(coltxt).toString());
          } else {
             match = !value;
          }
@@ -859,12 +858,12 @@ class StandaloneMenu extends JSRootMenu {
    runModal(title, main_content, args) {
       if (!args) args = {};
       let dlg_id = this.menuname + "_dialog";
-      d3.select("#" + dlg_id).remove();
-      d3.select("#" + dlg_id+"_block").remove();
+      d3_select("#" + dlg_id).remove();
+      d3_select("#" + dlg_id+"_block").remove();
 
-      let block = d3.select('body').append('div').attr('id', dlg_id+"_block").attr("class", "jsroot_dialog_block");
+      let block = d3_select('body').append('div').attr('id', dlg_id+"_block").attr("class", "jsroot_dialog_block");
 
-      let element = d3.select('body')
+      let element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
                       .attr("class","jsroot_dialog").style("width",(args.width || 450) + "px")
@@ -896,7 +895,7 @@ class StandaloneMenu extends JSRootMenu {
             }
          });
          element.selectAll('.jsroot_dialog_button').on("click", evnt => {
-            resolveFunc(args.btns && (d3.select(evnt.target).text() == "Ok") ? element.node() : null);
+            resolveFunc(args.btns && (d3_select(evnt.target).text() == "Ok") ? element.node() : null);
             element.remove();
             block.remove();
          });
