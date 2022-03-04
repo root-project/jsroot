@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -1332,7 +1332,7 @@ class RAxisPainter extends RObjectPainter {
                evnt.stopPropagation();
                evnt.preventDefault();
 
-               let pos = d3.pointer(evnt, this.draw_g.node()),
+               let pos = d3_pointer(evnt, this.draw_g.node()),
                    coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
                    item = this.analyzeWheelEvent(evnt, coord);
 
@@ -2589,7 +2589,7 @@ class RFramePainter extends RObjectPainter {
    showAxisStatus(axis_name, evnt) {
 
       let taxis = null, hint_name = axis_name, hint_title = "axis",
-          m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "axis object"; }
 
@@ -3293,7 +3293,7 @@ class RPadPainter extends RObjectPainter {
       if (evnt.stopPropagation) {
          // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
-         let pos = d3.pointer(evnt, this.svg_this_pad().node());
+         let pos = d3_pointer(evnt, this.svg_this_pad().node());
 
          if (pos && (pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
 
@@ -5118,9 +5118,9 @@ JSROOT.registerMethods("ROOT::Experimental::RPalette", {
          return (r1 < r2) ? entry2.fColor : entry1.fColor;
 
       // interpolate
-      let col1 = d3.rgb(this.extractRColor(entry1.fColor)),
-          col2 = d3.rgb(this.extractRColor(entry2.fColor)),
-          color = d3.rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
+      let col1 = d3_rgb(this.extractRColor(entry1.fColor)),
+          col2 = d3_rgb(this.extractRColor(entry2.fColor)),
+          color = d3_rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
                          Math.round((col1.g*r1 + col2.g*r2)/dist),
                          Math.round((col1.b*r1 + col2.b*r2)/dist));
 
@@ -5329,7 +5329,7 @@ class RPalettePainter extends RObjectPainter {
                      .style("fill", col)
                      .style("stroke", col)
                      .property("fill0", col)
-                     .property("fill1", d3.rgb(col).darker(0.5).toString());
+                     .property("fill1", d3_rgb(col).darker(0.5).toString());
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
@@ -5375,7 +5375,7 @@ class RPalettePainter extends RObjectPainter {
             if (!doing_zoom) return;
             evnt.preventDefault();
 
-            last_pos = d3.pointer(evnt, this.draw_g.node());
+            last_pos = d3_pointer(evnt, this.draw_g.node());
 
             if (moving_labels)
                return framep.z_handle.processLabelsMove('move', last_pos);
@@ -5420,7 +5420,7 @@ class RPalettePainter extends RObjectPainter {
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            last_pos = d3.pointer(evnt, this.draw_g.node());
+            last_pos = d3_pointer(evnt, this.draw_g.node());
             sel1 = sel2 = last_pos[vertical ? 1 : 0];
             zoom_rect_visible = false;
             moving_labels = false;
@@ -5451,7 +5451,7 @@ class RPalettePainter extends RObjectPainter {
                   evnt.stopPropagation();
                   evnt.preventDefault();
 
-                  let pos = d3.pointer(evnt, this.draw_g.node()),
+                  let pos = d3_pointer(evnt, this.draw_g.node()),
                       coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width;
 
                   let item = framep.z_handle.analyzeWheelEvent(evnt, coord);

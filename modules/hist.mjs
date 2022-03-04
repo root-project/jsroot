@@ -3,7 +3,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
 import { Prob } from './math.mjs';
 
@@ -916,7 +916,7 @@ class TPavePainter extends ObjectPainter {
                        .attr("d", d)
                        .style("fill", col)
                        .property("fill0", col)
-                       .property("fill1", d3.rgb(col).darker(0.5).formatHex());
+                       .property("fill1", d3_rgb(col).darker(0.5).formatHex());
 
             if (this.isTooltipAllowed())
                r.on('mouseover', function() {
@@ -967,7 +967,7 @@ class TPavePainter extends ObjectPainter {
          if (!doing_zoom) return;
          evnt.preventDefault();
 
-         let m = d3.pointer(evnt, this.draw_g.node());
+         let m = d3_pointer(evnt, this.draw_g.node());
          if (this._palette_vertical) {
             sel2 = Math.min(Math.max(m[1], 0), s_height);
             zoom_rect.attr("y", Math.min(sel1, sel2))
@@ -998,7 +998,7 @@ class TPavePainter extends ObjectPainter {
          evnt.preventDefault();
          evnt.stopPropagation();
 
-         let origin = d3.pointer(evnt, this.draw_g.node());
+         let origin = d3_pointer(evnt, this.draw_g.node());
 
          zoom_rect = this.draw_g.append("svg:rect").attr("class", "zoom").attr("id", "colzoomRect");
 
@@ -1027,7 +1027,7 @@ class TPavePainter extends ObjectPainter {
 
       if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
-               let pos = d3.pointer(evnt, this.draw_g.node()),
+               let pos = d3_pointer(evnt, this.draw_g.node()),
                    coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width;
 
                let item = this.z_handle.analyzeWheelEvent(evnt, coord);
@@ -3833,13 +3833,13 @@ class TH1Painter extends THistPainter {
          this.draw_g.append("svg:path")
                .attr("d", barsl)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
+               .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr)
          this.draw_g.append("svg:path")
                .attr("d", barsr)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).darker(0.5).formatHex());
+               .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (show_text)
          await this.finishTextDrawing();
@@ -6041,13 +6041,13 @@ class TH2Painter extends THistPainter {
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
                     .call(this.fillatt.func)
-                    .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
                     .call(this.fillatt.func)
-                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
          let elem = this.draw_g.append("svg:path")

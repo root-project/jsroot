@@ -1,7 +1,6 @@
 
-import * as d3 from './d3.mjs';
-
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, color as d3_color,
+         rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -1025,7 +1024,7 @@ class TAttFillHandler {
 
       if (color_as_svg) {
          this.color = color;
-         if (color != "none") indx = d3.color(color).hex().substr(1); // fictional index produced from color code
+         if (color != "none") indx = d3_color(color).hex().substr(1); // fictional index produced from color code
       } else {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
       }
@@ -1183,7 +1182,7 @@ class TAttFillHandler {
                      .attr("width", w).attr("height", h);
 
       if (fills2) {
-         let col = d3.rgb(this.color);
+         let col = d3_rgb(this.color);
          col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
@@ -3280,7 +3279,7 @@ class ObjectPainter extends BasePainter {
       let layer = frame.select(".main_layer");
       if (layer.empty()) return null;
 
-      let pos = d3.pointer(evnt, layer.node()),
+      let pos = d3_pointer(evnt, layer.node()),
           pnt = { touch: false, x: pos[0], y: pos[1] };
 
       if (typeof this.extractToolTip == 'function')

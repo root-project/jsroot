@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { rgb as d3_rgb } from './d3.mjs';
+
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
@@ -1290,7 +1292,7 @@ THistPainter.prototype.draw3DBins = function() {
          geom2.setAttribute( 'normal', new BufferAttribute( norm2, 3 ) );
          //geom2.computeVertexNormals();
 
-         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3.rgb(fcolor).darker(0.5).toString()),
+         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3_rgb(fcolor).darker(0.5).toString()),
                material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;

@@ -2,7 +2,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
 import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
@@ -34,10 +34,10 @@ let TooltipHandler = {
          if (!rect || rect.empty()) {
             pnt = null; // disable
          } else if (pnt.touch && evnt) {
-            let pos = d3.pointers(evnt, rect.node());
+            let pos = d3_pointers(evnt, rect.node());
             pnt = (pos && pos.length == 1) ? { touch: true, x: pos[0][0], y: pos[0][1] } : null;
          } else if (evnt) {
-            let pos = d3.pointer(evnt, rect.node());
+            let pos = d3_pointer(evnt, rect.node());
             pnt = { touch: false, x: pos[0], y: pos[1] };
          }
       }
@@ -619,7 +619,7 @@ function addMoveHandler(painter, enabled) {
          if (detectRightButton(evnt.sourceEvent)) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
-         let pos = d3.pointer(evnt, this.draw_g.node());
+         let pos = d3_pointer(evnt, this.draw_g.node());
          not_changed = true;
          if (this.moveStart)
             this.moveStart(pos[0], pos[1]);
@@ -877,7 +877,7 @@ let FrameInteractive = {
       evnt.preventDefault();
 
       let frame = this.getFrameSvg(),
-          pos = d3.pointer(evnt, frame.node());
+          pos = d3_pointer(evnt, frame.node());
 
       this.clearInteractiveElements();
 
@@ -941,7 +941,7 @@ let FrameInteractive = {
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       evnt.preventDefault();
-      let m = d3.pointer(evnt, this.getFrameSvg().node());
+      let m = d3_pointer(evnt, this.getFrameSvg().node());
 
       if (this.zoom_labels)
          return this.zoom_labels.processLabelsMove('move', m);
@@ -985,7 +985,7 @@ let FrameInteractive = {
       d3_select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
 
-      let m = d3.pointer(evnt, this.getFrameSvg().node()), kind = this.zoom_kind;
+      let m = d3_pointer(evnt, this.getFrameSvg().node()), kind = this.zoom_kind;
 
       if (this.zoom_labels) {
          this.zoom_labels.processLabelsMove('stop', m);
@@ -1060,7 +1060,7 @@ let FrameInteractive = {
    /** @summary Handle mouse double click on frame */
    mouseDoubleClick(evnt) {
       evnt.preventDefault();
-      let m = d3.pointer(evnt, this.getFrameSvg().node()),
+      let m = d3_pointer(evnt, this.getFrameSvg().node()),
           fw = this.getFrameWidth(), fh = this.getFrameHeight();
       this.clearInteractiveElements();
 
@@ -1096,7 +1096,7 @@ let FrameInteractive = {
          return;
       }
 
-      let arr = d3.pointers(evnt, this.getFrameSvg().node());
+      let arr = d3_pointers(evnt, this.getFrameSvg().node());
       this.touch_cnt+=1;
 
       // normally double-touch will be handled
@@ -1181,7 +1181,7 @@ let FrameInteractive = {
 
       evnt.preventDefault();
 
-      let arr = d3.pointers(evnt, this.getFrameSvg().node());
+      let arr = d3_pointers(evnt, this.getFrameSvg().node());
 
       if (arr.length != 2)
          return this.clearInteractiveElements();
@@ -1317,7 +1317,7 @@ let FrameInteractive = {
 
       let itemx = { name: "x", reverse: this.reverse_x },
           itemy = { name: "y", reverse: this.reverse_y, ignore: !this.isAllowedDefaultYZooming() },
-          cur = d3.pointer(evnt, this.getFrameSvg().node()),
+          cur = d3_pointer(evnt, this.getFrameSvg().node()),
           w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.can_zoom_x)
@@ -1364,8 +1364,8 @@ let FrameInteractive = {
             menu_painter = obj;
             kind = "";
          } else if (!kind) {
-            let ms = d3.pointer(evnt, this.getFrameSvg().node()),
-                tch = d3.pointers(evnt, this.getFrameSvg().node()),
+            let ms = d3_pointer(evnt, this.getFrameSvg().node()),
+                tch = d3_pointers(evnt, this.getFrameSvg().node()),
                 pp = this.getPadPainter(),
                 pnt = null, sel = null;
 
@@ -1425,7 +1425,7 @@ let FrameInteractive = {
    startTouchMenu(kind, evnt) {
       // method to let activate context menu via touch handler
 
-      let arr = d3.pointers(evnt, this.getFrameSvg().node());
+      let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
       if (!kind || (kind=="")) kind = "main";

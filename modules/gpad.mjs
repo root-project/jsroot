@@ -3,7 +3,7 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, color as d3_color, pointer as d3_pointer } from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -2351,7 +2351,7 @@ class TFramePainter extends ObjectPainter {
     * @private */
    showAxisStatus(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;
@@ -3230,7 +3230,7 @@ class TPadPainter extends ObjectPainter {
       if (evnt.stopPropagation) { // this is normal event processing and not emulated jsroot event
 
          // for debug purposes keep original context menu for small region in top-left corner
-         let pos = d3.pointer(evnt, this.svg_this_pad().node());
+         let pos = d3_pointer(evnt, this.svg_this_pad().node());
 
          if (pos && (pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
 
@@ -3487,10 +3487,10 @@ class TPadPainter extends ObjectPainter {
          for (let n = 0; n < arr.length; ++n) {
             let name = arr[n], p = name.indexOf(":");
             if (p > 0) {
-               ListOfColors[parseInt(name.substr(0,p))] = d3.color("rgb(" + name.substr(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.substr(0,p))] = d3_color("rgb(" + name.substr(p+1) + ")").formatHex();
             } else {
                p = name.indexOf("=");
-               ListOfColors[parseInt(name.substr(0,p))] = d3.color("rgba(" + name.substr(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.substr(0,p))] = d3_color("rgba(" + name.substr(p+1) + ")").formatHex();
             }
          }
 

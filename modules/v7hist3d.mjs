@@ -4,6 +4,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { rgb as d3_rgb } from './d3.mjs';
+
 import { REVISION, DoubleSide,
          Object3D, Vector2, Vector3, Matrix4, Line3, Color, Plane, ShapeUtils,
          Scene, PointLight, PerspectiveCamera,
@@ -1257,7 +1259,7 @@ RHistPainter.prototype.drawLego = function() {
          //var material2 = new MeshLambertMaterial( { color: 0xFF0000 } );
 
          let color2 = (rootcolor<2) ? new Color(0xFF0000) :
-                         new Color(d3.rgb(fcolor).darker(0.5).toString());
+                         new Color(d3_rgb(fcolor).darker(0.5).toString());
 
          let material2 = new MeshBasicMaterial({ color: color2, vertexColors: false });
 

@@ -4,6 +4,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
+import { rgb as d3_rgb } from './d3.mjs';
+
 import { floatToString, DrawOptions, TAttLineHandler, TRandom,
          buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
 
@@ -1156,13 +1158,13 @@ class RH1Painter extends RHistPainter {
          this.draw_g.append("svg:path")
                .attr("d", barsl)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
+               .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr.length > 0)
          this.draw_g.append("svg:path")
                .attr("d", barsr)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).darker(0.5).formatHex());
+               .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
    }
 
    /** @summary Draw histogram as filled errors */
@@ -3015,13 +3017,13 @@ class RH2Painter extends RHistPainter {
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
                     .call(this.fillatt.func)
-                    .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
                     .call(this.fillatt.func)
-                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
          let elem = this.draw_g.append("svg:path")
