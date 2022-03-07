@@ -940,7 +940,11 @@ Many function names where adjusted to naming conventions. Like:
 
 Remove direct support of require.js, probably loading of JSRoot.core.js will be possible but will not be guaranteed
 
-Remove minified scripts from distribution, one should load JSRoot.core.js. Deployed code will be minified automatically.
+Remove minified scripts from distribution, one should load modules/core.mjs or scripts/JSRoot.core.js. Deployed code will be minified automatically.
+
+Core functionality should be imported from `core.mjs` module like:
+
+      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/core.mjs';
 
 JSROOT.hpainter -> JSROOT.require('hierarchy').then(hh => hh.getHPainter())
 

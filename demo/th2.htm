@@ -8,11 +8,11 @@
    <div id="object_draw" style="width: 800px; height:600px"></div>
 
    <script type='module'>
-      import * as JSROOT from '../modules/core.mjs';
+      import { createHistogram, redraw } from '../modules/core.mjs';
 
       let cnt = 0;
       function updateGUI() {
-         let histo = JSROOT.createHistogram("TH2I", 20, 20);
+         let histo = createHistogram("TH2I", 20, 20);
          for (let iy = 0; iy < 20; iy++)
             for (let ix = 0; ix < 20; ix++) {
                let bin = histo.getBin(ix+1, iy+1), val = 0;
@@ -27,7 +27,7 @@
 
          histo.fName = "generated";
          histo.fTitle = "Drawing " + cnt++;
-         JSROOT.redraw('object_draw', histo, "colz");
+         redraw('object_draw', histo, "colz");
       }
       updateGUI();
       setInterval(updateGUI, 3000);

@@ -8,10 +8,11 @@
    <div id="object_draw" style="width: 1200px; height: 800px"></div>
 
    <script type='module'>
-      import * as JSROOT from '../modules/core.mjs';
+
+      import { createHistogram, redraw } from '../modules/core.mjs';
 
       let cnt = 0;
-      let histo = JSROOT.createHistogram("TH3I", 20, 20, 20);
+      let histo = createHistogram("TH3I", 20, 20, 20);
       histo.fXaxis.fXmin = -10;
       histo.fXaxis.fXmax = 10;
       histo.fYaxis.fXmin = -10;
@@ -28,7 +29,7 @@
 
          histo.Fill(9*Math.sin(angle1), 9*Math.cos(angle2), 9*Math.sin(angle2));
 
-         JSROOT.redraw('object_draw', histo, "box2");
+         redraw('object_draw', histo, "box2");
       }
 
       updateGUI();

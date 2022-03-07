@@ -6,19 +6,19 @@
 
    <title>TMultiGraph with TLegend and custom labels</title>
 
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-
 </head>
 
 <body>
   <div id="object_draw" style="width: 1200px; height:800px"></div>
 
-  <script type='text/javascript'>
+  <script type='module'>
+
+      import { create, createTGraph, createTMultiGraph, createHistogram, extend, redraw } from '../modules/core.mjs';
 
       let cnt = 0;
 
       function CreateLegendEntry(obj, lbl) {
-         var entry = JSROOT.create("TLegendEntry");
+         var entry = create("TLegendEntry");
          entry.fObject = obj;
          entry.fLabel = lbl;
          entry.fOption = "l";
@@ -34,7 +34,7 @@
             xpts.push(i);
             ypts.push(50*Math.sin((i+cnt)));
          }
-         let graph1 = JSROOT.createTGraph(npoints, xpts, ypts);
+         let graph1 = createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
 
@@ -43,22 +43,22 @@
             xpts.push(i);
             ypts.push(50*Math.cos((i+cnt)));
          }
-         let graph2 = JSROOT.createTGraph(npoints, xpts, ypts);
+         let graph2 = createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 
-         let mgraph = JSROOT.createTMultiGraph(graph1, graph2);
+         let mgraph = createTMultiGraph(graph1, graph2);
          mgraph.fTitle = "Drawing " + cnt++;
 
-         let h1 = JSROOT.createHistogram("TH1I", 20);
+         let h1 = createHistogram("TH1I", 20);
          h1.fName = "axis_draw";
          h1.fTitle = mgraph.fTitle;
          h1.fXaxis.fTitle = "xaxis"+cnt;
          h1.fYaxis.fTitle = "yaxis"+cnt;
          h1.fXaxis.fLabelSize = 0.02;
-         h1.fXaxis.fLabels = JSROOT.create("THashList");
+         h1.fXaxis.fLabels = create("THashList");
          for (let i=0; i<npoints; i++) {
-            let lbl = JSROOT.create("TObjString");
+            let lbl = create("TObjString");
             lbl.fString = 'pnt'+((i+cnt)%20);
             lbl.fUniqueID = i+1;
             h1.fXaxis.fLabels.Add(lbl, "");
@@ -67,9 +67,9 @@
          h1.fYaxis.fXmax = +60;
          mgraph.fHistogram = h1;
 
-         let leg = JSROOT.create("TLegend");
+         let leg = create("TLegend");
          // leg.fName = "graphs_legend";
-         JSROOT.extend(leg, { fX1NDC: 0.2, fY1NDC:0.75, fX2NDC: 0.6, fY2NDC:0.9 });
+         extend(leg, { fX1NDC: 0.2, fY1NDC:0.75, fX2NDC: 0.6, fY2NDC:0.9 });
 
          leg.fPrimitives.Add(CreateLegendEntry(graph1, "Math.sin " + cnt));
          leg.fPrimitives.Add(CreateLegendEntry(graph2, "Math.cos " + cnt));
@@ -80,7 +80,7 @@
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
 
-         JSROOT.redraw('object_draw', mgraph, "").then(() => setTimeout(updateGUI, 500));
+         redraw('object_draw', mgraph, "").then(() => setTimeout(updateGUI, 500));
       }
 
       updateGUI();
