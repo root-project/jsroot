@@ -1,6 +1,6 @@
 /// context menu
 
-import { loadScript, source_dir, settings, _ } from './core.mjs';
+import { loadScript, source_dir, settings, internals } from './core.mjs';
 
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from './d3.mjs';
 
@@ -934,11 +934,11 @@ class BootstrapMenu extends JSRootMenu {
    loadBS(with_js) {
       let ext = 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/';
 
-      let promise = _.bs_path ? Promise.resolve(true) :
+      let promise = internals.bs_path ? Promise.resolve(true) :
                       loadScript(source_dir + 'style/bootstrap.min.css')
-                            .then(() => { _.bs_path = source_dir + 'scripts/'; })
-                            .catch(() => { _.bs_path = ext + "js/"; return loadScript(ext + 'css/bootstrap.min.css'); });
-      return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(_.bs_path + 'bootstrap.bundle.min.js'));
+                            .then(() => { internals.bs_path = source_dir + 'scripts/'; })
+                            .catch(() => { internals.bs_path = ext + "js/"; return loadScript(ext + 'css/bootstrap.min.css'); });
+      return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(internals.bs_path + 'bootstrap.bundle.min.js'));
    }
 
    /** @summary Load bootstrap functionality */
