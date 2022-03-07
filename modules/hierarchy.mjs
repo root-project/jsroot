@@ -14,8 +14,6 @@ import { BasePainter, ObjectPainter, loadJSDOM,
          createMenu, registerForResize, selectActivePad, getRGBfromTColor,
          compressSVG, readStyleFromURL, cleanup, resize } from './painter.mjs';
 
-import { produceLegend } from './hist.mjs';
-
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -3392,9 +3390,8 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (itemname == "$legend")
-         return JSROOT.require("hist")
-                      .then(() => produceLegend(divid, opt))
-                      .then(legend_painter => drop_complete(legend_painter));
+         return import('./hist.mjs').then(hhh => hhh.produceLegend(divid, opt))
+                                    .then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
 

@@ -2993,7 +2993,7 @@ class ObjectPainter extends BasePainter {
          arg.simple_latex = arg.latex && (settings.Latex == constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
-            JSROOT.require('latex').then(ltx => {
+            import('./latex.mjs').then(ltx => {
                if (arg.simple_latex || ltx.isPlainText(arg.text) || arg.plain) {
                   arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
@@ -3022,7 +3022,7 @@ class ObjectPainter extends BasePainter {
       arg.mj_node = arg.draw_g.append("svg:g")
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-      JSROOT.require('latex')
+      import('./latex.mjs')
             .then(ltx => ltx.produceMathjax(this, arg.mj_node, arg))
             .then(() => {
                arg.ready = true;
@@ -3638,7 +3638,7 @@ function drawRawText(dom, txt /*, opt*/) {
       this.setTopPainter();
 
       if (mathjax)
-         return JSROOT.require('latex').then(ltx => { ltx.typesetMathjax(frame.node()); return this; });
+         return import('./latex.mjs').then(ltx => { ltx.typesetMathjax(frame.node()); return this; });
 
       return Promise.resolve(this);
    }

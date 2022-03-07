@@ -4376,7 +4376,7 @@ class TCanvasPainter extends TPadPainter {
          sidebar.classed("side_panel", true).style('position','relative');
 
          // now append all childs to the new main
-         for (let k=0;k<lst.length;++k)
+         for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
 
          this.setLayoutKind(layout_kind, ".central_panel");

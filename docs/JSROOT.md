@@ -880,25 +880,23 @@ First problem is bootstraping of OpenUI5. Most easy solution - use `JSROOT.requi
 JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5.
 After loading is completed, one can use `sap` to access openui5 functionality like:
 
-      <script type="text/javascript">
-         JSROOT.require('openui5').then(() => {
-            sap.registerModulePath("NavExample", "./");
-            new sap.m.App ({
-              pages: [
-                new sap.m.Page({
-                  title: "Nav Container",
-                    enableScrolling : true,
-                    content: [ new sap.ui.core.ComponentContainer({
-                         name : "NavExample"
-                    })]
-                })
-              ]
-            }).placeAt("content");
-         });
+      <script type="module">
+         import { require } from 'path_to_jsroot/modules/core.mjs';
+         let sap = await require('openui5');
+         sap.registerModulePath("NavExample", "./");
+         new sap.m.App ({
+           pages: [
+             new sap.m.Page({
+               title: "Nav Container",
+               enableScrolling : true,
+               content: [ new sap.ui.core.ComponentContainer({ name : "NavExample" })]
+             })
+           ]
+         }).placeAt("content");
       </script>
 
-There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified
-as `jsrootsys/scripts/JSRoot.core.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
+There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT modules should be specified
+as `jsrootsys/modules/core.mjs`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
 
     jQuery.sap.registerModulePath("NavExample", "/currentdir/");
 
