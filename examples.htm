@@ -5,7 +5,6 @@
       <meta charset="UTF-8">
       <title>JavaScript ROOT examples</title>
       <link rel="shortcut icon" href="img/RootIcon.ico"/>
-      <script type="text/javascript" src="scripts/JSRoot.core.js"></script>
       <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
       <meta property="og:title" content="JSROOT examples"/>
       <meta property="og:type" content="website"/>
@@ -104,7 +103,15 @@
       <div id="viewer">
       </div>
 
-      <script type="text/javascript" >
+      <script type="module">
+         import { require, settings, httpRequest, openFile, decodeUrl, version, source_dir } from './modules/core.mjs';
+
+         import { cleanup, registerForResize } from './modules/painter.mjs';
+
+         import { draw } from './modules/draw.mjs';
+
+         import { HierarchyPainter, getHPainter } from './modules/hierarchy.mjs';
+
          let jsroot_path = "./",
              demo_path = "demo/",
              filepath = "../files/",
@@ -144,23 +151,18 @@
 
             keyid = null; // stop execution of running test loop (if any)
 
-          //  if (viewer && viewer.contentWindow) {
-          //     let jsroot = viewer.contentWindow.JSROOT;
-          //     if (jsroot && jsroot.hpainter) {
-          //        console.log('CLEANUP PAINTER IN IFRAME');
-          //        jsroot.hpainter.cleanup();
-          //     }
-          //  }
+            if (getHPainter())
+               getHPainter().cleanup();
 
-            let hh = await JSROOT.require('hierarchy');
-            if (hh.getHPainter())
-               hh.getHPainter().cleanup();
+            cleanup('viewer');
 
-            let ph = await JSROOT.require('painter');
-            ph.cleanup('viewer');
-
-            if (no_interactive)
-               await JSROOT.changeSettings({ Tooltip: 0, ContextMenu: false, Zooming: false, MoveResize: false, DragAndDrop: false });
+            if (no_interactive) {
+               settings.Tooltip = 0;
+               settings.ContextMenu = false;
+               settings.Zooming = false;
+               settings.MoveResize = false;
+               settings.DragAndDrop = false;
+            }
 
             if (durl.length > 0) {
                let viewer = document.getElementById( 'viewer_frame' );
@@ -178,12 +180,12 @@
                 document.getElementById('viewer').style['background-color'] = "";
 
                 if (jsonname) {
-                   JSROOT.httpRequest(jsonname, 'object')
-                         .then(obj => JSROOT.draw("viewer", obj, opt));
+                   httpRequest(jsonname, 'object')
+                         .then(obj => draw("viewer", obj, opt));
                 } else {
-                   JSROOT.openFile(filename)
+                   openFile(filename)
                          .then(file => file.readObject(itemname))
-                         .then(obj => JSROOT.draw("viewer", obj, opt));
+                         .then(obj => draw("viewer", obj, opt));
                 }
              }
          };
@@ -215,11 +217,11 @@
                let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
                testfile = testobj = null;
-               let ii = await JSROOT.decodeUrl().get("interval");
+               let ii = decodeUrl().get("interval");
                if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                     else testinterval = interval;
                if (running) return;
-               return JSROOT.require("hierarchy").then(() => RunBigTest(0));
+               return RunBigTest(0);
             }
 
             function TestContinue() { RunBigTest(); }
@@ -287,8 +289,7 @@
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
 
             if (hpainter) { hpainter.cleanup(); hpainter = null; }
-            let ph = await JSROOT.require('painter');
-            ph.cleanup('viewer');
+            cleanup('viewer');
 
             if (url.length > 0) {
                if (no_interactive) url += "&interactive=0";
@@ -296,13 +297,13 @@
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
 
-               let d = await JSROOT.decodeUrl(url),
+               let d = decodeUrl(url),
                    layout = d.get("layout", "simple"),
                    nobrowser = d.has("nobrowser");
 
                if (nobrowser) {
                   document.getElementById('viewer').innerHTML = "";
-                  hpainter = new JSROOT.HierarchyPainter('root', null);
+                  hpainter = new HierarchyPainter('root', null);
                   hpainter.setDisplay(layout, "viewer");
                } else {
                   document.getElementById('viewer').innerHTML =
@@ -310,228 +311,223 @@
                       '<div id="browser"></div></div>' +
                       '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
 
-                  hpainter = new JSROOT.HierarchyPainter('root', 'browser');
+                  hpainter = new HierarchyPainter('root', 'browser');
                   hpainter.setDisplay(layout,"right-div");
                }
 
                hpainter.startGUI(null, url).then(TestContinue, TestFailure);
             } else if (jsonname.length > 0) {
                testfile = testobj = null;
-               JSROOT.httpRequest(jsonname, 'object').then(obj => {
+               httpRequest(jsonname, 'object').then(obj => {
                   testobj = obj;
-                  return JSROOT.draw("viewer", obj, opt).then(TestContinue, TestFailure);
+                  return draw("viewer", obj, opt).then(TestContinue, TestFailure);
                });
             } else if (filename.length > 0) {
-                JSROOT.openFile(filename)
+                openFile(filename)
                       .then(file => { testfile = file; return testfile.readObject(itemname); })
-                      .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt); })
+                      .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
                       .then(TestContinue, TestFailure);
             } else if (itemname.length > 0) {
                 testfile.readObject(itemname)
-                         .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt); })
+                         .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
                          .then(TestContinue, TestFailure);
             } else {
-                JSROOT.draw("viewer", testobj, opt).then(TestContinue, TestFailure);
+                draw("viewer", testobj, opt).then(TestContinue, TestFailure);
             }
          }
 
-         async function FillContent() {
+         let txt = await httpRequest(demo_path + 'examples.json','text');
 
-            // all painter assigned to viewer element will be automatically informed about resize
-            let handle = await JSROOT.require("painter");
-            handle.registerForResize('viewer');
+         examples_main = JSON.parse(txt);
+         if (window.location.search.indexOf("?more") == 0) {
+            let txt_more = await httpRequest(demo_path + 'examples_more.json', 'text');
+            let examples_more = JSON.parse(txt_more);
+            for (let key in examples_more) {
+               if (key in examples_main) {
+                  for (let n in examples_more[key])
+                     examples_main[key].push(examples_more[key][n]);
+               } else {
+                  examples_main[key] = examples_more[key];
+               }
+            }
+         }
 
-            let d = await JSROOT.decodeUrl();
+         /// start filling content
 
-            select_key = d.get("select");
-            if (!select_key && d.has("geom")) select_key = "TGeo";
+         // all painter assigned to viewer element will be automatically informed about resize
+         registerForResize('viewer');
 
-            document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
+         let d = decodeUrl();
 
-            let content = document.getElementById( 'content' );
+         select_key = d.get("select");
+         if (!select_key && d.has("geom")) select_key = "TGeo";
 
-            for (let key in examples_main) {
+         document.getElementById( 'version' ).title = version + ", " + source_dir;
 
-               let opts = examples_main[key];
+         let content = document.getElementById( 'content' );
 
-               if (select_key && (key != select_key)) continue;
+         for (let key in examples_main) {
 
-               let header = document.createElement( 'h2' );
-               header.textContent = key;
-               content.appendChild( header );
+            let opts = examples_main[key];
 
-               if (window.location.hash == "#" + key.toLowerCase())
-                  header.scrollIntoView();
+            if (select_key && (key != select_key)) continue;
 
-               let url = "", filename = "", itemname = "", jsonname = "", style = "";
+            let header = document.createElement( 'h2' );
+            header.textContent = key;
+            content.appendChild( header );
 
-               for (let n = 0; n<opts.length; ++n) {
-                  let entry = opts[n];
+            if (window.location.hash == "#" + key.toLowerCase())
+               header.scrollIntoView();
 
-                  let shortname = key.toLowerCase().replace(" ","_");
+            let url = "", filename = "", itemname = "", jsonname = "", style = "";
 
-                  jsonname = ""; url = ""; style = "";
+            for (let n = 0; n<opts.length; ++n) {
+               let entry = opts[n];
 
-                  if ('url' in entry) {
-                     url = entry.url.replace(/\$\$\$/g,filepath);
-                  } else if ('json' in entry) {
-                     jsonname = entry.json;
-                     if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
-                  } else {
-                     if ('file' in entry) {
-                        url = ""; filename = entry.file;
-                        if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
-                     }
-                     if ('item' in entry) {
-                        url = ""; itemname = entry.item; style = entry.style;
-                     } else if ('items' in entry) {
-                        url = "?nobrowser&file=" + filename;
-                        if (entry.layout) url += "&layout=" + entry.layout;
-                        url += "&items=[" + entry.items.join(",") + "]";
-                        if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
-                        if (entry.mathjax) url += "&mathjax";
-                        if (entry.latex) url += "&latex=" + entry.latex;
-                        if (entry.style) url += "&style=" + entry.style;
-                     }
+               let shortname = key.toLowerCase().replace(" ","_");
+
+               jsonname = ""; url = ""; style = "";
+
+               if ('url' in entry) {
+                  url = entry.url.replace(/\$\$\$/g,filepath);
+               } else if ('json' in entry) {
+                  jsonname = entry.json;
+                  if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+               } else {
+                  if ('file' in entry) {
+                     url = ""; filename = entry.file;
+                     if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
                   }
-
-                  let opt = ('opt' in entry) ? entry.opt : "";
-                  let aaa = document.createElement( 'a' );
-
-                  if ('name' in entry)
-                     aaa.textContent = entry.name;
-                  else if (opt != "")
-                     aaa.textContent = opt;
-                  else
-                     aaa.textContent = "<dflt>";
-
-                  if (aaa.textContent != "<dflt>")
-                     shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
-
-                  let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
-
-                  if (entry.asurl) {
-                     if (jsonname)
-                        url = prefix + 'json=' + jsonname;
-                     else
-                        url = prefix + "file=" + filename + "&item=" + itemname;
-                     if (entry.style) url += "&style=" + entry.style;
+                  if ('item' in entry) {
+                     url = ""; itemname = entry.item; style = entry.style;
+                  } else if ('items' in entry) {
+                     url = "?nobrowser&file=" + filename;
+                     if (entry.layout) url += "&layout=" + entry.layout;
+                     url += "&items=[" + entry.items.join(",") + "]";
+                     if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                      if (entry.mathjax) url += "&mathjax";
                      if (entry.latex) url += "&latex=" + entry.latex;
+                     if (entry.style) url += "&style=" + entry.style;
                   }
+               }
 
-                  if (url)
-                     aaa.href = jsroot_path + url;
-                  else if (jsonname)
-                     aaa.href = jsroot_path + prefix + "json=" + jsonname;
+               let opt = ('opt' in entry) ? entry.opt : "";
+               let aaa = document.createElement( 'a' );
+
+               if ('name' in entry)
+                  aaa.textContent = entry.name;
+               else if (opt != "")
+                  aaa.textContent = opt;
+               else
+                  aaa.textContent = "<dflt>";
+
+               if (aaa.textContent != "<dflt>")
+                  shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
+
+               let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
+
+               if (entry.asurl) {
+                  if (jsonname)
+                     url = prefix + 'json=' + jsonname;
                   else
-                     aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
+                     url = prefix + "file=" + filename + "&item=" + itemname;
+                  if (entry.style) url += "&style=" + entry.style;
+                  if (entry.mathjax) url += "&mathjax";
+                  if (entry.latex) url += "&latex=" + entry.latex;
+               }
 
-                  if (opt)
-                     aaa.href += "&opt=" + opt;
-                  if (style)
-                     aaa.href += "&style=" + style;
+               if (url)
+                  aaa.href = jsroot_path + url;
+               else if (jsonname)
+                  aaa.href = jsroot_path + prefix + "json=" + jsonname;
+               else
+                  aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
 
-                  if (extra_opts) aaa.href += extra_opts;
+               if (opt)
+                  aaa.href += "&opt=" + opt;
+               if (style)
+                  aaa.href += "&style=" + style;
 
-                  if ('title' in entry) {
-                     aaa.title = entry.title;
-                     // aaa.href += "&title='" + entry.title + "'";
-                  }
+               if (extra_opts) aaa.href += extra_opts;
 
-                  content.appendChild( aaa );
-                  SetListener(aaa, shortname, url, filename, itemname, opt, jsonname);
+               if ('title' in entry) {
+                  aaa.title = entry.title;
+                  // aaa.href += "&title='" + entry.title + "'";
+               }
 
-                  if (n < opts.length-1) {
-                     content.appendChild(document.createTextNode(", "));
-                  } else {
-                     content.appendChild(document.createElement('br'));
-                  }
+               content.appendChild( aaa );
+               SetListener(aaa, shortname, url, filename, itemname, opt, jsonname);
 
-                  if (window.location.hash == "#" + shortname) {
-                     aaa.focus();
-                     if (entry.title) SetPageTitle(entry.title);
-                     ProcessClick(url, filename, itemname, opt, jsonname);
-                  }
+               if (n < opts.length-1) {
+                  content.appendChild(document.createTextNode(", "));
+               } else {
+                  content.appendChild(document.createElement('br'));
+               }
+
+               if (window.location.hash == "#" + shortname) {
+                  aaa.focus();
+                  if (entry.title) SetPageTitle(entry.title);
+                  ProcessClick(url, filename, itemname, opt, jsonname);
                }
             }
+         }
 
-            if (window.location.search.indexOf("?more")==0) {
-                let div = document.createElement( 'h2' );
-                div.textContent = "Testing";
-                content.appendChild( div );
+         if (window.location.search.indexOf("?more")==0) {
+             let div = document.createElement( 'h2' );
+             div.textContent = "Testing";
+             content.appendChild( div );
 
-                let aaa = document.createElement( 'a' );
-                aaa.textContent = "run";
-                aaa.title = "Run all examples after each other";
-                content.appendChild( aaa );
-                aaa.addEventListener( 'click', function (event) {
-                    event.preventDefault();
-                    window.location.hash = "run";
-                    RunBigTest(10,true);
-                });
+             let aaa = document.createElement( 'a' );
+             aaa.textContent = "run";
+             aaa.title = "Run all examples after each other";
+             content.appendChild( aaa );
+             aaa.addEventListener( 'click', function (event) {
+                 event.preventDefault();
+                 window.location.hash = "run";
+                 RunBigTest(10,true);
+             });
 
-                content.appendChild(document.createTextNode(", "));
+             content.appendChild(document.createTextNode(", "));
 
-                aaa = document.createElement( 'a' );
-                aaa.textContent = "slow";
-                aaa.title = "Run all examples slowly after each other";
-                content.appendChild( aaa );
-                aaa.addEventListener( 'click', function (event) {
-                    event.preventDefault();
-                    window.location.hash = "slow";
-                    RunBigTest(5000,true);
-                });
+             aaa = document.createElement( 'a' );
+             aaa.textContent = "slow";
+             aaa.title = "Run all examples slowly after each other";
+             content.appendChild( aaa );
+             aaa.addEventListener( 'click', function (event) {
+                 event.preventDefault();
+                 window.location.hash = "slow";
+                 RunBigTest(5000,true);
+             });
 
-                content.appendChild(document.createTextNode(", "));
+             content.appendChild(document.createTextNode(", "));
 
-                aaa = document.createElement( 'a' );
-                aaa.textContent = "fast";
-                aaa.title = "Run all examples very fast";
-                content.appendChild( aaa );
-                aaa.addEventListener( 'click', function (event) {
-                    event.preventDefault();
-                    window.location.hash = "fast";
-                    RunBigTest(1,true);
-                });
+             aaa = document.createElement( 'a' );
+             aaa.textContent = "fast";
+             aaa.title = "Run all examples very fast";
+             content.appendChild( aaa );
+             aaa.addEventListener( 'click', function (event) {
+                 event.preventDefault();
+                 window.location.hash = "fast";
+                 RunBigTest(1,true);
+             });
 
-                content.appendChild(document.createTextNode(", "));
-                aaa = document.createElement( 'a' );
-                aaa.textContent = "stop";
-                aaa.title = "Stop running example";
-                content.appendChild( aaa );
-                aaa.addEventListener( 'click', function (event) {
-                    event.preventDefault();
-                    keyid = null;
-                });
-            }
+             content.appendChild(document.createTextNode(", "));
+             aaa = document.createElement( 'a' );
+             aaa.textContent = "stop";
+             aaa.title = "Stop running example";
+             content.appendChild( aaa );
+             aaa.addEventListener( 'click', function (event) {
+                 event.preventDefault();
+                 keyid = null;
+             });
+         }
 
-            if (window.location.hash == "#run")
-               RunBigTest(100,true);
-            else if (window.location.hash == "#fast")
-               RunBigTest(1,true);
-            else if (window.location.hash == "#slow")
-               RunBigTest(5000,true);
-
-         }; // FillContent
-
-         JSROOT.httpRequest(demo_path + 'examples.json','text').then(txt => {
-            examples_main = JSON.parse(txt);
-            if (window.location.search.indexOf("?more") != 0)
-               return FillContent();
-            JSROOT.httpRequest(demo_path + 'examples_more.json', 'text').then(txt_more => {
-               let examples_more = JSON.parse(txt_more);
-               for (let key in examples_more) {
-                  if (key in examples_main) {
-                     for (let n in examples_more[key])
-                        examples_main[key].push(examples_more[key][n]);
-                  } else {
-                     examples_main[key] = examples_more[key];
-                  }
-               }
-               FillContent();
-            });
-         });
+         if (window.location.hash == "#run")
+            RunBigTest(100,true);
+         else if (window.location.hash == "#fast")
+            RunBigTest(1,true);
+         else if (window.location.hash == "#slow")
+            RunBigTest(5000,true);
 
       </script>
    </body>

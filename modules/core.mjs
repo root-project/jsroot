@@ -247,10 +247,6 @@ let settings = {
    DragGraphs: true
 };
 
-function changeSettings(args) {
-   Object.assign(settings, args);
-}
-
 /** @namespace
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
@@ -1765,7 +1761,6 @@ browser,
 internals,
 constants,
 settings,
-changeSettings,
 gStyle,
 isArrayProto,
 jsroot_require as define,
