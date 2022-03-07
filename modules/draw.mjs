@@ -2,7 +2,7 @@ import { select as d3_select } from './d3.mjs';
 
 import { loadScript, findFunction, internals, extend, isNodeJs, require } from './core.mjs';
 
-import { cleanup, BasePainter, ObjectPainter, drawRawText, compressSVG, loadJSDOM } from './painter.mjs';
+import { cleanup, BasePainter, ObjectPainter, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
 
 // list of registered draw functions
 let drawFuncs = { lst: [
