@@ -5,8 +5,6 @@ import { select as d3_select, color as d3_color,
 import { gStyle, loadScript, decodeUrl,
          browser, settings, constants, internals, extend, isBatchMode, isNodeJs } from './core.mjs';
 
-import * as JSROOT from './core.mjs';
-
 if (!isBatchMode())
    await loadScript('$$$style/JSRoot.painter');
 
@@ -81,7 +79,6 @@ function floatToString(value, fmt, ret_fmt) {
 
 
 /** @summary Draw options interpreter
-  * @memberof JSROOT
   * @private */
 class DrawOptions {
 
@@ -131,10 +128,8 @@ class DrawOptions {
    }
 }
 
-// ============================================================================================
 
 /** @summary Simple random generator with controlled seed
-  * @memberof JSROOT
   * @private */
 class TRandom {
    constructor(i) {
@@ -454,7 +449,6 @@ function getSvgLineStyle(indx) {
 /**
  * @summary Color palette handle
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -482,10 +476,10 @@ class ColorPalette {
 
 } // class ColorPalette
 
+
 /**
   * @summary Handle for marker attributes
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -761,7 +755,6 @@ class TAttMarkerHandler {
 /**
   * @summary Handle for line attributes
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -887,10 +880,10 @@ class TAttLineHandler {
 
 } // class TAttLineHandler
 
+
 /**
   * @summary Handle for fill attributes
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -1212,7 +1205,6 @@ class TAttFillHandler {
 /**
  * @summary Helper class for font handling
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1551,9 +1543,8 @@ function getAbsPosInCanvas(sel, pos) {
 }
 
 /**
- * @summary Base painter class in JSROOT
+ * @summary Base painter class
  *
- * @memberof JSROOT
  */
 
 class BasePainter {
@@ -1822,7 +1813,6 @@ class BasePainter {
 /**
  * @summary Painter class for ROOT objects
  *
- * @memberof JSROOT
  */
 
 class ObjectPainter extends BasePainter {
@@ -2597,7 +2587,7 @@ class ObjectPainter extends BasePainter {
       if (!obj || (typeof obj !== 'object') || !obj._typename)
          obj = this.getObject();
 
-      JSROOT.draw(id, obj, 'inspect');
+      import('./hierarchy.mjs').then(hhh => hhh.drawInspector(id, obj));
    }
 
    /** @summary Fill context menu for the object
@@ -3053,7 +3043,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Configure user-defined context menu for the object
      * @desc fillmenu_func will be called when context menu is actiavted
      * Arguments fillmenu_func are (menu,kind)
-     * First is JSROOT menu object, second is object subelement like axis "x" or "y"
+     * First is menu object, second is object subelement like axis "x" or "y"
      * Function should return promise with menu when items are filled
      * @param {function} fillmenu_func - function to fill custom context menu for oabject */
    configureUserContextMenu(fillmenu_func) {
@@ -3726,12 +3716,12 @@ function getElementMainPainter(dom) {
    return new ObjectPainter(dom).getMainPainter(true);
 }
 
-/** @summary Safely remove all JSROOT drawings from specified element
+/** @summary Safely remove all drawings from specified element
   * @param {string|object} dom - id or DOM element
   * @requires painter
   * @example
-  * JSROOT.cleanup("drawing");
-  * JSROOT.cleanup(document.querySelector("#drawing")); */
+  * cleanup("drawing");
+  * cleanup(document.querySelector("#drawing")); */
 function cleanup(dom) {
    let dummy = new ObjectPainter(dom), lst = [];
    dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
@@ -3749,7 +3739,7 @@ function drawingJSON(dom) {
    return canp ? canp.produceJSON() : "";
 }
 
-/** @summary Compress SVG code, produced from JSROOT drawing
+/** @summary Compress SVG code, produced from drawing
   * @desc removes extra info or empty elements
   * @private */
 function compressSVG(svg) {
@@ -3786,72 +3776,6 @@ function loadJSDOM() {
    });
 }
 
-/** @summary Create SVG image for provided object.
-  * @desc Function especially useful in Node.js environment to generate images for
-  * supported ROOT classes
-  * @param {object} args - contains different settings
-  * @param {object} args.object - object for the drawing
-  * @param {string} [args.option] - draw options
-  * @param {number} [args.width = 1200] - image width
-  * @param {number} [args.height = 800] - image height
-  * @returns {Promise} with svg code */
-function makeSVG(args) {
-
-   if (!args) args = {};
-   if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));
-   if (!args.width) args.width = 1200;
-   if (!args.height) args.height = 800;
-
-   function build(main) {
-
-      main.attr("width", args.width).attr("height", args.height)
-          .style("width", args.width + "px").style("height", args.height + "px");
-
-      internals.svg_3ds = undefined;
-
-      return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
-
-         let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
-
-         main.select('svg')
-             .attr("xmlns", "http://www.w3.org/2000/svg")
-             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-             .attr("width", args.width)
-             .attr("height", args.height)
-             .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
-
-         function clear_element() {
-            const elem = d3_select(this);
-            if (elem.style('display')=="none") elem.remove();
-         };
-
-         // remove containers with display: none
-         if (has_workarounds)
-            main.selectAll('g.root_frame').each(clear_element);
-
-         main.selectAll('svg').each(clear_element);
-
-         let svg = main.html();
-
-         if (has_workarounds)
-            svg = internals.processSvgWorkarounds(svg);
-
-         svg = compressSVG(svg);
-
-         cleanup(main.node());
-
-         main.remove();
-
-         return svg;
-      });
-   }
-
-   if (!isNodeJs())
-      return build(d3_select('body').append("div").style("visible", "hidden"));
-
-   return loadJSDOM().then(handle => build(handle.body.append('div')));
-}
-
 createRootColors();
 
 if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
@@ -3859,7 +3783,7 @@ if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&not
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect, cleanup, resize,
-         makeSVG, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
+         loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          getColor, addColor, adoptRootColors, getRootColors, extendRootColors, getRGBfromTColor, createRootColors,
          getSvgLineStyle, compressSVG, drawingJSON, readStyleFromURL,

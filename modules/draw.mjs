@@ -1,7 +1,8 @@
+import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, extend } from './core.mjs';
+import { loadScript, findFunction, internals, extend, isNodeJs, require } from './core.mjs';
 
-import { cleanup, BasePainter, ObjectPainter, drawRawText } from './painter.mjs';
+import { cleanup, BasePainter, ObjectPainter, drawRawText, compressSVG, loadJSDOM } from './painter.mjs';
 
 // list of registered draw functions
 let drawFuncs = { lst: [
@@ -241,21 +242,21 @@ function canDraw(classname) {
 
 /** @summary Draw object in specified HTML element with given draw options.
   * @param {string|object} dom - id of div element to draw or directly DOMElement
-  * @param {object} obj - object to draw, object type should be registered before in JSROOT
+  * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options separated by space, comma or semicolon
   * @returns {Promise} with painter object
   * @requires painter
-  * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
+  * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
-  * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-  *       .then(file => file.readObject("hpxpy;1"))
-  *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
+  * let file = await openFile("https://root.cern/js/files/hsimple.root");
+  * let obj = await file.readObject("hpxpy;1");
+  * await draw("drawing", obj, "colz;logx;gridx;gridy"); */
 async function draw(dom, obj, opt) {
    if (!obj || (typeof obj !== 'object'))
-      throw Error('not an object in JSROOT.draw');
+      throw Error('not an object in draw call');
 
    if (opt == 'inspect')
-      return JSROOT.require("hierarchy").then(hh => hh.drawInspector(dom, obj));
+      return import('./hierarchy.mjs').then(hhh => hhh.drawInspector(dom, obj));
 
    let handle, type_info;
    if ('_typename' in obj) {
@@ -265,11 +266,11 @@ async function draw(dom, obj, opt) {
       type_info = "kind " + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return JSROOT.require("hierarchy").then(hh => hh.drawInspector(dom, obj));
+      return import("./hierarchy.mjs").then(hhh => hhh.drawInspector(dom, obj));
 
    // this is case of unsupported class, close it normally
    if (!handle)
-      throw Error(`Object of ${type_info} cannot be shown with JSROOT.draw`);
+      throw Error(`Object of ${type_info} cannot be shown with draw`);
 
    if (handle.dummy)
       return null;
@@ -292,14 +293,14 @@ async function draw(dom, obj, opt) {
    async function performDraw() {
       let painter;
       if (handle.direct == "v7") {
-         let v7h = await JSROOT.require('v7gpad');
+         let v7h = await require('v7gpad');
          painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
          await v7h.ensureRCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let v6h = await  JSROOT.require('gpad');
+         let v6h = await  require('gpad');
          await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
@@ -330,7 +331,7 @@ async function draw(dom, obj, opt) {
    if (!handle.prereq && !handle.script)
       throw Error(`Prerequicities to load ${funcname || clname} are not specified`);
 
-   let hh = await JSROOT.require(handle.prereq);
+   let hh = await require(handle.prereq);
 
    if (handle.script)
       await loadScript(handle.script);
@@ -353,16 +354,16 @@ async function draw(dom, obj, opt) {
 
 /** @summary Redraw object in specified HTML element with given draw options.
   * @param {string|object} dom - id of div element to draw or directly DOMElement
-  * @param {object} obj - object to draw, object type should be registered before in JSROOT
+  * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options
   * @returns {Promise} with painter object
   * @requires painter
-  * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
+  * @desc If drawing was not done before, it will be performed with {@link draw}.
   * Otherwise drawing content will be updated */
 function redraw(dom, obj, opt) {
 
    if (!obj || (typeof obj !== 'object'))
-      return Promise.reject(Error('not an object in JSROOT.redraw'));
+      return Promise.reject(Error('not an object in redraw'));
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
@@ -453,8 +454,76 @@ function addStreamerInfosForPainter(lst) {
    }
 }
 
+
+/** @summary Create SVG image for provided object.
+  * @desc Function especially useful in Node.js environment to generate images for
+  * supported ROOT classes
+  * @param {object} args - contains different settings
+  * @param {object} args.object - object for the drawing
+  * @param {string} [args.option] - draw options
+  * @param {number} [args.width = 1200] - image width
+  * @param {number} [args.height = 800] - image height
+  * @returns {Promise} with svg code */
+function makeSVG(args) {
+
+   if (!args) args = {};
+   if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));
+   if (!args.width) args.width = 1200;
+   if (!args.height) args.height = 800;
+
+   function build(main) {
+
+      main.attr("width", args.width).attr("height", args.height)
+          .style("width", args.width + "px").style("height", args.height + "px");
+
+      internals.svg_3ds = undefined;
+
+      return draw(main.node(), args.object, args.option || "").then(() => {
+
+         let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
+
+         main.select('svg')
+             .attr("xmlns", "http://www.w3.org/2000/svg")
+             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+             .attr("width", args.width)
+             .attr("height", args.height)
+             .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+
+         function clear_element() {
+            const elem = d3_select(this);
+            if (elem.style('display')=="none") elem.remove();
+         };
+
+         // remove containers with display: none
+         if (has_workarounds)
+            main.selectAll('g.root_frame').each(clear_element);
+
+         main.selectAll('svg').each(clear_element);
+
+         let svg = main.html();
+
+         if (has_workarounds)
+            svg = internals.processSvgWorkarounds(svg);
+
+         svg = compressSVG(svg);
+
+         cleanup(main.node());
+
+         main.remove();
+
+         return svg;
+      });
+   }
+
+   if (!isNodeJs())
+      return build(d3_select('body').append("div").style("visible", "hidden"));
+
+   return loadJSDOM().then(handle => build(handle.body.append('div')));
+}
+
+
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 
-export { addDrawFunc, getDrawHandle, getDrawSettings, setDefaultDrawOpt, canDraw, draw, redraw, cleanup };
+export { addDrawFunc, getDrawHandle, getDrawSettings, setDefaultDrawOpt, canDraw, draw, redraw, cleanup, makeSVG };

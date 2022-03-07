@@ -1021,7 +1021,7 @@ function cleanup() {
 
 // Create SVG, defined in JSRoot.painter.js
 function makeSVG(args) {
-   return import("./painter.mjs").then(handle => handle.makeSVG(args));
+   return import("./draw.mjs").then(handle => handle.makeSVG(args));
 }
 
 /** @summary Method to build main JSROOT GUI

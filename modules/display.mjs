@@ -7,6 +7,7 @@ import { browser, internals, toJSON } from './core.mjs';
 import { BasePainter, ObjectPainter, getElementCanvPainter, selectActivePad, compressSVG,
          createMenu, cleanup, resize } from './painter.mjs';
 
+
 /**
  * @summary Base class to manage multiple document interface for drawings
  *

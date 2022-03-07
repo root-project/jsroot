@@ -848,20 +848,20 @@ create SVG output. For example, to create SVG image with lego plot, one should d
     let jsroot = require("jsroot");
     let fs = require("fs");
 
-    jsroot.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.readObject("hpx;1")
-          .then(obj => jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 }))
-          .then(svg => fs.writeFileSync("lego2.svg", svg));
+    let file = await jsroot.openFile("https://root.cern/js/files/hsimple.root");
+    let obj = await file.readObject("hpx;1");
+    let svg = await jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
+    fs.writeFileSync("lego2.svg", svg);
 
 It is also possible to convert any JavaScript object into ROOT JSON string, using **toJSON()** function. Like:
 
     let jsroot = require("jsroot");
     let fs = require("fs");
 
-    jsroot.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.readObject("hpxpy;1"))
-          .then(obj => jsroot.toJSON(obj))
-          .then(json => fs.writrFileSync("hpxpy.json", json));
+    let file = await jsroot.openFile("https://root.cern/js/files/hsimple.root");
+    let obj = await file.readObject("hpxpy;1");
+    let json = await jsroot.toJSON(obj);
+    fs.writrFileSync("hpxpy.json", json);
 
 Such JSON string could be parsed by any other JSROOT-based application.
 
