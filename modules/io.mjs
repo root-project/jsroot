@@ -2687,9 +2687,8 @@ class TDirectory {
 /**
   * @summary Interface to read objects from ROOT files
   *
-  * @memberof JSROOT
   * @hideconstructor
-  * @desc Use {@link JSROOT.openFile} to create instance of the class
+  * @desc Use {@link openFile} to create instance of the class
   */
 
 class TFile {

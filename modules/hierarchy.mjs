@@ -1,10 +1,10 @@
-import * as JSROOT from './core.mjs';
-
-import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         require, source_dir, settings, internals, extend, findFunction, parse, toJSON,
+import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
+         require, source_dir, settings, internals, extend, findFunction, parse,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
+
+import { openFile } from './io.mjs';
 
 import { showProgress } from './utils.mjs';
 
@@ -13,9 +13,9 @@ import { BasePainter, ObjectPainter, loadJSDOM,
          createMenu, registerForResize, getRGBfromTColor,
          readStyleFromURL, cleanup, resize } from './painter.mjs';
 
-import { getDrawSettings, getDrawHandle, canDraw, addDrawFunc } from './draw.mjs';
+import { getDrawSettings, getDrawHandle, canDraw, addDrawFunc, draw, redraw } from './draw.mjs';
 
-import { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
+import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
 
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
@@ -35,7 +35,7 @@ function drawList(dom, lst, opt) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
            if (!item) continue;
-           return JSROOT.draw(this.getDom(), item, opt).then(p => {
+           return draw(this.getDom(), item, opt).then(p => {
               if (p && !this.painter) this.painter = p;
               return this.draw_next(); // reenter loop
            });
@@ -620,7 +620,7 @@ function onlineHierarchy(node, obj) {
 // ==============================================================
 
 /** @summary Current hierarchy painter
-  * @desc Instance of {@link JSROOT.HierarchyPainter} object
+  * @desc Instance of {@link HierarchyPainter} object
   * @private */
 let first_hpainter = null;
 
@@ -629,10 +629,9 @@ function getHPainter() { return first_hpainter; }
 /**
   * @summary Painter of hierarchical structures
   *
-  * @memberof JSROOT
   * @example
   * // create hierarchy painter in "myTreeDiv"
-  * let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
+  * let h = new HierarchyPainter("example", "myTreeDiv");
   * // configure 'simple' layout in "myMainDiv"
   * // one also can specify "grid2x2" or "flex" or "tabs"
   * h.setDisplay("simple", "myMainDiv");
@@ -730,8 +729,8 @@ class HierarchyPainter extends BasePainter {
             }
 
             if (fff._file) return ReadFileObject(fff._file);
-            if (fff._localfile) return JSROOT.openFile(fff._localfile).then(f => ReadFileObject(f));
-            if (fff._fullurl) return JSROOT.openFile(fff._fullurl).then(f => ReadFileObject(f));
+            if (fff._localfile) return openFile(fff._localfile).then(f => ReadFileObject(f));
+            if (fff._fullurl) return openFile(fff._fullurl).then(f => ReadFileObject(f));
             return Promise.resolve(null);
          }
       };
@@ -1816,7 +1815,7 @@ class HierarchyPainter extends BasePainter {
                drawopt = handle.dflt;
 
             if (divid.length > 0) {
-               let func = updating ? JSROOT.redraw : JSROOT.draw;
+               let func = updating ? redraw : draw;
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
@@ -1842,7 +1841,7 @@ class HierarchyPainter extends BasePainter {
             d3_select(frame).html("");
             mdi.activateFrame(frame);
 
-            return JSROOT.draw(frame, obj, drawopt)
+            return draw(frame, obj, drawopt)
                          .then(p => complete(p))
                          .catch(err => complete(null, err));
 
@@ -1913,10 +1912,10 @@ class HierarchyPainter extends BasePainter {
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
          if (main_painter && main_painter.accept_drops)
-            return JSROOT.draw(divid, res.obj, "same " + opt).then(p => drop_complete(p, main_painter === p));
+            return draw(divid, res.obj, "same " + opt).then(p => drop_complete(p, main_painter === p));
 
          this.cleanupFrame(divid);
-         return JSROOT.draw(divid, res.obj, opt).then(p => drop_complete(p));
+         return draw(divid, res.obj, opt).then(p => drop_complete(p));
       });
    }
 
@@ -2417,7 +2416,7 @@ class HierarchyPainter extends BasePainter {
 
       showProgress("Opening " + filepath + " ...");
 
-      return JSROOT.openFile(filepath).then(file => {
+      return openFile(filepath).then(file => {
 
          let h1 = this.fileHierarchy(file);
          h1._isopen = true;
@@ -2835,7 +2834,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Returns actual MDI display object
-     * @desc It should an instance of {@link JSROOT.MDIDsiplay} class */
+     * @desc It should an instance of {@link MDIDsiplay} class */
    getDisplay() {
       return this.disp;
    }
@@ -2859,7 +2858,7 @@ class HierarchyPainter extends BasePainter {
          });
    }
 
-   /** @summary Creates configured JSROOT.MDIDisplay object
+   /** @summary Creates configured MDIDisplay object
      * @returns {Promise} when ready
      * @private */
    async createDisplay() {
@@ -2893,7 +2892,7 @@ class HierarchyPainter extends BasePainter {
       return this.disp;
    }
 
-   /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
+   /** @summary If possible, creates custom MDIDisplay for given item
      * @param itemname - name of item, for which drawing is created
      * @param custom_kind - display kind
      * @returns {Promise} with mdi object created
@@ -3262,7 +3261,7 @@ class HierarchyPainter extends BasePainter {
          return Promise.resolve(true);
       }
 
-      let guiCode = `<p class="jsroot_browser_version"><a href="https://root.cern/js/">JSROOT</a> version <span style="color:green"><b>${JSROOT.version}</b></span></p>`;
+      let guiCode = `<p class="jsroot_browser_version"><a href="https://root.cern/js/">JSROOT</a> version <span style="color:green"><b>${version}</b></span></p>`;
 
       if (this.is_online) {
          guiCode += '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>' +
@@ -3486,7 +3485,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
    });
 }
 
-/** @summary Build main JSROOT GUI
+/** @summary Build main GUI
   * @returns {Promise} when completed
   * @private  */
 function buildGUI(gui_element, gui_kind) {
@@ -3574,7 +3573,7 @@ function drawInspector(dom, obj) {
                   return this.showInspector(obj);
             }
             cleanup(ddom);
-            JSROOT.draw(ddom, obj, arg);
+            draw(ddom, obj, arg);
          });
    }
 
@@ -3709,7 +3708,7 @@ function createTreePlayer(player) {
 
       if (args.drawopt) cleanup(this.drawid);
 
-      const process_result = obj => JSROOT.redraw(this.drawid, obj);
+      const process_result = obj => redraw(this.drawid, obj);
 
       args.progress = process_result;
 
@@ -3764,7 +3763,7 @@ function createTreePlayer(player) {
       const submitDrawRequest = () => {
          httpRequest(url, 'object').then(res => {
             cleanup(this.drawid);
-            JSROOT.draw(this.drawid, res, option);
+            draw(this.drawid, res, option);
          });
       };
 
