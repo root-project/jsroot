@@ -3687,8 +3687,8 @@ class RPadPainter extends RObjectPainter {
          let mainid = this.selectDom().attr("id");
 
          if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
-            let hh = await JSROOT.require('hierarchy');
-            this.brlayout = new hh.BrowserLayout(mainid, null, this);
+            let hhh = await import('./display.mjs');
+            this.brlayout = new hhh.BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
             registerForResize(this.brlayout);
