@@ -247,7 +247,6 @@ function changeSettings(args) {
 }
 
 /** @namespace
-  * @alias JSROOT.gStyle
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
   * or can be load from the file providing style=itemname in the URL
@@ -868,7 +867,6 @@ function findFunction(name) {
    return (typeof elem == 'function') ? elem : null;
 }
 
-
 /** @summary Method to create http request
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
@@ -983,7 +981,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} [post_data] - data submitted with post kind of request
   * @returns {Promise} Promise for requested data, result type depends from the kind
   * @example
-  * JSROOT.httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+  * httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {

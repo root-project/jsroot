@@ -2,7 +2,8 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl, browser, settings, constants, internals, extend } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, findFunction,
+         browser, settings, constants, internals, extend } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -4120,7 +4121,7 @@ async function draw(dom, obj, opt) {
       await loadScript(handle.script);
 
    if (funcname) {
-      let func = hh?.[funcname] || JSROOT.findFunction(funcname);
+      let func = hh?.[funcname] || findFunction(funcname);
       if (!func)
          throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
       handle.func = func;

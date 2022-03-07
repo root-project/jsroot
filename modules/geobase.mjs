@@ -168,7 +168,6 @@ function produceNormal(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
 /**
   * @summary Helper class for geometry creation
   *
-  * @memberof JSROOT.GEO
   * @private
   */
 
@@ -375,7 +374,6 @@ class GeometryCreator {
 
 /** @summary Helper class for CsgGeometry creation
   *
-  * @memberof JSROOT.GEO
   * @private
   */
 
@@ -540,7 +538,6 @@ class PolygonsCreator{
 // ================= all functions to create geometry ===================================
 
 /** @summary Creates cube geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createCubeBuffer(shape, faces_limit) {
 
@@ -566,7 +563,6 @@ function createCubeBuffer(shape, faces_limit) {
 }
 
 /** @summary Creates 8 edges geometry
-  * @memberof JSROOT.GEO
   * @private */
 function create8edgesBuffer( v, faces_limit ) {
 
@@ -593,7 +589,6 @@ function create8edgesBuffer( v, faces_limit ) {
 }
 
 /** @summary Creates PARA geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createParaBuffer( shape, faces_limit ) {
 
@@ -615,7 +610,6 @@ function createParaBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates Ttrapezoid geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createTrapezoidBuffer( shape, faces_limit ) {
 
@@ -644,7 +638,6 @@ function createTrapezoidBuffer( shape, faces_limit ) {
 
 
 /** @summary Creates arb8 geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createArb8Buffer( shape, faces_limit ) {
 
@@ -751,7 +744,6 @@ function createArb8Buffer( shape, faces_limit ) {
 }
 
 /** @summary Creates sphere geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createSphereBuffer( shape, faces_limit ) {
    let radius = [shape.fRmax, shape.fRmin],
@@ -877,7 +869,6 @@ function createSphereBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates tube geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createTubeBuffer( shape, faces_limit) {
    let outerR, innerR; // inner/outer tube radius
@@ -936,7 +927,7 @@ function createTubeBuffer( shape, faces_limit) {
       };
 
    // create outer/inner tube
-   for (let side = 0; side<2; ++side) {
+   for (let side = 0; side < 2; ++side) {
       if ((side === 1) && !hasrmin) break;
 
       let R = (side === 0) ? outerR : innerR,
@@ -1022,7 +1013,6 @@ function createTubeBuffer( shape, faces_limit) {
 }
 
 /** @summary Creates eltu geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createEltuBuffer( shape , faces_limit ) {
    let radiusSegments = Math.max(4, Math.round(360/GradPerSegm));
@@ -1073,7 +1063,6 @@ function createEltuBuffer( shape , faces_limit ) {
 }
 
 /** @summary Creates torus geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createTorusBuffer( shape, faces_limit ) {
    let radius = shape.fR,
@@ -1166,7 +1155,6 @@ function createTorusBuffer( shape, faces_limit ) {
 
 
 /** @summary Creates polygon geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createPolygonBuffer( shape, faces_limit ) {
    let thetaStart = shape.fPhi1,
@@ -1343,7 +1331,6 @@ function createPolygonBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates xtru geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createXtruBuffer( shape, faces_limit ) {
    let nfaces = (shape.fNz-1) * shape.fNvert * 2;
@@ -1403,7 +1390,6 @@ function createXtruBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates para geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createParaboloidBuffer( shape, faces_limit ) {
 
@@ -1502,7 +1488,6 @@ function createParaboloidBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates hype geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createHypeBuffer( shape, faces_limit ) {
 
@@ -1575,7 +1560,6 @@ function createHypeBuffer( shape, faces_limit ) {
 }
 
 /** @summary Creates tessalated geometrey
-  * @memberof JSROOT.GEO
   * @private */
 function createTessellatedBuffer( shape, faces_limit) {
    let numfaces = 0;
@@ -1610,7 +1594,6 @@ function createTessellatedBuffer( shape, faces_limit) {
 }
 
 /** @summary Creates Matrix4 from TGeoMatrix
-  * @memberof JSROOT.GEO
   * @private */
 function createMatrix(matrix) {
 
@@ -1743,8 +1726,8 @@ function getNodeMatrix(kind, node) {
 let createGeometry; // will be function to create geometry
 
 /** @summary Returns number of faces for provided geometry
- * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
- * @private */
+  * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
+  * @private */
 function numGeometryFaces(geom) {
    if (!geom) return 0;
 
@@ -1764,8 +1747,8 @@ function numGeometryFaces(geom) {
 }
 
 /** @summary Returns number of faces for provided geometry
- * @param {Object} geom  - can be Geometry, BufferGeometry, CsgGeometry or interim array of polygons
- * @private */
+  * @param {Object} geom  - can be Geometry, BufferGeometry, CsgGeometry or interim array of polygons
+  * @private */
 function numGeometryVertices(geom) {
    if (!geom) return 0;
 
@@ -1812,7 +1795,6 @@ function geomBoundingBox(geom) {
 
 /** @summary Creates half-space geometry for given shape
   * @desc Just big-enough triangle to make BSP calculations
-  * @memberof JSROOT.GEO
   * @private */
 function createHalfSpace(shape, geom) {
    if (!shape || !shape.fN || !shape.fP) return null;
@@ -1857,7 +1839,6 @@ function createHalfSpace(shape, geom) {
 
 /** @summary Returns number of faces for provided geometry
   * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
-  * @memberof JSROOT.GEO
   * @private */
 function countGeometryFaces(geom) {
    if (!geom) return 0;
@@ -1878,7 +1859,6 @@ function countGeometryFaces(geom) {
 }
 
 /** @summary Creates geometrey for composite shape
-  * @memberof JSROOT.GEO
   * @private */
 function createComposite( shape, faces_limit ) {
 
@@ -1956,7 +1936,6 @@ function createComposite( shape, faces_limit ) {
 }
 
 /** @summary Try to create projected geometry
-  * @memberof JSROOT.GEO
   * @private */
 function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 
@@ -1999,7 +1978,6 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
  *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
  * @param {Object} shape - instance of TGeoShape object
  * @param {Number} limit - defines return value, see details
- * @memberof JSROOT.GEO
  * @private */
 createGeometry = function( shape, limit ) {
    if (limit === undefined) limit = 0;
@@ -2055,7 +2033,6 @@ createGeometry = function( shape, limit ) {
 
 /** @summary Provides info about geo object, used for tooltip info
   * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
-  * @memberof JSROOT.GEO
   * @private */
 function provideObjectInfo(obj) {
    let info = [], shape = null;
@@ -2135,7 +2112,6 @@ function provideObjectInfo(obj) {
 }
 
 /** @summary Creates projection matrix for the camera
-  * @memberof JSROOT.GEO
   * @private */
 function createProjectionMatrix(camera) {
    let cameraProjectionMatrix = new Matrix4();
@@ -2149,7 +2125,6 @@ function createProjectionMatrix(camera) {
 }
 
 /** @summary Creates frustum
-  * @memberof JSROOT.GEO
   * @private */
 function createFrustum(source) {
    if (!source) return null;
@@ -2233,7 +2208,6 @@ function isSameStack(stack1, stack2) {
       if (stack1[k] !== stack2[k]) return false;
    return true;
 }
-
 
 
 /**
@@ -3299,7 +3273,6 @@ class ClonedNodes {
  * one should inverse geometry object, otherwise three.js cannot correctly draw it
  * @param {Object} shape - TGeoShape object
  * @param {Object} material - material
- * @memberof JSROOT.GEO
  * @private */
 
 function createFlippedMesh(shape, material) {
@@ -3384,7 +3357,6 @@ function createFlippedMesh(shape, material) {
 
 /** @summary extract code of Box3.expandByObject
   * @desc Major difference - do not traverse hierarchy
-  * @memberof JSROOT.GEO
   * @private */
 function getBoundingBox(node, box3, local_coordinates) {
    if (!node || !node.geometry) return box3;

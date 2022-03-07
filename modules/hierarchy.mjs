@@ -1,7 +1,8 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings, internals, extend, isArrayProto, isRootCollection } from './core.mjs';
+         browser, source_dir, settings, internals, extend, findFunction,
+         isArrayProto, isRootCollection } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -2804,7 +2805,7 @@ class HierarchyPainter extends BasePainter {
       this.setTopPainter(); //assign hpainter as top painter
 
       if (status_item && !this.status_disabled && !decodeUrl().has('nostatus')) {
-         let func = JSROOT.findFunction(status_item._status);
+         let func = findFunction(status_item._status);
          if (typeof func == 'function')
             return this.createStatusLine().then(sdiv => {
                if (sdiv) func(sdiv, this.itemFullName(status_item));
@@ -3192,7 +3193,7 @@ class HierarchyPainter extends BasePainter {
 
       return JSROOT.require(item._prereq || '').then(() => {
 
-         let player_func = JSROOT.findFunction(item._player);
+         let player_func = findFunction(item._player);
          if (!player_func) return null;
 
          return this.createDisplay().then(mdi => {
@@ -3745,7 +3746,7 @@ class HierarchyPainter extends BasePainter {
       let DoExpandItem = (_item, _obj) => {
 
          if (typeof _item._expand == 'string')
-            _item._expand = JSROOT.findFunction(item._expand);
+            _item._expand = findFunction(item._expand);
 
          if (typeof _item._expand !== 'function') {
             let handle = getDrawHandle(_item._kind, "::expand");
@@ -3759,7 +3760,7 @@ class HierarchyPainter extends BasePainter {
             if (handle && handle.expand) {
                if (typeof handle.expand == 'string')
                   return JSROOT.require(handle.prereq).then(hh => {
-                     _item._expand = handle.expand = hh?.[handle.expand] || JSROOT.findFunction(handle.expand);
+                     _item._expand = handle.expand = hh?.[handle.expand] || findFunction(handle.expand);
                      return _item._expand ? DoExpandItem(_item, _obj) : true;
                   });
                _item._expand = handle.expand;
@@ -4013,7 +4014,7 @@ class HierarchyPainter extends BasePainter {
             req = 'h.json?compact=3';
             item._expand = onlineHierarchy; // use proper expand function
          } else if (item._make_request) {
-            func = JSROOT.findFunction(item._make_request);
+            func = findFunction(item._make_request);
          } else if (draw_handle && draw_handle.make_request) {
             func = draw_handle.make_request;
          }
@@ -4052,7 +4053,7 @@ class HierarchyPainter extends BasePainter {
             let func = null;
 
             if (!h_get && item && ('_after_request' in item)) {
-               func = JSROOT.findFunction(item._after_request);
+               func = findFunction(item._after_request);
             } else if (draw_handle && ('after_request' in draw_handle))
                func = draw_handle.after_request;
 
@@ -4967,7 +4968,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
 
    return hpainter.startGUI(myDiv, () => {
       if (!drawing) return hpainter;
-      let func = JSROOT.findFunction('GetCachedObject');
+      let func = findFunction('GetCachedObject');
       let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get("opt", "");

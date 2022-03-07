@@ -2,8 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir, 
-         settings, constants, internals, create, extend } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir,
+         settings, constants, internals, create, extend, findFunction } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -309,7 +309,6 @@ function getShapeIcon(shape) {
 /**
   * @summary Toolbar for geometry painter
   *
-  * @memberof JSROOT.GEO
   * @private
   */
 
@@ -374,7 +373,6 @@ class Toolbar {
 /**
   * @summary geometry drawing control
   *
-  * @memberof JSROOT.GEO
   * @private
   */
 
@@ -2934,7 +2932,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Handle drop operation
      * @desc opt parameter can include function name like opt$func_name
-     * Such function should be possible to find via {@link JSROOT.findFunction}
+     * Such function should be possible to find via {@link findFunction}
      * Function has to return Promise with objects to draw on geometry
      * By default function with name "extract_geo_tracks" is checked
      * @returns {Promise} handling of drop operation */
@@ -2950,7 +2948,7 @@ class TGeoPainter extends ObjectPainter {
             opt = opt.substr(opt.indexOf("$")+1);
          }
 
-         let func = JSROOT.findFunction(funcname);
+         let func = findFunction(funcname);
 
          if (!func) return Promise.reject(Error(`Function ${funcname} not found`));
 
