@@ -3,7 +3,7 @@
 import * as JSROOT from './core.mjs';
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, internals, create, extend, findFunction } from './core.mjs';
+         settings, constants, internals, create, extend, clone, findFunction } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -2004,7 +2004,7 @@ class TGeoPainter extends ObjectPainter {
                   // this is place holder for existing geometry
                   clone = { id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt };
                } else {
-                  clone = JSROOT.clone(item, null, true);
+                  clone = clone(item, null, true);
                   cnt++;
                }
 

@@ -854,7 +854,7 @@ create SVG output. For example, to create SVG image with lego plot, one should d
           .then(obj => jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 }))
           .then(svg => fs.writeFileSync("lego2.svg", svg));
 
-It is also possible to convert any JavaScript object into ROOT JSON string, using **JSROOT.toJSON()** function. Like:
+It is also possible to convert any JavaScript object into ROOT JSON string, using **toJSON()** function. Like:
 
     let jsroot = require("jsroot");
     let fs = require("fs");

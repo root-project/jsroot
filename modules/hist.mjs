@@ -1,8 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser, settings, constants, internals, extend,
-         create, createHistogram, createTPolyLine } from './core.mjs';
+import { gStyle, BIT, browser, settings, constants, internals,
+         extend, clone, create, createHistogram, createTPolyLine } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -1272,10 +1272,10 @@ class TPavePainter extends ObjectPainter {
 
       switch (obj._typename) {
          case 'TPaveText':
-            pave.fLines = JSROOT.clone(obj.fLines);
+            pave.fLines = clone(obj.fLines);
             return true;
          case 'TPavesText':
-            pave.fLines = JSROOT.clone(obj.fLines);
+            pave.fLines = clone(obj.fLines);
             pave.fNpaves = obj.fNpaves;
             return true;
          case 'TPaveLabel':
@@ -7425,9 +7425,9 @@ class THStackPainter extends ObjectPainter {
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
       let lst = create("TList");
-      lst.Add(JSROOT.clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
+      lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
-         let hnext = JSROOT.clone(stack.fHists.arr[i]),
+         let hnext = clone(stack.fHists.arr[i]),
              hnextopt = stack.fHists.opt[i],
              hprev = lst.arr[i-1];
 

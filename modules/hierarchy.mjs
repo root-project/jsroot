@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings, internals, extend, findFunction,
+         browser, source_dir, settings, internals, extend, findFunction, toJSON,
          isArrayProto, isRootCollection } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
@@ -1547,7 +1547,7 @@ class BatchDisplay extends MDIDisplay {
       let obj = d3_select(frame).property('_json_object_');
       if (obj) {
          d3_select(frame).property('_json_object_', null);
-         return JSROOT.toJSON(obj, spacing);
+         return toJSON(obj, spacing);
       }
    }
 

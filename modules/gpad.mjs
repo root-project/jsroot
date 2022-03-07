@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals, create, extend } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals, create, extend, toJSON } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -3609,8 +3609,8 @@ class TPadPainter extends ObjectPainter {
              mainid = this.selectDom().attr("id");
 
          if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string"))
-            layout_promise = JSROOT.require('hierarchy').then(() => {
-               this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
+            layout_promise = JSROOT.require('hierarchy').then(hh => {
+               this.brlayout = new hh.BrowserLayout(mainid, null, this);
                this.brlayout.create(mainid, true);
                // this.brlayout.toggleBrowserKind("float");
                this.setDom(this.brlayout.drawing_divid()); // need to create canvas
@@ -3802,7 +3802,7 @@ class TPadPainter extends ObjectPainter {
          }
       });
 
-      if (is_top) return JSROOT.toJSON(arg);
+      if (is_top) return toJSON(arg);
    }
 
    /** @summary returns actual ranges in the pad, which can be applied to the server
@@ -4841,14 +4841,14 @@ class TCanvasPainter extends TPadPainter {
          case "pave_moved":
             if (painter.fillWebObjectOptions) {
                let info = painter.fillWebObjectOptions();
-               if (info) msg = "PRIMIT6:" + JSROOT.toJSON(info);
+               if (info) msg = "PRIMIT6:" + toJSON(info);
             }
             break;
          default:
             if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
                console.log('Call exec', painter.snapid);
 
-               msg = "PRIMIT6:" + JSROOT.toJSON({
+               msg = "PRIMIT6:" + toJSON({
                   _typename: "TWebObjectOptions",
                   snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ""),
                   opt: kind.substr(5),
@@ -4893,7 +4893,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       if (arg && ischanged)
-         this.sendWebsocket("PADCLICKED:" + JSROOT.toJSON(arg));
+         this.sendWebsocket("PADCLICKED:" + toJSON(arg));
    }
 
    /** @summary Return actual TCanvas status bits  */
@@ -4926,7 +4926,7 @@ class TCanvasPainter extends TPadPainter {
          }, "objects");
       }
 
-      let res = JSROOT.toJSON(canv);
+      let res = toJSON(canv);
 
       if (fill0) canv.fFillStyle = 0;
 
