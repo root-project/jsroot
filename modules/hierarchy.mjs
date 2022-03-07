@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings, internals, isArrayProto } from './core.mjs';
+         browser, source_dir, settings, internals, isArrayProto, isRootCollection } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -97,7 +97,7 @@ function taskHierarchy(item, obj) {
 /** @summary Create hierarchy elements for TList object
   * @private */
 function listHierarchy(folder, lst) {
-   if (!JSROOT.isRootCollection(lst)) return false;
+   if (!isRootCollection(lst)) return false;
 
    if ((lst.arr === undefined) || (lst.arr.length === 0)) {
       folder._more = false;
@@ -427,7 +427,7 @@ function objectHierarchy(top, obj, args) {
                   case 'TLatex': item._value = fld.fTitle; break;
                   case 'TObjString': item._value = fld.fString; break;
                   default:
-                     if (JSROOT.isRootCollection(fld) && (typeof fld.arr === "object")) {
+                     if (isRootCollection(fld) && (typeof fld.arr === "object")) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
                         if (fld.arr.length>0) item._more = true;
@@ -532,7 +532,7 @@ function createInspectorContent(obj) {
    if (obj._typename)
       h._title += "  type:" + obj._typename;
 
-   if (JSROOT.isRootCollection(obj)) {
+   if (isRootCollection(obj)) {
       h._name = obj.name || obj._typename;
       listHierarchy(h, obj);
    } else {

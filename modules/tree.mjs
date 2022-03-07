@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { BIT, isArrayProto } from './core.mjs';
+import { BIT, isArrayProto, isRootCollection } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -172,7 +172,7 @@ class ArrayIterator {
 
          if (typ === "object") {
             if (obj._typename !== undefined) {
-               if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
+               if (isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
             } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
                typ = "array";
@@ -371,7 +371,7 @@ class TDrawVariable {
                      arriter.push(undefined);
                   } else {
                      let objclass = getBranchObjectClass(br, tree, false, true);
-                     if (objclass && JSROOT.isRootCollection(null, objclass)) arriter.push(undefined);
+                     if (objclass && isRootCollection(null, objclass)) arriter.push(undefined);
                   }
                }
                arriter.push(code.substr(prev, pos2 - prev));
@@ -467,7 +467,7 @@ class TDrawVariable {
 
          // try to check if branch is array and need to be iterated
          if (this.brarray[n] === undefined)
-            this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
+            this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || isRootCollection(arg[name]);
 
          // no array - no pain
          if (this.brarray[n] === false) continue;
