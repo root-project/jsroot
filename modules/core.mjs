@@ -1,15 +1,15 @@
 
-/** @summary JSROOT version id
+/** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0"
   * For the ROOT release string is "ROOT major.minor.patch" like "ROOT 6.26.00" */
 let version_id = "modules";
 
-/** @summary JSROOT version date
+/** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
 let version_date = "7/03/2022";
 
-/** @summary JSROOT version id and date
-  * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
+/** @summary version id and date
+  * @desc Produced by concatenation of {@link version_id} and {@link version_date}
   * Like "6.99.99 21/02/2022" */
 let version = version_id + " " + version_date;
 
@@ -17,8 +17,6 @@ let version = version_id + " " + version_date;
   * @desc Automatically detected and used to load other scripts */
 let source_dir = "";
 
-/** @summary Indicates if JSROOT runs inside Node.js
-  * @memberof JSROOT */
 let nodejs = false;
 
 /** @summary internal data
@@ -41,13 +39,15 @@ if (src && (typeof src == "string")) {
    if (src.indexOf("file://") == 0) nodejs = true;
 }
 
-/** @summary Indicates if JSROOT runs in batch mode, can be changed if required */
 let batch_mode = nodejs;
 
+/** @summary Indicates if running in batch mode */
 function isBatchMode() { return batch_mode; }
 
+/** @summary Set batch mode */
 function setBatchMode(on) { batch_mode = !!on; }
 
+/** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
 if (nodejs) {
@@ -1029,41 +1029,8 @@ function makeSVG(args) {
   * @param {string} [gui_kind = "gui"] - kind of the gui: "gui", "online", "draw"
   * @returns {Promise} when ready
   * @private */
-async function buildGUI(gui_element, gui_kind) {
-   let d = decodeUrl(),
-       nobrowser = d.has('nobrowser');
-
-   if (typeof gui_element == 'string')
-      gui_element = document.getElementById(gui_element);
-
-   if (!gui_element) {
-      console.log('Fail to find element for GUI drawing');
-      return false;
-   }
-
-   if (gui_kind == "nobrowser") {
-       gui_kind = "gui"; nobrowser = true;
-   } else if (gui_kind == "draw") {
-      nobrowser = true;
-   } else if (gui_kind != "online") {
-      gui_kind = "gui";
-   }
-
-   let user_scripts = d.get("autoload") || d.get("load");
-
-   internals.debug_output = gui_element;
-
-   if (user_scripts) {
-      await jsroot_require("painter");
-      await loadScript(user_scripts);
-   }
-
-   gui_element.innerHTML = "";
-   delete internals.debug_output;
-
-   let handle = await jsroot_require("hierarchy");
-
-   return nobrowser ? handle.buildNobrowserGUI(gui_element, gui_kind) : handle.buildGUI(gui_element, gui_kind);
+function buildGUI(gui_element, gui_kind) {
+   return import('./hierarchy.mjs').then(handle => handle.buildGUI(gui_element, gui_kind));
 }
 
 /** @summary Create some ROOT classes

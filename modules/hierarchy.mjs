@@ -2945,10 +2945,17 @@ class HierarchyPainter extends BasePainter {
    /** @summary Load and execute scripts
      * @private */
    async loadScripts(arr) {
+      if (!arr || !arr.length) return;
+
+      let has_jsroot = typeof globalThis.JSROOT != 'undefined';
+      if (!has_jsroot)  globalThis.JSROOT = { require };
+
       for (let k = 0; k < arr.length; ++k) {
          let txt = await httpRequest(arr[k], 'text');
          if (txt) eval(txt);
       }
+
+      if (!has_jsroot)  globalThis.JSROOT = undefined;
    }
 
    /** @summary Start GUI
@@ -3428,89 +3435,69 @@ class HierarchyPainter extends BasePainter {
 
 } // class HierarchyPainter
 
-// ======================================================================================
 
-/** @summary Build gui without visible hierarchy browser
-  * @private */
-function buildNobrowserGUI(gui_element, gui_kind) {
-
+/** @summary Build main GUI
+  * @returns {Promise} when completed
+  * @private  */
+async function buildGUI(gui_element, gui_kind) {
    let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
-   if (myDiv.empty()) {
-      alert('no div for simple nobrowser gui found');
-      return Promise.resolve(null);
-   }
+   if (myDiv.empty()) return alert('no div for gui found');
 
-   let online = false, drawing = false;
-   if (gui_kind == 'online')
+   myDiv.html(""); // clear element
+
+   let d = decodeUrl(), online = false, nobrowser = false, drawing = false;
+
+   if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false")) {
+       gui_kind = "gui";
+       nobrowser = true;
+   } else if (gui_kind == "draw") {
+      drawing = nobrowser = true;
+   } else if (gui_kind == "online") {
       online = true;
-   else if (gui_kind == 'draw')
-      online = drawing = true;
+   } else {
+      gui_kind = "gui";
+   }
 
    if (myDiv.attr("ignoreurl") === "true")
       settings.IgnoreUrlOptions = true;
 
    readStyleFromURL();
 
-   let d = decodeUrl(), guisize = d.get("divsize");
-   if (guisize) {
-      guisize = guisize.split("x");
-      if (guisize.length != 2) guisize = null;
-   }
+   if (nobrowser) {
+      let guisize = d.get("divsize");
+      if (guisize) {
+         guisize = guisize.split("x");
+         if (guisize.length != 2) guisize = null;
+      }
 
-   if (guisize) {
-      myDiv.style('position',"relative").style('width', guisize[0] + "px").style('height', guisize[1] + "px");
-   } else {
-      d3_select('html').style('height','100%');
-      d3_select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
-      myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
+      if (guisize) {
+         myDiv.style('position',"relative").style('width', guisize[0] + "px").style('height', guisize[1] + "px");
+      } else {
+         d3_select('html').style('height','100%');
+         d3_select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
+         myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
+      }
    }
 
    let hpainter = new HierarchyPainter('root', null);
 
    if (online) hpainter.is_online = drawing ? "draw" : "online";
    if (drawing) hpainter.exclude_browser = true;
+   hpainter.start_without_browser = nobrowser;
 
-   hpainter.start_without_browser = true; // indicate that browser not required at the beginning
+   await hpainter.startGUI(myDiv);
 
-   return hpainter.startGUI(myDiv, () => {
-      if (!drawing) return hpainter;
+   if (!nobrowser) {
+      hpainter.initializeBrowser();
+   } else if (drawing) {
       let func = findFunction('GetCachedObject');
       let obj = (typeof func == 'function') ? parse(func()) : null;
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get("opt", "");
-
       if (d.has("websocket")) opt+=";websocket";
-
-      return hpainter.display("", opt).then(() => hpainter);
-   });
-}
-
-/** @summary Build main GUI
-  * @returns {Promise} when completed
-  * @private  */
-function buildGUI(gui_element, gui_kind) {
-   let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
-   if (myDiv.empty()) return alert('no div for gui found');
-
-   let online = false;
-   if (gui_kind == "online") online = true;
-
-   if (myDiv.attr("ignoreurl") === "true")
-      settings.IgnoreUrlOptions = true;
-
-   if (decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
-      return buildNobrowserGUI(gui_element, gui_kind);
-
-   readStyleFromURL();
-
-   let hpainter = new HierarchyPainter('root', null);
-
-   hpainter.is_online = online;
-
-   return hpainter.startGUI(myDiv).then(() => {
-      hpainter.initializeBrowser();
-      return hpainter;
-   });
+      await hpainter.display("", opt);
+   }
+   return hpainter;
 }
 
 
@@ -3841,7 +3828,7 @@ function drawLeafPlayer(hpainter, itemname) {
    return drawTreePlayer(hpainter, itemname, false, true);
 }
 
-export { getHPainter, HierarchyPainter, buildNobrowserGUI, buildGUI,
+export { getHPainter, HierarchyPainter, buildGUI,
          drawInspector, drawStreamerInfo, drawList,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy,
          createTreePlayer, drawTreePlayer, drawTreePlayerKey, drawLeafPlayer };

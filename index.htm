@@ -6,14 +6,14 @@
       <link rel="shortcut icon" href="img/RootIcon.ico"/>
       <!-- To make use of RequireJS, replace following line with commented one -->
       <!--script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="scripts/JSRoot.core.js"></script-->
-      <script type="text/javascript" src="scripts/JSRoot.core.js"></script>
    </head>
    <body>
       <div id="simpleGUI" path="../files/" files="ct.root;exclusion.root;fillrandom.root;glbox.root;graph.root;hsimple.root;legends.root;rf107.root;stacks.root;zdemo.root">
          loading scripts ...
       </div>
-      <script type="text/javascript">
-         JSROOT.buildGUI("simpleGUI");
+      <script type="module">
+         import { buildGUI } from './modules/core.mjs';
+         buildGUI("simpleGUI");
       </script>
    </body>
 </html>
