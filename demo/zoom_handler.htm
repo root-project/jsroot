@@ -1,44 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Automatic zooming in second histogram</title>
+   <head>
+      <meta charset="utf-8">
+      <title>Automatic zooming in second histogram</title>
+   </head>
 
-   <!-- Load all required functionality in advance and call user function when ready -->
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-</head>
+   <body>
+     <div id="drawth2" style="width:600px; height:400px"></div>
+     <div id="drawth1" style="width:600px; height:400px"></div>
+   </body>
 
-<body>
-  <div id="drawth2" style="width:600px; height:400px"></div>
-  <div id="drawth1" style="width:600px; height:400px"></div>
+   <script type='module'>
 
-   <script type='text/javascript'>
+      import { openFile, draw } from '../modules/core.mjs';
 
-      let h1painter = null;
+      let file = await openFile("https://root.cern/js/files/hsimple.root");
 
-      JSROOT.openFile("https://root.cern/js/files/hsimple.root").then(file => {
-         file.readObject("hpx;1")
-             .then(obj1 => JSROOT.draw("drawth1", obj1, "hist"))
-             .then(painter => { h1painter = painter; });
+      let obj1 = await file.readObject("hpx;1");
 
-         file.readObject("hpxpy;1")
-             .then(obj2 => JSROOT.draw("drawth2", obj2, "col"))
-             .then(painter => {
-                // zooming handled in frame painter now
-                let fp = painter.getFramePainter();
-                // keep old function to be able invoke it again
-                fp.oldZoom = fp.zoom;
-                // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
-                fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-                   if (h1painter) h1painter.getFramePainter().zoom(xmin, xmax);
-                   return this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
-                }
-             });
-      });
+      let h1painter = await draw("drawth1", obj1, "hist");
+
+      let obj2 = await file.readObject("hpxpy;1");
+
+      let h2painter = await draw("drawth2", obj2, "col");
+
+      // zooming handled in frame painter now
+      let fp = h2painter.getFramePainter();
+
+      // keep old function to be able invoke it again
+      fp.oldZoom = fp.zoom;
+
+      // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
+      fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+          h1painter.getFramePainter().zoom(xmin, xmax);
+          return this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
+      }
 
    </script>
 
-</body>
 
 </html>
 
