@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Use of tooltip callback in JSROOT</title>
-</head>
+   <head>
+      <meta charset="utf-8">
+      <title>Use of tooltip callback in JSROOT</title>
+   </head>
 
-<body>
+   <body>
 
-   <div id="user_tooltip">Place for info</div>
+      <div id="user_tooltip">Place for info</div>
 
-   <form action="">
-      <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
-      <input type="radio" name="kind" id="btn2" value="Click"/> Click
-      <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
-      <input type="radio" name="kind" id="btn4" value="All"/> All
-   </form>
+      <form action="">
+         <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
+         <input type="radio" name="kind" id="btn2" value="Click"/> Click
+         <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
+         <input type="radio" name="kind" id="btn4" value="All"/> All
+      </form>
 
-   <div id="object_draw" style="width:800px; height:600px"></div>
+      <div id="object_draw" style="width:800px; height:600px"></div>
 
-   <div id="tooltip_draw" style="width:400px; height:300px"></div>
+      <div id="tooltip_draw" style="width:400px; height:300px"></div>
+
+   </body>
 
    <script type='module'>
 
@@ -28,7 +30,7 @@
 
       function UserHandler(kind, info) {
          if (!info)  {
-            d3.select("#user_tooltip").html("No info");
+            document.getElementById("user_tooltip").innerHTML = "No info";
             last_hbin = -1;
             return false;
          }
@@ -36,7 +38,7 @@
          last_hbin = info.bin;
 
          // show info
-         d3.select("#user_tooltip").html(`Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`);
+         document.getElementById("user_tooltip").innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
 
          let h1 = createHistogram("TH1I", 20);
          // copy content from TH2 to TH1
@@ -135,6 +137,5 @@
 
    </script>
 
-</body>
 </html>
 

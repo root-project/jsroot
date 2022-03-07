@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Create and update THStack object</title>
-</head>
-<body>
-  <h3>Text Before </h3>
+   <head>
+      <meta charset="utf-8">
+      <title>Create and update THStack object</title>
+   </head>
+   <body>
+      <h3>Text Before </h3>
+      <div id="object_draw" style="width: 800px; height:600px"></div>
+      <h3>Text After</h3>
+   </body>
 
-  <div id="object_draw" style="width: 800px; height:600px"></div>
-
-  <h3>Text After</h3>
-
-  <script type='module'>
+   <script type='module'>
 
      import { draw, redraw, createHistogram, createTHStack } from '../modules/core.mjs';
 
@@ -40,8 +39,6 @@
      let cnt = 0;
      setInterval(() => redraw("object_draw", createStack(++cnt), "nostack"), 2000);
 
-  </script>
+   </script>
 
-</body>
 </html>
-
