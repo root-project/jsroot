@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings, internals, extend, findFunction, parse, toJSON,
+         require, source_dir, settings, internals, extend, findFunction, parse, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
@@ -1699,7 +1699,7 @@ class HierarchyPainter extends BasePainter {
 
       if (!item || !item._player) return Promise.resolve(null);
 
-      return JSROOT.require(item._prereq || '').then(() => {
+      return require(item._prereq || '').then(() => {
 
          let player_func = findFunction(item._player);
          if (!player_func) return null;
@@ -2266,7 +2266,7 @@ class HierarchyPainter extends BasePainter {
 
             if (handle && handle.expand) {
                if (typeof handle.expand == 'string')
-                  return JSROOT.require(handle.prereq).then(hh => {
+                  return require(handle.prereq).then(hh => {
                      _item._expand = handle.expand = hh?.[handle.expand] || findFunction(handle.expand);
                      return _item._expand ? DoExpandItem(_item, _obj) : true;
                   });
@@ -2615,8 +2615,8 @@ class HierarchyPainter extends BasePainter {
             }
          });
 
-         return JSROOT.require(modules)
-               .then(() => JSROOT.require(scripts))
+         return require(modules)
+               .then(() => require(scripts))
                .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
@@ -3109,7 +3109,7 @@ class HierarchyPainter extends BasePainter {
          let promise;
 
          if (prereq) {
-            promise = JSROOT.require(prereq); prereq = "";
+            promise = require(prereq); prereq = "";
          } else if (load) {
             promise = this.loadScripts(load.split(";")); load = "";
          } else if (browser_kind) {

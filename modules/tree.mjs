@@ -2871,7 +2871,7 @@ async function drawTree() {
       if (!args) args = 'player';
 
       if ((typeof args == 'string') && (args.indexOf('player') == 0)) {
-         let hh = await JSROOT.require("hierarchy");
+         let hh = await import('./hierarchy.mjs');
          hh.createTreePlayer(painter);
          painter.configureTree(tree);
          painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
@@ -2904,7 +2904,7 @@ async function drawTree() {
       // redirect drawing to the player
       create_player = 1;
 
-      let hh = await JSROOT.require("hierarchy");
+      let hh = await import('./hierarchy.mjs');
       hh.createTreePlayer(painter);
       painter.configureTree(tree);
       painter.showPlayer(args);

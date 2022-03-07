@@ -2,7 +2,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, BIT, settings, constants, internals,
-         create, extend, parse, toJSON, isBatchMode, loadScript } from './core.mjs';
+         require, create, extend, parse, toJSON, isBatchMode, loadScript } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -4362,7 +4362,7 @@ class TCanvasPainter extends TPadPainter {
          return Promise.resolve(true);
       }
 
-      return JSROOT.require("hierarchy").then(hh => {
+      return import('./display.mjs').then(hh => {
 
          let grid = new hh.GridDisplay(origin.node(), layout_kind);
 
@@ -4372,8 +4372,8 @@ class TCanvasPainter extends TPadPainter {
          main = d3_select(grid.getGridFrame(mainid));
          sidebar = d3_select(grid.getGridFrame(1 - mainid));
 
-         main.classed("central_panel", true).style('position','relative');
-         sidebar.classed("side_panel", true).style('position','relative');
+         main.classed("central_panel", true).style('position', 'relative');
+         sidebar.classed("side_panel", true).style('position', 'relative');
 
          // now append all childs to the new main
          for (let k = 0; k < lst.length; ++k)
@@ -4712,7 +4712,7 @@ class TCanvasPainter extends TPadPainter {
 
       return new Promise(resolveFunc => {
 
-         JSROOT.require('openui5').then(() => {
+         require('openui5').then(() => {
 
             d3_select("#ged_placeholder").text("");
 

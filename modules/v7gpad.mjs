@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, create, extend, parse,
+import { gStyle, settings, constants, internals, create, extend, parse, require,
          addMethods, registerMethods, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
@@ -4294,7 +4294,7 @@ class RCanvasPainter extends RPadPainter {
          return Promise.resolve(true);
       }
 
-      return JSROOT.require("hierarchy").then(hh => {
+      return import('./display.mjs').then(hh => {
 
          let grid = new hh.GridDisplay(origin.node(), layout_kind);
 
@@ -4304,11 +4304,11 @@ class RCanvasPainter extends RPadPainter {
          main = d3_select(grid.getGridFrame(mainid));
          sidebar = d3_select(grid.getGridFrame(1 - mainid));
 
-         main.classed("central_panel", true).style('position','relative');
-         sidebar.classed("side_panel", true).style('position','relative');
+         main.classed("central_panel", true).style('position', 'relative');
+         sidebar.classed("side_panel", true).style('position', 'relative');
 
          // now append all childs to the new main
-         for (let k=0;k<lst.length;++k)
+         for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
 
          this.setLayoutKind(layout_kind, ".central_panel");
@@ -4767,7 +4767,7 @@ class RCanvasPainter extends RPadPainter {
 
       return new Promise(resolveFunc => {
 
-         JSROOT.require('openui5').then(() => {
+         require('openui5').then(() => {
 
             d3_select("#ged_placeholder").text("");
 

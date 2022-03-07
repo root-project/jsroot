@@ -1858,7 +1858,7 @@ class RH1Painter extends RHistPainter {
    /** @summary Draw in 3d */
    draw3D(reason) {
       this.mode3d = true;
-      return JSROOT.require('v7hist3d').then(() => this.draw3D(reason));
+      return import('./v7hist3d.mjs').then(() => this.draw3D(reason));
    }
 
    /** @summary Readraw histogram */
@@ -3671,7 +3671,7 @@ class RH2Painter extends RHistPainter {
      * @returns {Promise} when ready */
    draw3D(reason) {
       this.mode3d = true;
-      return JSROOT.require('v7hist3d').then(() => this.draw3D(reason));
+      return import('./v7hist3d.mjs').then(() => this.draw3D(reason));
    }
 
    /** @summary Call drawing function depending from 3D mode */
@@ -3758,7 +3758,7 @@ function drawHistDisplayItem(dom, obj, opt) {
       return RH2Painter.draw(dom, obj, opt);
 
    if (obj.fAxes.length == 3)
-      return JSROOT.require("v7hist3d").then(hh => hh.RH3Painter.draw(dom, obj, opt));
+      return import('./v7hist3d.mjs').then(hh => hh.RH3Painter.draw(dom, obj, opt));
 
    return null;
 }

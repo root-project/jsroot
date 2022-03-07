@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
+import { require, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -655,7 +655,7 @@ function connectWebWindow(arg) {
       if (arg.openui5src) _.openui5src = arg.openui5src;
       if (arg.openui5libs) _.openui5libs = arg.openui5libs;
       if (arg.openui5theme) _.openui5theme = arg.openui5theme;
-      return JSROOT.require(arg.prereq).then(() => {
+      return require(arg.prereq).then(() => {
          delete arg.prereq;
          if (arg.prereq_logdiv && document) {
             let elem = document.getElementById(arg.prereq_logdiv);
@@ -737,7 +737,7 @@ function connectWebWindow(arg) {
       handle.connect();
 
       if (arg.prereq2) {
-         JSROOT.require(arg.prereq2).then(() => {
+         require(arg.prereq2).then(() => {
             delete arg.prereq2; // indicate that func is loaded
             if (!arg.first_recv || handle.first_msg) resolveFunc(handle);
          });

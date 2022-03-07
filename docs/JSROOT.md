@@ -876,7 +876,7 @@ to make it working. To run JSROOT on headless machine, one have to use `xvfb-run
 
 [OpenUI5](http://openui5.org/) is a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
 
-First problem is bootstraping of OpenUI5. Most easy solution - use `JSROOT.require('openui5')`.
+First problem is bootstraping of OpenUI5. Most easy solution - use `require('openui5')`.
 JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5.
 After loading is completed, one can use `sap` to access openui5 functionality like:
 
