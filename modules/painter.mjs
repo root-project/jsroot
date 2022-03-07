@@ -2,7 +2,7 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl, browser, settings, constants } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, browser, settings, constants, internals } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -2582,7 +2582,7 @@ class ObjectPainter extends BasePainter {
          rect = getElementRect(main),
          w = Math.round(rect.width * 0.05) + "px",
          h = Math.round(rect.height * 0.05) + "px",
-         id = "root_inspector_" + JSROOT._.id_counter++;
+         id = "root_inspector_" + internals.id_counter++;
 
       main.append("div")
          .attr("id", id)
@@ -2625,7 +2625,7 @@ class ObjectPainter extends BasePainter {
 
       if (cp && (typeof cp.showCanvasStatus !== 'function')) cp = null;
 
-      if (!cp && (typeof JSROOT._.showStatus !== 'function')) return false;
+      if (!cp && (typeof internals.showStatus !== 'function')) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
 
@@ -2640,7 +2640,7 @@ class ObjectPainter extends BasePainter {
       if (cp)
          cp.showCanvasStatus(name, title, info, info2);
       else
-         JSROOT._.showStatus(name, title, info, info2);
+         internals.showStatus(name, title, info, info2);
    }
 
    /** @summary Redraw object
@@ -4227,13 +4227,13 @@ function compressSVG(svg) {
 function loadJSDOM() {
    return import("jsdom").then(handle => {
 
-      if (!JSROOT._.nodejs_window) {
-         JSROOT._.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
-         JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-         JSROOT._.nodejs_body = d3_select(JSROOT._.nodejs_document).select('body'); //get d3 handle for body
+      if (!internals.nodejs_window) {
+         internals.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
+         internals.nodejs_document = internals.nodejs_window.document; // used with three.js
+         internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); //get d3 handle for body
       }
 
-      return { JSDOM: handle.JSDOM, doc: JSROOT._.nodejs_document, body: JSROOT._.nodejs_body };
+      return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
    });
 }
 
@@ -4258,11 +4258,11 @@ function makeSVG(args) {
       main.attr("width", args.width).attr("height", args.height)
           .style("width", args.width + "px").style("height", args.height + "px");
 
-      JSROOT._.svg_3ds = undefined;
+      internals.svg_3ds = undefined;
 
       return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-         let has_workarounds = JSROOT._.svg_3ds && JSROOT._.processSvgWorkarounds;
+         let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
 
          main.select('svg')
              .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -4285,7 +4285,7 @@ function makeSVG(args) {
          let svg = main.html();
 
          if (has_workarounds)
-            svg = JSROOT._.processSvgWorkarounds(svg);
+            svg = internals.processSvgWorkarounds(svg);
 
          svg = compressSVG(svg);
 
@@ -4308,7 +4308,7 @@ createRootColors();
 if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 // to avoid cross-dependnecy between io.mjs and painter.mjs
-JSROOT._.addStreamerInfosForPainter = addStreamerInfosForPainter;
+internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,

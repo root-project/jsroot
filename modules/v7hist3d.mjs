@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants } from './core.mjs';
+import { gStyle, settings, constants, internals } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -278,7 +278,7 @@ RFramePainter.prototype.render3D = function(tmout) {
    if (tmout === -1111) {
       // special handling for direct SVG renderer
       // probably, here one can use canvas renderer - after modifications
-      let doc = JSROOT._.get_document(),
+      let doc = internals.get_document(),
           rrr = createSVGRenderer(false, 0, doc);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);

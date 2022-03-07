@@ -65,15 +65,13 @@ if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
 
 /** @summary Check if prototype string match to array (typed on untyped)
   * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array */
-function is_array_proto(proto) {
+function isArrayProto(proto) {
     if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
     let p = proto.indexOf('Array]');
     if ((p < 0) || (p != proto.length - 6)) return 0;
     // plain array has only "[object Array]", typed array type name inside
     return proto.length == 14 ? 1 : 2;
 }
-
-_.is_array_proto = is_array_proto;
 
 /** @summary Specialized JSROOT constants, used in {@link JSROOT.settings}
   * @namespace
@@ -552,7 +550,7 @@ function clone(src, map, nofunc) {
       if (i >= 0) return map.clones[i];
    }
 
-   let arr_kind = is_array_proto(Object.prototype.toString.apply(src));
+   let arr_kind = isArrayProto(Object.prototype.toString.apply(src));
 
    // process normal array
    if (arr_kind == 1) {
@@ -630,7 +628,7 @@ function parse(json) {
       let proto = Object.prototype.toString.apply(value);
 
       // scan array - it can contain other objects
-      if (is_array_proto(proto) > 0) {
+      if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
              let res = unref_value(value[i]);
              if (res!==undefined) value[i] = res;
@@ -765,7 +763,7 @@ function toJSON(obj, spacing) {
       if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
-      if (is_array_proto(Object.prototype.toString.apply(value)) > 0) {
+      if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
          let arr = new Array(value.length);
          for (let i = 0; i < value.length; ++i)
             arr[i] = copy_value(value[i]);
@@ -1789,11 +1787,12 @@ source_dir,
 nodejs,
 batch_mode,
 browser,
-_,
+_ as internals,
 constants,
 settings,
 changeSettings,
 gStyle,
+isArrayProto,
 jsroot_require as define,
 jsroot_require as require,
 BIT,

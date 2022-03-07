@@ -9,11 +9,13 @@
       <script type="text/javascript" src="../../scripts/JSRoot.core.js"></script>
 
       <!-- Application launch configuration -->
-      <script type="text/javascript">
+      <script type="module">
 
-      JSROOT._.openui5libs = "sap.ui.core, sap.m";
+      import { require, internals } from '../../modules/core.mjs';
 
-      JSROOT.require('openui5').then(() => {
+      internals.openui5libs = "sap.ui.core, sap.m";
+
+      require('openui5').then(() => {
 
          sap.ui.loader.config({
             paths: {

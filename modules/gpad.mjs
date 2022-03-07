@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -4033,8 +4033,8 @@ class TPadPainter extends ObjectPainter {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (JSROOT._.processSvgWorkarounds)
-         svg = JSROOT._.processSvgWorkarounds(svg);
+      if (internals.processSvgWorkarounds)
+         svg = internals.processSvgWorkarounds(svg);
 
       svg = compressSVG(svg);
 

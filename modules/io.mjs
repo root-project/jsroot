@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, createHttpRequest, BIT, loadScript } from './core.mjs';
+import { httpRequest, createHttpRequest, BIT, loadScript, internals } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -3184,8 +3184,8 @@ class TFile {
 
       this.fStreamerInfos = lst;
 
-      if (JSROOT._.addStreamerInfosForPainter)
-         JSROOT._.addStreamerInfosForPainter(lst);
+      if (internals.addStreamerInfosForPainter)
+         internals.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {
          let si = lst.arr[k];

@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants } from './core.mjs';
+import { gStyle, settings, constants, internals } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -2671,7 +2671,7 @@ class RPadPainter extends RObjectPainter {
          if (pad.fObjectID)
             this.this_pad_name = "pad" + pad.fObjectID; // use objectid as padname
          else
-            this.this_pad_name = "ppp" + JSROOT._.id_counter++; // artificical name
+            this.this_pad_name = "ppp" + internals.id_counter++; // artificical name
       }
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
@@ -3944,8 +3944,8 @@ class RPadPainter extends RObjectPainter {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (JSROOT._.processSvgWorkarounds)
-         svg = JSROOT._.processSvgWorkarounds(svg);
+      if (internals.processSvgWorkarounds)
+         svg = internals.processSvgWorkarounds(svg);
 
       svg = compressSVG(svg);
 

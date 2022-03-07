@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { BIT } from './core.mjs';
+import { BIT, isArrayProto } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -109,7 +109,7 @@ class TSelector {
 function checkArrayPrototype(arr, check_content) {
    if (typeof arr !== 'object') return 0;
 
-   let arr_kind = JSROOT._.is_array_proto(Object.prototype.toString.apply(arr));
+   let arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
 
    if (!check_content || (arr_kind != 1)) return arr_kind;
 

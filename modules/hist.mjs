@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser, settings, constants } from './core.mjs';
+import { gStyle, BIT, browser, settings, constants, internals } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -1987,7 +1987,7 @@ class THistPainter extends ObjectPainter {
       this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
-      this.hist_painter_id = JSROOT._.id_counter++; // assign unique identifier for hist painter
+      this.hist_painter_id = internals.id_counter++; // assign unique identifier for hist painter
    }
 
    /** @summary Returns histogram object */
@@ -6603,7 +6603,7 @@ class TH2Painter extends THistPainter {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr("class", pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + JSROOT._.id_counter++)
+                            .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();

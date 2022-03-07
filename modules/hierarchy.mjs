@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings } from './core.mjs';
+         browser, source_dir, settings, internals, isArrayProto } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -277,7 +277,7 @@ function objectHierarchy(top, obj, args) {
       prnt = prnt._parent;
    }
 
-   let isarray = (JSROOT._.is_array_proto(proto) > 0) && obj.length,
+   let isarray = (isArrayProto(proto) > 0) && obj.length,
        compress = isarray && (obj.length > settings.HierarchyLimit),  arrcompress = false;
 
    if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
@@ -372,7 +372,7 @@ function objectHierarchy(top, obj, args) {
 
          proto = Object.prototype.toString.apply(fld);
 
-         if (JSROOT._.is_array_proto(proto) > 0) {
+         if (isArrayProto(proto) > 0) {
             item._title = "array len=" + fld.length;
             simple = (proto != '[object Array]');
             if (fld.length === 0) {
@@ -1528,7 +1528,7 @@ class BatchDisplay extends MDIDisplay {
              .attr("frame_title", title);
 
       if (this.frames.length == 0)
-         JSROOT._.svg_3ds = undefined;
+         internals.svg_3ds = undefined;
 
       this.frames.push(frame.node());
 
@@ -1555,7 +1555,7 @@ class BatchDisplay extends MDIDisplay {
       let frame = this.frames[id];
       if (!frame) return;
       let main = d3_select(frame);
-      let has_workarounds = JSROOT._.svg_3ds && JSROOT._.processSvgWorkarounds;
+      let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
       main.select('svg')
           .attr("xmlns", "http://www.w3.org/2000/svg")
           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -1565,7 +1565,7 @@ class BatchDisplay extends MDIDisplay {
 
       let svg = main.html();
       if (has_workarounds)
-         svg = JSROOT._.processSvgWorkarounds(svg, id != this.frames.length-1);
+         svg = internals.processSvgWorkarounds(svg, id != this.frames.length-1);
 
       svg = compressSVG(svg);
 
@@ -1732,8 +1732,8 @@ class BrowserLayout {
          if (this.status_layout !== "app")
             delete this.status_layout;
 
-         if (this.status_handler && (JSROOT._.showStatus === this.status_handler)) {
-            delete JSROOT._.showStatus;
+         if (this.status_handler && (internals.showStatus === this.status_handler)) {
+            delete internals.showStatus;
             delete this.status_handler;
          }
 
@@ -1789,7 +1789,7 @@ class BrowserLayout {
            .attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
-      JSROOT._.showStatus = this.status_handler = this.showStatus.bind(this);
+      internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
       return Promise.resolve(id);
    }
@@ -5123,7 +5123,7 @@ function createTreePlayer(player) {
 
       let main = this.selectDom();
 
-      this.drawid = "jsroot_tree_player_" + JSROOT._.id_counter++ + "_draw";
+      this.drawid = "jsroot_tree_player_" + internals.id_counter++ + "_draw";
 
       let show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
 

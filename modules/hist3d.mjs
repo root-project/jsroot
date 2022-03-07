@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -305,7 +305,7 @@ TFramePainter.prototype.render3D = function(tmout) {
 
    if (tmout === -1111) {
       // special handling for direct SVG renderer
-      let doc = JSROOT._.get_document(),
+      let doc = internals.get_document(),
           rrr = createSVGRenderer(false, 0, doc);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);

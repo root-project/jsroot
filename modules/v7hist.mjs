@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants } from './core.mjs';
+import { gStyle, settings, constants, internals } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -3241,7 +3241,7 @@ class RH2Painter extends RHistPainter {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr("class", pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + JSROOT._.id_counter++)
+                            .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();

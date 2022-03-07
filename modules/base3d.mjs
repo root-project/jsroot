@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings, constants } from './core.mjs';
+import { browser, settings, constants, internals } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -400,7 +400,7 @@ async function createRender3D(width, height, render3d, args) {
    if (!args) args = { antialias: true, alpha: true };
 
    let need_workaround = false, renderer,
-       doc = JSROOT._.get_document();
+       doc = internals.get_document();
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
@@ -448,9 +448,9 @@ async function createRender3D(width, height, render3d, args) {
    }
 
    if (need_workaround) {
-      if (!JSROOT._.svg_3ds) JSROOT._.svg_3ds = [];
-      renderer.workaround_id = JSROOT._.svg_3ds.length;
-      JSROOT._.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
+      if (!internals.svg_3ds) internals.svg_3ds = [];
+      renderer.workaround_id = internals.svg_3ds.length;
+      internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
 
       // replace DOM element in renderer
       renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -511,7 +511,7 @@ function afterRender3D(renderer) {
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
       if (JSROOT.batch_mode) {
-         JSROOT._.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
+         internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
       } else {
          let parent = renderer.jsroot_dom.parentNode;
          if (parent) {
@@ -543,7 +543,7 @@ function afterRender3D(renderer) {
 
       let dataUrl = canvas.toDataURL("image/png"),
           svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
-      JSROOT._.svg_3ds[renderer.workaround_id] = svg;
+      internals.svg_3ds[renderer.workaround_id] = svg;
    } else {
       let dataUrl = renderer.domElement.toDataURL("image/png");
       d3_select(renderer.jsroot_dom).attr("xlink:href", dataUrl);
@@ -553,12 +553,12 @@ function afterRender3D(renderer) {
 /** @summary Special way to insert WebGL drawing into produced SVG batch code
   * @desc Used only in batch mode for SVG images generation
   * @private */
-JSROOT._.processSvgWorkarounds = function(svg, keep_workarounds) {
-   if (!JSROOT._.svg_3ds) return svg;
-   for (let k = 0;  k < JSROOT._.svg_3ds.length; ++k)
-      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, JSROOT._.svg_3ds[k]);
+internals.processSvgWorkarounds = function(svg, keep_workarounds) {
+   if (!internals.svg_3ds) return svg;
+   for (let k = 0;  k < internals.svg_3ds.length; ++k)
+      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, internals.svg_3ds[k]);
    if (!keep_workarounds)
-      JSROOT._.svg_3ds = undefined;
+      internals.svg_3ds = undefined;
    return svg;
 }
 

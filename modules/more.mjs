@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings } from './core.mjs';
+import { gStyle, BIT, settings, internals } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -3507,7 +3507,7 @@ class TGraphTimePainter extends ObjectPainter {
 
       if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
 
-      painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
+      painter.selfid = "grtime" + internals.id_counter++; // use to identify primitives which should be clean
 
       return JSROOT.draw(dom, gr.fFrame, "AXIS").then(() => {
          painter.addToPadPrimitives();

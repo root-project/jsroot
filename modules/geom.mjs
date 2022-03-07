@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants, internals } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -2453,7 +2453,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
-            let doc = JSROOT._.get_document(),
+            let doc = internals.get_document(),
                 svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
             d3_select(svg).attr("width",w).attr("height",h);
             svg.appendChild(this._renderer.jsroot_dom);
@@ -2547,7 +2547,7 @@ class TGeoPainter extends ObjectPainter {
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename === "asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
-      let doc = JSROOT._.get_document(),
+      let doc = internals.get_document(),
           link = doc.createElement('a');
       if (typeof link.download === 'string') {
          doc.body.appendChild(link); //Firefox requires the link to be in the body
