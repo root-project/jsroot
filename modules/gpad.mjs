@@ -2,7 +2,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, BIT, settings, constants, internals,
-         create, extend, parse, toJSON, isBatchMode } from './core.mjs';
+         create, extend, parse, toJSON, isBatchMode, loadScript } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -3632,12 +3632,12 @@ class TPadPainter extends ObjectPainter {
                let arg = "";
 
                if (snap.fScripts.indexOf("load:") == 0)
-                  arg = snap.fScripts;
+                  arg = snap.fScripts.substr(5).split(";");
                else if (snap.fScripts.indexOf("assert:") == 0)
                   arg = snap.fScripts.substr(7);
 
                if (arg)
-                  return JSROOT.require(arg).then(() => this.drawNextSnap(snap.fPrimitives));
+                  return loadScript(arg).then(() => this.drawNextSnap(snap.fPrimitives));
 
                console.log('Calling eval ' + snap.fScripts.length);
                eval(snap.fScripts);

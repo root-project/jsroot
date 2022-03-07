@@ -2,7 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, create, extend, parse, addMethods, isBatchMode } from './core.mjs';
+import { gStyle, settings, constants, internals, create, extend, parse,
+         addMethods, registerMethods, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -331,7 +332,7 @@ class RObjectPainter extends ObjectPainter {
    }
 
    /** @summary Return communication mode with the server
-    * @desc Using constants from {@link JSROOT.v7.CommMode} object
+    * @desc Using constants from {@link v7.CommMode} object
     * kOffline means no server there,
     * kLessTraffic advise not to send commands if offline functionality available
     * kNormal is standard functionality with RCanvas on server side */
@@ -4466,9 +4467,9 @@ class RCanvasPainter extends RPadPainter {
             let relative_path = cmd.substr(9);
             if (!this.showUI5Panel) {
                handle.send(reply + "false");
-            } else {
+            } else import('./webwindow.mjs').then(hh => {
 
-               let conn = new JSROOT.WebWindowHandle(handle.kind);
+               let conn = new hh.WebWindowHandle(handle.kind);
 
                // set interim receiver until first message arrives
                conn.setReceiver({
@@ -4504,7 +4505,7 @@ class RCanvasPainter extends RPadPainter {
                }
                // only when connection established, panel will be activated
                conn.connect(addr);
-            }
+            });
          } else {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
@@ -5060,7 +5061,7 @@ function drawRFrameTitle(reason, drag) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-JSROOT.registerMethods("ROOT::Experimental::RPalette", {
+registerMethods("ROOT::Experimental::RPalette", {
 
    extractRColor(rcolor) {
      return rcolor.fColor || "black";

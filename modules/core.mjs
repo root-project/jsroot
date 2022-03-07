@@ -1782,7 +1782,6 @@ _init();
 // exports, available via JSROOT global
 
 export {
-
 version_id,
 version_date,
 version,
@@ -1828,4 +1827,3 @@ registerMethods,
 isRootCollection,
 markAsStreamerInfo,
 connectWebWindow };
-

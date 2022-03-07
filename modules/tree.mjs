@@ -1423,19 +1423,18 @@ function detectBranchMemberClass(brlst, prefix, start) {
  * @summary JSROOT methods for ROOT TTree class
  *
  * @class
- * @alias JSROOT.TTree
  * @hideconstructor
  * @desc TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
  * @example
- * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
- *       .then(file => file.readObject("ntuple;1"))
- *       .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
+ * let file = await openFile("https://root.cern/js/files/hsimple.root");
+ * let tuple = await file.readObject("ntuple;1");
+ * draw("drawing", tree, "px:py::pz>5");
  */
 const TTreeMethods = {
 
    /** @summary Process selector
      * @desc function similar to the TTree::Process
-     * @param {object} selector - instance of {@link JSROOT.TSelector} class
+     * @param {object} selector - instance of {@link TSelector} class
      * @param {object} [args] - different arguments
      * @param {number} [args.firstentry] - first entry to process, 0 when not specified
      * @param {number} [args.numentries] - number of entries to process, all when not specified

@@ -1795,7 +1795,7 @@ class BasePainter {
    }
 
    /** @summary Set item name, associated with the painter
-     * @desc Used by {@link JSROOT.HierarchyPainter}
+     * @desc Used by {@link HierarchyPainter}
      * @private */
    setItemName(name, opt, hpainter) {
       if (typeof name === 'string')
@@ -1809,11 +1809,11 @@ class BasePainter {
    }
 
    /** @summary Returns assigned item name
-     * @desc Used with {@link JSROOT.HierarchyPainter} to identify drawn item name */
+     * @desc Used with {@link HierarchyPainter} to identify drawn item name */
    getItemName() { return ('_hitemname' in this) ? this._hitemname : null; }
 
    /** @summary Returns assigned item draw option
-     * @desc Used with {@link JSROOT.HierarchyPainter} to identify drawn item option */
+     * @desc Used with {@link HierarchyPainter} to identify drawn item option */
    getItemDrawOpt() { return this._hdrawopt || ""; }
 
 } // class BasePainter
@@ -1971,8 +1971,8 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options
      * @returns {boolean|Promise} for object redraw
-     * @desc Two actions typically done by redraw - update object content via {@link JSROOT.ObjectPainter.updateObject} and
-      * then redraw correspondent pad via {@link JSROOT.ObjectPainter.redrawPad}. If possible one should redefine
+     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.updateObject} and
+      * then redraw correspondent pad via {@link ObjectPainter.redrawPad}. If possible one should redefine
       * only updateObject function and keep this function unchanged. But for some special painters this function is the
       * only way to control how object can be update while requested from the server
       * @protected */
@@ -2058,7 +2058,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated.
-     * @desc Redirects to {@link JSROOT.TPadPainter.checkCanvasResize}
+     * @desc Redirects to {@link TPadPainter.checkCanvasResize}
      * @private */
    checkResize(arg) {
       let p = this.getCanvPainter();
@@ -2080,7 +2080,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Returns created <g> element used for object drawing
-     * @desc Element should be created by {@link JSROOT.ObjectPainter.createG}
+     * @desc Element should be created by {@link ObjectPainter.createG}
      * @protected */
    getG() { return this.draw_g; }
 
@@ -2273,7 +2273,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
-     * @desc Reverse transformation for {@link JSROOT.ObjectPainter.axisToSvg}
+     * @desc Reverse transformation for {@link ObjectPainter.axisToSvg}
      * @param {string} axis - name like "x" or "y"
      * @param {number} coord - graphics coordiante.
      * @param {boolean} ndc - kind of return value
