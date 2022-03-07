@@ -27,7 +27,9 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          HelveticerRegularFont } from './base3d.mjs';
 
 import { ObjectPainter, DrawOptions, createMenu, closeMenu,
-         getColor, getRootColors, isPromise, addDrawFunc } from './painter.mjs';
+         getColor, getRootColors, isPromise  } from './painter.mjs';
+
+import { addDrawFunc } from './draw.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
