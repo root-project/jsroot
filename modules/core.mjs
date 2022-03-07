@@ -6,7 +6,7 @@ let version_id = "modules";
 
 /** @summary JSROOT version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/03/2022";
+let version_date = "7/03/2022";
 
 /** @summary JSROOT version id and date
   * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -24,7 +24,7 @@ let nodejs = false;
 /** @summary internal data
   * @memberof JSROOT
   * @private */
-let _ = {
+let internals = {
    id_counter: 1          ///< unique id contner, starts from 1,
 };
 
@@ -46,8 +46,8 @@ if (src && (typeof src == "string")) {
 let batch_mode = nodejs;
 
 if (nodejs) {
-   _.atob = await import('atob').then(hh => hh.default);
-   _.xhr2 = await import('xhr2').then(hh => hh.default);
+   internals.atob = await import('atob').then(hh => hh.default);
+   internals.xhr2 = await import('xhr2').then(hh => hh.default);
 }
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
@@ -331,14 +331,14 @@ let gStyle = {
 
 /** @summary Method returns current document in use
   * @private */
-_.get_document = function() {
+internals.get_document = function() {
    if (nodejs)
-      return _.nodejs_document;
+      return internals.nodejs_document;
    if (typeof document !== 'undefined')
       return document;
    if (typeof window == 'object')
       return window.document;
-   return udefined;
+   return undefined;
 }
 
 /** @summary Load script or CSS file into the browser
@@ -667,7 +667,7 @@ function parse(json) {
          if (value.b !== undefined) {
             // base64 coding
 
-            let atob_func = nodejs ? _.atob : window.atob;
+            let atob_func = nodejs ? internals.atob : window.atob;
 
             let buf = atob_func(value.b);
 
@@ -872,7 +872,7 @@ function findFunction(name) {
 /** @summary Method to create http request
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
-   let xhr = nodejs ? new _.xhr2() : new XMLHttpRequest();
+   let xhr = nodejs ? new internals.xhr2() : new XMLHttpRequest();
 
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
@@ -1043,7 +1043,7 @@ async function buildGUI(gui_element, gui_kind) {
 
    let user_scripts = d.get("autoload") || d.get("load");
 
-   _.debug_output = gui_element;
+   internals.debug_output = gui_element;
 
    if (user_scripts) {
       await jsroot_require("painter");
@@ -1051,7 +1051,7 @@ async function buildGUI(gui_element, gui_kind) {
    }
 
    gui_element.innerHTML = "";
-   delete _.debug_output;
+   delete internals.debug_output;
 
    let handle = await jsroot_require("hierarchy");
 
@@ -1768,7 +1768,7 @@ function _init() {
    if (d.has('nocache')) settings.NoCache = (new Date).getTime(); // use timestamp to overcome cache limitation
    if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
-   if (d.has('nosap')) _.sap = undefined; // let ignore sap loader even with openui5 loaded
+   if (d.has('nosap')) internals.sap = undefined; // let ignore sap loader even with openui5 loaded
 
    return this;
 }
@@ -1787,7 +1787,7 @@ source_dir,
 nodejs,
 batch_mode,
 browser,
-_ as internals,
+internals,
 constants,
 settings,
 changeSettings,
