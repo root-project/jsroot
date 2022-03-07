@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, createHttpRequest, BIT, loadScript, internals } from './core.mjs';
+import { httpRequest, createHttpRequest, BIT, loadScript, internals, create } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -401,7 +401,7 @@ const CustomStreamers = {
       const v = buf.last_read_version;
       buf.classStreamer(obj, clTObject);
       let size = buf.ntoi4();
-      obj.arr = JSROOT.create(clTList);
+      obj.arr = create(clTList);
       while (size--)
          obj.arr.Add(buf.readObjectAny());
       if (v > 1) obj._name = buf.readTString();
@@ -737,7 +737,7 @@ function getPairStreamer(si, typname, file) {
             p1 = p - 1;
             return res.trim();
          }
-         si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: JSROOT.create(clTList) };
+         si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create(clTList) };
          si.fElements.Add(createStreamerElement("first", GetNextName(), file));
          si.fElements.Add(createStreamerElement("second", GetNextName(), file));
       }

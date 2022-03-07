@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants, internals } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants, internals, create } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -46,25 +46,25 @@ let createGeoPainter, createItem, build;
   * @private */
 function buildOverlapVolume(overlap) {
 
-   let vol = JSROOT.create("TGeoVolume");
+   let vol = create("TGeoVolume");
 
    setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = "";
 
-   let node1 = JSROOT.create("TGeoNodeMatrix");
+   let node1 = create("TGeoNodeMatrix");
    node1.fName = overlap.fVolume1.fName || "Overlap1";
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
    // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-   let node2 = JSROOT.create("TGeoNodeMatrix");
+   let node2 = create("TGeoNodeMatrix");
    node2.fName = overlap.fVolume2.fName || "Overlap2";
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-   vol.fNodes = JSROOT.create("TList");
+   vol.fNodes = create("TList");
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -84,7 +84,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
       side = "";
    }
 
-   let vol = JSROOT.create("TGeoVolume");
+   let vol = create("TGeoVolume");
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
@@ -99,21 +99,21 @@ function buildCompositeVolume(comp, maxlvl, side) {
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = "";
 
-   let node1 = JSROOT.create("TGeoNodeMatrix");
+   let node1 = create("TGeoNodeMatrix");
    setGeoBit(node1, geoBITS.kVisThis, true);
    setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = "Left";
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
-   let node2 = JSROOT.create("TGeoNodeMatrix");
+   let node2 = create("TGeoNodeMatrix");
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = "Right";
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
 
-   vol.fNodes = JSROOT.create("TList");
+   vol.fNodes = create("TList");
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -3000,7 +3000,7 @@ class TGeoPainter extends ObjectPainter {
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = JSROOT.create("TList");
+         this._extraObjects = create("TList");
 
       if (this._extraObjects.arr.indexOf(obj) >= 0) return false;
 
@@ -4654,7 +4654,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj && shape)
-         obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
+         obj = JSROOT.extend(create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
@@ -4969,7 +4969,7 @@ function drawDummy3DGeom(painter) {
          }
 
 
-   let shape = JSROOT.create('TNamed');
+   let shape = create('TNamed');
    shape._typename = "TGeoBBox";
    shape.fDX = max[0] - min[0];
    shape.fDY = max[1] - min[1];
@@ -4978,7 +4978,7 @@ function drawDummy3DGeom(painter) {
    shape.fShapeBits = 0;
    shape.fOrigin= [0,0,0];
 
-   let obj = JSROOT.create("TEveGeoShapeExtract");
+   let obj = create("TEveGeoShapeExtract");
 
    JSROOT.extend(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
                         fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
@@ -5051,7 +5051,7 @@ build = function(obj, opt) {
       obj = buildCompositeVolume(shape);
 
    if (!obj && shape)
-      obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
+      obj = JSROOT.extend(create("TEveGeoShapeExtract"),
                 { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
    if (!obj) return null;

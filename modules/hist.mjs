@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser, settings, constants, internals } from './core.mjs';
+import { gStyle, BIT, browser, settings, constants, internals, create, createHistogram, createTPolyLine } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -1404,7 +1404,7 @@ function produceLegend(dom, opt) {
        pad = pp ? pp.getRootPad(true) : null;
    if (!pad) return Promise.resolve(null);
 
-   let leg = JSROOT.create("TLegend");
+   let leg = create("TLegend");
 
    for (let k = 0; k < pp.painters.length; ++k) {
       let painter = pp.painters[k],
@@ -1412,7 +1412,7 @@ function produceLegend(dom, opt) {
 
       if (!obj) continue;
 
-      let entry = JSROOT.create("TLegendEntry");
+      let entry = create("TLegendEntry");
       entry.fObject = obj;
       entry.fLabel = (opt == "all") ? obj.fName : painter.getItemName();
       entry.fOption = "";
@@ -2515,7 +2515,7 @@ class THistPainter extends ObjectPainter {
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
-         pt = JSROOT.create("TPaveText");
+         pt = create("TPaveText");
          JSROOT.extend(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
@@ -2657,7 +2657,7 @@ class THistPainter extends ObjectPainter {
 
       if (stats) return stats;
 
-      stats = JSROOT.create('TPaveStats');
+      stats = create('TPaveStats');
       JSROOT.extend(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
@@ -2696,7 +2696,7 @@ class THistPainter extends ObjectPainter {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = JSROOT.create("TList");
+         histo.fFunctions = create("TList");
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);
@@ -3187,9 +3187,9 @@ class THistPainter extends ObjectPainter {
 
          if (this.options.PadPalette) return null;
 
-         pal = JSROOT.create('TPave');
+         pal = create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)
@@ -4739,12 +4739,12 @@ class TH2Painter extends THistPainter {
 
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
-            this.proj_hist = JSROOT.createHistogram("TH1D", this.nbinsx);
+            this.proj_hist = createHistogram("TH1D", this.nbinsx);
             JSROOT.extend(this.proj_hist.fXaxis, histo.fXaxis);
             this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
-            this.proj_hist = JSROOT.createHistogram("TH1D", this.nbinsy);
+            this.proj_hist = createHistogram("TH1D", this.nbinsy);
             JSROOT.extend(this.proj_hist.fXaxis, histo.fYaxis);
             this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
@@ -5394,7 +5394,7 @@ class TH2Painter extends THistPainter {
                   if ((ipoly >= 0) && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
-                        poly = polys[ipoly] = JSROOT.createTPolyLine(kMAXCONTOUR*4, true);
+                        poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
 
                      np = poly.fLastPoint;
                      if (np < poly.fN-2) {
@@ -7423,7 +7423,7 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      let lst = JSROOT.create("TList");
+      let lst = create("TList");
       lst.Add(JSROOT.clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          let hnext = JSROOT.clone(stack.fHists.arr[i]),
@@ -7639,13 +7639,13 @@ class THStackPainter extends ObjectPainter {
           numhistos = histos ? histos.arr.length : 0;
 
       if (!numhistos) {
-         let histo = JSROOT.createHistogram("TH1I", 100);
+         let histo = createHistogram("TH1I", 100);
          histo.fTitle = stack.fTitle;
          return histo;
       }
 
       let h0 = histos.arr[0];
-      let histo = JSROOT.createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+      let histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
       JSROOT.extend(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)

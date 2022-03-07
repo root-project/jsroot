@@ -1,6 +1,6 @@
 import * as JSROOT from './core.mjs';
 
-import { BIT, isArrayProto, isRootCollection } from './core.mjs';
+import { BIT, isArrayProto, isRootCollection, create, createHistogram, createTGraph } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -834,9 +834,9 @@ class TDrawSelector extends TSelector {
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = JSROOT.create("THashList");
+      res.fLabels = create("THashList");
       for (let k = 0; k < nbits; ++k) {
-         let s = JSROOT.create("TObjString");
+         let s = create("TObjString");
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -888,9 +888,9 @@ class TDrawSelector extends TSelector {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = JSROOT.create("THashList");
+         res.fLabels = create("THashList");
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = JSROOT.create("TObjString");
+            let s = create("TObjString");
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === "") s.fString = "<empty>";
@@ -962,9 +962,9 @@ class TDrawSelector extends TSelector {
 
          if (this.ndim == 1) {
             // A 1-dimensional graph will just have the x axis as an index
-            this.hist = JSROOT.createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            this.hist = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
          } else if (this.ndim == 2) {
-            this.hist = JSROOT.createTGraph(N, this.vars[0].buf, this.vars[1].buf);
+            this.hist = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
             delete this.vars[1].buf;
          }
 
@@ -980,9 +980,9 @@ class TDrawSelector extends TSelector {
          this.z = this.getMinMaxBins(2, 50);
 
          switch (this.ndim) {
-            case 1: this.hist = JSROOT.createHistogram("TH1" + this.htype, this.x.nbins); break;
-            case 2: this.hist = JSROOT.createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = JSROOT.createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
+            case 1: this.hist = createHistogram("TH1" + this.htype, this.x.nbins); break;
+            case 2: this.hist = createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
+            case 3: this.hist = createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
 
          this.hist.fXaxis.fTitle = this.x.title;

@@ -1063,7 +1063,7 @@ async function buildGUI(gui_element, gui_kind) {
   * @param {string} typename - ROOT class name
   * @memberof JSROOT
   * @example
-  * let obj = JSROOT.create("TNamed");
+  * let obj = create("TNamed");
   * obj.fName = "name";
   * obj.fTitle = "title"; */
 function create(typename, target) {
@@ -1333,7 +1333,7 @@ function create(typename, target) {
   * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
   * @returns {Object} created histogram object
   * @example
-  * let h1 = JSROOT.createHistogram("TH1I", 20);
+  * let h1 = createHistogram("TH1I", 20);
   * h1.fName = "Hist1";
   * h1.fTitle = "Histogram title";
   * h1.fXaxis.fTitle = "xaxis";
@@ -1410,10 +1410,10 @@ function createTGraph(npoints, xpts, ypts) {
   * @desc As arguments one could specify any number of histograms objects
   * @example
   * let nbinsx = 20;
-  * let h1 = JSROOT.createHistogram("TH1F", nbinsx);
-  * let h2 = JSROOT.createHistogram("TH1F", nbinsx);
-  * let h3 = JSROOT.createHistogram("TH1F", nbinsx);
-  * let stack = JSROOT.createTHStack(h1, h2, h3); */
+  * let h1 = createHistogram("TH1F", nbinsx);
+  * let h2 = createHistogram("TH1F", nbinsx);
+  * let h3 = createHistogram("TH1F", nbinsx);
+  * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
    let stack = create("THStack");
    for (let i = 0; i < arguments.length; ++i)
@@ -1424,10 +1424,10 @@ function createTHStack() {
 /** @summary Creates TMultiGraph object
   * @desc As arguments one could specify any number of TGraph objects
   * @example
-  * let gr1 = JSROOT.createTGraph(100);
-  * let gr2 = JSROOT.createTGraph(100);
-  * let gr3 = JSROOT.createTGraph(100);
-  * let mgr = JSROOT.createTMultiGraph(gr1, gr2, gr3); */
+  * let gr1 = createTGraph(100);
+  * let gr2 = createTGraph(100);
+  * let gr3 = createTGraph(100);
+  * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
    let mgraph = create("TMultiGraph");
    for (let i = 0; i < arguments.length; ++i)

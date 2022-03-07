@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals } from './core.mjs';
+import { gStyle, settings, constants, internals, createTPolyLine } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -2483,7 +2483,7 @@ class RH2Painter extends RHistPainter {
                   if ((ipoly >= 0) && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
-                        poly = polys[ipoly] = JSROOT.createTPolyLine(kMAXCONTOUR*4, true);
+                        poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
 
                      np = poly.fLastPoint;
                      if (np < poly.fN-2) {

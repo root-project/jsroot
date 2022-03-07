@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, internals } from './core.mjs';
+import { gStyle, BIT, settings, internals, create, createHistogram } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -673,7 +673,7 @@ class TF1Painter extends ObjectPainter {
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      let histo = JSROOT.create("TH1I"),
+      let histo = create("TH1I"),
           tf1 = this.getObject();
 
       histo.fName = tf1.fName + "_hist";
@@ -882,7 +882,7 @@ function createTF2Histogram(func, hist) {
          }
 
          if (!iserr && Number.isFinite(z)) {
-            if (!hist) hist = JSROOT.createHistogram("TH2F", npx, npy);
+            if (!hist) hist = createHistogram("TH2F", npx, npy);
             isany = true;
             hist.setBinContent(hist.getBin(i+1,j+1), z);
          }
@@ -890,7 +890,7 @@ function createTF2Histogram(func, hist) {
 
    let use_saved_points = (iserr || !isany) && (nsave > 6);
    if (!use_saved_points && !hist)
-      hist = JSROOT.createHistogram("TH2F", npx, npy);
+      hist = createHistogram("TH2F", npx, npy);
 
    if (!iserr && isany) {
       hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
@@ -906,7 +906,7 @@ function createTF2Histogram(func, hist) {
       dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
       dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
-      if (!hist) hist = JSROOT.createHistogram("TH2F", npx+1, npy+1);
+      if (!hist) hist = createHistogram("TH2F", npx+1, npy+1);
 
       hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
       hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
@@ -1263,7 +1263,7 @@ class TGraphPainter extends ObjectPainter {
       if (!set_x && !set_y) set_x = set_y = true;
 
       if (!histo) {
-         histo = graph.fHistogram = JSROOT.createHistogram("TH1F", 100);
+         histo = graph.fHistogram = createHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          let kNoStats = BIT(9);
          histo.fBits = histo.fBits | kNoStats;
@@ -2415,7 +2415,7 @@ class TGraphPainter extends ObjectPainter {
 
       let st = gStyle;
 
-      stats = JSROOT.create('TPaveStats');
+      stats = create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
                              fOptStat: 0,
                              fOptFit: st.fOptFit || 111,
@@ -2926,7 +2926,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Create polargram object */
    createPolargram() {
-      let polargram = JSROOT.create("TGraphPolargram"),
+      let polargram = create("TGraphPolargram"),
           gr = this.getObject();
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
@@ -3132,7 +3132,7 @@ class TSplinePainter extends ObjectPainter {
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      let histo = JSROOT.create("TH1I");
+      let histo = create("TH1I");
 
       histo.fName = spline.fName + "_hist";
       histo.fTitle = spline.fTitle;
@@ -3616,7 +3616,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
    /** @summary Create graph for the drawing of 1-dim TEfficiency */
    createGraph(/*eff*/) {
-      let gr = JSROOT.create('TGraphAsymmErrors');
+      let gr = create('TGraphAsymmErrors');
       gr.fName = "eff_graph";
       return gr;
    }
@@ -3625,7 +3625,7 @@ class TEfficiencyPainter extends ObjectPainter {
    createHisto(eff) {
       const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
             nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
-            hist = JSROOT.createHistogram('TH2F', nbinsx, nbinsy);
+            hist = createHistogram('TH2F', nbinsx, nbinsy);
       JSROOT.extend(hist.fXaxis, eff.fTotalHistogram.fXaxis);
       JSROOT.extend(hist.fYaxis, eff.fTotalHistogram.fYaxis);
       hist.fName = "eff_histo";
@@ -3883,14 +3883,14 @@ class TMultiGraphPainter extends ObjectPainter {
       if (!histo) {
          let xaxis, yaxis;
          if (this._3d) {
-            histo = JSROOT.create("TH2I");
+            histo = create("TH2I");
             xaxis = histo.fXaxis;
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
             xaxis.fNbins = graphs.arr.length;
-            xaxis.fLabels = JSROOT.create("THashList");
+            xaxis.fLabels = create("THashList");
             for (let i = 0; i < graphs.arr.length; i++) {
-               let lbl = JSROOT.create("TObjString");
+               let lbl = create("TObjString");
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                xaxis.fLabels.Add(lbl, "");
@@ -3898,7 +3898,7 @@ class TMultiGraphPainter extends ObjectPainter {
             xaxis = histo.fYaxis;
             yaxis = histo.fZaxis;
          } else {
-            histo = JSROOT.create("TH1I");
+            histo = create("TH1I");
             xaxis = histo.fXaxis;
             yaxis = histo.fYaxis;
          }
@@ -4390,7 +4390,7 @@ class TASImagePainter extends ObjectPainter {
 
       if (url && this.isMainPainter() && is_buf && fp) {
          await this.drawColorPalette(this.options.Zscale, true);
-         fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
+         fp.setAxesRanges(create("TAxis"), 0, 1, create("TAxis"), 0, 1, null, 0, 0);
          fp.createXY({ ndim: 2, check_pad_range: false });
          await fp.addInteractivity();
       }
@@ -4420,9 +4420,9 @@ class TASImagePainter extends ObjectPainter {
          return null;
 
       if (!this.draw_palette) {
-         let pal = JSROOT.create('TPave');
+         let pal = create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = "+";
@@ -4658,7 +4658,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  let line = JSROOT.create("TLine");
+                  let line = create("TLine");
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;

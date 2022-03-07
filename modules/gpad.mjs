@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals, create } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -3110,7 +3110,7 @@ class TPadPainter extends ObjectPainter {
                 x2 = x1 +dx -2*xmargin;
             if (x1 > x2) continue;
             n++;
-            let pad = JSROOT.create("TPad");
+            let pad = create("TPad");
             pad.fName = pad.fTitle = this.pad.fName + "_" + n;
             pad.fNumber = n;
             if (!this.iscan) {
@@ -4426,7 +4426,7 @@ class TCanvasPainter extends TPadPainter {
 
       if (this.proj_painter === 1) {
 
-         let canv = JSROOT.create("TCanvas"),
+         let canv = create("TCanvas"),
              pad = this.pad,
              main = this.getFramePainter(), drawopt;
 
@@ -4939,7 +4939,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary draw TCanvas */
    static draw(dom, can, opt) {
       let nocanvas = !can;
-      if (nocanvas) can = JSROOT.create("TCanvas");
+      if (nocanvas) can = create("TCanvas");
 
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
@@ -4998,7 +4998,7 @@ ensureTCanvas = async function(painter, frame_kind) {
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt*/) {
-   let can = JSROOT.create("TCanvas"),
+   let can = create("TCanvas"),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();

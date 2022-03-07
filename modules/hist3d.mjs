@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals, createHistogram } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -3018,7 +3018,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (graph.fMinimum != -1111) uzmin = graph.fMinimum;
       if (graph.fMaximum != -1111) uzmax = graph.fMaximum;
 
-      let histo = JSROOT.createHistogram("TH2I", 10, 10);
+      let histo = createHistogram("TH2I", 10, 10);
       histo.fName = graph.fName + "_h";
       histo.fTitle = graph.fTitle;
       histo.fXaxis.fXmin = uxmin;

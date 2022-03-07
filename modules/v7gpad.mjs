@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals } from './core.mjs';
+import { gStyle, settings, constants, internals, create } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -1757,8 +1757,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (!xaxis || xaxis._typename != "TAxis") xaxis = JSROOT.create("TAxis");
-      if (!yaxis || yaxis._typename != "TAxis") yaxis = JSROOT.create("TAxis");
+      if (!xaxis || xaxis._typename != "TAxis") xaxis = create("TAxis");
+      if (!yaxis || yaxis._typename != "TAxis") yaxis = create("TAxis");
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -4818,7 +4818,7 @@ class RCanvasPainter extends RPadPainter {
    static draw(dom, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
-         can = JSROOT.create("ROOT::Experimental::TCanvas");
+         can = create("ROOT::Experimental::TCanvas");
 
       let painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
