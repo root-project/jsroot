@@ -751,7 +751,7 @@ function parseMulti(json) {
 }
 
 /** @summary Method converts JavaScript object into ROOT-like JSON
-  * @desc Produced JSON can be used in JSROOT.parse() again
+  * @desc Produced JSON can be used in parse() again
   * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
   * @param {object} obj - JavaScript object to convert
   * @param {number} [spacing] - optional line spacing in JSON
@@ -975,7 +975,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *    - "bin" - abstract binary data, result as string
   *    - "buf" - abstract binary data, result as ArrayBuffer (default)
   *    - "text" - returns req.responseText
-  *    - "object" - returns JSROOT.parse(req.responseText)
+  *    - "object" - returns parse(req.responseText)
   *    - "multi" - returns correctly parsed multi.json request
   *    - "xml" - returns req.responseXML
   *    - "head" - returns request itself, uses "HEAD" request method

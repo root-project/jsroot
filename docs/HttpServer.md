@@ -462,7 +462,7 @@ To use `multi.json` request from the JavaScript, one should create special 'POST
                console.error("Fail to handle multi.json request");
             });
 
-Here argument "multi" identifies, that server response should be parsed with `JSROOT.parseMulti()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
+Here argument "multi" identifies, that server response should be parsed with `parseMulti()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
 
 
 ## Websockets supports
@@ -478,7 +478,7 @@ To work with websockets, subclass of THttpWSHandler should be created and regist
     public:
        TUserHandler(const char *name, const char *title) : THttpWSHandler(name, title) {}
 
-       // provide custom HTML page when open correpondent address
+       // provide custom HTML page when open correspondent address
        TString GetDefaultPageContent() { return ""; }
 
        virtual Bool_t ProcessWS(THttpCallArg *arg);

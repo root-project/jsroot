@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, source_dir, settings, internals, extend, findFunction, toJSON,
+         browser, source_dir, settings, internals, extend, findFunction, parse, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
@@ -4969,7 +4969,7 @@ function buildNobrowserGUI(gui_element, gui_kind) {
    return hpainter.startGUI(myDiv, () => {
       if (!drawing) return hpainter;
       let func = findFunction('GetCachedObject');
-      let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
+      let obj = (typeof func == 'function') ? parse(func()) : null;
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get("opt", "");
 

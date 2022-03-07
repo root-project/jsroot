@@ -1,7 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals, create, extend, toJSON, isBatchMode } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals,
+         create, extend, parse, toJSON, isBatchMode } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -4574,7 +4575,7 @@ class TCanvasPainter extends TPadPainter {
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6
 
-         let snap = JSROOT.parse(msg.substr(6));
+         let snap = parse(msg.substr(6));
 
          this.syncDraw(true).then(() => this.redrawPadSnap(snap)).then(() => {
             this.completeCanvasSnapDrawing();
@@ -4585,7 +4586,7 @@ class TCanvasPainter extends TPadPainter {
          });
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
-         let lst = JSROOT.parse(msg.substr(5));
+         let lst = parse(msg.substr(5));
          if (typeof this._getmenu_callback == 'function') {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
@@ -4605,7 +4606,7 @@ class TCanvasPainter extends TPadPainter {
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],
-             hist = JSROOT.parse(msg.substr(7));
+             hist = parse(msg.substr(7));
          this.drawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),

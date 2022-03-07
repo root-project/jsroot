@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, create, extend, addMethods, isBatchMode } from './core.mjs';
+import { gStyle, settings, constants, internals, create, extend, parse, addMethods, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -4440,7 +4440,7 @@ class RCanvasPainter extends RPadPainter {
          msg = msg.substr(5);
          let p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1));
+             snap = parse(msg.substr(p1+1));
          this.syncDraw(true)
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
@@ -4448,7 +4448,7 @@ class RCanvasPainter extends RPadPainter {
                  this.confirmDraw();
               });
       } else if (msg.substr(0,4)=='JSON') {
-         let obj = JSROOT.parse(msg.substr(4));
+         let obj = parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
       } else if (msg.substr(0,9)=="REPL_REQ:") {
@@ -4511,7 +4511,7 @@ class RCanvasPainter extends RPadPainter {
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],
-             hist = JSROOT.parse(msg.substr(7));
+             hist = parse(msg.substr(7));
          this.drawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),
@@ -4607,7 +4607,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Process reply from request to RDrawable */
    processDrawableReply(msg) {
-      let reply = JSROOT.parse(msg);
+      let reply = parse(msg);
       if (!reply || !reply.reqid || !this._submreq) return false;
 
       let req = this._submreq[reply.reqid];

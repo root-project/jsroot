@@ -659,15 +659,14 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
 To access data from a remote web server, it is recommended to use the `JSROOT.httpRequest` method.
 For instance to recieve object from a THttpServer server one could do:
 
-    JSROOT.httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object").then(obj => {
-       console.log('Read object of type ', obj._typename);
-    });
+    let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
+    console.log('Read object of type ', obj._typename);
 
 Function returns Promise, which provides parsed object (or Error in case of failure).
 
 If JSON string was obtained by different method, it should be parsed with:
 
-    let obj = JSROOT.parse(json_string);
+    let obj = parse(json_string);
 
 
 

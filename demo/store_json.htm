@@ -6,8 +6,6 @@
 
    <title>Store canvas in JSON to replicate it</title>
 
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-
 </head>
 
 <body>
@@ -16,27 +14,31 @@
   <button onclick="StoreJson()" type="button">Replicate</button>
   <div id="replica" style="width:600px; height:400px"></div>
 
-   <script type='text/javascript'>
+   <script type='module'>
 
-     // absolute file path can be used as well
-     JSROOT.openFile("../../files/hsimple.root")
-           .then(file => file.readObject("hpxpy;1"))
-           .then(obj => JSROOT.draw("drawing", obj, "colz"));
+      import { openFile, draw, parse, cleanup } from '../modules/core.mjs';
 
-     function StoreJson() {
-        // produce JSON code
-        let json = JSROOT.drawingJSON("drawing");
+      import { drawingJSON } from '../modules/painter.mjs';
 
-        // parse JSON and get new TCanvas
-        let obj2 = JSROOT.parse(json);
+      // absolute file path can be used as well
+      let file = await openFile("../../files/hsimple.root");
+      let obj = await file.readObject("hpxpy;1");
+      await JSROOT.draw("drawing", obj, "colz");
 
-        // cleanup previous drawing
-        JSROOT.cleanup("replica");
+      function StoreJson() {
+         // produce JSON code
+         let json = drawingJSON("drawing");
 
-        // draw canvas again
-        JSROOT.draw("replica", obj2);
+         // parse JSON and get new TCanvas
+         let obj2 = parse(json);
 
-     }
+         // cleanup previous drawing
+         cleanup("replica");
+
+         // draw canvas again
+         draw("replica", obj2);
+
+      }
    </script>
 
 </body>
