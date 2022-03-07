@@ -1011,8 +1011,8 @@ function redraw(dom, obj, opt) {
 }
 
 // Dummy, when painter is not yet loaded, should happens nothing
-function cleanup() {
-   return import("./painter.mjs").then(handle => handle.cleanup());
+function cleanup(dom) {
+   return import("./painter.mjs").then(handle => handle.cleanup(dom));
 }
 
 // Create SVG, defined in JSRoot.painter.js
