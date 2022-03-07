@@ -1,3 +1,5 @@
+/// context menu
+
 import { loadScript, source_dir, settings, _ } from './core.mjs';
 
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from './d3.mjs';

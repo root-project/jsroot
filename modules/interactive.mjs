@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// interactive functionality for different classes
 
 import { browser, settings, extend, isBatchMode } from './core.mjs';
 

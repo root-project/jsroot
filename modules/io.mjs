@@ -1,7 +1,5 @@
 /// I/O methods of JavaScript ROOT
 
-import * as JSROOT from './core.mjs';
-
 import { httpRequest, createHttpRequest, BIT, loadScript, internals,
          create, getMethods, addMethods, extend, isNodeJs } from './core.mjs';
 

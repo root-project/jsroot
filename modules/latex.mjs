@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// latex parsing and rendering
 
 import { loadScript, settings, isNodeJs } from './core.mjs';
 

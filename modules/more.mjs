@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// more ROOT classes
 
 import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
 
@@ -7,6 +6,8 @@ import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer 
 
 import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
          floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
+
+import { draw } from './draw.mjs';
 
 import * as jsroot_math from './math.mjs';
 
@@ -477,11 +478,11 @@ function drawArrow() {
   * @private */
 function drawRooPlot(dom, plot) {
 
-   return JSROOT.draw(dom, plot._hist, "hist").then(hp => {
+   return draw(dom, plot._hist, "hist").then(hp => {
 
       const drawNext = cnt => {
          if (cnt >= plot._items.arr.length) return hp;
-         return JSROOT.draw(dom, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => drawNext(cnt+1));
+         return draw(dom, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => drawNext(cnt+1));
       };
 
       return drawNext(0);
@@ -844,7 +845,7 @@ class TF1Painter extends ObjectPainter {
       proivdeEvalPar(tf1, jsroot_math);
 
       if (!has_main || painter.second_x || painter.second_y)
-         await JSROOT.draw(dom, painter.createDummyHisto(), aopt);
+         await draw(dom, painter.createDummyHisto(), aopt);
 
       painter.addToPadPrimitives();
       await painter.redraw();
@@ -965,7 +966,7 @@ async function drawTF2(dom, func, opt) {
       if (!getElementMainPainter(dom))
          opt = "A_ADJUST_FRAME_" + opt.substr(4);
 
-   let hpainter = await JSROOT.draw(dom, hist, opt);
+   let hpainter = await draw(dom, hist, opt);
 
    hpainter.tf2_typename = func._typename;
 
@@ -985,7 +986,6 @@ const kNotEditable = BIT(18);   // bit set if graph is non editable
 /**
  * @summary Painter for TGraph object.
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2473,7 +2473,7 @@ class TGraphPainter extends ObjectPainter {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      return JSROOT.draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
+      return draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
    /** @summary Draw TGraph */
@@ -2489,7 +2489,7 @@ class TGraphPainter extends ObjectPainter {
 
       if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
          let histo = painter.createHistogram();
-         promise = JSROOT.draw(dom, histo, painter.options.Axis).then(hist_painter => {
+         promise = draw(dom, histo, painter.options.Axis).then(hist_painter => {
             if (hist_painter) {
                painter.axes_draw = true;
                if (!painter._own_histogram) painter.$primary = true;
@@ -2510,7 +2510,6 @@ class TGraphPainter extends ObjectPainter {
 /**
  * @summary Painter for TGraphPolargram objects.
  *
- * @memberof JSROOT
  * @private */
 
 class TGraphPolargramPainter extends ObjectPainter {
@@ -2817,7 +2816,6 @@ class TGraphPolargramPainter extends ObjectPainter {
 /**
  * @summary Painter for TGraphPolar objects.
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3046,7 +3044,6 @@ class TGraphPolarPainter extends ObjectPainter {
 /**
  * @summary Painter for TSpline objects.
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3359,7 +3356,7 @@ class TSplinePainter extends ObjectPainter {
             return null;
          }
          let histo = painter.createDummyHisto();
-         promise = JSROOT.draw(dom, histo, painter.options.Hopt);
+         promise = draw(dom, histo, painter.options.Hopt);
       }
 
       return promise.then(() => {
@@ -3375,7 +3372,6 @@ class TSplinePainter extends ObjectPainter {
 /**
  * @summary Painter for TGraphTime object
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3417,7 +3413,7 @@ class TGraphTimePainter extends ObjectPainter {
          return Promise.resolve();
       }
 
-      return JSROOT.draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
+      return draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
 
          if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
          return this.drawPrimitives(indx+1);
@@ -3509,7 +3505,7 @@ class TGraphTimePainter extends ObjectPainter {
 
       painter.selfid = "grtime" + internals.id_counter++; // use to identify primitives which should be clean
 
-      return JSROOT.draw(dom, gr.fFrame, "AXIS").then(() => {
+      return draw(dom, gr.fFrame, "AXIS").then(() => {
          painter.addToPadPrimitives();
          return painter.startDrawing();
       });
@@ -3520,7 +3516,7 @@ class TGraphTimePainter extends ObjectPainter {
 
 const kIsBayesian       = BIT(14),  ///< Bayesian statistics are used
       kPosteriorMode    = BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
- //   kShortestInterval = BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
+ //   kShortestInterval = BIT(16),  ///< Use shortest interval, not implemented - too complicated
       kUseBinPrior      = BIT(17),  ///< Use a different prior for each bin
       kUseWeights       = BIT(18),  ///< Use weights
       getBetaAlpha      = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha,
@@ -3529,7 +3525,6 @@ const kIsBayesian       = BIT(14),  ///< Bayesian statistics are used
 /**
  * @summary Painter for TEfficiency object
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3684,7 +3679,7 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length)
          return this;
 
-       return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+       return draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
    }
 
    /** @summary Draw TEfficiency object */
@@ -3715,12 +3710,12 @@ class TEfficiencyPainter extends ObjectPainter {
 
          let gr = painter.createGraph(eff);
          painter.fillGraph(gr, opt);
-         await JSROOT.draw(dom, gr, opt);
+         await draw(dom, gr, opt);
       } else {
          if (!opt) opt = "col";
          let hist = painter.createHisto(eff);
          painter.fillHisto(hist, opt);
-         await JSROOT.draw(dom, hist, opt);
+         await draw(dom, hist, opt);
       }
 
       painter.addToPadPrimitives();
@@ -3734,7 +3729,6 @@ class TEfficiencyPainter extends ObjectPainter {
 /**
  * @summary Painter for TMultiGraph object.
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3937,7 +3931,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      return JSROOT.draw(this.getDom(), histo, (this._3d ? "AXIS3D" : "AXIS") + hopt);
+      return draw(this.getDom(), histo, (this._3d ? "AXIS3D" : "AXIS") + hopt);
    }
 
    /** @summary method draws next function from the functions list  */
@@ -3948,7 +3942,7 @@ class TMultiGraphPainter extends ObjectPainter {
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return Promise.resolve(this);
 
-      return JSROOT.draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+      return draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
                   .then(() => this.drawNextFunction(indx+1));
    }
 
@@ -3977,7 +3971,7 @@ class TMultiGraphPainter extends ObjectPainter {
       let o = graphs.opt[indx] || opt || "";
       if (this._3d) o += "pos3d_"+(graphs.arr.length - indx);
 
-      return JSROOT.draw(this.getDom(), graphs.arr[indx], o).then(subp => {
+      return draw(this.getDom(), graphs.arr[indx], o).then(subp => {
          if (subp) this.painters.push(subp);
 
          return this.drawNextGraph(indx+1, opt);
@@ -4189,7 +4183,6 @@ class TWebPaintingPainter extends ObjectPainter {
 /**
  * @summary Painter for TASImage object.
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -4455,7 +4448,7 @@ class TASImagePainter extends ObjectPainter {
       if (!pal_painter) {
          let prev_name = this.selectCurrentPad(this.getPadName());
 
-         pal_painter = await JSROOT.draw(this.getDom(), this.draw_palette);
+         pal_painter = await draw(this.getDom(), this.draw_palette);
 
          this.selectCurrentPad(prev_name);
          // mark painter as secondary - not in list of TCanvas primitives
@@ -4665,7 +4658,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   line.fLineStyle = 2;
                   ratio.fGridlines.push(line);
                   if (currpad === undefined) currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
-                  arr.push(JSROOT.draw(this.getDom(), line));
+                  arr.push(draw(this.getDom(), line));
                }
             });
          }

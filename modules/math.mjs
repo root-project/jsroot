@@ -1,4 +1,4 @@
-// Special mathematical functions
+/// Special mathematical functions
 
 const kMACHEP  = 1.11022302462515654042363166809e-16,
       kMINLOG  = -708.396418532264078748994506896,
