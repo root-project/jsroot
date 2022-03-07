@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings, constants, internals, extend } from './core.mjs';
+import { browser, settings, constants, internals, extend, isBatchMode } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -123,11 +123,11 @@ function createSVGRenderer(as_is, precision, doc) {
  * @returns {value} - rendering kind, see constants.Render3D
  * @private */
 function getRender3DKind(render3d) {
-   if (!render3d) render3d = JSROOT.batch_mode ? settings.Render3DBatch : settings.Render3D;
+   if (!render3d) render3d = isBatchMode() ? settings.Render3DBatch : settings.Render3D;
    let rc = constants.Render3D;
 
-   if (render3d == rc.Default) render3d = JSROOT.batch_mode ? rc.WebGLImage : rc.WebGL;
-   if (JSROOT.batch_mode && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d == rc.Default) render3d = isBatchMode() ? rc.WebGLImage : rc.WebGL;
+   if (isBatchMode() && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
 
    return render3d;
 }
@@ -410,7 +410,7 @@ async function createRender3D(width, height, render3d, args) {
       // SVG rendering
       renderer = createSVGRenderer(false, 0, doc);
 
-      if (JSROOT.batch_mode) {
+      if (isBatchMode()) {
          need_workaround = true;
       } else {
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -466,7 +466,7 @@ async function createRender3D(width, height, render3d, args) {
 
    // apply size to dom element
    renderer.setJSROOTSize = function(width, height) {
-      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !JSROOT.batch_mode && !JSROOT.nodejs)
+      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !JSROOT.nodejs)
          return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
    };
 
@@ -510,7 +510,7 @@ function afterRender3D(renderer) {
 
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
-      if (JSROOT.batch_mode) {
+      if (isBatchMode()) {
          internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
       } else {
          let parent = renderer.jsroot_dom.parentNode;

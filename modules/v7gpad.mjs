@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, create, extend, addMethods } from './core.mjs';
+import { gStyle, settings, constants, internals, create, extend, addMethods, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -750,7 +750,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, side) {
-      if (!settings.MoveResize || JSROOT.batch_mode) return;
+      if (!settings.MoveResize || isBatchMode()) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, alt_pos, curr_indx,
@@ -1084,7 +1084,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add zomming rect to axis drawing */
    addZoomingRect(axis_g, side, lgaps) {
-      if (settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
+      if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
          let sz = Math.max(lgaps[side], 10);
 
          let d = this.vertical ? "v" + this.gr_range + "h"+(-side*sz) + "v" + (-this.gr_range)
@@ -1310,7 +1310,7 @@ class RAxisPainter extends RObjectPainter {
 
       let promise = this.drawAxis(this.draw_g, `translate(${pos.x},${pos.y})`);
 
-      if (JSROOT.batch_mode) return promise;
+      if (isBatchMode()) return promise;
 
       return promise.then(() => JSROOT.require('interactive')).then(inter => {
          if (settings.ContextMenu)
@@ -2156,7 +2156,7 @@ class RFramePainter extends RObjectPainter {
 
          this.draw_g = this.getLayerSvg("primitives_layer").append("svg:g").attr("class", "root_frame");
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             this.draw_g.append("svg:title").text("");
 
          top_rect = this.draw_g.append("svg:rect");
@@ -2201,7 +2201,7 @@ class RFramePainter extends RObjectPainter {
          await this.addInteractivity();
       }
 
-      if (JSROOT.batch_mode) return;
+      if (isBatchMode()) return;
 
       top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
@@ -2606,7 +2606,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (JSROOT.batch_mode) return;
+      if (isBatchMode()) return;
       JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.addKeysHandler();
@@ -2617,7 +2617,7 @@ class RFramePainter extends RObjectPainter {
     * @private */
    async addInteractivity(for_second_axes) {
 
-      if (JSROOT.batch_mode || (!settings.Zooming && !settings.ContextMenu))
+      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
 
       if (!this.addFrameInteractivity) {
@@ -2912,7 +2912,7 @@ class RPadPainter extends RObjectPainter {
 
          if (!rect.changed) return false;
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
 
          frect = svg.select(".canvas_fillrect");
@@ -2932,11 +2932,11 @@ class RPadPainter extends RObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             svg.append("svg:title").text("ROOT canvas");
 
          frect = svg.append("svg:path").attr("class","canvas_fillrect");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter(this, null))
@@ -2945,7 +2945,7 @@ class RPadPainter extends RObjectPainter {
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -3090,7 +3090,7 @@ class RPadPainter extends RObjectPainter {
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.select(".root_pad_border");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_parent.select(".primitives_layer")
@@ -3099,13 +3099,13 @@ class RPadPainter extends RObjectPainter {
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             svg_pad.append("svg:title").text("ROOT subpad");
 
          svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = svg_pad.append("svg:g")
                           .attr("class","btns_layer")
                           .property('leftside', settings.ToolBarSide != 'left')
@@ -3114,7 +3114,7 @@ class RPadPainter extends RObjectPainter {
          if (settings.ContextMenu)
             svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", evnt => this.enlargePad(evnt))
                     .on("click", () => this.selectObjectPainter(this, null))
@@ -4058,7 +4058,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(_btn, _tooltip, _funcname, _keyname) {
-      if (!settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
+      if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -4840,7 +4840,7 @@ class RCanvasPainter extends RPadPainter {
 async function drawRPadSnapshot(dom, snap /*, opt*/) {
    let painter = new RCanvasPainter(dom, null);
    painter.normal_canvas = false;
-   painter.batch_mode = JSROOT.batch_mode;
+   painter.batch_mode = isBatchMode();
    await painter.syncDraw(true);
    await painter.redrawPadSnap(snap);
    painter.confirmDraw();
@@ -4949,7 +4949,7 @@ class RPavePainter extends RObjectPainter {
 
       return this.drawContent().then(() => {
 
-         if (JSROOT.batch_mode) return this;
+         if (isBatchMode()) return this;
 
          return JSROOT.require(['interactive']).then(inter => {
             // TODO: provide pave context menu as in v6
@@ -5062,7 +5062,7 @@ function drawRFrameTitle(reason, drag) {
    this.drawText(arg);
 
    return this.finishTextDrawing().then(() => {
-      if (!JSROOT.batch_mode)
+      if (!isBatchMode())
       return JSROOT.require(['interactive'])
             .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
                                                         minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) }));
@@ -5349,7 +5349,7 @@ class RPalettePainter extends RObjectPainter {
 
       let promise = framep.z_handle.drawAxis(this.draw_g, vertical ? `translate(${palette_width},${palette_height})` : `translate(0,${palette_height})`, vertical ? -1 : 1);
 
-      if (JSROOT.batch_mode || drag)
+      if (isBatchMode() || drag)
          return promise;
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {

@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals, create, extend, toJSON } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals, create, extend, toJSON, isBatchMode } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -455,7 +455,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!settings.MoveResize || JSROOT.batch_mode) return;
+      if (!settings.MoveResize || isBatchMode()) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
@@ -857,7 +857,7 @@ class TAxisPainter extends ObjectPainter {
 
       let labelMaxWidth = arr[1];
 
-      if (settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
+      if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
          let labelSize = arr[0],
              r = axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
@@ -1931,7 +1931,7 @@ class TFramePainter extends ObjectPainter {
          this.draw_g = this.getLayerSvg("primitives_layer").append("svg:g").attr("class", "root_frame");
 
          // empty title on the frame required to suppress title of the canvas
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             this.draw_g.append("svg:title").text("");
 
          top_rect = this.draw_g.append("svg:path");
@@ -1964,7 +1964,7 @@ class TFramePainter extends ObjectPainter {
               .attr("height", h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
-      if (JSROOT.batch_mode) return;
+      if (isBatchMode()) return;
 
       top_rect.style("pointer-events", "visibleFill"); // let process mouse events inside frame
 
@@ -2367,7 +2367,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (JSROOT.batch_mode) return;
+      if (isBatchMode()) return;
       JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.addKeysHandler();
@@ -2377,7 +2377,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive functionality to the frame
      * @private */
    async addInteractivity(for_second_axes) {
-      if (JSROOT.batch_mode || (!settings.Zooming && !settings.ContextMenu))
+      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
       if (!this.addFrameInteractivity) {
@@ -2654,7 +2654,7 @@ class TPadPainter extends ObjectPainter {
 
          if (!rect.changed) return false;
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
 
          frect = svg.select(".canvas_fillrect");
@@ -2674,17 +2674,17 @@ class TPadPainter extends ObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (JSROOT.batch_mode) {
+         if (isBatchMode()) {
             svg.attr("xmlns", "http://www.w3.org/2000/svg");
             svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
          } else {
             svg.append("svg:title").text("ROOT canvas");
          }
 
-         if (!JSROOT.batch_mode || (this.pad.fFillStyle > 0))
+         if (!isBatchMode() || (this.pad.fFillStyle > 0))
             frect = svg.append("svg:path").attr("class","canvas_fillrect");
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter())
@@ -2693,7 +2693,7 @@ class TPadPainter extends ObjectPainter {
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -2828,7 +2828,7 @@ class TPadPainter extends ObjectPainter {
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.select(".root_pad_border");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_can.select(".primitives_layer")
@@ -2837,14 +2837,14 @@ class TPadPainter extends ObjectPainter {
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             svg_pad.append("svg:title").text("subpad " + this.this_pad_name);
 
          // need to check attributes directly while attributes objects will be created later
-         if (!JSROOT.batch_mode || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+         if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
 
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", evnt => this.enlargePad(evnt))
                     .on("click", () => this.selectObjectPainter())
@@ -2852,7 +2852,7 @@ class TPadPainter extends ObjectPainter {
                     .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             btns = svg_pad.append("svg:g")
                           .attr("class","btns_layer")
                           .property('leftside', settings.ToolBarSide != 'left')
@@ -4143,7 +4143,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(_btn, _tooltip, _funcname, _keyname) {
-      if (!settings.ToolBar || JSROOT.batch_mode || this.batch_mode) return;
+      if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -4944,7 +4944,7 @@ class TCanvasPainter extends TPadPainter {
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
 
-      if (!nocanvas && can.fCw && can.fCh && !JSROOT.batch_mode) {
+      if (!nocanvas && can.fCw && can.fCh && !isBatchMode()) {
          let rect0 = painter.selectDom().node().getBoundingClientRect();
          if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
             painter.selectDom().style("width", can.fCw+"px").style("height", can.fCh+"px");

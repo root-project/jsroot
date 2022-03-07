@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, createTPolyLine } from './core.mjs';
+import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -1235,7 +1235,7 @@ class RH1Painter extends RHistPainter {
           right = handle.i2,
           di = handle.stepi,
           histo = this.getHisto(),
-          want_tooltip = !JSROOT.batch_mode && settings.Tooltip,
+          want_tooltip = !isBatchMode() && settings.Tooltip,
           xaxis = this.getAxis("x"),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -1437,7 +1437,7 @@ class RH1Painter extends RHistPainter {
       }
 
       let close_path = "",
-          fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line;
+          fill_for_interactive = !isBatchMode() && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line;
       if (!this.fillatt.empty() || fill_for_interactive) {
          let h0 = height + 3;
          if (fill_for_interactive) {
@@ -1466,7 +1466,7 @@ class RH1Painter extends RHistPainter {
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
                    .style("fill", "none")
-                   .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
+                   .style("pointer-events", isBatchMode() ? null : "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())

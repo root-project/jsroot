@@ -3,7 +3,7 @@
 import * as JSROOT from './core.mjs';
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, internals, create, extend, clone, findFunction } from './core.mjs';
+         settings, constants, internals, create, extend, clone, findFunction, isBatchMode } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -36,7 +36,7 @@ import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
-if (!JSROOT.batch_mode)
+if (!isBatchMode())
    await loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
@@ -504,7 +504,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create toolbar */
    createToolbar() {
-      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || JSROOT.batch_mode) return;
+      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || isBatchMode()) return;
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
@@ -1718,7 +1718,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add orbit control */
    addOrbitControls() {
 
-      if (this._controls || !this._webgl || JSROOT.batch_mode) return;
+      if (this._controls || !this._webgl || isBatchMode()) return;
 
       let painter = this;
 
@@ -1898,7 +1898,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !JSROOT.batch_mode && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && source_dir.indexOf("file://")==0) {
@@ -2870,7 +2870,7 @@ class TGeoPainter extends ObjectPainter {
      * @returns {Promise} with object drawing ready */
    drawCount(unqievis, clonetm) {
 
-      const makeTime = tm => (JSROOT.batch_mode ? "anytime" : tm.toString()) + " ms";
+      const makeTime = tm => (isBatchMode() ? "anytime" : tm.toString()) + " ms";
 
       let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
@@ -2908,7 +2908,7 @@ class TGeoPainter extends ObjectPainter {
 
       let elem = this.selectDom().style('overflow', 'auto');
 
-      if (JSROOT.batch_mode)
+      if (isBatchMode())
          elem.property("_json_object_", res);
       else
          res.forEach(str => elem.append("p").text(str));
@@ -2921,7 +2921,7 @@ class TGeoPainter extends ObjectPainter {
             tm2 = new Date().getTime();
 
             let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
-            if (JSROOT.batch_mode)
+            if (isBatchMode())
                res.push(last_str);
             else
                elem.append("p").text(last_str);
@@ -3707,8 +3707,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && this._webgl /* && !JSROOT.batch_mode */) {
-         if (JSROOT.batch_mode) tmout = 1; // use minimal timeout in batch mode
+      if ((tmout > 0) && this._webgl /* && !isBatchMode() */) {
+         if (isBatchMode()) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {
                if (!this._render_resolveFuncs) this._render_resolveFuncs = [];
@@ -4295,7 +4295,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !JSROOT.batch_mode) this.showControlOptions(true);
+            if (this._webgl && this.ctrl.show_controls && !isBatchMode()) this.showControlOptions(true);
          }
 
          this.setAsMainPainter();

@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, _ } from './core.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -621,7 +621,7 @@ class WebWindowHandle {
          };
 
          // only in interactive mode try to reconnect
-         if (!JSROOT.batch_mode)
+         if (!isBatchMode())
             setTimeout(retry_open, 3000); // after 3 seconds try again
 
       } // retry_open
@@ -683,7 +683,7 @@ function connectWebWindow(arg) {
    if (arg.batch === undefined)
       arg.batch = d.has("headless");
 
-   if (arg.batch) JSROOT.batch_mode = true;
+   if (arg.batch) setBatchMode(true);
 
    if (!arg.socket_kind)
       arg.socket_kind = d.get("ws");

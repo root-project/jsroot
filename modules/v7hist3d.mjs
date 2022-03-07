@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals } from './core.mjs';
+import { gStyle, settings, constants, internals, isBatchMode } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
 
@@ -195,7 +195,7 @@ RFramePainter.prototype.create3DScene = async function(render3d) {
    this.first_render_tm = 0;
    this.enable_highlight = false;
 
-   if (JSROOT.batch_mode || !this.webgl) return;
+   if (isBatchMode() || !this.webgl) return;
 
    this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
@@ -293,7 +293,7 @@ RFramePainter.prototype.render3D = function(tmout) {
 
    if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-   if ((tmout > 0) && this.webgl && JSROOT.batch_mode) {
+   if ((tmout > 0) && this.webgl && isBatchMode()) {
        if (!this.render_tmout)
           this.render_tmout = setTimeout(() => this.render3D(0), tmout);
        return;

@@ -2,7 +2,7 @@ import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          browser, source_dir, settings, internals, extend, findFunction, toJSON,
-         isArrayProto, isRootCollection } from './core.mjs';
+         isArrayProto, isRootCollection, isBatchMode } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -3927,7 +3927,7 @@ class HierarchyPainter extends BasePainter {
          return this.refreshHtml();
       }).catch(() => {
          // make CORS warning
-         if (JSROOT.batch_mode)
+         if (isBatchMode())
             console.error(`Fail to open ${filepath} - check CORS headers`);
          else if (!d3_select("#gui_fileCORS").style("background","red").empty())
             setTimeout(() => d3_select("#gui_fileCORS").style("background",''), 5000);
@@ -5014,7 +5014,7 @@ function drawStreamerInfo(dom, lst) {
    let painter = new HierarchyPainter('sinfo', dom, 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
-   if (JSROOT.batch_mode) {
+   if (isBatchMode()) {
       painter.selectDom().property("_json_object_", lst);
       return Promise.resolve(painter);
    }
@@ -5040,7 +5040,7 @@ function drawInspector(dom, obj) {
    let painter = new HierarchyPainter('inspector', dom, 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
-   if (JSROOT.batch_mode) {
+   if (isBatchMode()) {
       painter.selectDom().property("_json_object_", obj);
       return Promise.resolve(painter);
    }

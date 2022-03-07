@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { settings } from './core.mjs';
+import { settings, isBatchMode } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -13,7 +13,7 @@ import { select as d3_select } from './d3.mjs';
   * @param {number} tmout - optional timeout in milliseconds, after message will disappear
   * @private */
 function showProgress(msg, tmout) {
-   if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
+   if (isBatchMode() || (typeof document === 'undefined')) return;
    let id = "jsroot_progressbox",
        box = d3_select("#" + id);
 

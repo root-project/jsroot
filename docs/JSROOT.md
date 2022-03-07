@@ -949,3 +949,5 @@ Core functionality should be imported from `core.mjs` module like:
 JSROOT.hpainter -> JSROOT.require('hierarchy').then(hh => hh.getHPainter())
 
 JSROOT.Math -> math = await JSROOT.require('math')
+
+JSROOT.batch_mode   -> isBatchMode()

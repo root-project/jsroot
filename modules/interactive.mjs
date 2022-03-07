@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { browser, settings, extend } from './core.mjs';
+import { browser, settings, extend, isBatchMode } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag,
          pointer as d3_pointer, pointers as d3_pointers } from './d3.mjs';
@@ -363,7 +363,7 @@ function detectRightButton(event) {
 
 /** @summary Add drag for interactive rectangular elements for painter */
 function addDragHandler(_painter, arg) {
-   if (!settings.MoveResize || JSROOT.batch_mode) return;
+   if (!settings.MoveResize || isBatchMode()) return;
 
    let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
    if (pp && pp._fast_drawing) return;
@@ -595,7 +595,7 @@ function addMoveHandler(painter, enabled) {
 
    if (enabled === undefined) enabled = true;
 
-   if (!settings.MoveResize || JSROOT.batch_mode || !painter.draw_g) return;
+   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
 
    if (!enabled) {
       if (painter.draw_g.property("assigned_move")) {

@@ -3,11 +3,11 @@ import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
 import { gStyle, loadScript, decodeUrl, findFunction,
-         browser, settings, constants, internals, extend } from './core.mjs';
+         browser, settings, constants, internals, extend, isBatchMode } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
-if (!JSROOT.batch_mode)
+if (!isBatchMode())
    await loadScript('$$$style/JSRoot.painter');
 
 /** @summary Converts numeric value to string according to specified format.
@@ -3679,7 +3679,7 @@ function resize(dom, arg) {
   * @protected */
 function registerForResize(handle, delay) {
 
-   if (!handle || JSROOT.batch_mode || (typeof window == 'undefined')) return;
+   if (!handle || isBatchMode() || (typeof window == 'undefined')) return;
 
    let myInterval = null, myDelay = delay ? delay : 300;
 

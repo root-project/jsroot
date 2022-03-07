@@ -41,9 +41,12 @@ if (src && (typeof src == "string")) {
    if (src.indexOf("file://") == 0) nodejs = true;
 }
 
-/** @summary Indicates if JSROOT runs in batch mode, can be changed if required
-  * @alias JSROOT.batch_mode */
+/** @summary Indicates if JSROOT runs in batch mode, can be changed if required */
 let batch_mode = nodejs;
+
+function isBatchMode() { return batch_mode; }
+
+function setBatchMode(on) { batch_mode = !!on; }
 
 if (nodejs) {
    internals.atob = await import('atob').then(hh => hh.default);
@@ -1784,6 +1787,8 @@ version,
 source_dir,
 nodejs,
 batch_mode,
+isBatchMode,
+setBatchMode,
 browser,
 internals,
 constants,

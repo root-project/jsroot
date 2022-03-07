@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, internals, extend, create, createHistogram } from './core.mjs';
+import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBatchMode } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -62,7 +62,7 @@ function drawText() {
    this.drawText(arg);
 
    return this.finishTextDrawing().then(() => {
-      if (JSROOT.batch_mode) return this;
+      if (isBatchMode()) return this;
 
       return JSROOT.require(['interactive']).then(inter => {
          this.pos_dx = this.pos_dy = 0;
@@ -438,7 +438,7 @@ function drawArrow() {
       elem.style('fill','none');
    }
 
-   if (!JSROOT.batch_mode)
+   if (!isBatchMode())
       return JSROOT.require('interactive').then(inter => {
 
          if (!this.moveStart)
@@ -1675,7 +1675,7 @@ class TGraphPainter extends ObjectPainter {
          if (options.skip_errors_x0 || options.skip_errors_y0)
             visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
 
-         if (!JSROOT.batch_mode && settings.Tooltip && main_block)
+         if (!isBatchMode() && settings.Tooltip && main_block)
             visible.append("svg:path")
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
@@ -1703,7 +1703,7 @@ class TGraphPainter extends ObjectPainter {
 
          this.markeratt.resetPos();
 
-         let want_tooltip = !JSROOT.batch_mode && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
+         let want_tooltip = !isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
              hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
@@ -1872,7 +1872,7 @@ class TGraphPainter extends ObjectPainter {
          this.extractGmeErrors(0); // ensure that first block kept at the end
       }
 
-      if (!JSROOT.batch_mode)
+      if (!isBatchMode())
          return JSROOT.require(['interactive'])
                       .then(inter => inter.addMoveHandler(this, this.testEditable()));
    }
@@ -2763,7 +2763,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                 .call(this.gridatt.func);
          }
 
-      if (JSROOT.batch_mode) return;
+      if (isBatchMode()) return;
 
       let inter = await JSROOT.require(['interactive']);
 

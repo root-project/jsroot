@@ -1,7 +1,7 @@
 import * as JSROOT from './core.mjs';
 
 import { BIT, isArrayProto, isRootCollection, getMethods, extend,
-         create, createHistogram, createTGraph } from './core.mjs';
+         create, createHistogram, createTGraph, isBatchMode } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -792,7 +792,7 @@ class TDrawSelector extends TSelector {
 
    /** @summary Show progress */
    ShowProgress(value) {
-      if (typeof document == 'undefined' || JSROOT.batch_mode) return;
+      if (typeof document == 'undefined' || isBatchMode()) return;
 
       import('./utils.mjs').then(utils => {
 

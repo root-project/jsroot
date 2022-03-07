@@ -2,7 +2,7 @@
 import * as JSROOT from './core.mjs';
 
 import { gStyle, BIT, browser, settings, constants, internals,
-         extend, clone, create, createHistogram, createTPolyLine } from './core.mjs';
+         extend, clone, create, createHistogram, createTPolyLine, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -359,7 +359,7 @@ class TPavePainter extends ObjectPainter {
                .call(this.lineatt.func);
 
       let rect;
-      if (!JSROOT.batch_mode || !this.fillatt.empty() || !this.lineatt.empty())
+      if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
            rect = this.draw_g.append("svg:path")
                       .attr("d", `M0,0H${width}V${height}H0Z`)
                       .call(this.fillatt.func)
@@ -368,7 +368,7 @@ class TPavePainter extends ObjectPainter {
       if (typeof this.paveDrawFunc == 'function')
          await this.paveDrawFunc(width, height, arg);
 
-      if (!JSROOT.batch_mode && (pt._typename !== "TPave")) {
+      if (!isBatchMode() && (pt._typename !== "TPave")) {
          let inter = await JSROOT.require(['interactive']);
 
          // here all kind of interactive settings
@@ -3903,7 +3903,7 @@ class TH1Painter extends THistPainter {
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
           histo = this.getHisto(),
-          want_tooltip = !JSROOT.batch_mode && settings.Tooltip,
+          want_tooltip = !isBatchMode() && settings.Tooltip,
           xaxis = histo.fXaxis,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -4178,7 +4178,7 @@ class TH1Painter extends THistPainter {
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
                    .style("fill", "none")
-                   .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
+                   .style("pointer-events", isBatchMode() ? null : "visibleFill");
 
          if (path_line) {
             if (!this.fillatt.empty() && !draw_hist)
@@ -4201,7 +4201,7 @@ class TH1Painter extends THistPainter {
             this.draw_g.append("svg:path")
                 .attr("d", hints_marker)
                 .style("fill", "none")
-                .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
+                .style("pointer-events", isBatchMode() ? null : "visibleFill");
       }
 
       if (res && draw_hist)
@@ -6475,7 +6475,7 @@ class TH2Painter extends THistPainter {
          this.draw_g.append("svg:path")
              .attr("d", hists)
              .style("stroke", (hline_color != 'none') ? hline_color : null)
-             .style("pointer-events",JSROOT.batch_mode ? null : "visibleFill")
+             .style("pointer-events",isBatchMode() ? null : "visibleFill")
              .call(this.fillatt.func);
 
       if (bars.length > 0)
