@@ -4199,6 +4199,7 @@ class TPadPainter extends ObjectPainter {
 
       let d = new DrawOptions(opt);
 
+      if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
       extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
@@ -4537,6 +4538,16 @@ class TCanvasPainter extends TPadPainter {
          this._websocket.cleanup();
          delete this._websocket;
       }
+   }
+
+   /** @summary Create websocket for the canvas
+     * @private */
+   openWebsocket(socket_kind) {
+      this.closeWebsocket();
+
+      this._websocket = new JSROOT.WebWindowHandle(socket_kind);
+      this._websocket.setReceiver(this);
+      this._websocket.connect();
    }
 
    /** @summary Use provided connection for the web canvas
