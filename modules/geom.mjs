@@ -3,7 +3,7 @@
 import * as JSROOT from './core.mjs';
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, internals, create, extend, clone, findFunction, isBatchMode } from './core.mjs';
+         settings, constants, internals, create, extend, clone, findFunction, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -2425,7 +2425,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
 
-         if (this._renderer.setPixelRatio && !JSROOT.nodejs)
+         if (this._renderer.setPixelRatio && !isNodeJs())
             this._renderer.setPixelRatio(window.devicePixelRatio);
          this._renderer.setSize(w, h, !this._fit_main_area);
          this._renderer.localClippingEnabled = true;

@@ -3,7 +3,7 @@ import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
 import { gStyle, loadScript, decodeUrl, findFunction,
-         browser, settings, constants, internals, extend, isBatchMode } from './core.mjs';
+         browser, settings, constants, internals, extend, isBatchMode, isNodeJs } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -1504,7 +1504,7 @@ function buildSvgPath(kind, bins, height, ndig) {
   * With node.js can use "width" and "height" attributes when provided in element
   * @private */
 function getElementRect(elem, sizearg) {
-   if (JSROOT.nodejs && (sizearg != 'bbox'))
+   if (isNodeJs() && (sizearg != 'bbox'))
       return { x: 0, y: 0, width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
    const styleValue = name => {
@@ -2792,7 +2792,7 @@ class ObjectPainter extends BasePainter {
 
             // handle simple text drawing
 
-            if (JSROOT.nodejs) {
+            if (isNodeJs()) {
                if (arg.scale && (f > 0)) { arg.box.width *= 1/f; arg.box.height *= 1/f; }
             } else if (!arg.plain && !arg.fast) {
                // exact box dimension only required when complex text was build
@@ -2804,7 +2804,7 @@ class ObjectPainter extends BasePainter {
                if (arg.align[1] == 'top')
                   txt.attr("dy", ".8em");
                else if (arg.align[1] == 'middle') {
-                  if (JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+                  if (isNodeJs()) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
                }
             } else {
                txt.attr("text-anchor", "start");
@@ -2876,7 +2876,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    _postprocessDrawText(arg, txt_node) {
       // complete rectangle with very rougth size estimations
-      arg.box = !JSROOT.nodejs && !settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
+      arg.box = !isNodeJs() && !settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
@@ -4298,7 +4298,7 @@ function makeSVG(args) {
       });
    }
 
-   if (!JSROOT.nodejs)
+   if (!isNodeJs())
       return build(d3_select('body').append("div").style("visible", "hidden"));
 
    return loadJSDOM().then(handle => build(handle.body.append('div')));
@@ -4306,7 +4306,7 @@ function makeSVG(args) {
 
 createRootColors();
 
-if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 // to avoid cross-dependnecy between io.mjs and painter.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;

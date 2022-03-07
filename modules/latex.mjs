@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { loadScript, settings } from './core.mjs';
+import { loadScript, settings, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -433,7 +433,7 @@ const parseLatex = (node, arg, label, curr) => {
             else
                elem.text(s);
 
-            let rect = !JSROOT.nodejs && !settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
+            let rect = !isNodeJs() && !settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
                           { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
 
             if (curr.x) elem.attr("x", curr.x);
@@ -870,7 +870,7 @@ function loadMathjax() {
        titleID: 0                     // initial id number to use for aria-labeledby titles
    };
 
-   if (!JSROOT.nodejs) {
+   if (!isNodeJs()) {
       window.MathJax = {
          options: {
             enableMenu: false
@@ -1117,7 +1117,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
 
    svg.attr("width", width).attr('height', height).attr("style", null);
 
-   if (!JSROOT.nodejs) {
+   if (!isNodeJs()) {
       let box = getElementRect(mj_node, 'bbox');
       width = 1.05 * box.width; height = 1.05 * box.height;
    }

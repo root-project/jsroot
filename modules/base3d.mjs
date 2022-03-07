@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings, constants, internals, extend, isBatchMode } from './core.mjs';
+import { browser, settings, constants, internals, extend, isBatchMode, isNodeJs } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -416,7 +416,7 @@ async function createRender3D(width, height, render3d, args) {
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
          // d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
       }
-   } else if (JSROOT.nodejs) {
+   } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
       let canvas_handle = await import('canvas');
 
@@ -466,7 +466,7 @@ async function createRender3D(width, height, render3d, args) {
 
    // apply size to dom element
    renderer.setJSROOTSize = function(width, height) {
-      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !JSROOT.nodejs)
+      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
          return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
    };
 
@@ -479,7 +479,7 @@ async function createRender3D(width, height, render3d, args) {
 function cleanupRender3D(renderer) {
    if (!renderer) return;
 
-   if (JSROOT.nodejs) {
+   if (isNodeJs()) {
       let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null;
       let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
       if (ext) ext.destroy();
@@ -519,7 +519,7 @@ function afterRender3D(renderer) {
             renderer.jsroot_dom = parent.firstChild;
          }
       }
-   } else if (JSROOT.nodejs) {
+   } else if (isNodeJs()) {
       // this is WebGL rendering in node.js
       let canvas = renderer.domElement,
          context = canvas.getContext('2d');
@@ -1475,10 +1475,10 @@ class PointsCreator {
           imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
                     `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                     `</svg>`,
-          dataUrl = 'data:image/svg+xml;charset=utf8,' + (JSROOT.nodejs ? imgdata : encodeURIComponent(imgdata)),
+          dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata)),
           texture;
 
-      if (JSROOT.nodejs) {
+      if (isNodeJs()) {
          let handle = await import('canvas');
 
          let img = await handle.default.loadImage(dataUrl);

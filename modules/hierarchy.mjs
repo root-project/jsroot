@@ -2,7 +2,7 @@ import * as JSROOT from './core.mjs';
 
 import { gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          browser, source_dir, settings, internals, extend, findFunction, toJSON,
-         isArrayProto, isRootCollection, isBatchMode } from './core.mjs';
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
@@ -4365,7 +4365,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (this.disp_kind == 'batch') {
-         let handle = JSROOT.nodejs ? await loadJSDOM() : null;
+         let handle = isNodeJs() ? await loadJSDOM() : null;
          this.disp = new BatchDisplay(1200, 800, handle?.body);
          return this.disp;
       }

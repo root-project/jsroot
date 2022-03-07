@@ -3,7 +3,7 @@
 import * as JSROOT from './core.mjs';
 
 import { httpRequest, createHttpRequest, BIT, loadScript, internals,
-         create, getMethods, addMethods, extend } from './core.mjs';
+         create, getMethods, addMethods, extend, isNodeJs } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -2104,7 +2104,7 @@ function R__unzip(arr, tgtsize, noalert, src_shift) {
                });
             };
 
-            let promise = JSROOT.nodejs ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
+            let promise = isNodeJs() ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
                                         : loadScript('../../zstd/zstd-codec.min.js')
                                              .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
                                              .then(() => handleZsdt(ZstdCodec));
@@ -3772,7 +3772,7 @@ function openFile(arg) {
 
    let file;
 
-   if (JSROOT.nodejs && (typeof arg == "string")) {
+   if (isNodeJs() && (typeof arg == "string")) {
       if (arg.indexOf("file://") == 0)
          file = new TNodejsFile(arg.substr(7));
       else if (arg.indexOf("http") !== 0)

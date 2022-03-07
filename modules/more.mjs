@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBatchMode } from './core.mjs';
+import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -4327,7 +4327,7 @@ class TASImagePainter extends ObjectPainter {
 
          let canvas;
 
-         if (JSROOT.nodejs) {
+         if (isNodeJs()) {
             try {
                let handle = await import('canvas');
                canvas = handle.default.createCanvas(xmax - xmin, ymax - ymin);
@@ -4368,7 +4368,7 @@ class TASImagePainter extends ObjectPainter {
          constRatio = obj.fConstRatio;
 
       } else if (obj.fPngBuf) {
-         let pngbuf = "", btoa_func = JSROOT.nodejs ? (await import("btoa"))?.default : window.btoa;
+         let pngbuf = "", btoa_func = isNodeJs() ? (await import("btoa"))?.default : window.btoa;
 
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;

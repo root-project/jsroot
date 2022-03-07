@@ -48,6 +48,8 @@ function isBatchMode() { return batch_mode; }
 
 function setBatchMode(on) { batch_mode = !!on; }
 
+function isNodeJs() { return nodejs; }
+
 if (nodejs) {
    internals.atob = await import('atob').then(hh => hh.default);
    internals.xhr2 = await import('xhr2').then(hh => hh.default);
@@ -1785,8 +1787,7 @@ version_id,
 version_date,
 version,
 source_dir,
-nodejs,
-batch_mode,
+isNodeJs,
 isBatchMode,
 setBatchMode,
 browser,
