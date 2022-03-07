@@ -9,8 +9,6 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
 
 import { browser, settings, constants, internals, extend, isBatchMode, isNodeJs } from './core.mjs';
 
-import * as JSROOT from './core.mjs';
-
 import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
 
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
@@ -1317,7 +1315,6 @@ Box3D.MeshSegments = (function() {
 /**
  * @summary Abstract interactive control interface for 3D objects
  *
- * @memberof JSROOT
  * @abstract
  * @private
  */
@@ -1334,7 +1331,6 @@ class InteractiveControl {
 /**
  * @summary Special class to control highliht and selection of single points, used in geo painter
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1416,7 +1412,6 @@ class PointsControl extends InteractiveControl {
 /**
  * @summary Class for creation of 3D points
  *
- * @memberof JSROOT
  * @private
  */
 

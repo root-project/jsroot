@@ -1,6 +1,4 @@
-/// JavaScript ROOT 3D geometry painter
-
-import * as JSROOT from './core.mjs';
+/// 3D geometry painter
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
          settings, constants, internals, create, extend, clone, findFunction, isBatchMode, isNodeJs } from './core.mjs';

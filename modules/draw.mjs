@@ -1,3 +1,5 @@
+/// generic draw, loads functionality via dynamic import
+
 import { select as d3_select } from './d3.mjs';
 
 import { loadScript, findFunction, internals, extend, isNodeJs, require } from './core.mjs';

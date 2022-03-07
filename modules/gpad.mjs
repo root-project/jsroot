@@ -18,6 +18,8 @@ import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandl
          adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
          compressSVG, cleanup, resize } from './painter.mjs';
 
+import { draw } from './draw.mjs';
+
 // identifier used in TWebCanvas painter
 const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
@@ -96,7 +98,6 @@ function getTimeOffset(axis) {
 /**
  * @summary Painter for TAxis/TGaxis objects
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1045,7 +1046,6 @@ class TAxisPainter extends ObjectPainter {
 /**
  * @summary Painter class for TFrame, main handler for interactivity
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2403,7 +2403,6 @@ class TFramePainter extends ObjectPainter {
 /**
   * @summary Painter for TPad object
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -2421,7 +2420,7 @@ class TPadPainter extends ObjectPainter {
       if (!this.iscan && (pad !== null) && ('fName' in pad)) {
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
          let regexp = new RegExp("^[A-Za-z][A-Za-z0-9_]*$");
-         if (!regexp.test(this.this_pad_name)) this.this_pad_name = 'jsroot_pad_' + JSROOT.id_counter++;
+         if (!regexp.test(this.this_pad_name)) this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
       }
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
@@ -3078,7 +3077,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return JSROOT.draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
+      return draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
          if (op && (typeof op == 'object'))
             op._primitive = true; // mark painter as belonging to primitives
 
@@ -3133,7 +3132,7 @@ class TPadPainter extends ObjectPainter {
       const drawNext = () => {
          if (subpads.length == 0)
             return Promise.resolve(this);
-         return JSROOT.draw(this.getDom(), subpads.shift()).then(drawNext);
+         return draw(this.getDom(), subpads.shift()).then(drawNext);
       };
 
       return drawNext();
@@ -3544,7 +3543,7 @@ class TPadPainter extends ObjectPainter {
 
       // here the case of normal drawing, will be handled in promise
       if ((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG))
-         return JSROOT.draw(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
+         return draw(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
          });
@@ -4294,7 +4293,6 @@ let TCanvasStatusBits = {
 /**
   * @summary Painter for TCanvas object
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -4474,7 +4472,7 @@ class TCanvasPainter extends TPadPainter {
    drawInSidePanel(canv, opt) {
       let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
-      return JSROOT.draw(side.node(), canv, opt);
+      return draw(side.node(), canv, opt);
    }
 
    /** @summary Show message
