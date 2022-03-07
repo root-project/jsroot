@@ -11,9 +11,6 @@ import { createBufferGeometry, createNormal,
 function JSROOT_BIT(n) { return 1 << n; }
 
 
-/** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geobase').then(geo => ...)```
-  * @namespace
-  */
 let GradPerSegm = 6,       // grad per segment in cylinder/spherical symmetry shapes
     CompressComp = true;   // use faces compression in composite shapes
 

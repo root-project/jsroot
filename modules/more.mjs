@@ -64,7 +64,7 @@ function drawText() {
    return this.finishTextDrawing().then(() => {
       if (isBatchMode()) return this;
 
-      return JSROOT.require(['interactive']).then(inter => {
+      return import('./interactive.mjs').then(inter => {
          this.pos_dx = this.pos_dy = 0;
 
          if (!this.moveDrag)
@@ -439,7 +439,7 @@ function drawArrow() {
    }
 
    if (!isBatchMode())
-      return JSROOT.require('interactive').then(inter => {
+      return import('./interactive.mjs').then(inter => {
 
          if (!this.moveStart)
             this.moveStart = function(x,y) {
@@ -1873,7 +1873,7 @@ class TGraphPainter extends ObjectPainter {
       }
 
       if (!isBatchMode())
-         return JSROOT.require(['interactive'])
+         return import('./interactive.mjs')
                       .then(inter => inter.addMoveHandler(this, this.testEditable()));
    }
 
@@ -2765,7 +2765,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       if (isBatchMode()) return;
 
-      let inter = await JSROOT.require(['interactive']);
+      let inter = await import('./interactive.mjs');
 
       inter.TooltipHandler.assign(this);
 

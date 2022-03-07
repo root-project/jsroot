@@ -1313,7 +1313,7 @@ class RAxisPainter extends RObjectPainter {
 
       if (isBatchMode()) return promise;
 
-      return promise.then(() => JSROOT.require('interactive')).then(inter => {
+      return promise.then(() => import('./interactive.mjs')).then(inter => {
          if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
@@ -2206,7 +2206,7 @@ class RFramePainter extends RObjectPainter {
 
       top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
-      let inter = await JSROOT.require('interactive');
+      let inter = await import('./interactive.mjs');
       inter.FrameInteractive.assign(this);
       this.addBasicInteractivity();
    }
@@ -2608,7 +2608,7 @@ class RFramePainter extends RObjectPainter {
     * @private */
    addKeysHandler() {
       if (isBatchMode()) return;
-      JSROOT.require(['interactive']).then(inter => {
+      import('./interactive.mjs').then(inter => {
          inter.FrameInteractive.assign(this);
          this.addKeysHandler();
       });
@@ -2622,7 +2622,7 @@ class RFramePainter extends RObjectPainter {
          return true;
 
       if (!this.addFrameInteractivity) {
-         let inter = await JSROOT.require(['interactive']);
+         let inter = await import('./interactive.mjs');
          inter.FrameInteractive.assign(this);
       }
       return this.addFrameInteractivity(for_second_axes);
@@ -4102,7 +4102,7 @@ class RPadPainter extends RObjectPainter {
    showPadButtons() {
       if (!this._buttons) return;
 
-      JSROOT.require(['interactive']).then(inter => {
+      import('./interactive.mjs').then(inter => {
          inter.PadButtonsHandler.assign(this);
          this.showPadButtons();
       });
@@ -4745,7 +4745,7 @@ class RCanvasPainter extends RPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      JSROOT.require('interactive').then(inter => {
+      import('./interactive.mjs').then(inter => {
 
          inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
                             .style("margin","3px").on("click", () => this.brlayout.toggleKind('fix'));
@@ -4941,7 +4941,7 @@ class RPavePainter extends RObjectPainter {
 
          if (isBatchMode()) return this;
 
-         return JSROOT.require(['interactive']).then(inter => {
+         return import('./interactive.mjs').then(inter => {
             // TODO: provide pave context menu as in v6
             if (settings.ContextMenu && this.paveContextMenu)
                this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
@@ -5053,7 +5053,7 @@ function drawRFrameTitle(reason, drag) {
 
    return this.finishTextDrawing().then(() => {
       if (!isBatchMode())
-      return JSROOT.require(['interactive'])
+      return import('./interactive.mjs')
             .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
                                                         minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) }));
    });
@@ -5342,7 +5342,7 @@ class RPalettePainter extends RObjectPainter {
       if (isBatchMode() || drag)
          return promise;
 
-      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
+      return promise.then(() => import('./interactive.mjs')).then(inter => {
 
          if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {

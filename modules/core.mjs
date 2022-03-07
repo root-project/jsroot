@@ -514,7 +514,7 @@ async function jsroot_require(need) {
 
 /** @summary Define JSROOT module
   * @desc Should be only used for JSROOT modules
-  * @param {Array|string} req - requirements, see {@link JSROOT.require} for more details
+  * @param {Array|string} req - requirements, see {@link require} for more details
   * @param {Function} factoryFunc - called when requirements are fulfilled, with requested modules
   * @private */
 //function define(req, factoryFunc) {

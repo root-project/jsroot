@@ -1969,7 +1969,7 @@ class TFramePainter extends ObjectPainter {
 
       top_rect.style("pointer-events", "visibleFill"); // let process mouse events inside frame
 
-      JSROOT.require(['interactive']).then(inter => {
+      import('./interactive.mjs').then(inter => {
          inter.FrameInteractive.assign(this);
          this.addBasicInteractivity();
       });
@@ -2369,7 +2369,7 @@ class TFramePainter extends ObjectPainter {
     * @private */
    addKeysHandler() {
       if (isBatchMode()) return;
-      JSROOT.require(['interactive']).then(inter => {
+      import('./interactive.mjs').then(inter => {
          inter.FrameInteractive.assign(this);
          this.addKeysHandler();
       });
@@ -2382,7 +2382,7 @@ class TFramePainter extends ObjectPainter {
          return false;
 
       if (!this.addFrameInteractivity) {
-         let inter = await JSROOT.require(['interactive']);
+         let inter = await import('./interactive.mjs');
          inter.FrameInteractive.assign(this);
       }
       return this.addFrameInteractivity(for_second_axes);
@@ -4166,7 +4166,7 @@ class TPadPainter extends ObjectPainter {
    showPadButtons() {
       if (!this._buttons) return;
 
-      JSROOT.require(['interactive']).then(inter => {
+      import('./interactive.mjs').then(inter => {
          inter.PadButtonsHandler.assign(this);
          this.showPadButtons();
       });
@@ -4693,7 +4693,7 @@ class TCanvasPainter extends TPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      JSROOT.require('interactive').then(inter => {
+      import('./interactive.mjs').then(inter => {
 
          inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
                             .style("margin","3px").on("click", () => this.brlayout.toggleKind('fix'));

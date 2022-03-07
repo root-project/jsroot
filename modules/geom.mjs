@@ -324,7 +324,7 @@ class Toolbar {
    addButtons(buttons) {
       this.buttonsNames = [];
 
-      JSROOT.require(["interactive"]).then(inter => {
+      import('./interactive.mjs').then(inter => {
          buttons.forEach(buttonConfig => {
             let buttonName = buttonConfig.name;
             if (!buttonName)

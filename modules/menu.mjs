@@ -1142,14 +1142,12 @@ class BootstrapMenu extends JSRootMenu {
   * @param {object} [handler] - object with handling function, in this case one not need to bind function
   * @param {string} [menuname] - optional menu name
   * @example
-  * JSROOT.require("menu")
-  *       .then(handle => handle.createMenu())
-  *       .then(menu => {
-  *          menu.add("First", () => console.log("Click first"));
-  *          let flag = true;
-  *          menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
-  *          menu.show();
-  *        }); */
+  * import { createMenu } from 'path_to_jsroot/modules/menu.mjs';
+  * let menu = await createMenu());
+  * menu.add("First", () => console.log("Click first"));
+  * let flag = true;
+  * menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
+  * menu.show(); */
 function createMenu(evnt, handler, menuname) {
    let menu = settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
                                  : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);

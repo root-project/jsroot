@@ -4692,7 +4692,7 @@ class HierarchyPainter extends BasePainter {
       if (!this.exclude_browser) {
          let btns = this.brlayout.createBrowserBtns();
 
-         JSROOT.require(['interactive']).then(inter => {
+         import('./interactive.mjs').then(inter => {
             inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
                                .style("margin","3px").on("click", () => this.createBrowser("fix", true));
 
