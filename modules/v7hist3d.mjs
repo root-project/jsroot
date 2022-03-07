@@ -1,7 +1,5 @@
 /// ROOT7 histogram 3D graphics
 
-import * as JSROOT from './core.mjs';
-
 import { gStyle, settings, constants, internals, isBatchMode } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
@@ -2232,12 +2230,10 @@ RH2Painter.prototype.drawPolyLego = function() {
    }
 }
 
-// ==============================================================================
 
 /**
  * @summary Painter for RH3 classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2979,4 +2975,3 @@ class RH3Painter extends RHistPainter {
 } // class RH3Painter
 
 export { RH3Painter };
-

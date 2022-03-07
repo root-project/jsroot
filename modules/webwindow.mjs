@@ -7,7 +7,6 @@ import { closeCurrentWindow, showProgress } from './utils.mjs';
 /**
  * @summary Class emulating web socket with long-poll http requests
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -178,7 +177,6 @@ class LongPollSocket {
 /**
  * @summary Class re-playing socket data from stored protocol
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -231,13 +229,11 @@ class FileDumpSocket {
 
 } // class FileDumpSocket
 
-// ========================================================================================
 
 /**
  * @summary Client communication handle for RWebWindow.
  *
- * @memberof JSROOT
- * @desc Should be created with {@link JSROOT.connectWebWindow} function
+ * @desc Should be created with {@link connectWebWindow} function
  */
 
 class WebWindowHandle {

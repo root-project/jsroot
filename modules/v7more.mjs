@@ -1,9 +1,6 @@
 /// JavaScript ROOT v7 graphics for different classes
 
-import * as JSROOT from './core.mjs';
-
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
-
 
 /** @summary draw RText object
   * @private */
@@ -178,7 +175,6 @@ class RLegendPainter extends RPavePainter {
 /**
  * @summary Painter for RPaveText class
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -218,7 +214,6 @@ class RPaveTextPainter extends RPavePainter {
    }
 
 } // class RPaveTextPainter
-
 
 export { RLegendPainter, RPaveTextPainter,
          drawText, drawLine, drawBox, drawMarker };

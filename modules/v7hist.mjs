@@ -1,7 +1,5 @@
 /// JavaScript ROOT v7 graphics for histogram classes
 
-import * as JSROOT from './core.mjs';
-
 import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } from './core.mjs';
 
 import { rgb as d3_rgb } from './d3.mjs';
