@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings, constants, internals } from './core.mjs';
+import { browser, settings, constants, internals, extend } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -381,7 +381,7 @@ let Handling3DDrawings = {
 /** @summary Assigns method to handle 3D drawings inside SVG
   * @private */
 function assign3DHandler(painter) {
-   JSROOT.extend(painter, Handling3DDrawings);
+   extend(painter, Handling3DDrawings);
 }
 
 /** @summary Creates renderer for the 3D drawings

@@ -1,6 +1,7 @@
 import * as JSROOT from './core.mjs';
 
-import { BIT, isArrayProto, isRootCollection, create, createHistogram, createTGraph } from './core.mjs';
+import { BIT, isArrayProto, isRootCollection, getMethods, extend,
+         create, createHistogram, createTGraph } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
          kCharStar, kDouble, kDouble32, kLegacyChar,
@@ -1189,7 +1190,7 @@ class TDrawSelector extends TSelector {
 
       if (res && this.copy_fields) {
          if (checkArrayPrototype(res) === 0) {
-            this.hist.push(JSROOT.extend({}, res));
+            this.hist.push(extend({}, res));
          } else {
             this.hist.push(res);
          }
@@ -1387,7 +1388,7 @@ function getBranchObjectClass(branch, tree, with_clones, with_leafs) {
 /** @summary create fast list to assign all methods to the object
   * @private */
 function makeMethodsList(typename) {
-   let methods = JSROOT.getMethods(typename);
+   let methods = getMethods(typename);
 
    let res = {
       names: [],
@@ -2780,9 +2781,9 @@ function treeHierarchy(node, obj) {
                CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
             let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
-                methods = object_class ? JSROOT.getMethods(object_class) : null;
+                methods = object_class ? getMethods(object_class) : null;
 
-            if (methods && (bobj.fBranches.arr.length>0))
+            if (methods && (bobj.fBranches.arr.length > 0))
                for (let key in methods) {
                   if (typeof methods[key] !== 'function') continue;
                   let s = methods[key].toString();

@@ -1,7 +1,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, settings, constants, internals, create } from './core.mjs';
+import { gStyle, BIT, settings, constants, internals, create, extend } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -1716,9 +1716,9 @@ class TFramePainter extends ObjectPainter {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad) {
-            JSROOT.extend(this, settings.FrameNDC);
+            extend(this, settings.FrameNDC);
          } else {
-            JSROOT.extend(this, {
+            extend(this, {
                fX1NDC: pad.fLeftMargin,
                fX2NDC: 1 - pad.fRightMargin,
                fY1NDC: pad.fBottomMargin,
@@ -2917,7 +2917,7 @@ class TPadPainter extends ObjectPainter {
       if (!obj) return false;
 
       if (obj._typename == "TStyle") {
-         JSROOT.extend(gStyle, obj);
+         extend(gStyle, obj);
          return true;
       }
 
@@ -3479,7 +3479,7 @@ class TPadPainter extends ObjectPainter {
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
-         JSROOT.extend(gStyle, snap.fSnapshot);
+         extend(gStyle, snap.fSnapshot);
          return this.drawNextSnap(lst, indx); // call next
       }
 
@@ -4202,7 +4202,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
-      JSROOT.extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
+      extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }

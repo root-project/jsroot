@@ -2,7 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir, settings, constants, internals, create } from './core.mjs';
+import { httpRequest, loadScript, decodeUrl, browser, source_dir, 
+         settings, constants, internals, create, extend } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -1128,7 +1129,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._slave_painters)
          this._slave_painters.forEach(p => {
-            JSROOT.extend(p.ctrl.ssao, this.ctrl.ssao);
+            extend(p.ctrl.ssao, this.ctrl.ssao);
             p.changedSSAO();
          });
    }
@@ -1323,7 +1324,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._slave_painters)
          this._slave_painters.forEach(p => {
-            JSROOT.extend(p.ctrl.bloom, this.ctrl.bloom);
+            extend(p.ctrl.bloom, this.ctrl.bloom);
             p.changedBloomSettings();
          });
    }
@@ -4654,7 +4655,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj && shape)
-         obj = JSROOT.extend(create("TEveGeoShapeExtract"),
+         obj = extend(create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
@@ -4694,7 +4695,7 @@ createGeoPainter = function(dom, obj, opt) {
    painter.options = painter.decodeOptions(opt); // indicator of initialization
 
    // copy all attributes from options to control
-   JSROOT.extend(painter.ctrl, painter.options);
+   extend(painter.ctrl, painter.options);
 
    painter.ctrl.ssao.enabled = painter.options.usessao;
    painter.ctrl.bloom.enabled = painter.options.usebloom;
@@ -4980,7 +4981,7 @@ function drawDummy3DGeom(painter) {
 
    let obj = create("TEveGeoShapeExtract");
 
-   JSROOT.extend(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
+   extend(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
                         fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
    let opt = "", pp = painter.getPadPainter();
@@ -5051,7 +5052,7 @@ build = function(obj, opt) {
       obj = buildCompositeVolume(shape);
 
    if (!obj && shape)
-      obj = JSROOT.extend(create("TEveGeoShapeExtract"),
+      obj = extend(create("TEveGeoShapeExtract"),
                 { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
    if (!obj) return null;

@@ -1,7 +1,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, BIT, browser, settings, constants, internals, create, createHistogram, createTPolyLine } from './core.mjs';
+import { gStyle, BIT, browser, settings, constants, internals, extend,
+         create, createHistogram, createTPolyLine } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from './d3.mjs';
@@ -235,7 +236,7 @@ class TPavePainter extends ObjectPainter {
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
 
       if (pt.fInit === 0) {
-         this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
+         this.stored = extend({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
          let pad = this.getPadPainter().getRootPad(true);
 
@@ -1263,7 +1264,7 @@ class TPavePainter extends ObjectPainter {
             pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
          }
 
-         this.stored = JSROOT.extend({}, obj); // store latest coordinates
+         this.stored = extend({}, obj); // store latest coordinates
       }
 
       pave.fOption = obj.fOption;
@@ -1455,7 +1456,7 @@ class THistDrawOptions {
 
    /** @summary Reset hist draw options */
    reset() {
-      JSROOT.extend(this,
+      extend(this,
             { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
               Bar: false, BarStyle: 0, Curve: false,
               Hist: true, Line: false, Fill: false,
@@ -2516,7 +2517,7 @@ class THistPainter extends ObjectPainter {
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = create("TPaveText");
-         JSROOT.extend(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         extend(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
          return TPavePainter.draw(this.getDom(), pt, "postitle").then(tp => {
@@ -2658,7 +2659,7 @@ class THistPainter extends ObjectPainter {
       if (stats) return stats;
 
       stats = create('TPaveStats');
-      JSROOT.extend(stats, {
+      extend(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
          fFillColor: st.fStatColor, fFillStyle: st.fStatStyle,
@@ -3189,15 +3190,15 @@ class THistPainter extends ObjectPainter {
 
          pal = create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
+         extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)
-            JSROOT.extend(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
+            extend(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
 
          let zaxis = this.getHisto().fZaxis;
 
-         JSROOT.extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
+         extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
                                     fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
                                     fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
@@ -4740,12 +4741,12 @@ class TH2Painter extends THistPainter {
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
             this.proj_hist = createHistogram("TH1D", this.nbinsx);
-            JSROOT.extend(this.proj_hist.fXaxis, histo.fXaxis);
+            extend(this.proj_hist.fXaxis, histo.fXaxis);
             this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
             this.proj_hist = createHistogram("TH1D", this.nbinsy);
-            JSROOT.extend(this.proj_hist.fXaxis, histo.fYaxis);
+            extend(this.proj_hist.fXaxis, histo.fYaxis);
             this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
          }
@@ -7584,7 +7585,7 @@ class THStackPainter extends ObjectPainter {
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
       if (!this.options) this.options = {};
-      JSROOT.extend(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
+      extend(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
 
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
@@ -7647,9 +7648,9 @@ class THStackPainter extends ObjectPainter {
       let h0 = histos.arr[0];
       let histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
-      JSROOT.extend(histo.fXaxis, h0.fXaxis);
+      extend(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
-         JSROOT.extend(histo.fYaxis, h0.fYaxis);
+         extend(histo.fYaxis, h0.fYaxis);
 
       // this code is not exists in ROOT painter, can be skipped?
       for (let n=1;n<numhistos;++n) {

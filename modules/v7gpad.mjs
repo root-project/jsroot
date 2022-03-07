@@ -2,7 +2,7 @@
 
 import * as JSROOT from './core.mjs';
 
-import { gStyle, settings, constants, internals, create } from './core.mjs';
+import { gStyle, settings, constants, internals, create, extend, addMethods } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -2834,7 +2834,7 @@ class RPadPainter extends RObjectPainter {
              fInterpolate: true,
              fNormalized: true
          };
-         JSROOT.addMethods(this.fDfltPalette, "ROOT::Experimental::RPalette");
+         addMethods(this.fDfltPalette, "ROOT::Experimental::RPalette");
       }
 
       return this.fDfltPalette;
@@ -3586,7 +3586,7 @@ class RPadPainter extends RObjectPainter {
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
 
          if (snap.fKind == webSnapIds.kStyle) {
-            JSROOT.extend(gStyle, snap.fObject);
+            extend(gStyle, snap.fObject);
             return this.drawNextSnap(lst, indx);
          }
 
@@ -4158,7 +4158,7 @@ class RPadPainter extends RObjectPainter {
       if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
-      JSROOT.extend(this.options, { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
+      extend(this.options, { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
@@ -5240,7 +5240,7 @@ class RPalettePainter extends RObjectPainter {
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
-         JSROOT.addMethods(pal, "ROOT::Experimental::RPalette");
+         addMethods(pal, "ROOT::Experimental::RPalette");
 
       return pal;
    }

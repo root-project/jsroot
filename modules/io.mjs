@@ -2,7 +2,8 @@
 
 import * as JSROOT from './core.mjs';
 
-import { httpRequest, createHttpRequest, BIT, loadScript, internals, create } from './core.mjs';
+import { httpRequest, createHttpRequest, BIT, loadScript, internals,
+         create, getMethods, addMethods, extend } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -1292,9 +1293,9 @@ function getArrayKind(type_name) {
 function addClassMethods(clname, streamer) {
    if (streamer === null) return streamer;
 
-   let methods = JSROOT.getMethods(clname);
+   let methods = getMethods(clname);
 
-   if (methods !== null)
+   if (methods)
       for (let key in methods)
          if ((typeof methods[key] === 'function') || (key.indexOf("_") == 0))
             streamer.push({
@@ -2586,7 +2587,7 @@ class TBuffer {
          // just skip bytes belonging to not-recognized object
          // console.warn('skip object ', classname);
 
-         JSROOT.addMethods(obj);
+         addMethods(obj);
       }
 
       this.checkByteCount(ver, classname);
@@ -3086,7 +3087,7 @@ class TFile {
 
       return import('./tree.mjs').then(handle => {
          if (this.readTrees) {
-            this.readTrees.forEach(t => JSROOT.extend(t, handle.TTreeMethods))
+            this.readTrees.forEach(t => extend(t, handle.TTreeMethods))
             delete this.readTrees;
          }
          return obj;
@@ -3099,9 +3100,9 @@ class TFile {
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @returns {Promise} promise with object read
      * @example
-     *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-     *         .then(f => f.readObject("hpxpy;1"))
-     *         .then(obj => console.log(`Read object of type ${obj._typename}`)); */
+     *   let f = await openFile("https://root.cern/js/files/hsimple.root");
+     *   let obj = await f.readObject("hpxpy;1");
+     *   console.log(`Read object of type ${obj._typename}`); */
    readObject(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
@@ -3497,18 +3498,18 @@ class TFile {
   * @param {binary} sinfo_rawdata - data of streamer info root.bin request
   * @returns {object} - created JavaScript object
   * @example
-  * async function read_binary_and_draw() {
-  *    await JSROOT.require("io");
-  *    let obj_data = await JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf");
-  *    let si_data = await JSROOT.httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf");
-  *    let histo = await JSROOT.reconstructObject("TH1F", obj_data, si_data);
-  *    console.log(`Get histogram with title = ${histo.fTitle}`);
-  * }
-  * read_binary_and_draw();
+  *
+  * import { httpRequest } from 'http://localhost:8080/jsrootsys/modules/core.mjs';
+  * import { reconstructObject } from 'http://localhost:8080/jsrootsys/modules/io.mjs';
+  *
+  * let obj_data = await httpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf");
+  * let si_data = await httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf");
+  * let histo = await reconstructObject("TH1F", obj_data, si_data);
+  * console.log(`Get histogram with title = ${histo.fTitle}`);
   *
   * // request same data via root.json request
-  * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
-  *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`)); */
+  * httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
+  *            .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`)); */
 function reconstructObject(class_name, obj_rawdata, sinfo_rawdata) {
 
    let file = new TFile;
@@ -3636,9 +3637,8 @@ function readMapElement(buf) {
 /**
   * @summary Interface to read local file in the browser
   *
-  * @memberof JSROOT
   * @hideconstructor
-  * @desc Use {@link JSROOT.openFile} to create instance of the class
+  * @desc Use {@link openFile} to create instance of the class
   * @private
   */
 
@@ -3687,9 +3687,8 @@ class TLocalFile extends TFile {
 /**
   * @summary Interface to read file in node.js
   *
-  * @memberof JSROOT
   * @hideconstructor
-  * @desc Use {@link JSROOT.openFile} to create instance of the class
+  * @desc Use {@link openFile} to create instance of the class
   * @private
   */
 
@@ -3765,10 +3764,10 @@ class TNodejsFile extends TFile {
   *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
   * @param {string|object} arg - argument for file open like url, see details
-  * @returns {object} - Promise with {@link JSROOT.TFile} instance when file is opened
+  * @returns {object} - Promise with {@link TFile} instance when file is opened
   * @example
-  * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-  *        .then(f => console.log(`Open file ${f.getFileName()}`)); */
+  * let f = await openFile("https://root.cern/js/files/hsimple.root");
+  * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {
 
    let file;

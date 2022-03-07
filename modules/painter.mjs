@@ -2,7 +2,7 @@
 import { select as d3_select, color as d3_color,
          rgb as d3_rgb, pointer as d3_pointer } from './d3.mjs';
 
-import { gStyle, loadScript, decodeUrl, browser, settings, constants, internals } from './core.mjs';
+import { gStyle, loadScript, decodeUrl, browser, settings, constants, internals, extend } from './core.mjs';
 
 import * as JSROOT from './core.mjs';
 
@@ -1942,7 +1942,7 @@ class ObjectPainter extends BasePainter {
       let pp = original.indexOf(";;");
       if (pp >= 0) original = original.substr(0, pp);
       this.options.original = original;
-      this.options_store = JSROOT.extend({}, this.options);
+      this.options_store = extend({}, this.options);
    }
 
    /** @summary Return actual draw options as string
@@ -1991,7 +1991,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    updateObject(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
-      JSROOT.extend(this.getObject(), obj);
+      extend(this.getObject(), obj);
       return true;
    }
 
@@ -3928,7 +3928,7 @@ function addStreamerInfosForPainter(lst) {
 
       if (!handle) continue;
 
-      let newhandle = JSROOT.extend({}, handle);
+      let newhandle = extend({}, handle);
       // delete newhandle.for_derived; // should we disable?
       newhandle.name = si.fName;
       addDrawFunc(newhandle);
