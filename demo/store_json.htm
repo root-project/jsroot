@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Store canvas in JSON to replicate it</title>
-</head>
+   <head>
+      <meta charset="utf-8">
+      <title>Store canvas in JSON to replicate it</title>
+   </head>
 
-<body>
-  <div id="drawing" style="width:600px; height:400px"></div>
-  <p>Example show replication of TCanvas with all primitives, using JSROOT.drawingJSON() function</p>
-  <button onclick="StoreJson()" type="button">Replicate</button>
-  <div id="replica" style="width:600px; height:400px"></div>
+   <body>
+      <div id="drawing" style="width:600px; height:400px"></div>
+      <p>Example show replication of TCanvas with all primitives, using JSROOT.drawingJSON() function</p>
+      <button id="btn1" type="button">Replicate</button> <button id="btn2" type="button">Clear</button>
+
+      <div id="replica" style="width:600px; height:400px"></div>
+   </body>
 
    <script type='module'>
 
@@ -20,9 +22,9 @@
       // absolute file path can be used as well
       let file = await openFile("../../files/hsimple.root");
       let obj = await file.readObject("hpxpy;1");
-      await JSROOT.draw("drawing", obj, "colz");
+      await draw("drawing", obj, "colz");
 
-      function StoreJson() {
+      document.getElementById('btn1').addEventListener('click', () => {
          // produce JSON code
          let json = drawingJSON("drawing");
 
@@ -34,11 +36,11 @@
 
          // draw canvas again
          draw("replica", obj2);
+      });
 
-      }
+      document.getElementById('btn2').addEventListener('click', () => cleanup("replica"));
+
    </script>
-
-</body>
 
 </html>
 

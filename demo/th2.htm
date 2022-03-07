@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Create, draw and update TH2 object</title>
-</head>
-<body>
-   <div id="object_draw" style="width: 800px; height:600px"></div>
+   <head>
+      <meta charset="utf-8">
+      <title>Create, draw and update TH2 object</title>
+   </head>
+   <body>
+      <div id="object_draw" style="width: 800px; height:600px"></div>
+   </body>
 
    <script type='module'>
       import { createHistogram, redraw } from '../modules/core.mjs';
@@ -32,5 +33,4 @@
       updateGUI();
       setInterval(updateGUI, 3000);
    </script>
-</body>
 </html>
