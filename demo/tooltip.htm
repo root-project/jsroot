@@ -28,7 +28,7 @@
 
       function UserHandler(kind, info) {
          if (!info)  {
-            d3.select("#user_tooltip").html("No info");
+            document.getElementById("user_tooltip").innerHTML = "No info";
             last_hbin = -1;
             return false;
          }
@@ -36,7 +36,7 @@
          last_hbin = info.bin;
 
          // show info
-         d3.select("#user_tooltip").html(`Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`);
+         document.getElementById("user_tooltip").innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
 
          let h1 = createHistogram("TH1I", 20);
          // copy content from TH2 to TH1

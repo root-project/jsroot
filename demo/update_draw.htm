@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Demonstrator of online usage of JSROOT</title>
+   <head>
+      <meta charset="utf-8">
+      <title>Demonstrator of online usage of JSROOT</title>
 
-   <!--  load JSROOT with 2D graphic -->
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
+      <style>
+         html {
+            height: 100%;
+         }
+         body {
+            min-height: 100%;
+            margin: 0px;
+            overflow : hidden;
+         }
+     </style>
 
-   <style>
-      html {
-         height: 100%;
-      }
-      body {
-         min-height: 100%;
-         margin: 0px;
-         overflow : hidden;
-      }
-  </style>
+   </head>
 
-</head>
+   <body>
+      <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
+   </body>
 
-<body>
-   <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
-
-   <script type='text/javascript'>
+   <script type='module'>
 
       let mdi = null, cnt = 0, drawopt = null, addr = null;
+
+      import { httpRequest, redraw, decodeUrl } from '../modules/core.mjs';
+      import { GridDisplay } from '../modules/display.mjs';
+      import { registerForResize } from '../modules/painter.mjs';
 
       function updateGUI() {
 
@@ -37,44 +39,31 @@
          let request_addr = addr || ("root" + (cnt % 20) + ".json"),
              request_count = cnt++;
 
-         JSROOT.httpRequest(request_addr, 'object').then(histo => {
-            if (!histo) {
-               d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>");
-               return;
-            }
-
+         httpRequest(request_addr, 'object').then(histo => {
             // when use grid layout, use counter value stored in request itself
             let frame = mdi ? mdi.findFrame("item" + (request_count % mdi.numGridFrames()), true) : 'drawing';
 
             // redraw histogram at specified frame
-            JSROOT.redraw(frame, histo, drawopt).then(() => {
+            redraw(frame, histo, drawopt).then(() => {
                // let adjust drawing when browser will be resized
-               if (!request_count)
-                  JSROOT.require("painter").then(handle => handle.registerForResize('drawing'));
+               if (!request_count) registerForResize('drawing');
             });
-         });
+         }).catch(() => { document.getElementById('drawing').innerHTML = `"<h3>Can not get ${request_addr} from the server</h3>`;});
       }
 
-      let d = JSROOT.decodeUrl();
-
+      let d = decodeUrl();
       let monitor = parseInt(d.get("monitoring") || "1000");
 
       drawopt = d.get("opt");
       addr = d.get("addr");
 
-      let layout = d.get("layout"), promise = Promise.resolve(this);
+      let layout = d.get("layout");
 
       if (layout)
-          promise = JSROOT.require('hierarchy').then(handle => { mdi = new handle.GridDisplay('drawing', layout); });
+          mdi = new GridDisplay('drawing', layout);
 
-      promise.then(() => {
-         setInterval(updateGUI, monitor);
-     });
+      setInterval(updateGUI, monitor);
 
    </script>
 
-
-</body>
-
 </html>
-
