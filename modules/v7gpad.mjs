@@ -1,7 +1,5 @@
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-import * as JSROOT from './core.mjs';
-
 import { gStyle, settings, constants, internals, create, extend, parse, require,
          addMethods, registerMethods, isBatchMode } from './core.mjs';
 
@@ -17,12 +15,9 @@ import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandl
          getElementRect, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
 
-import { addDrawFunc } from './draw.mjs';
-
+import { addDrawFunc, draw } from './draw.mjs';
 
 import { TAxisPainter } from './gpad.mjs';
-
-let v7 = {}; // placeholder for v7-relevant code
 
 const CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
@@ -354,7 +349,6 @@ class RObjectPainter extends ObjectPainter {
 /**
  * @summary Axis painter for v7
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1456,7 +1450,6 @@ class RAxisPainter extends RObjectPainter {
 /**
  * @summary Painter class for RFrame, main handler for interactivity
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2659,7 +2652,6 @@ class RFramePainter extends RObjectPainter {
 /**
  * @summary Painter class for RPad
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3229,7 +3221,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       // handle used to invoke callback only when necessary
-      return JSROOT.draw(this.getDom(), this.pad.fPrimitives[indx], "").then(ppainter => {
+      return draw(this.getDom(), this.pad.fPrimitives[indx], "").then(ppainter => {
          // mark painter as belonging to primitives
          if (ppainter && (typeof ppainter == 'object'))
             ppainter._primitive = true;
@@ -3617,14 +3609,14 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (!this.getFramePainter())
-            return JSROOT.draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
+            return draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
                          .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
 
          this.extractTObjectProp(snap);
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return JSROOT.draw(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
+      return draw(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
          this.addObjectPainter(objpainter, lst, indx);
          return this.drawNextSnap(lst, indx);
       });
@@ -4215,14 +4207,12 @@ class RPadPainter extends RObjectPainter {
       });
    }
 
-} // RPadPainter
+} // class RPadPainter
 
-// ==========================================================================================
 
 /**
  * @summary Painter class for RCanvas
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -4359,7 +4349,7 @@ class RCanvasPainter extends RPadPainter {
    drawInSidePanel(canv, opt) {
       let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
-      return JSROOT.draw(side.node(), canv, opt);
+      return draw(side.node(), canv, opt);
    }
 
    /** @summary Checks if canvas shown inside ui5 widget
@@ -4826,7 +4816,7 @@ class RCanvasPainter extends RPadPainter {
       });
    }
 
-} // RCanvasPainter
+} // class RCanvasPainter
 
 /** @summary draw RPadSnapshot object
   * @private */
@@ -4862,14 +4852,11 @@ ensureRCanvas = async function(painter, frame_kind) {
 }
 
 
-// ======================================================================================
-
 const ECorner = { kTopLeft: 1, kTopRight: 2, kBottomLeft: 3, kBottomRight: 4 };
 
 /**
  * @summary Painter for RPave class
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -5221,7 +5208,6 @@ registerMethods("ROOT::Experimental::RPalette", {
 
 /** @summary painter for RPalette
  *
- * @memberof JSROOT
  * @private
  */
 

@@ -1,6 +1,4 @@
 
-import * as JSROOT from './core.mjs';
-
 import { settings, isBatchMode } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
