@@ -1,4 +1,4 @@
-import * as JSROOT from './core.mjs';
+/// TTree functionality
 
 import { BIT, isArrayProto, isRootCollection, getMethods, extend,
          create, createHistogram, createTGraph, isBatchMode } from './core.mjs';
@@ -27,7 +27,6 @@ const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
 /**
  * @summary Class to read data from TTree
  *
- * @memberof JSROOT
  * @desc Instance of TSelector can be used to access TTree data
  */
 
@@ -254,7 +253,6 @@ class ArrayIterator {
 /**
  * @summary object with single variable in TTree::Draw expression
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -525,12 +523,10 @@ class TDrawVariable {
 
 } // class TDrawVariable
 
-// =============================================================================
 
 /**
  * @summary Selector class for TTree::Draw function
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1420,7 +1416,7 @@ function detectBranchMemberClass(brlst, prefix, start) {
 }
 
 /**
- * @summary JSROOT methods for ROOT TTree class
+ * @summary methods for ROOT TTree class
  *
  * @class
  * @hideconstructor
@@ -2567,7 +2563,7 @@ const TTreeMethods = {
       return res;
    },
 
-   /** @summary  JSROOT implementation of TTree::Draw
+   /** @summary  implementation of TTree::Draw
      * @param {object|string} args - different setting or simply draw expression
      * @param {string} args.expr - draw expression
      * @param {string} [args.cut=undefined]   - cut expression (also can be part of 'expr' after '::')
@@ -2828,10 +2824,10 @@ function treeHierarchy(node, obj) {
    return true;
 }
 
-/** @summary function called from JSROOT.draw()
- * @desc just envelope for real TTree::Draw method which do the main job
- * Can be also used for the branch and leaf object
- * @private */
+/** @summary function called from draw()
+  * @desc just envelope for real TTree::Draw method which do the main job
+  * Can be also used for the branch and leaf object
+  * @private */
 async function drawTree() {
 
    let painter = this,
@@ -2896,7 +2892,7 @@ async function drawTree() {
          drawid = painter.drawid;
 
       if (drawid)
-         return JSROOT.redraw(drawid, obj); // return painter for histogram
+         return import('./draw.mjs').then(handle => handle.redraw(drawid, obj)); // return painter for histogram
 
       if (create_player === 1)
          return intermediate ? null : new Promise(resolve => { finalResolve = resolve; });
@@ -2909,7 +2905,8 @@ async function drawTree() {
       painter.configureTree(tree);
       painter.showPlayer(args);
       create_player = 2;
-      let objpainter = await JSROOT.redraw(painter.drawid, obj);
+      let handle = import('./draw.mjs');
+      let objpainter = await handle.redraw(painter.drawid, obj);
       painter.setItemName("TreePlayer"); // item name used by MDI when process resize
       if (finalResolve) finalResolve(objpainter);
       return objpainter; // return painter for histogram

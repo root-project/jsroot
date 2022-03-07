@@ -1,6 +1,6 @@
 /// Bootstraping of OpenUI5 functionality in JSROOT
 
-import { _, source_dir } from './core.mjs';
+import { internals, source_dir } from './core.mjs';
 
 let resolveFunc, rejectFunc, rootui5sys;
 
@@ -41,9 +41,9 @@ function tryOpenOpenUI(sources) {
    // this is location of openui5 scripts when working with THttpServer or when scripts are installed inside JSROOT
    element.setAttribute('src', src + "resources/sap-ui-core.js"); // latest openui5 version
 
-   element.setAttribute('data-sap-ui-libs', _.openui5libs ?? "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
+   element.setAttribute('data-sap-ui-libs', internals.openui5libs ?? "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
 
-   element.setAttribute('data-sap-ui-theme', _.openui5theme || 'sap_belize');
+   element.setAttribute('data-sap-ui-theme', internals.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
@@ -69,7 +69,7 @@ rootui5sys = source_dir.replace(/jsrootsys/g, "rootui5sys");
 
 if (rootui5sys == source_dir) {
    // if jsrootsys location not detected, try to guess it
-   if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!_.openui5src || _.openui5src == 'nojsroot' || _.openui5src == 'jsroot'))
+   if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!internals.openui5src || internals.openui5src == 'nojsroot' || internals.openui5src == 'jsroot'))
       rootui5sys = window.location.origin + window.location.pathname + "../rootui5sys/";
    else
       rootui5sys = undefined;
@@ -92,13 +92,13 @@ function doUi5Loading() {
        openui5_dflt = "https://openui5.hana.ondemand.com/1.98.0/",
        openui5_root = rootui5sys ? rootui5sys + "distribution/" : "";
 
-   if (typeof _.openui5src == 'string') {
-      switch (_.openui5src) {
+   if (typeof internals.openui5src == 'string') {
+      switch (internals.openui5src) {
          case "nodefault": openui5_dflt = ""; break;
          case "default": openui5_sources.push(openui5_dflt); openui5_dflt = ""; break;
          case "nojsroot": /* openui5_root = ""; */ break;
          case "jsroot": openui5_sources.push(openui5_root); openui5_root = ""; break;
-         default: openui5_sources.push(_.openui5src); break;
+         default: openui5_sources.push(internals.openui5src); break;
       }
    }
 
