@@ -12,7 +12,7 @@ import { Prob } from './math.mjs';
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, buildSvgPath, toHex, getElementMainPainter, createMenu, getColor } from './painter.mjs';
 
-import { getDrawSettings } from './draw.mjs';
+import { getDrawSettings, draw } from './draw.mjs';
 
 import { EAxisBits, ensureTCanvas, TAxisPainter } from './gpad.mjs';
 
@@ -209,7 +209,6 @@ function getColorPalette(id) {
 /**
  * @summary painter for TPave-derived classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1398,7 +1397,7 @@ class TPavePainter extends ObjectPainter {
 
 /** @summary Produce and draw TLegend object for the specified dom
   * @desc Should be called when all other objects are painted
-  * Invoked when item "$legend" specified in JSROOT URL string
+  * Invoked when item "$legend" specified in url string
   * @returns {Object} Promise with TLegend painter
   * @private */
 function produceLegend(dom, opt) {
@@ -1449,7 +1448,6 @@ function produceLegend(dom, opt) {
 /**
  * @summary Class to decode histograms draw options
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1854,7 +1852,6 @@ class THistDrawOptions {
 /**
  * @summary Handle for histogram contour
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1974,7 +1971,6 @@ let TH1StatusBits = {
 /**
  * @summary Basic painter for histogram classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2325,7 +2321,7 @@ class THistPainter extends ObjectPainter {
             if (pp && (newfuncs.length > 0)) {
                let arr = [], prev_name = pp.has_canvas ? pp.selectCurrentPad(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
-                  arr.push(JSROOT.draw(this.getDom(), newfuncs[k]));
+                  arr.push(draw(this.getDom(), newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
@@ -2612,9 +2608,7 @@ class THistPainter extends ObjectPainter {
       }
 
       let prev_name = this.selectCurrentPad(this.getPadName());
-      JSROOT.draw(this.getDom(), stat).then(() => {
-         this.selectCurrentPad(prev_name);
-      });
+      draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
 
       return true;
    }
@@ -2741,7 +2735,7 @@ class THistPainter extends ObjectPainter {
 
       func.$histo = histo; // required to draw TF1 correctly
 
-      return JSROOT.draw(this.getDom(), func, opt).then(painter => {
+      return draw(this.getDom(), func, opt).then(painter => {
          if (painter && (typeof painter == "object")) {
             painter.child_painter_id = this.hist_painter_id;
          }
@@ -3488,7 +3482,6 @@ class THistPainter extends ObjectPainter {
 /**
  * @summary Painter for TH1 classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -4666,7 +4659,6 @@ class TH1Painter extends THistPainter {
 /**
  * @summary Painter for TH2 classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -7395,7 +7387,6 @@ class TH2Painter extends THistPainter {
 /**
  * @summary Painter class for THStack
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -7566,7 +7557,7 @@ class THStackPainter extends ObjectPainter {
             return Promise.resolve(this);
 
          let prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
-         return JSROOT.draw(subpad_painter.getDom(), hist, hopt).then(subp => {
+         return draw(subpad_painter.getDom(), hist, hopt).then(subp => {
             this.painters.push(subp);
             subpad_painter.selectCurrentPad(prev_name);
             return this.drawNextHisto(indx+1, pad_painter);
@@ -7578,7 +7569,7 @@ class THStackPainter extends ObjectPainter {
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
 
-      return JSROOT.draw(this.getDom(), hist, hopt + " same nostat").then(subp => {
+      return draw(this.getDom(), hist, hopt + " same nostat").then(subp => {
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);
       });
@@ -7771,7 +7762,7 @@ class THStackPainter extends ObjectPainter {
 
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
 
-         return JSROOT.draw(dom, stack.fHistogram, hopt).then(subp => {
+         return draw(dom, stack.fHistogram, hopt).then(subp => {
             painter.firstpainter = subp;
          });
       }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));

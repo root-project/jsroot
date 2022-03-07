@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// 3D histogram drawing
 
 import { gStyle, BIT, settings, constants, internals, createHistogram, isBatchMode } from './core.mjs';
 
@@ -13,7 +12,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3
 
 import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom, floatToString } from './painter.mjs';
 
-import { getDrawSettings } from './draw.mjs';
+import { getDrawSettings, draw } from './draw.mjs';
 
 import { TAxisPainter, TFramePainter, EAxisBits, ensureTCanvas } from './gpad.mjs';
 
@@ -2228,7 +2227,6 @@ TH2Painter.prototype.drawPolyLego = function() {
 /**
  * @summary Painter for TH3 classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -2932,7 +2930,7 @@ class TH3Painter extends THistPainter {
       await  painter.redraw();
       let stats = painter.createStat(); // only when required
       if (stats)
-         await JSROOT.draw(dom, stats, "");
+         await draw(dom, stats, "");
       painter.fillToolbar();
       return painter;
    }
@@ -2943,7 +2941,6 @@ class TH3Painter extends THistPainter {
 /**
  * @summary Painter for TGraph2D classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -3281,7 +3278,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
-         promise = JSROOT.draw(dom, gr.fHistogram, "lego;axis");
+         promise = draw(dom, gr.fHistogram, "lego;axis");
          painter.ownhisto = true;
       }
 
