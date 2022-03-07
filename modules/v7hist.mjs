@@ -7,7 +7,9 @@ import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } 
 import { rgb as d3_rgb } from './d3.mjs';
 
 import { floatToString, DrawOptions, TAttLineHandler, TRandom,
-         buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
+         buildSvgPath, createMenu } from './painter.mjs';
+
+import { getDrawSettings } from './draw.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas, CommMode } from './v7gpad.mjs';
 

@@ -13,7 +13,9 @@ import { REVISION, DoubleSide,
          LineSegments, LineBasicMaterial, LineDashedMaterial,
          BufferAttribute, BufferGeometry } from './three.mjs';
 
-import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
+import { floatToString, TRandom } from './painter.mjs';
+
+import { getDrawSettings } from './draw.mjs';
 
 import { RAxisPainter, RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 

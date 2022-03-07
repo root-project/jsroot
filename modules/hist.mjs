@@ -10,7 +10,9 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
 import { Prob } from './math.mjs';
 
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
-         floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu, getColor } from './painter.mjs';
+         floatToString, buildSvgPath, toHex, getElementMainPainter, createMenu, getColor } from './painter.mjs';
+
+import { getDrawSettings } from './draw.mjs';
 
 import { EAxisBits, ensureTCanvas, TAxisPainter } from './gpad.mjs';
 

@@ -9,10 +9,11 @@ import { select as d3_select } from './d3.mjs';
 import { showProgress } from './utils.mjs';
 
 import { BasePainter, ObjectPainter, loadJSDOM,
-         getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementMainPainter,
          createMenu, registerForResize, getRGBfromTColor,
          readStyleFromURL, cleanup, resize } from './painter.mjs';
+
+import { getDrawSettings, getDrawHandle, canDraw, addDrawFunc } from './draw.mjs';
 
 import { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
 

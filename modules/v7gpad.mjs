@@ -14,8 +14,11 @@ import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
          createMenu, closeMenu, isPromise, addColor, getRootColors, registerForResize,
-         getElementRect, chooseTimeFormat, selectActivePad, addDrawFunc,
+         getElementRect, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
+
+import { addDrawFunc } from './draw.mjs';
+
 
 import { TAxisPainter } from './gpad.mjs';
 

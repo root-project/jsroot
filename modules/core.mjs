@@ -419,6 +419,42 @@ function loadScript(url) {
    });
 }
 
+/** @summary Just copy (not clone) all fields from source to the target object
+  * @desc Simple replacement of jQuery.extend method
+  * @memberof JSROOT
+  * @private */
+function extend(tgt, src) {
+   if ((src === null) || (typeof src !== 'object')) return tgt;
+   if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
+
+   for (let k in src)
+      tgt[k] = src[k];
+
+   return tgt;
+}
+
+
+/** @summary Central method to load JSROOT functionality
+  * @desc
+  * Following components can be specified
+  *    - 'io'     TFile functionality
+  *    - 'tree'   TTree support
+  *    - 'painter' d3.js plus basic painting functions
+  *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
+  *    - 'hist'   histograms 2d drawing (SVG)
+  *    - 'hist3d' histograms 3d drawing (WebGL)
+  *    - 'more'   extra 2d graphic (TGraph, TF1)
+  *    - 'geom'   TGeo support
+  *    - 'v7gpad' ROOT v7 RPad/RCanvas/RFrame
+  *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
+  *    - 'v7hist3d' ROOT v7 histograms 3d drawing (WebGL)
+  *    - 'v7more' ROOT v7 special classes
+  *    - 'math'   some methods from TMath class
+  *    - 'hierarchy' hierarchy browser
+  *    - 'openui5' OpenUI5 and related functionality
+  * @param {Array|string} req - list of required components (as array or string separated by semicolon)
+  * @returns {Promise} with array of requirements (or single element) */
+
 async function jsroot_require(need) {
    if (!need)
       return Promise.resolve(null);
@@ -461,9 +497,10 @@ async function jsroot_require(need) {
          arr.push(import("./math.mjs"));
       else if (name == "latex")
          arr.push(import("./latex.mjs"));
-      else if (name == "painter")
-         arr.push(import("./painter.mjs"));
-      else if (name == "base3d")
+      else if (name == "painter") {
+         // combine painter.mjs and draw.mjs
+         arr.push(Promise.all([import('./painter.mjs'), import('./draw.mjs')]).then(arr => extend(extend({}, arr[0]), arr[1])));
+      } else if (name == "base3d")
          arr.push(import("./base3d.mjs"));
       else if (name == "interactive")
          arr.push(import("./interactive.mjs"));
@@ -488,26 +525,6 @@ async function jsroot_require(need) {
    return Promise.all(arr);
 }
 
-/** @summary Central method to load JSROOT functionality
-  * @desc
-  * Following components can be specified
-  *    - 'io'     TFile functionality
-  *    - 'tree'   TTree support
-  *    - 'painter' d3.js plus basic painting functions
-  *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
-  *    - 'hist'   histograms 2d drawing (SVG)
-  *    - 'hist3d' histograms 3d drawing (WebGL)
-  *    - 'more'   extra 2d graphic (TGraph, TF1)
-  *    - 'geom'   TGeo support
-  *    - 'v7gpad' ROOT v7 RPad/RCanvas/RFrame
-  *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
-  *    - 'v7hist3d' ROOT v7 histograms 3d drawing (WebGL)
-  *    - 'v7more' ROOT v7 special classes
-  *    - 'math'   some methods from TMath class
-  *    - 'hierarchy' hierarchy browser
-  *    - 'openui5' OpenUI5 and related functionality
-  * @param {Array|string} req - list of required components (as array or string separated by semicolon)
-  * @returns {Promise} with array of requirements (or single element) */
 //function require(req) {
 //   return jsroot_require(req);
 //}
@@ -526,20 +543,6 @@ async function jsroot_require(need) {
   * @returns {Number} produced mask
   * @private */
 function BIT(n) { return 1 << n; }
-
-/** @summary Just copy (not clone) all fields from source to the target object
-  * @desc Simple replacement of jQuery.extend method
-  * @memberof JSROOT
-  * @private */
-function extend(tgt, src) {
-   if ((src === null) || (typeof src !== 'object')) return tgt;
-   if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
-
-   for (let k in src)
-      tgt[k] = src[k];
-
-   return tgt;
-}
 
 /** @summary Make deep clone of the object, including all sub-objects
   * @returns {object} cloned object
@@ -1003,16 +1006,18 @@ function openFile(filename) {
 
 // Draw object, defined in JSRoot.painter.js
 function draw(dom, obj, opt) {
-   return import("./painter.mjs").then(handle => handle.draw(dom, obj, opt));
+   return import("./draw.mjs").then(handle => handle.draw(dom, obj, opt));
 }
 
 // Redaraw object, defined in JSRoot.painter.js
 function redraw(dom, obj, opt) {
-   return import("./painter.mjs").then(handle => handle.redraw(dom, obj, opt));
+   return import("./draw.mjs").then(handle => handle.redraw(dom, obj, opt));
 }
 
 // Dummy, when painter is not yet loaded, should happens nothing
-function cleanup() {}
+function cleanup() {
+   return import("./painter.mjs").then(handle => handle.cleanup());
+}
 
 // Create SVG, defined in JSRoot.painter.js
 function makeSVG(args) {
