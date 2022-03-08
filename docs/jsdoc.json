@@ -29,7 +29,7 @@
                      "modules/v7hist.mjs",
                      "modules/v7hist3d.mjs",
                      "modules/v7more.mjs" ],
-        "includePattern": ".+\\.js(doc|x)?$",
+        "includePattern": ".+\\.mjs(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
     "sourceType": "module",
@@ -45,23 +45,23 @@
         "monospaceLinks": true,
         "name": "JSROOT",
         "default": {
-			   "outputSourceFiles" : true
-		   },
-		   "applicationName": "JavaScript ROOT",
-		   "disqus": "",
-		   "googleAnalytics": "",
-		   "openGraph": {
-   			"title": "",
-			   "type": "website",
-			   "image": "",
-			   "site_name": "",
-			   "url": ""
-		   },
-		   "meta": {
-   			"title": "",
-			   "description": "",
-			   "keyword": ""
-		   },
+           "outputSourceFiles" : true
+        },
+        "applicationName": "JavaScript ROOT",
+        "disqus": "",
+        "googleAnalytics": "",
+        "openGraph": {
+          "title": "",
+          "type": "website",
+          "image": "",
+          "site_name": "",
+          "url": ""
+         },
+         "meta": {
+            "title": "",
+            "description": "",
+            "keyword": ""
+          },
          "linenums": false
     }
 }
