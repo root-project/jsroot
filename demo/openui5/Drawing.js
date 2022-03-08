@@ -45,30 +45,26 @@ sap.ui.define([
       drawObject: function(obj, options, call_back) {
          this.object = obj;
          this.options = options;
-         JSROOT.draw(this.getDomRef(), obj, options).then(function(painter) {
+         JSROOT.draw(this.getDomRef(), obj, options).then(painter => {
             this.object_painter = painter;
-            this.resizeid = ResizeHandler.register(this, painter.checkResize.bind(painter));
-         }.bind(this));
+            this.resizeid = ResizeHandler.register(this, () => painter.checkResize());
+         });
       },
 
       onAfterRendering: function() {
-         var fname = this.getFile();
-         var jsonfile = this.getJsonfile();
-         var ctrl = this;
+         let fname = this.getFile();
+         let jsonfile = this.getJsonfile();
 
          if (this.object) {
             // object was already loaded
             this.drawObject(this.object, this.options);
          } else if (jsonfile) {
-            JSROOT.httpRequest(jsonfile, 'object').then(function(obj) {
-               ctrl.drawObject(obj, ctrl.getDrawopt());
-            });
+            JSROOT.httpRequest(jsonfile, 'object')
+                  .then(obj => this.drawObject(obj, this.getDrawopt()));
          } else if (fname) {
-            JSROOT.openFile(fname).then(file => {
-               file.readObject(ctrl.getItem()).then(obj => {
-                  ctrl.drawObject(obj, ctrl.getDrawopt());
-               });
-            });
+            JSROOT.openFile(fname)
+                  .then(file => file.readObject(this.getItem()))
+                  .then(obj => this.drawObject(obj, this.getDrawopt()));
          }
       },
 

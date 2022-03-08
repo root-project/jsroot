@@ -4,7 +4,8 @@ This example shows how JSROOT graphics can be used inside OpenUI5
 
 JSROOT provides method to load openui5 functionality. Just do:
 
-      JSROOT.load('openui5').then(() => {
+     import { require } from './path_to_jsroot/modules.core.mjs'
+      require('openui5').then(sap => {
           // use sap variable from this point
       });
 
