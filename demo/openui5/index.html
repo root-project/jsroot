@@ -5,17 +5,19 @@
       <meta charset="UTF-8">
 
       <title>Nav Container with JSROOT drawings</title>
+   </head>
 
-      <script type="text/javascript" src="../../scripts/JSRoot.core.js"></script>
+   <!-- UI Content -->
+   <body class="sapUiBody" id="content" role="application">
+   </body>
 
-      <!-- Application launch configuration -->
-      <script type="module">
+   <script type="module">
 
       import { require, internals } from '../../modules/core.mjs';
 
       internals.openui5libs = "sap.ui.core, sap.m";
 
-      require('openui5').then(() => {
+      require('openui5').then(sap => {
 
          sap.ui.loader.config({
             paths: {
@@ -43,11 +45,6 @@
 
       });
 
-      </script>
-   </head>
-
-   <!-- UI Content -->
-   <body class="sapUiBody" id="content" role="application">
-   </body>
+   </script>
 
 </html>

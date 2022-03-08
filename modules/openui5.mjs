@@ -78,12 +78,12 @@ if (rootui5sys == source_dir) {
 
 // return Promise let loader wait before dependent source will be invoked
 
-function doUi5Loading() {
+async function doUi5Loading() {
    // very simple - openui5 was loaded before and will be used as is
    if (typeof sap == 'object')
       return sap;
 
-   if (!resolveFunc) {
+   if (resolveFunc) {
       console.error('ui5 loading already started - need better solution');
       return null;
    }
@@ -104,6 +104,9 @@ function doUi5Loading() {
 
    if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0)) openui5_sources.push(openui5_root);
    if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt) < 0)) openui5_sources.push(openui5_dflt);
+
+   if (typeof globalThis.JSROOT === 'undefined')
+      globalThis.JSROOT = await import('./core.mjs');
 
    return new Promise((resolve, reject) => {
       resolveFunc = resolve;
