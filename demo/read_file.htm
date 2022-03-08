@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Reading object from the ROOT file</title>
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-</head>
-<body>
-   <div id="drawing" style="width:800px; height:600px"></div>
-   <script type='text/javascript'>
-      // absolute file path can be used as well
-      JSROOT.openFile("../../files/hsimple.root")
-            .then(file => file.readObject("hpxpy;1"))
-            .then(obj => JSROOT.draw("drawing", obj, "colz"));
+   <head>
+      <meta charset="utf-8">
+      <title>Reading object from the ROOT file</title>
+   </head>
+   <body>
+      <div id="drawing" style="width:800px; height:600px"></div>
+   </body>
+   <script type='module'>
+      import { draw, openFile } from '../modules/core.mjs';
+      let file = await openFile("../../files/hsimple.root");
+      let obj = await file.readObject("hpxpy;1");
+      draw("drawing", obj, "colz");
    </script>
-</body>
 </html>
 

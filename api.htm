@@ -154,7 +154,7 @@
               { name: "Enable status", url: "?status&file=" + filepath + "hsimple.root&item=hpxpy;1&opt=colz", title: "Show tooltip information in special status line" },
               { name: "Hide browser", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hprof;1", title: "Hide browser - only display items, browser can be activated later" },
               { name: "Float browser", url: "?float&file=" + filepath + "hsimple.root&item=ntuple;1&opt=px:pz", title: "Display floating browser, which overlays objects drawings" },
-              { name: "Flexible layout", url: "?file=" + filepath + "hsimple.root&layout=flex&items=[hpx;1,hpxpy;1,hprof;1]&opts=[hist,colz,e1]", title: "Display several items with flexible layout", syn: "tabs_layout", syn2: "collapsible_layout" },
+              { name: "Flexible layout", url: "?file=" + filepath + "hsimple.root&layout=flex&items=[hpx;1,hpxpy;1,hprof;1]&opts=[hist,colz,e1]", title: "Display several items with flexible layout", syn: "url_syntax_tabs_layout", syn2: "url_syntax_collapsible_layout" },
               { name: "Grid layout", url: "?path=" + filepath + "&layout=grid2x2&files=[hsimple.root,glbox.root]&items=[hsimple.root/hpx;1,hsimple.root/hpxpy;1,hsimple.root/hprof;1,glbox.root/h31;1]&opts=[hist,lego20,e1,box2]", title: "Example of grid layout with 2D and 3D drawings" },
               { name: "Veritcal layout", url: "?file=" + filepath + "hsimple.root&layout=vert121&items=[hpx;1,hpxpy;1,ntuple;1,hprof;1]&opts=[hist,colz,px:pz,e1]", title: "Display several items in vertical layout" },
               { name: "Horizontal layout", url: "?file=" + filepath + "hsimple.root&layout=horiz32_12&items=[ntuple,ntuple,ntuple,hpx,hpxpy]&opts=[px:py,px:pz,py:pz,hist,lego2]", title: "Display several items in horizontal layout, adjust size ratio" },
@@ -170,8 +170,7 @@
             ],
             'Custom HTML' : [
               { name: "Read JSON", url: "demo/read_json.htm", title: "Custom web page to read and display object from JSON file", src: true },
-              { name: "Read ROOT file", url: "demo/read_file.htm", title: "Read and display object from ROOT file", src: true },
-              { name: "Async read", url: "demo/read_file_async.htm", title: "Async reading and display object from ROOT file", src: true },
+              { name: "Read ROOT file", url: "demo/read_file.htm", title: "Read and display object from ROOT file", src: true, syn: "custom_html_async_read" },
               { name: "Without id attr", url: "demo/without_id.htm", title: "Do not use explicit id attribute for traget HTML element", src: true },
               { name: "TH2", url: "demo/th2.htm", title: "Produce and draw ROOT TH2 histogram in JavaScript", src: true },
               { name: "TH3", url: "demo/th3.htm", title: "Produce and draw ROOT TH3 histogram in JavaScript", src: true },
@@ -337,7 +336,7 @@
             if (window.location.hash == "#" + key.toLowerCase())
                 header.scrollIntoView();
 
-            for (let n=0; n<opts.length;++n) {
+            for (let n = 0; n < opts.length; ++n) {
                let entry = opts[n];
 
                if (!('name' in entry)) continue;

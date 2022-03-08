@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Reading object from the JSON file</title>
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-</head>
-<body>
-   <div id="drawing" style="width:800px; height:600px"></div>
-   <script type='text/javascript'>
-      // json file stored in same folder, absolute address can be used as well
-      JSROOT.httpRequest("https://jsroot.gsi.de/files/hpx.json", 'object')
-            .then(obj => JSROOT.draw("drawing", obj, "hist"));
+   <head>
+      <meta charset="utf-8">
+      <title>Reading object from the JSON file</title>
+   </head>
+   <body>
+      <div id="drawing" style="width:800px; height:600px"></div>
+   </body>
+   <script type='module'>
+      import { draw, httpRequest } from '../modules/core.mjs';
+      let obj = await httpRequest("https://jsroot.gsi.de/files/hpx.json", 'object');
+      draw("drawing", obj, "hist");
    </script>
-</body>
 </html>

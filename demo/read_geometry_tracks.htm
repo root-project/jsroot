@@ -1,38 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Reading geometry and tracks from the ROOT file</title>
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-</head>
+   <head>
+      <meta charset="utf-8">
+      <title>Reading geometry and tracks from the ROOT file</title>
+   </head>
 
-<body>
+   <body>
+     <div id="drawing" style="width:800px; height:600px"></div>
+   </body>
 
-  <div id="drawing" style="width:800px; height:600px"></div>
+   <script type='module'>
+    import { openFile, draw, httpRequest } from '../modules/core.mjs';
 
-   <script type='text/javascript'>
      // absolute file path can be used as well
      let geom_file = "../../files/geom/evegeoshape.json.gz",
          tracks_file = "../../files/geom/eve_tracks.root";
 
-     async function draw_geometry_and_tracks() {
-        let obj = await JSROOT.httpRequest(geom_file, "object");
-        let geo_painter = await JSROOT.draw("drawing", obj);
-        let file = await JSROOT.openFile(tracks_file);
-        let tracks = await file.readObject("tracks;1");
+     let obj = await httpRequest(geom_file, "object");
+     let geo_painter = await draw("drawing", obj);
+     let file = await openFile(tracks_file);
+     let tracks = await file.readObject("tracks;1");
 
-        // one could simply draw list of tracks
-        // JSROOT.draw("drawing", tracks, "same");
+     // one could simply draw list of tracks
+     // draw("drawing", tracks, "same");
 
-        // or use method of TGeoPainter to draw extras
-        geo_painter.drawExtras(tracks, "tracks");
-     }
-
-     draw_geometry_and_tracks();
+     // or use method of TGeoPainter to draw extras
+     geo_painter.drawExtras(tracks, "tracks");
 
    </script>
-
-</body>
 
 </html>
 
