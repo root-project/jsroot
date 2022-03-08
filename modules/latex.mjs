@@ -2,8 +2,6 @@
 
 import { loadScript, settings, isNodeJs } from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
-
 import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
 
 const symbols_map = {
@@ -1100,9 +1098,9 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
    };
 
-   let width = transform(svg.attr("width")),
-       height = transform(svg.attr("height")),
-       valign = svg.attr("style");
+   let width = transform(svg.getAttribute("width")),
+       height = transform(svg.getAttribute("height")),
+       valign = svg.getAttribute("style");
 
    if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
       let p = valign.indexOf("ex;");
@@ -1114,7 +1112,9 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
    height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
 
-   svg.attr("width", width).attr('height', height).attr("style", null);
+   svg.setAttribute("width", width);
+   svg.setAttribute('height', height);
+   svg.removeAttribute("style");
 
    if (!isNodeJs()) {
       let box = getElementRect(mj_node, 'bbox');
@@ -1179,9 +1179,10 @@ function produceMathjax(painter, mj_node, arg) {
    return loadMathjax()
           .then(() => MathJax.tex2svgPromise(mtext, options))
           .then(elem => {
-              let svg = d3_select(elem).select("svg");
               // when adding element to new node, it will be removed from original parent
-              mj_node.append(function() { return svg.node(); });
+              let svg = elem.querySelector('svg');
+
+              mj_node.append(function() { return svg; });
 
               repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
