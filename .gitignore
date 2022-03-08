@@ -13,3 +13,6 @@ libs/three/node_modules/
 libs/d3/node_modules/
 openui5dist
 package-lock.json
+httpcontrol.C
+httpserver.C
+Go4ExampleSimple

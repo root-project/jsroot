@@ -3143,8 +3143,9 @@ class HierarchyPainter extends BasePainter {
 
       let h0 = null;
       if (this.is_online) {
-         if (typeof internals.GetCachedHierarchy == 'function')
-            h0 = internals.GetCachedHierarchy();
+         let func = internals.GetCachedHierarchy || findFunction('GetCachedHierarchy');
+         if (typeof func == 'function')
+            h0 = func();
          if (typeof h0 !== 'object') h0 = "";
 
          if ((this.is_online == "draw") && !itemsarr.length)
@@ -3487,9 +3488,9 @@ async function buildGUI(gui_element, gui_kind) {
    if (!nobrowser) {
       hpainter.initializeBrowser();
    } else if (drawing) {
-      let obj = null;
-      if (typeof internals.GetCachedObject == 'function')
-         obj = parse(internals.GetCachedObject());
+      let obj = null, func = internals.GetCachedObject || findFunction('GetCachedObject');
+      if (typeof func == 'function')
+         obj = parse(func());
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get("opt", "");
       if (d.has("websocket")) opt+=";websocket";
