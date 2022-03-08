@@ -6,7 +6,7 @@ JSROOT is provided as npm module and always can be installed as:
 
 After this JSROOT functionality can be used from Node.js scripts via:
 
-    let jsroot = require("jsroot");
+    import { openFile, draw } from "jsroot";
 
 Provided package.json file allows to use demos directly with local jsroot installation:
 
@@ -28,6 +28,6 @@ JSROOT also implements extensive tree-draw functionality, shown in <tree_draw.js
 
     node tree_draw.js
 
-Possibility to read TTree data, using `JSROOT.TSelector` class shown in <selector.js> example:
+Possibility to read TTree data, using `TSelector` class shown in <selector.js> example:
 
     node selector.js
