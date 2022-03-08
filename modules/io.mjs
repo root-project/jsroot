@@ -2136,7 +2136,6 @@ function R__unzip(arr, tgtsize, noalert, src_shift) {
 /**
   * @summary Buffer object to read data from TFile
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -2600,7 +2599,6 @@ class TBuffer {
 /**
   * @summary A class that reads a TDirectory from a buffer.
   *
-  * @memberof JSROOT
   * @private
   */
 

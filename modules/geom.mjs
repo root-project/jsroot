@@ -437,7 +437,6 @@ class GeoDrawingControl extends InteractiveControl {
 /**
  * @summary Painter class for geometries drawing
  *
- * @memberof JSROOT
  * @private
  */
 

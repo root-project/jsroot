@@ -59,10 +59,8 @@ function getHImpl(obj) {
 }
 
 
-
 /** @summary Base painter class for RHist objects
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -881,7 +879,6 @@ class RHistPainter extends RObjectPainter {
 /**
  * @summary Painter for RH1 classes
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -1917,7 +1914,6 @@ class RH1Painter extends RHistPainter {
 /**
  * @summary Painter for RH2 classes
  *
- * @memberof JSROOT
  * @private
  */
 

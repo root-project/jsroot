@@ -20,7 +20,6 @@ let source_dir = "";
 let nodejs = false;
 
 /** @summary internal data
-  * @memberof JSROOT
   * @private */
 let internals = {
    id_counter: 1          ///< unique id contner, starts from 1,
@@ -416,7 +415,6 @@ function loadScript(url) {
 
 /** @summary Just copy (not clone) all fields from source to the target object
   * @desc Simple replacement of jQuery.extend method
-  * @memberof JSROOT
   * @private */
 function extend(tgt, src) {
    if ((src === null) || (typeof src !== 'object')) return tgt;
@@ -597,7 +595,6 @@ function clone(src, map, nofunc) {
   * @desc JSROOT implements some basic methods for different ROOT classes.
   * @param {object} obj - object where methods are assigned
   * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
-  * @memberof JSROOT
   * @private */
 function addMethods(obj, typename) {
    extend(obj, getMethods(typename || obj._typename, obj));
@@ -1031,7 +1028,6 @@ function buildGUI(gui_element, gui_kind) {
 /** @summary Create some ROOT classes
   * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
   * @param {string} typename - ROOT class name
-  * @memberof JSROOT
   * @example
   * let obj = create("TNamed");
   * obj.fName = "name";
