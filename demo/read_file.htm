@@ -9,7 +9,7 @@
    <div id="drawing" style="width:800px; height:600px"></div>
    <script type='text/javascript'>
       // absolute file path can be used as well
-      JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+      JSROOT.openFile("../../files/hsimple.root")
             .then(file => file.readObject("hpxpy;1"))
             .then(obj => JSROOT.draw("drawing", obj, "colz"));
    </script>

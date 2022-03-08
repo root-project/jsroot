@@ -1,71 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <title>Reading object from the ROOT file</title>
-   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-</head>
+   <head>
+      <meta charset="utf-8">
+      <title>Reading object from the ROOT file</title>
+   </head>
 
-<body>
-   <p id="p_start">...</p>
-   <p id="p_process">...</p>
-   <p id="p_ready">...</p>
-   <p id="p_process">...</p>
+   <body>
+      <p id="p_start">...</p>
+      <p id="p_process">...</p>
+      <p id="p_ready">...</p>
+   </body>
 
-   <script type='text/javascript'>
+   <script type='module'>
 
-      JSROOT.openFile("../../files/hsimple.root")
-            .then(file => file.readObject("ntuple;1"))
-            .then(tree => {
+      import { openFile } from '../modules/core.mjs';
+      import { TSelector } from '../modules/tree.mjs';
 
-               // only here TTree classes, including TSelector are available
-               // one also can use JSROOT.require('tree', () => {}) to get tree functionality loaded
+      class TExampleSelector extends TSelector {
+         /** constructor */
+         constructor() {
+            super();
 
-               class TRealSelector extends JSROOT.TSelector {
-                  /** constructor */
-                  constructor() {
-                     super();
+            this.cnt = 0;
+            this.sumpx = 0;
+            this.sumpy = 0;
 
-                     this.cnt = 0;
-                     this.sumpx = 0;
-                     this.sumpy = 0;
+            this.addBranch("px");
+            this.addBranch("py");
+         }
 
-                     this.addBranch("px");
-                     this.addBranch("py");
-                  }
+         /** function called before reading of TTree starts */
+         Begin() {
+            document.getElementById('p_start').innerHTML = "Start reading TTree";
+         }
 
-                  /** function called before reading of TTree starts */
-                  Begin() {
-                     document.getElementById('p_start').innerHTML = "Start reading TTree";
-                  }
+         /** function called for every entry */
+         Process() {
+            this.sumpx += this.tgtobj.px;
+            this.sumpy += this.tgtobj.py;
+            this.cnt++;
+            document.getElementById('p_process').innerHTML = `Process ${this.cnt} entries`;
+         }
 
-                  /** function called for every entry */
-                  Process() {
-                     this.sumpx += this.tgtobj.px;
-                     this.sumpy += this.tgtobj.py;
-                     this.cnt++;
-                     document.getElementById('p_process').innerHTML = `Process ${this.cnt} entries`;
-                  }
+         /** function called when processing finishes */
+         Terminate(res) {
+            if (!res || !this.cnt) {
+               res = "Fail to process TTree";
+            } else {
+               let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
+               res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
+            }
+            document.getElementById('p_ready').innerHTML = res;
+         }
+      }
 
-                  /** function called when processing finishes */
-                  Terminate(res) {
-                     if (!res || !this.cnt) {
-                        res = "Fail to process TTree";
-                     } else {
-                        let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
-                        res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
-                     }
+      let file = await openFile("../../files/hsimple.root");
+      let tree = await file.readObject("ntuple;1");
 
-                     document.getElementById('p_ready').innerHTML = res;
-                  }
-
-               }
-
-               tree.Process(new TRealSelector());
-            }).then(() =>  document.getElementById('p_process').innerHTML = "TTree processed")
-              .catch(err =>  document.getElementById('p_process').innerHTML = `TTree processing failed ${err}`);
+      tree.Process(new TExampleSelector());
    </script>
-
-</body>
 
 </html>
