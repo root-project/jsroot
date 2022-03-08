@@ -3078,7 +3078,6 @@ class TGeoPainter extends ObjectPainter {
          // adding mesh as is
          this.addToExtrasContainer(obj);
          promise = Promise.resolve(true);
-         is_any = true;
       } else if (obj._typename === 'TGeoTrack') {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawGeoTrack(obj, itemname);
