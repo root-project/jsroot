@@ -1794,6 +1794,7 @@ class HierarchyPainter extends BasePainter {
          if (!updating) showProgress("Loading " + display_itemname);
 
          return h.getObject(display_itemname, drawopt).then(result => {
+
             if (!updating) showProgress();
 
             if (!item) item = result.item;
@@ -3449,7 +3450,7 @@ async function buildGUI(gui_element, gui_kind) {
        gui_kind = "gui";
        nobrowser = true;
    } else if (gui_kind == "draw") {
-      drawing = nobrowser = true;
+      online = drawing = nobrowser = true;
    } else if (gui_kind == "online") {
       online = true;
    } else {
