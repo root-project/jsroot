@@ -3,8 +3,6 @@
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
          settings, constants, internals, create, extend, clone, findFunction, isBatchMode, isNodeJs } from './core.mjs';
 
-import { select as d3_select } from './d3.mjs';
-
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -1145,7 +1143,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._datgui) {
          if (!on) {
-            d3_select(this._datgui.domElement).remove();
+            this._datgui.domElement.remove();
             this._datgui.destroy();
             delete this._datgui;
          }
@@ -1171,11 +1169,11 @@ class TGeoPainter extends ObjectPainter {
       let main = this.selectDom();
       if (main.style('position')=='static') main.style('position','relative');
 
-      d3_select(this._datgui.domElement)
-               .style('position','absolute')
-               .style('top',0).style('right',0);
-
-      main.node().appendChild(this._datgui.domElement);
+      let dom = this._datgui.domElement;
+      dom.style.position = 'absolute';
+      dom.style.top = 0;
+      dom.style.right = 0;
+      main.node().appendChild(dom);
 
       this._datgui.painter = this;
 
@@ -2452,7 +2450,8 @@ class TGeoPainter extends ObjectPainter {
             // create top-most SVG for geomtery drawings
             let doc = internals.get_document(),
                 svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-            d3_select(svg).attr("width",w).attr("height",h);
+            svg.setAttribute("width", w);
+            svg.setAttribute("height", h);
             svg.appendChild(this._renderer.jsroot_dom);
             return svg;
          }
@@ -3595,14 +3594,18 @@ class TGeoPainter extends ObjectPainter {
       if (!this._first_drawing || !this._start_drawing_time) return;
 
       let main = this._renderer.domElement.parentNode,
-          info = d3_select(main).select(".geo_info");
+          info = main.querySelector(".geo_info");
 
       if (!msg) {
          info.remove();
       } else {
          let spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
-         if (info.empty()) info = d3_select(main).append("p").attr("class","geo_info");
-         info.html(msg + ", " + spent.toFixed(1) + "s");
+         if (!info) {
+            info = document.createElement("p");
+            info.setAttribute("class", "geo_info");
+            main.append(info);
+         }
+         info.innerHTML = `${msg}, ${spent.toFixed(1)}s`;
       }
    }
 
