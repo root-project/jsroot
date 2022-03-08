@@ -1,22 +1,20 @@
-let jsroot = require("jsroot");
-let fs = require("fs");
+import { openFile, makeSVG, version, httpRequest } from "jsroot";
 
-console.log('JSROOT version', jsroot.version);
+import { writeFileSync } from "fs";
 
-let file, url = "https://root.cern/js/files/hsimple.root";
+console.log('JSROOT version', version);
 
-if (process.argv && (process.argv[2] == "buf")) {
-   // read complete file as binary buffer and work with it fully locally
-   let buf = await jsroot.httpRequest(url, "buf");
-   file = await jsroot.openFile(buf);
-} else {
-   // normal file open, only required data will be read
-   file = await jsroot.openFile(url);
-}
+let arg = "https://root.cern/js/files/hsimple.root";
+
+// read complete file as binary buffer and work with it fully locally
+if (process.argv && (process.argv[2] == "buf"))
+   arg = await httpRequest(arg, "buf");
+
+let file = await openFile(arg);
 
 // now read ntuple, perform Draw operation, create SVG file and sve to the disk
 let ntuple = await file.readObject("ntuple");
 let hist = await ntuple.Draw("px:py::pz>5");
-let svg = await jsroot.makeSVG({ object: hist, width: 1200, height: 800 });
-fs.writeFileSync("tree_draw.svg", svg);
+let svg = await makeSVG({ object: hist, width: 1200, height: 800 });
+writeFileSync("tree_draw.svg", svg);
 console.log(`Create tree_draw.svg size ${svg.length}`);
