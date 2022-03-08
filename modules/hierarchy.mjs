@@ -3444,17 +3444,12 @@ async function buildGUI(gui_element, gui_kind) {
 
    myDiv.html(""); // clear element
 
-   let d = decodeUrl(), online = false, nobrowser = false, drawing = false;
+   let d = decodeUrl(), online = (gui_kind == "online"), nobrowser = false, drawing = false;
 
-   if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false")) {
-       gui_kind = "gui";
-       nobrowser = true;
-   } else if (gui_kind == "draw") {
+   if (gui_kind == "draw") {
       online = drawing = nobrowser = true;
-   } else if (gui_kind == "online") {
-      online = true;
-   } else {
-      gui_kind = "gui";
+   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false")) {
+      nobrowser = true;
    }
 
    if (myDiv.attr("ignoreurl") === "true")
