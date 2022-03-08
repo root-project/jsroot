@@ -2947,15 +2947,12 @@ class HierarchyPainter extends BasePainter {
    async loadScripts(arr) {
       if (!arr || !arr.length) return;
 
-      let has_jsroot = typeof globalThis.JSROOT != 'undefined';
-      if (!has_jsroot)  globalThis.JSROOT = { require };
+      // need to keep global JSROOT for use in external scripts
+      if (typeof globalThis.JSROOT == 'undefined')
+         globalThis.JSROOT = await import('./core.mjs');
 
-      for (let k = 0; k < arr.length; ++k) {
-         let txt = await httpRequest(arr[k], 'text');
-         if (txt) eval(txt);
-      }
-
-      if (!has_jsroot)  globalThis.JSROOT = undefined;
+      for (let k = 0; k < arr.length; ++k)
+         await loadScript(arr[k]);
    }
 
    /** @summary Start GUI
