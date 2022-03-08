@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// TPad painting
 
 import { gStyle, BIT, settings, constants, internals,
          require, create, extend, parse, toJSON, isBatchMode, loadScript } from './core.mjs';

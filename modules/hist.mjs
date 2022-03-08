@@ -1,5 +1,4 @@
-
-import * as JSROOT from './core.mjs';
+/// TH1 painting
 
 import { gStyle, BIT, browser, settings, constants, internals,
          extend, clone, create, createHistogram, createTPolyLine, isBatchMode } from './core.mjs';

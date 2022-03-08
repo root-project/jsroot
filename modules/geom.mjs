@@ -13,8 +13,7 @@ import { REVISION, DoubleSide, FrontSide,
          TextGeometry, BufferGeometry, BoxBufferGeometry, CircleBufferGeometry,
          SphereBufferGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
-         TransformControls, WebGLRenderTarget,
-         PointLight, AmbientLight, HemisphereLight,
+         TransformControls, PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from './three.mjs';
 
 import { showProgress } from './utils.mjs';
@@ -1818,7 +1817,7 @@ class TGeoPainter extends ObjectPainter {
             break;
          case 17: // Ctrl
             this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
-            this._tcontrols.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
+            this._tcontrols.setRotationSnap( MathUtils.degToRad( 15 ) );
             break;
          case 84: // T (Translate)
             this._tcontrols.setMode( "translate" );
