@@ -39,7 +39,7 @@ async function extract_geo_tracks(tree, opt) {
          track.fLineWidth = 2;
          track.fLineColor = 3;
          lst.Add(track);
-         if (numtracks>100) return this.Abort(); // do not accumulate too many tracks
+         if (numtracks > 100) return this.Abort(); // do not accumulate too many tracks
       }
    }
 
