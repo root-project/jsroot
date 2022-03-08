@@ -78,9 +78,8 @@ function isArrayProto(proto) {
     return proto.length == 14 ? 1 : 2;
 }
 
-/** @summary Specialized JSROOT constants, used in {@link JSROOT.settings}
+/** @summary Specialized JSROOT constants, used in {@link settings}
   * @namespace
-  * @alias JSROOT.constants
   * @private */
 let constants = {
    /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
@@ -225,7 +224,7 @@ let settings = {
    XValuesFormat : undefined,
    /** @summary custom format for all Y values, when not specified {@link gStyle.fStatFormat} is used */
    YValuesFormat : undefined,
-   /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
+   /** @summary custom format for all Z values, when not specified {@link gStyle.fStatFormat} is used */
    ZValuesFormat : undefined,
    /** @summary Let detect and solve problem when browser returns wrong content-length parameter
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
@@ -808,7 +807,7 @@ function toJSON(obj, spacing) {
   * @param {string} [url] URL string with options, document.URL will be used when not specified
   * @returns {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
   * @example
-  * let d = JSROOT.decodeUrl("any?opt1&op2=3");
+  * let d = decodeUrl("any?opt1&op2=3");
   * console.log(`Has opt1 ${d.has("opt1")}`);     // true
   * console.log(`Get opt1 ${d.get("opt1")}`);     // ""
   * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"

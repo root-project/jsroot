@@ -3323,7 +3323,7 @@ class TFile {
 
    /** @summary Read the directory content from  a root file
      * @desc If directory was already read - return previously read object
-     * Same functionality as {@link JSROOT.TFile.readObject}
+     * Same functionality as {@link TFile.readObject}
      * @param {string} dir_name - directory name
      * @param {number} [cycle] - directory cycle
      * @returns {Promise} - promise with read directory */

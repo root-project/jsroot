@@ -635,7 +635,7 @@ to change stat format using to display value in stats box:
     import { gStyle } from 'https://root.cern/js/latest/modules/core.mjs';
     gStyle.fStatFormat = "7.5g";
 
-There is also `JSROOT.settings` object which contains all other JSROOT settings. For instance,
+There is also `settings` object which contains all other JSROOT settings. For instance,
 one can configure custom format for different axes:
 
     import { settings } from 'https://root.cern/js/latest/modules/core.mjs';
@@ -656,9 +656,10 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
     obj->SaveAs("file.json");
     ...
 
-To access data from a remote web server, it is recommended to use the `JSROOT.httpRequest` method.
-For instance to recieve object from a THttpServer server one could do:
+To access data from a remote web server, it is recommended to use the `httpRequest` method.
+For instance to receive object from a THttpServer server one could do:
 
+    import { httpRequest } from 'https://root.cern/js/latest/modules/core.mjs';
     let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
     console.log('Read object of type ', obj._typename);
 
@@ -666,8 +667,8 @@ Function returns Promise, which provides parsed object (or Error in case of fail
 
 If JSON string was obtained by different method, it should be parsed with:
 
+    import { parse } from 'https://root.cern/js/latest/modules/core.mjs';
     let obj = parse(json_string);
-
 
 
 ### Objects drawing
@@ -678,31 +679,32 @@ After an object has been created, one can directly draw it. If HTML page has `<d
     <div id="drawing"></div>
     ...
 
-One could use the JSROOT.draw function:
+One could use the `draw` function:
 
-    JSROOT.draw("drawing", obj, "colz");
+    import { draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    draw("drawing", obj, "colz");
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
 
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
+    import { httpRequest, draw } from 'https://root.cern/js/latest/modules/core.mjs';
     let filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.httpRequest(filename, 'object')
-          .then(obj => JSROOT.draw("drawing", obj, "lego"));
+    let obj = await httpRequest(filename, 'object');
+    draw("drawing", obj, "lego");
 
-In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
+In very seldom cases one need to access painter object, created in `draw()` function. This can be done via
 handling Promise results like:
 
-    JSROOT.draw("drawing", obj, "colz").then(painter => {
-       console.log('Object type in painter', painter.getClassName());
-    });
+    let painter = await draw("drawing", obj, "colz");
+    console.log('Object type in painter', painter.getClassName());
 
 One is also able to update the drawing with a new version of the object:
 
     // after some interval request object again
-    JSROOT.redraw("drawing", obj2, "colz");
+    redraw("drawing", obj2, "colz");
 
-The JSROOT.redraw() function will call JSROOT.draw if the drawing was not performed before.
+The `redraw` function will call `draw` if the drawing was not performed before.
 
 In the case when changing of HTML layout leads to resize of element with JSROOT drawing,
 one should call `resize()` to let JSROOT adjust drawing size. One should do:
@@ -725,23 +727,12 @@ One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore, callback functions are used to react when the I/O operation completed.
 For example, reading an object from a file and displaying it will look like:
 
+    import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
     let filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.openFile(filename)
-          .then(file => file.readObject("hpxpy;1"))
-          .then(obj => JSROOT.draw("drawing", obj, "colz"))
-          .then(() => console.log("drawing completed"));
-
-Using async function, one can write following:
-
-      async function read_and_draw_async() {
-         let file = await JSROOT.openFile(filename);
-         let obj = await file.readObject("hpxpy;1");
-         await JSROOT.draw("drawing", obj, "colz");
-         console.log("drawing completed");
-      }
-
-      read_and_draw_async();
-
+    let file = await openFile(filename);
+    let obj = await file.readObject("hpxpy;1");
+    await draw("drawing", obj, "colz");
+    console.log("drawing completed");
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
 
@@ -750,48 +741,48 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-    JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.readObject("ntuple;1"))
-          .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
+    import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    let file = await openFile("https://root.cern/js/files/hsimple.root");
+    let tree = await file.readObject("ntuple;1");
+    draw("drawing", tree, "px:py::pz>5");
 
-To get access to selected branches, one should use TSelector class:
+To get access to selected branches, one should use `TSelector` class:
 
-    JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.readObject("ntuple;1"))
-          .then(tree => {
+    import { openFile, draw, require } from 'https://root.cern/js/latest/modules/core.mjs';
+    let file = await openFile("https://root.cern/js/files/hsimple.root");
+    let tree = await file.readObject("ntuple;1");
+    let handle = await require('tree');
+    let selector = new handle.TSelector();
 
-             let selector = new JSROOT.TSelector();
+    selector.AddBranch("px");
+    selector.AddBranch("py");
 
-             selector.AddBranch("px");
-             selector.AddBranch("py");
+    let cnt = 0, sumpx = 0, sumpy = 0;
 
-             let cnt = 0, sumpx = 0, sumpy = 0;
+    selector.Begin = function() {
+       // function called before reading of TTree starts
+    }
 
-             selector.Begin = function() {
-                // function called before reading of TTree starts
-             }
+    selector.Process = function() {
+       // function called for every entry
+       sumpx += this.tgtobj.px;
+       sumpy += this.tgtobj.py;
+       cnt++;
+    }
 
-             selector.Process = function() {
-                // function called for every entry
-                sumpx += this.tgtobj.px;
-                sumpy += this.tgtobj.py;
-                cnt++;
-             }
+    selector.Terminate = function(res) {
+       if (!res || (cnt===0)) return;
+       var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
+       console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
+    }
 
-             selector.Terminate = function(res) {
-                if (!res || (cnt===0)) return;
-                var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
-                console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
-             }
-
-             tree.Process(selector);
-       });
+    await tree.Process(selector);
 
 Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
 
-This examples shows how read TTree from binary file and create JSROOT.TSelector object.
-Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
-Selected branches can be accessed from **tgtobj** data member. At the end of tree reading TSelector::Terminate() method
+This examples shows how read TTree from binary file and create `TSelector` object.
+Logically it is similar to original TSelector class - for every read entry `TSelector::Process()` method is called.
+Selected branches can be accessed from **tgtobj** data member. At the end of tree reading `TSelector::Terminate()` method
 will be called.
 
 As second parameter of tree.Process() function one could provide object with arguments
@@ -802,11 +793,10 @@ As second parameter of tree.Process() function one could provide object with arg
 
 ### TGeo API
 
-Any supported TGeo object can be drawn with normal JSROOR.draw() function.
+Any supported TGeo object can be drawn with normal `draw()` function.
 
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
-
 
     import { build } from './path_to_jsroot/modules/geom.mjs';
     let opt = { numfaces: 100000 };
@@ -834,34 +824,34 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geomet
 
 ### Use with Node.js
 
-To install latest JSROOT relelase, just do:
+To install latest JSROOT release, just do:
 
     [shell] npm install jsroot
 
 To use in the Node.js scripts, one should add following line:
 
-     let jsroot = require('jsroot');
+     import { draw, httpRequest } from 'jsroot';
 
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
-    let jsroot = require("jsroot");
-    let fs = require("fs");
+    import { openFile, makeSVG } from 'jsroot';
+    import { writeFileSync } from 'fs';
 
-    let file = await jsroot.openFile("https://root.cern/js/files/hsimple.root");
+    let file = await openFile("https://root.cern/js/files/hsimple.root");
     let obj = await file.readObject("hpx;1");
-    let svg = await jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
-    fs.writeFileSync("lego2.svg", svg);
+    let svg = await makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
+    writeFileSync("lego2.svg", svg);
 
-It is also possible to convert any JavaScript object into ROOT JSON string, using **toJSON()** function. Like:
+It is also possible to convert any JavaScript object into ROOT JSON string, using `toJSON()` function. Like:
 
-    let jsroot = require("jsroot");
-    let fs = require("fs");
+    import { openFile, makeSVG, toJSON } from 'jsroot';
+    import { writeFileSync } from 'fs';
 
-    let file = await jsroot.openFile("https://root.cern/js/files/hsimple.root");
-    let obj = await file.readObject("hpxpy;1");
-    let json = await jsroot.toJSON(obj);
-    fs.writrFileSync("hpxpy.json", json);
+    let file = await openFile("https://root.cern/js/files/hsimple.root");
+    let obj = await file.readObject("hpx;1");
+    let json = await toJSON(obj);
+    writrFileSync("hpxpy.json", json);
 
 Such JSON string could be parsed by any other JSROOT-based application.
 
@@ -943,8 +933,8 @@ Core functionality should be imported from `core.mjs` module like:
 
       import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/core.mjs';
 
-JSROOT.hpainter -> JSROOT.require('hierarchy').then(hh => hh.getHPainter())
+JSROOT.hpainter -> require('hierarchy').then(hh => hh.getHPainter())
 
-JSROOT.Math -> math = await JSROOT.require('math')
+JSROOT.Math -> math = await require('math')
 
-JSROOT.batch_mode   -> isBatchMode()
+JSROOT.batch_mode -> isBatchMode()
