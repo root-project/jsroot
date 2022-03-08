@@ -125,11 +125,11 @@
       <div id="srcviewer"></div>
 
       <script type="module">
-         import * as JSROOT from './modules/core.mjs';
+         import { httpRequest, version, source_dir } from './modules/core.mjs';
 
          let jsroot_path = "./", filepath = "../files/";
 
-         document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
+         document.getElementById( 'version' ).title = version + ", " + source_dir;
 
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
@@ -142,8 +142,8 @@
          }
 
          function GetGithubBrunch(is_test) {
-             if (JSROOT.source_dir.indexOf("/dev/") > 0 && !is_test) return "dev/";
-             if (JSROOT.source_dir.indexOf("/v6/") > 0) return "v6/";
+             if (source_dir.indexOf("/dev/") > 0 && !is_test) return "dev/";
+             if (source_dir.indexOf("/v6/") > 0) return "v6/";
              return "master/";
           }
 
@@ -189,7 +189,7 @@
               { name: "Zooming", url: "demo/zoom_handler.htm", title: "Redefine Zoom function to make synchronous zooming in other histogram", src: true },
               { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
               { name: "Store JSON", url: "demo/store_json.htm", title: "Store drawn objects into JSON, can be reused to display once again", src: true },
-              { name: "Geometry", url: "demo/tgeo_build.htm", title : "Example how one can create three.js model for TGeo object, using JSROOT.GEO.build function", src: "demo/tgeo_build.htm" },
+              { name: "Geometry", url: "demo/tgeo_build.htm", title : "Example how one can create three.js model for TGeo object, using build() function from geom.mjs", src: "demo/tgeo_build.htm" },
               { name: "OpenUI5", url: "demo/openui5/", title : "Use of JSROOT graphics inside OpenUI5", src: "demo/openui5/Readme.md" }
             ],
             'TTree': [
@@ -282,7 +282,7 @@
             if (srcload === "github")
                srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + GetGithubBrunch() + entry.src;
 
-            JSROOT.httpRequest(srcload, "text").then(function(res) {
+            httpRequest(srcload, "text").then(function(res) {
                let viewer = document.getElementById( 'viewer' );
                let srcviewer = document.getElementById( 'srcviewer' );
                viewer.style.display = 'none';
@@ -359,7 +359,7 @@
                   let srcurl = "", github = "https://github.com/root-project/jsroot/blob/" + GetGithubBrunch();
                   if (entry.src === true) {
                      srcurl = github + url;
-                     entry.src = JSROOT.source_dir + url;
+                     entry.src = source_dir + url;
                   } else if (entry.src.indexOf("http")===0)
                      srcurl = entry.src;
                   else
