@@ -1693,21 +1693,27 @@ class HierarchyPainter extends BasePainter {
      * @param {string} itemname - item name for which player should be started
      * @param {string} [option] - extra options for the player
      * @returns {Promise} when ready*/
-   player(itemname, option) {
+   async player(itemname, option) {
       let item = this.findItem(itemname);
 
-      if (!item || !item._player) return Promise.resolve(null);
+      if (!item || !item._player)
+         return null;
 
-      return require(item._prereq || '').then(() => {
+      // TODO: remove after v7.2, just to support older THttpServer
+      if (item._player == 'JSROOT.drawTreePlayer') {
+         item._prereq = 'hierarchy';
+         item._player = 'drawTreePlayer';
+      }
 
-         let player_func = findFunction(item._player);
-         if (!player_func) return null;
+      if (!item._prereq)
+         return null;
 
-         return this.createDisplay().then(mdi => {
-            let res = mdi ? player_func(this, itemname, option) : null;
-            return res;
-         });
-      });
+      let hh = await require(item._prereq);
+      let player_func = hh ? hh[item._player] : null;
+      if (typeof player_func != 'function') return null;
+
+      let mdi = await this.createDisplay();
+      return mdi ? player_func(this, itemname, option) : null;
    }
 
    /** @summary Checks if item can be displayed with given draw option
