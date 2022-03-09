@@ -14,7 +14,6 @@ function v6_import() {
    return import('../modules/v6.mjs');
 }
 
-
 exports.httpRequest = function(...args) {
    return core_import().then(handle => handle.httpRequest(...args));
 }
@@ -25,10 +24,6 @@ exports.require = function(...args) {
 
 exports.define = function(req, factoryFunc) {
    v6_import().then(handle => handle.define(req, factoryFunc));
-}
-
-exports.decodeUrl = function(...args) {
-   return core_import().then(handle => handle.decodeUrl(...args));
 }
 
 exports.buildGUI = function(...args) {
@@ -44,7 +39,15 @@ if (typeof globalThis !== "undefined") {
    globalThis.JSROOT = exports;
 
    core_import().then(handle => {
-      globalThis.JSROOT.BIT = handle.BIT;
+      // copy all methods
+      let old = exports.require;
+      Object.assign(exports, handle);
+      exports.require = old;
+      return v6_import();
+   }).then(v6 => {
+      exports.require = v6.require;
+      exports.define = v6.define;
+      v6.ensureJSROOT();
    });
 
 }
