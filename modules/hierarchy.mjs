@@ -2623,7 +2623,7 @@ class HierarchyPainter extends BasePainter {
          });
 
          return require(modules)
-               .then(() => require(scripts))
+               .then(() => this.loadScripts(scripts))
                .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
@@ -2950,17 +2950,19 @@ class HierarchyPainter extends BasePainter {
       if (this.disp) this.disp.checkMDIResize(null, size);
    }
 
-   /** @summary Load and execute scripts
+   /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
    async loadScripts(arr) {
       if (!arr || !arr.length) return;
 
-      // need to keep global JSROOT for use in external scripts
-      if (typeof globalThis.JSROOT == 'undefined')
-         globalThis.JSROOT = await import('./core.mjs');
+      let v6 = await import('./v6.mjs');
+
+      v6.ensureJSROOT();
 
       for (let k = 0; k < arr.length; ++k)
          await loadScript(arr[k]);
+
+      await v6.complete_loading();
    }
 
    /** @summary Start GUI

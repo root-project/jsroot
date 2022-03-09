@@ -451,7 +451,7 @@ function extend(tgt, src) {
   * @param {Array|string} req - list of required components (as array or string separated by semicolon)
   * @returns {Promise} with array of requirements (or single element) */
 
-async function jsroot_require(need) {
+function jsroot_require(need) {
    if (!need)
       return Promise.resolve(null);
 
@@ -470,8 +470,7 @@ async function jsroot_require(need) {
          need[indx] = "v7gpad";
    });
 
-   let arr = [], was_doing = (internals.doing_require !== undefined);
-   if (!was_doing) internals.doing_require = [];
+   let arr = [];
 
    need.forEach(name => {
       if (name == "hist")
@@ -513,19 +512,13 @@ async function jsroot_require(need) {
          arr.push(import("./v7gpad.mjs"))
       else if (name == "openui5")
          arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
-      else if (name.indexOf('.js') >= 0)
-         arr.push(loadScript(name));
 
    });
 
-   let res = await Promise.all(arr);
+   if (arr.length == 1)
+      return arr[0];
 
-   if(!was_doing) {
-      await Promise.all(internals.doing_require);
-      delete internals.doing_require;
-   }
-
-   return (res.length == 1) ? res[0] : res;
+   return Promise.all(arr);
 }
 
 /** @summary Generate mask for given bit

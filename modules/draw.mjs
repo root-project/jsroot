@@ -302,7 +302,7 @@ async function draw(dom, obj, opt) {
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let v6h = await  require('gpad');
+         let v6h = await require('gpad');
          await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
@@ -335,13 +335,18 @@ async function draw(dom, obj, opt) {
 
    let hh = await require(handle.prereq);
 
-   if (handle.script)
+   if (handle.script) {
+      let v6 = await import('./v6.mjs');
+      v6.ensureJSROOT();
       await loadScript(handle.script);
+      await v6.complete_loading();
+   }
 
    if (funcname) {
       let func = hh?.[funcname] || findFunction(funcname);
       if (!func)
          throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
+
       handle.func = func;
    } else {
       let cl = hh?.[clname];
