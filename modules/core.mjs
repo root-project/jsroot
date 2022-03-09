@@ -467,7 +467,8 @@ async function jsroot_require(need) {
          need[indx] = "v7gpad";
    });
 
-   let arr = [];
+   let arr = [], was_doing = (internals.doing_require !== undefined);
+   if (!was_doing) internals.doing_require = [];
 
    need.forEach(name => {
       if (name == "hist")
@@ -509,13 +510,19 @@ async function jsroot_require(need) {
          arr.push(import("./v7gpad.mjs"))
       else if (name == "openui5")
          arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
+      else if (name.indexOf('.js') >= 0)
+         arr.push(loadScript(name));
 
    });
 
-   if (arr.length == 1)
-      return arr[0];
+   let res = await Promise.all(arr);
 
-   return Promise.all(arr);
+   if(!was_doing) {
+      await Promise.all(internals.doing_require);
+      delete internals.doing_require;
+   }
+
+   return (res.length == 1) ? res[0] : res;
 }
 
 /** @summary Generate mask for given bit

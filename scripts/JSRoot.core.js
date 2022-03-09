@@ -60,12 +60,13 @@ function require_v6(need) {
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs"));
       else if (name == "painter") {
-         arr.push(jsrp ? jsrp : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs')]).then(res => {
+         arr.push(jsrp ? jsrp : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs'), import('../modules/d3.mjs')]).then(res => {
             jsrp = {};
             Object.assign(jsrp, res[0], res[1]);
             globalThis.JSROOT.Painter = jsrp;
             globalThis.JSROOT.ObjectPainter = res[0].ObjectPainter;
             globalThis.JSROOT.BasePainter = res[0].BasePainter;
+            globalThis.d3 = res[2]; // assign global d3
             return jsrp;
          }));
       } else if (name == "base3d")
@@ -84,7 +85,7 @@ function require_v6(need) {
          arr.push(import("../modules/v7gpad.mjs"))
       else if (name == "openui5")
          arr.push(import("../modules/openui5.mjs").then(handle => handle.doUi5Loading()));
-      else
+      else if (name.indexOf(".js") >= 0)
          arr.push(core_import().then(handle => handle.loadScript(name)));
    });
 
@@ -97,7 +98,16 @@ function require_v6(need) {
 exports.require = require_v6;
 
 exports.define = function(req, factoryFunc) {
-   return require_v6(req).then(arr => req.length < 2 ? factoryFunc(arr) : factoryFunc(...arr));
+   let pr = new Promise(resolveFunc => {
+       require_v6(req).then(arr => {
+         if (req.length < 2) factoryFunc(arr)
+                        else factoryFunc(...arr);
+         resolveFunc(true);
+       });
+   });
+
+   let internals = globalThis.JSROOT?.internals;
+   if (internals && internals.doing_require) internals.doing_require.push(pr); // will wait until other PRs are finished
 }
 
 exports.decodeUrl = function(...args) {
@@ -112,13 +122,15 @@ exports.openFile= function(...args) {
    return core_import().then(handle => handle.openFile(...args));
 }
 
-
 // try to define global JSROOT
 if (typeof globalThis !== "undefined") {
    globalThis.JSROOT = exports;
-   // copy all methods - even when asynchrone
-}
 
+   core_import().then(handle => {
+      // copy all methods - even when asynchrone
+      globalThis.JSROOT.internals = handle.internals;
+   });
+}
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like _.openui5src = "nojsroot";
 

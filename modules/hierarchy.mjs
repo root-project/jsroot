@@ -2605,9 +2605,10 @@ class HierarchyPainter extends BasePainter {
 
          let styles = [], scripts = [], modules = [];
          this.forEachItem(item => {
-            if ('_childs' in item) item._expand = onlineHierarchy;
+            if (item._childs !== undefined)
+               item._expand = onlineHierarchy;
 
-            if ('_autoload' in item) {
+            if (item._autoload) {
                let arr = item._autoload.split(";");
                arr.forEach(name => {
                   if ((name.length > 3) && (name.lastIndexOf(".js") == name.length-3)) {
@@ -2622,7 +2623,7 @@ class HierarchyPainter extends BasePainter {
          });
 
          return require(modules)
-               .then(() => loadScript(scripts))
+               .then(() => require(scripts))
                .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
