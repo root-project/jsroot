@@ -346,6 +346,9 @@ function loadScript(url) {
    if (!url)
       return Promise.resolve(true);
 
+   if ((typeof url == 'string') && (url.indexOf(";") >= 0))
+      url = url.split(";");
+
    if (typeof url != 'string') {
       let scripts = url, loadNext = () => {
          if (!scripts.length) return Promise.resolve(true);
