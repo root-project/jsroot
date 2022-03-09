@@ -120,8 +120,8 @@ exports.define = function(req, factoryFunc) {
        });
    });
 
-   let req = globalThis.JSROOT?.internals?.doing_require;
-   if (req) req.push(pr); // will wait until other PRs are finished
+   let doing_require = globalThis.JSROOT?.internals?.doing_require;
+   if (doing_require) doing_require.push(pr); // will wait until other PRs are finished
 }
 
 exports.decodeUrl = function(...args) {
