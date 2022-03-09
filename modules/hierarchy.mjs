@@ -2622,7 +2622,7 @@ class HierarchyPainter extends BasePainter {
          });
 
          return require(modules)
-               .then(() => require(scripts))
+               .then(() => loadScript(scripts))
                .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {

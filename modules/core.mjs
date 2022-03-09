@@ -518,19 +518,6 @@ async function jsroot_require(need) {
    return Promise.all(arr);
 }
 
-//function require(req) {
-//   return jsroot_require(req);
-//}
-
-/** @summary Define JSROOT module
-  * @desc Should be only used for JSROOT modules
-  * @param {Array|string} req - requirements, see {@link require} for more details
-  * @param {Function} factoryFunc - called when requirements are fulfilled, with requested modules
-  * @private */
-//function define(req, factoryFunc) {
-//   jsroot_require(req, factoryFunc);
-//}
-
 /** @summary Generate mask for given bit
   * @param {number} n bit number
   * @returns {Number} produced mask
@@ -1758,7 +1745,6 @@ constants,
 settings,
 gStyle,
 isArrayProto,
-jsroot_require as define,
 jsroot_require as require,
 getDocument,
 BIT,
