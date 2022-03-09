@@ -25,6 +25,8 @@ let internals = {
    id_counter: 1          ///< unique id contner, starts from 1,
 };
 
+//openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
+
 let source_fullpath = "";
 
 const src = import.meta?.url;

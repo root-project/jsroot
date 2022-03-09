@@ -44,14 +44,9 @@ if (typeof globalThis !== "undefined") {
    globalThis.JSROOT = exports;
 
    core_import().then(handle => {
-      // copy all methods - even when asynchrone
-      globalThis.JSROOT.internals = handle.internals;
+      globalThis.JSROOT.BIT = handle.BIT;
    });
 
 }
-
-console.log('loading JSRootCore.js done');
-
-//openuicfg // DO NOT DELETE, used to configure openui5 usage like _.openui5src = "nojsroot";
 
 }));

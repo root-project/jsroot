@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { require, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
+import { require, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, internals } from './core.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -648,9 +648,9 @@ function connectWebWindow(arg) {
       arg = {};
 
    if (arg.prereq) {
-      if (arg.openui5src) _.openui5src = arg.openui5src;
-      if (arg.openui5libs) _.openui5libs = arg.openui5libs;
-      if (arg.openui5theme) _.openui5theme = arg.openui5theme;
+      if (arg.openui5src) internals.openui5src = arg.openui5src;
+      if (arg.openui5libs) internals.openui5libs = arg.openui5libs;
+      if (arg.openui5theme) internals.openui5theme = arg.openui5theme;
       return require(arg.prereq).then(() => {
          delete arg.prereq;
          if (arg.prereq_logdiv && document) {
