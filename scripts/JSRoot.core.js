@@ -60,7 +60,7 @@ function require_v6(need) {
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs"));
       else if (name == "painter") {
-         arr.push(jsrp ? jsrp : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs'), import('../modules/d3.mjs')]).then(res => {
+         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs'), import('../modules/d3.mjs')]).then(res => {
             jsrp = {};
             Object.assign(jsrp, res[0], res[1]);
             globalThis.JSROOT.Painter = jsrp;
