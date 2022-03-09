@@ -30,7 +30,10 @@ function require(need) {
 
    need.forEach(name => {
       if (name == "hist")
-         arr.push(import("../modules/hist.mjs"));
+         arr.push(import("../modules/hist.mjs").then(handle => {
+            globalThis.JSROOT.TH1Painter = handle.TH1Painter;
+            globalThis.JSROOT.TH2Painter = handle.TH2Painter;
+         }))
       else if (name == "hist3d")
          arr.push(import("../modules/hist3d.mjs"));
       else if (name == "more")
