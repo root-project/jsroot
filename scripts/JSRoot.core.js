@@ -89,10 +89,24 @@ function require_v6(need) {
          arr.push(core_import().then(handle => handle.loadScript(name)));
    });
 
-   if (arr.length == 1)
-      return arr[0];
+   let req = globalThis.JSROOT?.internals?.doing_require;
 
-   return Promise.all(arr);
+   if (!req) {
+      if (arr.length == 1)
+         return arr[0];
+      return Promise.all(arr);
+   }
+
+   // when already global requre invoked, block it until that sub-require performed
+   let notify;
+   req.push(new Promise(func => { notify = func; }));
+
+   return new Promise(resolveFunc => {
+      Promise.all(arr).then(res => {
+         resolveFunc(res.length == 1 ? res[0] : res);
+         if (notify) notify(true);
+      });
+   });
 }
 
 exports.require = require_v6;
@@ -106,8 +120,8 @@ exports.define = function(req, factoryFunc) {
        });
    });
 
-   let internals = globalThis.JSROOT?.internals;
-   if (internals && internals.doing_require) internals.doing_require.push(pr); // will wait until other PRs are finished
+   let req = globalThis.JSROOT?.internals?.doing_require;
+   if (req) req.push(pr); // will wait until other PRs are finished
 }
 
 exports.decodeUrl = function(...args) {
