@@ -36,7 +36,10 @@ function require(need) {
       else if (name == "more")
          arr.push(import("../modules/more.mjs"));
       else if (name == "gpad")
-         arr.push(import("../modules/gpad.mjs"));
+         arr.push(import("../modules/gpad.mjs").then(handle => {
+            if (jsrp) jsrp.ensureTCanvas = handle.ensureTCanvas;
+            return handle;
+         }));
       else if (name == "io")
          arr.push(import("../modules/io.mjs"));
       else if (name == "tree")

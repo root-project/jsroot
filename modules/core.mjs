@@ -451,7 +451,7 @@ function extend(tgt, src) {
   * @param {Array|string} req - list of required components (as array or string separated by semicolon)
   * @returns {Promise} with array of requirements (or single element) */
 
-function jsroot_require(need) {
+function require(need) {
    if (!need)
       return Promise.resolve(null);
 
@@ -1748,7 +1748,7 @@ constants,
 settings,
 gStyle,
 isArrayProto,
-jsroot_require as require,
+require,
 getDocument,
 BIT,
 extend,

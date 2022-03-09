@@ -1705,11 +1705,12 @@ class HierarchyPainter extends BasePainter {
          item._player = 'drawTreePlayer';
       }
 
-      if (!item._prereq)
-         return null;
-
-      let hh = await require(item._prereq);
-      let player_func = hh ? hh[item._player] : null;
+      let player_func;
+      if (item._prereq) {
+         let hh = await require(item._prereq);
+         player_func = hh[item._player];
+      }
+      if (!player_func) player_func = findFunction(item._player);
       if (typeof player_func != 'function') return null;
 
       let mdi = await this.createDisplay();
