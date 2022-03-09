@@ -3592,7 +3592,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary methods show info when first geometry drawing is performed */
    showDrawInfo(msg) {
-      if (!this._first_drawing || !this._start_drawing_time) return;
+      if (isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
       let main = this._renderer.domElement.parentNode,
           info = main.querySelector(".geo_info");
