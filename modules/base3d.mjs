@@ -7,7 +7,7 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from './three.mjs';
 
-import { browser, settings, constants, internals, extend, isBatchMode, isNodeJs } from './core.mjs';
+import { browser, settings, constants, internals, extend, isBatchMode, isNodeJs, getDocument } from './core.mjs';
 
 import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
 
@@ -398,7 +398,7 @@ async function createRender3D(width, height, render3d, args) {
    if (!args) args = { antialias: true, alpha: true };
 
    let need_workaround = false, renderer,
-       doc = internals.get_document();
+       doc = getDocument();
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering

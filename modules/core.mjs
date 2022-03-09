@@ -6,7 +6,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "8/03/2022";
+let version_date = "9/03/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -329,7 +329,7 @@ let gStyle = {
 
 /** @summary Method returns current document in use
   * @private */
-internals.get_document = function() {
+function getDocument() {
    if (nodejs)
       return internals.nodejs_document;
    if (typeof document !== 'undefined')
@@ -1760,6 +1760,7 @@ gStyle,
 isArrayProto,
 jsroot_require as define,
 jsroot_require as require,
+getDocument,
 BIT,
 extend,
 clone,

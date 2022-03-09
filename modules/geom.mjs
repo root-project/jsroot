@@ -1,7 +1,8 @@
 /// 3D geometry painter
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, internals, create, extend, clone, findFunction, isBatchMode, isNodeJs } from './core.mjs';
+         settings, constants, create, extend, clone,
+         findFunction, isBatchMode, isNodeJs, getDocument } from './core.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -1994,17 +1995,17 @@ class TGeoPainter extends ObjectPainter {
          if (this.canSubmitToWorker()) {
             let job = { limit: this._current_face_limit, shapes: [] }, cnt = 0;
             for (let n = 0; n < this._build_shapes.length; ++n) {
-               let clone = null, item = this._build_shapes[n];
+               let cl = null, item = this._build_shapes[n];
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  clone = { id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt };
+                  cl = { id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt };
                } else {
-                  clone = clone(item, null, true);
+                  cl = clone(item, null, true);
                   cnt++;
                }
 
-               job.shapes.push(clone);
+               job.shapes.push(cl);
             }
 
             if (cnt > 0) {
@@ -2448,7 +2449,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
-            let doc = internals.get_document(),
+            let doc = getDocument(),
                 svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("width", w);
             svg.setAttribute("height", h);
@@ -2543,7 +2544,7 @@ class TGeoPainter extends ObjectPainter {
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename === "asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
-      let doc = internals.get_document(),
+      let doc = getDocument(),
           link = doc.createElement('a');
       if (typeof link.download === 'string') {
          doc.body.appendChild(link); //Firefox requires the link to be in the body
