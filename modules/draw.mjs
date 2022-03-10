@@ -327,40 +327,28 @@ async function draw(dom, obj, opt) {
       // simple extract class and access class.draw method
       let cl = await handle.class();
       handle.func = cl.draw;
+   } else if (!handle.func || typeof handle.func !== 'string') {
+      throw Error(`Draw function or class not specified to draw ${type_info}`);
+   } else if (!handle.prereq && !handle.script) {
+      throw Error(`Prerequicities to load ${handle.func} are not specified`);
    } else {
-      let funcname, clname;
-      if (typeof handle.func == 'string')
-         funcname = handle.func;
-      else if (typeof handle.class == 'string')
-         clname = handle.class;
-      else
-         throw Error(`Draw function or class not specified to draw ${type_info}`);
-
-      if (!handle.prereq && !handle.script)
-         throw Error(`Prerequicities to load ${funcname || clname} are not specified`);
-
-      let hh = await require(handle.prereq);
+      let func;
 
       if (handle.script) {
          let v6 = await import('./v6.mjs');
          v6.ensureJSROOT();
          await loadScript(handle.script);
          await v6.complete_loading();
-      }
-
-      if (funcname) {
-         let func = hh?.[funcname] || findFunction(funcname);
-         if (!func)
-            throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
-
-         handle.func = func;
+         func = findFunction(handle.func);
       } else {
-         let cl = hh?.[clname];
-         if (!cl || typeof cl.draw != 'function')
-            throw Error(`Fail to find class ${clname} after loading ${handle.prereq}`);
-         handle.class = cl;
-         handle.func = cl.draw;
+         let hh = await require(handle.prereq);
+         func = hh?.[handle.func];
       }
+
+      if (!func || (typeof func != 'function'))
+         throw Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`);
+
+      handle.func = func;
    }
 
    return performDraw();
