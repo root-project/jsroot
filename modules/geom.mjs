@@ -5142,7 +5142,7 @@ build = function(obj, opt) {
 }
 
 
-addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: expandGeoObject, opt: ";more;all;count" });
+addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', class: () => TGeoPainter, expand: expandGeoObject, opt: ";more;all;count" });
 addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
 addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
 

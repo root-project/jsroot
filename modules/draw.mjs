@@ -80,7 +80,7 @@ let drawFuncs = { lst: [
    { name: "TPolyMarker", icon: 'img_graph', draw: () => import('./more.mjs').then(h => h.drawPolyMarker), direct: true },
    { name: "TASImage", icon: 'img_mgraph', class: () => import('./more.mjs').then(h => h.TASImagePainter), opt: ";z" },
    { name: "TJSImage", icon: 'img_mgraph', draw: () => import('./more.mjs').then(h => h.drawJSImage), opt: ";scale;center" },
-   { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", class: () => import('./geom.mjs').then(h => h.TGeoPainter), expand: "expandGeoObject", opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
+   { name: "TGeoVolume", icon: 'img_histo3d', class: () => import('./geom.mjs').then(h => h.TGeoPainter), get_expand: () => import('./geom.mjs').then(h => h.expandGeoObject), opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
    { name: "TEveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
    { name: "ROOT::Experimental::REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
    { name: "TGeoOverlap", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
@@ -89,15 +89,15 @@ let drawFuncs = { lst: [
    { name: "TAxis3D", icon: 'img_graph', draw: () => import('./geom.mjs').then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: "kind:Command", icon: "img_execute", execute: true },
-   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: "folderHierarchy" },
-   { name: "TTask", icon: "img_task", prereq: "hierarchy", expand: "taskHierarchy", for_derived: true },
-   { name: "TTree", icon: "img_tree", prereq: "tree", expand: 'treeHierarchy', draw: () => import('./tree.mjs').then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, get_expand: () => import('./hierarchy.mjs').then(h => h.folderHierarchy) },
+   { name: "TTask", icon: "img_task", get_expand: () => import('./hierarchy.mjs').then(h => h.taskHierarchy), for_derived: true },
+   { name: "TTree", icon: "img_tree", get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import('./tree.mjs').then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
    { name: "TNtuple", sameas: "TTree" },
    { name: "TNtupleD", sameas: "TTree" },
    { name: "TBranchFunc", icon: "img_leaf_method", draw: () => import('./tree.mjs').then(h => h.drawTree), opt: ";dump", noinspect: true, direct: true },
    { name: /^TBranch/, icon: "img_branch", draw: () => import('./tree.mjs').then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true, direct: true },
    { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => import('./tree.mjs').then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true, direct: true },
-   { name: "TList", icon: "img_list", draw: () => import('./hierarchy.mjs').then(h => h.drawList), prereq: "hierarchy", expand: "listHierarchy", dflt: "expand" },
+   { name: "TList", icon: "img_list", draw: () => import('./hierarchy.mjs').then(h => h.drawList), get_expand: () => import('./hierarchy.mjs').then(h => h.listHierarchy), dflt: "expand" },
    { name: "THashList", sameas: "TList" },
    { name: "TObjArray", sameas: "TList" },
    { name: "TClonesArray", sameas: "TList" },
@@ -118,8 +118,9 @@ let drawFuncs = { lst: [
   * @desc List of supported draw options could be provided, separated  with ';'
   * @param {object} args - arguments
   * @param {string|regexp} args.name - class name or regexp pattern
-  * @param {string} [args.prereq] - prerequicities to load before search for the draw function
-  * @param {string} args.func - draw function name or just a function
+  * @param {function} [args.func] - draw function
+  * @param {function} [args.draw] - async function to load draw function
+  * @param {function} [args.class] - async function to load painter class with static draw function
   * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
   * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
   * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
@@ -346,18 +347,14 @@ async function draw(dom, obj, opt) {
    } else if (!handle.prereq && !handle.script) {
       throw Error(`Prerequicities to load ${handle.func} are not specified`);
    } else {
-      let func;
-
-      if (handle.script) {
-         let v6 = await import('./v6.mjs');
-         v6.ensureJSROOT();
+      let v6 = await import('./v6.mjs');
+      v6.ensureJSROOT();
+      if (handle.prereq)
+         await v6.require(handle.prereq);
+      if (handle.script)
          await loadScript(handle.script);
-         await v6.complete_loading();
-         func = findFunction(handle.func);
-      } else {
-         let hh = await require(handle.prereq);
-         func = hh?.[handle.func];
-      }
+      await v6.complete_loading();
+      let func = findFunction(handle.func);
 
       if (!func || (typeof func != 'function'))
          throw Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`);

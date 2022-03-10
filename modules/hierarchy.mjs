@@ -17,6 +17,10 @@ import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redra
 
 import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
 
+function canExpandHandle(handle) {
+   return handle?.expand || handle?.get_expand || handle?.expand_item;
+}
+
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -1037,13 +1041,13 @@ class HierarchyPainter extends BasePainter {
           img1 = "", img2 = "", can_click = false, break_list = false,
           d3cont, itemname = this.itemFullName(hitem);
 
-      if (handle !== null) {
+      if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
          if ((img1.length==0) && (typeof handle.icon_get == 'function'))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
-             (('expand' in handle) && (hitem._more !== false))) can_click = true;
+             (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
       }
 
       if ('_icon' in hitem) img1 = hitem._icon;
@@ -1487,7 +1491,7 @@ class HierarchyPainter extends BasePainter {
          if (hitem._childs) can_expand = false;
 
          if (can_draw === undefined) can_draw = sett.draw;
-         if (can_expand === undefined) can_expand = sett.expand;
+         if (can_expand === undefined) can_expand = sett.expand || set.get_expand;
 
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
@@ -1666,7 +1670,7 @@ class HierarchyPainter extends BasePainter {
                                 arg => window.open(source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg));
             }
 
-            if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
+            if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add("Expand", () => this.expandItem(itemname));
 
             if (hitem._kind === "ROOT.TStyle")
@@ -2245,19 +2249,19 @@ class HierarchyPainter extends BasePainter {
       if (!item) return false;
       if (item._expand) return true;
       let handle = getDrawHandle(item._kind, "::expand");
-      return handle && (handle.expand_item || handle.expand);
+      return handle && canExpandHandle(handle);
    }
 
    /** @summary expand specified item
      * @param {String} itemname - item name
      * @returns {Promise} when ready */
    expandItem(itemname, d3cont, silent) {
-      let hitem = this.findItem(itemname);
+      let hitem = this.findItem(itemname), hpainter = this;
 
       if (!hitem && d3cont)
          return Promise.resolve();
 
-      let DoExpandItem = (_item, _obj) => {
+      async function DoExpandItem(_item, _obj){
 
          if (typeof _item._expand == 'string')
             _item._expand = findFunction(item._expand);
@@ -2267,17 +2271,21 @@ class HierarchyPainter extends BasePainter {
 
             if (handle && handle.expand_item) {
                _obj = _obj[handle.expand_item];
-              if (_obj && _obj._typename)
-                 handle = getDrawHandle("ROOT."+_obj._typename, "::expand");
+              handle = (_obj && _obj._typename) ? getDrawHandle("ROOT."+_obj._typename, "::expand") : null;
             }
 
-            if (handle && handle.expand) {
-               if (typeof handle.expand == 'string')
-                  return require(handle.prereq).then(hh => {
-                     _item._expand = handle.expand = hh?.[handle.expand] || findFunction(handle.expand);
-                     return _item._expand ? DoExpandItem(_item, _obj) : true;
-                  });
-               _item._expand = handle.expand;
+            if (handle && (handle.expand || handle.get_expand)) {
+               if (typeof handle.expand == 'function')
+                  _item._expand = handle.expand;
+               else if (typeof handle.expand == 'string') {
+                  let v6 = await import('./v6.mjs');
+                  v6.ensureJSROOT();
+                  await v6.require(handle.prereq);
+                  await v6.complete_loading();
+                  _item._expand = handle.expand = findFunction(handle.expand);
+               } else if (typeof handle.get_expand == 'function') {
+                  _item._expand = handle.expand = await handle.get_expand();
+               }
             }
          }
 
@@ -2287,11 +2295,11 @@ class HierarchyPainter extends BasePainter {
                _item._isopen = true;
                if (_item._parent && !_item._parent._isopen) {
                   _item._parent._isopen = true; // also show parent
-                  if (!silent) this.updateTreeNode(_item._parent);
+                  if (!silent) hpainter.updateTreeNode(_item._parent);
                } else {
-                  if (!silent) this.updateTreeNode(_item, d3cont);
+                  if (!silent) hpainter.updateTreeNode(_item, d3cont);
                }
-               return Promise.resolve(_item);
+               return _item;
             }
          }
 
@@ -2299,14 +2307,14 @@ class HierarchyPainter extends BasePainter {
             _item._isopen = true;
             if (_item._parent && !_item._parent._isopen) {
                _item._parent._isopen = true; // also show parent
-               if (!silent) this.updateTreeNode(_item._parent);
+               if (!silent) hpainter.updateTreeNode(_item._parent);
             } else {
-               if (!silent) this.updateTreeNode(_item, d3cont);
+               if (!silent) hpainter.updateTreeNode(_item, d3cont);
             }
-            return Promise.resolve(_item);
+            return _item;
          }
 
-         return Promise.resolve(-1);
+         return -1;
       };
 
       let promise = Promise.resolve(-1);
@@ -2687,7 +2695,7 @@ class HierarchyPainter extends BasePainter {
          menu.addDrawMenu("Draw", sett.opts, arg => this.display(itemname, arg));
       }
 
-      if (!node._childs && (node._more !== false) && (node._more || root_type || sett.expand))
+      if (!node._childs && (node._more !== false) && (node._more || root_type || sett.expand || sett.get_expand))
          menu.add("Expand", () => this.expandItem(itemname));
 
       if (handle && ('execute' in handle))
