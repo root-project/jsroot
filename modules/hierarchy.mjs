@@ -3770,7 +3770,7 @@ function createTreePlayer(player) {
       if (this.askey) {
          // first let read tree from the file
          this.askey = false;
-         httpRequest(this.url + "/root.json", 'text').then(submitDrawRequest);
+         httpRequest(this.url + "/root.json.gz?compact=3", 'text').then(submitDrawRequest);
       } else {
          submitDrawRequest();
       }
