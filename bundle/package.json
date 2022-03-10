@@ -1,0 +1,39 @@
+{
+  "name": "jsroot_bundle",
+  "version": "6.99.99",
+  "description": "JSROOT hist painters",
+  "homepage": "https://github.com/root-project/jsroot/",
+  "keywords": [
+    "jsroot",
+    "ROOT",
+    "visualization",
+    "hist"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Sergey Linev",
+    "url": "https://github.com/linev"
+  },
+  "type": "module",
+  "files": [
+    "jsroot_bundle.js"
+  ],
+  "module": "jsroot_bundle.js",
+  "main": "jsroot_bundle.js",
+  "devDependencies": {
+    "@rollup/plugin-json": "4",
+    "@rollup/plugin-node-resolve": "13",
+    "eslint": "8",
+    "mocha": "9",
+    "rollup": "2",
+    "rollup-plugin-ascii": "0.0",
+    "rollup-plugin-terser": "7",
+    "rollup-plugin-ignore": "1.0.10"
+  },
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
