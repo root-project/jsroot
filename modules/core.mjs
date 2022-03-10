@@ -498,7 +498,8 @@ function require(need) {
          arr.push(import("./v7gpad.mjs"))
       else if (name == "openui5")
          arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
-
+      else  if (name == "painter")
+         arr.push(import('./painter.mjs'));
    });
 
    if (arr.length == 1)
