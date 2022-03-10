@@ -51,7 +51,7 @@ let drawFuncs = { lst: [
    { name: "TStreamerInfoList", icon: "img_question", prereq: "hierarchy", func: "drawStreamerInfo" },
    { name: "TPaletteAxis", icon: "img_colz", class: () => import('./hist.mjs').then(h => h.TPavePainter) },
    { name: "TWebPainting", icon: "img_graph", class: () => import('./more.mjs').then(h => h.TWebPaintingPainter) },
-   { name: "TCanvasWebSnapshot", icon: "img_canvas", class: () => import('./gpad.mjs').then(h => h.drawTPadSnapshot) },
+   { name: "TCanvasWebSnapshot", icon: "img_canvas", draw: () => import('./gpad.mjs').then(h => h.drawTPadSnapshot) },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
    { name: "kind:Text", icon: "img_text", func: drawRawText },
    { name: "TObjString", icon: "img_text", func: drawRawText },
@@ -288,7 +288,7 @@ async function draw(dom, obj, opt) {
    if (handle.draw_field && obj[handle.draw_field])
       return draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
 
-   if (!handle.func && !handle.direct && !handle.class) {
+   if (!handle.func && !handle.direct && !handle.class && !handle.draw) {
       if (opt && (opt.indexOf("same") >= 0)) {
 
          let main_painter = getElementMainPainter(dom);
@@ -335,6 +335,9 @@ async function draw(dom, obj, opt) {
       // simple extract class and access class.draw method
       let cl = await handle.class();
       handle.func = cl.draw;
+   } else if (handle.draw && (typeof handle.draw == 'function')) {
+      // draw function without special class
+      handle.func = await handle.draw();
    } else if (!handle.func || typeof handle.func !== 'string') {
       throw Error(`Draw function or class not specified to draw ${type_info}`);
    } else if (!handle.prereq && !handle.script) {

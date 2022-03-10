@@ -5504,7 +5504,7 @@ addDrawFunc({ name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d",
 addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "drawText", opt: "", direct: "v7", csstype: "text" });
 addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawRFrameTitle, opt: "", direct: "v7", csstype: "title" });
 addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: RPalettePainter.draw, opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", prereq: "v7hist", class: "RHistStatsPainter", opt: "" });
+addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" });
 addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "drawLine", opt: "", direct: "v7", csstype: "line" });
 addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "drawBox", opt: "", direct: "v7", csstype: "box" });
 addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "drawMarker", opt: "", direct: "v7", csstype: "marker" });
