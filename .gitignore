@@ -18,4 +18,5 @@ httpserver.C
 Go4ExampleSimple
 bundle/bundle
 bundle/bundle.min
+bundle/style
 
