@@ -21,9 +21,9 @@ let drawFuncs = { lst: [
    { name: "TLatex", icon: "img_text", prereq: "more", func: "drawText", direct: true },
    { name: "TMathText", icon: "img_text", prereq: "more", func: "drawText", direct: true },
    { name: "TText", icon: "img_text", prereq: "more", func: "drawText", direct: true },
-   { name: /^TH1/, icon: "img_histo1d", prereq: "hist", class: "TH1Painter", opt: ";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
-   { name: "TProfile", icon: "img_profile", prereq: "hist", class: "TH1Painter", opt: ";E0;E1;E2;p;AH;hist" },
-   { name: "TH2Poly", icon: "img_histo2d", prereq: "hist", class: "TH2Painter", opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
+   { name: /^TH1/, icon: "img_histo1d", class: () => import('./hist.mjs').then(h => h.TH1Painter), opt: ";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
+   { name: "TProfile", icon: "img_profile", class: () => import('./hist.mjs').then(h => h.TH1Painter), opt: ";E0;E1;E2;p;AH;hist" },
+   { name: "TH2Poly", icon: "img_histo2d", class: () => import('./hist.mjs').then(h => h.TH2Painter), opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
    { name: "TProfile2Poly", sameas: "TH2Poly" },
    { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly", draw_field_opt: "L" },
    { name: /^TH2/, icon: "img_histo2d", prereq: "hist", class: "TH2Painter", dflt: "col", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "lego" },
@@ -322,38 +322,45 @@ async function draw(dom, obj, opt) {
    if (typeof handle.func == 'function')
       return performDraw();
 
-   let funcname, clname;
-   if (typeof handle.func == 'string')
-      funcname = handle.func;
-   else if (typeof handle.class == 'string')
-      clname = handle.class;
-   else
-      throw Error(`Draw function or class not specified to draw ${type_info}`);
-
-   if (!handle.prereq && !handle.script)
-      throw Error(`Prerequicities to load ${funcname || clname} are not specified`);
-
-   let hh = await require(handle.prereq);
-
-   if (handle.script) {
-      let v6 = await import('./v6.mjs');
-      v6.ensureJSROOT();
-      await loadScript(handle.script);
-      await v6.complete_loading();
-   }
-
-   if (funcname) {
-      let func = hh?.[funcname] || findFunction(funcname);
-      if (!func)
-         throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
-
-      handle.func = func;
-   } else {
-      let cl = hh?.[clname];
-      if (!cl || typeof cl.draw != 'function')
-         throw Error(`Fail to find class ${clname} after loading ${handle.prereq}`);
-      handle.class = cl;
+   if (handle.class && (typeof handle.class == 'function')) {
+      // class coded as async function which returns class handle
+      // simple extract class and access class.draw method
+      let cl = await handle.class();
       handle.func = cl.draw;
+   } else {
+      let funcname, clname;
+      if (typeof handle.func == 'string')
+         funcname = handle.func;
+      else if (typeof handle.class == 'string')
+         clname = handle.class;
+      else
+         throw Error(`Draw function or class not specified to draw ${type_info}`);
+
+      if (!handle.prereq && !handle.script)
+         throw Error(`Prerequicities to load ${funcname || clname} are not specified`);
+
+      let hh = await require(handle.prereq);
+
+      if (handle.script) {
+         let v6 = await import('./v6.mjs');
+         v6.ensureJSROOT();
+         await loadScript(handle.script);
+         await v6.complete_loading();
+      }
+
+      if (funcname) {
+         let func = hh?.[funcname] || findFunction(funcname);
+         if (!func)
+            throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
+
+         handle.func = func;
+      } else {
+         let cl = hh?.[clname];
+         if (!cl || typeof cl.draw != 'function')
+            throw Error(`Fail to find class ${clname} after loading ${handle.prereq}`);
+         handle.class = cl;
+         handle.func = cl.draw;
+      }
    }
 
    return performDraw();
