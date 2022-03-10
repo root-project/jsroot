@@ -307,14 +307,14 @@ async function draw(dom, obj, opt) {
    async function performDraw() {
       let painter;
       if (handle.direct == "v7") {
-         let v7h = await require('v7gpad');
+         let v7h = await import('./v7gpad.mjs');
          painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
          await v7h.ensureRCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let v6h = await require('gpad');
+         let v6h = await import('./gpad.mjs');
          await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();

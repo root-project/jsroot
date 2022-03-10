@@ -453,7 +453,7 @@ function extend(tgt, src) {
   * @param {Array|string} req - list of required components (as array or string separated by semicolon)
   * @returns {Promise} with array of requirements (or single element) */
 
-function require(need) {
+function jsroot_require(need) {
    if (!need)
       return Promise.resolve(null);
 
@@ -462,7 +462,18 @@ function require(need) {
    let arr = [];
 
    need.forEach(name => {
-      if (name == "hist")
+      if (name == "io")
+         arr.push(import("./io.mjs"));
+      else if (name == "tree")
+         arr.push(import("./tree.mjs"));
+      else if (name == "openui5")
+         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
+      else if (name == "hierarchy")
+         arr.push(import("./hierarchy.mjs"));
+      else if (name == "math")
+         arr.push(import("./math.mjs"));
+
+      else if (name == "hist")
          arr.push(import("./hist.mjs"));
       else if (name == "hist3d")
          arr.push(import("./hist3d.mjs"));
@@ -470,10 +481,6 @@ function require(need) {
          arr.push(import("./more.mjs"));
       else if (name == "gpad")
          arr.push(import("./gpad.mjs"));
-      else if (name == "io")
-         arr.push(import("./io.mjs"));
-      else if (name == "tree")
-         arr.push(import("./tree.mjs"));
       else if (name == "geobase")
          arr.push(import("./geobase.mjs"));
       else if (name == "geom")
@@ -486,8 +493,6 @@ function require(need) {
          arr.push(import("./base3d.mjs"));
       else if (name == "interactive")
          arr.push(import("./interactive.mjs"));
-      else if (name == "hierarchy")
-         arr.push(import("./hierarchy.mjs"));
       else if (name == "v7hist")
          arr.push(import("./v7hist.mjs"));
       else if (name == "v7hist3d")
@@ -496,8 +501,6 @@ function require(need) {
          arr.push(import("./v7more.mjs"));
       else if (name == "v7gpad")
          arr.push(import("./v7gpad.mjs"))
-      else if (name == "openui5")
-         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
       else  if (name == "painter")
          arr.push(import('./painter.mjs'));
    });
@@ -1735,7 +1738,7 @@ constants,
 settings,
 gStyle,
 isArrayProto,
-require,
+jsroot_require as require,
 getDocument,
 BIT,
 extend,

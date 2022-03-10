@@ -5,7 +5,7 @@ import * as jsroot from './core.mjs';
 import { getHPainter } from './hierarchy.mjs';
 
 let sync_promises = [];
-let jsrp = null; // old JSROOT.Painter handle
+let jsrp = null, geo = null; // old JSROOT.Painter and JSROOT.GEO handles
 
 function require(need) {
    if (!need)
@@ -47,15 +47,19 @@ function require(need) {
          arr.push(import("../modules/io.mjs"));
       else if (name == "tree")
          arr.push(import("../modules/tree.mjs"));
-      else if (name == "geobase")
-         arr.push(import("../modules/geobase.mjs"));
       else if (name == "geom")
-         arr.push(import("../modules/geom.mjs"));
+         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("../modules/geobase.mjs"), import("../modules/geom.mjs")).then(res => {
+            geo = {};
+            Object.assign(geo, res[0], res[1]);
+            globalThis.JSROOT.GEO = geo;
+            globalThis.JSROOT.TGeoPainter = res[1].TGeoPainter;
+            return geo;
+         }));
       else if (name == "math")
          arr.push(import("../modules/math.mjs"));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs"));
-      else if (name == "painter") {
+      else if (name == "painter")
          arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs'), import('../modules/d3.mjs')]).then(res => {
             jsrp = {};
             Object.assign(jsrp, res[0], res[1]);
@@ -65,13 +69,17 @@ function require(need) {
             globalThis.d3 = res[2]; // assign global d3
             return jsrp;
          }));
-      } else if (name == "base3d")
+      else if (name == "base3d")
          arr.push(import("../modules/base3d.mjs"));
       else if (name == "interactive")
          arr.push(import("../modules/interactive.mjs"));
       else if (name == "hierarchy")
-         arr.push(import("../modules/hierarchy.mjs"));
-      else if (name == "v7hist")
+         arr.push(import("../modules/hierarchy.mjs").then(h => {
+            Object.assign(globalThis.JSROOT, h);
+            globalThis.JSROOT.hpainter = getHPainter();
+            return h;
+         }));
+       else if (name == "v7hist")
          arr.push(import("../modules/v7hist.mjs"));
       else if (name == "v7hist3d")
          arr.push(import("../modules/v7hist3d.mjs"));

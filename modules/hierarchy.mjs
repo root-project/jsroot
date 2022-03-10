@@ -1700,22 +1700,22 @@ class HierarchyPainter extends BasePainter {
    async player(itemname, option) {
       let item = this.findItem(itemname);
 
-      if (!item || !item._player)
+      if (!item || !item._player || (typeof item._player != 'string'))
          return null;
 
-      // TODO: remove after v7.2, just to support older THttpServer
-      if (item._player == 'JSROOT.drawTreePlayer') {
-         item._prereq = 'hierarchy';
-         item._player = 'drawTreePlayer';
-      }
+      let player_func = findFunction(item._player);
 
-      let player_func;
-      if (item._prereq) {
-         let hh = await require(item._prereq);
-         player_func = hh[item._player];
+      if (!player_func)
+         if (item._prereq || (item._player.indexOf('JSROOT.') >= 0)) {
+            await this.loadScripts("", item._prereq);
+            player_func = findFunction(item._player);
+         }
+      if (!player_func && item._module) {
+         let hh = require(item._module);
+         player_func = hh ? hh[item._player] : null;
       }
-      if (!player_func) player_func = findFunction(item._player);
-      if (typeof player_func != 'function') return null;
+      if (typeof player_func != 'function')
+         return null;
 
       let mdi = await this.createDisplay();
       return mdi ? player_func(this, itemname, option) : null;
@@ -2612,7 +2612,7 @@ class HierarchyPainter extends BasePainter {
 
          this.h._expand = onlineHierarchy;
 
-         let styles = [], scripts = [], modules = [];
+         let styles = [], scripts = [], v6_modules = [];
          this.forEachItem(item => {
             if (item._childs !== undefined)
                item._expand = onlineHierarchy;
@@ -2625,14 +2625,13 @@ class HierarchyPainter extends BasePainter {
                   } else if ((name.length > 4) && (name.lastIndexOf(".css") == name.length-4)) {
                      if (!styles.find(elem => elem == name)) styles.push(name);
                   } else if (name && !modules.find(elem => elem == name)) {
-                     modules.push(name);
+                     v6_modules.push(name);
                   }
                });
             }
          });
 
-         return require(modules)
-               .then(() => this.loadScripts(scripts))
+         return this.loadScripts(scripts, v6_modules)
                .then(() => loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
@@ -2961,15 +2960,18 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
-   async loadScripts(arr) {
-      if (!arr || !arr.length) return;
+   async loadScripts(scritps, modules) {
+      if (!scritps && !modules) return;
 
       let v6 = await import('./v6.mjs');
 
       v6.ensureJSROOT();
 
-      for (let k = 0; k < arr.length; ++k)
-         await loadScript(arr[k]);
+      if (modules)
+         await v6.require(modules);
+
+      if(scritps)
+         await loadScript(scritps);
 
       await v6.complete_loading();
    }
@@ -3130,10 +3132,8 @@ class HierarchyPainter extends BasePainter {
       let openAllFiles = () => {
          let promise;
 
-         if (prereq) {
-            promise = require(prereq); prereq = "";
-         } else if (load) {
-            promise = this.loadScripts(load.split(";")); load = "";
+         if (load || prereq) {
+            promise = this.loadScripts(load, prereq); load = ""; prereq = "";
          } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = "";
          } else if (status !== null) {
