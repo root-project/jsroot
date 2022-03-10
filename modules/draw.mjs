@@ -81,11 +81,11 @@ let drawFuncs = { lst: [
    { name: "TASImage", icon: 'img_mgraph', class: () => import('./more.mjs').then(h => h.TASImagePainter), opt: ";z" },
    { name: "TJSImage", icon: 'img_mgraph', prereq: "more", func: "drawJSImage", opt: ";scale;center" },
    { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", class: () => import('./geom.mjs').then(h => h.TGeoPainter), expand: "expandGeoObject", opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
-   { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: () => import('./geom.mjs').then(h => h.TGeoPainter), expand: "expandGeoObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-   { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: () => import('./geom.mjs').then(h => h.TGeoPainter), expand: "expandGeoObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-   { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "expandGeoObject", class: () => import('./geom.mjs').then(h => h.TGeoPainter), opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
-   { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "expandGeoObject", class: () => import('./geom.mjs').then(h => h.TGeoPainter), opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
-   { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", class: () => import('./geom.mjs').then(h => h.TGeoPainter), expand: "expandGeoObject", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
+   { name: "TEveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
+   { name: "ROOT::Experimental::REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
+   { name: "TGeoOverlap", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
+   { name: "TGeoManager", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
+   { name: /^TGeo/, sameas: "TGeoVolume", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TAxis3D", icon: 'img_graph', prereq: "geom", func: "drawAxis3D", direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: "kind:Command", icon: "img_execute", execute: true },
@@ -155,8 +155,16 @@ function getDrawHandle(kind, selector) {
          if (!search.match(h.name)) continue;
       }
 
-      if (h.sameas !== undefined)
-         return getDrawHandle("ROOT." + h.sameas, selector);
+      if (h.sameas !== undefined) {
+         let hs = getDrawHandle("ROOT." + h.sameas, selector);
+         if (hs) {
+            for (let key in hs)
+               if (h[key] === undefined)
+                  h[key] = hs[key];
+            delete h.sameas;
+         }
+         return h;
+      }
 
       if ((selector === null) || (selector === undefined)) {
          // store found handle in cache, can reuse later
