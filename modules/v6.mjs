@@ -7,6 +7,19 @@ import { getHPainter } from './hierarchy.mjs';
 let sync_promises = [];
 let jsrp = null, geo = null; // old JSROOT.Painter and JSROOT.GEO handles
 
+/** @summary Old v6 method to load JSROOT functionality
+  * @desc
+  * Following components can be specified
+  *    - 'io'     TFile functionality
+  *    - 'tree'   TTree support
+  *    - 'painter' d3.js plus basic painting functions
+  *    - 'geom'   TGeo support
+  *    - 'math'   some methods from TMath class
+  *    - 'hierarchy' hierarchy browser
+  *    - 'openui5' OpenUI5 and related functionality
+  * @param {Array|string} req - list of required components (as array or string separated by semicolon)
+  * @returns {Promise} with array of requirements (or single element) */
+
 function require(need) {
    if (!need)
       return Promise.resolve(null);

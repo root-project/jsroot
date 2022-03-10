@@ -438,15 +438,7 @@ function extend(tgt, src) {
   *    - 'io'     TFile functionality
   *    - 'tree'   TTree support
   *    - 'painter' d3.js plus basic painting functions
-  *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
-  *    - 'hist'   histograms 2d drawing (SVG)
-  *    - 'hist3d' histograms 3d drawing (WebGL)
-  *    - 'more'   extra 2d graphic (TGraph, TF1)
   *    - 'geom'   TGeo support
-  *    - 'v7gpad' ROOT v7 RPad/RCanvas/RFrame
-  *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
-  *    - 'v7hist3d' ROOT v7 histograms 3d drawing (WebGL)
-  *    - 'v7more' ROOT v7 special classes
   *    - 'math'   some methods from TMath class
   *    - 'hierarchy' hierarchy browser
   *    - 'openui5' OpenUI5 and related functionality
@@ -466,43 +458,18 @@ function jsroot_require(need) {
          arr.push(import("./io.mjs"));
       else if (name == "tree")
          arr.push(import("./tree.mjs"));
-      else if (name == "openui5")
-         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
+      else if (name == "painter")
+         arr.push(import('./painter.mjs'));
       else if (name == "hierarchy")
          arr.push(import("./hierarchy.mjs"));
-      else if (name == "math")
-         arr.push(import("./math.mjs"));
-
-      else if (name == "hist")
-         arr.push(import("./hist.mjs"));
-      else if (name == "hist3d")
-         arr.push(import("./hist3d.mjs"));
-      else if (name == "more")
-         arr.push(import("./more.mjs"));
-      else if (name == "gpad")
-         arr.push(import("./gpad.mjs"));
-      else if (name == "geobase")
-         arr.push(import("./geobase.mjs"));
       else if (name == "geom")
          arr.push(import("./geom.mjs"));
       else if (name == "math")
          arr.push(import("./math.mjs"));
       else if (name == "latex")
          arr.push(import("./latex.mjs"));
-      else if (name == "base3d")
-         arr.push(import("./base3d.mjs"));
-      else if (name == "interactive")
-         arr.push(import("./interactive.mjs"));
-      else if (name == "v7hist")
-         arr.push(import("./v7hist.mjs"));
-      else if (name == "v7hist3d")
-         arr.push(import("./v7hist3d.mjs"));
-      else if (name == "v7more")
-         arr.push(import("./v7more.mjs"));
-      else if (name == "v7gpad")
-         arr.push(import("./v7gpad.mjs"))
-      else  if (name == "painter")
-         arr.push(import('./painter.mjs'));
+      else if (name == "openui5")
+         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
    });
 
    if (arr.length == 1)
