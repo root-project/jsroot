@@ -2624,7 +2624,7 @@ class HierarchyPainter extends BasePainter {
                      if (!scripts.find(elem => elem == name)) scripts.push(name);
                   } else if ((name.length > 4) && (name.lastIndexOf(".css") == name.length-4)) {
                      if (!styles.find(elem => elem == name)) styles.push(name);
-                  } else if (name && !modules.find(elem => elem == name)) {
+                  } else if (name && !v6_modules.find(elem => elem == name)) {
                      v6_modules.push(name);
                   }
                });
