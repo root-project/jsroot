@@ -6,7 +6,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "9/03/2022";
+let version_date = "10/03/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -459,19 +459,6 @@ function require(need) {
 
    if (typeof need == "string") need = need.split(";");
 
-   need.forEach((name,indx) => {
-      if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
-         need[indx] = name.substr(5);
-      else if (name == "2d")
-         need[indx] = "painter";
-      else if ((name == "jq2d") || (name == "jq"))
-         need[indx] = "hierarchy";
-      else if (name == "v6")
-         need[indx] = "gpad";
-      else if (name == "v7")
-         need[indx] = "v7gpad";
-   });
-
    let arr = [];
 
    need.forEach(name => {
@@ -495,10 +482,7 @@ function require(need) {
          arr.push(import("./math.mjs"));
       else if (name == "latex")
          arr.push(import("./latex.mjs"));
-      else if (name == "painter") {
-         // combine painter.mjs and draw.mjs
-         arr.push(Promise.all([import('./painter.mjs'), import('./draw.mjs')]).then(arr => extend(extend({}, arr[0]), arr[1])));
-      } else if (name == "base3d")
+      else if (name == "base3d")
          arr.push(import("./base3d.mjs"));
       else if (name == "interactive")
          arr.push(import("./interactive.mjs"));
@@ -988,12 +972,12 @@ function openFile(filename) {
    return import("./io.mjs").then(handle => handle.openFile(filename));
 }
 
-// Draw object, defined in JSRoot.painter.js
+// Draw object, defined in draw.mjs
 function draw(dom, obj, opt) {
    return import("./draw.mjs").then(handle => handle.draw(dom, obj, opt));
 }
 
-// Redaraw object, defined in JSRoot.painter.js
+// Redaraw object, defined in draw.mjs
 function redraw(dom, obj, opt) {
    return import("./draw.mjs").then(handle => handle.redraw(dom, obj, opt));
 }

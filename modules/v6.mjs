@@ -85,6 +85,7 @@ function require(need) {
          arr.push(import("../modules/core.mjs").then(handle => handle.loadScript(name)));
    });
 
+   // need notify calling function when require is completed
    let notify;
    sync_promises.push(new Promise(func => { notify = func; }));
 
