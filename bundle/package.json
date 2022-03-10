@@ -31,8 +31,8 @@
     "rollup-plugin-ignore": "1.0.10"
   },
   "scripts": {
-    "build": "rollup -c && mkdir -p style && cp ../style/JSRoot.painter.css style",
-    "cleanup": "rm -f bundle bundle.min style"
+    "build": "rm -rf bundle/* bundle.min/* && rollup -c && mkdir -p style && cp ../style/JSRoot.painter.css style",
+    "clean": "rm -rf bundle bundle.min style"
   },
   "engines": {
     "node": ">=14"
