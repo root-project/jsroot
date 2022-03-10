@@ -13,7 +13,7 @@ import { BasePainter, ObjectPainter, loadJSDOM,
          createMenu, registerForResize, getRGBfromTColor,
          readStyleFromURL, cleanup, resize } from './painter.mjs';
 
-import { getDrawSettings, getDrawHandle, canDraw, addDrawFunc, draw, redraw } from './draw.mjs';
+import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
 
 import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
 
@@ -154,7 +154,7 @@ function listHierarchy(folder, lst) {
            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
         }
 
-        if (do_context && canDraw(obj._typename)) item._direct_context = true;
+        if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
 
         // if name is integer value, it should match array index
         if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
@@ -404,7 +404,7 @@ function objectHierarchy(top, obj, args) {
 
             if (fld._typename) {
                item._title = fld._typename;
-               if (do_context && canDraw(fld._typename)) item._direct_context = true;
+               if (do_context && canDrawHandle(fld._typename)) item._direct_context = true;
             }
 
             // check if object already shown in hierarchy (circular dependency)
@@ -1042,7 +1042,7 @@ class HierarchyPainter extends BasePainter {
          if ('icon2' in handle) img2 = handle.icon2;
          if ((img1.length==0) && (typeof handle.icon_get == 'function'))
             img1 = handle.icon_get(hitem, this);
-         if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) ||
+         if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (('expand' in handle) && (hitem._more !== false))) can_click = true;
       }
 
@@ -1725,7 +1725,7 @@ class HierarchyPainter extends BasePainter {
       if (item._can_draw !== undefined) return item._can_draw;
       if (drawopt == 'inspect') return true;
       const handle = getDrawHandle(item._kind, drawopt);
-      return handle && (handle.func || handle.class || handle.draw_field);
+      return canDrawHandle(handle);
    }
 
    /** @summary Returns true if given item displayed
@@ -2632,7 +2632,7 @@ class HierarchyPainter extends BasePainter {
                      let typename = "kind:" + item._kind;
                      if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
-                     if (!canDraw(typename) || drawopt)
+                     if (!canDrawHandle(typename) || drawopt)
                         addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
 
@@ -2928,10 +2928,10 @@ class HierarchyPainter extends BasePainter {
    /** @summary function updates object drawings for other painters
      * @private */
    updateOnOtherFrames(painter, obj) {
-      let mdi = this.disp, handle = null, isany = false;
+      let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      if (obj._typename) handle = getDrawHandle("ROOT." + obj._typename);
+      let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
