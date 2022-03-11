@@ -4,7 +4,9 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { DrawOptions } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
+import { TH1Painter } from './TH1Painter.mjs';
+
+import { TH2Painter } from './TH2Painter.mjs';
 
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
@@ -183,7 +185,8 @@ class THStackPainter extends ObjectPainter {
             return Promise.resolve(this);
 
          let prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
-         return draw(subpad_painter.getDom(), hist, hopt).then(subp => {
+
+         return this.hdraw_func(subpad_painter.getDom(), hist, hopt).then(subp => {
             this.painters.push(subp);
             subpad_painter.selectCurrentPad(prev_name);
             return this.drawNextHisto(indx+1, pad_painter);
@@ -195,7 +198,7 @@ class THStackPainter extends ObjectPainter {
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
 
-      return draw(this.getDom(), hist, hopt + " same nostat").then(subp => {
+      return this.hdraw_func(this.getDom(), hist, hopt + " same nostat").then(subp => {
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);
       });
@@ -264,8 +267,8 @@ class THStackPainter extends ObjectPainter {
          return histo;
       }
 
-      let h0 = histos.arr[0];
-      let histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+      let h0 = histos.arr[0],
+          histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
       extend(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
@@ -356,11 +359,15 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed
 
-      let painter = new THStackPainter(dom, stack, opt), pad_painter = null, skip_drawing = false;
+      let painter = new THStackPainter(dom, stack, opt),
+          pad_painter = null,
+          skip_drawing = false;
 
       return ensureTCanvas(painter, false).then(() => {
 
          painter.decodeOptions(opt);
+
+         painter.hdraw_func = (painter.options.ndim == 1) ? TH1Painter.draw : TH2Painter.draw;
 
          if (painter.options.pads) {
             pad_painter = painter.getPadPainter();
@@ -388,7 +395,7 @@ class THStackPainter extends ObjectPainter {
 
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
 
-         return draw(dom, stack.fHistogram, hopt).then(subp => {
+         return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
             painter.firstpainter = subp;
          });
       }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));
