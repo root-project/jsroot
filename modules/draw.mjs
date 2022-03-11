@@ -12,10 +12,10 @@ import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } f
 
 // list of registered draw functions
 let drawFuncs = { lst: [
-   { name: "TCanvas", icon: "img_canvas", class: () => import('./gpad.mjs').then(h => h.TCanvasPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-   { name: "TPad", icon: "img_canvas", class: () => import('./gpad.mjs').then(h => h.TPadPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-   { name: "TSlider", icon: "img_canvas", class: () => import('./gpad.mjs').then(h => h.TPadPainter) },
-   { name: "TFrame", icon: "img_frame", class: () => import('./gpad.mjs').then(h => h.TFramePainter) },
+   { name: "TCanvas", icon: "img_canvas", class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+   { name: "TPad", icon: "img_canvas", class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+   { name: "TSlider", icon: "img_canvas", class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
+   { name: "TFrame", icon: "img_frame", draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
    { name: "TPave", icon: "img_pavetext", class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
    { name: "TPaveText", sameas: "TPave" },
    { name: "TPavesText", sameas: "TPave" },
@@ -56,7 +56,7 @@ let drawFuncs = { lst: [
    { name: "TMultiGraph", icon: "img_mgraph", class: () => import('./more.mjs').then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./hierarchy.mjs').then(h => h.drawStreamerInfo) },
    { name: "TWebPainting", icon: "img_graph", class: () => import('./more.mjs').then(h => h.TWebPaintingPainter) },
-   { name: "TCanvasWebSnapshot", icon: "img_canvas", draw: () => import('./gpad.mjs').then(h => h.drawTPadSnapshot) },
+   { name: "TCanvasWebSnapshot", icon: "img_canvas", draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
    { name: "kind:Text", icon: "img_text", func: drawRawText },
    { name: "TObjString", icon: "img_text", func: drawRawText },
@@ -76,7 +76,7 @@ let drawFuncs = { lst: [
    { name: "TCurlyLine", sameas: 'TPolyLine' },
    { name: "TCurlyArc", sameas: 'TPolyLine' },
    { name: "TParallelCoord", icon: "img_graph", dummy: true },
-   { name: "TGaxis", icon: "img_graph", class: () => import('./gpad.mjs').then(h => h.TAxisPainter) },
+   { name: "TGaxis", icon: "img_graph", draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTGaxis) },
    { name: "TBox", icon: 'img_graph', draw: () => import('./more.mjs').then(h => h.drawBox), direct: true },
    { name: "TWbox", sameas: "TBox" },
    { name: "TSliderBox", sameas: "TBox" },
@@ -318,7 +318,7 @@ async function draw(dom, obj, opt) {
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let v6h = await import('./gpad.mjs');
+         let v6h = await import('./gpad/TCanvasPainter.mjs');
          await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();

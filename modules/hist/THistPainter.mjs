@@ -10,7 +10,7 @@ import { DrawOptions } from '../painter.mjs';
 
 import { draw } from '../draw.mjs';
 
-import { EAxisBits } from '../gpad.mjs';
+import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { TPavePainter } from './TPavePainter.mjs';
 

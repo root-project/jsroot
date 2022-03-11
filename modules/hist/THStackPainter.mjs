@@ -6,7 +6,9 @@ import { DrawOptions } from '../painter.mjs';
 
 import { draw } from '../draw.mjs';
 
-import { EAxisBits, ensureTCanvas } from '../gpad.mjs';
+import { EAxisBits } from '../gpad/TAxisPainter.mjs';
+
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 /**
  * @summary Painter class for THStack

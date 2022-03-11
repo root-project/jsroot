@@ -12,7 +12,9 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { floatToString, getElementMainPainter, createMenu } from '../painter.mjs';
 
-import { ensureTCanvas, TAxisPainter } from '../gpad.mjs';
+import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 /**
  * @summary painter for TPave-derived classes

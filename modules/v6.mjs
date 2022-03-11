@@ -43,23 +43,25 @@ function require(need) {
 
    need.forEach(name => {
       if (name == "hist")
-         arr.push(Promise.all([import("../modules/hist/TH1Painter.mjs"), import("../modules/hist/TH2Painter.mjs"), import("../modules/hist/THStackPainter.mjs")]).then(arr => {
+         arr.push(Promise.all([import("./hist/TH1Painter.mjs"), import("./hist/TH2Painter.mjs"), import("./hist/THStackPainter.mjs")]).then(arr => {
             // copy hist painter objects into JSROOT
             Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
          }));
       else if (name == "more")
-         arr.push(import("../modules/more.mjs"));
+         arr.push(import("./more.mjs"));
       else if (name == "gpad")
-         arr.push(import("../modules/gpad.mjs").then(handle => {
-            if (jsrp) jsrp.ensureTCanvas = handle.ensureTCanvas;
+         arr.push(Promise.all([import("./gpad/TAxisPainter.mjs"), import("./gpad/TPadPainter.mjs"), import("./gpad/TCanvasPainter.mjs")]).then(arr => {
+            // copy all classes
+            Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
+            if (jsrp) jsrp.ensureTCanvas = arr[2].ensureTCanvas;
             return handle;
          }));
       else if (name == "io")
-         arr.push(import("../modules/io.mjs"));
+         arr.push(import("./io.mjs"));
       else if (name == "tree")
-         arr.push(import("../modules/tree.mjs"));
+         arr.push(import("./tree.mjs"));
       else if (name == "geom")
-         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("../modules/geobase.mjs"), import("../modules/geom.mjs")).then(res => {
+         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("./geobase.mjs"), import("./geom.mjs")).then(res => {
             geo = {};
             Object.assign(geo, res[0], res[1]);
             globalThis.JSROOT.GEO = geo;
@@ -67,12 +69,12 @@ function require(need) {
             return geo;
          }));
       else if (name == "math")
-         arr.push(import("../modules/math.mjs"));
+         arr.push(import("./math.mjs"));
       else if (name == "latex")
-         arr.push(import("../modules/latex.mjs"));
+         arr.push(import("./latex.mjs"));
       else if (name == "painter")
-         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/painter.mjs'),
-                    import('../modules/draw.mjs'), import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
+         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('./d3.mjs'), import('./painter.mjs'),
+                    import('./draw.mjs'), import('./base/colors.mjs'), import('./base/BasePainter.mjs'), import('./base/ObjectPainter.mjs')]).then(res => {
             globalThis.d3 = res[0]; // assign global d3
             jsrp = {};
             Object.assign(jsrp, res[1], res[2], res[3]);
@@ -82,27 +84,27 @@ function require(need) {
             return jsrp;
          }));
       else if (name == "base3d")
-         arr.push(import("../modules/base3d.mjs"));
+         arr.push(import("./base3d.mjs"));
       else if (name == "interactive")
-         arr.push(import("../modules/interactive.mjs"));
+         arr.push(import("./interactive.mjs"));
       else if (name == "hierarchy")
-         arr.push(import("../modules/hierarchy.mjs").then(h => {
+         arr.push(import("./hierarchy.mjs").then(h => {
             Object.assign(globalThis.JSROOT, h);
             globalThis.JSROOT.hpainter = getHPainter();
             return h;
          }));
        else if (name == "v7hist")
-         arr.push(import("../modules/v7hist.mjs"));
+         arr.push(import("./v7hist.mjs"));
       else if (name == "v7hist3d")
-         arr.push(import("../modules/v7hist3d.mjs"));
+         arr.push(import("./v7hist3d.mjs"));
       else if (name == "v7more")
-         arr.push(import("../modules/v7more.mjs"));
+         arr.push(import("./v7more.mjs"));
       else if (name == "v7gpad")
-         arr.push(import("../modules/v7gpad.mjs"))
+         arr.push(import("./v7gpad.mjs"))
       else if (name == "openui5")
-         arr.push(import("../modules/openui5.mjs").then(handle => handle.doUi5Loading()));
+         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
       else if (name.indexOf(".js") >= 0)
-         arr.push(import("../modules/core.mjs").then(handle => handle.loadScript(name)));
+         arr.push(import("./core.mjs").then(handle => handle.loadScript(name)));
    });
 
    // need notify calling function when require is completed

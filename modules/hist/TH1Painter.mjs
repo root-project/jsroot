@@ -6,7 +6,7 @@ import { floatToString, buildSvgPath } from '../painter.mjs';
 
 import { getDrawSettings } from '../draw.mjs';
 
-import { ensureTCanvas } from '../gpad.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { THistPainter } from './THistPainter.mjs';
 

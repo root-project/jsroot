@@ -9,7 +9,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector3, Matrix4, Line3,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight } from '../three.mjs';
 
-import { TAxisPainter, EAxisBits } from '../gpad.mjs';
+import { TAxisPainter, EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D,

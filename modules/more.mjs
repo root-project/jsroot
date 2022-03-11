@@ -22,7 +22,7 @@ import { draw } from './draw.mjs';
 
 import * as jsroot_math from './math.mjs';
 
-import { ensureTCanvas } from './gpad.mjs';
+import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
 
 /** @summary Draw TText
   * @private */

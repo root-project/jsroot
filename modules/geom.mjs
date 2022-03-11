@@ -30,7 +30,7 @@ import { DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 import { addDrawFunc } from './draw.mjs';
 
-import { ensureTCanvas } from './gpad.mjs';
+import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
 
 import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,

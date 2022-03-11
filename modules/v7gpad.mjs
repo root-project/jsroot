@@ -26,7 +26,7 @@ import { DrawOptions, AxisPainterMethods,
 
 import { addDrawFunc, draw } from './draw.mjs';
 
-import { TAxisPainter } from './gpad.mjs';
+import { TAxisPainter } from './gpad/TAxisPainter.mjs';
 
 const CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 

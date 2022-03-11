@@ -10,7 +10,7 @@ import { TRandom, floatToString } from '../painter.mjs';
 
 import { getDrawSettings, draw } from '../draw.mjs';
 
-import { ensureTCanvas } from '../gpad.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
 
