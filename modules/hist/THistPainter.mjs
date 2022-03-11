@@ -8,8 +8,6 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { DrawOptions } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
-
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { TPavePainter } from './TPavePainter.mjs';
@@ -1081,7 +1079,7 @@ class THistPainter extends ObjectPainter {
             if (pp && (newfuncs.length > 0)) {
                let arr = [], prev_name = pp.has_canvas ? pp.selectCurrentPad(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
-                  arr.push(draw(this.getDom(), newfuncs[k]));
+                  arr.push(pp.drawObject(this.getDom(), newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
@@ -1368,7 +1366,7 @@ class THistPainter extends ObjectPainter {
       }
 
       let prev_name = this.selectCurrentPad(this.getPadName());
-      draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+      TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
 
       return true;
    }
@@ -1495,7 +1493,7 @@ class THistPainter extends ObjectPainter {
 
       func.$histo = histo; // required to draw TF1 correctly
 
-      return draw(this.getDom(), func, opt).then(painter => {
+      return pp.drawObject(this.getDom(), func, opt).then(painter => {
          if (painter && (typeof painter == "object")) {
             painter.child_painter_id = this.hist_painter_id;
          }

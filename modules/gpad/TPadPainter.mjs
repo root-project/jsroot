@@ -17,8 +17,6 @@ import { DrawOptions, createMenu, closeMenu, registerForResize,
          selectActivePad, getActivePad, getAbsPosInCanvas,
          compressSVG } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
-
 // identifier used in TWebCanvas painter
 const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
