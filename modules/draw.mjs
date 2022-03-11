@@ -4,11 +4,13 @@ import { select as d3_select } from './d3.mjs';
 
 import { loadScript, findFunction, internals, extend, isNodeJs } from './core.mjs';
 
+import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
+
 import { BasePainter } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
+import { TPadPainter } from './gpad/TPadPainter.mjs';
 
 // list of registered draw functions
 let drawFuncs = { lst: [
@@ -538,6 +540,9 @@ function makeSVG(args) {
    return loadJSDOM().then(handle => build(handle.body.append('div')));
 }
 
+
+// only now one can draw primitives in the canvas
+TPadPainter.prototype.drawObject = draw;
 
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
