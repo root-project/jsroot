@@ -417,20 +417,6 @@ function loadScript(url) {
    });
 }
 
-/** @summary Just copy (not clone) all fields from source to the target object
-  * @desc Simple replacement of jQuery.extend method
-  * @private */
-function extend(tgt, src) {
-   if ((src === null) || (typeof src !== 'object')) return tgt;
-   if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
-
-   for (let k in src)
-      tgt[k] = src[k];
-
-   return tgt;
-}
-
-
 /** @summary Central method to load JSROOT functionality
   * @desc
   * Following components can be specified
@@ -538,6 +524,9 @@ function clone(src, map, nofunc) {
 
    return tgt;
 }
+
+// used very often - keep shortcut
+const extend = Object.assign;
 
 /** @summary Adds specific methods to the object.
   * @desc JSROOT implements some basic methods for different ROOT classes.
@@ -1716,7 +1705,6 @@ isArrayProto,
 jsroot_require as require,
 getDocument,
 BIT,
-extend,
 clone,
 addMethods,
 parse,
