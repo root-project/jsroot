@@ -2,7 +2,7 @@
 
 import { settings } from '../core.mjs';
 
-import { drawBinsLego } from './draw3d.mjs';
+import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
 import { TH1Painter } from '../hist/TH1Painter.mjs';
 
@@ -27,6 +27,7 @@ TH1Painter.prototype.draw3D = async function(reason) {
       this.scanContent(true); // may be required for axis drawings
 
       if (is_main) {
+         assignFrame3DMethods(main);
          await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
          main.set3DOptions(this.options);

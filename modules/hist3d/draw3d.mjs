@@ -9,7 +9,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector3, Matrix4, Line3,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight } from '../three.mjs';
 
-import { TAxisPainter, TFramePainter, EAxisBits } from '../gpad.mjs';
+import { TAxisPainter, EAxisBits } from '../gpad.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D,
@@ -107,9 +107,9 @@ function setCameraPosition(fp, first_time) {
       fp.camera.lookAt(fp.lookat);
 }
 
-/** @summary Create all necessary components for 3D drawings
+/** @summary Create all necessary components for 3D drawings in frame painter
   * @private */
-TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dscale) {
+async function create3DScene(render3d, x3dscale, y3dscale) {
 
    if (render3d === -1) {
 
@@ -288,14 +288,14 @@ TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dsc
 
 }
 
-/** @summary call 3D rendering of the histogram drawing
+/** @summary call 3D rendering of the frame
   * @param {number} tmout - specifies delay, after which actual rendering will be invoked
   * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
   * superimposed with each other.
   * If tmeout <= 0, rendering performed immediately
   * If tmout == -1111, immediate rendering with SVG renderer is performed
   * @private */
-TFramePainter.prototype.render3D = function(tmout) {
+function render3D(tmout) {
 
    if (tmout === -1111) {
       // special handling for direct SVG renderer
@@ -351,7 +351,7 @@ TFramePainter.prototype.render3D = function(tmout) {
 
 /** @summary Check is 3D drawing need to be resized
   * @private */
-TFramePainter.prototype.resize3D = function() {
+function resize3D() {
 
    let sz = this.getSizeFor3d(this.access3dKind());
 
@@ -374,9 +374,9 @@ TFramePainter.prototype.resize3D = function() {
    return true;
 }
 
-/** @summary Hilight bin in 3D drawing
+/** @summary Hilight bin in frame painter 3D drawing
   * @private */
-TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
+function highlightBin3D(tip, selfmesh) {
 
    let changed = false, tooltip_mesh = null, changed_self = true,
        want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
@@ -470,13 +470,13 @@ TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
 /** @summary Set options used for 3D drawings
   * @private */
-TFramePainter.prototype.set3DOptions = function(hopt) {
+function set3DOptions(hopt) {
    this.opt3d = hopt;
 }
 
 /** @summary Draw axes in 3D mode
   * @private */
-TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
+function drawXYZ(toplevel, opts) {
    if (!opts) opts = {};
 
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
@@ -1029,6 +1029,11 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 }
 
+function assignFrame3DMethods(fpainter) {
+   Object.assign(fpainter, { create3DScene, render3D, resize3D, highlightBin3D, set3DOptions, drawXYZ });
+}
+
+
 /** @summary Draw histograms in 3D mode
   * @private */
 function drawBinsLego(painter) {
@@ -1382,4 +1387,5 @@ function drawBinsLego(painter) {
    main.toplevel.add(line);
 }
 
-export { drawBinsLego };
+
+export { assignFrame3DMethods, drawBinsLego };

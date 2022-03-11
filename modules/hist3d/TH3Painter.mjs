@@ -16,8 +16,7 @@ import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
 
 import { THistPainter } from '../hist/THistPainter.mjs';
 
-// need to assign frame painter methods
-import { drawBinsLego } from './draw3d.mjs';
+import { assignFrame3DMethods } from './draw3d.mjs';
 
 /**
  * @summary Painter for TH3 classes
@@ -597,7 +596,7 @@ class TH3Painter extends THistPainter {
          if (main.resize3D()) main.render3D();
 
       } else {
-
+         assignFrame3DMethods(main);
          await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
