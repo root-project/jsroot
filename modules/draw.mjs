@@ -12,8 +12,11 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { TPadPainter } from './gpad/TPadPainter.mjs';
 
+// v7 namespace prefix
+const _v7 = "ROOT::Experimental::";
+
 // list of registered draw functions
-let drawFuncs = { lst: [
+const drawFuncs = { lst: [
    { name: "TCanvas", icon: "img_canvas", class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
    { name: "TPad", icon: "img_canvas", class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
    { name: "TSlider", icon: "img_canvas", class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
@@ -88,7 +91,7 @@ let drawFuncs = { lst: [
    { name: "TJSImage", icon: 'img_mgraph', draw: () => import('./more.mjs').then(h => h.drawJSImage), opt: ";scale;center" },
    { name: "TGeoVolume", icon: 'img_histo3d', class: () => import('./geom.mjs').then(h => h.TGeoPainter), get_expand: () => import('./geom.mjs').then(h => h.expandGeoObject), opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
    { name: "TEveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
-   { name: "ROOT::Experimental::REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
+   { name: _v7+"REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
    { name: "TGeoOverlap", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TGeoManager", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
    { name: /^TGeo/, sameas: "TGeoVolume", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
@@ -115,25 +118,25 @@ let drawFuncs = { lst: [
    { name: "Session", icon: "img_globe" },
    { name: "kind:TopFolder", icon: "img_base" },
    { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-   { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", class: () => import('./v7gpad.mjs').then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
-   { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", draw: () => import('./v7gpad.mjs').then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
-   { name: "ROOT::Experimental::RHist1Drawable", icon: "img_histo1d", class: () => import('./v7hist.mjs').then(h => h.RH1Painter), opt: "" },
-   { name: "ROOT::Experimental::RHist2Drawable", icon: "img_histo2d", class: () => import('./v7hist.mjs').then(h => h.RH2Painter), opt: "" },
-   { name: "ROOT::Experimental::RHist3Drawable", icon: "img_histo3d", class: () => import('./v7hist3d.mjs').then(h => h.RH3Painter), opt: "" },
-   { name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", draw: () => import('./v7hist.mjs').then(h => h.drawHistDisplayItem), opt: "" },
-   { name: "ROOT::Experimental::RText", icon: "img_text", draw: () => import('./v7more.mjs').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
-   { name: "ROOT::Experimental::RFrameTitle", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
-   { name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", class: () => import('./v7gpad.mjs').then(h => h.RPalettePainter), opt: "" },
-   { name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" },
-   { name: "ROOT::Experimental::RLine", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
-   { name: "ROOT::Experimental::RBox", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
-   { name: "ROOT::Experimental::RMarker", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
-   { name: "ROOT::Experimental::RPave", icon: "img_pavetext", class: () => import('./v7gpad.mjs').then(h => h.RPavePainter), opt: "" },
-   { name: "ROOT::Experimental::RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" },
-   { name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" },
-   { name: "ROOT::Experimental::RFrame", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RFramePainter), opt: "" },
-   { name: "ROOT::Experimental::RFont", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
-   { name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RAxisPainter), opt: "" }
+   { name: _v7+"RCanvas", icon: "img_canvas", class: () => import('./v7gpad.mjs').then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
+   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => import('./v7gpad.mjs').then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
+   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => import('./v7hist.mjs').then(h => h.RH1Painter), opt: "" },
+   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => import('./v7hist.mjs').then(h => h.RH2Painter), opt: "" },
+   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => import('./v7hist3d.mjs').then(h => h.RH3Painter), opt: "" },
+   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => import('./v7hist.mjs').then(h => h.drawHistDisplayItem), opt: "" },
+   { name: _v7+"RText", icon: "img_text", draw: () => import('./v7more.mjs').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
+   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
+   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => import('./v7gpad.mjs').then(h => h.RPalettePainter), opt: "" },
+   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" },
+   { name: _v7+"RLine", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
+   { name: _v7+"RBox", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
+   { name: _v7+"RMarker", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
+   { name: _v7+"RPave", icon: "img_pavetext", class: () => import('./v7gpad.mjs').then(h => h.RPavePainter), opt: "" },
+   { name: _v7+"RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" },
+   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" },
+   { name: _v7+"RFrame", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RFramePainter), opt: "" },
+   { name: _v7+"RFont", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
+   { name: _v7+"RAxisDrawable", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RAxisPainter), opt: "" }
 ], cache: {} };
 
 
