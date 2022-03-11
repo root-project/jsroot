@@ -943,11 +943,6 @@ function cleanup(dom) {
    return import("./painter.mjs").then(handle => handle.cleanup(dom));
 }
 
-// Create SVG, defined in JSRoot.painter.js
-function makeSVG(args) {
-   return import("./draw.mjs").then(handle => handle.makeSVG(args));
-}
-
 /** @summary Method to build main JSROOT GUI
   * @param {string|object} gui_element - where gui should be started, element id or just HTML element
   * @param {string} [gui_kind = "gui"] - kind of the gui: "gui", "online", "draw"
@@ -1710,7 +1705,6 @@ findFunction,
 createHttpRequest,
 httpRequest,
 loadScript,
-makeSVG,
 cleanup,
 redraw,
 draw,
