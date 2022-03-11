@@ -10,8 +10,13 @@ import { Prob } from './math.mjs';
 
 import { ColorPalette, toHex, getColor } from './base/colors.mjs';
 
-import {  ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
-         floatToString, buildSvgPath, getElementMainPainter, createMenu } from './painter.mjs';
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { TAttLineHandler } from './base/TAttLineHandler.mjs';
+
+import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+
+import { DrawOptions, TRandom, floatToString, buildSvgPath, getElementMainPainter, createMenu } from './painter.mjs';
 
 import { getDrawSettings, draw } from './draw.mjs';
 

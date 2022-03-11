@@ -4,8 +4,9 @@ import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } 
 
 import { rgb as d3_rgb } from './d3.mjs';
 
-import { floatToString, DrawOptions, TAttLineHandler, TRandom,
-         buildSvgPath, createMenu } from './painter.mjs';
+import { TAttLineHandler } from './base/TAttLineHandler.mjs';
+
+import { floatToString, DrawOptions, TRandom, buildSvgPath, createMenu } from './painter.mjs';
 
 import { getDrawSettings } from './draw.mjs';
 

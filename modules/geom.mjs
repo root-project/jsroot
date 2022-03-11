@@ -24,7 +24,9 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
 
 import { getColor, getRootColors } from './base/colors.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 import { addDrawFunc } from './draw.mjs';
 

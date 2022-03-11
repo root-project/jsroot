@@ -10,7 +10,11 @@ import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3
          TextGeometry, SphereGeometry, ShapeUtils,
          Plane, Scene, PerspectiveCamera, PointLight } from './three.mjs';
 
-import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom, floatToString } from './painter.mjs';
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+
+import { DrawOptions, TRandom, floatToString } from './painter.mjs';
 
 import { getDrawSettings, draw } from './draw.mjs';
 

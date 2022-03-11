@@ -2,7 +2,9 @@
 
 import { loadScript, settings, isNodeJs } from './core.mjs';
 
-import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
+import { getElementRect } from './base/BasePainter.mjs';
+
+import { loadJSDOM, FontHandler } from './painter.mjs';
 
 const symbols_map = {
    // greek letters

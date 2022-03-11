@@ -9,7 +9,13 @@ import { REVISION, HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget
 
 import { browser, settings, constants, internals, extend, isBatchMode, isNodeJs, getDocument } from './core.mjs';
 
-import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
+import { getElementRect } from './base/BasePainter.mjs';
+
+import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+
+import { getSvgLineStyle } from './base/TAttLineHandler.mjs';
+
+import { getAbsPosInCanvas } from './painter.mjs';
 
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
 

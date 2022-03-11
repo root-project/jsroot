@@ -4,9 +4,12 @@ import { select as d3_select, drag as d3_drag } from './d3.mjs';
 
 import { browser, internals, toJSON } from './core.mjs';
 
-import { BasePainter, ObjectPainter, getElementCanvPainter, selectActivePad, compressSVG,
-         createMenu, cleanup, resize } from './painter.mjs';
+import { BasePainter } from './base/BasePainter.mjs';
 
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { getElementCanvPainter, selectActivePad, compressSVG,
+         createMenu, cleanup, resize } from './painter.mjs';
 
 /**
  * @summary Base class to manage multiple document interface for drawings

@@ -10,8 +10,11 @@ import { showProgress } from './utils.mjs';
 
 import { getRGBfromTColor } from './base/colors.mjs';
 
-import { BasePainter, ObjectPainter, loadJSDOM,
-         getElementMainPainter,
+import { BasePainter } from './base/BasePainter.mjs';
+
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { loadJSDOM, getElementMainPainter,
          createMenu, registerForResize, readStyleFromURL, cleanup, resize } from './painter.mjs';
 
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';

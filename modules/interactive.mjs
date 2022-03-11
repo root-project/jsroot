@@ -5,7 +5,9 @@ import { browser, settings, extend, isBatchMode } from './core.mjs';
 import { select as d3_select, drag as d3_drag,
          pointer as d3_pointer, pointers as d3_pointers } from './d3.mjs';
 
-import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
+import { getElementRect } from './base/BasePainter.mjs';
+
+import { createMenu, closeMenu, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
 let TooltipHandler = {
 

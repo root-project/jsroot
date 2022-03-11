@@ -6,8 +6,17 @@ import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer 
 
 import { toHex, getColor } from './base/colors.mjs';
 
-import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
-         floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
+import { BasePainter } from './base/BasePainter.mjs';
+
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+
+import { TAttLineHandler } from './base/TAttLineHandler.mjs';
+
+import { TAttFillHandler } from './base/TAttFillHandler.mjs';
+
+import { DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
 
 import { draw } from './draw.mjs';
 

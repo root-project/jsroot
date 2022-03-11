@@ -4,7 +4,7 @@ import { select as d3_select } from './d3.mjs';
 import { gStyle, loadScript, decodeUrl,
          browser, settings, constants, internals, isBatchMode, isNodeJs } from './core.mjs';
 
-import { getElementRect, BasePainter } from './base/BasePainter.mjs';
+import { BasePainter } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
@@ -949,17 +949,12 @@ function loadJSDOM() {
 
 if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-export { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
-
 export { TAttFillHandler } from './base/TAttFillHandler.mjs';
-
-export { TAttLineHandler, getSvgLineStyle } from './base/TAttLineHandler.mjs';
 
 export { FontHandler } from './base/FontHandler.mjs';
 
-export { BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
-         TRandom, getElementRect, cleanup, resize,
-         loadJSDOM, floatToString, buildSvgPath,
+export { DrawOptions, AxisPainterMethods,
+         TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          compressSVG, drawingJSON, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas, drawRawText };

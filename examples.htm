@@ -132,7 +132,7 @@
          let host = window.location.host;
 
          if (host.indexOf("localhost") >= 0) {
-            filepath = "https://jsroot.gsi.de/files/";
+            filepath = "https://root.cern/js/files/"; // "https://jsroot.gsi.de/files/";
             use_zstd = false;
          } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
             filepath = "https://root.cern/js/files/";

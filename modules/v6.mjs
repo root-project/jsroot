@@ -73,13 +73,14 @@ function require(need) {
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs"));
       else if (name == "painter")
-         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/painter.mjs'), import('../modules/draw.mjs'), import('../modules/d3.mjs')]).then(res => {
+         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/painter.mjs'),
+                    import('../modules/draw.mjs'), import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
+            globalThis.d3 = res[0]; // assign global d3
             jsrp = {};
-            Object.assign(jsrp, res[0], res[1]);
+            Object.assign(jsrp, res[1], res[2], res[3]);
             globalThis.JSROOT.Painter = jsrp;
-            globalThis.JSROOT.ObjectPainter = res[0].ObjectPainter;
-            globalThis.JSROOT.BasePainter = res[0].BasePainter;
-            globalThis.d3 = res[2]; // assign global d3
+            globalThis.JSROOT.BasePainter = res[4].BasePainter;
+            globalThis.JSROOT.ObjectPainter = res[5].ObjectPainter;
             return jsrp;
          }));
       else if (name == "base3d")

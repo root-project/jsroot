@@ -12,9 +12,15 @@ import { closeCurrentWindow, showProgress } from './utils.mjs';
 
 import { ColorPalette, addColor, getRootColors } from './base/colors.mjs';
 
-import { ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
-         createMenu, closeMenu, registerForResize, getElementRect, chooseTimeFormat, selectActivePad,
-         getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
+import { ObjectPainter } from './base/ObjectPainter.mjs';
+
+import { getElementRect } from './base/BasePainter.mjs';
+
+import { getSvgLineStyle } from './base/TAttLineHandler.mjs';
+
+import { DrawOptions, AxisPainterMethods, FontHandler,
+         createMenu, closeMenu, registerForResize, chooseTimeFormat, selectActivePad,
+         getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
 
 import { addDrawFunc, draw } from './draw.mjs';
 
