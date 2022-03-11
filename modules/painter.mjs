@@ -949,10 +949,6 @@ function loadJSDOM() {
 
 if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-export { TAttFillHandler } from './base/TAttFillHandler.mjs';
-
-export { FontHandler } from './base/FontHandler.mjs';
-
 export { DrawOptions, AxisPainterMethods,
          TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,

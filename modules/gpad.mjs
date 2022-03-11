@@ -18,7 +18,9 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { TAttLineHandler, getSvgLineStyle } from './base/TAttLineHandler.mjs';
 
-import { DrawOptions, AxisPainterMethods, FontHandler,
+import { FontHandler } from './base/FontHandler.mjs';
+
+import { DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, registerForResize,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
          compressSVG, cleanup, resize } from './painter.mjs';

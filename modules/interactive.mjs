@@ -7,7 +7,9 @@ import { select as d3_select, drag as d3_drag,
 
 import { getElementRect } from './base/BasePainter.mjs';
 
-import { createMenu, closeMenu, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
+import { FontHandler } from './base/FontHandler.mjs';
+
+import { createMenu, closeMenu, getActivePad, getAbsPosInCanvas } from './painter.mjs';
 
 let TooltipHandler = {
 
