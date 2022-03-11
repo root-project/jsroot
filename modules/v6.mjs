@@ -47,8 +47,6 @@ function require(need) {
             // copy hist painter objects into JSROOT
             Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
          }));
-      else if (name == "hist3d")
-         arr.push(import("../modules/hist3d.mjs"));
       else if (name == "more")
          arr.push(import("../modules/more.mjs"));
       else if (name == "gpad")

@@ -1915,8 +1915,9 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (itemname == "$legend")
-         return import('./hist.mjs').then(hhh => hhh.produceLegend(divid, opt))
-                                    .then(legend_painter => drop_complete(legend_painter));
+         return import('./hist/TPavePainter.mjs')
+                    .then(h => h.produceLegend(divid, opt))
+                    .then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
 
