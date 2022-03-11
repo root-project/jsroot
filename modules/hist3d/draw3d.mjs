@@ -27,9 +27,6 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
 
 import { translateLaTeX } from '../latex.mjs';
 
-import { THistPainter } from '../hist/THistPainter.mjs';
-
-
 
 /** @summary Text 3d axis visibility
   * @private */
@@ -1043,21 +1040,9 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
 /** @summary Draw histograms in 3D mode
   * @private */
-THistPainter.prototype.draw3DBins = function() {
+function drawBinsLego(painter) {
 
-   if (!this.draw_content) return;
-
-   if (this.isTH2Poly() && this.drawPolyLego)
-      return this.drawPolyLego();
-
-   if ((this.getDimension() == 2) && this.options.Contour && this.drawContour3D)
-      return this.drawContour3D(true);
-
-   if ((this.getDimension() == 2) && this.options.Surf && this.drawSurf)
-      return this.drawSurf();
-
-   if ((this.getDimension() == 2) && this.options.Error && this.drawError)
-      return this.drawError();
+   if (!painter.draw_content) return;
 
    // Perform TH1/TH2 lego plot with BufferGeometry
 
@@ -1069,14 +1054,14 @@ THistPainter.prototype.draw3DBins = function() {
          rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
          // reduced vertices
          rvertices = [ new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0) ],
-         main = this.getFramePainter(),
+         main = painter.getFramePainter(),
          axis_zmin = main.z_handle.getScaleMin(),
          axis_zmax = main.z_handle.getScaleMax(),
-         handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+         handle = painter.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
-         histo = this.getHisto(),
+         histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
-         split_faces = (this.options.Lego === 11) || (this.options.Lego === 13), // split each layer on two parts
+         split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
          use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
 
    if ((i1 >= i2) || (j1 >= j2)) return;
@@ -1090,10 +1075,10 @@ THistPainter.prototype.draw3DBins = function() {
       binz2 = histo.getBinContent(ii+1, jj+1);
       if (basehisto)
          binz1 = basehisto.getBinContent(ii+1, jj+1);
-      else if (this.options.BaseLine !== false)
-         binz1 = this.options.BaseLine;
+      else if (painter.options.BaseLine !== false)
+         binz1 = painter.options.BaseLine;
       else
-         binz1 = this.options.Zero ? axis_zmin : 0;
+         binz1 = painter.options.Zero ? axis_zmin : 0;
       if (binz2 < binz1) { let d = binz1; binz1 = binz2; binz2 = d; }
 
       if ((binz1 >= zmax) || (binz2 < zmin)) return false;
@@ -1104,9 +1089,9 @@ THistPainter.prototype.draw3DBins = function() {
 
       if (basehisto) return false; // do not draw empty bins on top of other bins
 
-      if (this.options.Zero || (axis_zmin>0)) return true;
+      if (painter.options.Zero || (axis_zmin>0)) return true;
 
-      return this._show_empty_bins;
+      return painter._show_empty_bins;
    };
 
 
@@ -1114,11 +1099,11 @@ THistPainter.prototype.draw3DBins = function() {
 
    // DRAW ALL CUBES
 
-   if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
+   if ((painter.options.Lego === 12) || (painter.options.Lego === 14)) {
       // drawing colors levels, axis can not exceed palette
-      let cntr = this.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
+      let cntr = painter.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
       levels = cntr.arr;
-      palette = this.getHistPalette();
+      palette = painter.getHistPalette();
       //axis_zmin = levels[0];
       //axis_zmax = levels[levels.length-1];
    }
@@ -1236,11 +1221,11 @@ THistPainter.prototype.draw3DBins = function() {
       // geometry.computeVertexNormals();
 
       let rootcolor = histo.fFillColor,
-          fcolor = this.getColor(rootcolor);
+          fcolor = painter.getColor(rootcolor);
 
       if (palette) {
          fcolor = palette.calcColor(nlevel, levels.length);
-      } else if ((this.options.Lego === 1) || (rootcolor < 2)) {
+      } else if ((painter.options.Lego === 1) || (rootcolor < 2)) {
          rootcolor = 1;
          fcolor = 'white';
       }
@@ -1249,10 +1234,10 @@ THistPainter.prototype.draw3DBins = function() {
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
-      mesh.painter = this;
+      mesh.painter = painter;
       mesh.zmin = axis_zmin;
       mesh.zmax = axis_zmax;
-      mesh.baseline = (this.options.BaseLine!==false) ? this.options.BaseLine : (this.options.Zero ? axis_zmin : 0);
+      mesh.baseline = (painter.options.BaseLine !== false) ? painter.options.BaseLine : (painter.options.Zero ? axis_zmin : 0);
       mesh.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
       mesh.handle = handle;
 
@@ -1302,7 +1287,7 @@ THistPainter.prototype.draw3DBins = function() {
                material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
-         mesh2.painter = this;
+         mesh2.painter = painter;
          mesh2.handle = mesh.handle;
          mesh2.tooltip = mesh.tooltip;
          mesh2.zmin = mesh.zmin;
@@ -1315,7 +1300,7 @@ THistPainter.prototype.draw3DBins = function() {
    }
 
    // lego3 or lego4 do not draw border lines
-   if (this.options.Lego > 12) return;
+   if (painter.options.Lego > 12) return;
 
    // DRAW LINE BOXES
 
@@ -1390,12 +1375,12 @@ THistPainter.prototype.draw3DBins = function() {
    }
 
    // create boxes
-   const lcolor = this.getColor(histo.fLineColor),
+   const lcolor = painter.getColor(histo.fLineColor),
          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
-   line.painter = this;
+   line.painter = painter;
    line.intersect_index = intersect_index;
    line.tooltip = function(intersect) {
       if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
@@ -1406,4 +1391,4 @@ THistPainter.prototype.draw3DBins = function() {
    main.toplevel.add(line);
 }
 
-export { THistPainter };
+export { drawBinsLego };

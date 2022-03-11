@@ -27,7 +27,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
 
 import { translateLaTeX } from '../latex.mjs';
 
-import { THistPainter } from './draw3d.mjs';
+import { drawBinsLego } from './draw3d.mjs';
 
 import { TH1Painter } from '../hist/TH1Painter.mjs';
 
@@ -59,7 +59,7 @@ TH1Painter.prototype.draw3D = async function(reason) {
       }
 
       if (main.mode3d) {
-         this.draw3DBins();
+         drawBinsLego(this);
          main.render3D();
          this.updateStatWebCanvas();
          main.addKeysHandler();

@@ -27,7 +27,10 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
 
 import { translateLaTeX } from '../latex.mjs';
 
-import { THistPainter } from './draw3d.mjs';
+import { THistPainter } from '../hist/THistPainter.mjs';
+
+// need to assign frame painter methods
+import { drawBinsLego } from './draw3d.mjs';
 
 /**
  * @summary Painter for TH3 classes

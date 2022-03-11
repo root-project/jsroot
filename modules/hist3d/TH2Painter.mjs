@@ -27,7 +27,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
 
 import { translateLaTeX } from '../latex.mjs';
 
-import { THistPainter } from './draw3d.mjs';
+import { drawBinsLego } from './draw3d.mjs';
 
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 
@@ -68,7 +68,18 @@ TH2Painter.prototype.draw3D = async function(reason) {
       }
 
       if (main.mode3d) {
-         this.draw3DBins();
+         if (this.draw_content) {
+            if (this.isTH2Poly() && this.drawPolyLego)
+               this.drawPolyLego();
+            else if (this.options.Contour && this.drawContour3D)
+               this.drawContour3D(true);
+            else if (this.options.Surf && this.drawSurf)
+               this.drawSurf();
+            else if (this.options.Error && this.drawError)
+               this.drawError();
+            else
+               drawBinsLego(this);
+         }
          main.render3D();
          this.updateStatWebCanvas();
          main.addKeysHandler();
