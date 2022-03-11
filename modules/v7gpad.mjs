@@ -24,7 +24,7 @@ import { DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, registerForResize, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
 
-import { addDrawFunc, draw } from './draw.mjs';
+import { addDrawFunc, draw, getDrawSettings } from './draw.mjs';
 
 import { TAxisPainter } from './gpad/TAxisPainter.mjs';
 
@@ -3202,6 +3202,12 @@ class RPadPainter extends RObjectPainter {
       }
    }
 
+   /** @summary Draw single primitive */
+   drawObject(dom, obj, opt) {
+      console.log('Not possible to draw object without loading of draw.mjs');
+      return null;
+   }
+
    /** @summary Draw pad primitives
      * @private */
    drawPrimitives(indx) {
@@ -3230,7 +3236,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       // handle used to invoke callback only when necessary
-      return draw(this.getDom(), this.pad.fPrimitives[indx], "").then(ppainter => {
+      return this.drawObject(this.getDom(), this.pad.fPrimitives[indx], "").then(ppainter => {
          // mark painter as belonging to primitives
          if (ppainter && (typeof ppainter == 'object'))
             ppainter._primitive = true;
@@ -3618,14 +3624,14 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (!this.getFramePainter())
-            return draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
-                         .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
+            return this.drawObject(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
+                       .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
 
          this.extractTObjectProp(snap);
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return draw(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
+      return this.drawObject(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
          this.addObjectPainter(objpainter, lst, indx);
          return this.drawNextSnap(lst, indx);
       });
@@ -5502,6 +5508,10 @@ function drawRFont() {
 
    return true;
 }
+
+// only now one can draw primitives in the canvas
+RPadPainter.prototype.drawObject = draw;
+RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 
 
 // addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: RPadPainter.draw, opt: "" });
