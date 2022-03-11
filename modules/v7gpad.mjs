@@ -5514,5 +5514,5 @@ RPadPainter.prototype.drawObject = draw;
 RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 
 export { ensureRCanvas, drawRPadSnapshot, CommMode,
-         RObjectPainter, RAxisPainter, RPavePainter, RFramePainter, drawRFrameTitle,
+         RObjectPainter, RAxisPainter, RPavePainter, RFramePainter, drawRFrameTitle, drawRFont,
          RPalettePainter, RPadPainter, RCanvasPainter };
