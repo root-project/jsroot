@@ -43,10 +43,10 @@ function require(need) {
 
    need.forEach(name => {
       if (name == "hist")
-         arr.push(import("../modules/hist.mjs").then(handle => {
-            globalThis.JSROOT.TH1Painter = handle.TH1Painter;
-            globalThis.JSROOT.TH2Painter = handle.TH2Painter;
-         }))
+         arr.push(Promise.all([import("../modules/hist/TH1Painter.mjs"), import("../modules/hist/TH2Painter.mjs"), import("../modules/hist/THStackPainter.mjs")]).then(arr => {
+            // copy hist painter objects into JSROOT
+            Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
+         }));
       else if (name == "hist3d")
          arr.push(import("../modules/hist3d.mjs"));
       else if (name == "more")
