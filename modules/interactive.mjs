@@ -1,6 +1,6 @@
 /// interactive functionality for different classes
 
-import { browser, settings, extend, isBatchMode } from './core.mjs';
+import { browser, settings, isBatchMode } from './core.mjs';
 
 import { select as d3_select, drag as d3_drag,
          pointer as d3_pointer, pointers as d3_pointers } from './d3.mjs';
@@ -1288,7 +1288,7 @@ let FrameInteractive = {
       // if there is second handle, use it
       let handle2 = second_side ? this[item.name + "2_handle"] : null;
       if (handle2) {
-         item.second = extend({}, item);
+         item.second = Object.assign({}, item);
          return handle2.analyzeWheelEvent(event, dmin, item.second, test_ignore);
       }
       let handle = this[item.name + "_handle"];
@@ -1487,7 +1487,7 @@ let FrameInteractive = {
 
    /** @summary Assign frame interactive methods */
    assign(painter) {
-      extend(painter, this);
+      Object.assign(painter, this);
    }
 
 } // FrameInterative
@@ -1534,7 +1534,7 @@ let ToolbarIcons = {
       if ('recs' in btn) {
          let rec = {};
          for (let n = 0; n < btn.recs.length; ++n) {
-            extend(rec, btn.recs[n]);
+            Object.assign(rec, btn.recs[n]);
             svg.append('rect').attr("x", rec.x).attr("y", rec.y)
                .attr("width", rec.w).attr("height", rec.h)
                .style("fill", rec.f);

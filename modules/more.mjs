@@ -1,6 +1,6 @@
 /// more ROOT classes
 
-import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
+import { gStyle, BIT, settings, internals, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
@@ -1063,7 +1063,7 @@ class TGraphPainter extends ObjectPainter {
 
       // decode main draw options for the graph
       const decodeBlock = (d, res) => {
-         extend(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
+         Object.assign(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
 
          if (is_gme && d.check("S=", true)) res.ScaleErrX = d.partAsFloat();
 
@@ -1089,7 +1089,7 @@ class TGraphPainter extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      extend(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      Object.assign(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
          if (opt.indexOf(";") > 0) {
@@ -2431,7 +2431,7 @@ class TGraphPainter extends ObjectPainter {
       let st = gStyle;
 
       stats = create('TPaveStats');
-      extend(stats, { fName : 'stats',
+      Object.assign(stats, { fName : 'stats',
                              fOptStat: 0,
                              fOptFit: st.fOptFit || 111,
                              fBorderSize : 1} );
@@ -2848,7 +2848,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (!this.options) this.options = {};
 
-      extend(this.options, {
+      Object.assign(this.options, {
           mark: d.check("P"),
           err: d.check("E"),
           fill: d.check("F"),
@@ -3071,7 +3071,7 @@ class TSplinePainter extends ObjectPainter {
 
       if (spline._typename != obj._typename) return false;
 
-      if (spline !== obj) extend(spline, obj);
+      if (spline !== obj) Object.assign(spline, obj);
 
       if (opt !== undefined) this.decodeOptions(opt);
 
@@ -3340,7 +3340,7 @@ class TSplinePainter extends ObjectPainter {
 
       let has_main = !!this.getMainPainter();
 
-      extend(this.options, {
+      Object.assign(this.options, {
          Same: d.check('SAME'),
          Line: d.check('L'),
          Curve: d.check('C'),
@@ -3404,7 +3404,7 @@ class TGraphTimePainter extends ObjectPainter {
 
       if (!this.options) this.options = {};
 
-      extend(this.options, {
+      Object.assign(this.options, {
           once: d.check("ONCE"),
           repeat: d.check("REPEAT"),
           first: d.check("FIRST")
@@ -3636,8 +3636,8 @@ class TEfficiencyPainter extends ObjectPainter {
       const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
             nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
             hist = createHistogram('TH2F', nbinsx, nbinsy);
-      extend(hist.fXaxis, eff.fTotalHistogram.fXaxis);
-      extend(hist.fYaxis, eff.fTotalHistogram.fYaxis);
+      Object.assign(hist.fXaxis, eff.fTotalHistogram.fXaxis);
+      Object.assign(hist.fYaxis, eff.fTotalHistogram.fYaxis);
       hist.fName = "eff_histo";
       return hist;
    }
@@ -4434,7 +4434,7 @@ class TASImagePainter extends ObjectPainter {
       if (!this.draw_palette) {
          let pal = create('TPave');
 
-         extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
+         Object.assign(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = "+";

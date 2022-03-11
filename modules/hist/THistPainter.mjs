@@ -1,6 +1,6 @@
 /// TH painting base class
 
-import { gStyle, BIT, settings, constants, internals, extend, create } from '../core.mjs';
+import { gStyle, BIT, settings, constants, internals, create } from '../core.mjs';
 
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 
@@ -214,7 +214,7 @@ class THistDrawOptions {
 
    /** @summary Reset hist draw options */
    reset() {
-      extend(this,
+      Object.assign(this,
             { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
               Bar: false, BarStyle: 0, Curve: false,
               Hist: true, Line: false, Fill: false,
@@ -1273,7 +1273,7 @@ class THistPainter extends ObjectPainter {
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = create("TPaveText");
-         extend(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         Object.assign(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
          return TPavePainter.draw(this.getDom(), pt, "postitle").then(tp => {
@@ -1413,7 +1413,7 @@ class THistPainter extends ObjectPainter {
       if (stats) return stats;
 
       stats = create('TPaveStats');
-      extend(stats, {
+      Object.assign(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
          fFillColor: st.fStatColor, fFillStyle: st.fStatStyle,
@@ -1944,15 +1944,15 @@ class THistPainter extends ObjectPainter {
 
          pal = create('TPave');
 
-         extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
+         Object.assign(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)
-            extend(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
+            Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
 
          let zaxis = this.getHisto().fZaxis;
 
-         extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
+         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
                                     fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
                                     fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });

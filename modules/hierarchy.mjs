@@ -1,5 +1,5 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         require, source_dir, settings, internals, extend, findFunction, parse,
+         require, source_dir, settings, internals, findFunction, parse,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
@@ -2478,7 +2478,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (style && (typeof style === 'object') && (style._typename === "TStyle"))
-         extend(gStyle, style);
+         Object.assign(gStyle, style);
 
    }
 

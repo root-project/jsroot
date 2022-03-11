@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, extend, clone, create, isBatchMode } from '../core.mjs';
+import { gStyle, browser, settings, clone, create, isBatchMode } from '../core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 
@@ -47,7 +47,7 @@ class TPavePainter extends ObjectPainter {
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
 
       if (pt.fInit === 0) {
-         this.stored = extend({}, pt); // store coordinates to use them when updating
+         this.stored = Object.assign({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
          let pad = this.getPadPainter().getRootPad(true);
 
@@ -1075,7 +1075,7 @@ class TPavePainter extends ObjectPainter {
             pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
          }
 
-         this.stored = extend({}, obj); // store latest coordinates
+         this.stored = Object.assign({}, obj); // store latest coordinates
       }
 
       pave.fOption = obj.fOption;

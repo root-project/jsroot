@@ -2,7 +2,7 @@
 
 import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, extend, isNodeJs } from './core.mjs';
+import { loadScript, findFunction, internals, isNodeJs } from './core.mjs';
 
 import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
 
@@ -486,7 +486,7 @@ function addStreamerInfosForPainter(lst) {
 
       if (!handle) continue;
 
-      let newhandle = extend({}, handle);
+      let newhandle = Object.assign({}, handle);
       // delete newhandle.for_derived; // should we disable?
       newhandle.name = si.fName;
       addDrawFunc(newhandle);

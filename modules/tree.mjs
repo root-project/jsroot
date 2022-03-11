@@ -1,6 +1,6 @@
 /// TTree functionality
 
-import { BIT, isArrayProto, isRootCollection, getMethods, extend,
+import { BIT, isArrayProto, isRootCollection, getMethods,
          create, createHistogram, createTGraph, isBatchMode } from './core.mjs';
 
 import { kChar, kShort, kInt, kLong, kFloat, kCounter,
@@ -1186,7 +1186,7 @@ class TDrawSelector extends TSelector {
 
       if (res && this.copy_fields) {
          if (checkArrayPrototype(res) === 0) {
-            this.hist.push(extend({}, res));
+            this.hist.push(Object.assign({}, res));
          } else {
             this.hist.push(res);
          }

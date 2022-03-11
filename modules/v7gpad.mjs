@@ -1,6 +1,6 @@
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-import { gStyle, settings, constants, internals, create, extend, parse, require,
+import { gStyle, settings, constants, internals, create, parse, require,
          addMethods, registerMethods, isPromise, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
@@ -3597,7 +3597,7 @@ class RPadPainter extends RObjectPainter {
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
 
          if (snap.fKind == webSnapIds.kStyle) {
-            extend(gStyle, snap.fObject);
+            Object.assign(gStyle, snap.fObject);
             return this.drawNextSnap(lst, indx);
          }
 
@@ -4169,7 +4169,7 @@ class RPadPainter extends RObjectPainter {
       if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
-      extend(this.options, { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
+      Object.assign(this.options, { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }

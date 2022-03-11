@@ -1,7 +1,7 @@
 /// 3D geometry painter
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, create, extend, clone,
+         settings, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from './core.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
@@ -1127,7 +1127,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._slave_painters)
          this._slave_painters.forEach(p => {
-            extend(p.ctrl.ssao, this.ctrl.ssao);
+            Object.assign(p.ctrl.ssao, this.ctrl.ssao);
             p.changedSSAO();
          });
    }
@@ -1322,7 +1322,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._slave_painters)
          this._slave_painters.forEach(p => {
-            extend(p.ctrl.bloom, this.ctrl.bloom);
+            Object.assign(p.ctrl.bloom, this.ctrl.bloom);
             p.changedBloomSettings();
          });
    }
@@ -4657,7 +4657,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj && shape)
-         obj = extend(create("TEveGeoShapeExtract"),
+         obj = Object.assign(create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
@@ -4697,7 +4697,7 @@ createGeoPainter = function(dom, obj, opt) {
    painter.options = painter.decodeOptions(opt); // indicator of initialization
 
    // copy all attributes from options to control
-   extend(painter.ctrl, painter.options);
+   Object.assign(painter.ctrl, painter.options);
 
    painter.ctrl.ssao.enabled = painter.options.usessao;
    painter.ctrl.bloom.enabled = painter.options.usebloom;
@@ -4983,7 +4983,7 @@ function drawDummy3DGeom(painter) {
 
    let obj = create("TEveGeoShapeExtract");
 
-   extend(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
+   Object.assign(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
                         fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
    let opt = "", pp = painter.getPadPainter();
@@ -5054,7 +5054,7 @@ build = function(obj, opt) {
       obj = buildCompositeVolume(shape);
 
    if (!obj && shape)
-      obj = extend(create("TEveGeoShapeExtract"),
+      obj = Object.assign(create("TEveGeoShapeExtract"),
                 { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
    if (!obj) return null;

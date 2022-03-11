@@ -1,7 +1,7 @@
 /// I/O methods of JavaScript ROOT
 
 import { httpRequest, createHttpRequest, BIT, loadScript, internals,
-         create, getMethods, addMethods, extend, isNodeJs } from './core.mjs';
+         create, getMethods, addMethods, isNodeJs } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
@@ -3082,7 +3082,7 @@ class TFile {
 
       return import('./tree.mjs').then(handle => {
          if (this.readTrees) {
-            this.readTrees.forEach(t => extend(t, handle.TTreeMethods))
+            this.readTrees.forEach(t => Object.assign(t, handle.TTreeMethods))
             delete this.readTrees;
          }
          return obj;

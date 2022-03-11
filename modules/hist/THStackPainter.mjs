@@ -1,4 +1,4 @@
-import { extend, clone, create, createHistogram } from '../core.mjs';
+import { clone, create, createHistogram } from '../core.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
@@ -207,7 +207,7 @@ class THStackPainter extends ObjectPainter {
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
       if (!this.options) this.options = {};
-      extend(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
+      Object.assign(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
 
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
@@ -270,9 +270,9 @@ class THStackPainter extends ObjectPainter {
       let h0 = histos.arr[0],
           histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
-      extend(histo.fXaxis, h0.fXaxis);
+      Object.assign(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
-         extend(histo.fYaxis, h0.fYaxis);
+         Object.assign(histo.fYaxis, h0.fYaxis);
 
       // this code is not exists in ROOT painter, can be skipped?
       for (let n=1;n<numhistos;++n) {
