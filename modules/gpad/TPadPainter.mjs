@@ -1,7 +1,7 @@
 /// TPad painting
 
 import { gStyle, settings, constants, internals,
-         create, extend, toJSON, isBatchMode, loadScript, isPromise } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, isPromise } from '../core.mjs';
 
 import { color as d3_color, pointer as d3_pointer,  } from '../d3.mjs';
 
@@ -535,7 +535,7 @@ class TPadPainter extends ObjectPainter {
       if (!obj) return false;
 
       if (obj._typename == "TStyle") {
-         extend(gStyle, obj);
+         Object.assign(gStyle, obj);
          return true;
       }
 
@@ -1103,7 +1103,7 @@ class TPadPainter extends ObjectPainter {
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
-         extend(gStyle, snap.fSnapshot);
+         Object.assign(gStyle, snap.fSnapshot);
          return this.drawNextSnap(lst, indx); // call next
       }
 
@@ -1826,7 +1826,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
-      extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
+      Object.assign(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }

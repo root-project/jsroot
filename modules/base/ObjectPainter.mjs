@@ -1,7 +1,7 @@
 
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 
-import { settings, constants, internals, extend, isNodeJs, isPromise } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, isPromise } from '../core.mjs';
 
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 
@@ -138,7 +138,7 @@ class ObjectPainter extends BasePainter {
       let pp = original.indexOf(";;");
       if (pp >= 0) original = original.substr(0, pp);
       this.options.original = original;
-      this.options_store = extend({}, this.options);
+      this.options_store = Object.assign({}, this.options);
    }
 
    /** @summary Return actual draw options as string
@@ -201,7 +201,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    updateObject(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
-      extend(this.getObject(), obj);
+      Object.assign(this.getObject(), obj);
       return true;
    }
 

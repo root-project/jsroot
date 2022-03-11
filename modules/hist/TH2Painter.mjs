@@ -1,4 +1,4 @@
-import { gStyle, internals, extend, createHistogram, createTPolyLine, isBatchMode } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode } from '../core.mjs';
 
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 
@@ -91,12 +91,12 @@ class TH2Painter extends THistPainter {
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
             this.proj_hist = createHistogram("TH1D", this.nbinsx);
-            extend(this.proj_hist.fXaxis, histo.fXaxis);
+            Object.assign(this.proj_hist.fXaxis, histo.fXaxis);
             this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
             this.proj_hist = createHistogram("TH1D", this.nbinsy);
-            extend(this.proj_hist.fXaxis, histo.fYaxis);
+            Object.assign(this.proj_hist.fXaxis, histo.fYaxis);
             this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
          }

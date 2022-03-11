@@ -1,6 +1,6 @@
 /// TCanvas painting
 
-import { gStyle, settings, extend, isBatchMode } from '../core.mjs';
+import { gStyle, settings, isBatchMode } from '../core.mjs';
 
 import { pointer as d3_pointer } from '../d3.mjs';
 
@@ -682,9 +682,9 @@ class TFramePainter extends ObjectPainter {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad) {
-            extend(this, settings.FrameNDC);
+            Object.assign(this, settings.FrameNDC);
          } else {
-            extend(this, {
+            Object.assign(this, {
                fX1NDC: pad.fLeftMargin,
                fX2NDC: 1 - pad.fRightMargin,
                fY1NDC: pad.fBottomMargin,
