@@ -13,82 +13,18 @@ import { drawBinsLego } from './draw3d.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 
 
-/** @summary Draw 2-D histogram in 3D
-  * @private */
-TH2Painter.prototype.draw3D = async function(reason) {
-
-   this.mode3d = true;
-
-   let main = this.getFramePainter(), // who makes axis drawing
-       is_main = this.isMainPainter(), // is main histogram
-       histo = this.getHisto();
-
-   if (reason == "resize") {
-
-      if (is_main && main.resize3D()) main.render3D();
-
-   } else {
-
-      let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
-
-      this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
-      this.zmax = this.gmaxbin;
-
-      if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
-      if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-
-      if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
-
-      this.deleteAttr();
-
-      if (is_main) {
-         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
-      }
-
-      if (main.mode3d) {
-         if (this.draw_content) {
-            if (this.isTH2Poly() && this.drawPolyLego)
-               this.drawPolyLego();
-            else if (this.options.Contour && this.drawContour3D)
-               this.drawContour3D(true);
-            else if (this.options.Surf && this.drawSurf)
-               this.drawSurf();
-            else if (this.options.Error && this.drawError)
-               this.drawError();
-            else
-               drawBinsLego(this);
-         }
-         main.render3D();
-         this.updateStatWebCanvas();
-         main.addKeysHandler();
-      }
-   }
-
-   if (is_main) {
-      //  (re)draw palette by resize while canvas may change dimension
-      await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                   (this.options.Surf===11) || (this.options.Surf===12)));
-      await this.drawHistTitle();
-   }
-
-   return this;
-}
-
 /** @summary Draw TH2 as 3D contour plot
   * @private */
-TH2Painter.prototype.drawContour3D = function(realz) {
+function drawContour3D(painter, realz) {
    // for contour plots one requires handle with full range
-   let main = this.getFramePainter(),
-       handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
-       histo = this.getHisto(), // get levels
-       levels = this.getContourLevels(), // init contour if not exists
-       palette = this.getHistPalette(),
+   let main = painter.getFramePainter(),
+       handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+       histo = painter.getHisto(), // get levels
+       levels = painter.getContourLevels(), // init contour if not exists
+       palette = painter.getHistPalette(),
        layerz = 2*main.size_z3d, pnts = [];
 
-   this.buildContour(handle, levels, palette,
+   painter.buildContour(handle, levels, palette,
       (colindx,xp,yp,iminus,iplus,ilevel) => {
           // ignore less than three points
           if (iplus - iminus < 3) return;
@@ -105,15 +41,15 @@ TH2Painter.prototype.drawContour3D = function(realz) {
       }
    );
 
-   let lines = createLineSegments(pnts, create3DLineMaterial(this, histo));
+   let lines = createLineSegments(pnts, create3DLineMaterial(painter, histo));
    main.toplevel.add(lines);
 }
 
 /** @summary Draw TH2 histograms in surf mode */
-TH2Painter.prototype.drawSurf = function() {
-   let histo = this.getHisto(),
-       main = this.getFramePainter(),
-       handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+function drawSurf3D(painter) {
+   let histo = painter.getHisto(),
+       main = painter.getFramePainter(),
+       handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
        i,j, x1, y1, x2, y2, z11, z12, z21, z22,
        axis_zmin = main.z_handle.getScaleMin();
        // axis_zmax = main.z_handle.getScaleMax();
@@ -127,13 +63,13 @@ TH2Painter.prototype.drawSurf = function() {
    let ilevels = null, levels = null, dolines = true, dogrid = false,
        donormals = false, palette = null;
 
-   switch(this.options.Surf) {
-      case 11: ilevels = this.getContourLevels(); palette = this.getHistPalette(); break;
+   switch(painter.options.Surf) {
+      case 11: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); break;
       case 12:
       case 15: // make surf5 same as surf2
-      case 17: ilevels = this.getContourLevels(); palette = this.getHistPalette(); dolines = false; break;
+      case 17: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); dolines = false; break;
       case 14: dolines = false; donormals = true; break;
-      case 16: ilevels = this.getContourLevels(); dogrid = true; dolines = false; break;
+      case 16: ilevels = painter.getContourLevels(); dogrid = true; dolines = false; break;
       default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
    }
 
@@ -396,10 +332,10 @@ TH2Painter.prototype.drawSurf = function() {
          if (palette) {
             fcolor = palette.calcColor(lvl, levels.length);
          } else {
-            fcolor = histo.fFillColor > 1 ? this.getColor(histo.fFillColor) : 'white';
-            if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = this.getColor(48);
+            fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
+            if ((painter.options.Surf === 14) && (histo.fFillColor<2)) fcolor = painter.getColor(48);
          }
-         if (this.options.Surf === 14)
+         if (painter.options.Surf === 14)
             material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
          else
             material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
@@ -408,7 +344,7 @@ TH2Painter.prototype.drawSurf = function() {
 
          main.toplevel.add(mesh);
 
-         mesh.painter = this; // to let use it with context menu
+         mesh.painter = painter; // to let use it with context menu
       }
 
 
@@ -416,10 +352,10 @@ TH2Painter.prototype.drawSurf = function() {
       if (nsegments*6 !== lindx)
          console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
-      const lcolor = this.getColor(histo.fLineColor),
+      const lcolor = painter.getColor(histo.fLineColor),
             material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
             line = createLineSegments(lpos, material);
-      line.painter = this;
+      line.painter = painter;
       main.toplevel.add(line);
    }
 
@@ -427,27 +363,27 @@ TH2Painter.prototype.drawSurf = function() {
       if (ngridsegments*6 !== gindx)
          console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
 
-      const material = (this.options.Surf === 1)
+      const material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
-                      : new LineBasicMaterial({ color: new Color(this.getColor(histo.fLineColor)) }),
+                      : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) }),
            line = createLineSegments(grid, material);
-      line.painter = this;
+      line.painter = painter;
       main.toplevel.add(line);
    }
 
-   if (this.options.Surf === 17)
-      this.drawContour3D();
+   if (painter.options.Surf === 17)
+      drawContour3D(painter);
 
-   if (this.options.Surf === 13) {
+   if (painter.options.Surf === 13) {
 
-      handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+      handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
       // get levels
-      let levels = this.getContourLevels(), // init contour
-          palette = this.getHistPalette(),
+      let levels = painter.getContourLevels(), // init contour
+          palette = painter.getHistPalette(),
           lastcolindx = -1, layerz = 2*main.size_z3d;
 
-      this.buildContour(handle, levels, palette,
+      painter.buildContour(handle, levels, palette,
          (colindx,xp,yp,iminus,iplus) => {
              // no need for duplicated point
              if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus])) iplus--;
@@ -497,7 +433,7 @@ TH2Painter.prototype.drawSurf = function() {
 
              const material = new MeshBasicMaterial({ color: palette.getColor(colindx), side: DoubleSide, opacity: 0.5, vertexColors: false }),
                    mesh = new Mesh(geometry, material);
-             mesh.painter = this;
+             mesh.painter = painter;
              main.toplevel.add(mesh);
          }
       );
@@ -505,10 +441,10 @@ TH2Painter.prototype.drawSurf = function() {
 }
 
 /** @summary Draw TH2 histogram in error mode */
-TH2Painter.prototype.drawError = function() {
-   const main = this.getFramePainter(),
-         histo = this.getHisto(),
-         handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+function drawError3D(painter) {
+   const main = painter.getFramePainter(),
+         histo = painter.getHisto(),
+         handle = painter.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
          zmin = main.z_handle.getScaleMin(),
          zmax = main.z_handle.getScaleMax();
    let i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
@@ -516,8 +452,8 @@ TH2Painter.prototype.drawError = function() {
 
    const check_skip_min = () => {
        // return true if minimal histogram value should be skipped
-       if (this.options.Zero || (zmin > 0)) return false;
-       return !this._show_empty_bins;
+       if (painter.options.Zero || (zmin > 0)) return false;
+       return !painter._show_empty_bins;
    };
 
     // loop over the points - first loop counts points, second fill arrays
@@ -569,11 +505,11 @@ TH2Painter.prototype.drawError = function() {
     }
 
     // create lines
-    const lcolor = this.getColor(histo.fLineColor),
+    const lcolor = painter.getColor(histo.fLineColor),
           material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
           line = createLineSegments(lpos, material);
 
-    line.painter = this;
+    line.painter = painter;
     line.intersect_index = binindx;
     line.zmin = zmin;
     line.zmax = zmax;
@@ -609,20 +545,20 @@ TH2Painter.prototype.drawError = function() {
 }
 
 /** @summary Draw TH2Poly histogram as lego */
-TH2Painter.prototype.drawPolyLego = function() {
-   let histo = this.getHisto(),
-       pmain = this.getFramePainter(),
+function drawTH2PolyLego(painter) {
+   let histo = painter.getHisto(),
+       pmain = painter.getFramePainter(),
        axis_zmin = pmain.z_handle.getScaleMin(),
        axis_zmax = pmain.z_handle.getScaleMax(),
        colindx, bin, i, len = histo.fBins.arr.length,
        z0 = pmain.grz(axis_zmin), z1;
 
    // use global coordinates
-   this.maxbin = this.gmaxbin;
-   this.minbin = this.gminbin;
-   this.minposbin = this.gminposbin;
+   painter.maxbin = painter.gmaxbin;
+   painter.minbin = painter.gminbin;
+   painter.minposbin = painter.gminposbin;
 
-   let cntr = this.getContour(true), palette = this.getHistPalette();
+   let cntr = painter.getContour(true), palette = painter.getHistPalette();
 
    for (i = 0; i < len; ++ i) {
       bin = histo.fBins.arr[i];
@@ -764,13 +700,13 @@ TH2Painter.prototype.drawPolyLego = function() {
       geometry.setAttribute( 'position', new BufferAttribute( pos, 3 ) );
       geometry.computeVertexNormals();
 
-      let fcolor = this.fPalette.getColor(colindx);
+      let fcolor = painter.fPalette.getColor(colindx);
       let material = new MeshBasicMaterial({ color: fcolor, vertexColors: false });
       let mesh = new Mesh(geometry, material);
 
       pmain.toplevel.add(mesh);
 
-      mesh.painter = this;
+      mesh.painter = painter;
       mesh.bins_index = i;
       mesh.draw_z0 = z0;
       mesh.draw_z1 = z1;
@@ -799,5 +735,70 @@ TH2Painter.prototype.drawPolyLego = function() {
       };
    }
 }
+
+/** @summary Draw 2-D histogram in 3D
+  * @private */
+TH2Painter.prototype.draw3D = async function(reason) {
+
+   this.mode3d = true;
+
+   let main = this.getFramePainter(), // who makes axis drawing
+       is_main = this.isMainPainter(), // is main histogram
+       histo = this.getHisto();
+
+   if (reason == "resize") {
+
+      if (is_main && main.resize3D()) main.render3D();
+
+   } else {
+
+      let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
+
+      this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+      this.zmax = this.gmaxbin;
+
+      if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
+      if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
+
+      if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+      this.deleteAttr();
+
+      if (is_main) {
+         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+         main.set3DOptions(this.options);
+         main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+      }
+
+      if (main.mode3d) {
+         if (this.draw_content) {
+            if (this.isTH2Poly())
+               drawTH2PolyLego(this);
+            else if (this.options.Contour)
+               drawContour3D(this, true);
+            else if (this.options.Surf)
+               drawSurf3D(this);
+            else if (this.options.Error)
+               drawError3D(this);
+            else
+               drawBinsLego(this);
+         }
+         main.render3D();
+         this.updateStatWebCanvas();
+         main.addKeysHandler();
+      }
+   }
+
+   if (is_main) {
+      //  (re)draw palette by resize while canvas may change dimension
+      await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                  (this.options.Surf===11) || (this.options.Surf===12)));
+      await this.drawHistTitle();
+   }
+
+   return this;
+}
+
 
 export { TH2Painter };
