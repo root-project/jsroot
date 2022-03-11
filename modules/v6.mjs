@@ -144,11 +144,12 @@ async function complete_loading() {
 function ensureJSROOT()
 {
    // need to keep global JSROOT for use in external scripts
-   if (typeof globalThis.JSROOT == 'undefined') {
-      globalThis.JSROOT = Object.assign({}, jsroot, jsroot_io, jsroot_draw);
-      globalThis.JSROOT.require = require;
-      globalThis.JSROOT.define = define;
-   }
+   if (typeof globalThis.JSROOT == 'undefined')
+      globalThis.JSROOT = {};
+
+   Object.assign(globalThis.JSROOT, jsroot, jsroot_io, jsroot_draw);
+   globalThis.JSROOT.require = require;
+   globalThis.JSROOT.define = define;
 
    globalThis.JSROOT.hpainter = getHPainter();
 }

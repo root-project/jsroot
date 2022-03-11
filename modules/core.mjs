@@ -943,15 +943,6 @@ function cleanup(dom) {
    return import("./painter.mjs").then(handle => handle.cleanup(dom));
 }
 
-/** @summary Method to build main JSROOT GUI
-  * @param {string|object} gui_element - where gui should be started, element id or just HTML element
-  * @param {string} [gui_kind = "gui"] - kind of the gui: "gui", "online", "draw"
-  * @returns {Promise} when ready
-  * @private */
-function buildGUI(gui_element, gui_kind) {
-   return import('./hierarchy.mjs').then(handle => handle.buildGUI(gui_element, gui_kind));
-}
-
 /** @summary Create some ROOT classes
   * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
   * @param {string} typename - ROOT class name
@@ -1708,7 +1699,6 @@ loadScript,
 cleanup,
 redraw,
 draw,
-buildGUI,
 create,
 createHistogram,
 createTPolyLine,
