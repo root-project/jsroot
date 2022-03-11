@@ -1,12 +1,8 @@
-import { gStyle, BIT, browser, settings, constants, internals,
-         extend, clone, create, createHistogram, createTPolyLine, isBatchMode } from '../core.mjs';
+import { gStyle, browser, settings, extend, clone, create, isBatchMode } from '../core.mjs';
 
-import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
-         chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
+import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 
 import { Prob } from '../math.mjs';
-
-import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
@@ -14,12 +10,9 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
-import { DrawOptions, TRandom, floatToString, buildSvgPath, getElementMainPainter, createMenu } from '../painter.mjs';
+import { floatToString, getElementMainPainter, createMenu } from '../painter.mjs';
 
-import { getDrawSettings, draw } from '../draw.mjs';
-
-import { EAxisBits, ensureTCanvas, TAxisPainter } from '../gpad.mjs';
-
+import { ensureTCanvas, TAxisPainter } from '../gpad.mjs';
 
 /**
  * @summary painter for TPave-derived classes
