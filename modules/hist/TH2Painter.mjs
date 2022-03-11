@@ -2686,7 +2686,7 @@ class TH2Painter extends THistPainter {
      * @returns {Promise} when ready */
    draw3D(reason) {
       this.mode3d = true;
-      return import('./hist3d.mjs').then(() => this.draw3D(reason));
+      return import('../hist3d/TH2Painter.mjs').then(() => this.draw3D(reason));
    }
 
    /** @summary Call drawing function depending from 3D mode */

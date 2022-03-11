@@ -185,7 +185,7 @@ class TPavePainter extends ObjectPainter {
          await this.paveDrawFunc(width, height, arg);
 
       if (!isBatchMode() && (pt._typename !== "TPave")) {
-         let inter = await import('./interactive.mjs');
+         let inter = await import('../interactive.mjs');
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
