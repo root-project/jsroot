@@ -11,7 +11,10 @@
   "exports": {
      "." : "./modules/core.mjs",
      "./draw" : "./modules/draw.mjs",
-     "./io" : "./modules/io.mjs"
+     "./io" : "./modules/io.mjs",
+     "./colors" : "./modules/base/colors.mjs",
+     "./hierarchy" : "./modules/hierarchy.mjs",
+     "./latex" : "./modules/latex.mjs"
   },
   "contributors": [
     {
