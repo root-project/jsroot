@@ -543,6 +543,7 @@ function makeSVG(args) {
 
 // only now one can draw primitives in the canvas
 TPadPainter.prototype.drawObject = draw;
+TPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;

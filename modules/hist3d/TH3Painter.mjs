@@ -8,7 +8,7 @@ import { REVISION, Matrix4,
 
 import { TRandom, floatToString } from '../painter.mjs';
 
-import { getDrawSettings, draw } from '../draw.mjs';
+import { draw } from '../draw.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
@@ -696,9 +696,9 @@ class TH3Painter extends THistPainter {
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
 
-      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", sett.opts, arg => {
+      menu.addDrawMenu("Draw with", opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 

@@ -104,8 +104,8 @@ class JSRootMenu {
    /** @summary Add draw sub-menu with draw options
      * @protected */
    addDrawMenu(top_name, opts, call_back) {
-      if (!opts) opts = [];
-      if (opts.length==0) opts.push("");
+      if (!opts || !opts.length)
+         return;
 
       let without_sub = false;
       if (top_name.indexOf("nosub:")==0) {

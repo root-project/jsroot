@@ -8,8 +8,6 @@ import { TAttLineHandler } from './base/TAttLineHandler.mjs';
 
 import { floatToString, DrawOptions, TRandom, buildSvgPath, createMenu } from './painter.mjs';
 
-import { getDrawSettings } from './draw.mjs';
-
 import { RObjectPainter, RPavePainter, ensureRCanvas, CommMode } from './v7gpad.mjs';
 
 /** @summary assign methods for the RAxis objects
@@ -1771,9 +1769,9 @@ class RH1Painter extends RHistPainter {
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
-      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", sett.opts, arg => {
+      menu.addDrawMenu("Draw with", opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 
@@ -1998,9 +1996,9 @@ class RH2Painter extends RHistPainter {
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
-      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", sett.opts, arg => {
+      menu.addDrawMenu("Draw with", opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
          this.decodeOptions(arg);

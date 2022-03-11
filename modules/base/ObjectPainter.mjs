@@ -162,6 +162,20 @@ class ObjectPainter extends BasePainter {
       return this.options.original || ""; // nothing better, return original draw option
    }
 
+   /** @summary Returns array with supported draw options as configured in draw.mjs
+     * @desc works via pad painter and only when module was loaded */
+   getSupportedDrawOptions() {
+      let pp = this.getPadPainter(),
+          obj = this.getObject();
+
+      if (!pp || !obj || !obj._typename || !pp.getObjectDrawSettings)
+         return [];
+
+      let sett = pp.getObjectDrawSettings('ROOT.' + obj._typename, 'nosame');
+      return sett?.opts;
+   }
+
+
    /** @summary Central place to update objects drawing
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options

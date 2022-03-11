@@ -8,8 +8,6 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { TRandom, floatToString } from '../painter.mjs';
 
-import { getDrawSettings } from '../draw.mjs';
-
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -169,9 +167,9 @@ class TH2Painter extends THistPainter {
          menu.add("Auto zoom-in", () => this.autoZoom());
       }
 
-      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", sett.opts, arg => {
+      menu.addDrawMenu("Draw with", opts, arg => {
          if (arg == 'inspect')
             return this.showInspector();
          this.decodeOptions(arg);

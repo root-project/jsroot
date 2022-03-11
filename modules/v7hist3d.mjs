@@ -13,8 +13,6 @@ import { REVISION, DoubleSide,
 
 import { floatToString, TRandom } from './painter.mjs';
 
-import { getDrawSettings } from './draw.mjs';
-
 import { RAxisPainter, RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
 import { RHistPainter, RH1Painter, RH2Painter } from './v7hist.mjs';
@@ -2932,9 +2930,9 @@ class RH3Painter extends RHistPainter {
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
 
-      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", sett.opts, arg => {
+      menu.addDrawMenu("Draw with", opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 
