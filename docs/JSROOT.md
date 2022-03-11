@@ -595,7 +595,8 @@ Many different examples of JSROOT API usage can be found on [JSROOT API examples
 Major JSROOT functions are locates in `core.mjs` module and can be imported like:
 
     <script type='module'>
-       import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+       import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+       import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
        let filename = "https://root.cern/js/files/hsimple.root";
        let file = await openFile(filename);
        let obj = await file.readObject("hpxpy;1");
@@ -606,7 +607,7 @@ Here the default location `https://root.cern/js/latest/` is specified. One could
 When JSROOT is used with THttpServer, the address looks like:
 
     <script type='module'>
-       import { openFile, draw } from 'http://your_root_server:8080/jsrootsys/modules/core.mjs';
+       import { openFile } from 'http://your_root_server:8080/jsrootsys/modules/io.mjs';
        ...
    </script>
 
@@ -727,7 +728,8 @@ One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore, callback functions are used to react when the I/O operation completed.
 For example, reading an object from a file and displaying it will look like:
 
-    import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
     let filename = "https://root.cern/js/files/hsimple.root";
     let file = await openFile(filename);
     let obj = await file.readObject("hpxpy;1");
@@ -741,18 +743,21 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-    import { openFile, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
     let file = await openFile("https://root.cern/js/files/hsimple.root");
     let tree = await file.readObject("ntuple;1");
     draw("drawing", tree, "px:py::pz>5");
 
 To get access to selected branches, one should use `TSelector` class:
 
-    import { openFile, draw, require } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
+    import { TSelector } from 'https://root.cern/js/latest/modules/tree.mjs';
+
     let file = await openFile("https://root.cern/js/files/hsimple.root");
     let tree = await file.readObject("ntuple;1");
-    let handle = await require('tree');
-    let selector = new handle.TSelector();
+    let selector = new TSelector();
 
     selector.AddBranch("px");
     selector.AddBranch("py");
@@ -830,12 +835,14 @@ To install latest JSROOT release, just do:
 
 To use in the Node.js scripts, one should add following line:
 
-     import { draw, httpRequest } from 'jsroot';
+     import { httpRequest } from 'jsroot';
+     import { makeSVG } from 'jsroot/draw';
 
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
-    import { openFile, makeSVG } from 'jsroot';
+    import { openFile } from 'jsroot/io';
+    import { makeSVG } from 'jsroot/draw';
     import { writeFileSync } from 'fs';
 
     let file = await openFile("https://root.cern/js/files/hsimple.root");
@@ -845,7 +852,9 @@ create SVG output. For example, to create SVG image with lego plot, one should d
 
 It is also possible to convert any JavaScript object into ROOT JSON string, using `toJSON()` function. Like:
 
-    import { openFile, makeSVG, toJSON } from 'jsroot';
+    import { openFile } from 'jsroot/io';
+    import { makeSVG } from 'jsroot/draw';
+    import { toJSON } from 'jsroot';
     import { writeFileSync } from 'fs';
 
     let file = await openFile("https://root.cern/js/files/hsimple.root");
@@ -938,3 +947,5 @@ JSROOT.hpainter -> require('hierarchy').then(hh => hh.getHPainter())
 JSROOT.Math -> math = await require('math')
 
 JSROOT.batch_mode -> isBatchMode()
+
+JSROOT.extend -> Object.assign

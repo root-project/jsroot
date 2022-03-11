@@ -2,6 +2,10 @@
 
 import * as jsroot from './core.mjs';
 
+import * as jsroot_io from './io.mjs';
+
+import * as jsroot_draw from './draw.mjs';
+
 import { getHPainter } from './hierarchy.mjs';
 
 let sync_promises = [];
@@ -141,7 +145,7 @@ function ensureJSROOT()
 {
    // need to keep global JSROOT for use in external scripts
    if (typeof globalThis.JSROOT == 'undefined') {
-      globalThis.JSROOT = Object.assign({}, jsroot);
+      globalThis.JSROOT = Object.assign({}, jsroot, jsroot_io, jsroot_draw);
       globalThis.JSROOT.require = require;
       globalThis.JSROOT.define = define;
    }

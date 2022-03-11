@@ -1,8 +1,7 @@
-import { require, openFile }  from "jsroot";
+import { openFile }  from "jsroot/io";
+import { TSelector }  from "jsroot/tree";
 
-let handle = await require('tree');
-
-let selector = new handle.TSelector();
+let selector = new TSelector();
 
 selector.addBranch("px");
 selector.addBranch("py");

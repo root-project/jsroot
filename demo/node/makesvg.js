@@ -1,4 +1,6 @@
-import { openFile, makeSVG, version } from "jsroot";
+import { version } from "jsroot";
+import { openFile } from "jsroot/io";
+import { makeSVG } from "jsroot/draw";
 
 import { writeFileSync } from "fs";
 

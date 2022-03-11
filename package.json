@@ -12,6 +12,7 @@
      "." : "./modules/core.mjs",
      "./draw" : "./modules/draw.mjs",
      "./io" : "./modules/io.mjs",
+     "./tree" : "./modules/tree.mjs",
      "./colors" : "./modules/base/colors.mjs",
      "./hierarchy" : "./modules/hierarchy.mjs",
      "./latex" : "./modules/latex.mjs"

@@ -10,7 +10,9 @@
    </body>
 
    <script type='module'>
-    import { openFile, draw, httpRequest } from '../modules/core.mjs';
+    import { httpRequest } from '../modules/core.mjs';
+    import { openFile } from '../modules/io.mjs';
+    import { draw } from '../modules/draw.mjs';
 
      // absolute file path can be used as well
      let geom_file = "../../files/geom/evegeoshape.json.gz",

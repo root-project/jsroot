@@ -928,11 +928,6 @@ function httpRequest(url, kind, post_data) {
    });
 }
 
-// Open ROOT file, defined in io.mjs
-function openFile(filename) {
-   return import("./io.mjs").then(handle => handle.openFile(filename));
-}
-
 // Draw object, defined in draw.mjs
 function draw(dom, obj, opt) {
    return import("./draw.mjs").then(handle => handle.draw(dom, obj, opt));
@@ -1715,7 +1710,6 @@ findFunction,
 createHttpRequest,
 httpRequest,
 loadScript,
-openFile,
 makeSVG,
 cleanup,
 redraw,
