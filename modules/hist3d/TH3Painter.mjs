@@ -1,4 +1,4 @@
-/// 3D TH2 drawing
+/// 3D TH3 drawing
 
 import { gStyle, settings } from '../core.mjs';
 
@@ -8,11 +8,12 @@ import { REVISION, Matrix4,
 
 import { TRandom, floatToString } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
+
+import { TPavePainter } from '../hist/TPavePainter.mjs';
 
 import { THistPainter } from '../hist/THistPainter.mjs';
 
@@ -722,7 +723,7 @@ class TH3Painter extends THistPainter {
       await  painter.redraw();
       let stats = painter.createStat(); // only when required
       if (stats)
-         await draw(dom, stats, "");
+         await TPavePainter.draw(dom, stats, "");
       painter.fillToolbar();
       return painter;
    }
