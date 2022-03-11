@@ -1,31 +1,16 @@
 /// TCanvas painting
 
-import { gStyle, BIT, settings, constants, internals,
-         require, create, extend, parse, toJSON, isBatchMode, loadScript, isPromise } from '../core.mjs';
+import { gStyle, BIT, settings, isBatchMode } from '../core.mjs';
 
-import { select as d3_select, color as d3_color,
-         pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
+import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 
-import { closeCurrentWindow, showProgress } from '../utils.mjs';
-
-import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
-
-import { getElementRect } from '../base/BasePainter.mjs';
-
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-
-import { TAttLineHandler, getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 
 import { FontHandler } from '../base/FontHandler.mjs';
 
-import { DrawOptions, AxisPainterMethods,
-         createMenu, closeMenu, registerForResize,
-         chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
-         compressSVG, cleanup, resize } from '../painter.mjs';
-
-import { draw } from '../draw.mjs';
+import { AxisPainterMethods, chooseTimeFormat } from '../painter.mjs';
 
 const EAxisBits = {
    kDecimals: BIT(7),

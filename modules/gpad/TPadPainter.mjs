@@ -1,6 +1,6 @@
 /// TPad painting
 
-import { gStyle, BIT, settings, constants, internals,
+import { gStyle, settings, constants, internals,
          create, extend, toJSON, isBatchMode, loadScript, isPromise } from '../core.mjs';
 
 import { color as d3_color, pointer as d3_pointer,  } from '../d3.mjs';
@@ -13,9 +13,7 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler, getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 
-
-import { DrawOptions,
-         createMenu, closeMenu, registerForResize,
+import { DrawOptions, createMenu, closeMenu, registerForResize,
          selectActivePad, getActivePad, getAbsPosInCanvas,
          compressSVG } from '../painter.mjs';
 
@@ -671,6 +669,11 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Draw single primitive */
+   drawObject(dom, obj, opt) {
+      return draw(dom, obj, opt);
+   }
+
    /** @summary Draw pad primitives
      * @returns {Promise} when drawing completed
      * @private */
@@ -699,7 +702,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
+      return this.drawObject(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
          if (op && (typeof op == 'object'))
             op._primitive = true; // mark painter as belonging to primitives
 
@@ -754,7 +757,7 @@ class TPadPainter extends ObjectPainter {
       const drawNext = () => {
          if (subpads.length == 0)
             return Promise.resolve(this);
-         return draw(this.getDom(), subpads.shift()).then(drawNext);
+         return this.drawObject(this.getDom(), subpads.shift()).then(drawNext);
       };
 
       return drawNext();
@@ -1165,7 +1168,7 @@ class TPadPainter extends ObjectPainter {
 
       // here the case of normal drawing, will be handled in promise
       if ((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG))
-         return draw(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
+         return this.drawObject(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
          });
