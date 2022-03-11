@@ -2,7 +2,7 @@
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
          settings, constants, create, extend, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument } from './core.mjs';
+         findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from './core.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -22,8 +22,9 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont } from './base3d.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu,
-         getColor, getRootColors, isPromise  } from './painter.mjs';
+import { getColor, getRootColors } from './base/colors.mjs';
+
+import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 import { addDrawFunc } from './draw.mjs';
 

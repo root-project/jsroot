@@ -1,7 +1,7 @@
 /// TPad painting
 
 import { gStyle, BIT, settings, constants, internals,
-         require, create, extend, parse, toJSON, isBatchMode, loadScript } from './core.mjs';
+         require, create, extend, parse, toJSON, isBatchMode, loadScript, isPromise } from './core.mjs';
 
 import { select as d3_select, color as d3_color,
          pointer as d3_pointer, drag as d3_drag, timeFormat as d3_timeFormat,
@@ -10,11 +10,13 @@ import { select as d3_select, color as d3_color,
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
-import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
+import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from './base/colors.mjs';
+
+import { ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
          TAttLineHandler,
-         createMenu, closeMenu, registerForResize, getElementRect, isPromise,
+         createMenu, closeMenu, registerForResize, getElementRect,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
-         adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
+         getSvgLineStyle,
          compressSVG, cleanup, resize } from './painter.mjs';
 
 import { draw } from './draw.mjs';

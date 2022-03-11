@@ -4,7 +4,11 @@ import { loadScript, source_dir, settings, internals } from './core.mjs';
 
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from './d3.mjs';
 
-import { TAttMarkerHandler, getColor, getRootColors, getSvgLineStyle } from './painter.mjs';
+import { getColor, getRootColors } from './base/colors.mjs';
+
+import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+
+import { getSvgLineStyle } from './base/TAttLineHandler.mjs';
 
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors

@@ -8,8 +8,10 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
 
 import { Prob } from './math.mjs';
 
-import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
-         floatToString, buildSvgPath, toHex, getElementMainPainter, createMenu, getColor } from './painter.mjs';
+import { ColorPalette, toHex, getColor } from './base/colors.mjs';
+
+import {  ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
+         floatToString, buildSvgPath, getElementMainPainter, createMenu } from './painter.mjs';
 
 import { getDrawSettings, draw } from './draw.mjs';
 

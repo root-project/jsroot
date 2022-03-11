@@ -4,8 +4,10 @@ import { gStyle, BIT, settings, internals, extend, create, createHistogram, isBa
 
 import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
 
+import { toHex, getColor } from './base/colors.mjs';
+
 import { BasePainter, ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
-         floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
+         floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
 
 import { draw } from './draw.mjs';
 

@@ -459,6 +459,8 @@ function jsroot_require(need) {
          arr.push(import("./tree.mjs"));
       else if (name == "painter")
          arr.push(import('./painter.mjs'));
+      else if (name == "colors")
+         arr.push(import('./base/colors.mjs'));
       else if (name == "hierarchy")
          arr.push(import("./hierarchy.mjs"));
       else if (name == "geom")
@@ -1668,6 +1670,13 @@ function connectWebWindow(arg) {
    return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
 }
 
+/** @summary Check if object is a Promise
+  * @private */
+function isPromise(obj) {
+   return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
+}
+
+
 /** @summary Initialize JSROOT
   * @desc Called when main JSRoot.core.js script is loaded.
   * @private */
@@ -1734,4 +1743,5 @@ getMethods,
 registerMethods,
 isRootCollection,
 markAsStreamerInfo,
-connectWebWindow };
+connectWebWindow,
+isPromise };

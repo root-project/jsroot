@@ -1,7 +1,7 @@
 /// JavaScript ROOT graphics for ROOT v7 classes
 
 import { gStyle, settings, constants, internals, create, extend, parse, require,
-         addMethods, registerMethods, isBatchMode } from './core.mjs';
+         addMethods, registerMethods, isPromise, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
@@ -10,9 +10,10 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
-import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
-         createMenu, closeMenu, isPromise, addColor, getRootColors, registerForResize,
-         getElementRect, chooseTimeFormat, selectActivePad,
+import { ColorPalette, addColor, getRootColors } from './base/colors.mjs';
+
+import { ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
+         createMenu, closeMenu, registerForResize, getElementRect, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
 
 import { addDrawFunc, draw } from './draw.mjs';
