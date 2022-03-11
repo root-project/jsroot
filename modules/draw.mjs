@@ -116,7 +116,24 @@ let drawFuncs = { lst: [
    { name: "kind:TopFolder", icon: "img_base" },
    { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
    { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", class: () => import('./v7gpad.mjs').then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
-   { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", draw: () => import('./v7gpad.mjs').then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" }
+   { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", draw: () => import('./v7gpad.mjs').then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
+   { name: "ROOT::Experimental::RHist1Drawable", icon: "img_histo1d", class: () => import('./v7hist.mjs').then(h => h.RH1Painter), opt: "" },
+   { name: "ROOT::Experimental::RHist2Drawable", icon: "img_histo2d", class: () => import('./v7hist.mjs').then(h => h.RH2Painter), opt: "" },
+   { name: "ROOT::Experimental::RHist3Drawable", icon: "img_histo3d", class: () => import('./v7hist3d.mjs').then(h => h.RH3Painter), opt: "" },
+   { name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", draw: () => import('./v7hist.mjs').then(h => h.drawHistDisplayItem), opt: "" },
+   { name: "ROOT::Experimental::RText", icon: "img_text", draw: () => import('./v7more.mjs').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
+   { name: "ROOT::Experimental::RFrameTitle", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
+   { name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", class: () => import('./v7gpad.mjs').then(h => h.RPalettePainter), opt: "" },
+   { name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" },
+   { name: "ROOT::Experimental::RLine", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
+   { name: "ROOT::Experimental::RBox", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
+   { name: "ROOT::Experimental::RMarker", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
+   { name: "ROOT::Experimental::RPave", icon: "img_pavetext", class: () => import('./v7gpad.mjs').then(h => h.RPavePainter), opt: "" },
+   { name: "ROOT::Experimental::RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" },
+   { name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" },
+   { name: "ROOT::Experimental::RFrame", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RFramePainter), opt: "" },
+   { name: "ROOT::Experimental::RFont", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
+   { name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RAxisPainter), opt: "" }
 ], cache: {} };
 
 

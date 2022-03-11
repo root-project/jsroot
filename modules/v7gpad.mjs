@@ -24,7 +24,7 @@ import { DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, registerForResize, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
 
-import { addDrawFunc, draw, getDrawSettings } from './draw.mjs';
+import { draw, getDrawSettings } from './draw.mjs';
 
 import { TAxisPainter } from './gpad/TAxisPainter.mjs';
 
@@ -5513,27 +5513,6 @@ function drawRFont() {
 RPadPainter.prototype.drawObject = draw;
 RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 
-
-// addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: RPadPainter.draw, opt: "" });
-
-addDrawFunc({ name: "ROOT::Experimental::RHist1Drawable", icon: "img_histo1d", class: () => import('./v7hist.mjs').then(h => h.RH1Painter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RHist2Drawable", icon: "img_histo2d", class: () => import('./v7hist.mjs').then(h => h.RH2Painter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RHist3Drawable", icon: "img_histo3d", class: () => import('./v7hist3d.mjs').then(h => h.RH3Painter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", draw: () => import('./v7hist.mjs').then(h => h.drawHistDisplayItem), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", draw: () => import('./v7more.mjs').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" });
-addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawRFrameTitle, opt: "", direct: "v7", csstype: "title" });
-addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: RPalettePainter.draw, opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" });
-addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" });
-addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" });
-addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: RPavePainter.draw, opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: RFramePainter.draw, opt: "" });
-addDrawFunc({ name: "ROOT::Experimental::RFont", icon: "img_text", func: drawRFont, opt: "", direct: "v7", csstype: "font" });
-addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: RAxisPainter.draw, opt: "" });
-
 export { ensureRCanvas, drawRPadSnapshot, CommMode,
-         RObjectPainter, RAxisPainter, RPavePainter, RFramePainter,
+         RObjectPainter, RAxisPainter, RPavePainter, RFramePainter, drawRFrameTitle,
          RPalettePainter, RPadPainter, RCanvasPainter };
