@@ -10,6 +10,10 @@ import { BasePainter } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
+import { TH1Painter } from './hist/TH1Painter.mjs';
+
+import { TH2Painter } from './hist/TH2Painter.mjs';
+
 import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
 
 import { TAttLineHandler } from './base/TAttLineHandler.mjs';
@@ -856,7 +860,7 @@ class TF1Painter extends ObjectPainter {
       proivdeEvalPar(tf1, jsroot_math);
 
       if (!has_main || painter.second_x || painter.second_y)
-         await draw(dom, painter.createDummyHisto(), aopt);
+         await TH1Painter.draw(dom, painter.createDummyHisto(), aopt);
 
       painter.addToPadPrimitives();
       await painter.redraw();
@@ -3942,7 +3946,9 @@ class TMultiGraphPainter extends ObjectPainter {
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      return draw(this.getDom(), histo, (this._3d ? "AXIS3D" : "AXIS") + hopt);
+
+      return this._3d ? TH2Painter.draw(this.getDom(), histo, "AXIS3D" + hopt)
+                      : TH1Painter.draw(this.getDom(), histo, "AXIS" + hopt);
    }
 
    /** @summary method draws next function from the functions list  */
@@ -3953,8 +3959,10 @@ class TMultiGraphPainter extends ObjectPainter {
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return Promise.resolve(this);
 
-      return draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
-                  .then(() => this.drawNextFunction(indx+1));
+      let pp = this.getPadPainter()
+
+      return pp.drawObject(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+               .then(() => this.drawNextFunction(indx+1));
    }
 
    /** @summary method draws next graph  */

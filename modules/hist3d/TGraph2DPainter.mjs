@@ -10,7 +10,7 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { DrawOptions } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
+import { TH2Painter } from './TH2Painter.mjs';
 
 import { createLineSegments, PointsCreator } from '../base3d.mjs';
 
@@ -352,7 +352,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
-         promise = draw(dom, gr.fHistogram, "lego;axis");
+         promise = TH2Painter.draw(dom, gr.fHistogram, "lego;axis");
          painter.ownhisto = true;
       }
 
