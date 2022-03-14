@@ -43,15 +43,12 @@ async function extract_geo_tracks(tree, opt) {
       }
    }
 
-   return new Promise(resolveFunc => {
-      selector.Terminate = function(res) {
-         // function called when processing finishes
-         console.log('Read done num entries', numentry, 'tracks', numtracks);
-         resolveFunc(lst);
-      }
+   selector.Terminate = function() {
+      // function called when processing finishes
+      console.log('Read done num entries', numentry, 'tracks', numtracks);
+   }
 
-      tree.Process(selector);
-   });
+   return handle.treeProcess(tree, selector);
 }
 
 console.log('LOAD alice_esd.js with JSROOT', JSROOT.version);

@@ -749,7 +749,7 @@ To get access to selected branches, one should use `TSelector` class:
 
     import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
     import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
-    import { TSelector } from 'https://root.cern/js/latest/modules/tree.mjs';
+    import { TSelector, treeProcess } from 'https://root.cern/js/latest/modules/tree.mjs';
 
     let file = await openFile("https://root.cern/js/files/hsimple.root");
     let tree = await file.readObject("ntuple;1");
@@ -777,7 +777,7 @@ To get access to selected branches, one should use `TSelector` class:
        console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
     }
 
-    await tree.Process(selector);
+    await treeProcess(tree, selector);
 
 Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
 
@@ -786,10 +786,10 @@ Logically it is similar to original TSelector class - for every read entry `TSel
 Selected branches can be accessed from **tgtobj** data member. At the end of tree reading `TSelector::Terminate()` method
 will be called.
 
-As second parameter of tree.Process() function one could provide object with arguments
+As third parameter of treeProcess() function one could provide object with arguments
 
     let args = { numentries: 1000, firstentry: 500 };
-    tree.Process(selector, args);
+    treeProcess(tree, selector, args);
 
 
 ### TGeo API

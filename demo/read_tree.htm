@@ -14,7 +14,7 @@
    <script type='module'>
 
       import { openFile } from '../modules/io.mjs';
-      import { TSelector } from '../modules/tree.mjs';
+      import { TSelector, treeProcess } from '../modules/tree.mjs';
 
       class TExampleSelector extends TSelector {
          /** constructor */
@@ -57,7 +57,7 @@
       let file = await openFile("../../files/hsimple.root");
       let tree = await file.readObject("ntuple;1");
 
-      tree.Process(new TExampleSelector());
+      treeProcess(tree, new TExampleSelector());
    </script>
 
 </html>

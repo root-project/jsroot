@@ -1,5 +1,5 @@
 import { openFile }  from "jsroot/io";
-import { TSelector }  from "jsroot/tree";
+import { TSelector, treeProcess }  from "jsroot/tree";
 
 let selector = new TSelector();
 
@@ -34,6 +34,6 @@ let file = await openFile("https://root.cern/js/files/hsimple.root");
 
 let tree = await file.readObject("ntuple;1");
 
-await tree.Process(selector);
+await treeProcess(tree, selector);
 
 console.log("TTree::Process finished");

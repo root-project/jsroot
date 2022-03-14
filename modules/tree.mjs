@@ -2825,5 +2825,12 @@ function treeHierarchy(node, obj) {
    return true;
 }
 
+function treeProcess(tree, selector, args) {
+   return tree.Process(selector, args);
+}
 
-export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy };
+function treeDraw(tree, args) {
+   return tree.Draw(args);
+}
+
+export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy, treeProcess, treeDraw };
