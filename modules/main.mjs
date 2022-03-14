@@ -3,10 +3,12 @@
 
 export * from './core.mjs';
 
-export { cleanup, drawingJSON } from './painter.mjs';
+export { cleanup, drawingJSON, registerForResize } from './painter.mjs';
 
 export { draw, redraw, makeSVG, setDefaultDrawOpt } from './draw.mjs';
 
 export { openFile } from './io.mjs';
+
+export { GridDisplay, FlexibleDisplay, CustomDisplay, BatchDisplay } from './display.mjs';
 
 export { HierarchyPainter, getHPainter } from './hierarchy.mjs';
