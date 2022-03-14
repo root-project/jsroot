@@ -7,9 +7,9 @@
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "type" : "module",
-  "module": "modules/core.mjs",
+  "module": "modules/main.mjs",
   "exports": {
-     "." : "./modules/core.mjs",
+     "." : "./modules/main.mjs",
      "./draw" : "./modules/draw.mjs",
      "./io" : "./modules/io.mjs",
      "./tree" : "./modules/tree.mjs",

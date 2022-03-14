@@ -5,7 +5,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "11/03/2022";
+let version_date = "14/03/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -928,21 +928,6 @@ function httpRequest(url, kind, post_data) {
    });
 }
 
-// Draw object, defined in draw.mjs
-function draw(dom, obj, opt) {
-   return import("./draw.mjs").then(handle => handle.draw(dom, obj, opt));
-}
-
-// Redaraw object, defined in draw.mjs
-function redraw(dom, obj, opt) {
-   return import("./draw.mjs").then(handle => handle.redraw(dom, obj, opt));
-}
-
-// Dummy, when painter is not yet loaded, should happens nothing
-function cleanup(dom) {
-   return import("./painter.mjs").then(handle => handle.cleanup(dom));
-}
-
 /** @summary Create some ROOT classes
   * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
   * @param {string} typename - ROOT class name
@@ -1696,9 +1681,6 @@ findFunction,
 createHttpRequest,
 httpRequest,
 loadScript,
-cleanup,
-redraw,
-draw,
 create,
 createHistogram,
 createTPolyLine,
