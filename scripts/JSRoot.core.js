@@ -118,10 +118,11 @@ function v6_require(need) {
       else if (name == "interactive")
          arr.push(import("../modules/interactive.mjs"));
       else if (name == "hierarchy")
-         arr.push(import("../modules/hierarchy.mjs").then(h => {
-            Object.assign(globalThis.JSROOT, h);
+         arr.push(Promise.all([import("../modules/hierarchy.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
+            Object.assign(globalThis.JSROOT, arr[0], arr[1]);
+            getHPainter = arr[0].getHPainter;
             globalThis.JSROOT.hpainter = getHPainter();
-            return h;
+            return globalThis.JSROOT;
          }));
        else if (name == "v7hist")
          arr.push(import("../modules/v7hist.mjs"));

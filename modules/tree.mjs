@@ -2567,119 +2567,6 @@ const TTreeMethods = {
 } // TTreeMethods
 
 
-/** @summary Performs generic I/O test for all branches in the TTree
-  * @desc Used when "testio" draw option for TTree is specified
-  * @private */
-function treeIOTest(tree, args) {
-   args.branches = [];
-   args.names = [];
-   args.nchilds = [];
-   args.nbr = 0;
-
-   function CollectBranches(obj, prntname) {
-      if (!obj || !obj.fBranches) return 0;
-
-      let cnt = 0;
-
-      for (let n = 0; n < obj.fBranches.arr.length; ++n) {
-         let br = obj.fBranches.arr[n],
-            name = (prntname ? prntname + "/" : "") + br.fName;
-         args.branches.push(br);
-         args.names.push(name);
-         args.nchilds.push(0);
-         let pos = args.nchilds.length - 1;
-         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-         let nchld = CollectBranches(br, name);
-
-         cnt += nchld;
-         args.nchilds[pos] = nchld;
-
-      }
-      return cnt;
-   }
-
-   let numleaves = CollectBranches(tree);
-
-   args.names.push(`Total are ${args.branches.length} branches with ${numleaves} leaves`);
-
-   args.lasttm = new Date().getTime();
-   args.lastnbr = 0;
-
-   let TestNextBranch = () => {
-
-      let selector = new TSelector;
-
-      selector.addBranch(args.branches[args.nbr], "br0");
-
-      selector.Process = function() {
-         if (this.tgtobj.br0 === undefined)
-            this.fail = true;
-      }
-
-      selector.Terminate = function(res) {
-         if (typeof res !== 'string')
-            res = (!res || this.fails) ? "FAIL" : "ok";
-
-         args.names[args.nbr] = res + " " + args.names[args.nbr];
-         args.nbr++;
-
-         if (args.nbr >= args.branches.length) {
-            import('./utils.mjs').then(utils => utils.showProgress());
-            return args.resolveFunc(args.names);
-         }
-
-         let now = new Date().getTime();
-
-         if ((now - args.lasttm > 5000) || (args.nbr - args.lastnbr > 50)) {
-            args.lasttm = now;
-            args.lastnbr = args.nbr;
-            setTimeout(TestNextBranch, 1); // use timeout to avoid deep recursion
-         } else
-            TestNextBranch();
-      }
-
-      import('./utils.mjs').then(utils => utils.showProgress(`br ${args.nbr}/${args.branches.length} ${args.names[args.nbr]}`));
-
-      let br = args.branches[args.nbr],
-         object_class = getBranchObjectClass(br, this),
-         num = br.fEntries,
-         skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
-
-      if (object_class) skip_branch = (args.nchilds[args.nbr] > 100);
-
-      // skip_branch = args.nchilds[args.nbr]>1;
-
-      if (skip_branch || (num <= 0)) {
-         // ignore empty branches or objects with too-many subbranch
-         // if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbranches');
-         selector.Terminate("ignore");
-      } else {
-
-         let drawargs = { numentries: 10 },
-             first = br.fFirstEntry || 0,
-             last = br.fEntryNumber || (first + num);
-
-         if (num < drawargs.numentries) {
-            drawargs.numentries = num;
-         } else {
-            // select randomly first entry to test I/O
-            drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random());
-         }
-
-         // keep console output for debug purposes
-         console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
-
-         this.Process(selector, drawargs);
-      }
-   };
-
-   return new Promise(resolve => {
-      args.resolveFunc = resolve;
-      TestNextBranch();
-   });
-}
-
-
 /** @summary  implementation of TTree::Draw
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
@@ -2696,10 +2583,6 @@ function treeDraw(tree, args) {
 
    if (!args.expr) args.expr = "";
 
-   // special debugging code
-   if (args.expr === "testio")
-      return treeIOTest(tree, args);
-
    let selector = new TDrawSelector();
 
    if (args.branch) {
@@ -2715,6 +2598,91 @@ function treeDraw(tree, args) {
       selector.setCallback(resolve, args.progress);
       treeProcess(tree, selector, args);
    });
+}
+
+/** @summary Performs generic I/O test for all branches in the TTree
+  * @desc Used when "testio" draw option for TTree is specified
+  * @private */
+async function treeIOTest(tree, args) {
+   let branches = [], names = [], nchilds = [];
+
+   function CollectBranches(obj, prntname = "") {
+      if (!obj || !obj.fBranches) return 0;
+
+      let cnt = 0;
+
+      for (let n = 0; n < obj.fBranches.arr.length; ++n) {
+         let br = obj.fBranches.arr[n],
+            name = (prntname ? prntname + "/" : "") + br.fName;
+         branches.push(br);
+         names.push(name);
+         nchilds.push(0);
+         let pos = nchilds.length - 1;
+         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
+         let nchld = CollectBranches(br, name);
+
+         cnt += nchld;
+         nchilds[pos] = nchld;
+
+      }
+      return cnt;
+   }
+
+   let numleaves = CollectBranches(tree);
+
+   names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
+
+   for (let nbr = 0; nbr < branches.length; ++nbr) {
+
+      let selector = new TSelector;
+
+      selector.addBranch(branches[nbr], "br0");
+
+      selector.Process = function() {
+         if (this.tgtobj.br0 === undefined)
+            this.fail = true;
+      }
+
+      selector.Terminate = function(res) {
+         if (typeof res !== 'string')
+            res = (!res || this.fails) ? "FAIL" : "ok";
+
+         names[nbr] = res + " " + names[nbr];
+      }
+
+      let br = branches[nbr],
+          object_class = getBranchObjectClass(br, tree),
+          num = br.fEntries,
+          skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
+
+      if (object_class) skip_branch = (nchilds[nbr] > 100);
+
+      if (skip_branch || (num <= 0))
+         continue;
+
+      let drawargs = { numentries: 10 },
+          first = br.fFirstEntry || 0,
+          last = br.fEntryNumber || (first + num);
+
+      if (num < drawargs.numentries) {
+         drawargs.numentries = num;
+      } else {
+         // select randomly first entry to test I/O
+         drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random());
+      }
+
+      // keep console output for debug purposes
+      console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
+
+      if (args.showProgress)
+         args.showProgress(`br ${nbr}/${branches.length} ${br.fName}`);
+
+      await treeProcess(tree, selector, drawargs);
+   }
+
+   if (args.showProgress) args.showProgress();
+
+   return names;
 }
 
 
@@ -2827,4 +2795,4 @@ function treeHierarchy(node, obj) {
    return true;
 }
 
-export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy, treeProcess, treeDraw };
+export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy, treeProcess, treeDraw, treeIOTest };

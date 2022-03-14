@@ -241,7 +241,7 @@ function getDrawSettings(kind, selector) {
       if (!h) break;
       if (!res.handle) res.handle = h;
       if (h.noinspect) noinspect = true;
-      if (h.expand || h.expand_item || h.can_expand) canexpand = true;
+      if (h.expand || h.get_expand || h.expand_item || h.can_expand) canexpand = true;
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
       if (!('opt' in h)) continue;
