@@ -2,7 +2,7 @@
 <html lang="en">
 
    <head>
-      <meta charset="UTF-8">
+      <meta charset="utf-8">
 
       <title>Nav Container with JSROOT drawings</title>
    </head>
@@ -13,37 +13,39 @@
 
    <script type="module">
 
-      import { require, internals } from '../../modules/core.mjs';
+      import { loadOpenui5 } from '../../modules/openui5.mjs';
 
-      internals.openui5libs = "sap.ui.core, sap.m";
+      let sap = await loadOpenui5({ libs: "sap.ui.core, sap.m" });
 
-      require('openui5').then(sap => {
+      import { httpRequest, openFile, draw } from '../../modules/main.mjs';
 
-         sap.ui.loader.config({
-            paths: {
-               "NavExample": "./"
-            }
-         });
+      globalThis.jsroot_httpRequest = httpRequest;
+      globalThis.jsroot_openFile = openFile;
+      globalThis.jsroot_draw = draw;
 
-         sap.ui.require(["sap/ui/core/ComponentContainer", "sap/m/App", "sap/m/Page" ],
-
-            function(ComponentContainer, mApp, mPage) {
-
-               new mApp ({
-                  pages: [
-                     new mPage({
-                        title: "Nav Container",
-                        enableScrolling: true,
-                        content: [ new ComponentContainer({
-                           name: "NavExample"
-                        })]
-                    })
-                 ]
-               }).placeAt("content");
-
-           }); // sap.ui.require
-
+      sap.ui.loader.config({
+         paths: {
+            "NavExample": "./"
+         }
       });
+
+      sap.ui.require(["sap/ui/core/ComponentContainer", "sap/m/App", "sap/m/Page" ],
+
+         function(ComponentContainer, mApp, mPage) {
+
+            new mApp ({
+               pages: [
+                  new mPage({
+                     title: "Nav Container",
+                     enableScrolling: true,
+                     content: [ new ComponentContainer({
+                        name: "NavExample"
+                     })]
+                 })
+              ]
+            }).placeAt("content");
+
+        }); // sap.ui.require
 
    </script>
 

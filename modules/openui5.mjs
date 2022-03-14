@@ -1,28 +1,12 @@
 /// Bootstraping of OpenUI5 functionality in JSROOT
 
-import { internals, source_dir } from './core.mjs';
+import { source_dir } from './core.mjs';
 
-let resolveFunc, rejectFunc, rootui5sys;
-
-globalThis.completeUI5Loading = function() {
-   sap.ui.loader.config({
-      paths: {
-         jsroot: source_dir,
-         rootui5: rootui5sys
-      }
-   });
-
-   if (resolveFunc) {
-      resolveFunc(sap);
-      resolveFunc = null;
-   }
-};
-
-function tryOpenOpenUI(sources) {
+function tryOpenOpenUI(sources, args) {
    if (!sources || (sources.length == 0)) {
-      if (rejectFunc) {
-         rejectFunc(Error("openui5 was not possible to load"));
-         rejectFunc = null;
+      if (args.rejectFunc) {
+         args.rejectFunc(Error("openui5 was not possible to load"));
+         args.rejectFunc = null;
       }
       return;
    }
@@ -41,9 +25,9 @@ function tryOpenOpenUI(sources) {
    // this is location of openui5 scripts when working with THttpServer or when scripts are installed inside JSROOT
    element.setAttribute('src', src + "resources/sap-ui-core.js"); // latest openui5 version
 
-   element.setAttribute('data-sap-ui-libs', internals.openui5libs ?? "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
+   element.setAttribute('data-sap-ui-libs', args.openui5libs ?? "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
 
-   element.setAttribute('data-sap-ui-theme', internals.openui5theme || 'sap_belize');
+   element.setAttribute('data-sap-ui-theme', args.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
@@ -55,7 +39,7 @@ function tryOpenOpenUI(sources) {
       // remove failed element
       element.parentNode.removeChild(element);
       // and try next
-      tryOpenOpenUI(sources);
+      tryOpenOpenUI(sources, args);
    }
 
    element.onload = function() {
@@ -65,55 +49,69 @@ function tryOpenOpenUI(sources) {
    document.getElementsByTagName("head")[0].appendChild(element);
 }
 
-rootui5sys = source_dir.replace(/jsrootsys/g, "rootui5sys");
-
-if (rootui5sys == source_dir) {
-   // if jsrootsys location not detected, try to guess it
-   if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!internals.openui5src || internals.openui5src == 'nojsroot' || internals.openui5src == 'jsroot'))
-      rootui5sys = window.location.origin + window.location.pathname + "../rootui5sys/";
-   else
-      rootui5sys = undefined;
-}
-
 
 // return Promise let loader wait before dependent source will be invoked
 
-async function doUi5Loading() {
+async function loadOpenui5(args) {
    // very simple - openui5 was loaded before and will be used as is
    if (typeof sap == 'object')
       return sap;
 
-   if (resolveFunc) {
-      console.error('ui5 loading already started - need better solution');
-      return null;
+   if (!args) args = {};
+
+   let rootui5sys = source_dir.replace(/jsrootsys/g, "rootui5sys");
+
+   if (rootui5sys == source_dir) {
+      // if jsrootsys location not detected, try to guess it
+      if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!args.openui5src || args.openui5src == 'nojsroot' || args.openui5src == 'jsroot'))
+         rootui5sys = window.location.origin + window.location.pathname + "../rootui5sys/";
+      else
+         rootui5sys = undefined;
    }
 
    let openui5_sources = [],
        openui5_dflt = "https://openui5.hana.ondemand.com/1.98.0/",
        openui5_root = rootui5sys ? rootui5sys + "distribution/" : "";
 
-   if (typeof internals.openui5src == 'string') {
-      switch (internals.openui5src) {
+   if (typeof args.openui5src == 'string') {
+      switch (args.openui5src) {
          case "nodefault": openui5_dflt = ""; break;
          case "default": openui5_sources.push(openui5_dflt); openui5_dflt = ""; break;
          case "nojsroot": /* openui5_root = ""; */ break;
          case "jsroot": openui5_sources.push(openui5_root); openui5_root = ""; break;
-         default: openui5_sources.push(internals.openui5src); break;
+         default: openui5_sources.push(args.openui5src); break;
       }
    }
 
    if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0)) openui5_sources.push(openui5_root);
    if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt) < 0)) openui5_sources.push(openui5_dflt);
 
+   // FIXME: do not load JSROOT in general case!!
    if (typeof globalThis.JSROOT === 'undefined')
-      globalThis.JSROOT = await import('./core.mjs');
+      globalThis.JSROOT = await import('./main.mjs');
 
    return new Promise((resolve, reject) => {
-      resolveFunc = resolve;
-      rejectFunc = reject;
-      tryOpenOpenUI(openui5_sources);
+
+      args.resolveFunc = resolve;
+      args.rejectFunc = reject;
+
+      globalThis.completeUI5Loading = function() {
+         sap.ui.loader.config({
+            paths: {
+               jsroot: source_dir,
+               rootui5: rootui5sys
+            }
+         });
+
+         if (args.resolveFunc) {
+            args.resolveFunc(sap);
+            args.resolveFunc = null;
+         }
+      };
+
+      tryOpenOpenUI(openui5_sources, args);
    });
 
 }
 
-export { doUi5Loading };
+export { loadOpenui5 };

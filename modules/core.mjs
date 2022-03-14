@@ -455,8 +455,6 @@ function jsroot_require(need) {
          arr.push(import("./math.mjs"));
       else if (name == "latex")
          arr.push(import("./latex.mjs"));
-      else if (name == "openui5")
-         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
    });
 
    if (arr.length == 1)

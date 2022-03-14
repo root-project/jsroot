@@ -45,7 +45,7 @@ sap.ui.define([
       drawObject: function(obj, options, call_back) {
          this.object = obj;
          this.options = options;
-         JSROOT.draw(this.getDomRef(), obj, options).then(painter => {
+         return jsroot_draw(this.getDomRef(), obj, options).then(painter => {
             this.object_painter = painter;
             this.resizeid = ResizeHandler.register(this, () => painter.checkResize());
          });
@@ -59,10 +59,10 @@ sap.ui.define([
             // object was already loaded
             this.drawObject(this.object, this.options);
          } else if (jsonfile) {
-            JSROOT.httpRequest(jsonfile, 'object')
+            jsroot_httpRequest(jsonfile, 'object')
                   .then(obj => this.drawObject(obj, this.getDrawopt()));
          } else if (fname) {
-            JSROOT.openFile(fname)
+            jsroot_openFile(fname)
                   .then(file => file.readObject(this.getItem()))
                   .then(obj => this.drawObject(obj, this.getDrawopt()));
          }
