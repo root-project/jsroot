@@ -1,4 +1,4 @@
-import { openFile } from "jsroot/io";
+import { openFile } from "jsroot";
 
 let f = await openFile("https://root.cern/js/files/hsimple.root");
 let tree = await f.readObject("ntuple;1");

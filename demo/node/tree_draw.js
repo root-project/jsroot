@@ -1,6 +1,4 @@
-import { version, httpRequest } from "jsroot";
-import { openFile } from "jsroot/io";
-import { makeSVG } from "jsroot/draw";
+import { version, httpRequest, openFile, makeSVG } from "jsroot";
 
 import { writeFileSync } from "fs";
 
