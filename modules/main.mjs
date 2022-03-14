@@ -3,9 +3,9 @@
 
 export * from './core.mjs';
 
-export { cleanup } from './painter.mjs';
+export { cleanup, drawingJSON } from './painter.mjs';
 
-export { draw, redraw, makeSVG } from './draw.mjs';
+export { draw, redraw, makeSVG, setDefaultDrawOpt } from './draw.mjs';
 
 export { openFile } from './io.mjs';
 

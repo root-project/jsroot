@@ -15,11 +15,7 @@
 
    <script type='module'>
 
-      import { parse } from '../modules/core.mjs';
-      import { openFile } from '../modules/io.mjs';
-      import { draw, cleanup } from '../modules/draw.mjs';
-
-      import { drawingJSON } from '../modules/painter.mjs';
+      import { parse, openFile, draw, cleanup, drawingJSON  } from '../modules/main.mjs';
 
       // absolute file path can be used as well
       let file = await openFile("../../files/hsimple.root");
