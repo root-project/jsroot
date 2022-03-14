@@ -17,6 +17,8 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 import { loadJSDOM, getElementMainPainter,
          createMenu, registerForResize, cleanup, resize } from './painter.mjs';
 
+import { produceLegend } from './hist/TPavePainter.mjs';
+
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
 
 import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
@@ -1915,9 +1917,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (itemname == "$legend")
-         return import('./hist/TPavePainter.mjs')
-                    .then(h => h.produceLegend(divid, opt))
-                    .then(legend_painter => drop_complete(legend_painter));
+         return produceLegend(divid, opt).then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
 
