@@ -106,7 +106,7 @@ function require(need) {
       else if (name == "v7gpad")
          arr.push(import("./v7gpad.mjs"));
       else if (name == "openui5")
-         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
+         arr.push(import("./openui5.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
       else if (name.indexOf(".js") >= 0)
          arr.push(import("./core.mjs").then(handle => handle.loadScript(name)));
    });
