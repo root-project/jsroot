@@ -368,14 +368,11 @@ function loadScript(url) {
    let element, isstyle = url.indexOf(".css") > 0;
 
    if (nodejs) {
-      let res = null;
-      if (!isstyle) {
-         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-            return httpRequest(url, "text").then(txt => eval(txt));
-         res = require(url);
-      }
-
-      return Promise.resolve(res);
+      if (isstyle)
+         return Promise.resolve(null);
+      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+         return httpRequest(url, "text").then(txt => eval(txt));
+      return import(url);
    }
 
    const match_url = src => {
