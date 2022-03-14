@@ -24,7 +24,7 @@ let jsrp = null, geo = null; // old JSROOT.Painter and JSROOT.GEO handles
   * @param {Array|string} req - list of required components (as array or string separated by semicolon)
   * @returns {Promise} with array of requirements (or single element) */
 
-function require(need) {
+function v6_require(need) {
    if (!need)
       return Promise.resolve(null);
 
@@ -125,7 +125,7 @@ function require(need) {
 
 function define(req, factoryFunc) {
    let pr = new Promise(resolveFunc => {
-       require(req).then(arr => {
+       v6_require(req).then(arr => {
          if (req.length < 2) factoryFunc(arr)
                         else factoryFunc(...arr);
          resolveFunc(true);
@@ -141,6 +141,37 @@ async function complete_loading() {
    sync_promises = [];
 }
 
+
+async function connectWebWindow(arg) {
+
+   if (typeof arg == 'function')
+      arg = { callback: arg };
+   else if (!arg || (typeof arg != 'object'))
+      arg = {};
+
+   let prereq = "";
+   if (arg.prereq) prereq = arg.prereq;
+   if (arg.prereq2) prereq += ";" + arg.prereq;
+
+   if (prereq) {
+      if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
+      if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
+      if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
+      await v6_require(prereq);
+      delete arg.prereq;
+      delete arg.prereq2;
+      if (arg.prereq_logdiv && document) {
+         let elem = document.getElementById(arg.prereq_logdiv);
+         if (elem) elem.innerHTML = '';
+         delete arg.prereq_logdiv;
+      }
+   }
+
+   let h = await import('./webwindow.mjs');
+   return h.connectWebWindow(arg);
+}
+
+
 function ensureJSROOT()
 {
    // need to keep global JSROOT for use in external scripts
@@ -148,11 +179,11 @@ function ensureJSROOT()
       globalThis.JSROOT = {};
 
    Object.assign(globalThis.JSROOT, jsroot, jsroot_io, jsroot_draw);
-   globalThis.JSROOT.require = require;
+   globalThis.JSROOT.require = v6_require;
    globalThis.JSROOT.define = define;
    globalThis.JSROOT.extend = Object.assign;
 
    globalThis.JSROOT.hpainter = getHPainter();
 }
 
-export { ensureJSROOT, require, define, complete_loading };
+export { ensureJSROOT, v6_require as require, define, complete_loading };

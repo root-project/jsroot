@@ -1,5 +1,5 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         require, source_dir, settings, internals, findFunction,
+         source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
@@ -1715,7 +1715,7 @@ class HierarchyPainter extends BasePainter {
             player_func = findFunction(item._player);
          }
       if (!player_func && item._module) {
-         let hh = require(item._module);
+         let hh = import(item._module);
          player_func = hh ? hh[item._player] : null;
       }
       if (typeof player_func != 'function')

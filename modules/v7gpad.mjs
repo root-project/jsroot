@@ -1,6 +1,6 @@
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-import { gStyle, settings, constants, internals, create, parse, require,
+import { gStyle, settings, constants, internals, create, parse,
          addMethods, registerMethods, isPromise, isBatchMode } from './core.mjs';
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,

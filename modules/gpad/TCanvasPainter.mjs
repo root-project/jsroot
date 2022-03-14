@@ -1,6 +1,6 @@
 /// TCanvas painting
 
-import { BIT, settings, require, create, parse, toJSON, isBatchMode } from '../core.mjs';
+import { BIT, settings, create, parse, toJSON, isBatchMode } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 

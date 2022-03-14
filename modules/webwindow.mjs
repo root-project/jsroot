@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { require, httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, internals } from './core.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, internals } from './core.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
@@ -630,14 +630,10 @@ class WebWindowHandle {
 
 /** @summary Method used to initialize connection to web window.
   * @param {object} arg - arguments
-  * @param {string} [arg.prereq] - prerequicities, which should be loaded first
-  * @param {string} [arg.openui5src] - source of openui5, either URL like "https://openui5.hana.ondemand.com" or "jsroot" which provides its own reduced openui5 package
-  * @param {string} [arg.openui5libs] - list of openui5 libraries loaded, default is "sap.m, sap.ui.layout, sap.ui.unified"
   * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
   * @param {number} [arg.credits = 10] - number of packets which can be send to server without acknowledge
   * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
-  * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned in handle.first_msg
-  * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
+  * @param {string} [arg.first_recv] - required prefix in the first message from TWebWindow, remain part of message will be returned in handle.first_msg
   * @param {string} [arg.href] - URL to RWebWindow, using window.location.href by default
   * @returns {Promise} ready-to-use WebWindowHandle instance  */
 function connectWebWindow(arg) {
@@ -646,21 +642,6 @@ function connectWebWindow(arg) {
       arg = { callback: arg };
    else if (!arg || (typeof arg != 'object'))
       arg = {};
-
-   if (arg.prereq) {
-      if (arg.openui5src) internals.openui5src = arg.openui5src;
-      if (arg.openui5libs) internals.openui5libs = arg.openui5libs;
-      if (arg.openui5theme) internals.openui5theme = arg.openui5theme;
-      return require(arg.prereq).then(() => {
-         delete arg.prereq;
-         if (arg.prereq_logdiv && document) {
-            let elem = document.getElementById(arg.prereq_logdiv);
-            if (elem) elem.innerHTML = '';
-            delete arg.prereq_logdiv;
-         }
-         return connectWebWindow(arg);
-      });
-   }
 
    let d = decodeUrl();
 
@@ -732,14 +713,7 @@ function connectWebWindow(arg) {
       handle.setReceiver(arg.receiver);
       handle.connect();
 
-      if (arg.prereq2) {
-         require(arg.prereq2).then(() => {
-            delete arg.prereq2; // indicate that func is loaded
-            if (!arg.first_recv || handle.first_msg) resolveFunc(handle);
-         });
-      } else if (!arg.first_recv) {
-         resolveFunc(handle);
-      }
+      resolveFunc(handle);
    });
 }
 
