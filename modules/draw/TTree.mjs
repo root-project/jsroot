@@ -1,6 +1,6 @@
 import {kTString, kObject, kAnyP } from '../io.mjs';
 
-import { kClonesNode, kSTLNode } from '../tree.mjs';
+import { kClonesNode, kSTLNode, treeDraw } from '../tree.mjs';
 
 import { createTreePlayer } from '../hierarchy.mjs';
 
@@ -95,7 +95,7 @@ async function drawTree() {
    args.progress = obj => process_result(obj, true);
 
    // use in result handling same function as for progress handling
-   return tree.Draw(args).then(obj => process_result(obj));
+   return treeDraw(tree, args).then(obj => process_result(obj));
 }
 
 export { drawTree };
