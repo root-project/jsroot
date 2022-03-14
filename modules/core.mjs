@@ -417,52 +417,6 @@ function loadScript(url) {
    });
 }
 
-/** @summary Central method to load JSROOT functionality
-  * @desc
-  * Following components can be specified
-  *    - 'io'     TFile functionality
-  *    - 'tree'   TTree support
-  *    - 'painter' d3.js plus basic painting functions
-  *    - 'geom'   TGeo support
-  *    - 'math'   some methods from TMath class
-  *    - 'hierarchy' hierarchy browser
-  *    - 'openui5' OpenUI5 and related functionality
-  * @param {Array|string} req - list of required components (as array or string separated by semicolon)
-  * @returns {Promise} with array of requirements (or single element) */
-
-function jsroot_require(need) {
-   if (!need)
-      return Promise.resolve(null);
-
-   if (typeof need == "string") need = need.split(";");
-
-   let arr = [];
-
-   need.forEach(name => {
-      if (name == "io")
-         arr.push(import("./io.mjs"));
-      else if (name == "tree")
-         arr.push(import("./tree.mjs"));
-      else if (name == "painter")
-         arr.push(import('./painter.mjs'));
-      else if (name == "colors")
-         arr.push(import('./base/colors.mjs'));
-      else if (name == "hierarchy")
-         arr.push(import("./hierarchy.mjs"));
-      else if (name == "geom")
-         arr.push(import("./geom.mjs"));
-      else if (name == "math")
-         arr.push(import("./math.mjs"));
-      else if (name == "latex")
-         arr.push(import("./latex.mjs"));
-   });
-
-   if (arr.length == 1)
-      return arr[0];
-
-   return Promise.all(arr);
-}
-
 /** @summary Generate mask for given bit
   * @param {number} n bit number
   * @returns {Number} produced mask
@@ -1617,25 +1571,28 @@ function markAsStreamerInfo(h, item, obj) {
       obj._typename = 'TStreamerInfoList';
 }
 
-
-// Connects web window
-function connectWebWindow(arg) {
-   return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
-}
-
 /** @summary Check if object is a Promise
   * @private */
 function isPromise(obj) {
    return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
 }
 
+/** @summary Ensure global JSROOT and v6 support methods
+  * @private */
+async function _ensureJSROOT() {
+   if (!globalThis.JSROOT)
+      await loadScript(source_dir + 'scripts/JSRoot.core.js');
+
+   if (globalThis.JSROOT?._complete_loading)
+      await globalThis.JSROOT._complete_loading();
+
+   return globalThis.JSROOT;
+}
 
 /** @summary Initialize JSROOT
   * @desc Called when main JSRoot.core.js script is loaded.
   * @private */
-function _init() {
-
-   if (!source_fullpath) return this;
+if (source_fullpath) {
 
    let d = decodeUrl(source_fullpath);
 
@@ -1643,14 +1600,8 @@ function _init() {
    if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
    if (d.has('nosap')) internals.sap = undefined; // let ignore sap loader even with openui5 loaded
-
-   return this;
 }
 
-
-_init();
-
-// exports, available via JSROOT global
 
 export {
 version_id,
@@ -1666,7 +1617,6 @@ constants,
 settings,
 gStyle,
 isArrayProto,
-jsroot_require as require,
 getDocument,
 BIT,
 clone,
@@ -1689,5 +1639,5 @@ getMethods,
 registerMethods,
 isRootCollection,
 markAsStreamerInfo,
-connectWebWindow,
-isPromise };
+isPromise,
+_ensureJSROOT };

@@ -945,3 +945,5 @@ JSROOT.Math -> math = await require('math')
 JSROOT.batch_mode -> isBatchMode()
 
 JSROOT.extend -> Object.assign
+
+JSROOT.define and JSROOT.require deprecated, load necessary modules directly (in most cases `main.mjs`)

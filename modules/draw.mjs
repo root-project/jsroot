@@ -2,7 +2,7 @@
 
 import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, isNodeJs } from './core.mjs';
+import { loadScript, findFunction, internals, isNodeJs, _ensureJSROOT } from './core.mjs';
 
 import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
 
@@ -373,13 +373,12 @@ async function draw(dom, obj, opt) {
    } else if (!handle.prereq && !handle.script) {
       throw Error(`Prerequicities to load ${handle.func} are not specified`);
    } else {
-      let v6 = await import('./v6.mjs');
-      v6.ensureJSROOT();
+      let v6 = await _ensureJSROOT();
       if (handle.prereq)
          await v6.require(handle.prereq);
       if (handle.script)
          await loadScript(handle.script);
-      await v6.complete_loading();
+      await v6._complete_loading();
       let func = findFunction(handle.func);
 
       if (!func || (typeof func != 'function'))

@@ -1,6 +1,6 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -2283,10 +2283,9 @@ class HierarchyPainter extends BasePainter {
                if (typeof handle.expand == 'function')
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
-                  let v6 = await import('./v6.mjs');
-                  v6.ensureJSROOT();
+                  let v6 = await _ensureJSROOT();
                   await v6.require(handle.prereq);
-                  await v6.complete_loading();
+                  await v6._complete_loading();
                   _item._expand = handle.expand = findFunction(handle.expand);
                } else if (typeof handle.get_expand == 'function') {
                   _item._expand = handle.expand = await handle.get_expand();
@@ -2968,9 +2967,7 @@ class HierarchyPainter extends BasePainter {
    async loadScripts(scritps, modules) {
       if (!scritps && !modules) return;
 
-      let v6 = await import('./v6.mjs');
-
-      v6.ensureJSROOT();
+      let v6 = await _ensureJSROOT();
 
       if (modules)
          await v6.require(modules);
@@ -2978,7 +2975,7 @@ class HierarchyPainter extends BasePainter {
       if(scritps)
          await loadScript(scritps);
 
-      await v6.complete_loading();
+      await v6._complete_loading();
    }
 
    /** @summary Start GUI
