@@ -248,7 +248,41 @@ class ArrayIterator {
 
 } // class ArrayIterator
 
-// ============================================================================
+
+/** @summary return class name of the object, stored in the branch
+  * @private */
+function getBranchObjectClass(branch, tree, with_clones, with_leafs) {
+
+   if (!branch || (branch._typename !== "TBranchElement")) return "";
+
+   if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
+      // object where all sub-branches will be collected
+      return branch.fClassName;
+   }
+
+   if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
+      return branch.fClonesName;
+
+   let s_elem = findBrachStreamerElement(branch, tree.$file);
+
+   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
+      return s_elem.fName;
+
+   if (branch.fType === kObjectNode) {
+      if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
+         return s_elem.fTypeName;
+      return "TObject";
+   }
+
+   if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
+      if ((s_elem.fType === kObject) || (s_elem.fType === kAny)) return s_elem.fTypeName;
+      if (s_elem.fType === kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
+   }
+
+   return "";
+}
+
+
 
 /**
  * @summary object with single variable in TTree::Draw expression
@@ -1346,39 +1380,6 @@ function defineMemberTypeName(file, parent_class, member_name) {
    if (clname[clname.length - 1] === "*") clname = clname.substr(0, clname.length - 1);
 
    return clname;
-}
-
-/** @summary return class name of the object, stored in the branch
-  * @private */
-function getBranchObjectClass(branch, tree, with_clones, with_leafs) {
-
-   if (!branch || (branch._typename !== "TBranchElement")) return "";
-
-   if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
-      // object where all sub-branches will be collected
-      return branch.fClassName;
-   }
-
-   if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
-      return branch.fClonesName;
-
-   let s_elem = findBrachStreamerElement(branch, tree.$file);
-
-   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
-      return s_elem.fName;
-
-   if (branch.fType === kObjectNode) {
-      if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
-         return s_elem.fTypeName;
-      return "TObject";
-   }
-
-   if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
-      if ((s_elem.fType === kObject) || (s_elem.fType === kAny)) return s_elem.fTypeName;
-      if (s_elem.fType === kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
-   }
-
-   return "";
 }
 
 /** @summary create fast list to assign all methods to the object
@@ -2714,10 +2715,10 @@ const TTreeMethods = {
 
 } // TTreeMethods
 
+
 /** @summary Create hierarchy of TTree object
   * @private */
 function treeHierarchy(node, obj) {
-   if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
 
    function CreateBranchItem(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
@@ -2775,7 +2776,7 @@ function treeHierarchy(node, obj) {
             for (let i=0; i<bobj.fBranches.arr.length; ++i)
                CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
-            let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
+            let object_class = getBranchObjectClass(bobj, bobj.$tree, true, false),
                 methods = object_class ? getMethods(object_class) : null;
 
             if (methods && (bobj.fBranches.arr.length > 0))
@@ -2824,98 +2825,5 @@ function treeHierarchy(node, obj) {
    return true;
 }
 
-/** @summary function called from draw()
-  * @desc just envelope for real TTree::Draw method which do the main job
-  * Can be also used for the branch and leaf object
-  * @private */
-async function drawTree() {
 
-   let painter = this,
-       obj = this.getObject(),
-       opt = this.getDrawOpt(),
-       tree = obj,
-       args = opt;
-
-   if (obj._typename == "TBranchFunc") {
-      // fictional object, created only in browser
-      args = { expr: "." + obj.func + "()", branch: obj.branch };
-      if (opt && opt.indexOf("dump")==0)
-         args.expr += ">>" + opt;
-      else if (opt)
-         args.expr += opt;
-      tree = obj.branch.$tree;
-   } else if (obj.$branch) {
-      // this is drawing of the single leaf from the branch
-      args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
-      if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
-         // special case of size
-         args.expr = opt;
-         args.direct_branch = true;
-      }
-
-      tree = obj.$branch.$tree;
-   } else if (obj.$tree) {
-      // this is drawing of the branch
-
-      // if generic object tried to be drawn without specifying any options, it will be just dump
-      if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
-          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = "dump";
-
-      args = { expr: opt, branch: obj };
-      tree = obj.$tree;
-   } else {
-      if (!args) args = 'player';
-
-      if ((typeof args == 'string') && (args.indexOf('player') == 0)) {
-         let hh = await import('./hierarchy.mjs');
-         hh.createTreePlayer(painter);
-         painter.configureTree(tree);
-         painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
-         return painter;
-      }
-
-      if (typeof args === 'string') args = { expr: args };
-   }
-
-   if (!tree)
-      throw Error('No TTree object available for TTree::Draw');
-
-   let create_player = 0, finalResolve;
-
-   async function process_result(obj, intermediate) {
-
-      let drawid;
-
-      if (!args.player)
-         drawid = painter.getDom();
-      else if (create_player === 2)
-         drawid = painter.drawid;
-
-      if (drawid)
-         return import('./draw.mjs').then(handle => handle.redraw(drawid, obj)); // return painter for histogram
-
-      if (create_player === 1)
-         return intermediate ? null : new Promise(resolve => { finalResolve = resolve; });
-
-      // redirect drawing to the player
-      create_player = 1;
-
-      let hh = await import('./hierarchy.mjs');
-      hh.createTreePlayer(painter);
-      painter.configureTree(tree);
-      painter.showPlayer(args);
-      create_player = 2;
-      let handle = import('./draw.mjs');
-      let objpainter = await handle.redraw(painter.drawid, obj);
-      painter.setItemName("TreePlayer"); // item name used by MDI when process resize
-      if (finalResolve) finalResolve(objpainter);
-      return objpainter; // return painter for histogram
-   };
-
-   args.progress = obj => process_result(obj, true);
-
-   // use in result handling same function as for progress handling
-   return tree.Draw(args).then(obj => process_result(obj));
-}
-
-export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods, drawTree, treeHierarchy };
+export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy };
