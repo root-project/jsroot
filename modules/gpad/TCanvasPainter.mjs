@@ -4,7 +4,7 @@ import { BIT, settings, require, create, parse, toJSON, isBatchMode } from '../c
 
 import { select as d3_select } from '../d3.mjs';
 
-import { closeCurrentWindow, showProgress } from '../utils.mjs';
+import { closeCurrentWindow, showProgress, loadOpenui5 } from '../utils.mjs';
 
 import { selectActivePad, cleanup, resize } from '../painter.mjs';
 
@@ -468,7 +468,7 @@ class TCanvasPainter extends TPadPainter {
 
       return new Promise(resolveFunc => {
 
-         require('openui5').then(() => {
+         loadOpenui5().then(sap => {
 
             d3_select("#ged_placeholder").text("");
 

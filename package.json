@@ -10,6 +10,7 @@
   "module": "modules/main.mjs",
   "exports": {
      "." : "./modules/main.mjs",
+     "./core" : "./modules/core.mjs",
      "./draw" : "./modules/draw.mjs",
      "./io" : "./modules/io.mjs",
      "./tree" : "./modules/tree.mjs",

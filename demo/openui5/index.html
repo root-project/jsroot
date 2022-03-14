@@ -13,15 +13,11 @@
 
    <script type="module">
 
-      import { loadOpenui5 } from '../../modules/openui5.mjs';
+      import { loadOpenui5, httpRequest, openFile, draw } from '../../modules/main.mjs';
 
       let sap = await loadOpenui5({ libs: "sap.ui.core, sap.m" });
 
-      import { httpRequest, openFile, draw } from '../../modules/main.mjs';
-
-      globalThis.jsroot_httpRequest = httpRequest;
-      globalThis.jsroot_openFile = openFile;
-      globalThis.jsroot_draw = draw;
+      globalThis.JSROOT = { httpRequest, openFile, draw };
 
       sap.ui.loader.config({
          paths: {

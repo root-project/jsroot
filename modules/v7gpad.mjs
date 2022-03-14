@@ -8,7 +8,7 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from './d3.mjs';
 
-import { closeCurrentWindow, showProgress } from './utils.mjs';
+import { closeCurrentWindow, showProgress, loadOpenui5 } from './utils.mjs';
 
 import { ColorPalette, addColor, getRootColors } from './base/colors.mjs';
 
@@ -4784,7 +4784,7 @@ class RCanvasPainter extends RPadPainter {
 
       return new Promise(resolveFunc => {
 
-         require('openui5').then(() => {
+         loadOpenui5.then(sap => {
 
             d3_select("#ged_placeholder").text("");
 
