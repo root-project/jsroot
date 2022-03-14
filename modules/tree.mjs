@@ -282,6 +282,113 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    return "";
 }
 
+
+/** @summary Get branch with specified id
+  * @desc All sub-branches checked as well
+  * @returns {Object} branch */
+function getTreeBranch(tree, id) {
+   if (!Number.isInteger(id)) return;
+   let res, seq = 0;
+   function scan(obj) {
+      if (obj && obj.fBranches)
+         obj.fBranches.arr.forEach(br => {
+            if (seq++ === id) res = br;
+            if (!res) scan(br);
+         });
+   }
+
+   scan(tree);
+   return res;
+}
+
+
+/** @summary Special branch search
+  * @desc Name can include extra part, which will be returned in the result
+  * @param {string} name - name of the branch
+  * @returns {Object} with "branch" and "rest" members
+  * @private */
+function findBranchComplex(tree, name, lst = undefined, only_search = false) {
+
+   let top_search = false, search = name, res = null;
+
+   if (!lst) {
+      top_search = true;
+      lst = tree.fBranches;
+      let pos = search.indexOf("[");
+      if (pos > 0) search = search.substr(0, pos);
+   }
+
+   if (!lst || (lst.arr.length === 0)) return null;
+
+   for (let n = 0; n < lst.arr.length; ++n) {
+      let brname = lst.arr[n].fName;
+      if (brname[brname.length - 1] == "]")
+         brname = brname.substr(0, brname.indexOf("["));
+
+      // special case when branch name includes STL map name
+      if ((search.indexOf(brname) !== 0) && (brname.indexOf("<") > 0)) {
+         let p1 = brname.indexOf("<"), p2 = brname.lastIndexOf(">");
+         brname = brname.substr(0, p1) + brname.substr(p2 + 1);
+      }
+
+      if (brname === search) { res = { branch: lst.arr[n], rest: "" }; break; }
+
+      if (search.indexOf(brname) !== 0) continue;
+
+      // this is a case when branch name is in the begin of the search string
+
+      // check where point is
+      let pnt = brname.length;
+      if (brname[pnt - 1] === '.') pnt--;
+      if (search[pnt] !== '.') continue;
+
+      res = findBranchComplex(tree, search, lst.arr[n].fBranches);
+      if (!res) res = findBranchComplex(tree, search.substr(pnt + 1), lst.arr[n].fBranches);
+
+      if (!res) res = { branch: lst.arr[n], rest: search.substr(pnt) };
+
+      break;
+   }
+
+   if (top_search && !only_search && !res && (search.indexOf("br_") == 0)) {
+      let p = 3;
+      while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
+      let br = (p > 3) ? getTreeBranch(tree, parseInt(search.slice(3,p))) : null;
+      if (br) res = { branch: br, rest: search.substr(p) };
+   }
+
+   if (!top_search || !res) return res;
+
+   if (name.length > search.length) res.rest += name.substr(search.length);
+
+   return res;
+}
+
+
+/** @summary Search branch with specified name
+  * @param {string} name - name of the branch
+  * @returns {Object} found branch */
+function findBranch(tree, name) {
+   let res = findBranchComplex(tree, name, tree.fBranches, true);
+   return (!res || (res.rest.length > 0)) ? null : res.branch;
+}
+
+
+/** @summary Returns number of branches in the TTree
+  * @desc Checks also sub-branches in the branches
+  * @returns {number} number of branches */
+function getNumBranches(tree) {
+   function count(obj) {
+      if (!obj || !obj.fBranches) return 0;
+      let nchld = 0;
+      obj.fBranches.arr.forEach(sub => nchld += count(sub));
+      return obj.fBranches.arr.length + nchld;
+   }
+
+   return count(tree);
+}
+
+
 /**
  * @summary object with single variable in TTree::Draw expression
  *
@@ -348,7 +455,7 @@ class TDrawVariable {
                }
             }
 
-            br = tree.FindBranchComplex(code.substr(pos, pos2 - pos));
+            br = findBranchComplex(tree, code.substr(pos, pos2 - pos));
             if (!br) { pos = pos2 + 1; continue; }
 
             // when full id includes branch name, replace only part of extracted expression
@@ -1474,7 +1581,7 @@ function treeProcess(tree, selector, args) {
       // read_mode == '.member_name' select only reading of member_name instead of complete object
 
       if (typeof branch === 'string')
-         branch = handle.tree.FindBranch(branch);
+         branch = findBranch(handle.tree, branch);
 
       if (!branch) { console.error('Did not found branch'); return null; }
 
@@ -1599,7 +1706,7 @@ function treeProcess(tree, selector, args) {
          }
       } else
          if (nb_leaves === 1 && leaf && leaf.fLeafCount) {
-            let br_cnt = handle.tree.FindBranch(leaf.fLeafCount.fName);
+            let br_cnt = findBranch(handle.tree, leaf.fLeafCount.fName);
 
             if (br_cnt) {
                item_cnt = findInHandle(br_cnt);
@@ -2447,126 +2554,6 @@ function treeProcess(tree, selector, args) {
 
 }
 
-
-/**
- * @summary methods for ROOT TTree class
- *
- * @class
- * @hideconstructor
- * @desc TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
- * @example
- * let file = await openFile("https://root.cern/js/files/hsimple.root");
- * let tuple = await file.readObject("ntuple;1");
- * draw("drawing", tree, "px:py::pz>5");
- */
-const TTreeMethods = {
-
-
-   /** @summary Special branch search
-     * @desc Name can include extra part, which will be returned in the result
-     * @param {string} name - name of the branch
-     * @returns {Object} with "branch" and "rest" members
-     * @private */
-   FindBranchComplex(name, lst, only_search) {
-
-      let top_search = false, search = name, res = null;
-
-      if (lst === undefined) {
-         top_search = true;
-         lst = this.fBranches;
-         let pos = search.indexOf("[");
-         if (pos > 0) search = search.substr(0, pos);
-      }
-
-      if (!lst || (lst.arr.length === 0)) return null;
-
-      for (let n = 0; n < lst.arr.length; ++n) {
-         let brname = lst.arr[n].fName;
-         if (brname[brname.length - 1] == "]")
-            brname = brname.substr(0, brname.indexOf("["));
-
-         // special case when branch name includes STL map name
-         if ((search.indexOf(brname) !== 0) && (brname.indexOf("<") > 0)) {
-            let p1 = brname.indexOf("<"), p2 = brname.lastIndexOf(">");
-            brname = brname.substr(0, p1) + brname.substr(p2 + 1);
-         }
-
-         if (brname === search) { res = { branch: lst.arr[n], rest: "" }; break; }
-
-         if (search.indexOf(brname) !== 0) continue;
-
-         // this is a case when branch name is in the begin of the search string
-
-         // check where point is
-         let pnt = brname.length;
-         if (brname[pnt - 1] === '.') pnt--;
-         if (search[pnt] !== '.') continue;
-
-         res = this.FindBranchComplex(search, lst.arr[n].fBranches);
-         if (!res) res = this.FindBranchComplex(search.substr(pnt + 1), lst.arr[n].fBranches);
-
-         if (!res) res = { branch: lst.arr[n], rest: search.substr(pnt) };
-
-         break;
-      }
-
-      if (top_search && !only_search && !res && (search.indexOf("br_") == 0)) {
-         let p = 3;
-         while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
-         let br = (p > 3) ? this.GetBranch(parseInt(search.slice(3,p))) : null;
-         if (br) res = { branch: br, rest: search.substr(p) };
-      }
-
-      if (!top_search || !res) return res;
-
-      if (name.length > search.length) res.rest += name.substr(search.length);
-
-      return res;
-   },
-
-   /** @summary Search branch with specified name
-     * @param {string} name - name of the branch
-     * @returns {Object} found branch */
-   FindBranch(name) {
-      let res = this.FindBranchComplex(name, undefined, true);
-      return (!res || (res.rest.length > 0)) ? null : res.branch;
-   },
-
-   /** @summary Returns number of branches in the TTree
-    * @desc Checks also sub-branches in the branches
-    * @returns {number} number of branches */
-   GetNumBranches() {
-      function Count(obj) {
-         if (!obj || !obj.fBranches) return 0;
-         let nchld = 0;
-         obj.fBranches.arr.forEach(sub => nchld += Count(sub));
-         return obj.fBranches.arr.length + nchld;
-      }
-
-      return Count(this);
-   },
-
-   /** @summary Get branch with specified id
-     * @desc All sub-branches checked as well
-     * @returns {Object} branch */
-   GetBranch(id) {
-      if (!Number.isInteger(id)) return;
-      let res, seq = 0;
-      function Scan(obj) {
-         if (obj && obj.fBranches)
-            obj.fBranches.arr.forEach(br => {
-               if (seq++ === id) res = br;
-               if (!res) Scan(br);
-            });
-      }
-
-      Scan(this);
-      return res;
-   }
-
-} // TTreeMethods
-
-
 /** @summary  implementation of TTree::Draw
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
@@ -2690,7 +2677,7 @@ async function treeIOTest(tree, args) {
   * @private */
 function treeHierarchy(node, obj) {
 
-   function CreateBranchItem(node, branch, tree, parent_branch) {
+   function createBranchItem(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
       let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
@@ -2743,8 +2730,8 @@ function treeHierarchy(node, obj) {
                  });
               }
 
-            for (let i=0; i<bobj.fBranches.arr.length; ++i)
-               CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
+            for (let i = 0; i < bobj.fBranches.arr.length; ++i)
+               createBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
             let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
                 methods = object_class ? getMethods(object_class) : null;
@@ -2789,10 +2776,10 @@ function treeHierarchy(node, obj) {
    node._childs = [];
    node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-   for (let i=0; i < obj.fBranches.arr.length; ++i)
-      CreateBranchItem(node, obj.fBranches.arr[i], obj);
+   for (let i = 0; i < obj.fBranches.arr.length; ++i)
+      createBranchItem(node, obj.fBranches.arr[i], obj);
 
    return true;
 }
 
-export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, TTreeMethods, treeHierarchy, treeProcess, treeDraw, treeIOTest };
+export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, treeHierarchy, treeProcess, treeDraw, treeIOTest };

@@ -368,7 +368,7 @@ async function drawTree() {
       res = await treeDraw(tree, args);
    }
 
-   process_result(res);
+   return process_result(res);
 }
 
 export { drawTree, drawTreePlayer, drawTreePlayerKey, drawLeafPlayer };

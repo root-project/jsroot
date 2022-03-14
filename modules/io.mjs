@@ -362,7 +362,7 @@ const CustomStreamers = {
 
    TTree: {
       name: '$file',
-      func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
+      func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; }
    },
 
    RooRealVar(buf, obj) {
@@ -3066,29 +3066,6 @@ class TFile {
       });
    }
 
-   /** @summary Method called when TTree object is streamed
-    * @private */
-   _addReadTree(obj) {
-      if (!this.readTrees)
-         this.readTrees = [obj];
-      else if (this.readTrees.indexOf(obj) < 0)
-         this.readTrees.push(obj);
-   }
-
-   /** @summary Handle object after it completly read
-    * @private */
-   _postProcessRead(obj) {
-      if (!this.readTrees) return obj;
-
-      return import('./tree.mjs').then(handle => {
-         if (this.readTrees) {
-            this.readTrees.forEach(t => Object.assign(t, handle.TTreeMethods))
-            delete this.readTrees;
-         }
-         return obj;
-      });
-   }
-
    /** @summary Read any object from a root file
      * @desc One could specify cycle number in the object name or as separate argument
      * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
@@ -3146,7 +3123,7 @@ class TFile {
             if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
                return this._readFormulas(obj);
 
-            return this._postProcessRead(obj);
+            return obj;
          });
       });
    }
