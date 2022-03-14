@@ -104,11 +104,13 @@
       </div>
 
       <script type="module">
-         import { require, settings, httpRequest, openFile, decodeUrl, version, source_dir } from './modules/core.mjs';
+         import { settings, httpRequest, decodeUrl, version, source_dir } from './modules/core.mjs';
 
          import { cleanup, registerForResize } from './modules/painter.mjs';
 
          import { draw } from './modules/draw.mjs';
+
+         import { openFile } from './modules/io.mjs';
 
          import { HierarchyPainter, getHPainter } from './modules/hierarchy.mjs';
 

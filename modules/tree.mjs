@@ -3,11 +3,11 @@
 import { BIT, isArrayProto, isRootCollection, getMethods,
          create, createHistogram, createTGraph, isBatchMode } from './core.mjs';
 
-import { kChar, kShort, kInt, kLong, kFloat, kCounter,
-         kCharStar, kDouble, kDouble32, kLegacyChar,
-         kUChar, kUShort, kUInt, kULong, kBits,
+import { kChar, kShort, kInt, kFloat,
+         kCharStar, kDouble, kDouble32,
+         kUChar, kUShort, kUInt,
          kLong64, kULong64, kBool, kFloat16,
-         kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
+         kOffsetL, kOffsetP, kObject, kAny, kObjectp, kTString,
          kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
          R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 

@@ -104,7 +104,7 @@ function require(need) {
       else if (name == "v7more")
          arr.push(import("./v7more.mjs"));
       else if (name == "v7gpad")
-         arr.push(import("./v7gpad.mjs"))
+         arr.push(import("./v7gpad.mjs"));
       else if (name == "openui5")
          arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
       else if (name.indexOf(".js") >= 0)

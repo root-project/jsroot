@@ -1,28 +1,10 @@
-import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         require, source_dir, settings, internals, findFunction, parse,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
+import { decodeUrl, settings, internals, findFunction, parse } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
-import { openFile } from './io.mjs';
-
-import { showProgress } from './utils.mjs';
-
-import { getRGBfromTColor } from './base/colors.mjs';
-
-import { BasePainter } from './base/BasePainter.mjs';
-
-import { ObjectPainter } from './base/ObjectPainter.mjs';
-
-import { loadJSDOM, getElementMainPainter,
-         createMenu, registerForResize, readStyleFromURL, cleanup, resize } from './painter.mjs';
-
-import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
-
-import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
+import { readStyleFromURL } from './painter.mjs';
 
 import { HierarchyPainter } from './hierarchy.mjs';
-
 
 /** @summary Build main GUI
   * @returns {Promise} when completed

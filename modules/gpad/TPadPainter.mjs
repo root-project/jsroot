@@ -11,7 +11,7 @@ import { getElementRect } from '../base/BasePainter.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { TAttLineHandler, getSvgLineStyle } from '../base/TAttLineHandler.mjs';
+import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { DrawOptions, createMenu, closeMenu, registerForResize,
          selectActivePad, getActivePad, getAbsPosInCanvas,

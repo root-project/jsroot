@@ -750,7 +750,7 @@ class TAxisPainter extends ObjectPainter {
 
       let axis = this.getObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
-          axis_g = layer, tickSize = 0.03,
+          axis_g = layer, tickSize,
           scaling_size, draw_lines = true,
           pp = this.getPadPainter(),
           pad_w = pp ? pp.getPadWidth() : 10,

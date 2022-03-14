@@ -288,7 +288,7 @@ function isPlainText(txt) {
 /** @ummary translate TLatex and draw inside provided g element
   * @desc use <text> together with normal <path> elements
   * @private */
-const parseLatex = (node, arg, label, curr) => {
+function parseLatex(node, arg, label, curr) {
 
    let nelements = 0;
 

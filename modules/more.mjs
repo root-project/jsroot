@@ -537,7 +537,7 @@ function proivdeEvalPar(func, jsroot_math) {
 
         _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
                      .replace(/\b(TMath::Exp)/g, 'Math.exp')
-                     .replace(/\b(TMath::Abs)/g, 'Math.abs')
+                     .replace(/\b(TMath::Abs)/g, 'Math.abs');
 
         if (this._math)
            _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
@@ -990,7 +990,7 @@ async function drawTF2(dom, func, opt) {
       proivdeEvalPar(obj, jsroot_math);
       createTF2Histogram(obj, this.getHisto());
       return true;
-   }
+   };
 
    return hpainter;
 }

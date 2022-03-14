@@ -1,5 +1,5 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
-         require, source_dir, settings, internals, findFunction, parse,
+         require, source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
@@ -15,7 +15,7 @@ import { BasePainter } from './base/BasePainter.mjs';
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { loadJSDOM, getElementMainPainter,
-         createMenu, registerForResize, readStyleFromURL, cleanup, resize } from './painter.mjs';
+         createMenu, registerForResize, cleanup, resize } from './painter.mjs';
 
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
 
@@ -2872,7 +2872,7 @@ class HierarchyPainter extends BasePainter {
       let lst = cleanup(frame);
 
       // we remove all painters references from items
-      if (lst && (lst.length > 0))
+      if (lst.length > 0)
          this.forEachItem(item => {
             if (item._painter && lst.indexOf(item._painter) >= 0)
                delete item._painter;

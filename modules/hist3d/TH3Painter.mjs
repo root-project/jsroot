@@ -201,7 +201,7 @@ class TH3Painter extends THistPainter {
           i, j, k, bin_content;
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1))
-         return Promise.resolve(true);
+         return true;
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -286,12 +286,10 @@ class TH3Painter extends THistPainter {
    draw3DBins() {
 
       if (!this.draw_content)
-         Promise.resolve(false);
+         return Promise.resolve(false);
 
-      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego) {
-          let res = this.draw3DScatter();
-          if (res !== false) return res;
-      }
+      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
+          return this.draw3DScatter();
 
       let histo = this.getHisto(),
           fillcolor = this.getColor(histo.fFillColor),

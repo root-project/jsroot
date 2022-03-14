@@ -3309,7 +3309,7 @@ class RPadPainter extends RObjectPainter {
          // for debug purposes keep original context menu for small region in top-left corner
          let pos = d3_pointer(evnt, this.svg_this_pad().node());
 
-         if (pos && (pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
+         if ((pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
 
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
