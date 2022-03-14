@@ -483,7 +483,10 @@ Alternative - enable CORS requests in the browser. It can be easily done with [C
 Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to `JSRoot.core.js` script like:
 
     ...
-    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.js"></script>
+    <script type="module">
+       import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
+
+    </script>
     ...
 
 In the main `<div>` element one can specify many custom parameters like one do it in URL string:
@@ -507,12 +510,6 @@ One could try to invoke such dialog with "localfile" parameter in URL string:
    - <https://root.cern/js/latest/?localfile>
 
 It could happen, that due to security limitations automatic popup will be blocked.
-
-For debuging purposes one can install JSROOT on local file system and let read ROOT files from the same location. Like:
-
-   - <file:///home/user/jsroot/index.htm?file=hsimple.root&item=hpx>
-
-But this worked only with earlier Firefox versions.
 
 
 
@@ -592,11 +589,10 @@ Many different examples of JSROOT API usage can be found on [JSROOT API examples
 
 ### Import JSROOT functionality
 
-Major JSROOT functions are locates in `core.mjs` module and can be imported like:
+Major JSROOT functions are locates in `main.mjs` module and can be imported like:
 
     <script type='module'>
-       import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
-       import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
+       import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
        let filename = "https://root.cern/js/files/hsimple.root";
        let file = await openFile(filename);
        let obj = await file.readObject("hpxpy;1");
@@ -607,7 +603,7 @@ Here the default location `https://root.cern/js/latest/` is specified. One could
 When JSROOT is used with THttpServer, the address looks like:
 
     <script type='module'>
-       import { openFile } from 'http://your_root_server:8080/jsrootsys/modules/io.mjs';
+       import { openFile } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
        ...
    </script>
 
@@ -615,7 +611,7 @@ Loading core module is enough to get main ROOT functionality - loading files and
 One also can load some components directly like:
 
     <script type='module'>
-       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/HierarchyPainter.mjs';
+       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/main.mjs';
 
        let h = new HierarchyPainter("example", "myTreeDiv");
 
@@ -633,13 +629,13 @@ After script loading one can configure different parameters in `gStyle` object.
 It is instance of the `TStyle` object and behaves like `gStyle` variable in ROOT. For instance,
 to change stat format using to display value in stats box:
 
-    import { gStyle } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { gStyle } from 'https://root.cern/js/latest/modules/main.mjs';
     gStyle.fStatFormat = "7.5g";
 
 There is also `settings` object which contains all other JSROOT settings. For instance,
 one can configure custom format for different axes:
 
-    import { settings } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { settings } from 'https://root.cern/js/latest/modules/main.mjs';
     settings.XValuesFormat = "4.2g";
     settings.YValuesFormat = "6.1f";
 
@@ -660,7 +656,7 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
 To access data from a remote web server, it is recommended to use the `httpRequest` method.
 For instance to receive object from a THttpServer server one could do:
 
-    import { httpRequest } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { httpRequest } from 'https://root.cern/js/latest/modules/main.mjs';
     let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
     console.log('Read object of type ', obj._typename);
 
@@ -668,7 +664,7 @@ Function returns Promise, which provides parsed object (or Error in case of fail
 
 If JSON string was obtained by different method, it should be parsed with:
 
-    import { parse } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { parse } from 'https://root.cern/js/latest/modules/main.mjs';
     let obj = parse(json_string);
 
 
@@ -682,14 +678,14 @@ After an object has been created, one can directly draw it. If HTML page has `<d
 
 One could use the `draw` function:
 
-    import { draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { draw } from 'https://root.cern/js/latest/modules/main.mjs';
     draw("drawing", obj, "colz");
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
 
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
-    import { httpRequest, draw } from 'https://root.cern/js/latest/modules/core.mjs';
+    import { httpRequest, draw } from 'https://root.cern/js/latest/modules/main.mjs';
     let filename = "https://root.cern/js/files/th2ul.json.gz";
     let obj = await httpRequest(filename, 'object');
     draw("drawing", obj, "lego");
@@ -875,13 +871,13 @@ to make it working. To run JSROOT on headless machine, one have to use `xvfb-run
 
 [OpenUI5](http://openui5.org/) is a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
 
-First problem is bootstraping of OpenUI5. Most easy solution - use `require('openui5')`.
+First problem is bootstraping of OpenUI5. Most easy solution - use `openui5.mjs` module.
 JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5.
 After loading is completed, one can use `sap` to access openui5 functionality like:
 
       <script type="module">
-         import { require } from 'path_to_jsroot/modules/core.mjs';
-         let sap = await require('openui5');
+         import { loadOpenui5 } from 'path_to_jsroot/modules/openui5.mjs';
+         let sap = await loadOpenui5();
          sap.registerModulePath("NavExample", "./");
          new sap.m.App ({
            pages: [
@@ -895,7 +891,7 @@ After loading is completed, one can use `sap` to access openui5 functionality li
       </script>
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT modules should be specified
-as `jsrootsys/modules/core.mjs`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
+as `jsrootsys/modules/main.mjs`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
 
     jQuery.sap.registerModulePath("NavExample", "/currentdir/");
 
@@ -936,11 +932,11 @@ Many function names where adjusted to naming conventions. Like:
 
 Remove direct support of require.js, probably loading of JSRoot.core.js will be possible but will not be guaranteed
 
-Remove minified scripts from distribution, one should load modules/core.mjs or scripts/JSRoot.core.js. Deployed code will be minified automatically.
+Remove minified scripts from distribution, one should load modules/main.mjs or scripts/JSRoot.core.js. Deployed code will be minified automatically.
 
-Core functionality should be imported from `core.mjs` module like:
+Core functionality should be imported from `main.mjs` module like:
 
-      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/core.mjs';
+      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
 
 JSROOT.hpainter -> require('hierarchy').then(hh => hh.getHPainter())
 
