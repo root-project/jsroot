@@ -96,7 +96,7 @@ function tryOpenOpenUI(sources, args) {
       console.log('Load openui5 from ' + src);
    }
 
-   document.getElementsByTagName("head")[0].appendChild(element);
+   document.head.appendChild(element);
 }
 
 

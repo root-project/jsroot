@@ -444,7 +444,7 @@ async function loadScript(url) {
    return new Promise((resolve, reject) => {
       element.onload = () => resolve(true);
       element.onerror = () => { element.remove(); reject(Error(`Fail to load ${url}`)); };
-      document.getElementsByTagName("head")[0].appendChild(element);
+      document.head.appendChild(element);
    });
 }
 
