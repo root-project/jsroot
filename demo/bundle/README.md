@@ -9,5 +9,5 @@ After that one can import TH2Painter and draw:
     import { TH1Painter } from './bundle/jsroot_hist.js`
     TH1Painter.draw(dom, obj, opt)
 
-For the moment size of the bundle mostly the same as
-original modules, but this should be improved
+Size of bundle for histograms is ~1.2MiB,
+if only 2d graphics is used - ~0.51MiB

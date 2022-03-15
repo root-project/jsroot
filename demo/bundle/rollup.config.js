@@ -26,10 +26,13 @@ const config = {
   }
 };
 
-export default [
-  config,
-  {
-    ...config,
+const config_2d = {
+   ...config,
+   input: "jsroot_hist2d.mjs"
+}
+
+const config_minified = {
+   ...config,
     output: {
       ...config.output,
       dir: "bundle.min"
@@ -48,5 +51,16 @@ export default [
         }
       })
     ]
-  }
+}
+
+const config_2d_minified = {
+   ...config_minified,
+   input: "jsroot_hist2d.mjs"
+}
+
+export default [
+  config,
+  config_2d,
+  config_minified,
+  config_2d_minified
 ];
