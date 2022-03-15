@@ -3207,7 +3207,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Draw single primitive */
    drawObject(dom, obj, opt) {
       console.log('Not possible to draw object without loading of draw.mjs');
-      return null;
+      return Promise.resolve(null);
    }
 
    /** @summary Draw pad primitives
