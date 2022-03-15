@@ -1,34 +1,34 @@
 /// more ROOT classes
 
-import { gStyle, BIT, settings, internals, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
+import { gStyle, BIT, settings, internals, create, createHistogram, isBatchMode, isNodeJs } from '../core.mjs';
 
-import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
+import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
 
-import { toHex, getColor } from './base/colors.mjs';
+import { toHex, getColor } from '../base/colors.mjs';
 
-import { BasePainter } from './base/BasePainter.mjs';
+import { BasePainter } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from './base/ObjectPainter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { TH1Painter } from './hist/TH1Painter.mjs';
+import { TH1Painter } from '../hist/TH1Painter.mjs';
 
-import { TH2Painter } from './hist/TH2Painter.mjs';
+import { TH2Painter } from '../hist/TH2Painter.mjs';
 
-import { TAttMarkerHandler } from './base/TAttMarkerHandler.mjs';
+import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
-import { TAttLineHandler } from './base/TAttLineHandler.mjs';
+import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { TAttFillHandler } from './base/TAttFillHandler.mjs';
+import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
 
-import { detectRightButton, DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
+import { detectRightButton, DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from '../painter.mjs';
 
-import { draw } from './draw.mjs';
+import { draw } from '../draw.mjs';
 
-import * as jsroot_math from './math.mjs';
+import * as jsroot_math from '../math.mjs';
 
-import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
-import { TooltipHandler } from './gpad/TFramePainter.mjs';
+import { TooltipHandler } from '../gpad/TFramePainter.mjs';
 
 
 /** @summary Add move handlers for drawn element
