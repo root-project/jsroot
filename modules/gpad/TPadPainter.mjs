@@ -1970,7 +1970,6 @@ class TPadPainter extends ObjectPainter {
 
       let d = new DrawOptions(opt);
 
-      if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
       Object.assign(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });

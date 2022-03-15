@@ -285,18 +285,6 @@ class TCanvasPainter extends TPadPainter {
       }
    }
 
-   /** @summary Create websocket for the canvas
-     * @private */
-   async openWebsocket(socket_kind) {
-      this.closeWebsocket();
-
-      let handle = await import('../webwindow.mjs');
-
-      this._websocket = new handle.WebWindowHandle(socket_kind);
-      this._websocket.setReceiver(this);
-      this._websocket.connect();
-   }
-
    /** @summary Use provided connection for the web canvas
      * @private */
    useWebsocket(handle) {
