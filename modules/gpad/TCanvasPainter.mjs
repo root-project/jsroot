@@ -4,7 +4,7 @@ import { BIT, settings, create, parse, toJSON, isBatchMode } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 
-import { closeCurrentWindow, showProgress, loadOpenui5 } from '../utils.mjs';
+import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../utils.mjs';
 
 import { selectActivePad, cleanup, resize } from '../painter.mjs';
 
@@ -449,17 +449,14 @@ class TCanvasPainter extends TPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      import('../interactive.mjs').then(inter => {
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, "toggle fix-pos mode")
+                  .style("margin","3px").on("click", () => this.brlayout.toggleKind('fix'));
 
-         inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
-                            .style("margin","3px").on("click", () => this.brlayout.toggleKind('fix'));
+      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, "toggle float mode")
+                  .style("margin","3px").on("click", () => this.brlayout.toggleKind('float'));
 
-         inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float mode")
-                            .style("margin","3px").on("click", () => this.brlayout.toggleKind('float'));
-
-         inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.cross, 15, "delete GED")
-                            .style("margin","3px").on("click", () => this.removeGed());
-      });
+      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, "delete GED")
+                  .style("margin","3px").on("click", () => this.removeGed());
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
       this.brlayout.setBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");

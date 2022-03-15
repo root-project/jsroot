@@ -15,7 +15,7 @@ import { REVISION, DoubleSide, FrontSide,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from './three.mjs';
 
-import { showProgress } from './utils.mjs';
+import { showProgress, ToolbarIcons } from './utils.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
@@ -346,7 +346,7 @@ class Toolbar {
                               .attr('data-title', title)
                               .on('click', buttonConfig.click);
 
-            inter.ToolbarIcons.createSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
+            ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title);
          });
 
       });

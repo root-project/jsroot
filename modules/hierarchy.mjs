@@ -6,7 +6,7 @@ import { select as d3_select } from './d3.mjs';
 
 import { openFile } from './io.mjs';
 
-import { showProgress } from './utils.mjs';
+import { showProgress, ToolbarIcons } from './utils.mjs';
 
 import { getRGBfromTColor } from './base/colors.mjs';
 
@@ -3224,18 +3224,16 @@ class HierarchyPainter extends BasePainter {
       if (!this.exclude_browser) {
          let btns = this.brlayout.createBrowserBtns();
 
-         import('./interactive.mjs').then(inter => {
-            inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
-                               .style("margin","3px").on("click", () => this.createBrowser("fix", true));
+         ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, "toggle fix-pos browser")
+                     .style("margin","3px").on("click", () => this.createBrowser("fix", true));
 
-            if (!this.float_browser_disabled)
-               inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float browser")
-                                  .style("margin","3px").on("click", () => this.createBrowser("float", true));
+         if (!this.float_browser_disabled)
+            ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, "toggle float browser")
+                        .style("margin","3px").on("click", () => this.createBrowser("float", true));
 
-            if (!this.status_disabled)
-               inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.three_circles, 15, "toggle status line")
-                                  .style("margin","3px").on("click", () => this.createStatusLine(0, "toggle"));
-          });
+         if (!this.status_disabled)
+            ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, "toggle status line")
+                        .style("margin","3px").on("click", () => this.createStatusLine(0, "toggle"));
       }
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
