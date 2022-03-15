@@ -1,30 +1,15 @@
 /// ROOT7 histogram 3D graphics
 
-import { gStyle, settings, constants, isBatchMode, getDocument } from '../core.mjs';
-
-import { rgb as d3_rgb } from '../d3.mjs';
+import { settings } from '../core.mjs';
 
 import { REVISION, DoubleSide,
-         Object3D, Vector2, Vector3, Matrix4, Line3, Color, Plane, ShapeUtils,
-         Scene, PointLight, PerspectiveCamera,
-         Mesh, MeshBasicMaterial, MeshLambertMaterial, TextGeometry, SphereGeometry,
-         LineSegments, LineBasicMaterial, LineDashedMaterial,
+         Vector2, Color, ShapeUtils,
+         Mesh, MeshBasicMaterial, MeshLambertMaterial, LineBasicMaterial, LineDashedMaterial,
          BufferAttribute, BufferGeometry } from '../three.mjs';
-
-import { floatToString, TRandom } from '../painter.mjs';
-
-import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
-
-import { RFramePainter } from '../gpad/RFramePainter.mjs';
-
-import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 import { RH2Painter as RH2Painter2D } from '../hist2d/RH2Painter.mjs';
 
-import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
+import { createLineSegments, create3DLineMaterial } from '../base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 

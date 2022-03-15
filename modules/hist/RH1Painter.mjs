@@ -1,21 +1,4 @@
-import { gStyle, settings, constants, isBatchMode, getDocument } from '../core.mjs';
-
-import { rgb as d3_rgb } from '../d3.mjs';
-
-import { REVISION, DoubleSide,
-         Object3D, Vector2, Vector3, Matrix4, Line3, Color, Plane, ShapeUtils,
-         Scene, PointLight, PerspectiveCamera,
-         Mesh, MeshBasicMaterial, MeshLambertMaterial, TextGeometry, SphereGeometry,
-         LineSegments, LineBasicMaterial, LineDashedMaterial,
-         BufferAttribute, BufferGeometry } from '../three.mjs';
-
-import { floatToString, TRandom } from '../painter.mjs';
-
-import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
-
-import { RFramePainter } from '../gpad/RFramePainter.mjs';
-
-import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
+import { settings } from '../core.mjs';
 
 import { RH1Painter as RH1Painter2D } from '../hist2d/RH1Painter.mjs';
 

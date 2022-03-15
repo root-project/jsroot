@@ -1,28 +1,17 @@
-import { gStyle, settings, constants, isBatchMode, getDocument } from '../core.mjs';
+import { gStyle, settings } from '../core.mjs';
 
-import { rgb as d3_rgb } from '../d3.mjs';
-
-import { REVISION, DoubleSide,
-         Object3D, Vector2, Vector3, Matrix4, Line3, Color, Plane, ShapeUtils,
-         Scene, PointLight, PerspectiveCamera,
-         Mesh, MeshBasicMaterial, MeshLambertMaterial, TextGeometry, SphereGeometry,
-         LineSegments, LineBasicMaterial, LineDashedMaterial,
-         BufferAttribute, BufferGeometry } from '../three.mjs';
+import { REVISION,
+         Matrix4,
+         Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry,
+         LineBasicMaterial, BufferAttribute, BufferGeometry } from '../three.mjs';
 
 import { floatToString, TRandom } from '../painter.mjs';
-
-import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
-
-import { RFramePainter } from '../gpad/RFramePainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 import { RHistPainter } from '../hist2d/RHistPainter.mjs';
 
-import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
+import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
 
 import { RH1Painter } from './RH1Painter.mjs';
 
