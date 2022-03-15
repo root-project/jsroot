@@ -10,7 +10,7 @@ import { DrawOptions } from '../painter.mjs';
 
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
-import { TPavePainter } from './TPavePainter.mjs';
+import { TPavePainter } from '../hist/TPavePainter.mjs';
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 

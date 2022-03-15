@@ -15,7 +15,7 @@ import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
 
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 
-import { THistPainter } from '../hist/THistPainter.mjs';
+import { THistPainter } from '../hist2d/THistPainter.mjs';
 
 import { assignFrame3DMethods } from './draw3d.mjs';
 

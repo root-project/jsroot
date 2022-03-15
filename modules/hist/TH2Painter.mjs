@@ -10,7 +10,9 @@ import { createLineSegments, create3DLineMaterial } from '../base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
-import { TH2Painter } from '../hist/TH2Painter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
+
+import { TH2Painter as TH2Painter2D  } from '../hist2d/TH2Painter.mjs';
 
 
 /** @summary Draw TH2 as 3D contour plot
@@ -738,68 +740,112 @@ function drawTH2PolyLego(painter) {
 
 /** @summary Draw 2-D histogram in 3D
   * @private */
-TH2Painter.prototype.draw3D = async function(reason) {
+class TH2Painter extends TH2Painter2D {
 
-   this.mode3d = true;
+   async draw3D(reason) {
 
-   let main = this.getFramePainter(), // who makes axis drawing
-       is_main = this.isMainPainter(), // is main histogram
-       histo = this.getHisto();
+      this.mode3d = true;
 
-   if (reason == "resize") {
+      let main = this.getFramePainter(), // who makes axis drawing
+          is_main = this.isMainPainter(), // is main histogram
+          histo = this.getHisto();
 
-      if (is_main && main.resize3D()) main.render3D();
+      if (reason == "resize") {
 
-   } else {
+         if (is_main && main.resize3D()) main.render3D();
 
-      let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
+      } else {
 
-      this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
-      this.zmax = this.gmaxbin;
+         let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
 
-      if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
-      if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
+         this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+         this.zmax = this.gmaxbin;
 
-      if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
+         if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
 
-      this.deleteAttr();
+         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+         this.deleteAttr();
+
+         if (is_main) {
+            assignFrame3DMethods(main);
+            await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+         }
+
+         if (main.mode3d) {
+            if (this.draw_content) {
+               if (this.isTH2Poly())
+                  drawTH2PolyLego(this);
+               else if (this.options.Contour)
+                  drawContour3D(this, true);
+               else if (this.options.Surf)
+                  drawSurf3D(this);
+               else if (this.options.Error)
+                  drawError3D(this);
+               else
+                  drawBinsLego(this);
+            }
+            main.render3D();
+            this.updateStatWebCanvas();
+            main.addKeysHandler();
+         }
+      }
 
       if (is_main) {
-         assignFrame3DMethods(main);
-         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+         //  (re)draw palette by resize while canvas may change dimension
+         await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                     (this.options.Surf===11) || (this.options.Surf===12)));
+         await this.drawHistTitle();
       }
 
-      if (main.mode3d) {
-         if (this.draw_content) {
-            if (this.isTH2Poly())
-               drawTH2PolyLego(this);
-            else if (this.options.Contour)
-               drawContour3D(this, true);
-            else if (this.options.Surf)
-               drawSurf3D(this);
-            else if (this.options.Error)
-               drawError3D(this);
-            else
-               drawBinsLego(this);
-         }
-         main.render3D();
-         this.updateStatWebCanvas();
-         main.addKeysHandler();
+      return this;
+   }
+
+   /** @summary draw TH2 object */
+   static async draw(dom, histo, opt) {
+      let painter = new TH2Painter(dom, histo);
+
+      await ensureTCanvas(painter);
+
+      painter.setAsMainPainter();
+
+      painter.decodeOptions(opt);
+
+      if (painter.isTH2Poly()) {
+         if (painter.options.Mode3D)
+            painter.options.Lego = 12; // lego always 12
+         else if (!painter.options.Color)
+            painter.options.Color = true; // default is color
       }
+
+      painter._show_empty_bins = false;
+
+      // special case for root 3D drawings - pad range is wired
+      painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+
+      painter.scanContent();
+
+      painter.createStat(); // only when required
+
+      await painter.callDrawFunc();
+
+      await painter.drawNextFunction(0);
+
+      if (!painter.Mode3D && painter.options.AutoZoom)
+         painter.autoZoom();
+
+      painter.fillToolbar();
+      if (painter.options.Project && !painter.mode3d)
+           painter.toggleProjection(painter.options.Project);
+
+       return painter;
    }
 
-   if (is_main) {
-      //  (re)draw palette by resize while canvas may change dimension
-      await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                  (this.options.Surf===11) || (this.options.Surf===12)));
-      await this.drawHistTitle();
-   }
-
-   return this;
-}
+} // class TH2Painter
 
 
 export { TH2Painter };

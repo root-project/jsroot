@@ -4,11 +4,14 @@ import { settings } from '../core.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
-import { TH1Painter as TH1Painter2D  } from '../hist/TH1Painter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
+
+import { TH1Painter as TH1Painter2D  } from '../hist2d/TH1Painter.mjs';
 
 /** @summary Draw 1-D histogram in 3D
   * @private */
 class TH1Painter extends TH1Painter2D {
+
    async draw3D(reason) {
 
       this.mode3d = true;
@@ -51,8 +54,33 @@ class TH1Painter extends TH1Painter2D {
 
       return this;
    }
-}
 
-TH1Painter2D.prototype.draw3D = TH1Painter.prototype.draw3D;
+   /** @summary draw TH1 object */
+   static async draw(dom, histo, opt) {
+      let painter = new TH1Painter(dom, histo);
+
+      await ensureTCanvas(painter);
+      painter.setAsMainPainter();
+
+      painter.decodeOptions(opt);
+
+      painter.checkPadRange(!painter.options.Mode3D);
+
+      painter.scanContent();
+
+      painter.createStat();
+
+      await painter.callDrawFunc();
+
+      await painter.drawNextFunction(0);
+
+      if (!painter.options.Mode3D && painter.options.AutoZoom)
+         painter.autoZoom();
+      painter.fillToolbar();
+
+      return painter;
+   }
+
+} // class TH1Painter
 
 export { TH1Painter };

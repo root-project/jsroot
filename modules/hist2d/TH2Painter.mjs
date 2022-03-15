@@ -2672,11 +2672,11 @@ class TH2Painter extends THistPainter {
       return this.addInteractivity();
    }
 
-   /** @summary Performs 3D drawing of histogram
+   /** @summary Should performs 3D drawing of histogram
+     * @desc Disable in 2D case. just draw default draw options
      * @returns {Promise} when ready */
    draw3D(reason) {
-      this.mode3d = true;
-      return import('../hist3d/TH2Painter.mjs').then(() => this.draw3D(reason));
+      return this.draw2D(reason);
    }
 
    /** @summary Call drawing function depending from 3D mode */
@@ -2688,8 +2688,7 @@ class TH2Painter extends THistPainter {
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.copyOptionsFrom(main);
 
-      let funcname = this.options.Mode3D ? "draw3D" : "draw2D";
-      return this[funcname](reason);
+      return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
    }
 
    /** @summary Redraw histogram */
