@@ -3,6 +3,8 @@ import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 
 import { settings, constants, internals, isNodeJs, isPromise } from '../core.mjs';
 
+import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from '../latex.mjs';
+
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -1202,22 +1204,20 @@ class ObjectPainter extends BasePainter {
          arg.simple_latex = arg.latex && (settings.Latex == constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
-            import('../latex.mjs').then(ltx => {
-               if (arg.simple_latex || ltx.isPlainText(arg.text) || arg.plain) {
-                  arg.simple_latex = true;
-                  ltx.producePlainText(this, arg.txt_node, arg);
-               } else {
-                  arg.txt_node.remove(); // just remove text node,
-                  delete arg.txt_node;
-                  arg.txt_g = arg.draw_g.append("svg:g");
-                  ltx.produceLatex(this, arg.txt_g, arg);
-               }
-               arg.ready = true;
-               this._postprocessDrawText(arg, arg.txt_g || arg.txt_node);
+            if (arg.simple_latex || isPlainText(arg.text) || arg.plain) {
+               arg.simple_latex = true;
+               producePlainText(this, arg.txt_node, arg);
+            } else {
+               arg.txt_node.remove(); // just remove text node,
+               delete arg.txt_node;
+               arg.txt_g = arg.draw_g.append("svg:g");
+               produceLatex(this, arg.txt_g, arg);
+            }
+            arg.ready = true;
+            this._postprocessDrawText(arg, arg.txt_g || arg.txt_node);
 
-               if (arg.draw_g.property('draw_text_completed'))
-                  this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
-            });
+            if (arg.draw_g.property('draw_text_completed'))
+               this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
             return 0;
          }
 
@@ -1231,13 +1231,11 @@ class ObjectPainter extends BasePainter {
       arg.mj_node = arg.draw_g.append("svg:g")
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-      import('../latex.mjs')
-            .then(ltx => ltx.produceMathjax(this, arg.mj_node, arg))
-            .then(() => {
-               arg.ready = true;
-               if (arg.draw_g.property('draw_text_completed'))
-                  this._checkAllTextDrawing(arg.draw_g);
-            });
+      produceMathjax(this, arg.mj_node, arg).then(() => {
+         arg.ready = true;
+         if (arg.draw_g.property('draw_text_completed'))
+            this._checkAllTextDrawing(arg.draw_g);
+      });
 
       return 0;
    }
@@ -1506,4 +1504,49 @@ class ObjectPainter extends BasePainter {
 
 } // class ObjectPainter
 
-export { ObjectPainter };
+
+/** @summary Generic text drawing
+  * @private */
+function drawRawText(dom, txt /*, opt*/) {
+
+   let painter = new BasePainter(dom);
+   painter.txt = txt;
+
+   painter.redrawObject = function(obj) {
+      this.txt = obj;
+      this.drawText();
+      return true;
+   }
+
+   painter.drawText = function() {
+      let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
+      if (typeof txt != 'string') txt = "<undefined>";
+
+      let mathjax = this.txt.mathjax || (settings.Latex == constants.Latex.AlwaysMathJax);
+
+      if (!mathjax && !('as_is' in this.txt)) {
+         let arr = txt.split("\n"); txt = "";
+         for (let i = 0; i < arr.length; ++i)
+            txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
+      }
+
+      let frame = this.selectDom(),
+         main = frame.select("div");
+      if (main.empty())
+         main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
+      main.html(txt);
+
+      // (re) set painter to first child element, base painter not requires canvas
+      this.setTopPainter();
+
+      if (mathjax)
+         typesetMathjax(frame.node());
+
+      return Promise.resolve(this);
+   }
+
+   return painter.drawText();
+}
+
+
+export { ObjectPainter, drawRawText };

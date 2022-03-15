@@ -4,11 +4,11 @@ import { select as d3_select } from './d3.mjs';
 
 import { loadScript, findFunction, internals, isNodeJs, _ensureJSROOT } from './core.mjs';
 
-import { cleanup, drawRawText, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
+import { cleanup, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
 
 import { BasePainter } from './base/BasePainter.mjs';
 
-import { ObjectPainter } from './base/ObjectPainter.mjs';
+import { ObjectPainter, drawRawText } from './base/ObjectPainter.mjs';
 
 import { TPadPainter } from './gpad/TPadPainter.mjs';
 
