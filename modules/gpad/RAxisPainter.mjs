@@ -5,7 +5,7 @@ import { select as d3_select, pointer as d3_pointer,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 
-import { AxisPainterMethods, chooseTimeFormat } from '../painter.mjs';
+import { AxisPainterMethods, chooseTimeFormat } from './TAxisPainter.mjs';
 
 import { createMenu } from '../menu.mjs';
 
