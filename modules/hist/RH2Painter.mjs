@@ -26,7 +26,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
 
-import { translateLaTeX } from '../latex.mjs';
+import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 
 
 class RH2Painter extends RH2Painter2D {
@@ -803,7 +803,7 @@ class RH2Painter extends RH2Painter2D {
       if (this.options.Contour)
          return this.drawContour3D(true);
 
-      this.drawLego();
+      drawBinsLego(this);
       this.updatePaletteDraw();
    }
 
@@ -832,6 +832,7 @@ class RH2Painter extends RH2Painter2D {
       this.deleteAttr();
 
       if (is_main) {
+         assignFrame3DMethods(main);
          await main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
          main.set3DOptions(this.options);
@@ -849,6 +850,12 @@ class RH2Painter extends RH2Painter2D {
       }
 
       return this;
+   }
+
+      /** @summary draw RH2 object */
+   static async draw(dom, obj, opt) {
+      // create painter and add it to canvas
+      return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }
 
 } // class RH2Painter

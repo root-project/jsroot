@@ -1787,11 +1787,7 @@ class RH2Painter extends RHistPainter {
       this.callDrawFunc(reason);
    }
 
-   /** @summary draw RH2 object */
-   static async draw(dom, obj, opt) {
-      // create painter and add it to canvas
-      let painter = new RH2Painter(dom, obj);
-
+   static async _draw(painter, opt) {
       await ensureRCanvas(painter);
 
       painter.setAsMainPainter();
@@ -1836,6 +1832,12 @@ class RH2Painter extends RHistPainter {
       await painter.callDrawFunc();
 
       return painter;
+   }
+
+   /** @summary draw RH2 object */
+   static async draw(dom, obj, opt) {
+      // create painter and add it to canvas
+      return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }
 
 } //  class RH2Painter

@@ -28,6 +28,8 @@ import { RH1Painter } from './RH1Painter.mjs';
 
 import { RH2Painter } from './RH2Painter.mjs';
 
+import { assignFrame3DMethods } from './draw3dv7.mjs';
+
 /**
  * @summary Painter for RH3 classes
  *
@@ -632,6 +634,7 @@ class RH3Painter extends RHistPainter {
          return this;
       }
 
+      assignFrame3DMethods(main);
       await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       main.set3DOptions(this.options);
