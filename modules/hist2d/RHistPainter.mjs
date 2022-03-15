@@ -1,14 +1,6 @@
-import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } from '../core.mjs';
-
-import { rgb as d3_rgb } from '../d3.mjs';
-
-import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-
-import { floatToString, DrawOptions, TRandom, buildSvgPath } from '../painter.mjs';
+import { gStyle, settings } from '../core.mjs';
 
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
-
-import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 
 /** @summary assign methods for the RAxis objects

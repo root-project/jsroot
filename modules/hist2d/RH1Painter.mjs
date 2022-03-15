@@ -1,15 +1,12 @@
-import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } from '../core.mjs';
+import { gStyle, settings, constants, isBatchMode } from '../core.mjs';
 
 import { rgb as d3_rgb } from '../d3.mjs';
 
-import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-
-import { floatToString, DrawOptions, TRandom, buildSvgPath } from '../painter.mjs';
+import { floatToString, DrawOptions, buildSvgPath } from '../painter.mjs';
 
 import { RHistPainter } from './RHistPainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
-
 
 /**
  * @summary Painter for RH1 classes
@@ -966,9 +963,7 @@ class RH1Painter extends RHistPainter {
       if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
          this.options.Mode3D = main.mode3d;
 
-      let funcname = this.options.Mode3D ? "draw3D" : "draw2D";
-
-      return this[funcname](reason);
+      return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
    }
 
    /** @summary Draw in 2d */
@@ -987,7 +982,7 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Draw in 3d */
    draw3D(reason) {
-      console.log('3D drawing is not possible');
+      console.log('3D drawing is disabled, load ./hist/RH1Painter.mjs');
       return this.draw2D(reason);
    }
 

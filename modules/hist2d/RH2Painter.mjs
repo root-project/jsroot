@@ -1,17 +1,16 @@
 /// JavaScript ROOT v7 graphics for histogram classes
 
-import { gStyle, settings, constants, internals, createTPolyLine, isBatchMode } from '../core.mjs';
+import { gStyle, internals, createTPolyLine } from '../core.mjs';
 
 import { rgb as d3_rgb } from '../d3.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { floatToString, DrawOptions, TRandom, buildSvgPath } from '../painter.mjs';
+import { floatToString, TRandom } from '../painter.mjs';
 
 import { RHistPainter } from './RHistPainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
-
 
 /**
  * @summary Painter for RH2 classes
@@ -1766,8 +1765,8 @@ class RH2Painter extends RHistPainter {
    /** @summary Performs 3D drawing of histogram
      * @returns {Promise} when ready */
    draw3D(reason) {
-      this.mode3d = true;
-      return import('./v7hist3d.mjs').then(() => this.draw3D(reason));
+      console.log('3D drawing is disabled, load ./hist/RH1Painter.mjs');
+      return this.draw2D(reason);
    }
 
    /** @summary Call drawing function depending from 3D mode */
@@ -1777,14 +1776,12 @@ class RH2Painter extends RHistPainter {
       if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
          this.options.Mode3D = main.mode3d;
 
-      let funcname = this.options.Mode3D ? "draw3D" : "draw2D";
-
-      return this[funcname](reason);
+      return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
    }
 
    /** @summary Redraw histogram */
    redraw(reason) {
-      this.callDrawFunc(reason);
+      return this.callDrawFunc(reason);
    }
 
    static async _draw(painter, opt) {
