@@ -131,13 +131,13 @@ const drawFuncs = { lst: [
    { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
    { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
    { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: "" },
-   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RHistStatsPainter), opt: "" },
+   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: "" },
    { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
    { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
    { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
-   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7().then(h => h.RPavePainter), opt: "" },
-   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('more').then(h => h.RLegendPainter), opt: "" },
-   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('more').then(h => h.RPaveTextPainter), opt: "" },
+   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPavePainter), opt: "" },
+   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('pave').then(h => h.RLegendPainter), opt: "" },
+   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: "" },
    { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: "" },
    { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
    { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: "" }
@@ -575,6 +575,7 @@ init_v7 = function(arg) {
       h.RPadPainter.prototype.drawObject = draw;
       h.RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
       if (arg === 'more') return import('./draw/v7more.mjs');
+      if (arg === 'pave') return import('./hist/RPavePainter.mjs');
       return h;
    });
 }

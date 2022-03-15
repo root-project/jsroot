@@ -8,7 +8,7 @@ import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 
-import { RPavePainter, ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
+import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 import { createMenu } from '../menu.mjs';
 
@@ -96,134 +96,6 @@ function drawMarker() {
                   .attr("d", path)
                   .call(this.markeratt.func);
 }
-
-/**
- * @summary Painter for RLegend class
- *
- * @private
- */
-
-class RLegendPainter extends RPavePainter {
-
-   /** @summary draw RLegend content */
-   drawContent() {
-      let legend     = this.getObject(),
-          textFont   = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
-          width      = this.pave_width,
-          height     = this.pave_height,
-          nlines     = legend.fEntries.length,
-          pp         = this.getPadPainter();
-
-      if (legend.fTitle) nlines++;
-
-      if (!nlines || !pp) return Promise.resolve(this);
-
-      let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
-
-      textFont.setSize(height/(nlines * 1.2));
-      this.startTextDrawing(textFont, 'font' );
-
-      if (legend.fTitle) {
-         this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: legend.fTitle });
-         posy += stepy;
-      }
-
-      for (let i = 0; i < legend.fEntries.length; ++i) {
-         let objp = null, entry = legend.fEntries[i], w4 = Math.round(width/4);
-
-         this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + w4, y: posy, text: entry.fLabel });
-
-         if (entry.fDrawableId != "custom") {
-            objp = pp.findSnap(entry.fDrawableId, true);
-         } else if (entry.fDrawable.fIO) {
-            objp = new RObjectPainter(this.getDom(), entry.fDrawable.fIO);
-            if (entry.fLine) objp.createv7AttLine();
-            if (entry.fFill) objp.createv7AttFill();
-            if (entry.fMarker) objp.createv7AttMarker();
-         }
-
-         if (objp && entry.fFill && objp.fillatt)
-            this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
-              .call(objp.fillatt.func);
-
-         if (objp && entry.fLine && objp.lineatt)
-            this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
-              .call(objp.lineatt.func);
-
-         if (objp && entry.fError && objp.lineatt)
-            this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
-              .call(objp.lineatt.func);
-
-         if (objp && entry.fMarker && objp.markeratt)
-            this.draw_g.append("svg:path")
-                .attr("d", objp.markeratt.create(margin_x + width/8, posy + stepy/2))
-                .call(objp.markeratt.func);
-
-         posy += stepy;
-      }
-
-      return this.finishTextDrawing();
-   }
-
-   /** @summary draw RLegend object */
-   static async draw(dom, legend, opt) {
-      let painter = new RLegendPainter(dom, legend, opt, "legend");
-      await ensureRCanvas(painter, false);
-      await painter.drawPave();
-      return painter;
-   }
-
-} // class RLegendPainter
-
-
-/**
- * @summary Painter for RPaveText class
- *
- * @private
- */
-
-class RPaveTextPainter extends RPavePainter {
-
-   /** @summary draw RPaveText content */
-   drawContent() {
-      let pavetext  = this.getObject(),
-          textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
-          width     = this.pave_width,
-          height    = this.pave_height,
-          nlines    = pavetext.fText.length;
-
-      if (!nlines) return;
-
-      let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
-
-      textFont.setSize(height/(nlines * 1.2))
-
-      this.startTextDrawing(textFont, 'font');
-
-      for (let i = 0; i < pavetext.fText.length; ++i) {
-         let line = pavetext.fText[i];
-
-         this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: line });
-         posy += stepy;
-      }
-
-      return this.finishTextDrawing(undefined, true);
-   }
-
-   /** @summary draw RPaveText object */
-   static async draw(dom, pave, opt) {
-      let painter = new RPaveTextPainter(dom, pave, opt, "pavetext");
-      await ensureRCanvas(painter, false);
-      return painter.drawPave();
-   }
-
-} // class RPaveTextPainter
 
 /** @summary painter for RPalette
  *
@@ -479,5 +351,4 @@ class RPalettePainter extends RObjectPainter {
 
 
 
-export { RLegendPainter, RPaveTextPainter, RPalettePainter,
-         drawText, drawLine, drawBox, drawMarker };
+export { RPalettePainter, drawText, drawLine, drawBox, drawMarker };
