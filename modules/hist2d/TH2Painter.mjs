@@ -26,6 +26,7 @@ class TH2Painter extends THistPainter {
       super(dom, histo);
       this.fPalette = null;
       this.wheel_zoomy = true;
+      this._show_empty_bins = false;
    }
 
    /** @summary cleanup painter */
@@ -2698,42 +2699,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary draw TH2 object */
    static async draw(dom, histo, opt) {
-      let painter = new TH2Painter(dom, histo);
-
-      await ensureTCanvas(painter);
-
-      painter.setAsMainPainter();
-
-      painter.decodeOptions(opt);
-
-      if (painter.isTH2Poly()) {
-         if (painter.options.Mode3D)
-            painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color)
-            painter.options.Color = true; // default is color
-      }
-
-      painter._show_empty_bins = false;
-
-      // special case for root 3D drawings - pad range is wired
-      painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
-
-      painter.scanContent();
-
-      painter.createStat(); // only when required
-
-      await painter.callDrawFunc();
-
-      await painter.drawNextFunction(0);
-
-      if (!painter.Mode3D && painter.options.AutoZoom)
-         painter.autoZoom();
-
-      painter.fillToolbar();
-      if (painter.options.Project && !painter.mode3d)
-           painter.toggleProjection(painter.options.Project);
-
-       return painter;
+      return TH2Painter._drawHist(new TH2Painter(dom, histo), opt);
    }
 
 } // class TH2Painter

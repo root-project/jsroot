@@ -57,28 +57,7 @@ class TH1Painter extends TH1Painter2D {
 
    /** @summary draw TH1 object */
    static async draw(dom, histo, opt) {
-      let painter = new TH1Painter(dom, histo);
-
-      await ensureTCanvas(painter);
-      painter.setAsMainPainter();
-
-      painter.decodeOptions(opt);
-
-      painter.checkPadRange(!painter.options.Mode3D);
-
-      painter.scanContent();
-
-      painter.createStat();
-
-      await painter.callDrawFunc();
-
-      await painter.drawNextFunction(0);
-
-      if (!painter.options.Mode3D && painter.options.AutoZoom)
-         painter.autoZoom();
-      painter.fillToolbar();
-
-      return painter;
+      return TH1Painter._drawHist(new TH1Painter(dom, histo), opt);
    }
 
 } // class TH1Painter

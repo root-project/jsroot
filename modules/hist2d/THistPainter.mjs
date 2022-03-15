@@ -12,6 +12,9 @@ import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
+
+
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
 const createDefaultPalette = () => {
@@ -2237,6 +2240,45 @@ class THistPainter extends ObjectPainter {
 
       return "[" + funcs.axisAsText(name, x1) + ", " + funcs.axisAsText(name, x2) + ")";
    }
-}
+
+   /** @summary draw TH2 object
+     * @private */
+   static async _drawHist(painter, opt) {
+
+      await ensureTCanvas(painter);
+
+      painter.setAsMainPainter();
+
+      painter.decodeOptions(opt);
+
+      if (painter.isTH2Poly()) {
+         if (painter.options.Mode3D)
+            painter.options.Lego = 12; // lego always 12
+         else if (!painter.options.Color)
+            painter.options.Color = true; // default is color
+      }
+
+      painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+
+      painter.scanContent();
+
+      painter.createStat(); // only when required
+
+      await painter.callDrawFunc();
+
+      await painter.drawNextFunction(0);
+
+      if (!painter.Mode3D && painter.options.AutoZoom)
+         painter.autoZoom();
+
+      painter.fillToolbar();
+
+      if (painter.options.Project && !painter.mode3d && painter.toggleProjection)
+           await painter.toggleProjection(painter.options.Project);
+
+       return painter;
+   }
+
+} // class THistPainter
 
 export { THistPainter };
