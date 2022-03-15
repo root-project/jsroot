@@ -134,7 +134,7 @@ const drawFuncs = { lst: [
    { name: _v7+"RPave", icon: "img_pavetext", class: () => import('./v7gpad.mjs').then(h => h.RPavePainter), opt: "" },
    { name: _v7+"RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" },
    { name: _v7+"RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" },
-   { name: _v7+"RFrame", icon: "img_frame", class: () => import('./v7gpad.mjs').then(h => h.RFramePainter), opt: "" },
+   { name: _v7+"RFrame", icon: "img_frame", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrame), opt: "" },
    { name: _v7+"RFont", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
    { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => import('./v7gpad.mjs').then(h => h.drawRAxis), opt: "" }
 ], cache: {} };
