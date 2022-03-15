@@ -2,7 +2,7 @@
 
 import { gStyle, BIT, settings, internals, create, createHistogram, isBatchMode, isNodeJs } from './core.mjs';
 
-import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer } from './d3.mjs';
+import { scaleLinear, rgb as d3_rgb, select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
 
 import { toHex, getColor } from './base/colors.mjs';
 
@@ -20,13 +20,74 @@ import { TAttLineHandler } from './base/TAttLineHandler.mjs';
 
 import { TAttFillHandler } from './base/TAttFillHandler.mjs';
 
-import { DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
+import { detectRightButton, DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from './painter.mjs';
 
 import { draw } from './draw.mjs';
 
 import * as jsroot_math from './math.mjs';
 
 import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
+
+
+/** @summary Add move handlers for drawn element
+  * @private */
+function addMoveHandler(painter, enabled) {
+
+   if (enabled === undefined) enabled = true;
+
+   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
+
+   if (!enabled) {
+      if (painter.draw_g.property("assigned_move")) {
+         let drag_move = d3_drag().subject(Object);
+         drag_move.on("start", null).on("drag", null).on("end", null);
+         painter.draw_g
+               .style("cursor", null)
+               .property("assigned_move", null)
+               .call(drag_move);
+      }
+      return;
+   }
+
+   if (painter.draw_g.property("assigned_move")) return;
+
+   let drag_move = d3_drag().subject(Object),
+      not_changed = true, move_disabled = false;
+
+   drag_move
+      .on("start", function(evnt) {
+         move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
+         if (move_disabled) return;
+         if (detectRightButton(evnt.sourceEvent)) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         let pos = d3_pointer(evnt, this.draw_g.node());
+         not_changed = true;
+         if (this.moveStart)
+            this.moveStart(pos[0], pos[1]);
+      }.bind(painter)).on("drag", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         not_changed = false;
+         if (this.moveDrag)
+            this.moveDrag(evnt.dx, evnt.dy);
+      }.bind(painter)).on("end", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         if (this.moveEnd)
+            this.moveEnd(not_changed);
+         let pp = this.getPadPainter();
+         if (pp) pp.selectObjectPainter(this);
+      }.bind(painter));
+
+   painter.draw_g
+          .style("cursor", "move")
+          .property("assigned_move", true)
+          .call(drag_move);
+}
+
 
 /** @summary Draw TText
   * @private */
@@ -80,29 +141,27 @@ function drawText() {
    return this.finishTextDrawing().then(() => {
       if (isBatchMode()) return this;
 
-      return import('./interactive.mjs').then(inter => {
-         this.pos_dx = this.pos_dy = 0;
+      this.pos_dx = this.pos_dy = 0;
 
-         if (!this.moveDrag)
-            this.moveDrag = function(dx,dy) {
-               this.pos_dx += dx;
-               this.pos_dy += dy;
-               this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
-           }
+      if (!this.moveDrag)
+         this.moveDrag = function(dx,dy) {
+            this.pos_dx += dx;
+            this.pos_dy += dy;
+            this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
+        }
 
-         if (!this.moveEnd)
-            this.moveEnd = function(not_changed) {
-               if (not_changed) return;
-               let text = this.getObject();
-               text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
-               text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
-               this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
-            }
+      if (!this.moveEnd)
+         this.moveEnd = function(not_changed) {
+            if (not_changed) return;
+            let text = this.getObject();
+            text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
+            text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+            this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
+         }
 
-         inter.addMoveHandler(this);
+      addMoveHandler(this);
 
-         return this;
-      });
+      return this;
    });
 }
 
@@ -454,39 +513,37 @@ function drawArrow() {
       elem.style('fill','none');
    }
 
-   if (!isBatchMode())
-      return import('./interactive.mjs').then(inter => {
+   if (!isBatchMode()) return;
 
-         if (!this.moveStart)
-            this.moveStart = function(x,y) {
-               let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
-                   sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
-                   sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
-               if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
-            };
+   if (!this.moveStart)
+      this.moveStart = function(x,y) {
+         let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
+             sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
+             sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
+         if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
+      };
 
-         if (!this.moveDrag)
-            this.moveDrag = function(dx,dy) {
-               if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
-               if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
-               this.draw_g.select('path').attr("d", this.createPath());
-            };
+   if (!this.moveDrag)
+      this.moveDrag = function(dx,dy) {
+         if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
+         if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
+         this.draw_g.select('path').attr("d", this.createPath());
+      };
 
-         if (!this.moveEnd)
-            this.moveEnd = function(not_changed) {
-               if (not_changed) return;
-               let arrow = this.getObject(), exec = "";
-               arrow.fX1 = this.svgToAxis("x", this.x1, this.isndc);
-               arrow.fX2 = this.svgToAxis("x", this.x2, this.isndc);
-               arrow.fY1 = this.svgToAxis("y", this.y1, this.isndc);
-               arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
-               if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
-               if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
-               this.submitCanvExec(exec + "Notify();;");
-            };
+   if (!this.moveEnd)
+      this.moveEnd = function(not_changed) {
+         if (not_changed) return;
+         let arrow = this.getObject(), exec = "";
+         arrow.fX1 = this.svgToAxis("x", this.x1, this.isndc);
+         arrow.fX2 = this.svgToAxis("x", this.x2, this.isndc);
+         arrow.fY1 = this.svgToAxis("y", this.y1, this.isndc);
+         arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
+         if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
+         if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
+         this.submitCanvExec(exec + "Notify();;");
+      };
 
-         inter.addMoveHandler(this);
-      });
+   addMoveHandler(this);
 }
 
 /** @summary Draw TRooPlot
@@ -1888,8 +1945,7 @@ class TGraphPainter extends ObjectPainter {
       }
 
       if (!isBatchMode())
-         return import('./interactive.mjs')
-                      .then(inter => inter.addMoveHandler(this, this.testEditable()));
+         addMoveHandler(this, this.testEditable());
    }
 
    /** @summary Provide tooltip at specified point */

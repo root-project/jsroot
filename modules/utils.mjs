@@ -3,7 +3,6 @@ import { settings, isBatchMode, source_dir } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
-
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten
   * if no argument specified, any shown messages will be removed

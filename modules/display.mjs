@@ -8,7 +8,7 @@ import { BasePainter } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-import { getElementCanvPainter, selectActivePad, compressSVG,
+import { detectRightButton, getElementCanvPainter, selectActivePad, compressSVG,
          createMenu, cleanup, resize } from './painter.mjs';
 
 /**
@@ -730,13 +730,6 @@ class FlexibleDisplay extends MDIDisplay {
          .attr("title", d => d.t)
          .html(d => d.n)
          .on("click", function() { mdi._clickButton(this); });
-
-      const detectRightButton = event => {
-         if ('buttons' in event) return event.buttons === 2;
-         if ('which' in event) return event.which === 3;
-         if ('button' in event) return event.button === 2;
-         return false;
-      };
 
       let moving_frame = null, moving_div = null, doing_move = false,
           drag_object = d3_drag().subject(Object), current = [];

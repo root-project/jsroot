@@ -14,6 +14,8 @@ import { floatToString, getElementMainPainter, createMenu } from '../painter.mjs
 
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 
+import { addDragHandler } from '../gpad/TFramePainter.mjs';
+
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 /**
@@ -180,13 +182,12 @@ class TPavePainter extends ObjectPainter {
          await this.paveDrawFunc(width, height, arg);
 
       if (!isBatchMode() && (pt._typename !== "TPave")) {
-         let inter = await import('../interactive.mjs');
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         inter.addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
+         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
                                       minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });

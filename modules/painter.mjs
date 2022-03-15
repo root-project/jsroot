@@ -12,6 +12,13 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 if (!isBatchMode())
    await loadScript('$$$style/JSRoot.painter');
 
+function detectRightButton(event) {
+   if ('buttons' in event) return event.buttons === 2;
+   if ('which' in event) return event.which === 3;
+   if ('button' in event) return event.button === 2;
+   return false;
+}
+
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert
   * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
@@ -906,7 +913,7 @@ function loadJSDOM() {
 
 if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-export { DrawOptions, AxisPainterMethods,
+export { detectRightButton, DrawOptions, AxisPainterMethods,
          TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          compressSVG, drawingJSON, readStyleFromURL,

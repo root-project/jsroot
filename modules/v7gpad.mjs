@@ -28,6 +28,8 @@ import { draw, getDrawSettings } from './draw.mjs';
 
 import { TAxisPainter } from './gpad/TAxisPainter.mjs';
 
+import { addDragHandler, FrameInteractive } from './gpad/TFramePainter.mjs';
+
 const CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
 let ensureRCanvas;
@@ -1319,7 +1321,7 @@ class RAxisPainter extends RObjectPainter {
 
       if (isBatchMode()) return promise;
 
-      return promise.then(() => import('./interactive.mjs')).then(inter => {
+      return promise.then(() => {
          if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
@@ -1332,8 +1334,8 @@ class RAxisPainter extends RObjectPainter {
                });
             });
 
-         inter.addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
-                                      only_move: true, redraw: d => this.positionChanged(d) });
+         addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
+                                only_move: true, redraw: d => this.positionChanged(d) });
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
@@ -2211,8 +2213,7 @@ class RFramePainter extends RObjectPainter {
 
       top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
-      let inter = await import('./interactive.mjs');
-      inter.FrameInteractive.assign(this);
+      FrameInteractive.assign(this);
       this.addBasicInteractivity();
    }
 
@@ -2613,23 +2614,17 @@ class RFramePainter extends RObjectPainter {
     * @private */
    addKeysHandler() {
       if (isBatchMode()) return;
-      import('./interactive.mjs').then(inter => {
-         inter.FrameInteractive.assign(this);
-         this.addKeysHandler();
-      });
+      FrameInteractive.assign(this);
+      this.addFrameKeysHandler();
    }
 
    /** @summary Add interactive functionality to the frame
     * @private */
-   async addInteractivity(for_second_axes) {
+   addInteractivity(for_second_axes) {
 
       if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
-
-      if (!this.addFrameInteractivity) {
-         let inter = await import('./interactive.mjs');
-         inter.FrameInteractive.assign(this);
-      }
+      FrameInteractive.assign(this);
       return this.addFrameInteractivity(for_second_axes);
    }
 
@@ -4955,16 +4950,14 @@ class RPavePainter extends RObjectPainter {
 
          if (isBatchMode()) return this;
 
-         return import('./interactive.mjs').then(inter => {
-            // TODO: provide pave context menu as in v6
-            if (settings.ContextMenu && this.paveContextMenu)
-               this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
+         // TODO: provide pave context menu as in v6
+         if (settings.ContextMenu && this.paveContextMenu)
+            this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
-            inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-                                         minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+         addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
+                                minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
 
-            return this;
-         });
+         return this;
       });
    }
 
@@ -5067,9 +5060,8 @@ function drawRFrameTitle(reason, drag) {
 
    return this.finishTextDrawing().then(() => {
       if (!isBatchMode())
-      return import('./interactive.mjs')
-            .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                                                        minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) }));
+        addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+                               minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) });
    });
 }
 
@@ -5355,7 +5347,7 @@ class RPalettePainter extends RObjectPainter {
       if (isBatchMode() || drag)
          return promise;
 
-      return promise.then(() => import('./interactive.mjs')).then(inter => {
+      return promise.then(() => {
 
          if (settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
@@ -5369,8 +5361,8 @@ class RPalettePainter extends RObjectPainter {
                });
             });
 
-         inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
-                                       minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
+         addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
+                                minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
 
          if (!settings.Zooming) return;
 
