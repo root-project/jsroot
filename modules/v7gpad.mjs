@@ -30,6 +30,9 @@ import { TAxisPainter } from './gpad/TAxisPainter.mjs';
 
 import { addDragHandler, FrameInteractive } from './gpad/TFramePainter.mjs';
 
+import { PadButtonsHandler } from './gpad/TPadPainter.mjs';
+
+
 const CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
 let ensureRCanvas;
@@ -4107,10 +4110,8 @@ class RPadPainter extends RObjectPainter {
    showPadButtons() {
       if (!this._buttons) return;
 
-      import('./interactive.mjs').then(inter => {
-         inter.PadButtonsHandler.assign(this);
-         this.showPadButtons();
-      });
+      PadButtonsHandler.assign(this);
+      this.showPadButtons();
    }
 
    /** @summary Calculates RPadLength value */
