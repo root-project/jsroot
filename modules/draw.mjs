@@ -130,7 +130,7 @@ const drawFuncs = { lst: [
    { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.drawHistDisplayItem), opt: "" },
    { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
    { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
-   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7().then(h => h.RPalettePainter), opt: "" },
+   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: "" },
    { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RHistStatsPainter), opt: "" },
    { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
    { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },

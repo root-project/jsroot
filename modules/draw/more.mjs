@@ -4771,6 +4771,7 @@ class TRatioPlotPainter extends ObjectPainter {
 
 } // class TRatioPlotPainter
 
+
 export { TF1Painter, TGraphPainter, TGraphPolargramPainter, TGraphPolarPainter, TMultiGraphPainter,
          TSplinePainter, TASImagePainter, TRatioPlotPainter, TGraphTimePainter, TEfficiencyPainter, TWebPaintingPainter,
          drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox,
