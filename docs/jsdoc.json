@@ -15,7 +15,7 @@
                      "modules/gpad.mjs",
                      "modules/hist.mjs",
                      "modules/hist3d.mjs",
-                     "modules/more.mjs",
+                     "modules/draw/more.mjs",
                      "modules/math.mjs",
                      "modules/base3d.mjs",
                      "modules/csg.mjs",
@@ -27,7 +27,7 @@
                      "modules/v7gpad.mjs",
                      "modules/v7hist.mjs",
                      "modules/v7hist3d.mjs",
-                     "modules/v7more.mjs" ],
+                     "modules/draw/v7more.mjs" ],
         "includePattern": ".+\\.mjs(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
