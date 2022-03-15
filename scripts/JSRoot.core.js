@@ -115,8 +115,6 @@ function v6_require(need) {
          }));
       else if (name == "base3d")
          arr.push(import("../modules/base3d.mjs"));
-      else if (name == "interactive")
-         arr.push(import("../modules/interactive.mjs"));
       else if (name == "hierarchy")
          arr.push(Promise.all([import("../modules/hierarchy.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
             Object.assign(globalThis.JSROOT, arr[0], arr[1]);

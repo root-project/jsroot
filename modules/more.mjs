@@ -28,6 +28,8 @@ import * as jsroot_math from './math.mjs';
 
 import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
 
+import { TooltipHandler } from './gpad/TFramePainter.mjs';
+
 
 /** @summary Add move handlers for drawn element
   * @private */
@@ -2835,9 +2837,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       if (isBatchMode()) return;
 
-      let inter = await import('./interactive.mjs');
-
-      inter.TooltipHandler.assign(this);
+      TooltipHandler.assign(this);
 
       let layer = this.getLayerSvg("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");

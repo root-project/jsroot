@@ -13,7 +13,6 @@
                      "modules/draw.mjs",
                      "modules/latex.mjs",
                      "modules/gpad.mjs",
-                     "modules/interactive.mjs",
                      "modules/hist.mjs",
                      "modules/hist3d.mjs",
                      "modules/more.mjs",

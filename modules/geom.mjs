@@ -327,31 +327,29 @@ class Toolbar {
    addButtons(buttons) {
       this.buttonsNames = [];
 
-      import('./interactive.mjs').then(inter => {
-         buttons.forEach(buttonConfig => {
-            let buttonName = buttonConfig.name;
-            if (!buttonName)
-               throw new Error(`must provide button ${name} in button config`);
-            if (this.buttonsNames.indexOf(buttonName) !== -1)
-               throw new Error(`button name ${buttonName} is taken`);
+      buttons.forEach(buttonConfig => {
+         let buttonName = buttonConfig.name;
+         if (!buttonName)
+            throw new Error(`must provide button ${name} in button config`);
+         if (this.buttonsNames.indexOf(buttonName) !== -1)
+            throw new Error(`button name ${buttonName} is taken`);
 
-            this.buttonsNames.push(buttonName);
+         this.buttonsNames.push(buttonName);
 
-            let title = buttonConfig.title || buttonConfig.name;
+         let title = buttonConfig.title || buttonConfig.name;
 
-            if (typeof buttonConfig.click !== 'function')
-               throw new Error('must provide button "click" function in button config');
+         if (typeof buttonConfig.click !== 'function')
+            throw new Error('must provide button "click" function in button config');
 
-            let button = this.element.append('a')
-                              .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
-                              .attr('rel', 'tooltip')
-                              .attr('data-title', title)
-                              .on('click', buttonConfig.click);
+         let button = this.element.append('a')
+                           .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
+                           .attr('rel', 'tooltip')
+                           .attr('data-title', title)
+                           .on('click', buttonConfig.click);
 
-            ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title);
-         });
-
+         ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title);
       });
+
    }
 
    /** @summary change brightness */
