@@ -758,8 +758,7 @@ class ObjectPainter extends BasePainter {
 
       if (method.fName == "Inspect") {
          // primitve inspector, keep it here
-         this.showInspector();
-         return true;
+         return this.showInspector();
       }
 
       return false;
@@ -789,26 +788,8 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Show object in inspector for provided object
      * @protected */
-   showInspector(obj) {
-      let main = this.selectDom(),
-         rect = getElementRect(main),
-         w = Math.round(rect.width * 0.05) + "px",
-         h = Math.round(rect.height * 0.05) + "px",
-         id = "root_inspector_" + internals.id_counter++;
-
-      main.append("div")
-         .attr("id", id)
-         .attr("class", "jsroot_inspector")
-         .style('position', 'absolute')
-         .style('top', h)
-         .style('bottom', h)
-         .style('left', w)
-         .style('right', w);
-
-      if (!obj || (typeof obj !== 'object') || !obj._typename)
-         obj = this.getObject();
-
-      import('../hierarchy.mjs').then(h => h.drawInspector(id, obj));
+   showInspector() {
+      return false;
    }
 
    /** @summary Fill context menu for the object
@@ -822,7 +803,7 @@ class ObjectPainter extends BasePainter {
 
       menu.addAttributesMenu(this);
 
-      if (menu.size() > 0)
+      if ((menu.size() > 0) && this.showInspector('check'))
          menu.add('Inspect', this.showInspector);
 
       return menu.size() > 0;

@@ -10,7 +10,7 @@ import { showProgress, ToolbarIcons } from './utils.mjs';
 
 import { getRGBfromTColor } from './base/colors.mjs';
 
-import { BasePainter } from './base/BasePainter.mjs';
+import { BasePainter, getElementRect } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
@@ -241,7 +241,7 @@ function keysHierarchy(folder, keys, file, dirname) {
 
 /** @summary Create hierarchy for arbitrary object
   * @private */
-function objectHierarchy(top, obj, args) {
+function objectHierarchy(top, obj, args = undefined) {
    if (!top || (obj===null)) return false;
 
    top._childs = [];
@@ -362,7 +362,7 @@ function objectHierarchy(top, obj, args) {
       if ((key == '_typename') || (key[0]=='$')) continue;
       let fld = obj[key];
       if (typeof fld == 'function') continue;
-      if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
+      if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
 
       if (compress && lastitem) {
          if (lastfield===fld) { ++cnt; lastkey = key; continue; }
@@ -3452,6 +3452,38 @@ class HierarchyPainter extends BasePainter {
    }
 
 } // class HierarchyPainter
+
+
+
+/** @summary Show object in inspector for provided object
+  * @protected */
+ObjectPainter.prototype.showInspector = function(obj) {
+   if (obj === 'check')
+      return true;
+
+   let main = this.selectDom(),
+      rect = getElementRect(main),
+      w = Math.round(rect.width * 0.05) + "px",
+      h = Math.round(rect.height * 0.05) + "px",
+      id = "root_inspector_" + internals.id_counter++;
+
+   main.append("div")
+      .attr("id", id)
+      .attr("class", "jsroot_inspector")
+      .style('position', 'absolute')
+      .style('top', h)
+      .style('bottom', h)
+      .style('left', w)
+      .style('right', w);
+
+   if (!obj || (typeof obj !== 'object') || !obj._typename)
+      obj = this.getObject();
+
+   return drawInspector(id, obj);
+}
+
+
+
 
 
 /** @summary Display streamer info

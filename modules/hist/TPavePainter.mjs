@@ -944,7 +944,7 @@ class TPavePainter extends ObjectPainter {
 
       menu.addAttributesMenu(this);
 
-      if (menu.size() > 0)
+      if ((menu.size() > 0) && this.showInspector('check'))
          menu.add('Inspect', this.showInspector);
 
       return menu.size() > 0;
