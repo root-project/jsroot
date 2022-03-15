@@ -10,7 +10,9 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
-import { floatToString, getElementMainPainter, createMenu } from '../painter.mjs';
+import { createMenu } from '../menu.mjs';
+
+import { floatToString, getElementMainPainter } from '../painter.mjs';
 
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 

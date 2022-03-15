@@ -13,7 +13,9 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { DrawOptions, createMenu, closeMenu, registerForResize,
+import { createMenu, closeMenu } from '../menu.mjs';
+
+import { DrawOptions, registerForResize,
          selectActivePad, getActivePad, getAbsPosInCanvas,
          compressSVG } from '../painter.mjs';
 

@@ -9,7 +9,10 @@ import { BasePainter } from './base/BasePainter.mjs';
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { detectRightButton, getElementCanvPainter, selectActivePad, compressSVG,
-         createMenu, cleanup, resize } from './painter.mjs';
+         cleanup, resize } from './painter.mjs';
+
+import { createMenu } from './menu.mjs';
+
 
 /**
  * @summary Base class to manage multiple document interface for drawings

@@ -14,7 +14,9 @@ import { getElementRect } from '../base/BasePainter.mjs';
 
 import { FontHandler } from '../base/FontHandler.mjs';
 
-import { createMenu, closeMenu, getActivePad, getAbsPosInCanvas, detectRightButton } from '../painter.mjs';
+import { createMenu, closeMenu } from '../menu.mjs';
+
+import { getActivePad, getAbsPosInCanvas, detectRightButton } from '../painter.mjs';
 
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;

@@ -14,8 +14,9 @@ import { BasePainter } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-import { loadJSDOM, getElementMainPainter,
-         createMenu, registerForResize, cleanup } from './painter.mjs';
+import { loadJSDOM, getElementMainPainter, registerForResize, cleanup } from './painter.mjs';
+
+import { createMenu } from './menu.mjs';
 
 import { produceLegend } from './hist/TPavePainter.mjs';
 

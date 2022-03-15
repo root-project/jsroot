@@ -6,7 +6,9 @@ import { rgb as d3_rgb } from './d3.mjs';
 
 import { TAttLineHandler } from './base/TAttLineHandler.mjs';
 
-import { floatToString, DrawOptions, TRandom, buildSvgPath, createMenu } from './painter.mjs';
+import { floatToString, DrawOptions, TRandom, buildSvgPath } from './painter.mjs';
+
+import { createMenu } from './menu.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas, CommMode } from './v7gpad.mjs';
 

@@ -169,25 +169,6 @@ class TRandom {
 
 // ============================================================================================
 
-let _localCloseMenu = null;
-
-function createMenu(evnt, handler, menuname) {
-   document.body.style.cursor = 'wait';
-   let show_evnt;
-   // copy event values, otherwise they will gone after scripts loading
-   if (evnt && (typeof evnt == "object"))
-      if ((evnt.clientX !== undefined) && (evnt.clientY !== undefined))
-         show_evnt = { clientX: evnt.clientX, clientY: evnt.clientY };
-   return import('./menu.mjs').then(handle => {
-      _localCloseMenu = handle.closeMenu; // keep ref
-      document.body.style.cursor = 'auto';
-      return handle.createMenu(show_evnt, handler, menuname);
-   });
-}
-
-function closeMenu(menuname) {
-   return _localCloseMenu ? _localCloseMenu(menuname) : false;
-}
 
 /** @summary Read style and settings from URL
   * @private */
@@ -915,6 +896,6 @@ if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&not
 
 export { detectRightButton, DrawOptions, AxisPainterMethods,
          TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
-         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
+         getElementCanvPainter, getElementMainPainter, registerForResize,
          compressSVG, drawingJSON, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

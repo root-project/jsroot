@@ -21,8 +21,10 @@ import { getSvgLineStyle } from './base/TAttLineHandler.mjs';
 import { FontHandler } from './base/FontHandler.mjs';
 
 import { DrawOptions, AxisPainterMethods,
-         createMenu, closeMenu, registerForResize, chooseTimeFormat, selectActivePad,
+         registerForResize, chooseTimeFormat, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
+
+import { createMenu, closeMenu } from './menu.mjs';
 
 import { draw, getDrawSettings } from './draw.mjs';
 

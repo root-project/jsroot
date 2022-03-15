@@ -48,9 +48,9 @@ class JSRootMenu {
    constructor(painter, menuname, show_event) {
       this.painter = painter;
       this.menuname = menuname;
-      if (show_event && (typeof show_event == "object"))
-         if ((show_event.clientX !== undefined) && (show_event.clientY !== undefined))
-            this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
+      if (show_event && (typeof show_event == "object") &&
+          (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
+         this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
       this.remove_handler = () => this.remove();
       this.element = null;

@@ -26,7 +26,9 @@ import { getColor, getRootColors } from './base/colors.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-import { DrawOptions, createMenu, closeMenu } from './painter.mjs';
+import { DrawOptions } from './painter.mjs';
+
+import { createMenu, closeMenu } from './menu.mjs';
 
 import { addDrawFunc } from './draw.mjs';
 
