@@ -29,7 +29,6 @@ function setPainterTooltipEnabled(painter, on) {
       painter.control.setTooltipEnabled(on);
 }
 
-
 /** @summary Add drag for interactive rectangular elements for painter */
 function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
@@ -37,29 +36,29 @@ function addDragHandler(_painter, arg) {
    let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
    if (pp && pp._fast_drawing) return;
 
-   const makeResizeElements = (group, handler) => {
-      const addElement = (cursor, d) => {
+   function makeResizeElements(group, handler) {
+      function addElement(cursor, d) {
          let clname = "js_" + cursor.replace(/[-]/g, '_'),
-             elem = group.select('.' + clname);
+            elem = group.select('.' + clname);
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
-      };
+      }
 
       addElement("nw-resize", "M2,2h15v-5h-20v20h5Z");
-      addElement("ne-resize", `M${arg.width-2},2h-15v-5h20v20h-5 Z`);
-      addElement("sw-resize", `M2,${arg.height-2}h15v5h-20v-20h5Z`);
-      addElement("se-resize", `M${arg.width-2},${arg.height-2}h-15v5h20v-20h-5Z`);
+      addElement("ne-resize", `M${arg.width - 2},2h-15v-5h20v20h-5 Z`);
+      addElement("sw-resize", `M2,${arg.height - 2}h15v5h-20v-20h5Z`);
+      addElement("se-resize", `M${arg.width - 2},${arg.height - 2}h-15v5h20v-20h-5Z`);
 
       if (!arg.no_change_x) {
-         addElement("w-resize", `M-3,18h5v${Math.max(0,arg.height-2*18)}h-5Z`);
-         addElement("e-resize", `M${arg.width+3},18h-5v${Math.max(0,arg.height-2*18)}h5Z`);
+         addElement("w-resize", `M-3,18h5v${Math.max(0, arg.height - 2 * 18)}h-5Z`);
+         addElement("e-resize", `M${arg.width + 3},18h-5v${Math.max(0, arg.height - 2 * 18)}h5Z`);
       }
       if (!arg.no_change_y) {
-         addElement("n-resize", `M18,-3v5h${Math.max(0,arg.width-2*18)}v-5Z`);
-         addElement("s-resize", `M18,${arg.height+3}v-5h${Math.max(0,arg.width-2*18)}v5Z`);
+         addElement("n-resize", `M18,-3v5h${Math.max(0, arg.width - 2 * 18)}v-5Z`);
+         addElement("s-resize", `M18,${arg.height + 3}v-5h${Math.max(0, arg.width - 2 * 18)}v5Z`);
       }
-   };
+   }
 
    const complete_drag = (newx, newy, newwidth, newheight) => {
       drag_rect.style("cursor", "auto");
@@ -582,11 +581,7 @@ const TooltipHandler = {
 
    /** @summary Assigns tooltip methods */
    assign(painter) {
-      painter.tooltip_enabled = true;
-      painter.hints_layer = this.hints_layer;
-      painter.isTooltipShown = this.isTooltipShown;
-      painter.setTooltipEnabled = this.setTooltipEnabled;
-      painter.processFrameTooltipEvent = this.processFrameTooltipEvent;
+      Object.assign(painter, this, { tooltip_enabled: true });
    }
 
 } // TooltipHandler
