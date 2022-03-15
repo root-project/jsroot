@@ -10,7 +10,7 @@ import { floatToString, DrawOptions, TRandom, buildSvgPath } from './painter.mjs
 
 import { createMenu } from './menu.mjs';
 
-import { RObjectPainter, RPavePainter, ensureRCanvas, CommMode } from './v7gpad.mjs';
+import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
 /** @summary assign methods for the RAxis objects
   * @private */
@@ -454,7 +454,7 @@ class RHistPainter extends RObjectPainter {
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
       }
 
-      if (this.isDisplayItem() && is_axes_zoomed && (this.v7CommMode() == CommMode.kNormal)) {
+      if (this.isDisplayItem() && is_axes_zoomed && this.v7NormalMode()) {
 
          let handle = this.prepareDraw({ only_indexes: true });
 
@@ -3795,7 +3795,7 @@ class RHistStatsPainter extends RPavePainter {
          return true;
       }
 
-      if (this.v7CommMode() == CommMode.kOffline) {
+      if (this.v7OfflineMode()) {
          let main = this.getMainPainter();
          if (!main || (typeof main.fillStatistic !== 'function')) return false;
          // we take statistic from main painter
@@ -3957,8 +3957,7 @@ class RHistStatsPainter extends RPavePainter {
 
    /** @summary Redraw stats box */
    redraw(reason) {
-      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) &&
-          (this.v7CommMode() == CommMode.kNormal)) {
+      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) && this.v7NormalMode()) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.getObject().fShowMask // lines to show in stat box
