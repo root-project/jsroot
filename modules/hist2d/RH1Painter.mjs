@@ -987,8 +987,8 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Draw in 3d */
    draw3D(reason) {
-      this.mode3d = true;
-      return import('./v7hist3d.mjs').then(() => this.draw3D(reason));
+      console.log('3D drawing is not possible');
+      return this.draw2D(reason);
    }
 
    /** @summary Readraw histogram */
@@ -996,11 +996,7 @@ class RH1Painter extends RHistPainter {
       return this.callDrawFunc(reason);
    }
 
-   /** @summary draw RH1 object */
-   static async draw(dom, histo, opt) {
-      // create painter and add it to canvas
-      let painter = new RH1Painter(dom, histo);
-
+   static async _draw(painter, opt) {
       await ensureRCanvas(painter);
 
       painter.setAsMainPainter();
@@ -1041,6 +1037,11 @@ class RH1Painter extends RHistPainter {
       await painter.callDrawFunc();
 
       return painter;
+   }
+
+   /** @summary draw RH1 object */
+   static async draw(dom, histo, opt) {
+      return RH1Painter._draw(new RH1Painter(dom, histo), opt);
    }
 
 } // class RH1Painter

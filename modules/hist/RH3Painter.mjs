@@ -24,8 +24,9 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
 
-import { translateLaTeX } from '../latex.mjs';
+import { RH1Painter } from './RH1Painter.mjs';
 
+import { RH2Painter } from './RH2Painter.mjs';
 
 /**
  * @summary Painter for RH3 classes

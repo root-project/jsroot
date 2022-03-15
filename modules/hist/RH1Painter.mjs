@@ -19,12 +19,8 @@ import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 import { RH1Painter as RH1Painter2D } from '../hist2d/RH1Painter.mjs';
 
-import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
+import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 
-import { translateLaTeX } from '../latex.mjs';
 
 class RH1Painter extends RH1Painter2D {
 
@@ -46,6 +42,7 @@ class RH1Painter extends RH1Painter2D {
       this.scanContent(true); // may be required for axis drawings
 
       if (is_main) {
+         assignFrame3DMethods(main);
          await main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.set3DOptions(this.options);
@@ -58,13 +55,18 @@ class RH1Painter extends RH1Painter2D {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
-         this.drawLego();
+         drawBinsLego(this);
          this.updatePaletteDraw();
          main.render3D();
          main.addKeysHandler();
       }
 
       return this;
+   }
+
+      /** @summary draw RH1 object */
+   static async draw(dom, histo, opt) {
+      return RH1Painter._draw(new RH1Painter(dom, histo), opt);
    }
 
 } // class RH1Painter
