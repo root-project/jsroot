@@ -2674,9 +2674,10 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Should performs 3D drawing of histogram
-     * @desc Disable in 2D case. just draw default draw options
+     * @desc Disabled in 2D case. just draw default draw options
      * @returns {Promise} when ready */
    draw3D(reason) {
+       console.log('3D drawing is disabled, load ./hist/TH2Painter.mjs');
       return this.draw2D(reason);
    }
 

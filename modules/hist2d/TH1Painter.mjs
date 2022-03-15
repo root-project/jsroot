@@ -1143,6 +1143,7 @@ class TH1Painter extends THistPainter {
      * @desc Disable in 2D case, just draw with default options
      * @returns {Promise} when ready */
    draw3D(reason) {
+      console.log('3D drawing is disabled, load ./hist/TH1Painter.mjs');
       return this.draw2D(reason);
    }
 
