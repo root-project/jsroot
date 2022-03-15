@@ -10,7 +10,9 @@ import { floatToString, DrawOptions, TRandom, buildSvgPath } from './painter.mjs
 
 import { createMenu } from './menu.mjs';
 
-import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
+import { RObjectPainter } from './base/RObjectPainter.mjs';
+
+import { RPavePainter, ensureRCanvas } from './gpad/RCanvasPainter.mjs';
 
 /** @summary assign methods for the RAxis objects
   * @private */

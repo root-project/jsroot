@@ -15,6 +15,8 @@ import { TPadPainter } from './gpad/TPadPainter.mjs';
 // v7 namespace prefix
 const _v7 = "ROOT::Experimental::";
 
+let init_v7; // function to load and init v7 sources
+
 // list of registered draw functions
 const drawFuncs = { lst: [
    { name: "TCanvas", icon: "img_canvas", class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
@@ -118,25 +120,25 @@ const drawFuncs = { lst: [
    { name: "Session", icon: "img_globe" },
    { name: "kind:TopFolder", icon: "img_base" },
    { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-   { name: _v7+"RCanvas", icon: "img_canvas", class: () => import('./v7gpad.mjs').then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => import('./v7gpad.mjs').then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => import('./v7hist.mjs').then(h => h.RH1Painter), opt: "" },
-   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => import('./v7hist.mjs').then(h => h.RH2Painter), opt: "" },
-   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => import('./v7hist3d.mjs').then(h => h.RH3Painter), opt: "" },
-   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => import('./v7hist.mjs').then(h => h.drawHistDisplayItem), opt: "" },
-   { name: _v7+"RText", icon: "img_text", draw: () => import('./v7more.mjs').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
-   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
-   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => import('./v7gpad.mjs').then(h => h.RPalettePainter), opt: "" },
-   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => import('./v7hist.mjs').then(h => h.RHistStatsPainter), opt: "" },
-   { name: _v7+"RLine", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
-   { name: _v7+"RBox", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
-   { name: _v7+"RMarker", icon: "img_graph", draw: () => import('./v7more.mjs').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
-   { name: _v7+"RPave", icon: "img_pavetext", class: () => import('./v7gpad.mjs').then(h => h.RPavePainter), opt: "" },
-   { name: _v7+"RLegend", icon: "img_graph", class: () => import('./v7more.mjs').then(h => h.RLegendPainter), opt: "" },
-   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => import('./v7more.mjs').then(h => h.RPaveTextPainter), opt: "" },
-   { name: _v7+"RFrame", icon: "img_frame", draw: () => import('./v7gpad.mjs').then(h => h.drawRFrame), opt: "" },
-   { name: _v7+"RFont", icon: "img_text", draw: () => import('./v7gpad.mjs').then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
-   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => import('./v7gpad.mjs').then(h => h.drawRAxis), opt: "" }
+   { name: _v7+"RCanvas", icon: "img_canvas", class: () => init_v7().then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
+   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
+   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RH1Painter), opt: "" },
+   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RH2Painter), opt: "" },
+   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7().then(() => import('./v7hist3d.mjs')).then(h => h.RH3Painter), opt: "" },
+   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.drawHistDisplayItem), opt: "" },
+   { name: _v7+"RText", icon: "img_text", draw: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
+   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
+   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7().then(h => h.RPalettePainter), opt: "" },
+   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RHistStatsPainter), opt: "" },
+   { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
+   { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
+   { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
+   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7().then(h => h.RPavePainter), opt: "" },
+   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.RLegendPainter), opt: "" },
+   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7().then(() => import('./v7more.mjs')).then(h => h.RPaveTextPainter), opt: "" },
+   { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: "" },
+   { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
+   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: "" }
 ], cache: {} };
 
 
@@ -333,7 +335,7 @@ async function draw(dom, obj, opt) {
    async function performDraw() {
       let painter;
       if (handle.direct == "v7") {
-         let v7h = await import('./v7gpad.mjs');
+         let v7h = await import('./gpad/RCanvasPainter.mjs');
          painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
          await v7h.ensureRCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
@@ -559,10 +561,21 @@ function makeSVG(args) {
    return loadJSDOM().then(handle => build(handle.body.append('div')));
 }
 
-
 // only now one can draw primitives in the canvas
 TPadPainter.prototype.drawObject = draw;
 TPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
+
+
+// load v7 only by demand
+init_v7 = function() {
+   return import('./gpad/RCanvasPainter.mjs').then(h => {
+      // only now one can draw primitives in the canvas
+      h.RPadPainter.prototype.drawObject = draw;
+      h.RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
+      return h;
+   });
+}
+
 
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;

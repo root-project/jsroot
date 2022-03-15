@@ -17,7 +17,7 @@ import { RAxisPainter } from './gpad/RAxisPainter.mjs';
 
 import { RFramePainter } from './gpad/RFramePainter.mjs';
 
-import { ensureRCanvas } from './v7gpad.mjs';
+import { ensureRCanvas } from './gpad/RCanvasPainter.mjs';
 
 import { RHistPainter, RH1Painter, RH2Painter } from './v7hist.mjs';
 

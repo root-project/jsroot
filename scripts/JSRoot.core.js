@@ -122,14 +122,6 @@ function v6_require(need) {
             globalThis.JSROOT.hpainter = getHPainter();
             return globalThis.JSROOT;
          }));
-       else if (name == "v7hist")
-         arr.push(import("../modules/v7hist.mjs"));
-      else if (name == "v7hist3d")
-         arr.push(import("../modules/v7hist3d.mjs"));
-      else if (name == "v7more")
-         arr.push(import("../modules/v7more.mjs"));
-      else if (name == "v7gpad")
-         arr.push(import("../modules/v7gpad.mjs"));
       else if (name == "openui5")
          arr.push(import("../modules/utils.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
       else if (name.indexOf(".js") >= 0)

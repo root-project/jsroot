@@ -1,6 +1,8 @@
 /// JavaScript ROOT v7 graphics for different classes
 
-import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
+import { RObjectPainter } from './base/RObjectPainter.mjs';
+
+import { RPavePainter, ensureRCanvas } from './gpad/RCanvasPainter.mjs';
 
 /** @summary draw RText object
   * @private */
