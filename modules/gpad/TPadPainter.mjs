@@ -1,7 +1,7 @@
 /// TPad painting
 
 import { gStyle, settings, constants, internals,
-         create, toJSON, isBatchMode, loadScript, isPromise } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise } from '../core.mjs';
 
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 
@@ -1411,9 +1411,7 @@ class TPadPainter extends ObjectPainter {
                if (arg)
                   return loadScript(arg).then(() => this.drawNextSnap(snap.fPrimitives));
 
-               console.log('Calling eval ' + snap.fScripts.length);
-               eval(snap.fScripts);
-               console.log('Calling eval done');
+               injectCode(snap.fScripts);
             }
 
             return this.drawNextSnap(snap.fPrimitives);
