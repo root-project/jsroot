@@ -1880,7 +1880,7 @@ class TGraphPainter extends ObjectPainter {
          p0 = p1;
       }
 
-      let handle = await import('./base3d.mjs'),
+      let handle = await import('../base3d.mjs'),
           lines = handle.createLineSegments(pnts, handle.create3DLineMaterial(this, graph));
 
       fp.toplevel.add(lines);
