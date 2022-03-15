@@ -1138,6 +1138,13 @@ class TPavePainter extends ObjectPainter {
       super.cleanup();
    }
 
+   /** @summary Returns true if object is supported */
+   static canDraw(obj) {
+      let typ = obj?._typename;
+      return typ == "TPave" || typ == "TPaveLabel" || typ == "TPaveStats" || typ == "TPaveText"
+             || typ == "TPavesText" || typ == "TDiamond" || typ == "TLegend" || typ == "TPaletteAxis";
+   }
+
    /** @summary Draw TPave */
    static draw(dom, pave, opt) {
       let painter = new TPavePainter(dom, pave);

@@ -1493,7 +1493,11 @@ class THistPainter extends ObjectPainter {
 
       func.$histo = histo; // required to draw TF1 correctly
 
-      return pp.drawObject(this.getDom(), func, opt).then(painter => {
+
+      let promise = TPavePainter.canDraw(func) ? TPavePainter.draw(this.getDom(), func, opt)
+                                               : pp.drawObject(this.getDom(), func, opt);
+
+      return promise.then(painter => {
          if (painter && (typeof painter == "object")) {
             painter.child_painter_id = this.hist_painter_id;
          }
