@@ -6,17 +6,17 @@
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
-  "type" : "module",
+  "type": "module",
   "module": "modules/main.mjs",
   "exports": {
-     "." : "./modules/main.mjs",
-     "./core" : "./modules/core.mjs",
-     "./draw" : "./modules/draw.mjs",
-     "./io" : "./modules/io.mjs",
-     "./tree" : "./modules/tree.mjs",
-     "./colors" : "./modules/base/colors.mjs",
-     "./hierarchy" : "./modules/hierarchy.mjs",
-     "./latex" : "./modules/latex.mjs"
+    ".": "./modules/main.mjs",
+    "./core": "./modules/core.mjs",
+    "./draw": "./modules/draw.mjs",
+    "./io": "./modules/io.mjs",
+    "./tree": "./modules/tree.mjs",
+    "./colors": "./modules/base/colors.mjs",
+    "./hierarchy": "./modules/hierarchy.mjs",
+    "./latex": "./modules/latex.mjs"
   },
   "contributors": [
     {
@@ -36,6 +36,7 @@
     "gl": "^5.0.0",
     "jsdom": "^19.0.0",
     "mathjax": "3.2.0",
+    "tmp": "^0.2.1",
     "xhr2": "^0.2.1",
     "zstd-codec": "^0.1.2"
   },

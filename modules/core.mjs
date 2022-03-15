@@ -343,16 +343,16 @@ function getDocument() {
 /** @summary Load script or CSS file into the browser
   * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
   * @returns {Promise} */
-function loadScript(url) {
+async function loadScript(url) {
    if (!url)
-      return Promise.resolve(true);
+      return true;
 
    if ((typeof url == 'string') && (url.indexOf(";") >= 0))
       url = url.split(";");
 
    if (typeof url != 'string') {
       let scripts = url, loadNext = () => {
-         if (!scripts.length) return Promise.resolve(true);
+         if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
       };
       return loadNext();
@@ -369,10 +369,23 @@ function loadScript(url) {
 
    if (nodejs) {
       if (isstyle)
-         return Promise.resolve(null);
-      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-         return httpRequest(url, "text").then(txt => eval(txt));
-      return import(url);
+         return null;
+      let fs, name;
+      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0)) {
+         let txt = await httpRequest(url, "text");
+         let tmp = await import('tmp');
+         name = tmp.tmpNameSync() + ".js";
+         fs = await import('fs');
+         fs.writeFileSync(name, txt);
+         url = "file://" + name;
+      }
+      try {
+         await import(url);
+      } finally {
+         if (name && fs)
+            fs.unlinkSync(name);
+      }
+      return true;
    }
 
    const match_url = src => {
@@ -386,14 +399,14 @@ function loadScript(url) {
       for (let n = 0; n < styles.length; ++n) {
          if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
          if (match_url(styles[n].href))
-            return Promise.resolve();
+            return true;
       }
 
    } else {
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (match_url(scripts[n].src))
-            return Promise.resolve();
+            return true;
    }
 
    if (isstyle) {
