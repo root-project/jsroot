@@ -5,6 +5,11 @@ import {terser} from "rollup-plugin-terser";
 import * as meta from "../../package.json";
 import ignore from "rollup-plugin-ignore";
 
+const ingnore_modules = ['fs'];
+
+for(let key in meta.dependencies)
+   ingnore_modules.push(key);
+
 const config = {
   input: "jsroot_hist.mjs",
   output: {
@@ -15,7 +20,7 @@ const config = {
     banner: `// ${meta.homepage} v${meta.version}`
   },
   plugins: [
-    ignore(["fs", "xhr2", "canvas", "btoa", "atob", "zlib", "zstd-codec", "mathjax", "jsdom", "gl"]),
+    ignore(ingnore_modules),
     nodeResolve(),
     json(),
     ascii()
