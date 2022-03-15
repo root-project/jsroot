@@ -127,7 +127,7 @@ const drawFuncs = { lst: [
    { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RH1Painter), opt: "" },
    { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.RH2Painter), opt: "" },
    { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7().then(() => import('./v7hist3d.mjs')).then(h => h.RH3Painter), opt: "" },
-   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7().then(() => import('./v7hist.mjs')).then(h => h.drawHistDisplayItem), opt: "" },
+   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: "" },
    { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
    { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
    { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: "" },
@@ -574,8 +574,13 @@ init_v7 = function(arg) {
       // only now one can draw primitives in the canvas
       h.RPadPainter.prototype.drawObject = draw;
       h.RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
-      if (arg === 'more') return import('./draw/v7more.mjs');
-      if (arg === 'pave') return import('./hist/RPavePainter.mjs');
+      switch(arg) {
+         case 'more': return import('./draw/v7more.mjs');
+         case 'pave': return import('./hist/RPavePainter.mjs');
+         case 'rh1': return import('./hist/RH1Painter.mjs');
+         case 'rh2': return import('./hist/RH2Painter.mjs');
+         case 'rh3': return import('./hist/RH3Painter.mjs');
+      }
       return h;
    });
 }
