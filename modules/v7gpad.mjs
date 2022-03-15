@@ -10,6 +10,8 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer,
 
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from './utils.mjs';
 
+import { GridDisplay } from './display.mjs';
+
 import { ColorPalette, addColor, getRootColors } from './base/colors.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
@@ -4290,16 +4292,11 @@ class RCanvasPainter extends RPadPainter {
 
       if (layout_kind == 'simple') {
          main = origin;
-         for (let k=0;k<lst.length;++k)
+         for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
-         resize(main.node());
-         return Promise.resolve(true);
-      }
-
-      return import('./display.mjs').then(hh => {
-
-         let grid = new hh.GridDisplay(origin.node(), layout_kind);
+      } else {
+         let grid = new GridDisplay(origin.node(), layout_kind);
 
          if (mainid == undefined)
             mainid = (layout_kind.indexOf("vert") == 0) ? 0 : 1;
@@ -4318,12 +4315,11 @@ class RCanvasPainter extends RPadPainter {
 
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);
+      }
 
-         // resize main drawing and let draw extras
-         resize(main.node());
-
-         return true;
-      });
+      // resize main drawing and let draw extras
+      resize(main.node());
+      return Promise.resolve(true);
    }
 
    /** @summary Toggle projection

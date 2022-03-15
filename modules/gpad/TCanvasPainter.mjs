@@ -6,6 +6,8 @@ import { select as d3_select } from '../d3.mjs';
 
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../utils.mjs';
 
+import { GridDisplay } from '../display.mjs';
+
 import { selectActivePad, cleanup, resize } from '../painter.mjs';
 
 import { TAxisPainter } from './TAxisPainter.mjs';
@@ -102,13 +104,9 @@ class TCanvasPainter extends TPadPainter {
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
-         resize(main.node());
-         return Promise.resolve(true);
-      }
+      } else {
 
-      return import('../display.mjs').then(hh => {
-
-         let grid = new hh.GridDisplay(origin.node(), layout_kind);
+         let grid = new GridDisplay(origin.node(), layout_kind);
 
          if (mainid == undefined)
             mainid = (layout_kind.indexOf("vert") == 0) ? 0 : 1;
@@ -127,12 +125,11 @@ class TCanvasPainter extends TPadPainter {
 
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);
+      }
 
-         // resize main drawing and let draw extras
-         resize(main.node());
-
-         return true;
-      });
+      // resize main drawing and let draw extras
+      resize(main.node());
+      return Promise.resolve(true);
    }
 
    /** @summary Toggle projection
