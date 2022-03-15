@@ -340,6 +340,36 @@ function getDocument() {
    return undefined;
 }
 
+/** @summary Inject javascript code
+  * @desc Replacement for eval
+  * @returns {Promise} */
+async function injectCode(code) {
+   if (nodejs) {
+      let tmp = await import('tmp'),
+          fs = await import('fs'),
+          name = tmp.tmpNameSync() + ".js";
+      fs.writeFileSync(name, code);
+      try {
+         await import("file://" + name);
+      } finally {
+         fs.unlinkSync(name);
+      }
+   } else if (typeof document !== 'undefined') {
+
+      // check if code already loaded - to avoid duplication
+      let scripts = document.getElementsByTagName('script');
+      for (let n = 0; n < scripts.length; ++n)
+         if (scripts[n].innerHTML == code)
+            return true;
+
+      let element = document.createElement("script");
+      element.setAttribute("type", "text/javascript");
+      element.innerHTML = code;
+      document.head.appendChild(element);
+   }
+
+}
+
 /** @summary Load script or CSS file into the browser
   * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
   * @returns {Promise} */
@@ -370,20 +400,11 @@ async function loadScript(url) {
    if (nodejs) {
       if (isstyle)
          return null;
-      let fs, name;
       if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0)) {
-         let txt = await httpRequest(url, "text");
-         let tmp = await import('tmp');
-         name = tmp.tmpNameSync() + ".js";
-         fs = await import('fs');
-         fs.writeFileSync(name, txt);
-         url = "file://" + name;
-      }
-      try {
+         let code = await httpRequest(url, "text");
+         await injectCode(code);
+      } else {
          await import(url);
-      } finally {
-         if (name && fs)
-            fs.unlinkSync(name);
       }
       return true;
    }
@@ -1639,6 +1660,7 @@ findFunction,
 createHttpRequest,
 httpRequest,
 loadScript,
+injectCode,
 create,
 createHistogram,
 createTPolyLine,
