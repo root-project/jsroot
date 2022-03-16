@@ -752,12 +752,12 @@ function drawTGaxis(dom, obj, opt) {
 }
 
 /** @summary draw TGaxis object */
-async function drawTFrame(dom, obj, opt) {
+function drawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
-   await ensureTCanvas(fp, false);
-   if (opt == "3d") fp.mode3d = true;
-   await fp.redraw();
-   return fp;
+   return ensureTCanvas(fp, false).then(() => {
+      if (opt == "3d") fp.mode3d = true;
+      return fp.redraw();
+   });
 }
 
 export { TCanvasPainter, ensureTCanvas, drawTPadSnapshot, drawTGaxis, drawTFrame };

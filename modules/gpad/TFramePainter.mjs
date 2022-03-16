@@ -1978,13 +1978,13 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary draw axes, return Promise which ready when drawing is completed  */
-   async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
-                  AxisPos, has_x_obstacle, has_y_obstacle) {
+   drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
+            AxisPos, has_x_obstacle, has_y_obstacle) {
 
       this.cleanAxesDrawings();
 
       if ((this.xmin == this.xmax) || (this.ymin == this.ymax))
-         return false;
+         return Promise.resolve(false);
 
       if (AxisPos === undefined) AxisPos = 0;
 
@@ -2010,23 +2010,28 @@ class TFramePainter extends ObjectPainter {
          if (pp && pp._fast_drawing) disable_x_draw = disable_y_draw = true;
       }
 
+      let pr = Promise.resolve(true);
+
       if (!disable_x_draw || !disable_y_draw) {
 
          let can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame;
 
-         await draw_horiz.drawAxis(layer, w, h,
+         let pr1 = draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? undefined : `translate(0,${h})`,
                                    pad && pad.fTickx ? -h : 0, disable_x_draw,
                                    undefined, false);
 
-         await draw_vertical.drawAxis(layer, w, h,
+         let pr2 = draw_vertical.drawAxis(layer, w, h,
                                       draw_vertical.invert_side ? `translate(${w})` : undefined,
                                       pad && pad.fTicky ? w : 0, disable_y_draw,
                                       draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
-         this.drawGrids();
+         pr = Promise.all([pr1,pr2]).then(() => {
 
-         if (can_adjust_frame) {
+            this.drawGrids();
+
+            if (!can_adjust_frame) return;
+
             let shrink = 0., ypos = draw_vertical.position;
 
             if ((-0.2 * w < ypos) && (ypos < 0)) {
@@ -2037,22 +2042,22 @@ class TFramePainter extends ObjectPainter {
                this.shrink_frame_left = 0.;
             }
 
-            if (shrink != 0) {
-               this.shrinkFrame(shrink, 0);
-               await this.redraw();
-               await this.drawAxes(true);
-            }
-         }
+            if (!shrink) return;
+
+            this.shrinkFrame(shrink, 0);
+            return this.redraw().then(() => this.drawAxes(true));
+         });
       }
 
-     if (!shrink_forbidden)
-        this.axes_drawn = true;
-
-     return true;
+     return pr.then(() => {
+        if (!shrink_forbidden)
+           this.axes_drawn = true;
+        return true;
+     });
    }
 
    /** @summary draw second axes (if any)  */
-   async drawAxes2(second_x, second_y) {
+   drawAxes2(second_x, second_y) {
 
       let layer = this.getFrameSvg().select(".axis_layer"),
           w = this.getFrameWidth(),
@@ -2079,17 +2084,21 @@ class TFramePainter extends ObjectPainter {
          if (pp && pp._fast_drawing) draw_horiz = draw_vertical = null;
       }
 
+      let pr1, pr2;
+
       if (draw_horiz)
-         await draw_horiz.drawAxis(layer, w, h,
+         pr1 = draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? undefined : `translate(0,${h})`,
                                    pad && pad.fTickx ? -h : 0, false,
                                    undefined, false);
 
       if (draw_vertical)
-         await draw_vertical.drawAxis(layer, w, h,
+         pr2 = draw_vertical.drawAxis(layer, w, h,
                                       draw_vertical.invert_side ? `translate(${w})` : undefined,
                                       pad && pad.fTicky ? w : 0, false,
                                       draw_vertical.invert_side ? 0 : this._frame_x, false);
+
+       return Promise.all([pr1, pr2]);
    }
 
 
@@ -2305,7 +2314,7 @@ class TFramePainter extends ObjectPainter {
       this._frame_rotate = rotate;
       this._frame_fixpos = fixpos;
 
-      if (this.mode3d) return; // no need to create any elements in 3d mode
+      if (this.mode3d) return this; // no need to create any elements in 3d mode
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.getFrameSvg();
@@ -2350,12 +2359,13 @@ class TFramePainter extends ObjectPainter {
               .attr("height", h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
-      if (isBatchMode()) return;
+      if (!isBatchMode()) {
+         top_rect.style("pointer-events", "visibleFill"); // let process mouse events inside frame
+         FrameInteractive.assign(this);
+         this.addBasicInteractivity();
+      }
 
-      top_rect.style("pointer-events", "visibleFill"); // let process mouse events inside frame
-
-      FrameInteractive.assign(this);
-      this.addBasicInteractivity();
+      return this;
    }
 
    /** @summary Change log state of specified axis
@@ -2758,7 +2768,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Add interactive functionality to the frame
      * @private */
-   async addInteractivity(for_second_axes) {
+   addInteractivity(for_second_axes) {
       if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
