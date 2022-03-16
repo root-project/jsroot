@@ -39,13 +39,13 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Draw pave and content */
-   async drawPave(arg) {
+   drawPave(arg) {
 
       this.UseTextColor = false;
 
       if (!this.Enabled) {
          this.removeG();
-         return this;
+         return Promise.resolve(this);
       }
 
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
@@ -180,10 +180,11 @@ class TPavePainter extends ObjectPainter {
                       .call(this.fillatt.func)
                       .call(this.lineatt.func);
 
-      if (typeof this.paveDrawFunc == 'function')
-         await this.paveDrawFunc(width, height, arg);
+      let promise = this.paveDrawFunc ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
 
-      if (!isBatchMode() && (pt._typename !== "TPave")) {
+      return promise.then(() => {
+
+         if (isBatchMode() || (pt._typename === "TPave")) return this;
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
@@ -199,9 +200,9 @@ class TPavePainter extends ObjectPainter {
 
          if (pt._typename == "TPaletteAxis")
             this.interactivePaletteAxis(width, height);
-      }
 
-      return this;
+         return this;
+      });
    }
 
    /** @summary Fill option object used in TWebCanvas */
