@@ -2,7 +2,7 @@
 
 import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, isNodeJs, _ensureJSROOT } from './core.mjs';
+import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT } from './core.mjs';
 
 import { cleanup, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
 
@@ -350,6 +350,8 @@ function draw(dom, obj, opt) {
                            .then(() => painter.redraw());
       } else {
          promise = handle.func(dom, obj, opt);
+         if (!isPromise(promise))
+            promise = Promise.resolve(promise);
       }
 
       return promise.then(p => {

@@ -94,7 +94,7 @@ function createTF2Histogram(func, hist = undefined) {
   * @desc TF2 always drawn via temporary TH2 object,
   * therefore there is no special painter class
   * @private */
-async function drawTF2(dom, func, opt) {
+function drawTF2(dom, func, opt) {
 
    proivdeEvalPar(func);
 
@@ -117,18 +117,19 @@ async function drawTF2(dom, func, opt) {
       if (!getElementMainPainter(dom))
          opt = "A_ADJUST_FRAME_" + opt.substr(4);
 
-   let hpainter = await TH2Painter.draw(dom, hist, opt);
+   return TH2Painter.draw(dom, hist, opt).then(hpainter => {
 
-   hpainter.tf2_typename = func._typename;
+      hpainter.tf2_typename = func._typename;
 
-   hpainter.updateObject = function(obj /*, opt*/) {
-      if (!obj || (this.tf2_typename != obj._typename)) return false;
-      proivdeEvalPar(obj);
-      createTF2Histogram(obj, this.getHisto());
-      return true;
-   };
+      hpainter.updateObject = function(obj /*, opt*/) {
+         if (!obj || (this.tf2_typename != obj._typename)) return false;
+         proivdeEvalPar(obj);
+         createTF2Histogram(obj, this.getHisto());
+         return true;
+      };
 
-   return hpainter;
+      return hpainter;
+   });
 }
 
 export { drawTF2 };

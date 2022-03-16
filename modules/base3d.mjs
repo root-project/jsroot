@@ -1550,7 +1550,7 @@ function before3DDraw(painter, obj) {
 
 /** @summary direct draw function for TPolyMarker3D object
   * @private */
-async function drawPolyMarker3D() {
+function drawPolyMarker3D() {
 
    let poly = this.getObject(),
        fp = before3DDraw(this, poly);
@@ -1593,52 +1593,53 @@ async function drawPolyMarker3D() {
       pnts.addPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
    }
 
-   let mesh = await pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle });
+   return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
 
-   mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-   mesh.tip_name = poly.fName || "Poly3D";
-   mesh.poly = poly;
-   mesh.painter = fp;
-   mesh.scale0 = 0.7*pnts.scale;
-   mesh.index = index;
+      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+      mesh.tip_name = poly.fName || "Poly3D";
+      mesh.poly = poly;
+      mesh.painter = fp;
+      mesh.scale0 = 0.7*pnts.scale;
+      mesh.index = index;
 
-   fp.toplevel.add(mesh);
+      fp.toplevel.add(mesh);
 
-   mesh.tooltip = function(intersect) {
-      if (!Number.isInteger(intersect.index)) {
-         console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
-         return null;
-      }
-      let indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx<0) || (indx >= this.index.length)) return null;
+      mesh.tooltip = function(intersect) {
+         if (!Number.isInteger(intersect.index)) {
+            console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
+            return null;
+         }
+         let indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx<0) || (indx >= this.index.length)) return null;
 
-      indx = this.index[indx];
+         indx = this.index[indx];
 
-      let p = this.painter,
-          grx = p.grx(this.poly.fP[indx]),
-          gry = p.gry(this.poly.fP[indx+1]),
-          grz = p.grz(this.poly.fP[indx+2]);
+         let p = this.painter,
+             grx = p.grx(this.poly.fP[indx]),
+             gry = p.gry(this.poly.fP[indx+1]),
+             grz = p.grz(this.poly.fP[indx+2]);
 
-      return  {
-         x1: grx - this.scale0,
-         x2: grx + this.scale0,
-         y1: gry - this.scale0,
-         y2: gry + this.scale0,
-         z1: grz - this.scale0,
-         z2: grz + this.scale0,
-         color: this.tip_color,
-         lines: [ this.tip_name,
-                  "pnt: " + indx/3,
-                  "x: " + p.axisAsText("x", this.poly.fP[indx]),
-                  "y: " + p.axisAsText("y", this.poly.fP[indx+1]),
-                  "z: " + p.axisAsText("z", this.poly.fP[indx+2])
-                ]
+         return  {
+            x1: grx - this.scale0,
+            x2: grx + this.scale0,
+            y1: gry - this.scale0,
+            y2: gry + this.scale0,
+            z1: grz - this.scale0,
+            z2: grz + this.scale0,
+            color: this.tip_color,
+            lines: [ this.tip_name,
+                     "pnt: " + indx/3,
+                     "x: " + p.axisAsText("x", this.poly.fP[indx]),
+                     "y: " + p.axisAsText("y", this.poly.fP[indx+1]),
+                     "z: " + p.axisAsText("z", this.poly.fP[indx+2])
+                   ]
+         };
       };
-   };
 
-   fp.render3D(100); // set timeout to be able draw other points
+      fp.render3D(100); // set timeout to be able draw other points
 
-   return this;
+      return this;
+   });
 }
 
 /** @summary Direct draw function for TPolyLine3D object

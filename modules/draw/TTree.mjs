@@ -275,7 +275,7 @@ function drawLeafPlayer(hpainter, itemname) {
   * @desc just envelope for real TTree::Draw method which do the main job
   * Can be also used for the branch and leaf object
   * @private */
-async function drawTree() {
+function drawTree() {
 
    let painter = this,
        obj = this.getObject(),
@@ -328,7 +328,7 @@ async function drawTree() {
 
    let create_player = 0, finalResolve;
 
-   async function process_result(obj, intermediate = false) {
+   function process_result(obj, intermediate = false) {
 
       let drawid;
 
@@ -351,24 +351,25 @@ async function drawTree() {
       painter.showPlayer(args);
       create_player = 2;
 
-      let objpainter = await redraw(painter.drawid, obj);
-      painter.setItemName("TreePlayer"); // item name used by MDI when process resize
-      if (finalResolve) finalResolve(objpainter);
-      return objpainter; // return painter for histogram
+      return redraw(painter.drawid, obj).then(objpainter => {
+         painter.setItemName("TreePlayer"); // item name used by MDI when process resize
+         if (finalResolve) finalResolve(objpainter);
+         return objpainter; // return painter for histogram
+      });
    };
 
    // use in result handling same function as for progress handling
 
-   let res;
+   let pr;
    if (args.expr === "testio") {
       args.showProgress = showProgress;
-      res = await treeIOTest(tree, args);
+      pr = treeIOTest(tree, args);
    } else {
       args.progress = obj => process_result(obj, true);
-      res = await treeDraw(tree, args);
+      pr = treeDraw(tree, args);
    }
 
-   return process_result(res);
+   return pr.then(res => process_result(res));
 }
 
 export { drawTree, drawTreePlayer, drawTreePlayerKey, drawLeafPlayer };

@@ -622,7 +622,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    }
 
    /** @summary Redraw polargram */
-   async redraw() {
+   redraw() {
       if (!this.isMainPainter()) return;
 
       let polar = this.getObject(),
@@ -674,7 +674,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.startTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2));
 
-      for (let n=0;n<ticks.length;++n) {
+      for (let n = 0; n < ticks.length; ++n) {
          let rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
          this.draw_g.append("ellipse")
              .attr("cx",0)
@@ -705,75 +705,77 @@ class TGraphPolargramPainter extends ObjectPainter {
          }
       }
 
-      await this.finishTextDrawing();
-
-      let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
-      this.startTextDrawing(polar.fPolarLabelFont, fontsize);
-
       let nmajor = polar.fNdivPol % 100;
       if ((nmajor !== 8) && (nmajor !== 3)) nmajor = 8;
 
-      lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"];
-      let aligns = [12, 11, 21, 31, 32, 33, 23, 13];
+      return this.finishTextDrawing().then(() => {
 
-      for (let n = 0; n < nmajor; ++n) {
-         let angle = -n*2*Math.PI/nmajor - this.angle;
-         this.draw_g.append("svg:path")
-             .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
-             .call(this.lineatt.func);
+         let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
+         this.startTextDrawing(polar.fPolarLabelFont, fontsize);
 
-         let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+         lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"];
+         let aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
-         this.drawText({ align: aligns[aindx],
-                         x: Math.round((this.szx+fontsize)*Math.cos(angle)),
-                         y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
-                         text: lbls[n],
-                         color: this.getColor(polar.fPolarLabelColor), latex: 1 });
-      }
-
-      await this.finishTextDrawing();
-
-      nminor = Math.floor((polar.fNdivPol % 10000) / 100);
-
-      if (nminor > 1)
-         for (let n = 0; n < nmajor*nminor; ++n) {
-            if (n % nminor === 0) continue;
-            let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
+         for (let n = 0; n < nmajor; ++n) {
+            let angle = -n*2*Math.PI/nmajor - this.angle;
             this.draw_g.append("svg:path")
                 .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
-                .call(this.gridatt.func);
+                .call(this.lineatt.func);
+
+            let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+
+            this.drawText({ align: aligns[aindx],
+                            x: Math.round((this.szx+fontsize)*Math.cos(angle)),
+                            y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
+                            text: lbls[n],
+                            color: this.getColor(polar.fPolarLabelColor), latex: 1 });
          }
 
-      if (isBatchMode()) return;
+         return this.finishTextDrawing();
+      }).then(() => {
 
-      TooltipHandler.assign(this);
+         nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
-      let layer = this.getLayerSvg("primitives_layer"),
-          interactive = layer.select(".interactive_ellipse");
+         if (nminor > 1)
+            for (let n = 0; n < nmajor*nminor; ++n) {
+               if (n % nminor === 0) continue;
+               let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
+               this.draw_g.append("svg:path")
+                   .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+                   .call(this.gridatt.func);
+            }
 
-      if (interactive.empty())
-         interactive = layer.append("g")
-                            .classed("most_upper_primitives", true)
-                            .append("ellipse")
-                            .classed("interactive_ellipse", true)
-                            .attr("cx",0)
-                            .attr("cy",0)
-                            .style("fill", "none")
-                            .style("pointer-events","visibleFill")
-                            .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
-                            .on('mousemove', evnt => this.mouseEvent('move', evnt))
-                            .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
+         if (isBatchMode()) return;
 
-      interactive.attr("rx", this.szx).attr("ry", this.szy);
+         TooltipHandler.assign(this);
 
-      d3_select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+         let layer = this.getLayerSvg("primitives_layer"),
+             interactive = layer.select(".interactive_ellipse");
 
-      if (settings.Zooming && settings.ZoomWheel)
-         interactive.on("wheel", evnt => this.mouseWheel(evnt));
+         if (interactive.empty())
+            interactive = layer.append("g")
+                               .classed("most_upper_primitives", true)
+                               .append("ellipse")
+                               .classed("interactive_ellipse", true)
+                               .attr("cx",0)
+                               .attr("cy",0)
+                               .style("fill", "none")
+                               .style("pointer-events","visibleFill")
+                               .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
+                               .on('mousemove', evnt => this.mouseEvent('move', evnt))
+                               .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
+
+         interactive.attr("rx", this.szx).attr("ry", this.szy);
+
+         d3_select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+
+         if (settings.Zooming && settings.ZoomWheel)
+            interactive.on("wheel", evnt => this.mouseWheel(evnt));
+      });
    }
 
    /** @summary Draw TGraphPolargram */
-   static async draw(dom, polargram /*, opt*/) {
+   static draw(dom, polargram /*, opt*/) {
 
       let main = getElementMainPainter(dom);
       if (main) {
@@ -783,11 +785,10 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
 
       let painter = new TGraphPolargramPainter(dom, polargram);
-      await ensureTCanvas(painter, false);
-
-      painter.setAsMainPainter();
-      await painter.redraw();
-      return painter;
+      return ensureTCanvas(painter, false).then(() => {
+         painter.setAsMainPainter();
+         return painter.redraw();
+      }).then(() => painter);
    }
 
 } // class TGraphPolargramPainter
@@ -997,7 +998,7 @@ class TGraphPolarPainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphPolar */
-   static async draw(dom, graph, opt) {
+   static draw(dom, graph, opt) {
       let painter = new TGraphPolarPainter(dom, graph);
       painter.decodeOptions(opt);
 
@@ -1007,15 +1008,18 @@ class TGraphPolarPainter extends ObjectPainter {
          return null;
       }
 
+      let pr = Promise.resolve(null);
       if (!main) {
          if (!graph.fPolargram)
             graph.fPolargram = painter.createPolargram();
-         await TGraphPolargramPainter.draw(dom, graph.fPolargram);
+         pr = TGraphPolargramPainter.draw(dom, graph.fPolargram);
       }
 
-      painter.addToPadPrimitives();
-      painter.drawGraphPolar();
-      return painter;
+      return pr.then(() => {
+         painter.addToPadPrimitives();
+         painter.drawGraphPolar();
+         return painter;
+      });
    }
 
 } // class TGraphPolarPainter
@@ -1509,11 +1513,9 @@ class TWebPaintingPainter extends ObjectPainter {
       return this;
    }
 
-   static async draw(dom, obj) {
-
+   static draw(dom, obj) {
       let painter = new TWebPaintingPainter(dom, obj);
       painter.addToPadPrimitives();
-
       return painter.redraw();
    }
 
