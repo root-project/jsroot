@@ -272,7 +272,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Draw histogram as bars */
-   async drawBars(height, pmain, funcs) {
+   drawBars(height, pmain, funcs) {
 
       this.createG(true);
 
@@ -365,7 +365,7 @@ class TH1Painter extends THistPainter {
                .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (show_text)
-         await this.finishTextDrawing();
+         return this.finishTextDrawing();
    }
 
    /** @summary Draw histogram as filled errors */
@@ -403,8 +403,9 @@ class TH1Painter extends THistPainter {
                  .call(this.fillatt.func);
    }
 
-   /** @summary Draw TH1 bins in SVG element */
-   async draw1DBins() {
+   /** @summary Draw TH1 bins in SVG element
+     * @returns Promise or scalar value */
+   draw1DBins() {
 
       this.createHistDrawAttributes();
 
@@ -733,7 +734,7 @@ class TH1Painter extends THistPainter {
                     .call(this.fillatt.func);
 
       if (show_text)
-         await this.finishTextDrawing();
+         return this.finishTextDrawing();
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -1123,7 +1124,7 @@ class TH1Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   async draw2D(/* reason */) {
+   draw2D(/* reason */) {
       this.clear3DScene();
 
       this.scanContent(true);
@@ -1131,12 +1132,13 @@ class TH1Painter extends THistPainter {
       if ((typeof this.drawColorPalette === 'function') && this.isMainPainter())
          this.drawColorPalette(false);
 
-      await this.drawAxes();
-      await this.draw1DBins();
-      await this.drawHistTitle();
-      this.updateStatWebCanvas();
-
-      return this.addInteractivity();
+      return this.drawAxes()
+                 .then(() => this.draw1DBins())
+                 .then(() => this.drawHistTitle())
+                 .then(() => {
+                     this.updateStatWebCanvas();
+                     return this.addInteractivity();
+                 });
    }
 
    /** @summary Should performs 3D drawing of histogram
@@ -1153,7 +1155,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary draw TH1 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
       return TH1Painter._drawHist(new TH1Painter(dom, histo), opt);
    }
 

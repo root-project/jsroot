@@ -1079,7 +1079,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   async drawPolyBinsColor() {
+   drawPolyBinsColor() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
@@ -1129,6 +1129,8 @@ class TH2Painter extends THistPainter {
                item.call(this.lineatt.func);
          }
 
+      let pr = Promise.resolve(true);
+
       if (textbins.length > 0) {
          let text_col = this.getColor(histo.fMarkerColor),
              text_angle = -1*this.options.TextAngle,
@@ -1157,16 +1159,16 @@ class TH2Painter extends THistPainter {
             this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
-         await this.finishTextDrawing(text_g, true);
+         pr = this.finishTextDrawing(text_g, true);
       }
 
-      return { poly: true };
+      return pr.then(() => { poly: true });
    }
 
    /** @summary Draw TH2 bins as text */
-   async drawBinsText(handle) {
+   drawBinsText(handle) {
       let histo = this.getObject(),
-          i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
+          posx, posy, sizex, sizey,
           text_col = this.getColor(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
@@ -1175,32 +1177,31 @@ class TH2Painter extends THistPainter {
           show_err = (this.options.TextKind == "E"),
           use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
-      if (handle===null) handle = this.prepareColorDraw({ rounding: false });
+      if (handle === null) handle = this.prepareColorDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
 
-      if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
+      if (histo.fBarOffset !== 0) text_offset = histo.fBarOffset*1e-3;
 
       this.startTextDrawing(42, text_size, text_g, text_size);
 
-      for (i = handle.i1; i < handle.i2; ++i)
-         for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i+1, j+1);
+      for (let i = handle.i1; i < handle.i2; ++i) {
+         let binw = handle.grx[i+1] - handle.grx[i];
+         for (let j = handle.j1; j < handle.j2; ++j) {
+            let binz = histo.getBinContent(i+1, j+1);
             if ((binz === 0) && !this._show_empty_bins) continue;
-
-            binw = handle.grx[i+1] - handle.grx[i];
-            binh = handle.gry[j] - handle.gry[j+1];
+            let binh = handle.gry[j] - handle.gry[j+1];
 
             if (profile2d)
                binz = histo.getBinEntries(i+1, j+1);
 
-            lbl = (binz === Math.round(binz)) ? binz.toString() :
-                      floatToString(binz, gStyle.fPaintTextFormat);
+            let lbl = (binz === Math.round(binz)) ? binz.toString() :
+                         floatToString(binz, gStyle.fPaintTextFormat);
 
             if (show_err) {
-               errz = histo.getBinError(histo.getBin(i+1,j+1));
-               lble = (errz === Math.round(errz)) ? errz.toString() :
+               let errz = histo.getBinError(histo.getBin(i+1,j+1)),
+                   lble = (errz === Math.round(errz)) ? errz.toString() :
                             floatToString(errz, gStyle.fPaintTextFormat);
                if (this.options.TextLine)
                   lbl += '\xB1' + lble;
@@ -1222,12 +1223,11 @@ class TH2Painter extends THistPainter {
 
             this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
          }
-
-      await this.finishTextDrawing(text_g, true);
+      }
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
-      return handle;
+      return this.finishTextDrawing(text_g, true).then(() => handle);
    }
 
    /** @summary Draw TH2 bins as arrows */
@@ -1998,7 +1998,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Draw TH2 bins in 2D mode */
-   async draw2DBins() {
+   draw2DBins() {
 
       if (this._hide_frame && this.isMainPainter()) {
          this.getFrameSvg().style('display', null);
@@ -2012,10 +2012,10 @@ class TH2Painter extends THistPainter {
 
       this.createG(true);
 
-      let handle = null;
+      let handle = null, pr;
 
       if (this.isTH2Poly()) {
-         handle = await this.drawPolyBinsColor();
+         pr = this.drawPolyBinsColor();
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
@@ -2032,13 +2032,16 @@ class TH2Painter extends THistPainter {
             handle = this.drawBinsCandle();
 
          if (this.options.Text)
-            handle = await this.drawBinsText(handle);
+            pr = this.drawBinsText(handle);
 
-         if (!handle)
+         if (!handle && !pr)
             handle = this.drawBinsScatter();
       }
 
-      this.tt_handle = handle;
+      if (handle)
+         this.tt_handle = handle;
+      else if (pr)
+         return pr.then(tt => { this.tt_handle = tt; });
    }
 
    /** @summary Draw TH2 in circular mode */
@@ -2645,37 +2648,36 @@ class TH2Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   async draw2D(/* reason */) {
+   draw2D(/* reason */) {
 
       this.clear3DScene();
 
       let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour);
       // draw new palette, resize frame if required
-      let pp = await this.drawColorPalette(need_palette, true);
 
-      if (this.options.Circular && this.isMainPainter()) {
-         await this.drawBinsCircular();
-      } else if (this.options.Chord && this.isMainPainter()) {
-         await this.drawBinsChord();
-      } else {
-         await this.drawAxes();
-         await this.draw2DBins();
-      }
+      return this.drawColorPalette(need_palette, true).then(pp => {
 
-      await this.completePalette(pp);
+         let pr;
+         if (this.options.Circular && this.isMainPainter()) {
+            pr = this.drawBinsCircular();
+         } else if (this.options.Chord && this.isMainPainter()) {
+            pr = this.drawBinsChord();
+         } else {
+            pr = this.drawAxes().then(() => this.draw2DBins())
+         }
 
-      await this.drawHistTitle();
-
-      this.updateStatWebCanvas();
-
-      return this.addInteractivity();
+         return pr.then(() => this.completePalette(pp));
+      }).then(() => this.drawHistTitle()).then(() => {
+         this.updateStatWebCanvas();
+         return this.addInteractivity();
+      });
    }
 
    /** @summary Should performs 3D drawing of histogram
      * @desc Disabled in 2D case. just draw default draw options
      * @returns {Promise} when ready */
    draw3D(reason) {
-       console.log('3D drawing is disabled, load ./hist/TH2Painter.mjs');
+      console.log('3D drawing is disabled, load ./hist/TH2Painter.mjs');
       return this.draw2D(reason);
    }
 
@@ -2697,7 +2699,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary draw TH2 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
       return TH2Painter._drawHist(new TH2Painter(dom, histo), opt);
    }
 
