@@ -1584,11 +1584,11 @@ class THistPainter extends ObjectPainter {
      * @desc only first (main) painter in list allowed to add interactive functionality
      * Most of interactivity now handled by frame
      * @returns {Promise} for ready */
-   async addInteractivity() {
+   addInteractivity() {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
           fp = ismain || second_axis ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity(!ismain && second_axis) : false;
+      return fp ? fp.addInteractivity(!ismain && second_axis) : Promise.resolve(false);
    }
 
    /** @summary Invoke dialog to enter and modify user range */
@@ -1912,12 +1912,12 @@ class THistPainter extends ObjectPainter {
 
    /** @summary draw color palette
      * @returns {Promise} when done */
-   async drawColorPalette(enabled, postpone_draw, can_move) {
+   drawColorPalette(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();
       if (mp !== this) {
          if (mp && (mp.draw_content !== false))
-            return null;
+            return Promise.resolve(null);
       }
 
       let pal = this.findFunction('TPaletteAxis'),
@@ -1942,12 +1942,13 @@ class THistPainter extends ObjectPainter {
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
 
-         return null;
+         return Promise.resolve(null);
       }
 
       if (!pal) {
 
-         if (this.options.PadPalette) return null;
+         if (this.options.PadPalette)
+            return Promise.resolve(null);
 
          pal = create('TPave');
 
@@ -2003,80 +2004,84 @@ class THistPainter extends ObjectPainter {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       pal.$main_painter = this;
 
-      let arg = "";
-      if (postpone_draw) arg+=";postpone";
-      if (can_move && !this.do_redraw_palette) arg+=";can_move";
+      let arg = "", pr;
+      if (postpone_draw) arg += ";postpone";
+      if (can_move && !this.do_redraw_palette) arg += ";can_move";
       if (this.options.Cjust) arg+=";cjust";
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          let prev = this.selectCurrentPad(this.getPadName());
-         pal_painter = await TPavePainter.draw(this.getDom(), pal, arg);
-         this.selectCurrentPad(prev);
+         pr = TPavePainter.draw(this.getDom(), pal, arg).then(pp => {
+            pal_painter = pp;
+            this.selectCurrentPad(prev);
+         });
       } else {
          pal_painter.Enabled = true;
          // real drawing will be perform at the end
-         if (postpone_draw) return pal_painter;
-         await pal_painter.drawPave(arg);
+         if (postpone_draw) return Promise.resolve(pal_painter);
+         pr = pal_painter.drawPave(arg);
       }
 
-      // mark painter as secondary - not in list of TCanvas primitives
-      pal_painter.$secondary = true;
-      this.options.Zvert = pal_painter._palette_vertical;
+      return pr.then(() => {
 
-      // make dummy redraw, palette will be updated only from histogram painter
-      pal_painter.redraw = function() {};
+         // mark painter as secondary - not in list of TCanvas primitives
+         pal_painter.$secondary = true;
+         this.options.Zvert = pal_painter._palette_vertical;
 
-      let need_redraw = false;
+         // make dummy redraw, palette will be updated only from histogram painter
+         pal_painter.redraw = function() {};
 
-      // special code to adjust frame position to actual position of palette
-      if (can_move && fp && !this.do_redraw_palette) {
+         let need_redraw = false;
 
-         if (this.options.Zvert) {
-            if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
-               need_redraw = true;
-               fp.fX2NDC = pal.fX1NDC - 0.01;
-               if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
-             } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
-               need_redraw = true;
-               fp.fX1NDC = pal.fX2NDC + 0.05;
-               if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
-             }
-         } else {
-            if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
-               need_redraw = true;
-               fp.fY2NDC = pal.fY1NDC - 0.01;
-               if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
-            } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
-               need_redraw = true;
-               fp.fY1NDC = pal.fY2NDC + 0.05;
-               if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
+         // special code to adjust frame position to actual position of palette
+         if (can_move && fp && !this.do_redraw_palette) {
 
+            if (this.options.Zvert) {
+               if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
+                  need_redraw = true;
+                  fp.fX2NDC = pal.fX1NDC - 0.01;
+                  if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
+                } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
+                  need_redraw = true;
+                  fp.fX1NDC = pal.fX2NDC + 0.05;
+                  if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
+                }
+            } else {
+               if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
+                  need_redraw = true;
+                  fp.fY2NDC = pal.fY1NDC - 0.01;
+                  if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
+               } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
+                  need_redraw = true;
+                  fp.fY1NDC = pal.fY2NDC + 0.05;
+                  if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
+
+               }
             }
          }
 
-         if (need_redraw) {
-            this.do_redraw_palette = true;
-            await fp.redraw();
-            // here we should redraw main object
-            if (!postpone_draw)
-               await this.redraw();
-          }
+         if (!need_redraw)
+            return pal_painter;
 
-         delete this.do_redraw_palette;
-      }
-
-      return pal_painter;
+         this.do_redraw_palette = true;
+         fp.redraw();
+         let pr = !postpone_draw ? this.redraw() : Promise.resolve(true);
+         return pr.then(() => {
+             delete this.do_redraw_palette;
+             return pal_painter;
+         });
+      });
    }
 
    /** @summary Toggle color z palette drawing */
-   async toggleColz() {
+   toggleColz() {
       let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
                        this.options.Color || this.options.Contour;
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         await this.drawColorPalette(this.options.Zscale, false, true);
+         return this.drawColorPalette(this.options.Zscale, false, true);
       }
    }
 
@@ -2243,40 +2248,38 @@ class THistPainter extends ObjectPainter {
 
    /** @summary draw TH2 object
      * @private */
-   static async _drawHist(painter, opt) {
+   static _drawHist(painter, opt) {
 
-      await ensureTCanvas(painter);
+      return ensureTCanvas(painter).then(() => {
 
-      painter.setAsMainPainter();
+         painter.setAsMainPainter();
 
-      painter.decodeOptions(opt);
+         painter.decodeOptions(opt);
 
-      if (painter.isTH2Poly()) {
-         if (painter.options.Mode3D)
-            painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color)
-            painter.options.Color = true; // default is color
-      }
+         if (painter.isTH2Poly()) {
+            if (painter.options.Mode3D)
+               painter.options.Lego = 12; // lego always 12
+            else if (!painter.options.Color)
+               painter.options.Color = true; // default is color
+         }
 
-      painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+         painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
 
-      painter.scanContent();
+         painter.scanContent();
 
-      painter.createStat(); // only when required
+         painter.createStat(); // only when required
 
-      await painter.callDrawFunc();
-
-      await painter.drawNextFunction(0);
-
-      if (!painter.Mode3D && painter.options.AutoZoom)
-         painter.autoZoom();
-
-      painter.fillToolbar();
-
-      if (painter.options.Project && !painter.mode3d && painter.toggleProjection)
-           await painter.toggleProjection(painter.options.Project);
-
-       return painter;
+         return painter.callDrawFunc();
+      }).then(() => painter.drawNextFunction(0)).then(() => {
+         if (!painter.Mode3D && painter.options.AutoZoom)
+            return painter.autoZoom();
+      }).then(() => {
+         if (painter.options.Project && !painter.mode3d && painter.toggleProjection)
+             return painter.toggleProjection(painter.options.Project);
+      }).then(() => {
+          painter.fillToolbar();
+          return painter;
+      });
    }
 
 } // class THistPainter

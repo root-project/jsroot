@@ -1129,16 +1129,15 @@ class TH1Painter extends THistPainter {
 
       this.scanContent(true);
 
-      if ((typeof this.drawColorPalette === 'function') && this.isMainPainter())
-         this.drawColorPalette(false);
+      let pr = this.isMainPainter() ? this.drawColorPalette(false) : Promise.resolve(true);
 
-      return this.drawAxes()
-                 .then(() => this.draw1DBins())
-                 .then(() => this.drawHistTitle())
-                 .then(() => {
-                     this.updateStatWebCanvas();
-                     return this.addInteractivity();
-                 });
+      return pr.then(() => this.drawAxes())
+               .then(() => this.draw1DBins())
+               .then(() => this.drawHistTitle())
+               .then(() => {
+                   this.updateStatWebCanvas();
+                   return this.addInteractivity();
+               });
    }
 
    /** @summary Should performs 3D drawing of histogram
