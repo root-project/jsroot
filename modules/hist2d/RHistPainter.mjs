@@ -256,17 +256,18 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Draw axes */
-   async drawFrameAxes() {
+   drawFrameAxes() {
       // return true when axes was drawn
       let main = this.getFramePainter();
-      if (!main) return false;
+      if (!main)
+         return Promise.resolve(false);
 
       if (!this.draw_content)
-         return true;
+         return Promise.resolve(true);
 
       if (!this.isMainPainter()) {
          if (!this.options.second_x && !this.options.second_y)
-            return true;
+            return Promise.resolve(true);
 
          main.setAxes2Ranges(this.options.second_x, this.getAxis("x"), this.xmin, this.xmax, this.options.second_y, this.getAxis("y"), this.ymin, this.ymax);
          return main.drawAxes2(this.options.second_x, this.options.second_y);
@@ -410,7 +411,7 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Add interactive features, only main painter does it */
-   async addInteractivity() {
+   addInteractivity() {
       // only first painter in list allowed to add interactive functionality to the frame
 
       let ismain =  this.isMainPainter(),

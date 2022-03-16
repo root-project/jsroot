@@ -819,7 +819,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   async drawPolyBinsColor() {
+   drawPolyBinsColor() {
       let histo = this.getHisto(),
           pmain = this.getFramePainter(),
           colPaths = [], textbins = [],
@@ -868,6 +868,8 @@ class RH2Painter extends RHistPainter {
                item.call(this.lineatt.func);
          }
 
+      let pr = Promise.resolve(true);
+
       if (textbins.length > 0) {
          let textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text");
@@ -891,14 +893,14 @@ class RH2Painter extends RHistPainter {
             this.drawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
          }
 
-         await this.finishTextDrawing(text_g, true);
+         pr = this.finishTextDrawing(text_g, true);
       }
 
-      return { poly: true };
+      return pr.then(() => { poly: true });
    }
 
    /** @summary Draw RH2 bins as text */
-   async drawBinsText(handle) {
+   drawBinsText(handle) {
       let histo = this.getHisto(),
           i, j, binz, binw, binh, lbl, posx, posy, sizex, sizey;
 
@@ -944,11 +946,12 @@ class RH2Painter extends RHistPainter {
             this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
          }
 
-      await this.finishTextDrawing(text_g, true);
+      return this.finishTextDrawing(text_g, true).then(() => {
 
-      handle.hide_only_zeros = true; // text drawing suppress only zeros
+         handle.hide_only_zeros = true; // text drawing suppress only zeros
 
-      return handle;
+         return handle;
+      });
    }
 
    /** @summary Draw RH2 bins as arrows */
@@ -1383,10 +1386,12 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Draw RH2 bins in 2D mode */
-   async draw2DBins() {
+   draw2DBins() {
 
-      if (!this.draw_content)
-         return this.removeG();
+      if (!this.draw_content) {
+         this.removeG();
+         return Promise.resolve(false);
+      }
 
       this.createHistDrawAttributes();
 
@@ -1395,12 +1400,12 @@ class RH2Painter extends RHistPainter {
       let pmain = this.getFramePainter(),
           rect = pmain.getFrameRect(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          handle = null;
+          handle = null, pr = null;
 
       // if (this.lineatt.empty()) this.lineatt.color = 'cyan';
 
       if (this.isRH2Poly()) {
-         handle = await this.drawPolyBinsColor();
+         pr = this.drawPolyBinsColor();
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
@@ -1416,13 +1421,18 @@ class RH2Painter extends RHistPainter {
             handle = this.drawBinsCandle(funcs, rect.width);
 
          if (this.options.Text)
-            handle = await this.drawBinsText(handle);
+            pr = this.drawBinsText(handle);
 
-         if (!handle)
+         if (!handle && !pr)
             handle = this.drawBinsColor();
       }
 
-      this.tt_handle = handle;
+      if (!pr) pr = Promise.resolve(handle);
+
+      return pr.then(h => {
+         this.tt_handle = h;
+         return this;
+      });
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -1750,16 +1760,14 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   async draw2D(reason) {
+   draw2D(reason) {
       this.clear3DScene();
 
-      let res = await this.drawFrameAxes();
-      if (res) res = await this.drawingBins(reason);
-      if (res) {
-         await this.draw2DBins();
-         res = await this.addInteractivity();
-      }
-      return res ? this : null;
+      return this.drawFrameAxes().then(res => {
+        return res ? this.drawingBins(reason) : false;
+      }).then(res => {
+         if (res) return this.draw2DBins().then(() => this.addInteractivity());
+      }).then(() => this);
    }
 
    /** @summary Performs 3D drawing of histogram
@@ -1784,55 +1792,54 @@ class RH2Painter extends RHistPainter {
       return this.callDrawFunc(reason);
    }
 
-   static async _draw(painter, opt) {
-      await ensureRCanvas(painter);
+   static _draw(painter, opt) {
+      return ensureRCanvas(painter).then(() => {
 
-      painter.setAsMainPainter();
+         painter.setAsMainPainter();
 
-      painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
-                          Line: false, Fill: false, Lego: 0, Surf: 0,
-                          Text: true, TextAngle: 0, TextKind: "",
-                          BaseLine: false, Mode3D: false, AutoColor: 0,
-                          Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
-                          BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
+         painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
+                             Line: false, Fill: false, Lego: 0, Surf: 0,
+                             Text: true, TextAngle: 0, TextKind: "",
+                             BaseLine: false, Mode3D: false, AutoColor: 0,
+                             Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                             BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
-      let kind = painter.v7EvalAttr("kind", ""),
-          sub = painter.v7EvalAttr("sub", 0),
-          o = painter.options;
+         let kind = painter.v7EvalAttr("kind", ""),
+             sub = painter.v7EvalAttr("sub", 0),
+             o = painter.options;
 
-      o.Text = painter.v7EvalAttr("drawtext", false);
+         o.Text = painter.v7EvalAttr("drawtext", false);
 
-      switch(kind) {
-         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-         case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
-         case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
-         case "err": o.Error = true; o.Mode3D = true; break;
-         case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
-         case "arr": o.Arrow = true; break;
-         case "scat": o.Scat = true; break;
-         case "col": o.Color = true; break;
-         default: if (!o.Text) o.Color = true;
-      }
+         switch(kind) {
+            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+            case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
+            case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
+            case "err": o.Error = true; o.Mode3D = true; break;
+            case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
+            case "arr": o.Arrow = true; break;
+            case "scat": o.Scat = true; break;
+            case "col": o.Color = true; break;
+            default: if (!o.Text) o.Color = true;
+         }
 
-      // here we deciding how histogram will look like and how will be shown
-      // painter.decodeOptions(opt);
+         // here we deciding how histogram will look like and how will be shown
+         // painter.decodeOptions(opt);
 
-      if (painter.isRH2Poly()) {
-         if (o.Mode3D) o.Lego = 12;
-                  else o.Color = true;
-      }
+         if (painter.isRH2Poly()) {
+            if (o.Mode3D) o.Lego = 12;
+                     else o.Color = true;
+         }
 
-      painter._show_empty_bins = false;
+         painter._show_empty_bins = false;
 
-      painter.scanContent();
+         painter.scanContent();
 
-      await painter.callDrawFunc();
-
-      return painter;
+         return painter.callDrawFunc();
+      });
    }
 
    /** @summary draw RH2 object */
-   static async draw(dom, obj, opt) {
+   static draw(dom, obj, opt) {
       // create painter and add it to canvas
       return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }
