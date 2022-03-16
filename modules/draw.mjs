@@ -98,7 +98,7 @@ const drawFuncs = { lst: [
    { name: _v7+"REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
    { name: "TGeoOverlap", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TGeoManager", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
-   { name: /^TGeo/, sameas: "TGeoVolume", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
+   { name: /^TGeo/, class: () => import('./geom.mjs').then(h => h.TGeoPainter), get_expand: () => import('./geom.mjs').then(h => h.expandGeoObject), opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TAxis3D", icon: 'img_graph', draw: () => import('./geom.mjs').then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: "kind:Command", icon: "img_execute", execute: true },
@@ -597,14 +597,16 @@ internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 /** @summary Draw TRooPlot
   * @private */
-async function drawRooPlot(dom, plot) {
+function drawRooPlot(dom, plot) {
 
-   let hp = await draw(dom, plot._hist, "hist");
+   return draw(dom, plot._hist, "hist").then(hp => {
+      let arr = [];
 
-   for (let i = 0; i < plot._items.arr.length; ++i)
-      await draw(dom, plot._items.arr[i], plot._items.opt[i]);
+      for (let i = 0; i < plot._items.arr.length; ++i)
+         arr.push(draw(dom, plot._items.arr[i], plot._items.opt[i]));
 
-   return hp;
+      return Promise.all(arr).then(() => hp);
+   });
 }
 
 

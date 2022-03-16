@@ -3274,8 +3274,9 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Drawing different hits types like TPolyMarker3D */
-   async drawHit(hit, itemname) {
-      if (!hit || !hit.fN || (hit.fN < 0)) return false;
+   drawHit(hit, itemname) {
+      if (!hit || !hit.fN || (hit.fN < 0))
+         return Promise.resolve(false);
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
@@ -3298,13 +3299,14 @@ class TGeoPainter extends ObjectPainter {
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = await pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit_style });
-      mesh.renderOrder = 1000000; // to bring points to the front
-      mesh.highlightScale = 2;
-      mesh.geo_name = itemname;
-      mesh.geo_object = hit;
-      this.addToExtrasContainer(mesh);
-      return true; // indicate that rendering should be done
+      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit_style }).then(mesh => {
+         mesh.renderOrder = 1000000; // to bring points to the front
+         mesh.highlightScale = 2;
+         mesh.geo_name = itemname;
+         mesh.geo_object = hit;
+         this.addToExtrasContainer(mesh);
+         return true; // indicate that rendering should be done
+      });
    }
 
    /** @summary Draw extra shape on the geometry */
