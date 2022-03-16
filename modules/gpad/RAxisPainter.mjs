@@ -769,7 +769,8 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Draw axis title */
    drawTitle(axis_g, side, lgaps) {
-      if (!this.fTitle) return Promise.resolve(true);
+      if (!this.fTitle)
+         return Promise.resolve(this);
 
       let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
           title_position = this.v7EvalAttr("title_position", "right"),
@@ -1006,7 +1007,6 @@ class RAxisPainter extends RObjectPainter {
 
                if (item.changed) this.zoomStandalone(item.min, item.max);
             });
-
       });
    }
 

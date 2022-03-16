@@ -622,15 +622,15 @@ class RCanvasPainter extends RPadPainter {
 
 /** @summary draw RPadSnapshot object
   * @private */
-async function drawRPadSnapshot(dom, snap /*, opt*/) {
+function drawRPadSnapshot(dom, snap /*, opt*/) {
    let painter = new RCanvasPainter(dom, null);
    painter.normal_canvas = false;
    painter.batch_mode = isBatchMode();
-   await painter.syncDraw(true);
-   await painter.redrawPadSnap(snap);
-   painter.confirmDraw();
-   painter.showPadButtons();
-   return painter;
+   return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
+      painter.confirmDraw();
+      painter.showPadButtons();
+      return painter;
+   });
 }
 
 /** @summary Ensure RCanvas and RFrame for the painter object
@@ -638,19 +638,20 @@ async function drawRPadSnapshot(dom, snap /*, opt*/) {
   * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
   * @returns {Promise} for ready */
-async function ensureRCanvas(painter, frame_kind) {
+function ensureRCanvas(painter, frame_kind) {
    if (!painter)
-      throw Error('Painter not provided in ensureRCanvas');
+      return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 
    // simple check - if canvas there, can use painter
-   if (painter.getCanvSvg().empty())
-      await RCanvasPainter.draw(painter.getDom(), null /* , noframe */);
+   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* , noframe */) : Promise.resolve(true);
 
-   if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
-      await RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
-
-   painter.addToPadPrimitives();
-   return painter;
+   return pr.then(() => {
+      if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
+         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
+   }).then(() => {
+      painter.addToPadPrimitives();
+      return painter;
+   });
 }
 
 
@@ -877,23 +878,20 @@ function drawRFont() {
    return true;
 }
 
-
 /** @summary draw RAxis object */
-async function drawRAxis(dom, obj, opt) {
+function drawRAxis(dom, obj, opt) {
    let painter = new RAxisPainter(dom, obj, opt);
    painter.disable_zooming = true;
-   await ensureRCanvas(painter, false);
-   await painter.redraw();
-   return painter;
+   return ensureRCanvas(painter, false)
+           .then(() => painter.redraw())
+           .then(() => painter);
 }
 
 /** @summary draw RFrame object */
-async function drawRFrame(dom, obj, opt) {
+function drawRFrame(dom, obj, opt) {
    let p = new RFramePainter(dom, obj);
    if (opt == "3d") p.mode3d = true;
-   await ensureRCanvas(p, false);
-   await p.redraw();
-   return p;
+   return ensureRCanvas(p, false).then(() => p.redraw());
 }
 
 export { ensureRCanvas, drawRPadSnapshot,

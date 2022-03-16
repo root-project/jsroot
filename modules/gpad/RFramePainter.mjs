@@ -358,7 +358,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
-   async drawAxes() {
+   drawAxes() {
 
       if (this.axes_drawn || (this.xmin == this.xmax) || (this.ymin == this.ymax))
          return Promise.resolve(this.axes_drawn);
@@ -429,10 +429,10 @@ class RFramePainter extends RObjectPainter {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          pp = this.getPadPainter();
+          pp = this.getPadPainter(), pr;
 
       if (pp && pp._fast_drawing) {
-         // do nothing
+         pr = Promise.resolve(true); // do nothing
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
@@ -443,35 +443,43 @@ class RFramePainter extends RObjectPainter {
          draw_horiz.disable_ticks = (ticksx <= 0);
          draw_vertical.disable_ticks = (ticksy <= 0);
 
-         await draw_horiz.drawAxis(layer, w, h,
+         let pr1 = draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? undefined : `translate(0,${h})`,
                                    (ticksx > 1) ? -h : 0, disable_x_draw,
                                    undefined, false);
 
-         await draw_vertical.drawAxis(layer, w, h,
+         let pr2 =  draw_vertical.drawAxis(layer, w, h,
                                       draw_vertical.invert_side ? `translate(${w})` : undefined,
                                       (ticksy > 1) ? w : 0, disable_y_draw,
                                       draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
-         this.drawGrids();
+
+         pr = Promise.all([pr1,pr2]).then(() => this.drawGrids());
 
       } else {
+
+         let arr = [];
+
          if (ticksx > 0)
-            await draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
+            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex));
 
          if (ticksy > 0)
-            await draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
+            arr.push(draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey));
 
-         if (ticksx > 1)
-            await draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2);
+         pr = Promise.all(arr).then(() => {
+            arr = [];
+            if (ticksx > 1)
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
 
-         if (ticksy > 1)
-            await draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2);
-
-         this.drawGrids();
+            if (ticksy > 1)
+               arr.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
+            return Promise.all(arr);
+         }).then(() => this.drawGrids());
       }
 
-      this.axes_drawn = true;
-      return true;
+      return pr.then(() => {
+         this.axes_drawn = true;
+         return true;
+      });
    }
 
    /** @summary Draw secondary configuread axes */
@@ -672,7 +680,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Redraw frame
      * @private */
-   async redraw() {
+   redraw() {
 
       let pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this;
@@ -707,7 +715,7 @@ class RFramePainter extends RObjectPainter {
       this._frame_rotate = rotate;
       this._frame_fixpos = fixpos;
 
-      if (this.mode3d) return; // no need for real draw in mode3d
+      if (this.mode3d) return this; // no need for real draw in mode3d
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.getFrameSvg();
@@ -756,19 +764,24 @@ class RFramePainter extends RObjectPainter {
               .attr("height", h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
+      let pr = Promise.resolve(true);
+
       if (this.v7EvalAttr("drawAxes")) {
          this.self_drawaxes = true;
          this.setAxesRanges();
-         await this.drawAxes();
-         await this.addInteractivity();
+         pr = this.drawAxes().then(() => this.addInteractivity());
       }
 
-      if (isBatchMode()) return;
+      return pr.then(() => {
+         if (!isBatchMode()) {
+            top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
-      top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
+            FrameInteractive.assign(this);
+            this.addBasicInteractivity();
+         }
 
-      FrameInteractive.assign(this);
-      this.addBasicInteractivity();
+         return this;
+      });
    }
 
    /** @summary Returns frame width */
