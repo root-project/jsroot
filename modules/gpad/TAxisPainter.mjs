@@ -1124,7 +1124,7 @@ class TAxisPainter extends ObjectPainter {
       if ((labelSize0 <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
       let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null,
-          title_fontsize = 0, pr = Promise.resolve([labelSize0, 0]);
+          title_fontsize = 0, pr = Promise.resolve([labelSize0, 0]), labelMaxWidth = 0;
 
       // draw labels (sometime on both sides)
       if (!disable_axis_drawing && !optionUnlab)
@@ -1132,7 +1132,7 @@ class TAxisPainter extends ObjectPainter {
 
       return pr.then(arr => {
 
-         let labelMaxWidth = arr[1];
+         labelMaxWidth = arr[1];
 
          if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
             let labelSize = arr[0],
