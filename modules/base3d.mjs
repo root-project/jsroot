@@ -388,6 +388,9 @@ function assign3DHandler(painter) {
    Object.assign(painter, Handling3DDrawings);
 }
 
+let canvas_handle = isNodeJs() ? await import('canvas') : null;
+let glfunc = isNodeJs() ? await import('gl') : null;
+
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
@@ -395,7 +398,7 @@ function assign3DHandler(painter) {
   * @param {object} args - different arguments for creating 3D renderer
   * @private */
 
-async function createRender3D(width, height, render3d, args) {
+function createRender3D(width, height, render3d, args) {
 
    let rc = constants.Render3D;
 
@@ -422,14 +425,10 @@ async function createRender3D(width, height, render3d, args) {
       }
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      let canvas_handle = await import('canvas');
-
       args.canvas = canvas_handle.default.createCanvas(width, height);
       args.canvas.addEventListener = function() { }; // dummy
       args.canvas.removeEventListener = function() { }; // dummy
       args.canvas.style = {};
-
-      let glfunc = await import('gl');
 
       let gl = glfunc.default(width, height, { preserveDrawingBuffer: true });
       if (!gl) throw(Error("Fail to create headless-gl"));

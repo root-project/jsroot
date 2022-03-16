@@ -10,8 +10,6 @@ import { createLineSegments, create3DLineMaterial } from '../base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
-import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-
 import { TH2Painter as TH2Painter2D  } from '../hist2d/TH2Painter.mjs';
 
 
@@ -742,13 +740,14 @@ function drawTH2PolyLego(painter) {
   * @private */
 class TH2Painter extends TH2Painter2D {
 
-   async draw3D(reason) {
+   draw3D(reason) {
 
       this.mode3d = true;
 
       let main = this.getFramePainter(), // who makes axis drawing
           is_main = this.isMainPainter(), // is main histogram
-          histo = this.getHisto();
+          histo = this.getHisto(),
+          pr = Promise.resolve(true);
 
       if (reason == "resize") {
 
@@ -770,7 +769,7 @@ class TH2Painter extends TH2Painter2D {
 
          if (is_main) {
             assignFrame3DMethods(main);
-            await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+            main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
@@ -795,18 +794,16 @@ class TH2Painter extends TH2Painter2D {
          }
       }
 
-      if (is_main) {
-         //  (re)draw palette by resize while canvas may change dimension
-         await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                     (this.options.Surf===11) || (this.options.Surf===12)));
-         await this.drawHistTitle();
-      }
+      //  (re)draw palette by resize while canvas may change dimension
+      if (is_main)
+         pr = this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                     (this.options.Surf===11) || (this.options.Surf===12))).then(() => this.drawHistTitle());
 
-      return this;
+      return pr.then(() => this);
    }
 
    /** @summary draw TH2 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
       return TH2Painter._drawHist(new TH2Painter(dom, histo), opt);
    }
 

@@ -91,7 +91,7 @@ function setCameraPosition(fp) {
 }
 
 /** @summary Create all necessary components for 3D drawings */
-async function create3DScene(render3d) {
+function create3DScene(render3d) {
 
    if (render3d === -1) {
 
@@ -180,7 +180,7 @@ async function create3DScene(render3d) {
 
    setCameraPosition(this);
 
-   this.renderer = await createRender3D(this.scene_width, this.scene_height, render3d);
+   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
 
    this.webgl = (render3d === constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);

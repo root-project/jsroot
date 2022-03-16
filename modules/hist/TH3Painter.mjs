@@ -188,7 +188,7 @@ class TH3Painter extends THistPainter {
 
    /** @summary draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed */
-   async draw3DScatter() {
+   draw3DScatter() {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
@@ -201,7 +201,7 @@ class TH3Painter extends THistPainter {
           i, j, k, bin_content;
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1))
-         return true;
+         return Promise.resolve(true);
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -247,39 +247,40 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      let mesh = await pnts.createPoints({ color: this.getColor(histo.fMarkerColor) });
-      main.toplevel.add(mesh);
+      return pnts.createPoints({ color: this.getColor(histo.fMarkerColor) }).then(mesh => {
+         main.toplevel.add(mesh);
 
-      mesh.bins = bins;
-      mesh.painter = this;
-      mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
+         mesh.bins = bins;
+         mesh.painter = this;
+         mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
 
-      mesh.tooltip = function(intersect) {
-         if (!Number.isInteger(intersect.index)) {
-            console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
-            return null;
-         }
+         mesh.tooltip = function(intersect) {
+            if (!Number.isInteger(intersect.index)) {
+               console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
+               return null;
+            }
 
-         let indx = Math.floor(intersect.index / this.nvertex);
-         if ((indx<0) || (indx >= this.bins.length)) return null;
+            let indx = Math.floor(intersect.index / this.nvertex);
+            if ((indx<0) || (indx >= this.bins.length)) return null;
 
-         let p = this.painter, histo = p.getHisto(),
-             main = p.getFramePainter(),
-             tip = p.get3DToolTip(this.bins[indx]);
+            let p = this.painter, histo = p.getHisto(),
+                main = p.getFramePainter(),
+                tip = p.get3DToolTip(this.bins[indx]);
 
-         tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
-         tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
-         tip.y1 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
-         tip.y2 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
-         tip.z1 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
-         tip.z2 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
-         tip.color = this.tip_color;
-         tip.opacity = 0.3;
+            tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
+            tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
+            tip.y1 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
+            tip.y2 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
+            tip.z1 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
+            tip.z2 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
+            tip.color = this.tip_color;
+            tip.opacity = 0.3;
 
-         return tip;
-      };
+            return tip;
+         };
 
-      return true;
+         return true;
+      });
    }
 
    /** @summary Drawing of 3D histogram */
@@ -368,7 +369,8 @@ class TH3Painter extends THistPainter {
           k1 = this.getSelectIndex("z", "left", 0.5),
           k2 = this.getSelectIndex("z", "right", 0);
 
-      if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
+      if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
+         return Promise.resolve(false);
 
       let scalex = (main.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - main.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
           scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
@@ -585,10 +587,11 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary Redraw TH3 histogram */
-   async redraw(reason) {
+   redraw(reason) {
 
       let main = this.getFramePainter(), // who makes axis and 3D drawing
-          histo = this.getHisto();
+          histo = this.getHisto(),
+          pr = Promise.resolve(true);
 
       if (reason == "resize") {
 
@@ -596,19 +599,18 @@ class TH3Painter extends THistPainter {
 
       } else {
          assignFrame3DMethods(main);
-         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
-         await this.draw3DBins();
-
-         main.render3D();
-         this.updateStatWebCanvas();
-         main.addKeysHandler();
+         pr = this.draw3DBins().then(() => {
+            main.render3D();
+            this.updateStatWebCanvas();
+            main.addKeysHandler();
+         });
       }
 
-      await this.drawHistTitle();
-      return this;
+      return pr.then(() => this.drawHistTitle()).then(() => this);
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
@@ -708,22 +710,25 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary draw TH3 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
 
       let painter = new TH3Painter(dom, histo);
       painter.mode3d = true;
 
-      await ensureTCanvas(painter, "3d");
-      painter.setAsMainPainter();
-      painter.decodeOptions(opt);
-      painter.checkPadRange();
-      painter.scanContent();
-      await  painter.redraw();
-      let stats = painter.createStat(); // only when required
-      if (stats)
-         await TPavePainter.draw(dom, stats, "");
-      painter.fillToolbar();
-      return painter;
+      return ensureTCanvas(painter, "3d").then(() => {
+         painter.setAsMainPainter();
+         painter.decodeOptions(opt);
+         painter.checkPadRange();
+         painter.scanContent();
+         return painter.redraw();
+      }).then(() => {
+         let stats = painter.createStat(); // only when required
+         if (stats)
+            return TPavePainter.draw(dom, stats, "");
+      }).then(() => {
+         painter.fillToolbar();
+         return painter;
+      });
    }
 
 } // class TH3Painter

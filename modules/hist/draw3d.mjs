@@ -109,7 +109,7 @@ function setCameraPosition(fp, first_time) {
 
 /** @summary Create all necessary components for 3D drawings in frame painter
   * @private */
-async function create3DScene(render3d, x3dscale, y3dscale) {
+function create3DScene(render3d, x3dscale, y3dscale) {
 
    if (render3d === -1) {
 
@@ -204,7 +204,7 @@ async function create3DScene(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   this.renderer = await createRender3D(this.scene_width, this.scene_height, render3d);
+   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
 
    this.webgl = (render3d === constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
@@ -284,7 +284,7 @@ async function create3DScene(render3d, x3dscale, y3dscale) {
       let fp = obj_painter.getFramePainter();
       if (fp && fp.showContextMenu)
          fp.showContextMenu(kind, pos, p);
-   };
+   }
 
 }
 

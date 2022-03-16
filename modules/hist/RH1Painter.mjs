@@ -26,7 +26,7 @@ class RH1Painter extends RH1Painter2D {
 
       if (is_main) {
          assignFrame3DMethods(main);
-         await main.create3DScene(this.options.Render3D);
+         main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1 });
