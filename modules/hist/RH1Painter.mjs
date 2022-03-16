@@ -8,7 +8,7 @@ import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 class RH1Painter extends RH1Painter2D {
 
    /** @summary Draw 1-D histogram in 3D mode */
-   async draw3D(reason) {
+   draw3D(reason) {
 
       this.mode3d = true;
 
@@ -17,7 +17,7 @@ class RH1Painter extends RH1Painter2D {
 
       if (reason == "resize")  {
          if (is_main && main.resize3D()) main.render3D();
-         return this;
+         return Promise.resolve(this);
       }
 
       this.deleteAttr();
@@ -32,8 +32,11 @@ class RH1Painter extends RH1Painter2D {
          main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1 });
       }
 
-      if (main.mode3d) {
-         await this.drawingBins(reason);
+      if (!main.mode3d)
+         return Promise.resolve(this);
+
+
+      return this.drawingBins(reason).then(() => {
 
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
@@ -42,13 +45,12 @@ class RH1Painter extends RH1Painter2D {
          this.updatePaletteDraw();
          main.render3D();
          main.addKeysHandler();
-      }
-
-      return this;
+         return this;
+      });
    }
 
       /** @summary draw RH1 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
       return RH1Painter._draw(new RH1Painter(dom, histo), opt);
    }
 

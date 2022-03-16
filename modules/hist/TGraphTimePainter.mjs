@@ -128,7 +128,7 @@ class TGraphTimePainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphTime object */
-   static async draw(dom, gr, opt) {
+   static draw(dom, gr, opt) {
       if (!gr.fFrame) {
         console.error('Frame histogram not exists');
         return null;
@@ -143,14 +143,15 @@ class TGraphTimePainter extends ObjectPainter {
 
       painter.decodeOptions(opt);
 
-      if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
+      if (!gr.fFrame.fTitle && gr.fTitle)
+         gr.fFrame.fTitle = gr.fTitle;
 
       painter.selfid = "grtime" + internals.id_counter++; // use to identify primitives which should be clean
 
-      await TH1Painter.draw(dom, gr.fFrame, "AXIS");
-
-      painter.addToPadPrimitives();
-      return painter.startDrawing();
+      return TH1Painter.draw(dom, gr.fFrame, "AXIS").then(() => {
+         painter.addToPadPrimitives();
+         return painter.startDrawing();
+      });
    }
 
 } // class TGraphTimePainter

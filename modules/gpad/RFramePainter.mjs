@@ -483,9 +483,10 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Draw secondary configuread axes */
-   async drawAxes2(second_x, second_y) {
+   drawAxes2(second_x, second_y) {
       let w = this.getFrameWidth(), h = this.getFrameHeight(),
-          layer = this.getFrameSvg().select(".axis_layer");
+          layer = this.getFrameSvg().select(".axis_layer"),
+          pr1, pr2;
 
       if (second_x) {
          if (this.zoom_x2min != this.zoom_x2max) {
@@ -502,7 +503,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.configureAxis("x2axis", this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
          this.x2_handle.assignFrameMembers(this,"x2");
 
-         await this.x2_handle.drawAxis(layer, "", -1);
+         pr1 = this.x2_handle.drawAxis(layer, "", -1);
       }
 
       if (second_y) {
@@ -521,10 +522,10 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.configureAxis("y2axis", this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
          this.y2_handle.assignFrameMembers(this,"y2");
 
-         await this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
+         pr2 = this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
       }
 
-      return true;
+      return Promise.all([pr1,pr2]);
    }
 
    /** @summary Return functions to create x/y points based on coordinates

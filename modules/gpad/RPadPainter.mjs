@@ -1029,10 +1029,11 @@ class RPadPainter extends RObjectPainter {
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * @returns {Promise} with pad painter*/
-   async redrawPadSnap(snap) {
+   redrawPadSnap(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
-      if (!snap || !snap.fPrimitives) return this;
+      if (!snap || !snap.fPrimitives)
+         return Promise.resolve(this);
 
       // for the moment only window size attributes are provided
       // let padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
@@ -1124,15 +1125,15 @@ class RPadPainter extends RObjectPainter {
 
       let prev_name = this.selectCurrentPad(this.this_pad_name);
 
-      await this.drawNextSnap(snap.fPrimitives);
-      this.selectCurrentPad(prev_name);
+      return this.drawNextSnap(snap.fPrimitives).then(() => {
+         this.selectCurrentPad(prev_name);
 
-      if (getActivePad() === this) {
-         let canp = this.getCanvPainter();
-         if (canp) canp.producePadEvent("padredraw", this);
-      }
-
-      return this;
+         if (getActivePad() === this) {
+            let canp = this.getCanvPainter();
+            if (canp) canp.producePadEvent("padredraw", this);
+         }
+         return this;
+      });
    }
 
    /** @summary Create image for the pad
