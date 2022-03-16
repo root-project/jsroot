@@ -334,31 +334,32 @@ async function draw(dom, obj, opt) {
       throw Error(`Function not specified to draw object ${type_info}`);
    }
 
-   async function performDraw() {
-      let painter;
+    function performDraw() {
+      let promise, painter;
       if (handle.direct == "v7") {
-         let v7h = await import('./gpad/RCanvasPainter.mjs');
-         painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
-         await v7h.ensureRCanvas(painter, handle.frame || false);
-         painter.redraw = handle.func;
-         await painter.redraw();
+         promise = import('./gpad/RCanvasPainter.mjs').then(v7h => {
+            painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
+            painter.redraw = handle.func;
+            return v7h.ensureRCanvas(painter, handle.frame || false);
+         }).then(() => painter.redraw());
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let v6h = await import('./gpad/TCanvasPainter.mjs');
-         await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
-         await painter.redraw();
+         promise = import('./gpad/TCanvasPainter.mjs')
+                           .then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
+                           .then(() => painter.redraw());
       } else {
-         painter = await handle.func(dom, obj, opt);
+         promise = handle.func(dom, obj, opt);
       }
 
-      if (!painter)
-          throw Error(`Fail to draw object ${type_info}`);
-
-      if ((typeof painter == 'object') && !painter.options)
-         painter.options = { original: opt || "" }; // keep original draw options
-
-       return painter;
+      return promise.then(p => {
+         if (!painter) painter = p;
+         if (!painter)
+             throw Error(`Fail to draw object ${type_info}`);
+         if ((typeof painter == 'object') && !painter.options)
+            painter.options = { original: opt || "" }; // keep original draw options
+         return painter;
+      });
    }
 
    if (typeof handle.func == 'function')
