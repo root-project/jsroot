@@ -295,9 +295,9 @@ function setDefaultDrawOpt(classname, opt) {
   * let file = await openFile("https://root.cern/js/files/hsimple.root");
   * let obj = await file.readObject("hpxpy;1");
   * await draw("drawing", obj, "colz;logx;gridx;gridy"); */
-async function draw(dom, obj, opt) {
+function draw(dom, obj, opt) {
    if (!obj || (typeof obj !== 'object'))
-      throw Error('not an object in draw call');
+      return Promise.reject(Error('not an object in draw call'));
 
    if (opt == 'inspect')
       return import('./hierarchy.mjs').then(h => h.drawInspector(dom, obj));
@@ -314,10 +314,10 @@ async function draw(dom, obj, opt) {
 
    // this is case of unsupported class, close it normally
    if (!handle)
-      throw Error(`Object of ${type_info} cannot be shown with draw`);
+      return Promise.reject(Error(`Object of ${type_info} cannot be shown with draw`));
 
    if (handle.dummy)
-      return null;
+      return Promise.resolve(null);
 
    if (handle.draw_field && obj[handle.draw_field])
       return draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
@@ -331,7 +331,7 @@ async function draw(dom, obj, opt) {
             return main_painter.performDrop(obj, "", null, opt);
       }
 
-      throw Error(`Function not specified to draw object ${type_info}`);
+      return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
    }
 
     function performDraw() {
@@ -365,34 +365,37 @@ async function draw(dom, obj, opt) {
    if (typeof handle.func == 'function')
       return performDraw();
 
+   let promise;
+
    if (handle.class && (typeof handle.class == 'function')) {
       // class coded as async function which returns class handle
       // simple extract class and access class.draw method
-      let cl = await handle.class();
-      handle.func = cl.draw;
+      promise = handle.class().then(cl => { handle.func = cl.draw; });
    } else if (handle.draw && (typeof handle.draw == 'function')) {
       // draw function without special class
-      handle.func = await handle.draw();
+      promise = handle.draw().then(h => { handle.func = h; });
    } else if (!handle.func || typeof handle.func !== 'string') {
-      throw Error(`Draw function or class not specified to draw ${type_info}`);
+      return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
    } else if (!handle.prereq && !handle.script) {
-      throw Error(`Prerequicities to load ${handle.func} are not specified`);
+      return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
    } else {
-      let v6 = await _ensureJSROOT();
-      if (handle.prereq)
-         await v6.require(handle.prereq);
-      if (handle.script)
-         await loadScript(handle.script);
-      await v6._complete_loading();
-      let func = findFunction(handle.func);
+      promise = _ensureJSROOT().then(v6 => {
+         let pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
+         return pr.then(() => {
+            if (handle.script)
+               return loadScript(handle.script);
+         }).then(() => v6._complete_loading());
+      }).then(() => {
+         let func = findFunction(handle.func);
 
-      if (!func || (typeof func != 'function'))
-         throw Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`);
+         if (!func || (typeof func != 'function'))
+            return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
-      handle.func = func;
+         handle.func = func;
+      });
    }
 
-   return performDraw();
+   return promise.then(() => performDraw());
 }
 
 /** @summary Redraw object in specified HTML element with given draw options.
