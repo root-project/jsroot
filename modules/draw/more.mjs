@@ -18,8 +18,6 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { addMoveHandler, DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from '../painter.mjs';
 
-import { draw } from '../draw.mjs';
-
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
@@ -103,20 +101,28 @@ function drawText() {
 
 /** @summary Draw TLine
   * @private */
-function drawLine() {
+function drawTLine(dom, obj) {
 
-   let line = this.getObject(),
-       lineatt = new TAttLineHandler(line),
-       kLineNDC = BIT(14),
-       isndc = line.TestBit(kLineNDC);
+   let painter = new ObjectPainter(dom, obj);
 
-   // create svg:g container for line drawing
-   this.createG();
+   painter.redraw = function() {
+      const kLineNDC = BIT(14),
+            line = this.getObject(),
+            lineatt = new TAttLineHandler(line),
+            isndc = line.TestBit(kLineNDC);
 
-   this.draw_g
-       .append("svg:path")
-       .attr("d", `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},${this.axisToSvg("y", line.fY2, isndc)}`)
-       .call(lineatt.func);
+      // create svg:g container for line drawing
+      this.createG();
+
+      this.draw_g
+          .append("svg:path")
+          .attr("d", `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},${this.axisToSvg("y", line.fY2, isndc)}`)
+          .call(lineatt.func);
+
+      return this;
+   }
+
+   return ensureTCanvas(painter, false).then(() => painter.redraw());
 }
 
 /** @summary Draw TPolyLine
@@ -1648,7 +1654,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   line.fLineStyle = 2;
                   ratio.fGridlines.push(line);
                   if (currpad === undefined) currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
-                  arr.push(draw(this.getDom(), line));
+                  arr.push(drawTLine(this.getDom(), line));
                }
             });
          }
@@ -1689,5 +1695,5 @@ class TRatioPlotPainter extends ObjectPainter {
 
 export { TGraphPolargramPainter, TGraphPolarPainter,
          TSplinePainter, TRatioPlotPainter, TWebPaintingPainter,
-         drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox,
+         drawText, drawTLine, drawPolyLine, drawEllipse, drawPie, drawBox,
          drawMarker, drawPolyMarker, drawArrow, drawJSImage };

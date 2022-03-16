@@ -705,47 +705,50 @@ class TCanvasPainter extends TPadPainter {
  * @param {Object} painter  - painter object to process
  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
  * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
-async function ensureTCanvas(painter, frame_kind) {
+function ensureTCanvas(painter, frame_kind) {
    if (!painter)
-      throw Error('Painter not provided in ensureTCanvas');
+      return Promise.reject(Error('Painter not provided in ensureTCanvas'));
 
    // simple check - if canvas there, can use painter
    let svg_c = painter.getCanvSvg(),
-       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
+       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+       pr = Promise.resolve(true);
 
    if (svg_c.empty())
-      await TCanvasPainter.draw(painter.getDom(), null, noframe);
+      pr = TCanvasPainter.draw(painter.getDom(), null, noframe);
 
-   if ((frame_kind !== false) &&  painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
-      directDrawTFrame(painter.getDom(), null, frame_kind);
+   return pr.then(() => {
+      if ((frame_kind !== false) &&  painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
+         directDrawTFrame(painter.getDom(), null, frame_kind);
 
-   painter.addToPadPrimitives();
-   return painter;
+      painter.addToPadPrimitives();
+      return painter;
+   });
 }
 
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
-async function drawTPadSnapshot(dom, snap /*, opt*/) {
+function drawTPadSnapshot(dom, snap /*, opt*/) {
    let can = create("TCanvas"),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();
 
-   await painter.syncDraw(true);
-   await painter.redrawPadSnap(snap);
-   painter.confirmDraw();
-   painter.showPadButtons();
-   return painter;
+   return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
+      painter.confirmDraw();
+      painter.showPadButtons();
+      return painter;
+   });
 }
 
 /** @summary draw TGaxis object */
-async function drawTGaxis(dom, obj, opt) {
+function drawTGaxis(dom, obj, opt) {
    let painter = new TAxisPainter(dom, obj, false);
    painter.disable_zooming = true;
-   await ensureTCanvas(painter, false);
-   if (opt) painter.convertTo(opt);
-   await painter.redraw();
-   return painter;
+   return ensureTCanvas(painter, false).then(() => {
+      if (opt) painter.convertTo(opt);
+      return painter.redraw();
+   }).then(() => painter);
 }
 
 /** @summary draw TGaxis object */
