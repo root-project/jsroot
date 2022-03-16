@@ -2398,13 +2398,15 @@ class TGraphPainter extends ObjectPainter {
       if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
          return Promise.resolve(this);
 
-      let func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
+      let pp = this.getPadPainter(),
+          func = graph.fFunctions.arr[indx],
+          opt = graph.fFunctions.opt[indx];
 
       //  required for stats filling
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      return draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
+      return pp.drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
    /** @summary Draw TGraph */
@@ -2420,7 +2422,7 @@ class TGraphPainter extends ObjectPainter {
 
       if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
          let histo = painter.createHistogram();
-         promise = draw(dom, histo, painter.options.Axis).then(hist_painter => {
+         promise = TH1Painter.draw(dom, histo, painter.options.Axis).then(hist_painter => {
             if (hist_painter) {
                painter.axes_draw = true;
                if (!painter._own_histogram) painter.$primary = true;

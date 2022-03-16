@@ -602,5 +602,4 @@ async function drawRooPlot(dom, plot) {
 }
 
 
-
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot };
