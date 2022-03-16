@@ -2590,10 +2590,10 @@ function treeDraw(tree, args) {
 /** @summary Performs generic I/O test for all branches in the TTree
   * @desc Used when "testio" draw option for TTree is specified
   * @private */
-async function treeIOTest(tree, args) {
+function treeIOTest(tree, args) {
    let branches = [], names = [], nchilds = [];
 
-   function CollectBranches(obj, prntname = "") {
+   function collectBranches(obj, prntname = "") {
       if (!obj || !obj.fBranches) return 0;
 
       let cnt = 0;
@@ -2606,7 +2606,7 @@ async function treeIOTest(tree, args) {
          nchilds.push(0);
          let pos = nchilds.length - 1;
          cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-         let nchld = CollectBranches(br, name);
+         let nchld = collectBranches(br, name);
 
          cnt += nchld;
          nchilds[pos] = nchld;
@@ -2615,11 +2615,14 @@ async function treeIOTest(tree, args) {
       return cnt;
    }
 
-   let numleaves = CollectBranches(tree);
+   let numleaves = collectBranches(tree);
 
    names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
 
-   for (let nbr = 0; nbr < branches.length; ++nbr) {
+   function testBranch(nbr) {
+
+      if (nbr >= branches.length)
+         return Promise.resolve(true);
 
       let selector = new TSelector;
 
@@ -2645,7 +2648,7 @@ async function treeIOTest(tree, args) {
       if (object_class) skip_branch = (nchilds[nbr] > 100);
 
       if (skip_branch || (num <= 0))
-         continue;
+         return testBranch(nbr+1);
 
       let drawargs = { numentries: 10 },
           first = br.fFirstEntry || 0,
@@ -2664,12 +2667,14 @@ async function treeIOTest(tree, args) {
       if (args.showProgress)
          args.showProgress(`br ${nbr}/${branches.length} ${br.fName}`);
 
-      await treeProcess(tree, selector, drawargs);
+      return treeProcess(tree, selector, drawargs).then(() => testBranch(nbr+1));
    }
 
-   if (args.showProgress) args.showProgress();
+   return testBranch(0).then(() => {
+      if (args.showProgress) args.showProgress();
 
-   return names;
+      return names;
+   });
 }
 
 

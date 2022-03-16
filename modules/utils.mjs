@@ -102,10 +102,10 @@ function tryOpenOpenUI(sources, args) {
 
 // return Promise let loader wait before dependent source will be invoked
 
-async function loadOpenui5(args) {
+function loadOpenui5(args) {
    // very simple - openui5 was loaded before and will be used as is
    if (typeof sap == 'object')
-      return sap;
+      return Promise.resolve(sap);
 
    if (!args) args = {};
 

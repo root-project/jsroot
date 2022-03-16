@@ -343,31 +343,31 @@ function getDocument() {
 /** @summary Inject javascript code
   * @desc Replacement for eval
   * @returns {Promise} */
-async function injectCode(code) {
+function injectCode(code) {
    if (nodejs) {
-      let tmp = await import('tmp'),
-          fs = await import('fs'),
-          name = tmp.tmpNameSync() + ".js";
-      fs.writeFileSync(name, code);
-      try {
-         await import("file://" + name);
-      } finally {
-         fs.unlinkSync(name);
-      }
+      let name, fs;
+      return import('tmp').then(tmp => {
+         name = tmp.tmpNameSync() + ".js";
+         return import('fs');
+      }).then(_fs => {
+         fs = _fs;
+         fs.writeFileSync(name, code);
+         return import("file://" + name);
+      }).finally(() => fs.unlinkSync(name));
    } else if (typeof document !== 'undefined') {
 
       // check if code already loaded - to avoid duplication
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (scripts[n].innerHTML == code)
-            return true;
+            return Promise.resolve(true);
 
       let element = document.createElement("script");
       element.setAttribute("type", "text/javascript");
       element.innerHTML = code;
       document.head.appendChild(element);
    }
-
+   return Promise.resolve(true);
 }
 
 /** @summary Load script or CSS file into the browser
