@@ -1445,7 +1445,7 @@ class PointsCreator {
    }
 
    /** @summary Create points */
-   async createPoints(args) {
+   createPoints(args) {
 
       if (typeof args !== 'object')
          args = { color: args };
@@ -1468,7 +1468,7 @@ class PointsCreator {
 
       // this is plain creation of points, no need for texture loading
       if (k !== 1)
-         return makePoints(new PointsMaterial({ size: 3*this.scale * k, color: args.color }));
+         return Promise.resolve(makePoints(new PointsMaterial({ size: 3*this.scale * k, color: args.color })));
 
       let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
           w = handler.fill ? 1 : 7,
@@ -1476,26 +1476,25 @@ class PointsCreator {
                     `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                     `</svg>`,
           dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata)),
-          texture;
+          promise;
 
       if (isNodeJs()) {
-         let handle = await import('canvas');
-
-         let img = await handle.default.loadImage(dataUrl);
-
-         const canvas = handle.default.createCanvas(64, 64);
-         const ctx = canvas.getContext('2d');
-
-         ctx.drawImage(img, 0, 0, 64, 64);
-         texture = new CanvasTexture(canvas);
+         promise = import('canvas').then(handle => {
+            return handle.default.loadImage(dataUrl).then(img => {
+               const canvas = handle.default.createCanvas(64, 64);
+               const ctx = canvas.getContext('2d');
+               ctx.drawImage(img, 0, 0, 64, 64);
+               return new CanvasTexture(canvas);
+            });
+         });
       } else {
-         texture = await new Promise((resolveFunc, rejectFunc) => {
+         promise = new Promise((resolveFunc, rejectFunc) => {
             let loader = new TextureLoader();
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }
 
-      return makePoints(new PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }));
+      return promise.then(texture => makePoints(new PointsMaterial({ size: 3*this.scale, map: texture, transparent: true })));
    }
 
 } // class PointsCreator

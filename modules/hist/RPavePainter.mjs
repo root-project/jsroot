@@ -42,7 +42,8 @@ class RPavePainter extends RObjectPainter {
 
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
-      if (!visible) return Promise.resolve(this);
+      if (!visible)
+         return Promise.resolve(this);
 
       this.createv7AttLine("border_");
 
@@ -148,11 +149,9 @@ class RPavePainter extends RObjectPainter {
    }
 
    /** @summary draw RPave object */
-   static async draw(dom, pave, opt) {
+   static draw(dom, pave, opt) {
       let painter = new RPavePainter(dom, pave, opt, "pave");
-      await ensureRCanvas(painter, false);
-      await painter.drawPave();
-      return painter;
+      return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 }
 
@@ -232,11 +231,9 @@ class RLegendPainter extends RPavePainter {
    }
 
    /** @summary draw RLegend object */
-   static async draw(dom, legend, opt) {
+   static draw(dom, legend, opt) {
       let painter = new RLegendPainter(dom, legend, opt, "legend");
-      await ensureRCanvas(painter, false);
-      await painter.drawPave();
-      return painter;
+      return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
 } // class RLegendPainter
@@ -277,10 +274,9 @@ class RPaveTextPainter extends RPavePainter {
    }
 
    /** @summary draw RPaveText object */
-   static async draw(dom, pave, opt) {
+   static draw(dom, pave, opt) {
       let painter = new RPaveTextPainter(dom, pave, opt, "pavetext");
-      await ensureRCanvas(painter, false);
-      return painter.drawPave();
+      return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
 } // class RPaveTextPainter
@@ -492,15 +488,13 @@ class RHistStatsPainter extends RPavePainter {
          this.v7SubmitRequest("stat", req, reply => this.updateStatistic(reply));
       }
 
-      this.drawPave();
+      return this.drawPave();
    }
 
    /** @summary draw RHistStats object */
-   static async draw(dom, stats, opt) {
+   static draw(dom, stats, opt) {
       let painter = new RHistStatsPainter(dom, stats, opt, stats);
-      await ensureRCanvas(painter, false);
-      await painter.drawPave();
-      return painter;
+      return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
 } // class RHistStatsPainter

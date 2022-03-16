@@ -294,6 +294,8 @@ class RH1Painter extends RHistPainter {
                .attr("d", barsr)
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+
+       return Promise.resolve(true);
    }
 
    /** @summary Draw histogram as filled errors */
@@ -330,6 +332,8 @@ class RH1Painter extends RHistPainter {
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
                  .call(this.fillatt.func);
+
+      return Promise.resolve(true);
    }
 
    /** @summary Draw 1D histogram as SVG */
@@ -338,8 +342,10 @@ class RH1Painter extends RHistPainter {
       let pmain = this.getFramePainter(),
           rect = pmain.getFrameRect();
 
-      if (!this.draw_content || (rect.width <= 0) || (rect.height <= 0))
-         return this.removeG();
+      if (!this.draw_content || (rect.width <= 0) || (rect.height <= 0)) {
+         this.removeG()
+         return Promise.resolve(false);
+      }
 
       this.createHistDrawAttributes();
 
@@ -356,7 +362,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw histogram bins */
-   async drawHistBins(handle, funcs, width, height) {
+   drawHistBins(handle, funcs, width, height) {
       this.createG(true);
 
       let options = this.options,
@@ -622,8 +628,7 @@ class RH1Painter extends RHistPainter {
                     .call(this.fillatt.func);
       }
 
-      if (show_text)
-         await this.finishTextDrawing();
+      return show_text ? this.finishTextDrawing() : Promise.resolve(true);
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -967,17 +972,15 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw in 2d */
-   async draw2D(reason) {
+   draw2D(reason) {
       this.clear3DScene();
 
-      let res = await this.drawFrameAxes();
-      if (res)
-         res = await this.drawingBins(reason);
-      if (res) {
-         await this.draw1DBins();
-         res = await this.addInteractivity();
-      }
-      return res ? this : false;
+      return this.drawFrameAxes().then(res => {
+         return res ? this.drawingBins(reason) : false;
+      }).then(res => {
+         if (res)
+            return this.draw1DBins().then(() => this.addInteractivity());
+      }).then(() => this);
    }
 
    /** @summary Draw in 3d */
@@ -991,51 +994,50 @@ class RH1Painter extends RHistPainter {
       return this.callDrawFunc(reason);
    }
 
-   static async _draw(painter, opt) {
-      await ensureRCanvas(painter);
+   static _draw(painter, opt) {
+      return ensureRCanvas(painter).then(() => {
 
-      painter.setAsMainPainter();
+         painter.setAsMainPainter();
 
-      painter.options = { Hist: false, Bar: false, BarStyle: 0,
-                          Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
-                          Zero: false, Mark: false,
-                          Line: false, Fill: false, Lego: 0, Surf: 0,
-                          Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
-                          BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
+         painter.options = { Hist: false, Bar: false, BarStyle: 0,
+                             Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
+                             Zero: false, Mark: false,
+                             Line: false, Fill: false, Lego: 0, Surf: 0,
+                             Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
+                             BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
-      let d = new DrawOptions(opt);
-      if (d.check('R3D_', true))
-         painter.options.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
+         let d = new DrawOptions(opt);
+         if (d.check('R3D_', true))
+            painter.options.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
-      let kind = painter.v7EvalAttr("kind", "hist"),
-          sub = painter.v7EvalAttr("sub", 0),
-          has_main = !!painter.getMainPainter(),
-          o = painter.options;
+         let kind = painter.v7EvalAttr("kind", "hist"),
+             sub = painter.v7EvalAttr("sub", 0),
+             has_main = !!painter.getMainPainter(),
+             o = painter.options;
 
-      o.Text = painter.v7EvalAttr("drawtext", false);
-      o.BarOffset = painter.v7EvalAttr("baroffset", 0.);
-      o.BarWidth = painter.v7EvalAttr("barwidth", 1.);
-      o.second_x = has_main && painter.v7EvalAttr("secondx", false);
-      o.second_y = has_main && painter.v7EvalAttr("secondy", false);
+         o.Text = painter.v7EvalAttr("drawtext", false);
+         o.BarOffset = painter.v7EvalAttr("baroffset", 0.);
+         o.BarWidth = painter.v7EvalAttr("barwidth", 1.);
+         o.second_x = has_main && painter.v7EvalAttr("secondx", false);
+         o.second_y = has_main && painter.v7EvalAttr("secondy", false);
 
-      switch(kind) {
-         case "bar": o.Bar = true; o.BarStyle = sub; break;
-         case "err": o.Error = true; o.ErrorKind = sub; break;
-         case "p": o.Mark = true; break;
-         case "l": o.Line = true; break;
-         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-         default: o.Hist = true;
-      }
+         switch(kind) {
+            case "bar": o.Bar = true; o.BarStyle = sub; break;
+            case "err": o.Error = true; o.ErrorKind = sub; break;
+            case "p": o.Mark = true; break;
+            case "l": o.Line = true; break;
+            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+            default: o.Hist = true;
+         }
 
-      painter.scanContent();
+         painter.scanContent();
 
-      await painter.callDrawFunc();
-
-      return painter;
+         return painter.callDrawFunc();
+      });
    }
 
    /** @summary draw RH1 object */
-   static async draw(dom, histo, opt) {
+   static draw(dom, histo, opt) {
       return RH1Painter._draw(new RH1Painter(dom, histo), opt);
    }
 

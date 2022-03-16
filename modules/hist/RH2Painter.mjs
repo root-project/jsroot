@@ -792,8 +792,7 @@ class RH2Painter extends RH2Painter2D {
       this.updatePaletteDraw();
    }
 
-
-   async draw3D(reason) {
+   draw3D(reason) {
 
       this.mode3d = true;
 
@@ -803,7 +802,7 @@ class RH2Painter extends RH2Painter2D {
       if (reason == "resize") {
          if (is_main && main.resize3D()) main.render3D();
 
-         return this;
+         return Promise.resolve(this);
       }
 
       let zmult = 1.1;
@@ -824,21 +823,23 @@ class RH2Painter extends RH2Painter2D {
          main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2 });
       }
 
-      if (main.mode3d) {
-         await this.drawingBins(reason);
+      if (!main.mode3d)
+         return Promise.resolve(this);
+
+      return this.drawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
          this.draw3DBins();
          main.render3D();
          main.addKeysHandler();
-      }
 
-      return this;
+         return this;
+      });
    }
 
       /** @summary draw RH2 object */
-   static async draw(dom, obj, opt) {
+   static draw(dom, obj, opt) {
       // create painter and add it to canvas
       return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }

@@ -35,7 +35,6 @@ class RH1Painter extends RH1Painter2D {
       if (!main.mode3d)
          return Promise.resolve(this);
 
-
       return this.drawingBins(reason).then(() => {
 
          // called when bins received from server, must be reentrant
