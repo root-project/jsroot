@@ -55,7 +55,7 @@ const drawFuncs = { lst: [
    { name: "TGraph2DErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
    { name: "TGraphPolargram", icon: "img_graph", class: () => import_more().then(h => h.TGraphPolargramPainter), theonly: true },
    { name: "TGraphPolar", icon: "img_graph", class: () => import_more().then(h => h.TGraphPolarPainter), opt: ";F;L;P;PE", theonly: true },
-   { name: /^TGraph/, icon: "img_graph", class: () => import_more().then(h => h.TGraphPainter), opt: ";L;P" },
+   { name: /^TGraph/, icon: "img_graph", class: () => import('./hist2d/TGraphPainter.mjs').then(h => h.TGraphPainter), opt: ";L;P" },
    { name: "TEfficiency", icon: "img_graph", class: () => import('./hist/TEfficiencyPainter.mjs').then(h => h.TEfficiencyPainter), opt: ";AP" },
    { name: "TCutG", sameas: "TGraph" },
    { name: /^RooHist/, sameas: "TGraph" },

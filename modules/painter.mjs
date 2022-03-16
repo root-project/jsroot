@@ -1,5 +1,5 @@
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
 
 import { gStyle, loadScript, decodeUrl,
          browser, settings, constants, internals, isBatchMode, isNodeJs } from './core.mjs';
@@ -18,6 +18,67 @@ function detectRightButton(event) {
    if ('button' in event) return event.button === 2;
    return false;
 }
+
+
+/** @summary Add move handlers for drawn element
+  * @private */
+function addMoveHandler(painter, enabled) {
+
+   if (enabled === undefined) enabled = true;
+
+   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
+
+   if (!enabled) {
+      if (painter.draw_g.property("assigned_move")) {
+         let drag_move = d3_drag().subject(Object);
+         drag_move.on("start", null).on("drag", null).on("end", null);
+         painter.draw_g
+               .style("cursor", null)
+               .property("assigned_move", null)
+               .call(drag_move);
+      }
+      return;
+   }
+
+   if (painter.draw_g.property("assigned_move")) return;
+
+   let drag_move = d3_drag().subject(Object),
+      not_changed = true, move_disabled = false;
+
+   drag_move
+      .on("start", function(evnt) {
+         move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
+         if (move_disabled) return;
+         if (detectRightButton(evnt.sourceEvent)) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         let pos = d3_pointer(evnt, this.draw_g.node());
+         not_changed = true;
+         if (this.moveStart)
+            this.moveStart(pos[0], pos[1]);
+      }.bind(painter)).on("drag", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         not_changed = false;
+         if (this.moveDrag)
+            this.moveDrag(evnt.dx, evnt.dy);
+      }.bind(painter)).on("end", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         if (this.moveEnd)
+            this.moveEnd(not_changed);
+         let pp = this.getPadPainter();
+         if (pp) pp.selectObjectPainter(this);
+      }.bind(painter));
+
+   painter.draw_g
+          .style("cursor", "move")
+          .property("assigned_move", true)
+          .call(drag_move);
+}
+
 
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert
@@ -607,7 +668,7 @@ function loadJSDOM() {
 
 if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-export { detectRightButton, DrawOptions,
+export { detectRightButton, addMoveHandler, DrawOptions,
          TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
          getElementCanvPainter, getElementMainPainter, registerForResize,
          compressSVG, drawingJSON, readStyleFromURL,
