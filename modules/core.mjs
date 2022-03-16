@@ -5,7 +5,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "15/03/2022";
+let version_date = "16/03/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -13,7 +13,7 @@ let version_date = "15/03/2022";
 let version = version_id + " " + version_date;
 
 /** @summary Location of JSROOT scripts
-  * @desc Automatically detected and used to load other scripts */
+  * @desc Automatically detected and used to load other scripts or modules */
 let source_dir = "";
 
 let nodejs = false;

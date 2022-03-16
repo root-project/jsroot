@@ -1252,7 +1252,7 @@ function disposeThreejsObject(obj, only_childs) {
 /** @summary Create LineSegments mesh (or only geometry)
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
-function createLineSegments(arr, material, index, only_geometry) {
+function createLineSegments(arr, material, index = undefined, only_geometry = false) {
 
    let geom = new BufferGeometry();
 

@@ -548,22 +548,6 @@ function drawArrow() {
    addMoveHandler(this);
 }
 
-/** @summary Draw TRooPlot
-  * @private */
-function drawRooPlot(dom, plot) {
-
-   return draw(dom, plot._hist, "hist").then(hp => {
-
-      const drawNext = cnt => {
-         if (cnt >= plot._items.arr.length) return hp;
-         return draw(dom, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => drawNext(cnt+1));
-      };
-
-      return drawNext(0);
-   });
-}
-
-
 function proivdeEvalPar(func, jsroot_math) {
 
    func._math = jsroot_math;
@@ -4775,4 +4759,4 @@ class TRatioPlotPainter extends ObjectPainter {
 export { TF1Painter, TGraphPainter, TGraphPolargramPainter, TGraphPolarPainter, TMultiGraphPainter,
          TSplinePainter, TASImagePainter, TRatioPlotPainter, TGraphTimePainter, TEfficiencyPainter, TWebPaintingPainter,
          drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox,
-         drawMarker, drawPolyMarker, drawArrow, drawRooPlot, drawJSImage, drawTF2 };
+         drawMarker, drawPolyMarker, drawArrow, drawJSImage, drawTF2 };

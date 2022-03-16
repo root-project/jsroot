@@ -60,7 +60,7 @@ const drawFuncs = { lst: [
    { name: "TCutG", sameas: "TGraph" },
    { name: /^RooHist/, sameas: "TGraph" },
    { name: /^RooCurve/, sameas: "TGraph" },
-   { name: "RooPlot", icon: "img_canvas", draw: () => import_more().then(h => h.drawRooPlot) },
+   { name: "RooPlot", icon: "img_canvas", func: drawRooPlot },
    { name: "TRatioPlot", icon: "img_mgraph", class: () => import_more().then(h => h.TRatioPlotPainter), opt: "" },
    { name: "TMultiGraph", icon: "img_mgraph", class: () => import_more().then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./hierarchy.mjs').then(h => h.drawStreamerInfo) },
@@ -589,5 +589,18 @@ init_v7 = function(arg) {
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
+/** @summary Draw TRooPlot
+  * @private */
+async function drawRooPlot(dom, plot) {
 
-export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG };
+   let hp = await draw(dom, plot._hist, "hist");
+
+   for (let i = 0; i < plot._items.arr.length; ++i)
+      await draw(dom, plot._items.arr[i], plot._items.opt[i]);
+
+   return hp;
+}
+
+
+
+export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot };
