@@ -91,7 +91,7 @@ const drawFuncs = { lst: [
    { name: "TSliderBox", sameas: "TBox" },
    { name: "TMarker", icon: 'img_graph', draw: () => import_more().then(h => h.drawMarker), direct: true },
    { name: "TPolyMarker", icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyMarker), direct: true },
-   { name: "TASImage", icon: 'img_mgraph', class: () => import_more().then(h => h.TASImagePainter), opt: ";z" },
+   { name: "TASImage", icon: 'img_mgraph', draw: () => import('./draw/TASImage.mjs').then(h => h.drawTASImage), opt: ";z" },
    { name: "TJSImage", icon: 'img_mgraph', draw: () => import_more().then(h => h.drawJSImage), opt: ";scale;center" },
    { name: "TGeoVolume", icon: 'img_histo3d', class: () => import('./geom.mjs').then(h => h.TGeoPainter), get_expand: () => import('./geom.mjs').then(h => h.expandGeoObject), opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
    { name: "TEveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
