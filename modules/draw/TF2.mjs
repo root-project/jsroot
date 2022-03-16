@@ -2,7 +2,7 @@ import { createHistogram, BIT } from '../core.mjs';
 
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 
-import { proivdeEvalPar } from './more.mjs';
+import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
 
 import { DrawOptions, getElementMainPainter } from '../painter.mjs';
 

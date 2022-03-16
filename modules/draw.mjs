@@ -69,7 +69,7 @@ const drawFuncs = { lst: [
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
    { name: "kind:Text", icon: "img_text", func: drawRawText },
    { name: "TObjString", icon: "img_text", func: drawRawText },
-   { name: "TF1", icon: "img_tf1", class: () => import_more().then(h => h.TF1Painter) },
+   { name: "TF1", icon: "img_tf1", class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter) },
    { name: "TF2", icon: "img_tf2", draw: () => import('./draw/TF2.mjs').then(h => h.drawTF2) },
    { name: "TSpline3", icon: "img_tf1", class: () => import_more().then(h => h.TSplinePainter) },
    { name: "TSpline5", sameas: 'TSpline3' },

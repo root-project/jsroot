@@ -4,9 +4,11 @@ import { BIT, create, createHistogram } from '../core.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { TH2Painter } from '../hist2d/TH2Painter.mjs';
+import { TGraphPainter } from '../hist2d/TGraphPainter.mjs';
 
-import { draw } from '../draw.mjs';
+import { TF1Painter } from '../hist/TF1Painter.mjs';
+
+import { TH2Painter } from '../hist2d/TH2Painter.mjs';
 
 import { getTEfficiencyBoundaryFunc } from '../math.mjs';
 
@@ -176,7 +178,7 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length)
          return this;
 
-       return draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+       return TF1Painter.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
    }
 
    /** @summary Draw TEfficiency object */
@@ -209,7 +211,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
          let gr = painter.createGraph(eff);
          painter.fillGraph(gr, opt);
-         promise = draw(dom, gr, opt);
+         promise = TGraphPainter.draw(dom, gr, opt);
       } else {
          if (!opt) opt = "col";
          let hist = painter.createHisto(eff);
