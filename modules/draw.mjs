@@ -70,7 +70,7 @@ const drawFuncs = { lst: [
    { name: "kind:Text", icon: "img_text", func: drawRawText },
    { name: "TObjString", icon: "img_text", func: drawRawText },
    { name: "TF1", icon: "img_tf1", class: () => import_more().then(h => h.TF1Painter) },
-   { name: "TF2", icon: "img_tf2", draw: () => import_more().then(h => h.drawTF2) },
+   { name: "TF2", icon: "img_tf2", draw: () => import('./draw/TF2.mjs').then(h => h.drawTF2) },
    { name: "TSpline3", icon: "img_tf1", class: () => import_more().then(h => h.TSplinePainter) },
    { name: "TSpline5", sameas: 'TSpline3' },
    { name: "TEllipse", icon: 'img_graph', draw: () => import_more().then(h => h.drawEllipse), direct: true },
