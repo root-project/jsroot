@@ -50,7 +50,7 @@ const drawFuncs = { lst: [
    { name: "TGraphStruct" },
    { name: "TGraphNode" },
    { name: "TGraphEdge" },
-   { name: "TGraphTime", icon: "img_graph", class: () => import_more().then(h => h.TGraphTimePainter), opt: "once;repeat;first", theonly: true },
+   { name: "TGraphTime", icon: "img_graph", class: () => import('./hist/TGraphTimePainter.mjs').then(h => h.TGraphTimePainter), opt: "once;repeat;first", theonly: true },
    { name: "TGraph2D", icon: "img_graph", class: () => import('./hist/TGraph2DPainter.mjs').then(h => h.TGraph2DPainter), opt: ";P;PCOL", theonly: true },
    { name: "TGraph2DErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
    { name: "TGraphPolargram", icon: "img_graph", class: () => import_more().then(h => h.TGraphPolargramPainter), theonly: true },
