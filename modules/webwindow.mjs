@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, internals } from './core.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
 
 import { closeCurrentWindow, showProgress } from './gui/utils.mjs';
 

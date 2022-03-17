@@ -4,8 +4,6 @@ import { settings } from '../core.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
-import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-
 import { TH1Painter as TH1Painter2D  } from '../hist2d/TH1Painter.mjs';
 
 /** @summary Draw 1-D histogram in 3D
