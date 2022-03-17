@@ -15,7 +15,7 @@ import { REVISION, DoubleSide, FrontSide,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from './three.mjs';
 
-import { showProgress, ToolbarIcons } from './utils.mjs';
+import { showProgress, ToolbarIcons } from './gui/utils.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
@@ -28,7 +28,7 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { DrawOptions } from './painter.mjs';
 
-import { createMenu, closeMenu } from './menu.mjs';
+import { createMenu, closeMenu } from './gui/menu.mjs';
 
 import { addDrawFunc } from './draw.mjs';
 

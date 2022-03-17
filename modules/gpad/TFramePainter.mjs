@@ -14,7 +14,7 @@ import { getElementRect } from '../base/BasePainter.mjs';
 
 import { FontHandler } from '../base/FontHandler.mjs';
 
-import { createMenu, closeMenu } from '../menu.mjs';
+import { createMenu, closeMenu } from '../gui/menu.mjs';
 
 import { getActivePad, getAbsPosInCanvas, detectRightButton } from '../painter.mjs';
 

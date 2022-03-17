@@ -4,7 +4,7 @@ import { settings, create, parse, registerMethods, isBatchMode } from '../core.m
 
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 
-import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../utils.mjs';
+import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../gui/utils.mjs';
 
 import { GridDisplay } from '../display.mjs';
 

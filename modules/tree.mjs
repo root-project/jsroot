@@ -929,7 +929,7 @@ class TDrawSelector extends TSelector {
    ShowProgress(value) {
       if (typeof document == 'undefined' || isBatchMode()) return;
 
-      import('./utils.mjs').then(utils => {
+      import('./gui/utils.mjs').then(utils => {
 
          if ((value === undefined) || !Number.isFinite(value))
             return utils.showProgress();

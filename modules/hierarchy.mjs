@@ -6,7 +6,7 @@ import { select as d3_select } from './d3.mjs';
 
 import { openFile } from './io.mjs';
 
-import { showProgress, ToolbarIcons } from './utils.mjs';
+import { showProgress, ToolbarIcons } from './gui/utils.mjs';
 
 import { getRGBfromTColor } from './base/colors.mjs';
 
@@ -16,7 +16,7 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 
 import { loadJSDOM, getElementMainPainter, registerForResize, cleanup } from './painter.mjs';
 
-import { createMenu } from './menu.mjs';
+import { createMenu } from './gui/menu.mjs';
 
 import { produceLegend } from './hist/TPavePainter.mjs';
 

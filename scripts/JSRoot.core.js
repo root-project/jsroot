@@ -123,7 +123,7 @@ function v6_require(need) {
             return globalThis.JSROOT;
          }));
       else if (name == "openui5")
-         arr.push(import("../modules/utils.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
+         arr.push(import("../modules/gui/utils.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
       else if (name.indexOf(".js") >= 0)
          arr.push(import("../modules/core.mjs").then(handle => handle.loadScript(name)));
    });

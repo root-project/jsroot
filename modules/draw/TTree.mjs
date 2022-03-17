@@ -12,7 +12,7 @@ import { BasePainter } from '../base/BasePainter.mjs';
 
 import { draw, redraw } from '../draw.mjs';
 
-import { showProgress } from '../utils.mjs';
+import { showProgress } from '../gui/utils.mjs';
 
 
 /** @summary Create painter to perform tree drawing on server side

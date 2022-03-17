@@ -13,13 +13,13 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { createMenu, closeMenu } from '../menu.mjs';
+import { createMenu, closeMenu } from '../gui/menu.mjs';
 
 import { DrawOptions, registerForResize,
          selectActivePad, getActivePad, getAbsPosInCanvas,
          compressSVG } from '../painter.mjs';
 
-import { ToolbarIcons } from '../utils.mjs';
+import { ToolbarIcons } from '../gui/utils.mjs';
 
 
 function getButtonSize(handler, fact) {

@@ -14,7 +14,7 @@ import { DrawOptions, registerForResize, selectActivePad,
 
 import { BrowserLayout } from '../display.mjs';
 
-import { createMenu, closeMenu } from '../menu.mjs';
+import { createMenu, closeMenu } from '../gui/menu.mjs';
 
 import { PadButtonsHandler } from './TPadPainter.mjs';
 

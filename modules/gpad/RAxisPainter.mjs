@@ -7,7 +7,7 @@ import { select as d3_select, pointer as d3_pointer,
 
 import { AxisPainterMethods, chooseTimeFormat } from './TAxisPainter.mjs';
 
-import { createMenu } from '../menu.mjs';
+import { createMenu } from '../gui/menu.mjs';
 
 import { addDragHandler } from './TFramePainter.mjs';
 

@@ -11,7 +11,7 @@ import { ObjectPainter } from './base/ObjectPainter.mjs';
 import { detectRightButton, getElementCanvPainter, selectActivePad, compressSVG,
          cleanup, resize } from './painter.mjs';
 
-import { createMenu } from './menu.mjs';
+import { createMenu } from './gui/menu.mjs';
 
 
 /**

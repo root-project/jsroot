@@ -2,7 +2,7 @@
 
 import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, internals } from './core.mjs';
 
-import { closeCurrentWindow, showProgress } from './utils.mjs';
+import { closeCurrentWindow, showProgress } from './gui/utils.mjs';
 
 /**
  * @summary Class emulating web socket with long-poll http requests

@@ -10,7 +10,7 @@ import { addDragHandler } from '../gpad/TFramePainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
-import { createMenu } from '../menu.mjs';
+import { createMenu } from '../gui/menu.mjs';
 
 /** @summary draw RText object
   * @private */
