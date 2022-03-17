@@ -6,13 +6,13 @@ import { kTString, kObject, kAnyP } from '../io.mjs';
 
 import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
 
-import { registerForResize, cleanup, resize } from '../painter.mjs';
+import { cleanup, resize } from '../painter.mjs';
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
 import { draw, redraw } from '../draw.mjs';
 
-import { showProgress } from '../gui/utils.mjs';
+import { showProgress, registerForResize } from '../gui/utils.mjs';
 
 
 /** @summary Show TTree::Draw progress during processing */
