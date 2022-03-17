@@ -12,7 +12,7 @@ import { getElementCanvPainter, selectActivePad, compressSVG, cleanup, resize } 
 
 import { createMenu } from './menu.mjs';
 
-import { detectRightButton } from './utils.mjs';
+import { detectRightButton, injectStyle } from './utils.mjs';
 
 
 /**
@@ -705,12 +705,68 @@ class FlexibleDisplay extends MDIDisplay {
           dom = this.selectDom(),
           top = dom.select(".jsroot_flex_top");
 
+      if (this.cnt == 0) injectStyle(`
+.jsroot_flex_top {
+   overflow: auto;
+   position: relative;
+   height: 100%;
+   width: 100%;
+}
+
+.jsroot_flex_btn {
+   float: right;
+   padding: 0;
+   width: 1.4em;
+   text-align: center;
+   font-size: 10px;
+   margin-top: 2px;
+   margin-right: 4px;
+}
+
+.jsroot_flex_header {
+   height: 23px;
+   overflow: hidden;
+   background-color: lightblue;
+}
+
+.jsroot_flex_header p {
+   margin: 1px;
+   float: left;
+   font-size: 14px;
+   padding-left: 5px;
+}
+
+.jsroot_flex_draw {
+   overflow: hidden;
+   width: 100%;
+   height: calc(100% - 24px);
+}
+
+.jsroot_flex_frame {
+   border: 1px solid black;
+   box-shadow: 1px 1px 2px 2px #aaa;
+   background: white;
+}
+
+.jsroot_flex_resize {
+   position: absolute;
+   right: 2px;
+   bottom: 2px;
+   overflow: hidden;
+   cursor: nwse-resize;
+}
+
+.jsroot_flex_resizable_helper {
+   border: 2px dotted #00F;
+}`, dom.node());
+
       if (top.empty())
          top = dom.append("div").classed("jsroot_flex_top", true);
 
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
+
 
       main.html(`<div class="jsroot_flex_header"><p>${title}</p></div>
                  <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
@@ -1029,6 +1085,64 @@ class BrowserLayout {
                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
       if (with_browser) main.append("div").classed("jsroot_browser", true);
+
+      injectStyle(`
+.jsroot_draw_area {
+   background-color: #E6E6FA;
+   overflow: hidden;
+   margin: 0;
+   border: 0;
+}
+.jsroot_browser_title {
+   font-family: Verdana;
+   font-size: 20px;
+}
+.jsroot_browser_btns {
+   pointer-events: all;
+   opacity: 0;
+   display:flex;
+   flex-direction: column;
+}
+.jsroot_browser_btns:hover {
+   opacity: 0.3;
+}
+.jsroot_browser_area {
+   background-color: #E6E6FA;
+   font-size: 12px;
+   font-family: Verdana;
+   pointer-events: all;
+   box-sizing: initial;
+}
+.jsroot_browser_area p {
+   margin-top: 5px;
+   margin-bottom: 5px;
+   white-space: nowrap;
+}
+.jsroot_browser_hierarchy {
+   flex: 1;
+   margin-top: 2px;
+}
+.jsroot_status_area {
+   background-color: #E6E6FA;
+   overflow: hidden;
+   font-size: 12px;
+   font-family: Verdana;
+   pointer-events: all;
+}
+.jsroot_float_browser {
+   border: solid 3px white;
+}
+.jsroot_browser_resize {
+   position: absolute;
+   right: 3px;
+   bottom: 3px;
+   margin-bottom: 0px;
+   margin-right: 0px;
+   opacity: 0.5;
+   cursor: se-resize;
+}
+
+`, main.node());
    }
 
    /** @summary Create buttons in the layout */
