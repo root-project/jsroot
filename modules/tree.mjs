@@ -8,7 +8,7 @@ import { kChar, kShort, kInt, kFloat,
          kUChar, kUShort, kUInt,
          kLong64, kULong64, kBool, kFloat16,
          kOffsetL, kOffsetP, kObject, kAny, kObjectp, kTString,
-         kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
+         kStreamer, kStreamLoop, kSTLp, kSTL,
          R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 
 import * as jsroot_math from './math.mjs';
@@ -926,46 +926,7 @@ class TDrawSelector extends TSelector {
    }
 
    /** @summary Show progress */
-   ShowProgress(value) {
-      if (typeof document == 'undefined' || isBatchMode()) return;
-
-      import('./gui/utils.mjs').then(utils => {
-
-         if ((value === undefined) || !Number.isFinite(value))
-            return utils.showProgress();
-
-         if (this.last_progress !== value) {
-            let diff = value - this.last_progress;
-            if (!this.aver_diff) this.aver_diff = diff;
-            this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
-         }
-
-         let ndig = 0;
-         if (this.aver_diff <= 0) ndig = 0; else
-            if (this.aver_diff < 0.0001) ndig = 3; else
-               if (this.aver_diff < 0.001) ndig = 2; else
-                  if (this.aver_diff < 0.01) ndig = 1;
-
-         let main_box = document.createElement("p"),
-            text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
-            selector = this;
-
-         main_box.appendChild(text_node);
-         main_box.title = "Click on element to break drawing";
-
-         main_box.onclick = function() {
-            if (++selector._break < 3) {
-               main_box.title = "Tree draw will break after next I/O operation";
-               return text_node.nodeValue = "Breaking ... ";
-            }
-            selector.Abort();
-            utils.showProgress();
-         };
-
-         utils.showProgress(main_box);
-         this.last_progress = value;
-      });
-   }
+   ShowProgress(/*value*/) { }
 
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {

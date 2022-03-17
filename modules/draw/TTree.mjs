@@ -1,10 +1,10 @@
-import { internals, httpRequest } from '../core.mjs';
+import { internals, httpRequest, isBatchMode } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 
 import { kTString, kObject, kAnyP } from '../io.mjs';
 
-import { kClonesNode, kSTLNode, treeDraw, treeIOTest } from '../tree.mjs';
+import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
 
 import { registerForResize, cleanup, resize } from '../painter.mjs';
 
@@ -13,6 +13,46 @@ import { BasePainter } from '../base/BasePainter.mjs';
 import { draw, redraw } from '../draw.mjs';
 
 import { showProgress } from '../gui/utils.mjs';
+
+
+/** @summary Show TTree::Draw progress during processing */
+TDrawSelector.prototype.ShowProgress = function(value) {
+   if ((typeof document == 'undefined') || isBatchMode()) return;
+
+   if ((value === undefined) || !Number.isFinite(value))
+      return showProgress();
+
+   if (this.last_progress !== value) {
+      let diff = value - this.last_progress;
+      if (!this.aver_diff) this.aver_diff = diff;
+      this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
+   }
+
+   let ndig = 0;
+   if (this.aver_diff <= 0) ndig = 0; else
+      if (this.aver_diff < 0.0001) ndig = 3; else
+         if (this.aver_diff < 0.001) ndig = 2; else
+            if (this.aver_diff < 0.01) ndig = 1;
+
+   let main_box = document.createElement("p"),
+      text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
+      selector = this;
+
+   main_box.appendChild(text_node);
+   main_box.title = "Click on element to break drawing";
+
+   main_box.onclick = function() {
+      if (++selector._break < 3) {
+         main_box.title = "Tree draw will break after next I/O operation";
+         return text_node.nodeValue = "Breaking ... ";
+      }
+      selector.Abort();
+      showProgress();
+   };
+
+   showProgress(main_box);
+   this.last_progress = value;
+}
 
 
 /** @summary Create painter to perform tree drawing on server side
@@ -268,8 +308,6 @@ function drawTreePlayerKey(hpainter, itemname) {
 function drawLeafPlayer(hpainter, itemname) {
    return drawTreePlayer(hpainter, itemname, false, true);
 }
-
-
 
 /** @summary function called from draw()
   * @desc just envelope for real TTree::Draw method which do the main job
