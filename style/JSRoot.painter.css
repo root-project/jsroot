@@ -151,19 +151,6 @@
    overflow: hidden;
 }
 
-
-.jsroot_fastcmd_btn {
-   height: 32px;
-   width: 32px;
-   display: inline-block;
-   margin: 2px;
-   padding: 2px;
-   background-position: left 2px top 2px;
-   background-repeat: no-repeat;
-   background-size: 24px 24px;
-   border-color: inherit;
-}
-
 .jsroot_drag_area {
    background-color: #007fff;
 }
@@ -175,62 +162,3 @@
     background-color: white;
 }
 
-/* separator style, used for browser and new grid layout */
-
-.jsroot_separator {
-   pointer-events: all;
-   border: 0;
-   margin: 0;
-   padding: 0;
-}
-
-.jsroot_vline:after {
-    content:"";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    border-left: 1px dotted #ff0000;
-}
-
-.jsroot_hline:after {
-    content:"";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    border-top: 1px dotted #ff0000;
-}
-
-.jsroot_h_separator {
-   cursor: ns-resize;
-   background-color: azure;
-}
-
-.jsroot_v_separator {
-   cursor: ew-resize;
-   background-color: azure;
-}
-
-.jsroot_status_label {
-   margin: 3px;
-   margin-left: 5px;
-   font-size: 14px;
-   vertical-align: middle;
-   white-space: nowrap;
-}
-
-.jsroot .canvas_menu {
-    float: left;
-    display: block;
-    text-align: center;
-    padding: 0px 5px;
-    text-decoration: none;
-    font-size: 17px;
-    margin: 2px;
-}
-
-.jsroot .canvas_menu:hover {
-    background-color: #ddd;
-    color: black;
-}

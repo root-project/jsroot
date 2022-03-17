@@ -204,7 +204,8 @@ class GridDisplay extends MDIDisplay {
       this.use_separarators = !kind || (kind.indexOf("x")<0);
       this.simple_layout = false;
 
-      this.selectDom().style('overflow','hidden');
+      let dom = this.selectDom();
+      dom.style('overflow','hidden');
 
       if (kind === "simple") {
          this.simple_layout = true;
@@ -283,8 +284,33 @@ class GridDisplay extends MDIDisplay {
 
       if (sizes && (sizes.length!==num)) sizes = undefined;
 
-      if (!this.simple_layout)
-         this.createGroup(this, this.selectDom(), num, arr, sizes);
+      if (!this.simple_layout) {
+         injectStyle(`
+.jsroot_vline:after {
+    content:"";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dotted #ff0000;
+}
+.jsroot_hline:after {
+    content:"";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dotted #ff0000;
+}
+.jsroot_separator {
+   pointer-events: all;
+   border: 0;
+   margin: 0;
+   padding: 0;
+}
+`, dom.node());
+         this.createGroup(this, dom, num, arr, sizes);
+      }
    }
 
    /** @summary Create frames group
@@ -1141,7 +1167,27 @@ class BrowserLayout {
    opacity: 0.5;
    cursor: se-resize;
 }
-
+.jsroot_separator {
+   pointer-events: all;
+   border: 0;
+   margin: 0;
+   padding: 0;
+}
+.jsroot_h_separator {
+   cursor: ns-resize;
+   background-color: azure;
+}
+.jsroot_v_separator {
+   cursor: ew-resize;
+   background-color: azure;
+}
+.jsroot_status_label {
+   margin: 3px;
+   margin-left: 5px;
+   font-size: 14px;
+   vertical-align: middle;
+   white-space: nowrap;
+}
 `, main.node());
    }
 
