@@ -1,7 +1,7 @@
 
 import { settings, isBatchMode, gStyle } from '../core.mjs';
 
-import { floatToString } from '../painter.mjs';
+import { floatToString } from '../base/BasePainter.mjs';
 
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 

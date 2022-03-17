@@ -7,15 +7,13 @@ import { color as d3_color, pointer as d3_pointer, select as d3_select } from '.
 
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 
-import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
 
 import { ObjectPainter, selectActivePad, getActivePad  } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
-
-import { DrawOptions, compressSVG } from '../painter.mjs';
 
 import { ToolbarIcons, registerForResize } from '../gui/utils.mjs';
 

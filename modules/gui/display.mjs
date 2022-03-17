@@ -4,11 +4,9 @@ import { select as d3_select, drag as d3_drag } from '../d3.mjs';
 
 import { browser, internals, toJSON } from '../core.mjs';
 
-import { BasePainter } from '../base/BasePainter.mjs';
+import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 
-import { getElementCanvPainter, selectActivePad, ObjectPainter } from '../base/ObjectPainter.mjs';
-
-import { compressSVG, cleanup, resize } from '../painter.mjs';
+import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { createMenu } from './menu.mjs';
 

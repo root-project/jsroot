@@ -3,9 +3,7 @@
 
 export * from './core.mjs';
 
-export { cleanup } from './painter.mjs';
-
-export { drawingJSON } from './base/ObjectPainter.mjs';
+export { drawingJSON, cleanup, resize } from './base/ObjectPainter.mjs';
 
 export { loadOpenui5, registerForResize } from './gui/utils.mjs';
 

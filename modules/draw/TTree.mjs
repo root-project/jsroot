@@ -6,9 +6,9 @@ import { kTString, kObject, kAnyP } from '../io.mjs';
 
 import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
 
-import { cleanup, resize } from '../painter.mjs';
-
 import { BasePainter } from '../base/BasePainter.mjs';
+
+import { cleanup, resize } from '../base/ObjectPainter.mjs';
 
 import { draw, redraw } from '../draw.mjs';
 

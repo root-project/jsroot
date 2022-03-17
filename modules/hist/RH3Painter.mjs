@@ -5,7 +5,7 @@ import { REVISION,
          Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry,
          LineBasicMaterial, BufferAttribute, BufferGeometry } from '../three.mjs';
 
-import { floatToString, TRandom } from '../painter.mjs';
+import { floatToString, TRandom } from '../base/BasePainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 

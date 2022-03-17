@@ -10,9 +10,7 @@ import { getRGBfromTColor } from '../base/colors.mjs';
 
 import { BasePainter, getElementRect, _loadJSDOM } from '../base/BasePainter.mjs';
 
-import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
-
-import { cleanup } from '../painter.mjs';
+import { getElementMainPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { createMenu } from './menu.mjs';
 

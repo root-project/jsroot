@@ -4,11 +4,11 @@ import { BIT, settings, createHistogram } from '../core.mjs';
 
 import { REVISION, Color, LineBasicMaterial } from '../three.mjs';
 
+import { DrawOptions } from '../base/BasePainter.mjs';
+
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
-
-import { DrawOptions } from '../painter.mjs';
 
 import { TH2Painter } from './TH2Painter.mjs';
 

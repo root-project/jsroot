@@ -2,7 +2,7 @@ import { gStyle, settings, isBatchMode } from '../core.mjs';
 
 import { rgb as d3_rgb } from '../d3.mjs';
 
-import { floatToString, buildSvgPath } from '../painter.mjs';
+import { floatToString, buildSvgPath } from '../base/BasePainter.mjs';
 
 import { THistPainter } from './THistPainter.mjs';
 

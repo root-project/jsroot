@@ -1,6 +1,6 @@
 export { version, parse } from "../../modules/core.mjs";
 
-export { cleanup } from "../../modules/painter.mjs";
+export { cleanup } from "../../modules/base/ObjectPainter.mjs";
 
 export { TH1Painter } from "../../modules/hist/TH1Painter.mjs";
 

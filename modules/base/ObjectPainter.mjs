@@ -1583,6 +1583,44 @@ function getActivePad() {
 }
 
 
+/** @summary Check resize of drawn element
+  * @param {string|object} dom - id or DOM element
+  * @param {boolean|object} arg - options on how to resize
+  * @desc As first argument dom one should use same argument as for the drawing
+  * As second argument, one could specify "true" value to force redrawing of
+  * the element even after minimal resize
+  * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+  * @example
+  * resize("drawing", { width: 500, height: 200 } );
+  * resize(document.querySelector("#drawing"), true); */
+function resize(dom, arg) {
+   if (arg === true)
+      arg = { force: true };
+   else if (typeof arg !== 'object')
+      arg = null;
+   let done = false;
+   new ObjectPainter(dom).forEachPainter(painter => {
+      if (!done && (typeof painter.checkResize == 'function'))
+         done = painter.checkResize(arg);
+   });
+   return done;
+}
+
+
+/** @summary Safely remove all drawings from specified element
+  * @param {string|object} dom - id or DOM element
+  * @requires painter
+  * @example
+  * cleanup("drawing");
+  * cleanup(document.querySelector("#drawing")); */
+function cleanup(dom) {
+   let dummy = new ObjectPainter(dom), lst = [];
+   dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
+   lst.forEach(p => p.cleanup());
+   dummy.selectDom().html("");
+   return lst;
+}
+
 export { getElementCanvPainter, getElementMainPainter, drawingJSON,
-         selectActivePad, getActivePad,
-         ObjectPainter, drawRawText };
+         selectActivePad, getActivePad, cleanup, resize,
+         ObjectPainter, drawRawText  };

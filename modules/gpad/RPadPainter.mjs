@@ -7,11 +7,9 @@ import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
-import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
 
 import { selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
-
-import { DrawOptions, compressSVG } from '../painter.mjs';
 
 import { registerForResize } from '../gui/utils.mjs';
 

@@ -6,7 +6,7 @@ import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
 
 import { getElementMainPainter } from '../base/ObjectPainter.mjs';
 
-import { DrawOptions } from '../painter.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 
 function createTF2Histogram(func, hist = undefined) {
    let nsave = func.fSave.length, use_middle = true;

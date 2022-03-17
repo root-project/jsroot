@@ -4,9 +4,9 @@ import { gStyle, BIT, settings, constants, internals, create } from '../core.mjs
 
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 
-import { DrawOptions } from '../painter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 

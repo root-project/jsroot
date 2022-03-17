@@ -2,7 +2,7 @@
 
 import { internals } from '../core.mjs';
 
-import { DrawOptions } from '../painter.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 

@@ -8,9 +8,7 @@ import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../
 
 import { GridDisplay } from '../gui/display.mjs';
 
-import { cleanup, resize } from '../painter.mjs';
-
-import { selectActivePad } from '../base/ObjectPainter.mjs';
+import { cleanup, resize, selectActivePad } from '../base/ObjectPainter.mjs';
 
 import { TAxisPainter } from './TAxisPainter.mjs';
 

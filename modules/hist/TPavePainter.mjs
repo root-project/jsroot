@@ -4,17 +4,15 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3
 
 import { Prob } from '../base/math.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { floatToString } from '../base/BasePainter.mjs';
+
+import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { createMenu } from '../gui/menu.mjs';
-
-import { floatToString } from '../painter.mjs';
-
-import { getElementMainPainter } from '../base/ObjectPainter.mjs';
 
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 

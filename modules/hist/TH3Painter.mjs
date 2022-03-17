@@ -6,8 +6,7 @@ import { REVISION, Matrix4,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineBasicMaterial, SphereGeometry } from '../three.mjs';
 
-import { TRandom, floatToString } from '../painter.mjs';
-
+import { TRandom, floatToString } from '../base/BasePainter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 

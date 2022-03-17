@@ -6,7 +6,7 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
-import { TRandom, floatToString } from '../painter.mjs';
+import { TRandom, floatToString } from '../base/BasePainter.mjs';
 
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 

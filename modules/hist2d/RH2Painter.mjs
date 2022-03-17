@@ -6,7 +6,7 @@ import { rgb as d3_rgb } from '../d3.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { floatToString, TRandom } from '../painter.mjs';
+import { floatToString, TRandom } from '../base/BasePainter.mjs';
 
 import { RHistPainter } from './RHistPainter.mjs';
 

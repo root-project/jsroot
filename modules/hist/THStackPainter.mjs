@@ -1,8 +1,8 @@
 import { clone, create, createHistogram } from '../core.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 
-import { DrawOptions } from '../painter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TH1Painter } from './TH1Painter.mjs';
 

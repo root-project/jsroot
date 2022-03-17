@@ -103,14 +103,14 @@ function v6_require(need) {
       else if (name == "latex")
          arr.push(import("../modules/base/latex.mjs"));
       else if (name == "painter")
-         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/painter.mjs'),
-                    import('../modules/draw.mjs'), import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
+         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'),
+                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
             globalThis.d3 = res[0]; // assign global d3
             jsrp = {};
-            Object.assign(jsrp, res[1], res[2], res[3]);
+            Object.assign(jsrp, res[1], res[2], res[3], res[4]);
             globalThis.JSROOT.Painter = jsrp;
-            globalThis.JSROOT.BasePainter = res[4].BasePainter;
-            globalThis.JSROOT.ObjectPainter = res[5].ObjectPainter;
+            globalThis.JSROOT.BasePainter = res[3].BasePainter;
+            globalThis.JSROOT.ObjectPainter = res[4].ObjectPainter;
             return jsrp;
          }));
       else if (name == "hierarchy")

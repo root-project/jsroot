@@ -3,13 +3,13 @@
 
 import { create } from '../core.mjs';
 
+import { DrawOptions } from '../base/BasePainter.mjs';
+
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TH1Painter } from './TH1Painter.mjs';
 
 import { TGraphPainter } from './TGraphPainter.mjs';
-
-import { DrawOptions } from '../painter.mjs';
 
 /**
  * @summary Painter for TMultiGraph object.
