@@ -1541,7 +1541,7 @@ function before3DDraw(painter, obj) {
 
    let geop = painter.getMainPainter();
    if(!geop)
-      return import("./geom.mjs").then(hhh => hhh.drawDummy3DGeom(painter));
+      return import("./geom/geom.mjs").then(hhh => hhh.drawDummy3DGeom(painter));
    else if (typeof geop.drawExtras == 'function')
       return geop.drawExtras(obj);
 

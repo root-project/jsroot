@@ -25,7 +25,7 @@
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from '../modules/three.mjs';
 
-      import { build, produceRenderOrder } from '../modules/geom.mjs';
+      import { build, produceRenderOrder } from '../modules/geom/geom.mjs';
 
       let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null,
          d = decodeUrl();

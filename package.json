@@ -16,7 +16,8 @@
     "./tree": "./modules/tree.mjs",
     "./colors": "./modules/base/colors.mjs",
     "./hierarchy": "./modules/hierarchy.mjs",
-    "./latex": "./modules/latex.mjs"
+    "./latex": "./modules/latex.mjs",
+    "./geom": "./modules/geom/geom.mjs"
   },
   "contributors": [
     {

@@ -91,7 +91,7 @@ function v6_require(need) {
       else if (name == "tree")
          arr.push(import("../modules/tree.mjs"));
       else if (name == "geom")
-         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("../modules/geobase.mjs"), import("../modules/geom.mjs")).then(res => {
+         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("../modules/geom/geobase.mjs"), import("../modules/geom/geom.mjs")).then(res => {
             geo = {};
             Object.assign(geo, res[0], res[1]);
             globalThis.JSROOT.GEO = geo;
