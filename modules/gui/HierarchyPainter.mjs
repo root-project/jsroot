@@ -1,28 +1,28 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from './core.mjs';
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from '../core.mjs';
 
-import { select as d3_select } from './d3.mjs';
+import { select as d3_select } from '../d3.mjs';
 
-import { openFile } from './io.mjs';
+import { openFile } from '../io.mjs';
 
-import { getRGBfromTColor } from './base/colors.mjs';
+import { getRGBfromTColor } from '../base/colors.mjs';
 
-import { BasePainter, getElementRect } from './base/BasePainter.mjs';
+import { BasePainter, getElementRect } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from './base/ObjectPainter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { loadJSDOM, getElementMainPainter, cleanup } from './painter.mjs';
+import { loadJSDOM, getElementMainPainter, cleanup } from '../painter.mjs';
 
-import { createMenu } from './gui/menu.mjs';
+import { createMenu } from '../gui/menu.mjs';
 
-import { produceLegend } from './hist/TPavePainter.mjs';
+import { produceLegend } from '../hist/TPavePainter.mjs';
 
-import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
+import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
 
-import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './gui/display.mjs';
+import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
 
-import { showProgress, ToolbarIcons, registerForResize } from './gui/utils.mjs';
+import { showProgress, ToolbarIcons, registerForResize } from './utils.mjs';
 
 function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
@@ -3555,7 +3555,6 @@ function drawInspector(dom, obj) {
       return painter;
    });
 }
-
 
 export { getHPainter, HierarchyPainter,
          drawInspector, drawStreamerInfo, drawList,
