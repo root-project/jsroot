@@ -11,7 +11,7 @@ import { TRandom, floatToString } from '../painter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
-import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
+import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
 
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 

@@ -6,7 +6,7 @@ import { REVISION, DoubleSide, Color, Vector2,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineDashedMaterial, LineBasicMaterial, ShapeUtils } from '../three.mjs';
 
-import { createLineSegments, create3DLineMaterial } from '../base3d.mjs';
+import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 

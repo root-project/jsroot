@@ -20,7 +20,7 @@ import { showProgress, ToolbarIcons } from '../gui/utils.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
-         HelveticerRegularFont } from '../base3d.mjs';
+         HelveticerRegularFont } from '../base/base3d.mjs';
 
 import { getColor, getRootColors } from '../base/colors.mjs';
 

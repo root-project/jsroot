@@ -12,7 +12,7 @@ import { DrawOptions } from '../painter.mjs';
 
 import { TH2Painter } from './TH2Painter.mjs';
 
-import { createLineSegments, PointsCreator } from '../base3d.mjs';
+import { createLineSegments, PointsCreator } from '../base/base3d.mjs';
 
 /**
  * @summary Painter for TGraph2D classes

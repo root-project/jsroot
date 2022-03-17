@@ -9,7 +9,7 @@ import { REVISION, DoubleSide,
 
 import { RH2Painter as RH2Painter2D } from '../hist2d/RH2Painter.mjs';
 
-import { createLineSegments, create3DLineMaterial } from '../base3d.mjs';
+import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 

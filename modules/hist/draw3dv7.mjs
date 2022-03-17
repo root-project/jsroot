@@ -15,7 +15,7 @@ import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base3d.mjs';
+         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base/base3d.mjs';
 
 import { translateLaTeX } from '../latex.mjs';
 

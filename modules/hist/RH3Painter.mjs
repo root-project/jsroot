@@ -11,7 +11,7 @@ import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
 import { RHistPainter } from '../hist2d/RHistPainter.mjs';
 
-import { createLineSegments, PointsCreator, Box3D } from '../base3d.mjs';
+import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
 
 import { RH1Painter } from './RH1Painter.mjs';
 

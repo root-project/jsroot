@@ -113,8 +113,6 @@ function v6_require(need) {
             globalThis.JSROOT.ObjectPainter = res[5].ObjectPainter;
             return jsrp;
          }));
-      else if (name == "base3d")
-         arr.push(import("../modules/base3d.mjs"));
       else if (name == "hierarchy")
          arr.push(Promise.all([import("../modules/hierarchy.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
             Object.assign(globalThis.JSROOT, arr[0], arr[1]);
