@@ -335,18 +335,18 @@ function addMoveHandler(painter, enabled) {
 
 /** @summary Inject style
   * @param {String} code - css string */
-function injectStyle(code) {
+function injectStyle(code, node) {
    if (isBatchMode() || !code || (typeof document === 'undefined'))
       return true;
 
-   let styles = document.getElementsByTagName('style');
+   let styles = (node || document).getElementsByTagName('style');
    for (let n = 0; n < styles.length; ++n)
       if (styles[n].innerHTML == code)
          return true;
 
    let element = document.createElement("style");
    element.innerHTML = code;
-   document.head.appendChild(element);
+   (node || document.head).appendChild(element);
    return true;
 }
 
