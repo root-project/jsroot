@@ -350,7 +350,8 @@ let Handling3DDrawings = {
          this.getCanvSvg().property('redraw_by_resize', true);
 
          if (elem.empty())
-            elem = d3_select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
+            elem = d3_select(prnt).append('div').attr("class", size.clname)
+                                  .style("user-select", "none");
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position

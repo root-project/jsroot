@@ -16,7 +16,8 @@ function showProgress(msg, tmout) {
    let id = "jsroot_progressbox",
        box = d3_select("#" + id);
 
-   if (!settings.ProgressBox) return box.remove();
+   if (!settings.ProgressBox)
+      return box.remove();
 
    if ((arguments.length == 0) || !msg) {
       if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
@@ -24,7 +25,9 @@ function showProgress(msg, tmout) {
    }
 
    if (box.empty()) {
-      box = d3_select(document.body).append("div").attr("id", id);
+      box = d3_select(document.body)
+              .append("div").attr("id", id)
+              .attr("style", "position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;");
       box.append("p");
    }
 
@@ -36,6 +39,7 @@ function showProgress(msg, tmout) {
       box.html("");
       box.node().appendChild(msg);
    }
+   injectStyle("#jsroot_progressbox p { font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px; }", box.node());
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
       box.property("with_timeout", true);
