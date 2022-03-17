@@ -97,6 +97,15 @@ function injectHStyle(node) {
    background-size: 24px 24px;
    border-color: inherit;
 }
+.jsroot_inspector {
+    border: 1px solid black;
+    box-shadow: 1px 1px 2px 2px #aaa;
+    opacity: 0.95;
+    background-color: white;
+}
+.jsroot_drag_area {
+   background-color: #007fff;
+}
 .jsroot .img_minus {
     display: inline-block;
     height: 18px;
@@ -3794,9 +3803,6 @@ ObjectPainter.prototype.showInspector = function(obj) {
 
    return drawInspector(id, obj);
 }
-
-
-
 
 
 /** @summary Display streamer info

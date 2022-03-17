@@ -194,8 +194,10 @@ const ToolbarIcons = {
    },
 
    createSVG(group, btn, size, title) {
+      injectStyle('.jsroot_svg_toolbar_btn { fill: steelblue; cursor: pointer; opacity: 0.3; } .jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node());
+
       let svg = group.append("svg:svg")
-                     .attr("class", "svg_toolbar_btn")
+                     .attr("class", "jsroot_svg_toolbar_btn")
                      .attr("width", size + "px")
                      .attr("height", size + "px")
                      .attr("viewBox", "0 0 512 512")

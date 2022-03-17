@@ -1113,6 +1113,17 @@ class BrowserLayout {
       if (with_browser) main.append("div").classed("jsroot_browser", true);
 
       injectStyle(`
+.jsroot_browser {
+   pointer-events: none;
+   position: absolute;
+   left: 0;
+   top: 0;
+   bottom: 0;
+   right:0;
+   margin: 0;
+   border: 0;
+   overflow: hidden;
+}
 .jsroot_draw_area {
    background-color: #E6E6FA;
    overflow: hidden;

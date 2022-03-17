@@ -102,16 +102,6 @@
 
 /* stylesheet for embedded toolbar buttons */
 
-.jsroot .svg_toolbar_btn {
-    fill: steelblue;
-    cursor: pointer;
-    opacity: 0.3;
-}
-
-.jsroot .svg_toolbar_btn:hover {
-    opacity: 1.0;
-}
-
 .jsroot_noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -121,44 +111,4 @@
             user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
 }
 
-/* stylesheet for enlarged canvas */
-#jsroot_enlarge_div {
-     position: fixed;
-     margin: 0px;
-     border: 0px;
-     padding: 0px;
-     left: 1px;
-     right: 1px;
-     top: 1px;
-     bottom: 1px;
-     background: white;
-     opacity: 0.95;
-     z-index: 100;
-     overflow: hidden;
-}
-
-/* stylesheet for browser layout */
-
-.jsroot_browser {
-   pointer-events: none;
-   position: absolute;
-   left: 0;
-   top: 0;
-   bottom: 0;
-   right:0;
-   margin: 0;
-   border: 0;
-   overflow: hidden;
-}
-
-.jsroot_drag_area {
-   background-color: #007fff;
-}
-
-.jsroot_inspector {
-    border: 1px solid black;
-    box-shadow: 1px 1px 2px 2px #aaa;
-    opacity: 0.95;
-    background-color: white;
-}
 
