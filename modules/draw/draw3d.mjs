@@ -2,7 +2,7 @@ import { REVISION } from '../three.mjs';
 
 import { settings } from '../core.mjs';
 
-import { createLineSegments, PointsCreator } from '../base/base3d.mjs';
+import { createLineSegments, PointsCreator, create3DLineMaterial } from '../base/base3d.mjs';
 
 import { drawDummy3DGeom } from '../geom/TGeoPainter.mjs';
 
