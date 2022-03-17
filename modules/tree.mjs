@@ -11,7 +11,7 @@ import { kChar, kShort, kInt, kFloat,
          kStreamer, kStreamLoop, kSTLp, kSTL,
          R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 
-import * as jsroot_math from './math.mjs';
+import * as jsroot_math from './base/math.mjs';
 
 // branch types
 const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,

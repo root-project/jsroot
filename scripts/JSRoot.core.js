@@ -99,9 +99,9 @@ function v6_require(need) {
             return geo;
          }));
       else if (name == "math")
-         arr.push(import("../modules/math.mjs"));
+         arr.push(import("../modules/base/math.mjs"));
       else if (name == "latex")
-         arr.push(import("../modules/latex.mjs"));
+         arr.push(import("../modules/base/latex.mjs"));
       else if (name == "painter")
          arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/painter.mjs'),
                     import('../modules/draw.mjs'), import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {

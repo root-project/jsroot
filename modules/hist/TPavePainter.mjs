@@ -2,7 +2,7 @@ import { gStyle, browser, settings, clone, create, isBatchMode } from '../core.m
 
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 
-import { Prob } from '../math.mjs';
+import { Prob } from '../base/math.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 

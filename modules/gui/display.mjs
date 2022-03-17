@@ -1,17 +1,17 @@
 /// different display kinds and browser layout
 
-import { select as d3_select, drag as d3_drag } from './d3.mjs';
+import { select as d3_select, drag as d3_drag } from '../d3.mjs';
 
-import { browser, internals, toJSON } from './core.mjs';
+import { browser, internals, toJSON } from '../core.mjs';
 
-import { BasePainter } from './base/BasePainter.mjs';
+import { BasePainter } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from './base/ObjectPainter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { detectRightButton, getElementCanvPainter, selectActivePad, compressSVG,
-         cleanup, resize } from './painter.mjs';
+         cleanup, resize } from '../painter.mjs';
 
-import { createMenu } from './gui/menu.mjs';
+import { createMenu } from './menu.mjs';
 
 
 /**

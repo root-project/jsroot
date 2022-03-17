@@ -10,7 +10,7 @@ import { TF1Painter } from '../hist/TF1Painter.mjs';
 
 import { TH2Painter } from '../hist2d/TH2Painter.mjs';
 
-import { getTEfficiencyBoundaryFunc } from '../math.mjs';
+import { getTEfficiencyBoundaryFunc } from '../base/math.mjs';
 
 
 const kIsBayesian       = BIT(14),  ///< Bayesian statistics are used

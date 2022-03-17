@@ -3,7 +3,7 @@ import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 
 import { settings, constants, internals, isNodeJs, isPromise } from '../core.mjs';
 
-import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from '../latex.mjs';
+import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 

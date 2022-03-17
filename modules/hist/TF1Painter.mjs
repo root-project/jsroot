@@ -6,7 +6,7 @@ import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 
 import { DrawOptions, buildSvgPath } from '../painter.mjs';
 
-import * as jsroot_math from '../math.mjs';
+import * as jsroot_math from '../base/math.mjs';
 
 
 function proivdeEvalPar(func) {
