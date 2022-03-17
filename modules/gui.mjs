@@ -1,10 +1,105 @@
-import { decodeUrl, settings, internals, findFunction, parse } from './core.mjs';
+import { decodeUrl, settings, gStyle, internals, findFunction, parse } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
-import { readStyleFromURL } from './painter.mjs';
-
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
+
+/** @summary Read style and settings from URL
+  * @private */
+function readStyleFromURL(url) {
+   let d = decodeUrl(url);
+
+   if (d.has("optimize")) {
+      settings.OptimizeDraw = 2;
+      let optimize = d.get("optimize");
+      if (optimize) {
+         optimize = parseInt(optimize);
+         if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
+      }
+   }
+
+   let inter = d.get("interactive");
+   if (inter === "nomenu")
+      settings.ContextMenu = false;
+   else if (inter !== undefined) {
+      if (!inter || (inter == "1"))
+         inter = "111111";
+      else if (inter == "0")
+         inter = "000000";
+      if (inter.length === 6) {
+         switch(inter[0]) {
+            case "0": settings.ToolBar = false; break;
+            case "1": settings.ToolBar = 'popup'; break;
+            case "2": settings.ToolBar = true; break;
+         }
+         inter = inter.substr(1);
+      }
+      if (inter.length == 5) {
+         settings.Tooltip = parseInt(inter[0]);
+         settings.ContextMenu = (inter[1] != '0');
+         settings.Zooming = (inter[2] != '0');
+         settings.MoveResize = (inter[3] != '0');
+         settings.DragAndDrop = (inter[4] != '0');
+      }
+   }
+
+   let tt = d.get("tooltip");
+   if ((tt == "off") || (tt == "false") || (tt == "0"))
+      settings.Tooltip = false;
+   else if (d.has("tooltip"))
+      settings.Tooltip = true;
+
+   if (d.has("bootstrap") || d.has("bs"))
+      settings.Bootstrap = true;
+
+   let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
+
+   if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
+   if (latex !== null)
+      settings.Latex = constants.Latex.fromString(latex);
+
+   if (d.has("nomenu")) settings.ContextMenu = false;
+   if (d.has("noprogress")) settings.ProgressBox = false;
+   if (d.has("notouch")) browser.touches = false;
+   if (d.has("adjframe")) settings.CanAdjustFrame = true;
+
+   let optstat = d.get("optstat"), optfit = d.get("optfit");
+   if (optstat) gStyle.fOptStat = parseInt(optstat);
+   if (optfit) gStyle.fOptFit = parseInt(optfit);
+   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
+   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
+
+   if (d.has("toolbar")) {
+      let toolbar = d.get("toolbar", ""), val = null;
+      if (toolbar.indexOf('popup') >= 0) val = 'popup';
+      if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
+      if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
+      if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
+      if (toolbar.indexOf('show') >= 0) val = true;
+      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
+   }
+
+   if (d.has("skipsi") || d.has("skipstreamerinfos"))
+      settings.SkipStreamerInfos = true;
+
+   if (d.has("nodraggraphs"))
+      settings.DragGraphs = false;
+
+   if (d.has("palette")) {
+      let palette = parseInt(d.get("palette"));
+      if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
+   }
+
+   let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
+       geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
+   if (render3d) settings.Render3D = constants.Render3D.fromString(render3d);
+   if (embed3d) settings.Embed3D = constants.Embed3D.fromString(embed3d);
+   if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+   if (geocomp) settings.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
+
+   if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
+}
+
 
 /** @summary Build main GUI
   * @returns {Promise} when completed
@@ -66,4 +161,4 @@ async function buildGUI(gui_element, gui_kind) {
    return hpainter;
 }
 
-export { buildGUI, internals };
+export { buildGUI, internals, readStyleFromURL };

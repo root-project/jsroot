@@ -154,104 +154,7 @@ class TRandom {
    }
 }
 
-// ============================================================================================
 
-
-/** @summary Read style and settings from URL
-  * @private */
-function readStyleFromURL(url) {
-   let d = decodeUrl(url);
-
-   if (d.has("optimize")) {
-      settings.OptimizeDraw = 2;
-      let optimize = d.get("optimize");
-      if (optimize) {
-         optimize = parseInt(optimize);
-         if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
-      }
-   }
-
-   let inter = d.get("interactive");
-   if (inter === "nomenu")
-      settings.ContextMenu = false;
-   else if (inter !== undefined) {
-      if (!inter || (inter == "1"))
-         inter = "111111";
-      else if (inter == "0")
-         inter = "000000";
-      if (inter.length === 6) {
-         switch(inter[0]) {
-            case "0": gStyle.ToolBar = false; break;
-            case "1": gStyle.ToolBar = 'popup'; break;
-            case "2": gStyle.ToolBar = true; break;
-         }
-         inter = inter.substr(1);
-      }
-      if (inter.length == 5) {
-         settings.Tooltip = parseInt(inter[0]);
-         settings.ContextMenu = (inter[1] != '0');
-         settings.Zooming = (inter[2] != '0');
-         settings.MoveResize = (inter[3] != '0');
-         settings.DragAndDrop = (inter[4] != '0');
-      }
-   }
-
-   let tt = d.get("tooltip");
-   if ((tt == "off") || (tt == "false") || (tt == "0"))
-      settings.Tooltip = false;
-   else if (d.has("tooltip"))
-      settings.Tooltip = true;
-
-   if (d.has("bootstrap") || d.has("bs"))
-      settings.Bootstrap = true;
-
-   let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
-
-   if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
-   if (latex !== null)
-      settings.Latex = constants.Latex.fromString(latex);
-
-   if (d.has("nomenu")) settings.ContextMenu = false;
-   if (d.has("noprogress")) settings.ProgressBox = false;
-   if (d.has("notouch")) browser.touches = false;
-   if (d.has("adjframe")) settings.CanAdjustFrame = true;
-
-   let optstat = d.get("optstat"), optfit = d.get("optfit");
-   if (optstat) gStyle.fOptStat = parseInt(optstat);
-   if (optfit) gStyle.fOptFit = parseInt(optfit);
-   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
-   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
-
-   if (d.has("toolbar")) {
-      let toolbar = d.get("toolbar", ""), val = null;
-      if (toolbar.indexOf('popup') >= 0) val = 'popup';
-      if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
-      if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
-      if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
-      if (toolbar.indexOf('show') >= 0) val = true;
-      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
-   }
-
-   if (d.has("skipsi") || d.has("skipstreamerinfos"))
-      settings.SkipStreamerInfos = true;
-
-   if (d.has("nodraggraphs"))
-      settings.DragGraphs = false;
-
-   if (d.has("palette")) {
-      let palette = parseInt(d.get("palette"));
-      if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
-   }
-
-   let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
-       geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
-   if (render3d) settings.Render3D = constants.Render3D.fromString(render3d);
-   if (embed3d) settings.Embed3D = constants.Embed3D.fromString(embed3d);
-   if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-   if (geocomp) settings.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
-
-   if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
-}
 
 /** @summary Function used to provide svg:path for the smoothed curves.
   * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
@@ -405,20 +308,6 @@ function buildSvgPath(kind, bins, height, ndig) {
    return res;
 }
 
-/** @summary Calculate absolute position of provided element in canvas
-  * @private */
-function getAbsPosInCanvas(sel, pos) {
-   while (!sel.empty() && !sel.classed('root_canvas') && pos) {
-      let cl = sel.attr("class");
-      if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
-         pos.x += sel.property("draw_x") || 0;
-         pos.y += sel.property("draw_y") || 0;
-      }
-      sel = d3_select(sel.node().parentNode);
-   }
-   return pos;
-}
-
 // ===========================================================
 
 let $active_pp = null;
@@ -475,20 +364,6 @@ function resize(dom, arg) {
 }
 
 
-/** @summary Returns canvas painter (if any) for specified HTML element
-  * @param {string|object} dom - id or DOM element
-  * @private */
-function getElementCanvPainter(dom) {
-   return new ObjectPainter(dom).getCanvPainter();
-}
-
-/** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
-  * @param {string|object} dom - id or DOM element
-  * @private */
-function getElementMainPainter(dom) {
-   return new ObjectPainter(dom).getMainPainter(true);
-}
-
 /** @summary Safely remove all drawings from specified element
   * @param {string|object} dom - id or DOM element
   * @requires painter
@@ -501,15 +376,6 @@ function cleanup(dom) {
    lst.forEach(p => p.cleanup());
    dummy.selectDom().html("");
    return lst;
-}
-
-/** @summary Save object, drawn in specified element, as JSON.
-  * @desc Normally it is TCanvas object with list of primitives
-  * @param {string|object} dom - id of top div element or directly DOMElement
-  * @returns {string} produced JSON string */
-function drawingJSON(dom) {
-   let canp = getElementCanvPainter(dom);
-   return canp ? canp.produceJSON() : "";
 }
 
 /** @summary Compress SVG code, produced from drawing
@@ -534,25 +400,7 @@ function compressSVG(svg) {
    return svg;
 }
 
-/** @summary Load and initialize JSDOM from nodes
-  * @returns {Promise} with d3 selection for d3_body */
-function loadJSDOM() {
-   return import("jsdom").then(handle => {
-
-      if (!internals.nodejs_window) {
-         internals.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
-         internals.nodejs_document = internals.nodejs_window.document; // used with three.js
-         internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); //get d3 handle for body
-      }
-
-      return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
-   });
-}
-
-if (isNodeJs()) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
-
 export { DrawOptions,
-         TRandom, cleanup, resize, loadJSDOM, floatToString, buildSvgPath,
-         getElementCanvPainter, getElementMainPainter,
-         compressSVG, drawingJSON, readStyleFromURL,
-         selectActivePad, getActivePad, getAbsPosInCanvas };
+         TRandom, cleanup, resize, floatToString, buildSvgPath,
+         compressSVG,
+         selectActivePad, getActivePad };

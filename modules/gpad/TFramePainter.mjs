@@ -10,7 +10,7 @@ import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 
 import { EAxisBits, TAxisPainter } from './TAxisPainter.mjs';
 
-import { getElementRect } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
 
 import { FontHandler } from '../base/FontHandler.mjs';
 
@@ -18,7 +18,7 @@ import { createMenu, closeMenu } from '../gui/menu.mjs';
 
 import { detectRightButton, injectStyle } from '../gui/utils.mjs';
 
-import { getActivePad, getAbsPosInCanvas } from '../painter.mjs';
+import { getActivePad } from '../painter.mjs';
 
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;

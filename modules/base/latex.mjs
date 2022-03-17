@@ -1,12 +1,10 @@
 /// latex parsing and rendering
 
-import { loadScript, settings, isNodeJs } from '../core.mjs';
+import { loadScript, settings, isNodeJs, _loadJSDOM } from '../core.mjs';
 
 import { getElementRect } from './BasePainter.mjs';
 
 import { FontHandler } from './FontHandler.mjs';
-
-import { loadJSDOM } from '../painter.mjs';
 
 const symbols_map = {
    // greek letters
@@ -900,7 +898,7 @@ function loadMathjax() {
 
    let myJSDOM;
 
-   return loadJSDOM().then(handle => { myJSDOM = handle.JSDOM; return import('mathjax'); }).then(mj => {
+   return _loadJSDOM().then(handle => { myJSDOM = handle.JSDOM; return import('mathjax'); }).then(mj => {
 
       // return Promise with mathjax loading
       mj.init({

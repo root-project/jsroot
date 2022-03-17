@@ -8,7 +8,7 @@ import { getColor } from '../base/colors.mjs';
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 
 import { TH1Painter } from '../hist/TH1Painter.mjs';
 
@@ -16,7 +16,7 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from '../painter.mjs';
+import { DrawOptions, floatToString, buildSvgPath } from '../painter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 

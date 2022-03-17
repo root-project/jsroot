@@ -1,6 +1,6 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from '../core.mjs';
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _loadJSDOM, _ensureJSROOT } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 
@@ -10,9 +10,9 @@ import { getRGBfromTColor } from '../base/colors.mjs';
 
 import { BasePainter, getElementRect } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { loadJSDOM, getElementMainPainter, cleanup } from '../painter.mjs';
+import { cleanup } from '../painter.mjs';
 
 import { createMenu } from './menu.mjs';
 
@@ -3215,7 +3215,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (this.disp_kind == 'batch') {
-         let pr = isNodeJs() ? loadJSDOM() : Promise.resolve(null);
+         let pr = isNodeJs() ? _loadJSDOM() : Promise.resolve(null);
          return pr.then(handle => {
             this.disp = new BatchDisplay(1200, 800, handle?.body);
             return this.disp;

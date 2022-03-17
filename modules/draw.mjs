@@ -2,13 +2,13 @@
 
 import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT } from './core.mjs';
+import { loadScript, findFunction, internals, isPromise, isNodeJs, _loadJSDOM, _ensureJSROOT } from './core.mjs';
 
-import { cleanup, compressSVG, loadJSDOM, getElementCanvPainter } from './painter.mjs';
+import { cleanup, compressSVG } from './painter.mjs';
 
 import { BasePainter } from './base/BasePainter.mjs';
 
-import { ObjectPainter, drawRawText } from './base/ObjectPainter.mjs';
+import { ObjectPainter, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 
 import { TPadPainter } from './gpad/TPadPainter.mjs';
 
@@ -567,7 +567,7 @@ function makeSVG(args) {
    if (!isNodeJs())
       return build(d3_select('body').append("div").style("visible", "hidden"));
 
-   return loadJSDOM().then(handle => build(handle.body.append('div')));
+   return _loadJSDOM().then(handle => build(handle.body.append('div')));
 }
 
 // only now one can draw primitives in the canvas

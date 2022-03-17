@@ -1529,5 +1529,29 @@ function drawRawText(dom, txt /*, opt*/) {
    return painter.drawText();
 }
 
+/** @summary Returns canvas painter (if any) for specified HTML element
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementCanvPainter(dom) {
+   return new ObjectPainter(dom).getCanvPainter();
+}
 
-export { ObjectPainter, drawRawText };
+/** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementMainPainter(dom) {
+   return new ObjectPainter(dom).getMainPainter(true);
+}
+
+/** @summary Save object, drawn in specified element, as JSON.
+  * @desc Normally it is TCanvas object with list of primitives
+  * @param {string|object} dom - id of top div element or directly DOMElement
+  * @returns {string} produced JSON string */
+function drawingJSON(dom) {
+   let canp = getElementCanvPainter(dom);
+   return canp ? canp.produceJSON() : "";
+}
+
+
+export { getElementCanvPainter, getElementMainPainter, drawingJSON,
+         ObjectPainter, drawRawText };

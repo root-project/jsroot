@@ -6,9 +6,9 @@ import { browser, internals, toJSON } from '../core.mjs';
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { getElementCanvPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { getElementCanvPainter, selectActivePad, compressSVG, cleanup, resize } from '../painter.mjs';
+import { selectActivePad, compressSVG, cleanup, resize } from '../painter.mjs';
 
 import { createMenu } from './menu.mjs';
 

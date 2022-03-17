@@ -3,7 +3,9 @@
 
 export * from './core.mjs';
 
-export { cleanup, drawingJSON } from './painter.mjs';
+export { cleanup } from './painter.mjs';
+
+export { drawingJSON } from './base/ObjectPainter.mjs';
 
 export { loadOpenui5, registerForResize } from './gui/utils.mjs';
 
@@ -14,3 +16,5 @@ export { openFile } from './io.mjs';
 export { GridDisplay, FlexibleDisplay, CustomDisplay, BatchDisplay } from './gui/display.mjs';
 
 export { HierarchyPainter, getHPainter } from './gui/HierarchyPainter.mjs';
+
+export { readStyleFromURL, buildGUI } from './gui.mjs';
