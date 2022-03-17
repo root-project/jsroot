@@ -672,9 +672,9 @@ class TooltipFor3D {
 
       if (this.tt === null) {
          this.tt = document.createElement('div');
-         this.tt.setAttribute('class', 'jsroot_tt3d_main');
+         this.tt.setAttribute('style', 'opacity: 1; filter: alpha(opacity=1); position: absolute; display: block; overflow: hidden; z-index: 101;');
          this.cont = document.createElement('div');
-         this.cont.setAttribute('class', 'jsroot_tt3d_cont');
+         this.cont.setAttribute('style', 'display: block; padding: 2px 12px 3px 7px; margin-left: 5px; font-size: 11px; background: #777; color: #fff;');
          this.tt.appendChild(this.cont);
          this.parent.appendChild(this.tt);
       }

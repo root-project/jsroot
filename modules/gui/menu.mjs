@@ -4,6 +4,8 @@ import { loadScript, source_dir, settings, internals } from '../core.mjs';
 
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from '../d3.mjs';
 
+import { injectStyle } from './utils.mjs';
+
 import { getColor, getRootColors } from '../base/colors.mjs';
 
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -857,6 +859,58 @@ class StandaloneMenu extends JSRootMenu {
 
       this.element = this._buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
 
+      injectStyle(`
+.jsroot_ctxt_container {
+   position: absolute;
+   top: 0;
+   user-select: none;
+   z-index: 100000;
+   background-color: rgb(250, 250, 250);
+   margin: 0;
+   padding: 0px;
+   width: auto;
+   min-width: 100px;
+   box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2);
+   border: 3px solid rgb(215, 215, 215);
+   font-family: Arial, helvetica, sans-serif, serif;
+   font-size: 13px;
+   color: rgb(0, 0, 0, 0.8);
+}
+
+.jsroot_ctxt_divider {
+   width: 85%;
+   margin: 3px auto;
+   border: 1px solid rgb(0, 0, 0, 0.15);
+}
+
+.jsroot_ctxt_header {
+   background-color: lightblue;
+   padding: 3px 7px;
+   font-weight: bold;
+   border-bottom: 1px;
+}
+
+.jsroot_ctxt_text {
+   margin: 0;
+   padding: 3px 7px;
+   pointer-events: none;
+   white-space: nowrap;
+}
+
+.jsroot_ctxt_extraText {
+   margin: 0;
+   padding: 3px 7px;
+   color: rgb(0, 0, 0, 0.6);
+}
+
+.jsroot_ctxt_focus {
+   background-color: rgb(220, 220, 220);
+}
+
+.jsroot_ctxt_item:hover {
+   background-color: rgb(235, 235, 235);
+}`, this.element);
+
       this.element.setAttribute('id', this.menuname);
 
       return Promise.resolve(this);
@@ -885,6 +939,58 @@ class StandaloneMenu extends JSRootMenu {
                ${args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : ''}
            </div>
           </div>`);
+
+      injectStyle(`
+.jsroot_dialog_block {
+   z-index: 100000;
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   opacity: 0.2;
+   background-color: white;
+}
+
+.jsroot_dialog {
+   z-index: 100001;
+   position: absolute;
+   left: 50%;
+   top: 50%;
+}
+
+.jsroot_dialog_body {
+   position: relative;
+   left: -50%;
+   top: -50%;
+   border: solid green 3px;
+   padding: 5px;
+   display: flex;
+   flex-flow: column;
+   background-color: white;
+}
+
+.jsroot_dialog_header {
+   flex: 0 1 auto;
+   padding: 5px;
+}
+
+.jsroot_dialog_content {
+   flex: 1 1 auto;
+   padding: 5px;
+}
+
+.jsroot_dialog_footer {
+   flex: 0 1 auto;
+   padding: 5px;
+}
+
+.jsroot_dialog_button {
+   float: right;
+   margin-right: 1em;
+}`, element.node());
+
+
 
       return new Promise(resolveFunc => {
          element.on("keyup", evnt => {
