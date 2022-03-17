@@ -333,5 +333,22 @@ function addMoveHandler(painter, enabled) {
           .call(drag_move);
 }
 
+/** @summary Inject style
+  * @param {String} code - css string */
+function injectStyle(code) {
+   if (isBatchMode() || !code || (typeof document === 'undefined'))
+      return true;
 
-export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize, detectRightButton, addMoveHandler };
+   let styles = document.getElementsByTagName('style');
+   for (let n = 0; n < styles.length; ++n)
+      if (styles[n].innerHTML == code)
+         return true;
+
+   let element = document.createElement("style");
+   element.innerHTML = code;
+   document.head.appendChild(element);
+   return true;
+}
+
+
+export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize, detectRightButton, addMoveHandler, injectStyle };

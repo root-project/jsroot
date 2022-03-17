@@ -1,5 +1,5 @@
 
-import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from './d3.mjs';
+import { select as d3_select } from './d3.mjs';
 
 import { gStyle, loadScript, decodeUrl,
          browser, settings, constants, internals, isBatchMode, isNodeJs } from './core.mjs';
