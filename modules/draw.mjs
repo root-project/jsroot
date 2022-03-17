@@ -2,11 +2,11 @@
 
 import { select as d3_select } from './d3.mjs';
 
-import { loadScript, findFunction, internals, isPromise, isNodeJs, _loadJSDOM, _ensureJSROOT } from './core.mjs';
+import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT } from './core.mjs';
 
 import { cleanup, compressSVG } from './painter.mjs';
 
-import { BasePainter } from './base/BasePainter.mjs';
+import { BasePainter, _loadJSDOM } from './base/BasePainter.mjs';
 
 import { ObjectPainter, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 

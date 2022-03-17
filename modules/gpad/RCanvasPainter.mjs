@@ -8,9 +8,11 @@ import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../
 
 import { GridDisplay } from '../gui/display.mjs';
 
+import { selectActivePad } from '../base/ObjectPainter.mjs';
+
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
-import { selectActivePad, cleanup, resize } from '../painter.mjs';
+import { cleanup, resize } from '../painter.mjs';
 
 import { RAxisPainter } from './RAxisPainter.mjs';
 

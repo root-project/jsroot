@@ -9,13 +9,13 @@ import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } fro
 
 import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
 
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, selectActivePad, getActivePad  } from '../base/ObjectPainter.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { DrawOptions, selectActivePad, getActivePad, compressSVG } from '../painter.mjs';
+import { DrawOptions, compressSVG } from '../painter.mjs';
 
 import { ToolbarIcons, registerForResize } from '../gui/utils.mjs';
 

@@ -1553,5 +1553,36 @@ function drawingJSON(dom) {
 }
 
 
+let $active_pp = null;
+
+/** @summary Set active pad painter
+  * @desc Normally be used to handle key press events, which are global in the web browser
+  * @param {object} args - functions arguments
+  * @param {object} args.pp - pad painter
+  * @param {boolean} [args.active] - is pad activated or not
+  * @private */
+function selectActivePad(args) {
+   if (args.active) {
+      let fp = $active_pp ? $active_pp.getFramePainter() : null;
+      if (fp) fp.setFrameActive(false);
+
+      $active_pp = args.pp;
+
+      fp = $active_pp ? $active_pp.getFramePainter() : null;
+      if (fp) fp.setFrameActive(true);
+   } else if ($active_pp === args.pp) {
+      $active_pp = null;
+   }
+}
+
+/** @summary Returns current active pad
+  * @desc Should be used only for keyboard handling
+  * @private */
+function getActivePad() {
+   return $active_pp;
+}
+
+
 export { getElementCanvPainter, getElementMainPainter, drawingJSON,
+         selectActivePad, getActivePad,
          ObjectPainter, drawRawText };

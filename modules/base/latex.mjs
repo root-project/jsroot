@@ -1,8 +1,8 @@
 /// latex parsing and rendering
 
-import { loadScript, settings, isNodeJs, _loadJSDOM } from '../core.mjs';
+import { loadScript, settings, isNodeJs } from '../core.mjs';
 
-import { getElementRect } from './BasePainter.mjs';
+import { getElementRect, _loadJSDOM } from './BasePainter.mjs';
 
 import { FontHandler } from './FontHandler.mjs';
 

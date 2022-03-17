@@ -1621,23 +1621,6 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-/** @summary Load and initialize JSDOM from nodes
-  * @returns {Promise} with d3 selection for d3_body */
-function _loadJSDOM() {
-   return import("jsdom").then(handle => {
-
-      if (!internals.nodejs_window) {
-         internals.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
-         internals.nodejs_document = internals.nodejs_window.document; // used with three.js
-         internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); //get d3 handle for body
-      }
-
-      return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
-   });
-}
-
-
-
 /** @summary Initialize JSROOT
   * @desc Called when main JSRoot.core.js script is loaded.
   * @private */
@@ -1690,5 +1673,4 @@ registerMethods,
 isRootCollection,
 markAsStreamerInfo,
 isPromise,
-_loadJSDOM,
 _ensureJSROOT };
