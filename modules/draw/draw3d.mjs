@@ -4,7 +4,7 @@ import { settings } from '../core.mjs';
 
 import { createLineSegments, PointsCreator } from '../base/base3d.mjs';
 
-import { drawDummy3DGeom } from '../geom/geom.mjs';
+import { drawDummy3DGeom } from '../geom/TGeoPainter.mjs';
 
 function before3DDraw(painter, obj) {
    let fp = painter.getFramePainter();

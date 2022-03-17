@@ -799,7 +799,7 @@ Any supported TGeo object can be drawn with normal `draw()` function.
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
 
-    import { build } from './path_to_jsroot/modules/geom/geom.mjs';
+    import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
     let opt = { numfaces: 100000 };
     let obj3d = build(obj, opt);
     scene.add( obj3d );
@@ -815,7 +815,7 @@ Following options can be specified:
 When transparent volumes appeared in the model, one could use `produceRenderOrder()` function
 to correctly set rendering order. It should be used as:
 
-    import { produceRenderOrder } from './path_to_jsroot/modules/geom/geom.mjs';
+    import { produceRenderOrder } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
     produceRenderOrder(scene, camera.position, 'box');
 
 Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.
