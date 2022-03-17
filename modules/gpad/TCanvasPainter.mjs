@@ -6,7 +6,7 @@ import { select as d3_select } from '../d3.mjs';
 
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../gui/utils.mjs';
 
-import { GridDisplay } from '../display.mjs';
+import { GridDisplay } from '../gui/display.mjs';
 
 import { selectActivePad, cleanup, resize } from '../painter.mjs';
 

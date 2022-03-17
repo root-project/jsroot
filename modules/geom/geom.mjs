@@ -42,8 +42,6 @@ if (!isBatchMode())
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
-let createItem, build;
-
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
 function buildOverlapVolume(overlap) {
@@ -4871,7 +4869,7 @@ function getBrowserIcon(hitem, hpainter) {
 
 /** @summary create hierarchy item for geo object
   * @private */
-createItem = function(node, obj, name) {
+function createItem(node, obj, name) {
    let sub = {
       _kind: "ROOT." + obj._typename,
       _name: name ? name : getObjectName(obj),
@@ -5026,7 +5024,7 @@ function drawAxis3D() {
   * let obj3d = build(obj);
   * // this is three.js object and can be now inserted in the scene
   */
-build = function(obj, opt) {
+function build(obj, opt) {
 
    if (!obj) return null;
 

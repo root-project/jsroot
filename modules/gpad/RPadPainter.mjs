@@ -12,7 +12,7 @@ import { getElementRect } from '../base/BasePainter.mjs';
 import { DrawOptions, registerForResize, selectActivePad,
          getActivePad, getAbsPosInCanvas, compressSVG } from '../painter.mjs';
 
-import { BrowserLayout } from '../display.mjs';
+import { BrowserLayout } from '../gui/display.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 

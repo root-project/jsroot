@@ -22,7 +22,7 @@ import { produceLegend } from './hist/TPavePainter.mjs';
 
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
 
-import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
+import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './gui/display.mjs';
 
 function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;

@@ -21,6 +21,8 @@ import { DrawOptions, registerForResize,
 
 import { ToolbarIcons } from '../gui/utils.mjs';
 
+import { BrowserLayout } from '../gui/display.mjs';
+
 
 function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
@@ -1378,44 +1380,38 @@ class TPadPainter extends ObjectPainter {
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
-         let layout_promise = Promise.resolve(true),
-             mainid = this.selectDom().attr("id");
+         let mainid = this.selectDom().attr("id");
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string"))
-            layout_promise = import('../display.mjs').then(hhh => {
-               this.brlayout = new hhh.BrowserLayout(mainid, null, this);
-               this.brlayout.create(mainid, true);
-               // this.brlayout.toggleBrowserKind("float");
-               this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-               registerForResize(this.brlayout);
-           });
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
+            this.brlayout = new BrowserLayout(mainid, null, this);
+            this.brlayout.create(mainid, true);
+            // this.brlayout.toggleBrowserKind("float");
+            this.setDom(this.brlayout.drawing_divid()); // need to create canvas
+            registerForResize(this.brlayout);
+         }
 
-         return layout_promise.then(() => {
+         this.createCanvasSvg(0);
 
-            this.createCanvasSvg(0);
+         if (!this.batch_mode)
+            this.addPadButtons(true);
 
-            if (!this.batch_mode)
-               this.addPadButtons(true);
+         if (typeof snap.fHighlightConnect !== 'undefined')
+            this._highlight_connect = snap.fHighlightConnect;
 
-            if (typeof snap.fHighlightConnect !== 'undefined')
-               this._highlight_connect = snap.fHighlightConnect;
+         let pr = Promise.resolve(true);
 
-            if ((typeof snap.fScripts == "string") && snap.fScripts) {
-               let arg = "";
+         if ((typeof snap.fScripts == "string") && snap.fScripts) {
+            let src = "";
 
-               if (snap.fScripts.indexOf("load:") == 0)
-                  arg = snap.fScripts.substr(5).split(";");
-               else if (snap.fScripts.indexOf("assert:") == 0)
-                  arg = snap.fScripts.substr(7);
+            if (snap.fScripts.indexOf("load:") == 0)
+               src = snap.fScripts.substr(5).split(";");
+            else if (snap.fScripts.indexOf("assert:") == 0)
+               src = snap.fScripts.substr(7);
 
-               if (arg)
-                  return loadScript(arg).then(() => this.drawNextSnap(snap.fPrimitives));
+            pr = src ? loadScript(arg) : injectCode(snap.fScripts);
+         }
 
-               injectCode(snap.fScripts);
-            }
-
-            return this.drawNextSnap(snap.fPrimitives);
-         });
+         return pr.then(() => this.drawNextSnap(snap.fPrimitives));
       }
 
       this.updateObject(first); // update only object attributes
