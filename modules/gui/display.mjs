@@ -8,10 +8,11 @@ import { BasePainter } from '../base/BasePainter.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { detectRightButton, getElementCanvPainter, selectActivePad, compressSVG,
-         cleanup, resize } from '../painter.mjs';
+import { getElementCanvPainter, selectActivePad, compressSVG, cleanup, resize } from '../painter.mjs';
 
 import { createMenu } from './menu.mjs';
+
+import { detectRightButton } from './utils.mjs';
 
 
 /**

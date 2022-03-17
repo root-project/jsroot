@@ -16,11 +16,14 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
-import { addMoveHandler, DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from '../painter.mjs';
+import { DrawOptions, floatToString, buildSvgPath, getElementMainPainter } from '../painter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
+
+import { addMoveHandler } from '../gui/utils.mjs';
+
 
 
 /** @summary Draw TText

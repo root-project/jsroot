@@ -3,9 +3,9 @@
 
 export * from './core.mjs';
 
-export { cleanup, drawingJSON, registerForResize } from './painter.mjs';
+export { cleanup, drawingJSON } from './painter.mjs';
 
-export { loadOpenui5 } from './gui/utils.mjs';
+export { loadOpenui5, registerForResize } from './gui/utils.mjs';
 
 export { draw, redraw, makeSVG, setDefaultDrawOpt } from './draw.mjs';
 

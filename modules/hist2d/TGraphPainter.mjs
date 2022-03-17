@@ -12,7 +12,9 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
 
-import { addMoveHandler, DrawOptions, buildSvgPath } from '../painter.mjs';
+import { DrawOptions, buildSvgPath } from '../painter.mjs';
+
+import { addMoveHandler } from '../gui/utils.mjs';
 
 
 const kNotEditable = BIT(18);   // bit set if graph is non editable

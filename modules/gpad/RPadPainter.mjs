@@ -9,8 +9,9 @@ import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 import { getElementRect } from '../base/BasePainter.mjs';
 
-import { DrawOptions, registerForResize, selectActivePad,
-         getActivePad, getAbsPosInCanvas, compressSVG } from '../painter.mjs';
+import { DrawOptions, selectActivePad, getActivePad, getAbsPosInCanvas, compressSVG } from '../painter.mjs';
+
+import { registerForResize } from '../gui/utils.mjs';
 
 import { BrowserLayout } from '../gui/display.mjs';
 

@@ -6,15 +6,13 @@ import { select as d3_select } from './d3.mjs';
 
 import { openFile } from './io.mjs';
 
-import { showProgress, ToolbarIcons } from './gui/utils.mjs';
-
 import { getRGBfromTColor } from './base/colors.mjs';
 
 import { BasePainter, getElementRect } from './base/BasePainter.mjs';
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-import { loadJSDOM, getElementMainPainter, registerForResize, cleanup } from './painter.mjs';
+import { loadJSDOM, getElementMainPainter, cleanup } from './painter.mjs';
 
 import { createMenu } from './gui/menu.mjs';
 
@@ -23,6 +21,8 @@ import { produceLegend } from './hist/TPavePainter.mjs';
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from './draw.mjs';
 
 import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './gui/display.mjs';
+
+import { showProgress, ToolbarIcons, registerForResize } from './gui/utils.mjs';
 
 function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;

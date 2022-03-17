@@ -15,11 +15,9 @@ import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { DrawOptions, registerForResize,
-         selectActivePad, getActivePad, getAbsPosInCanvas,
-         compressSVG } from '../painter.mjs';
+import { DrawOptions, selectActivePad, getActivePad, getAbsPosInCanvas, compressSVG } from '../painter.mjs';
 
-import { ToolbarIcons } from '../gui/utils.mjs';
+import { ToolbarIcons, registerForResize } from '../gui/utils.mjs';
 
 import { BrowserLayout } from '../gui/display.mjs';
 

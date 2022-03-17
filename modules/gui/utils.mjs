@@ -1,7 +1,9 @@
 
 import { settings, isBatchMode, source_dir } from '../core.mjs';
 
-import { select as d3_select } from '../d3.mjs';
+import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
+
+import { BasePainter } from '../base/BasePainter.mjs';
 
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten
@@ -222,4 +224,114 @@ const ToolbarIcons = {
 } // ToolbarIcons
 
 
-export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons };
+/** @summary Register handle to react on window resize
+  * @desc function used to react on browser window resize event
+  * While many resize events could come in short time,
+  * resize will be handled with delay after last resize event
+  * @param {object|string} handle can be function or object with checkResize function or dom where painting was done
+  * @param {number} [delay] - one could specify delay after which resize event will be handled
+  * @protected */
+function registerForResize(handle, delay) {
+
+   if (!handle || isBatchMode() || (typeof window == 'undefined')) return;
+
+   let myInterval = null, myDelay = delay ? delay : 300;
+
+   if (myDelay < 20) myDelay = 20;
+
+   function ResizeTimer() {
+      myInterval = null;
+
+      document.body.style.cursor = 'wait';
+      if (typeof handle == 'function')
+         handle();
+      else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
+         handle.checkResize();
+      } else {
+         let node = new BasePainter(handle).selectDom();
+         if (!node.empty()) {
+            let mdi = node.property('mdi');
+            if (mdi && typeof mdi.checkMDIResize == 'function') {
+               mdi.checkMDIResize();
+            } else {
+               resize(node.node());
+            }
+         }
+      }
+      document.body.style.cursor = 'auto';
+   }
+
+   window.addEventListener('resize', () => {
+      if (myInterval !== null) clearTimeout(myInterval);
+      myInterval = setTimeout(ResizeTimer, myDelay);
+   });
+}
+
+function detectRightButton(event) {
+   if ('buttons' in event) return event.buttons === 2;
+   if ('which' in event) return event.which === 3;
+   if ('button' in event) return event.button === 2;
+   return false;
+}
+
+/** @summary Add move handlers for drawn element
+  * @private */
+function addMoveHandler(painter, enabled) {
+
+   if (enabled === undefined) enabled = true;
+
+   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
+
+   if (!enabled) {
+      if (painter.draw_g.property("assigned_move")) {
+         let drag_move = d3_drag().subject(Object);
+         drag_move.on("start", null).on("drag", null).on("end", null);
+         painter.draw_g
+               .style("cursor", null)
+               .property("assigned_move", null)
+               .call(drag_move);
+      }
+      return;
+   }
+
+   if (painter.draw_g.property("assigned_move")) return;
+
+   let drag_move = d3_drag().subject(Object),
+      not_changed = true, move_disabled = false;
+
+   drag_move
+      .on("start", function(evnt) {
+         move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
+         if (move_disabled) return;
+         if (detectRightButton(evnt.sourceEvent)) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         let pos = d3_pointer(evnt, this.draw_g.node());
+         not_changed = true;
+         if (this.moveStart)
+            this.moveStart(pos[0], pos[1]);
+      }.bind(painter)).on("drag", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         not_changed = false;
+         if (this.moveDrag)
+            this.moveDrag(evnt.dx, evnt.dy);
+      }.bind(painter)).on("end", function(evnt) {
+         if (move_disabled) return;
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+         if (this.moveEnd)
+            this.moveEnd(not_changed);
+         let pp = this.getPadPainter();
+         if (pp) pp.selectObjectPainter(this);
+      }.bind(painter));
+
+   painter.draw_g
+          .style("cursor", "move")
+          .property("assigned_move", true)
+          .call(drag_move);
+}
+
+
+export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize, detectRightButton, addMoveHandler };
