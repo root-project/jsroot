@@ -102,11 +102,11 @@ function readStyleFromURL(url) {
 
 
 /** @summary Build main GUI
-  * @returns {Promise} when completed
-  * @private  */
-async function buildGUI(gui_element, gui_kind) {
+  * @returns {Promise} when completed  */
+function buildGUI(gui_element, gui_kind) {
    let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
-   if (myDiv.empty()) return alert('no div for gui found');
+   if (myDiv.empty())
+      return Promise.reject(Error('no div for gui found'));
 
    myDiv.html(""); // clear element
 
@@ -145,20 +145,19 @@ async function buildGUI(gui_element, gui_kind) {
    if (drawing) hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
 
-   await hpainter.startGUI(myDiv);
-
-   if (!nobrowser) {
-      hpainter.initializeBrowser();
-   } else if (drawing) {
+   return hpainter.startGUI(myDiv).then(() => {
+      if (!nobrowser)
+         return hpainter.initializeBrowser();
+      if (!drawing)
+         return;
       let obj = null, func = internals.GetCachedObject || findFunction('GetCachedObject');
       if (typeof func == 'function')
          obj = parse(func());
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get("opt", "");
       if (d.has("websocket")) opt+=";websocket";
-      await hpainter.display("", opt);
-   }
-   return hpainter;
+      return hpainter.display("", opt);
+   }).then(() => hpainter);
 }
 
 export { buildGUI, internals, readStyleFromURL };

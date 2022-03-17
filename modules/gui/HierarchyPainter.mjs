@@ -2588,7 +2588,7 @@ class HierarchyPainter extends BasePainter {
       if (!hitem && d3cont)
          return Promise.resolve();
 
-      async function DoExpandItem(_item, _obj){
+      async function doExpandItem(_item, _obj){
 
          if (typeof _item._expand == 'string')
             _item._expand = findFunction(item._expand);
@@ -2656,7 +2656,7 @@ class HierarchyPainter extends BasePainter {
             return Promise.resolve();
          }
 
-         if (hitem._obj) promise = DoExpandItem(hitem, hitem._obj);
+         if (hitem._obj) promise = doExpandItem(hitem, hitem._obj);
       }
 
       return promise.then(res => {
@@ -2668,7 +2668,7 @@ class HierarchyPainter extends BasePainter {
 
             showProgress();
 
-            if (res.obj) return DoExpandItem(res.item, res.obj).then(res => { return (res !== -1) ? res : undefined; });
+            if (res.obj) return doExpandItem(res.item, res.obj).then(res => { return (res !== -1) ? res : undefined; });
          });
       });
 
@@ -2786,21 +2786,24 @@ class HierarchyPainter extends BasePainter {
    /** @summary Apply loaded TStyle object
      * @desc One also can specify item name of JSON file name where style is loaded
      * @param {object|string} style - either TStyle object of item name where object can be load */
-   async applyStyle(style) {
+   applyStyle(style) {
       if (!style)
-         return;
+         return Promise.resolve(true);
+
+      let pr = Promise.resolve(style);
 
       if (typeof style === 'string') {
          let item = this.findItem({ name: style, allow_index: true, check_keys: true });
          if (item !== null)
-            style = await this.getObject(item).then(res => res.obj);
+            pr = this.getObject(item).then(res => res.obj);
          else if (style.indexOf('.json') > 0)
-            style = await httpRequest(style, 'object');
+            pr = httpRequest(style, 'object');
       }
 
-      if (style && (typeof style === 'object') && (style._typename === "TStyle"))
-         Object.assign(gStyle, style);
-
+      return pr.then(st => {
+         if (st && (typeof st === 'object') && (st._typename === "TStyle"))
+            Object.assign(gStyle, st);
+      });
    }
 
    /** @summary Provides information abouf file item
