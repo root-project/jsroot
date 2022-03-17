@@ -5,6 +5,8 @@ import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
+import { resize } from '../painter.mjs';
+
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten
   * if no argument specified, any shown messages will be removed

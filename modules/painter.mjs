@@ -6,10 +6,6 @@ import { gStyle, loadScript, decodeUrl,
 
 import { ObjectPainter } from './base/ObjectPainter.mjs';
 
-
-if (!isBatchMode())
-   await loadScript('$$$style/JSRoot.painter');
-
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert
   * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f

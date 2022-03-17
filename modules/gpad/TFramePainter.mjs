@@ -16,7 +16,7 @@ import { FontHandler } from '../base/FontHandler.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { detectRightButton } from '../gui/utils.mjs';
+import { detectRightButton, injectStyle } from '../gui/utils.mjs';
 
 import { getActivePad, getAbsPosInCanvas } from '../painter.mjs';
 
@@ -600,6 +600,12 @@ const FrameInteractive = {
       if (!this._frame_rotate && !this._frame_fixpos)
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
+
+      injectStyle(`
+.jsroot rect.h1bin { stroke: #4572A7; fill: #4572A7; opacity: 0; }
+.jsroot rect.zoom { stroke: steelblue; fill-opacity: 0.1; }
+.jsroot path.zoom { stroke: steelblue; fill-opacity: 0.1; }
+.jsroot svg:not(:root) { overflow: hidden; }`, this.draw_g.node());
 
       let main_svg = this.draw_g.select(".main_layer");
 
