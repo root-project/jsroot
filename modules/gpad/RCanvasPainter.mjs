@@ -20,6 +20,7 @@ import { RPadPainter } from './RPadPainter.mjs';
 
 import { addDragHandler } from './TFramePainter.mjs';
 
+import { WebWindowHandle } from '../webwindow.mjs';
 
 /**
  * @summary Painter class for RCanvas
@@ -265,9 +266,9 @@ class RCanvasPainter extends RPadPainter {
             let relative_path = cmd.substr(9);
             if (!this.showUI5Panel) {
                handle.send(reply + "false");
-            } else import('./webwindow.mjs').then(hh => {
+            } else {
 
-               let conn = new hh.WebWindowHandle(handle.kind);
+               let conn = new WebWindowHandle(handle.kind);
 
                // set interim receiver until first message arrives
                conn.setReceiver({
@@ -303,7 +304,7 @@ class RCanvasPainter extends RPadPainter {
                }
                // only when connection established, panel will be activated
                conn.connect(addr);
-            });
+            }
          } else {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
