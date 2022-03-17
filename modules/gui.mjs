@@ -4,7 +4,7 @@ import { select as d3_select } from './d3.mjs';
 
 import { readStyleFromURL } from './painter.mjs';
 
-import { HierarchyPainter } from './hierarchy.mjs';
+import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 
 /** @summary Build main GUI
   * @returns {Promise} when completed

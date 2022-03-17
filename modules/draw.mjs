@@ -63,7 +63,7 @@ const drawFuncs = { lst: [
    { name: "RooPlot", icon: "img_canvas", func: drawRooPlot },
    { name: "TRatioPlot", icon: "img_mgraph", class: () => import_more().then(h => h.TRatioPlotPainter), opt: "" },
    { name: "TMultiGraph", icon: "img_mgraph", class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
-   { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./hierarchy.mjs').then(h => h.drawStreamerInfo) },
+   { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
    { name: "TWebPainting", icon: "img_graph", class: () => import_more().then(h => h.TWebPaintingPainter) },
    { name: "TCanvasWebSnapshot", icon: "img_canvas", draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
@@ -103,15 +103,15 @@ const drawFuncs = { lst: [
    { name: "TAxis3D", icon: 'img_graph', draw: () => import('./geom/geom.mjs').then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: "kind:Command", icon: "img_execute", execute: true },
-   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, get_expand: () => import('./hierarchy.mjs').then(h => h.folderHierarchy) },
-   { name: "TTask", icon: "img_task", get_expand: () => import('./hierarchy.mjs').then(h => h.taskHierarchy), for_derived: true },
+   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.folderHierarchy) },
+   { name: "TTask", icon: "img_task", get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.taskHierarchy), for_derived: true },
    { name: "TTree", icon: "img_tree", get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
    { name: "TNtuple", sameas: "TTree" },
    { name: "TNtupleD", sameas: "TTree" },
    { name: "TBranchFunc", icon: "img_leaf_method", draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ";dump", noinspect: true, direct: true },
    { name: /^TBranch/, icon: "img_branch", draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true, direct: true },
    { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true, direct: true },
-   { name: "TList", icon: "img_list", draw: () => import('./hierarchy.mjs').then(h => h.drawList), get_expand: () => import('./hierarchy.mjs').then(h => h.listHierarchy), dflt: "expand" },
+   { name: "TList", icon: "img_list", draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawList), get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.listHierarchy), dflt: "expand" },
    { name: "THashList", sameas: "TList" },
    { name: "TObjArray", sameas: "TList" },
    { name: "TClonesArray", sameas: "TList" },
@@ -301,7 +301,7 @@ function draw(dom, obj, opt) {
       return Promise.reject(Error('not an object in draw call'));
 
    if (opt == 'inspect')
-      return import('./hierarchy.mjs').then(h => h.drawInspector(dom, obj));
+      return import('./gui/HierarchyPainter.mjs').then(h => h.drawInspector(dom, obj));
 
    let handle, type_info;
    if ('_typename' in obj) {
@@ -311,7 +311,7 @@ function draw(dom, obj, opt) {
       type_info = "kind " + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return import("./hierarchy.mjs").then(h => h.drawInspector(dom, obj));
+      return import("./gui/HierarchyPainter.mjs").then(h => h.drawInspector(dom, obj));
 
    // this is case of unsupported class, close it normally
    if (!handle)

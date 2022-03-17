@@ -114,7 +114,7 @@ function v6_require(need) {
             return jsrp;
          }));
       else if (name == "hierarchy")
-         arr.push(Promise.all([import("../modules/hierarchy.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
+         arr.push(Promise.all([import("../modules/gui/HierarchyPainter.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
             Object.assign(globalThis.JSROOT, arr[0], arr[1]);
             getHPainter = arr[0].getHPainter;
             globalThis.JSROOT.hpainter = getHPainter();
@@ -193,7 +193,7 @@ if ((typeof globalThis !== "undefined") && !globalThis.JSROOT) {
 
    globalThis.JSROOT._complete_loading = _sync;
 
-   let pr = Promise.all([import('../modules/core.mjs'), import('../modules/draw.mjs'), import('../modules/hierarchy.mjs')]).then(arr => {
+   let pr = Promise.all([import('../modules/core.mjs'), import('../modules/draw.mjs'), import('../modules/gui/HierarchyPainter.mjs')]).then(arr => {
       Object.assign(globalThis.JSROOT, arr[0], arr[1]);
 
       globalThis.JSROOT._ = arr[0].internals;

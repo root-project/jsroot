@@ -13,4 +13,4 @@ export { openFile } from './io.mjs';
 
 export { GridDisplay, FlexibleDisplay, CustomDisplay, BatchDisplay } from './gui/display.mjs';
 
-export { HierarchyPainter, getHPainter } from './hierarchy.mjs';
+export { HierarchyPainter, getHPainter } from './gui/HierarchyPainter.mjs';
