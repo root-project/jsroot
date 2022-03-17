@@ -5,7 +5,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "16/03/2022";
+let version_date = "17/03/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1612,14 +1612,13 @@ function isPromise(obj) {
 
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
-async function _ensureJSROOT() {
-   if (!globalThis.JSROOT)
-      await loadScript(source_dir + 'scripts/JSRoot.core.js');
+function _ensureJSROOT() {
+   let pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
 
-   if (globalThis.JSROOT?._complete_loading)
-      await globalThis.JSROOT._complete_loading();
-
-   return globalThis.JSROOT;
+   return pr.then(() => {
+      if (globalThis.JSROOT?._complete_loading)
+         return globalThis.JSROOT._complete_loading();
+   }).then(() => globalThis.JSROOT);
 }
 
 /** @summary Initialize JSROOT

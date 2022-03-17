@@ -198,7 +198,7 @@ if ((typeof globalThis !== "undefined") && !globalThis.JSROOT) {
    let pr = Promise.all([import('../modules/core.mjs'), import('../modules/draw.mjs'), import('../modules/hierarchy.mjs')]).then(arr => {
       Object.assign(globalThis.JSROOT, arr[0], arr[1]);
 
-     globalThis.JSROOT._ = arr[0].internals;
+      globalThis.JSROOT._ = arr[0].internals;
 
       globalThis.JSROOT.HierarchyPainter = arr[2].HierarchyPainter;
       getHPainter = arr[2].getHPainter;

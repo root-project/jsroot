@@ -2882,24 +2882,26 @@ class HierarchyPainter extends BasePainter {
    /** @summary Creates configured MDIDisplay object
      * @returns {Promise} when ready
      * @private */
-   async createDisplay() {
+   createDisplay() {
 
       if ('disp' in this) {
          if ((this.disp.numDraw() > 0) || (this.disp_kind == "custom"))
-            return this.disp;
+            return Promise.resolve(this.disp);
          this.disp.cleanup();
          delete this.disp;
       }
 
       if (this.disp_kind == 'batch') {
-         let handle = isNodeJs() ? await loadJSDOM() : null;
-         this.disp = new BatchDisplay(1200, 800, handle?.body);
-         return this.disp;
+         let pr = isNodeJs() ? loadJSDOM() : Promise.resolve(null);
+         return pr.then(handle => {
+            this.disp = new BatchDisplay(1200, 800, handle?.body);
+            return this.disp;
+         });
       }
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
-         return null;
+         return Promise.resolve(null);
 
       if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
@@ -2910,7 +2912,7 @@ class HierarchyPainter extends BasePainter {
       if (settings.DragAndDrop)
           this.disp.setInitFrame(this.enableDrop.bind(this));
 
-      return this.disp;
+      return Promise.resolve(this.disp);
    }
 
    /** @summary If possible, creates custom MDIDisplay for given item
@@ -2965,18 +2967,15 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
-   async loadScripts(scritps, modules) {
-      if (!scritps && !modules) return;
+   loadScripts(scritps, modules) {
+      if (!scritps && !modules)
+         return Promise.resolve(true);
 
-      let v6 = await _ensureJSROOT();
-
-      if (modules)
-         await v6.require(modules);
-
-      if(scritps)
-         await loadScript(scritps);
-
-      await v6._complete_loading();
+      return _ensureJSROOT().then(v6 => {
+         return v6.require(modules)
+                  .then(() => loadScript(scripts))
+                  .then(() => v6._complete_loading());
+      });
    }
 
    /** @summary Start GUI
