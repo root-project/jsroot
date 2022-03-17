@@ -98,6 +98,7 @@ const drawFuncs = { lst: [
    { name: _v7+"REveGeoShapeExtract", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt" },
    { name: "TGeoOverlap", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TGeoManager", sameas: "TGeoVolume", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
+   { name: "TGeoVolumeAssembly", sameas: "TGeoVolume", icon: 'img_geoassembly', opt: ";more;all;count" },
    { name: /^TGeo/, class: () => import('./geom/geom.mjs').then(h => h.TGeoPainter), get_expand: () => import('./geom/geom.mjs').then(h => h.expandGeoObject), opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
    { name: "TAxis3D", icon: 'img_graph', draw: () => import('./geom/geom.mjs').then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
@@ -573,6 +574,7 @@ function makeSVG(args) {
 TPadPainter.prototype.drawObject = draw;
 TPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 
+internals.addDrawFunc = addDrawFunc;
 
 // load v7 only by demand
 init_v7 = function(arg) {

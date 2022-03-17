@@ -1,7 +1,7 @@
 /// 3D geometry painter
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
-         settings, constants, create, clone,
+         settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from '../core.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
@@ -30,8 +30,6 @@ import { DrawOptions } from '../painter.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { addDrawFunc } from '../draw.mjs';
-
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
@@ -44,7 +42,7 @@ if (!isBatchMode())
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
-let createGeoPainter, createItem, build;
+let createItem, build;
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
@@ -4686,9 +4684,17 @@ class TGeoPainter extends ObjectPainter {
 } // class TGeoPainter
 
 
+let add_settings = false;
+
 /** @summary Create geo painter
   * @private */
-createGeoPainter = function(dom, obj, opt) {
+function createGeoPainter(dom, obj, opt) {
+
+   if (!add_settings && (typeof internals.addDrawFunc == 'function')) {
+      add_settings = true;
+      internals.addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
+   }
 
    setGeoParams(settings.GeoGradPerSegm, settings.GeoCompressComp);
 
@@ -4861,7 +4867,6 @@ function getBrowserIcon(hitem, hpainter) {
    }
    return icon;
 }
-
 
 
 /** @summary create hierarchy item for geo object
@@ -5143,11 +5148,6 @@ build = function(obj, opt) {
 
    return toplevel;
 }
-
-
-addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', class: () => TGeoPainter, expand: expandGeoObject, opt: ";more;all;count" });
-addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
-addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
 
 export { build, TGeoPainter, GeoDrawingControl,
          expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };
