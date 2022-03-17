@@ -246,6 +246,11 @@ let settings = {
    DragGraphs: true
 };
 
+
+if (nodejs)
+   Object.assign(settings, { ToolBar: false, Tooltip: 0, ContextMenu: false, Zooming: false, MoveResize: false, DragAndDrop: false, ProgressBox: false });
+
+
 /** @namespace
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
@@ -327,6 +332,10 @@ let gStyle = {
    /** @summary default time offset, UTC time at 01/01/95   */
    fTimeOffset: 788918400
 };
+
+
+
+
 
 /** @summary Method returns current document in use
   * @private */
