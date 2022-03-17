@@ -1,6 +1,6 @@
 /// CSG library for THREE.js
 
-import { BufferGeometry, BufferAttribute, Mesh } from './three.mjs';
+import { BufferGeometry, BufferAttribute, Mesh } from '../three.mjs';
 
 const EPSILON = 1e-5,
       COPLANAR = 0,

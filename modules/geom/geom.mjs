@@ -2,7 +2,7 @@
 
 import { httpRequest, loadScript, decodeUrl, browser, source_dir,
          settings, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from './core.mjs';
+         findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from '../core.mjs';
 
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -13,26 +13,26 @@ import { REVISION, DoubleSide, FrontSide,
          SphereBufferGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
-         EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from './three.mjs';
+         EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from '../three.mjs';
 
-import { showProgress, ToolbarIcons } from './gui/utils.mjs';
+import { showProgress, ToolbarIcons } from '../gui/utils.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
-         HelveticerRegularFont } from './base3d.mjs';
+         HelveticerRegularFont } from '../base3d.mjs';
 
-import { getColor, getRootColors } from './base/colors.mjs';
+import { getColor, getRootColors } from '../base/colors.mjs';
 
-import { ObjectPainter } from './base/ObjectPainter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
-import { DrawOptions } from './painter.mjs';
+import { DrawOptions } from '../painter.mjs';
 
-import { createMenu, closeMenu } from './gui/menu.mjs';
+import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { addDrawFunc } from './draw.mjs';
+import { addDrawFunc } from '../draw.mjs';
 
-import { ensureTCanvas } from './gpad/TCanvasPainter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
