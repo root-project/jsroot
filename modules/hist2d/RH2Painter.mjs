@@ -896,7 +896,7 @@ class RH2Painter extends RHistPainter {
          pr = this.finishTextDrawing(text_g, true);
       }
 
-      return pr.then(() => { poly: true });
+      return pr.then(() => { return { poly: true }; });
    }
 
    /** @summary Draw RH2 bins as text */

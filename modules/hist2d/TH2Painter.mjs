@@ -1162,7 +1162,7 @@ class TH2Painter extends THistPainter {
          pr = this.finishTextDrawing(text_g, true);
       }
 
-      return pr.then(() => { poly: true });
+      return pr.then(() => { return { poly: true }; });
    }
 
    /** @summary Draw TH2 bins as text */
