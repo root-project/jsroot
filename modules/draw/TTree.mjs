@@ -364,35 +364,46 @@ function drawTree() {
    if (!tree)
       throw Error('No TTree object available for TTree::Draw');
 
-   let create_player = 0, finalResolve;
+   let has_player = false, last_pr = null;
 
    function process_result(obj, intermediate = false) {
 
       let drawid;
 
-      if (!args.player)
+      // no need to update drawing if previous is not yet completed
+      if (intermediate && last_pr)
+         return;
+
+      if (!args.player) {
          drawid = painter.getDom();
-      else if (create_player === 2)
+      } else if (has_player) {
          drawid = painter.drawid;
+      } else {
+         createTreePlayer(painter);
+         painter.configureTree(tree);
+         painter.showPlayer(args);
+         drawid = painter.drawid;
+         has_player = true;
+      }
 
-      if (drawid)
-         return redraw(drawid, obj); // return painter for histogram
+      // complex logic with intermediate update
+      // while TTree reading not synchronized with drawing,
+      // next portion can appear before previous is drawn
+      // critical is last drawing which should wait for previous one
+      // therefore last_pr is kept as inidication that promise is not yet processed
 
-      if (create_player === 1)
-         return intermediate ? null : new Promise(resolve => { finalResolve = resolve; });
+      if (!last_pr) last_pr = Promise.resolve(true);
 
-      // redirect drawing to the player
-      create_player = 1;
+      return last_pr.then(() => {
+         last_pr = redraw(drawid, obj).then(objpainter => {
+            if (intermediate)
+               last_pr = null;
+            if (has_player)
+               painter.setItemName("TreePlayer"); // item name used by MDI when process resize
+            return objpainter; // return painter for histogram
+         });
 
-      createTreePlayer(painter);
-      painter.configureTree(tree);
-      painter.showPlayer(args);
-      create_player = 2;
-
-      return redraw(painter.drawid, obj).then(objpainter => {
-         painter.setItemName("TreePlayer"); // item name used by MDI when process resize
-         if (finalResolve) finalResolve(objpainter);
-         return objpainter; // return painter for histogram
+         return intermediate ? null : last_pr;
       });
    };
 

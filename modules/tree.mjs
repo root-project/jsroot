@@ -1,7 +1,7 @@
 /// TTree functionality
 
 import { BIT, isArrayProto, isRootCollection, getMethods,
-         create, createHistogram, createTGraph, isBatchMode } from './core.mjs';
+         create, createHistogram, createTGraph } from './core.mjs';
 
 import { kChar, kShort, kInt, kFloat,
          kCharStar, kDouble, kDouble32,

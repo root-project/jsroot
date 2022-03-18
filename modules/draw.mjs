@@ -445,7 +445,7 @@ function redraw(dom, obj, opt) {
    }
 
    if (res_painter) {
-      if (!redraw_res || (typeof redraw_res != 'object') || !redraw_res.then)
+      if (!isPromise(redraw_res))
          redraw_res = Promise.resolve(true);
       return redraw_res.then(() => res_painter);
    }
@@ -591,7 +591,6 @@ init_v7 = function(arg) {
    });
 }
 
-
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
@@ -608,6 +607,5 @@ function drawRooPlot(dom, plot) {
       return Promise.all(arr).then(() => hp);
    });
 }
-
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot };
