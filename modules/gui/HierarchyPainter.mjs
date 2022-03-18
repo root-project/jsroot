@@ -3877,6 +3877,8 @@ function drawInspector(dom, obj) {
    });
 }
 
+internals.drawInspector = drawInspector;
+
 export { getHPainter, HierarchyPainter,
          drawInspector, drawStreamerInfo, drawList,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };

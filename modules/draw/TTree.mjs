@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode } from '../core.mjs';
+import { internals, httpRequest, isBatchMode, create } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 
@@ -58,18 +58,17 @@ TDrawSelector.prototype.ShowProgress = function(value) {
 }
 
 function drawTreeDrawResult(dom, obj, opt) {
+
    let typ = obj._typename;
 
-   if (typ.indexOf('TGraph') == 0)
-      return TGraphPainter.draw(dom, obj, opt);
    if (typ.indexOf('TH1') == 0)
       return TH1Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH2') == 0)
       return TH2Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH3') == 0)
       return TH3Painter.draw(dom, obj, opt);
-   if (typ == 'TObjString')
-      return drawRawText(dom, obj);
+   if (typ.indexOf('TGraph') == 0)
+      return TGraphPainter.draw(dom, obj, opt);
 
    return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
 }
@@ -80,6 +79,20 @@ function treeDrawProgress(obj, final) {
    // no need to update drawing if previous is not yet completed
    if (!final && !this.last_pr)
       return;
+
+   if (this.dump || this.testio) {
+      if (!final) return;
+      if (isBatchMode()) {
+         let painter = new ObjectPainter(this.drawid, obj);
+         painter.selectDom().property("_json_object_", obj);
+         return Promise.resolve(painter);
+      }
+      if (internals.drawInspector)
+         return internals.drawInspector(this.drawid, obj);
+      let str = create('TObjString');
+      str.fString = JSON.stringify(obj);
+      return drawRawText(this.drawid, str);
+   }
 
    // complex logic with intermediate update
    // while TTree reading not synchronized with drawing,
@@ -434,6 +447,7 @@ function drawTree() {
 
    let pr;
    if (args.expr === "testio") {
+      args.testio = true;
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
    } else if (args.expr) {
