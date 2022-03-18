@@ -10,7 +10,10 @@ import { BasePainter } from '../base/BasePainter.mjs';
 
 import { cleanup, resize } from '../base/ObjectPainter.mjs';
 
-import { draw, redraw } from '../draw.mjs';
+import { TH1Painter } from '../hist/TH1Painter.mjs';
+import { TH2Painter } from '../hist/TH2Painter.mjs';
+import { TH3Painter } from '../hist/TH3Painter.mjs';
+import { TGraphPainter } from '../hist/TGraphPainter.mjs';
 
 import { showProgress, registerForResize } from '../gui/utils.mjs';
 
@@ -52,6 +55,50 @@ TDrawSelector.prototype.ShowProgress = function(value) {
 
    showProgress(main_box);
    this.last_progress = value;
+}
+
+function drawTreeDrawResult(dom, obj, opt) {
+   let typ = obj._typename;
+
+   if (typ.indexOf('TGraph') == 0)
+      return TGraphPainter.draw(dom, obj, opt);
+   if (typ.indexOf('TH1') == 0)
+      return TH1Painter.draw(dom, obj, opt);
+   if (typ.indexOf('TH2') == 0)
+      return TH2Painter.draw(dom, obj, opt);
+   if (typ.indexOf('TH3') == 0)
+      return TH3Painter.draw(dom, obj, opt);
+
+   return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
+}
+
+
+function treeDrawProgress(obj, final) {
+
+   // no need to update drawing if previous is not yet completed
+   if (!final && !this.last_pr)
+      return;
+
+   // complex logic with intermediate update
+   // while TTree reading not synchronized with drawing,
+   // next portion can appear before previous is drawn
+   // critical is last drawing which should wait for previous one
+   // therefore last_pr is kept as inidication that promise is not yet processed
+
+   if (!this.last_pr) this.last_pr = Promise.resolve(true);
+
+    return this.last_pr.then(() => {
+       if (this.obj_painter)
+          this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
+       else
+          this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
+             this.obj_painter = p;
+             if (!final) this.last_pr = null;
+             return p; // return painter for histogram
+          });
+
+       return final ? this.last_pr : null;
+   });
 }
 
 
@@ -176,11 +223,11 @@ function createTreePlayer(player) {
 
       if (args.drawopt) cleanup(this.drawid);
 
-      const process_result = obj => redraw(this.drawid, obj);
+      args.drawid = this.drawid;
 
-      args.progress = process_result;
+      args.progress = treeDrawProgress.bind(args);
 
-      treeDraw(this.local_tree, args).then(process_result);
+      treeDraw(this.local_tree, args).then(obj => args.progress(obj, true));
    }
 
    player.getDrawOpt = function() {
@@ -231,7 +278,7 @@ function createTreePlayer(player) {
       const submitDrawRequest = () => {
          httpRequest(url, 'object').then(res => {
             cleanup(this.drawid);
-            draw(this.drawid, res, option);
+            drawTreeDrawResult(this.drawid, res, option);
          });
       };
 
@@ -250,6 +297,7 @@ function createTreePlayer(player) {
 
    return player;
 }
+
 
 /** @summary function used with THttpServer to assign player for the TTree object
   * @private */
@@ -364,61 +412,28 @@ function drawTree() {
    if (!tree)
       throw Error('No TTree object available for TTree::Draw');
 
-   let has_player = false, last_pr = null;
-
-   function process_result(obj, intermediate = false) {
-
-      let drawid;
-
-      // no need to update drawing if previous is not yet completed
-      if (intermediate && last_pr)
-         return;
-
-      if (!args.player) {
-         drawid = painter.getDom();
-      } else if (has_player) {
-         drawid = painter.drawid;
-      } else {
-         createTreePlayer(painter);
-         painter.configureTree(tree);
-         painter.showPlayer(args);
-         drawid = painter.drawid;
-         has_player = true;
-      }
-
-      // complex logic with intermediate update
-      // while TTree reading not synchronized with drawing,
-      // next portion can appear before previous is drawn
-      // critical is last drawing which should wait for previous one
-      // therefore last_pr is kept as inidication that promise is not yet processed
-
-      if (!last_pr) last_pr = Promise.resolve(true);
-
-      return last_pr.then(() => {
-         last_pr = redraw(drawid, obj).then(objpainter => {
-            if (intermediate)
-               last_pr = null;
-            if (has_player)
-               painter.setItemName("TreePlayer"); // item name used by MDI when process resize
-            return objpainter; // return painter for histogram
-         });
-
-         return intermediate ? null : last_pr;
-      });
-   };
+   args.drawid = painter.getDom();
+   if (args.player) {
+      createTreePlayer(painter);
+      painter.configureTree(tree);
+      painter.showPlayer(args);
+      painter.setItemName("TreePlayer"); // item name used by MDI when process resize
+      args.drawid = painter.drawid;
+   }
 
    // use in result handling same function as for progress handling
+
+   args.progress = treeDrawProgress.bind(args);
 
    let pr;
    if (args.expr === "testio") {
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
    } else {
-      args.progress = obj => process_result(obj, true);
       pr = treeDraw(tree, args);
    }
 
-   return pr.then(res => process_result(res));
+   return pr.then(res => args.progress(res, true));
 }
 
 export { drawTree, drawTreePlayer, drawTreePlayerKey, drawLeafPlayer };
