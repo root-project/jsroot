@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, create } from '../core.mjs';
+import { internals, httpRequest, isBatchMode, create, toJSON } from '../core.mjs';
 
 import { select as d3_select } from '../d3.mjs';
 
@@ -83,14 +83,14 @@ function treeDrawProgress(obj, final) {
    if (this.dump || this.testio) {
       if (!final) return;
       if (isBatchMode()) {
-         let painter = new ObjectPainter(this.drawid, obj);
+         let painter = new BasePainter(this.drawid);
          painter.selectDom().property("_json_object_", obj);
          return Promise.resolve(painter);
       }
-      if (internals.drawInspector)
+      if (typeof internals.drawInspector == 'function')
          return internals.drawInspector(this.drawid, obj);
       let str = create('TObjString');
-      str.fString = JSON.stringify(obj);
+      str.fString = toJSON(obj,2);
       return drawRawText(this.drawid, str);
    }
 
