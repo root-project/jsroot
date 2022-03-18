@@ -78,7 +78,7 @@ const drawFuncs = { lst: [
    { name: "TPieSlice", icon: 'img_graph', dummy: true },
    { name: "TExec", icon: "img_graph", dummy: true },
    { name: "TLine", icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
-   { name: "TArrow", icon: 'img_graph', draw: () => import_more().then(h => h.drawArrow), direct: true },
+   { name: "TArrow", icon: 'img_graph', class: () => import('./draw/TArrowPainter.mjs').then(h => h.TArrowPainter) },
    { name: "TPolyLine", icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
    { name: "TCurlyLine", sameas: 'TPolyLine' },
    { name: "TCurlyArc", sameas: 'TPolyLine' },
