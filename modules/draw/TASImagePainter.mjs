@@ -339,20 +339,19 @@ class TASImagePainter extends ObjectPainter {
       }
    }
 
+   /** @summary Draw TASImage object */
+   static draw(dom, obj, opt) {
+      let painter = new TASImagePainter(dom, obj, opt);
+      painter.decodeOptions(opt);
+      return ensureTCanvas(painter, false)
+                 .then(() => painter.drawImage())
+                 .then(() => {
+                     painter.fillToolbar();
+                     return painter;
+                 });
+   }
+
 
 } // class TASImagePainter
 
-
-/** @summary Draw TASImage object */
-function drawTASImage(dom, obj, opt) {
-   let painter = new TASImagePainter(dom, obj, opt);
-   painter.decodeOptions(opt);
-   return ensureTCanvas(painter, false)
-              .then(() => painter.drawImage())
-              .then(() => {
-                  painter.fillToolbar();
-                  return painter;
-              });
-}
-
-export { drawTASImage };
+export { TASImagePainter };
