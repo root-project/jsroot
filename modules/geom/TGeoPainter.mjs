@@ -30,8 +30,6 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 
-import { GUI as datGui } from '../gui/dat.gui.mjs';
-
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
@@ -1162,16 +1160,21 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      if (on) this.buildDatGui();
+      if (on)
+         loadScript(source_dir + 'scripts/dat.gui.js')
+               .then(() => this.buildDatGui(globalThis.dat));
    }
 
    /** @summary build dat.gui elements
      * @private */
-   buildDatGui() {
+   buildDatGui(dat) {
       // can happen when dat gui loaded after drawing is already cleaned
       if (!this._renderer) return;
 
-      this._datgui = new datGui({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
+      if (!dat)
+         throw Error('Fail to load dat.gui');
+
+      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
       if (main.style('position')=='static') main.style('position','relative');
