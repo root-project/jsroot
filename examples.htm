@@ -110,6 +110,8 @@
 
          import { registerForResize } from './modules/gui/utils.mjs';
 
+         import { createRootColors } from './modules/base/colors.mjs';
+
          import { draw } from './modules/draw.mjs';
 
          import { openFile } from './modules/io.mjs';
@@ -151,7 +153,7 @@
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
-         async function ProcessClick(durl, filename, itemname, opt, jsonname) {
+         async function processClick(durl, filename, itemname, opt, jsonname) {
 
             keyid = null; // stop execution of running test loop (if any)
 
@@ -194,7 +196,7 @@
              }
          };
 
-         function SetPageTitle(title) {
+         function setPageTitle(title) {
             let arr = document.getElementsByTagName("meta");
             for (let k=0;k<arr.length;++k) {
                let elem = arr[k];
@@ -203,7 +205,7 @@
             }
          }
 
-         function SetListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
+         function setListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
              elem.addEventListener( 'click', function (event) {
                 event.preventDefault();
 
@@ -211,12 +213,12 @@
                    return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
 
                 window.location.hash = shortname;
-                if (elem.title) SetPageTitle(elem.title);
-                ProcessClick(durl, filename, itemname, opt, jsonname);
+                if (elem.title) setPageTitle(elem.title);
+                processClick(durl, filename, itemname, opt, jsonname);
             });
          };
 
-         async function RunBigTest(interval, doinit) {
+         async function runBigTest(interval, doinit) {
             if (doinit) {
                let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
@@ -225,17 +227,18 @@
                if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                     else testinterval = interval;
                if (running) return;
-               return RunBigTest(0);
+               return runBigTest(0);
             }
 
-            function TestContinue() { RunBigTest(); }
+            function TestContinue() { runBigTest(); }
             function TestFailure(err) { throw err; }
 
             if (!keyid) return; // this is indication of test break
 
-            if (!Number.isInteger(interval)) interval = testinterval;
+            if (!Number.isInteger(interval))
+               interval = testinterval;
             if (interval > 0)
-               return setTimeout(() => RunBigTest(0), interval);
+               return setTimeout(() => runBigTest(0), interval);
 
             if (++optid >= examples_main[keyid].length) {
                let found = false, next = null;
@@ -248,14 +251,14 @@
                if (!next) return; // stop condition
                optid = -1; testfile = testobj = null;
                // console.log("Switch key ", keyid);
-               return RunBigTest(0);
+               return runBigTest(0);
             }
 
             let entry = examples_main[keyid][optid];
 
             // exclude some entries from the test
-            if (entry.notest) return RunBigTest(0);
-            if (!use_zstd && entry.zstd) return RunBigTest(0);
+            if (entry.notest) return runBigTest(0);
+            if (!use_zstd && entry.zstd) return runBigTest(0);
 
             let filename = "", itemname = "", jsonname = "", url = "", opt = "";
 
@@ -290,16 +293,18 @@
             }
 
             // console.log('KEY ', keyid, 'opt', opt);
-            // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
+            // if ((url.length==0) || (keyid != 'Misc')) return runBigTest(0);
 
             if (hpainter) { hpainter.cleanup(); hpainter = null; }
             cleanup('viewer');
+
+            createRootColors(); // ensure default colors
 
             if (url.length > 0) {
                if (no_interactive) url += "&interactive=0";
 
                testfile = testobj = null;
-               // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
+               // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
 
                let d = decodeUrl(url),
                    layout = d.get("layout", "simple"),
@@ -460,7 +465,7 @@
                }
 
                content.appendChild( aaa );
-               SetListener(aaa, shortname, url, filename, itemname, opt, jsonname);
+               setListener(aaa, shortname, url, filename, itemname, opt, jsonname);
 
                if (n < opts.length-1) {
                   content.appendChild(document.createTextNode(", "));
@@ -470,8 +475,8 @@
 
                if (window.location.hash == "#" + shortname) {
                   aaa.focus();
-                  if (entry.title) SetPageTitle(entry.title);
-                  ProcessClick(url, filename, itemname, opt, jsonname);
+                  if (entry.title) setPageTitle(entry.title);
+                  processClick(url, filename, itemname, opt, jsonname);
                }
             }
          }
@@ -488,7 +493,7 @@
              aaa.addEventListener( 'click', function (event) {
                  event.preventDefault();
                  window.location.hash = "run";
-                 RunBigTest(10,true);
+                 runBigTest(10,true);
              });
 
              content.appendChild(document.createTextNode(", "));
@@ -500,7 +505,7 @@
              aaa.addEventListener( 'click', function (event) {
                  event.preventDefault();
                  window.location.hash = "slow";
-                 RunBigTest(5000,true);
+                 runBigTest(5000,true);
              });
 
              content.appendChild(document.createTextNode(", "));
@@ -512,7 +517,7 @@
              aaa.addEventListener( 'click', function (event) {
                  event.preventDefault();
                  window.location.hash = "fast";
-                 RunBigTest(1,true);
+                 runBigTest(1,true);
              });
 
              content.appendChild(document.createTextNode(", "));
@@ -527,11 +532,11 @@
          }
 
          if (window.location.hash == "#run")
-            RunBigTest(100,true);
+            runBigTest(100,true);
          else if (window.location.hash == "#fast")
-            RunBigTest(1,true);
+            runBigTest(1,true);
          else if (window.location.hash == "#slow")
-            RunBigTest(5000,true);
+            runBigTest(5000,true);
 
       </script>
    </body>
