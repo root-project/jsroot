@@ -48,7 +48,6 @@
   "files": [
     "moduels/*",
     "scripts/*",
-    "style/*",
     "LICENSE"
   ]
 }
