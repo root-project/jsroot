@@ -2552,7 +2552,8 @@ function treeDraw(tree, args) {
   * @desc Used when "testio" draw option for TTree is specified
   * @private */
 function treeIOTest(tree, args) {
-   let branches = [], names = [], nchilds = [];
+   let branches = [], names = [], nchilds = [],
+       res_str = create('TObjString');
 
    function collectBranches(obj, prntname = "") {
       if (!obj || !obj.fBranches) return 0;
@@ -2599,6 +2600,8 @@ function treeIOTest(tree, args) {
             res = (!res || this.fails) ? "FAIL" : "ok";
 
          names[nbr] = res + " " + names[nbr];
+
+         res_str.fString += nbr + ": " + names[nbr] + "\n";
       }
 
       let br = branches[nbr],
@@ -2634,7 +2637,7 @@ function treeIOTest(tree, args) {
    return testBranch(0).then(() => {
       if (args.showProgress) args.showProgress();
 
-      return names;
+      return res_str;
    });
 }
 

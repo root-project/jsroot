@@ -8,7 +8,7 @@ import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../t
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
-import { cleanup, resize } from '../base/ObjectPainter.mjs';
+import { cleanup, resize, drawRawText } from '../base/ObjectPainter.mjs';
 
 import { TH1Painter } from '../hist/TH1Painter.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
@@ -68,6 +68,8 @@ function drawTreeDrawResult(dom, obj, opt) {
       return TH2Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH3') == 0)
       return TH3Painter.draw(dom, obj, opt);
+   if (typ == 'TObjString')
+      return drawRawText(dom, obj);
 
    return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
 }
@@ -398,27 +400,32 @@ function drawTree() {
       tree = obj.$tree;
    } else {
       if (!args) args = 'player';
-
-      if ((typeof args == 'string') && (args.indexOf('player') == 0)) {
-         createTreePlayer(painter);
-         painter.configureTree(tree);
-         painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
-         return painter;
-      }
-
       if (typeof args === 'string') args = { expr: args };
    }
 
    if (!tree)
       throw Error('No TTree object available for TTree::Draw');
 
-   args.drawid = painter.getDom();
+   if (typeof args.expr == 'string') {
+      let p = args.expr.indexOf('player');
+      if (p == 0) {
+         args.player = true;
+         args.expr = args.expr.substr(6);
+         if (args.expr[0] == ':') args.expr = args.expr.substr(1);
+      } else if ((p >= 0) && (p == args.expr.length-6)) {
+         args.player = true;
+         args.expr = args.expr.substr(0,p);
+         if ((p > 0) && (args.expr[p-1] == ';')) args.expr = args.expr.substr(0,p-1);
+      }
+   }
+
    if (args.player) {
       createTreePlayer(painter);
       painter.configureTree(tree);
       painter.showPlayer(args);
-      painter.setItemName("TreePlayer"); // item name used by MDI when process resize
       args.drawid = painter.drawid;
+   } else {
+      args.drawid = painter.getDom();
    }
 
    // use in result handling same function as for progress handling
@@ -429,9 +436,10 @@ function drawTree() {
    if (args.expr === "testio") {
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
-   } else {
+   } else if (args.expr) {
       pr = treeDraw(tree, args);
-   }
+   } else
+      return Promise.resolve(painter);
 
    return pr.then(res => args.progress(res, true));
 }
