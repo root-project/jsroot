@@ -61,6 +61,9 @@ function drawTreeDrawResult(dom, obj, opt) {
 
    let typ = obj._typename;
 
+   if (!typ || (typeof typ !== 'string'))
+      return Promise.reject(Error(`Object without type cannot be draw with TTree`));
+
    if (typ.indexOf('TH1') == 0)
       return TH1Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH2') == 0)
