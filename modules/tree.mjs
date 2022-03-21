@@ -276,7 +276,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
       if ((s_elem.fType === kObject) || (s_elem.fType === kAny)) return s_elem.fTypeName;
-      if (s_elem.fType === kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
+      if (s_elem.fType === kObjectp) return s_elem.fTypeName.slice(0, s_elem.fTypeName.length - 1);
    }
 
    return "";
@@ -315,7 +315,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       top_search = true;
       lst = tree.fBranches;
       let pos = search.indexOf("[");
-      if (pos > 0) search = search.substr(0, pos);
+      if (pos > 0) search = search.slice(0, pos);
    }
 
    if (!lst || (lst.arr.length === 0)) return null;
@@ -323,12 +323,12 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
    for (let n = 0; n < lst.arr.length; ++n) {
       let brname = lst.arr[n].fName;
       if (brname[brname.length - 1] == "]")
-         brname = brname.substr(0, brname.indexOf("["));
+         brname = brname.slice(0, brname.indexOf("["));
 
       // special case when branch name includes STL map name
       if ((search.indexOf(brname) !== 0) && (brname.indexOf("<") > 0)) {
          let p1 = brname.indexOf("<"), p2 = brname.lastIndexOf(">");
-         brname = brname.substr(0, p1) + brname.substr(p2 + 1);
+         brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
       if (brname === search) { res = { branch: lst.arr[n], rest: "" }; break; }
@@ -343,9 +343,9 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       if (search[pnt] !== '.') continue;
 
       res = findBranchComplex(tree, search, lst.arr[n].fBranches);
-      if (!res) res = findBranchComplex(tree, search.substr(pnt + 1), lst.arr[n].fBranches);
+      if (!res) res = findBranchComplex(tree, search.slice(pnt + 1), lst.arr[n].fBranches);
 
-      if (!res) res = { branch: lst.arr[n], rest: search.substr(pnt) };
+      if (!res) res = { branch: lst.arr[n], rest: search.slice(pnt) };
 
       break;
    }
@@ -354,12 +354,12 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       let p = 3;
       while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
       let br = (p > 3) ? getTreeBranch(tree, parseInt(search.slice(3,p))) : null;
-      if (br) res = { branch: br, rest: search.substr(p) };
+      if (br) res = { branch: br, rest: search.slice(p) };
    }
 
    if (!top_search || !res) return res;
 
-   if (name.length > search.length) res.rest += name.substr(search.length);
+   if (name.length > search.length) res.rest += name.slice(search.length);
 
    return res;
 }
@@ -443,19 +443,19 @@ class TDrawVariable {
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
             if (code[pos2] == "$") {
                let repl = "";
-               switch (code.substr(pos, pos2 - pos)) {
+               switch (code.slice(pos, pos2)) {
                   case "LocalEntry":
                   case "Entry": repl = "arg.$globals.entry"; break;
                   case "Entries": repl = "arg.$globals.entries"; break;
                }
                if (repl) {
-                  code = code.substr(0, pos) + repl + code.substr(pos2 + 1);
+                  code = code.slice(0, pos) + repl + code.slice(pos2 + 1);
                   pos = pos + repl.length;
                   continue;
                }
             }
 
-            br = findBranchComplex(tree, code.substr(pos, pos2 - pos));
+            br = findBranchComplex(tree, code.slice(pos, pos2));
             if (!br) { pos = pos2 + 1; continue; }
 
             // when full id includes branch name, replace only part of extracted expression
@@ -476,7 +476,7 @@ class TDrawVariable {
          // now extract all levels of iterators
          while (pos2 < code.length) {
 
-            if ((code[pos2] === "@") && (code.substr(pos2, 5) == "@size") && (arriter.length == 0)) {
+            if ((code[pos2] === "@") && (code.slice(pos2, pos2 + 5) == "@size") && (arriter.length == 0)) {
                pos2 += 5;
                branch_mode = true;
                break;
@@ -486,7 +486,7 @@ class TDrawVariable {
                // this is object member
                let prev = ++pos2;
 
-               if ((code[prev] === "@") && (code.substr(prev, 5) === "@size")) {
+               if ((code[prev] === "@") && (code.slice(prev, prev + 5) === "@size")) {
                   arriter.push("$size$");
                   pos2 += 5;
                   break;
@@ -512,7 +512,7 @@ class TDrawVariable {
                      if (objclass && isRootCollection(null, objclass)) arriter.push(undefined);
                   }
                }
-               arriter.push(code.substr(prev, pos2 - prev));
+               arriter.push(code.slice(prev, pos2));
                continue;
             }
 
@@ -526,7 +526,7 @@ class TDrawVariable {
                if (code[pos2] == '[') cnt++; else if (code[pos2] == ']') cnt--;
                pos2++;
             }
-            let sub = code.substr(prev + 1, pos2 - prev - 1);
+            let sub = code.slice(prev + 1, pos2);
             switch (sub) {
                case "":
                case "$all$": arriter.push(undefined); break;
@@ -566,7 +566,7 @@ class TDrawVariable {
 
          let replace = "arg.var" + (this.branches.length - 1);
 
-         code = code.substr(0, pos) + replace + code.substr(pos2);
+         code = code.slice(0, pos) + replace + code.slice(pos2);
 
          pos = pos + replace.length;
       }
@@ -706,12 +706,12 @@ class TDrawSelector extends TSelector {
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(";");
       while (pos >= 0) {
-         let parname = expr.substr(pos + 1), parvalue = undefined;
-         expr = expr.substr(0, pos);
+         let parname = expr.slice(pos + 1), parvalue = undefined;
+         expr = expr.slice(0, pos);
          pos = expr.lastIndexOf(";");
 
          let separ = parname.indexOf(":");
-         if (separ > 0) { parvalue = parname.substr(separ + 1); parname = parname.substr(0, separ); }
+         if (separ > 0) { parvalue = parname.slice(separ + 1); parname = parname.slice(0, separ); }
 
          let intvalue = parseInt(parvalue);
          if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
@@ -766,12 +766,12 @@ class TDrawSelector extends TSelector {
 
       pos = expr.lastIndexOf(">>");
       if (pos >= 0) {
-         let harg = expr.substr(pos + 2).trim();
-         expr = expr.substr(0, pos).trim();
+         let harg = expr.slice(pos + 2).trim();
+         expr = expr.slice(0, pos).trim();
          pos = harg.indexOf("(");
          if (pos > 0) {
-            this.hist_name = harg.substr(0, pos);
-            harg = harg.substr(pos);
+            this.hist_name = harg.slice(0, pos);
+            harg = harg.slice(pos);
          }
          if (harg === "dump") {
             args.dump = true;
@@ -780,7 +780,7 @@ class TDrawSelector extends TSelector {
          } else if (pos < 0) {
             this.hist_name = harg;
          } else if ((harg[0] == "(") && (harg[harg.length - 1] == ")")) {
-            harg = harg.substr(1, harg.length - 2).split(",");
+            harg = harg.slice(1, harg.length - 1).split(",");
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
                harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
@@ -814,8 +814,8 @@ class TDrawSelector extends TSelector {
       } else {
          pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf("::"); // avoid confusion due-to :: in the namespace
          if (pos > 0) {
-            cut = expr.substr(pos + 2).trim();
-            expr = expr.substr(0, pos).trim();
+            cut = expr.slice(pos + 2).trim();
+            expr = expr.slice(0, pos).trim();
          }
       }
 
@@ -832,12 +832,12 @@ class TDrawSelector extends TSelector {
             case "]": nbr2--; break;
             case ":":
                if (expr[pos + 1] == ":") { pos++; continue; }
-               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
+               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
                prev = pos + 1;
                break;
          }
       }
-      if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
+      if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
 
       if ((names.length < 1) || (names.length > 3)) return false;
 
@@ -1394,9 +1394,9 @@ function findBrachStreamerElement(branch, file) {
 
    let match_name = branch.fName,
       pos = match_name.indexOf("[");
-   if (pos > 0) match_name = match_name.substr(0, pos);
+   if (pos > 0) match_name = match_name.slice(0, pos);
    pos = match_name.lastIndexOf(".");
-   if (pos > 0) match_name = match_name.substr(pos + 1);
+   if (pos > 0) match_name = match_name.slice(pos + 1);
 
    function match_elem(elem) {
       if (!elem) return false;
@@ -1442,7 +1442,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
    if (!elem) return "";
 
    let clname = elem.fTypeName;
-   if (clname[clname.length - 1] === "*") clname = clname.substr(0, clname.length - 1);
+   if (clname[clname.length - 1] === "*") clname = clname.slice(0, clname.length - 1);
 
    return clname;
 }
@@ -1682,7 +1682,7 @@ function treeProcess(tree, selector, args) {
          if (!lst || !lst.arr.length) return true;
 
          let match_prefix = branch.fName;
-         if (match_prefix[match_prefix.length - 1] === ".") match_prefix = match_prefix.substr(0, match_prefix.length - 1);
+         if (match_prefix[match_prefix.length - 1] === ".") match_prefix = match_prefix.slice(0, match_prefix.length - 1);
          if ((typeof read_mode === "string") && (read_mode[0] == ".")) match_prefix += read_mode;
          match_prefix += ".";
 
@@ -1706,20 +1706,20 @@ function treeProcess(tree, selector, args) {
             let subname = br.fName, chld_direct = 1;
 
             if (br.fName.indexOf(match_prefix) === 0) {
-               subname = subname.substr(match_prefix.length);
+               subname = subname.slice(match_prefix.length);
             } else {
                if (chld_kind > 0) continue; // for defined children names prefix must be present
             }
 
             let p = subname.indexOf('[');
-            if (p > 0) subname = subname.substr(0, p);
+            if (p > 0) subname = subname.slice(0, p);
             p = subname.indexOf('<');
-            if (p > 0) subname = subname.substr(0, p);
+            if (p > 0) subname = subname.slice(0, p);
 
             if (chld_kind > 0) {
                chld_direct = "$child$";
                let pp = subname.indexOf(".");
-               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + "." + subname.substr(0, pp + 1), k) || "TObject";
+               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + "." + subname.slice(0, pp + 1), k) || "TObject";
             }
 
             if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -2651,10 +2651,10 @@ function treeHierarchy(node, obj) {
 
       function ClearName(arg) {
          let pos = arg.indexOf("[");
-         if (pos>0) arg = arg.substr(0, pos);
+         if (pos>0) arg = arg.slice(0, pos);
          if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
-            arg = arg.substr(parent_branch.fName.length);
-            if (arg[0]===".") arg = arg.substr(1);
+            arg = arg.slice(parent_branch.fName.length);
+            if (arg[0]===".") arg = arg.slice(1);
          }
          return arg;
       }
