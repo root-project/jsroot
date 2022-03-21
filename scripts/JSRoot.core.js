@@ -86,8 +86,6 @@ function v6_require(need) {
 
    let arr = [];
 
-   console.log('need', JSON.stringify(need));
-
    need.forEach(name => {
       if (name == "hist")
          arr.push(Promise.all([import("../modules/hist/TH1Painter.mjs"), import("../modules/hist/TH2Painter.mjs"), import("../modules/hist/THStackPainter.mjs")]).then(arr => {
@@ -142,6 +140,8 @@ function v6_require(need) {
          }));
       else if (name == "openui5")
          arr.push(import("../modules/gui/utils.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
+      else if (name == "interactive")
+         arr.push(import("../modules/gui/utils.mjs").then(handle => { return { addMoveHandler: handle.addMoveHandler }; }));
       else if (name.indexOf(".js") >= 0)
          arr.push(import("../modules/core.mjs").then(handle => handle.loadScript(name)));
    });
