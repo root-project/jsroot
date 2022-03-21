@@ -696,7 +696,7 @@ let parseAsArray = val => {
             if (nbr === 0) {
                let sub = val.substring(last, indx).trim();
                if ((sub.length > 1) && (sub[0] == sub[sub.length-1]) && ((sub[0] == '"') || (sub[0] == "'")))
-                  sub = sub.substr(1, sub.length-2);
+                  sub = sub.slice(1, sub.length-1);
                res.push(sub);
                last = indx+1;
             }
@@ -705,7 +705,7 @@ let parseAsArray = val => {
    }
 
    if (res.length === 0)
-      res.push(val.substr(1, val.length-2).trim());
+      res.push(val.slice(1, val.length-1).trim());
 
    return res;
 }
@@ -894,7 +894,7 @@ class HierarchyPainter extends BasePainter {
 
             let len = top._name.length;
             if (fullname[len] == "/") {
-               fullname = fullname.substr(len+1);
+               fullname = fullname.slice(len+1);
                pos = fullname.length;
             }
          }
@@ -905,12 +905,12 @@ class HierarchyPainter extends BasePainter {
 
             if ((pos >= fullname.length-1) || (pos < 0)) return child;
 
-            return find_in_hierarchy(child, fullname.substr(pos + 1));
+            return find_in_hierarchy(child, fullname.slice(pos + 1));
          }
 
          while (pos > 0) {
             // we try to find element with slashes inside - start from full name
-            let localname = (pos >= fullname.length) ? fullname : fullname.substr(0, pos);
+            let localname = (pos >= fullname.length) ? fullname : fullname.slice(0, pos);
 
             if (top._childs) {
                // first try to find direct matched item
@@ -937,9 +937,9 @@ class HierarchyPainter extends BasePainter {
 
                let allow_index = arg.allow_index;
                if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
-                    /^\d+$/.test(localname.substr(1,localname.length-2))) {
+                    /^\d+$/.test(localname.slice(1,localname.length-1))) {
                   allow_index = true;
-                  localname = localname.substr(1,localname.length-2);
+                  localname = localname.slice(1,localname.length-1);
                }
 
                // when search for the elements it could be allowed to check index
@@ -957,7 +957,7 @@ class HierarchyPainter extends BasePainter {
              // if did not found element with given name we just generate it
              if (top._childs === undefined) top._childs = [];
              pos = fullname.indexOf("/");
-             let child = { _name: ((pos < 0) ? fullname : fullname.substr(0, pos)) };
+             let child = { _name: ((pos < 0) ? fullname : fullname.slice(0, pos)) };
              top._childs.push(child);
              return process_child(child);
          }
@@ -1079,7 +1079,7 @@ class HierarchyPainter extends BasePainter {
 
       if ((typeof itemname == 'string') && (itemname.indexOf("img:")==0)) {
          // artificial class, can be created by users
-         result.obj = {_typename: "TJSImage", fName: itemname.substr(4)};
+         result.obj = {_typename: "TJSImage", fName: itemname.slice(4)};
          return Promise.resolve(result);
       }
 
@@ -1730,7 +1730,7 @@ class HierarchyPainter extends BasePainter {
                            item = _item;
                            opt = _opt;
                         } else if (top.getPadPainter() === p.getPadPainter()) {
-                           if (_opt.indexOf("same ")==0) _opt = _opt.substr(5);
+                           if (_opt.indexOf("same ")==0) _opt = _opt.slice(5);
                            item += "+" + _item;
                            opt += "+" + _opt;
                         }
@@ -1864,8 +1864,8 @@ class HierarchyPainter extends BasePainter {
           p = drawopt ? drawopt.indexOf(marker) : -1;
 
       if (p >= 0) {
-         frame_name = drawopt.substr(p + marker.length);
-         drawopt = drawopt.substr(0, p);
+         frame_name = drawopt.slice(p + marker.length);
+         drawopt = drawopt.slice(0, p);
       }
 
       function complete(respainter, err) {
@@ -1893,7 +1893,7 @@ class HierarchyPainter extends BasePainter {
          updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:")==0);
 
          if (updating) {
-            drawopt = drawopt.substr(7);
+            drawopt = drawopt.slice(7);
             if (!item || item._doing_update) return complete();
             item._doing_update = true;
          }
@@ -2133,7 +2133,7 @@ class HierarchyPainter extends BasePainter {
          if (item && item.indexOf("img:")==0) { images[i] = true; continue; }
 
          if (item && (item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
-            items[i] = item.substr(1, item.length-2);
+            items[i] = item.slice(1, item.length-1);
             can_split = false;
          }
 
@@ -2153,7 +2153,7 @@ class HierarchyPainter extends BasePainter {
             for (let j = 0; j < dropitems[i].length; ++j) {
                let pos = dropitems[i][j].indexOf("_same_");
                if ((pos > 0) && (h.findItem(dropitems[i][j]) === null))
-                  dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
+                  dropitems[i][j] = dropitems[i][j].slice(0,pos) + items[i].slice(pos);
 
                elem = h.findItem({ name: dropitems[i][j], check_keys: true });
                if (elem) dropitems[i][j] = h.itemFullName(elem);
@@ -2175,7 +2175,7 @@ class HierarchyPainter extends BasePainter {
          // also check if subsequent items has _same_, than use name from first item
          let pos = items[i].indexOf("_same_");
          if ((pos > 0) && !h.findItem(items[i]) && (i > 0))
-            items[i] = items[i].substr(0,pos) + items[0].substr(pos);
+            items[i] = items[i].slice(0,pos) + items[0].slice(pos);
 
          elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) items[i] = h.itemFullName(elem);
@@ -2203,8 +2203,8 @@ class HierarchyPainter extends BasePainter {
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
          let p = options[n].indexOf("frameid:");
          if (p >= 0) {
-            fname = options[n].substr(p+8);
-            options[n] = options[n].substr(0,p);
+            fname = options[n].slice(p+8);
+            options[n] = options[n].slice(0,p);
          } else {
             while (frame_names.indexOf(fname)>=0)
                fname = items[n] + "_" + k++;
@@ -3104,12 +3104,12 @@ class HierarchyPainter extends BasePainter {
 
          while (opt.length > 0) {
             let separ = opt.indexOf(";");
-            let part = (separ>0) ? opt.substr(0, separ) : opt;
+            let part = (separ>0) ? opt.slice(0, separ) : opt;
 
-            if (separ > 0) opt = opt.substr(separ+1); else opt = "";
+            if (separ > 0) opt = opt.slice(separ+1); else opt = "";
 
             let canarray = true;
-            if (part[0]=='#') { part = part.substr(1); canarray = false; }
+            if (part[0]=='#') { part = part.slice(1); canarray = false; }
 
             let val = d.get(part,null);
 
@@ -3126,11 +3126,11 @@ class HierarchyPainter extends BasePainter {
          if (res.length>0 || !gui_div || gui_div.empty()) return res;
          while (opt.length>0) {
             let separ = opt.indexOf(";");
-            let part = separ>0 ? opt.substr(0, separ) : opt;
-            if (separ>0) opt = opt.substr(separ+1); else opt = "";
+            let part = separ>0 ? opt.slice(0, separ) : opt;
+            if (separ>0) opt = opt.slice(separ+1); else opt = "";
 
             let canarray = true;
-            if (part[0]=='#') { part = part.substr(1); canarray = false; }
+            if (part[0]=='#') { part = part.slice(1); canarray = false; }
             if (part==='files') continue; // special case for normal UI
 
             if (!gui_div.node().hasAttribute(part)) continue;

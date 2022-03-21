@@ -112,7 +112,7 @@ class JSRootMenu {
       let without_sub = false;
       if (top_name.indexOf("nosub:")==0) {
          without_sub = true;
-         top_name = top_name.substr(6);
+         top_name = top_name.slice(6);
       }
 
       if (opts.length === 1) {
@@ -647,7 +647,7 @@ class StandaloneMenu extends JSRootMenu {
          return curr.push({ divider: true });
 
       if (name.indexOf("header:")==0)
-         return curr.push({ text: name.substr(7), header: true });
+         return curr.push({ text: name.slice(7), header: true });
 
       if (name=="endsub:") return this.stack.pop();
 
@@ -657,13 +657,13 @@ class StandaloneMenu extends JSRootMenu {
       curr.push(elem);
 
       if (name.indexOf("sub:")==0) {
-         name = name.substr(4);
+         name = name.slice(4);
          elem.sub = [];
          this.stack.push(elem.sub);
       }
 
-      if (name.indexOf("chk:")==0) { elem.checked = true; name = name.substr(4); } else
-      if (name.indexOf("unk:")==0) { elem.checked = false; name = name.substr(4); }
+      if (name.indexOf("chk:")==0) { elem.checked = true; name = name.slice(4); } else
+      if (name.indexOf("unk:")==0) { elem.checked = false; name = name.slice(4); }
 
       elem.text = name;
       elem.title = title;
@@ -743,7 +743,7 @@ class StandaloneMenu extends JSRootMenu {
 
             let sub = document.createElement('span');
             if (d.text.indexOf("<nobr>") == 0)
-               sub.textContent = d.text.substr(6, d.text.length-13);
+               sub.textContent = d.text.slice(6, d.text.length-7);
             else
                sub.textContent = d.text;
             text.appendChild(sub);
@@ -1064,7 +1064,7 @@ class BootstrapMenu extends JSRootMenu {
       }
 
       if (name.indexOf("header:")==0) {
-         this.code += `<h6 class="dropdown-header">${name.substr(7)}</h6>`;
+         this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
          return;
       }
 
@@ -1076,15 +1076,15 @@ class BootstrapMenu extends JSRootMenu {
          this.code += "</ul>";
          return;
       }
-      if (name.indexOf("sub:")==0) { name = name.substr(4); newlevel = true; }
+      if (name.indexOf("sub:")==0) { name = name.slice(4); newlevel = true; }
 
       if (typeof arg == 'function') { func = arg; arg = name; }
 
       if (name.indexOf("chk:")==0) {
          checked = '\u2713';
-         name  = name.substr(4);
+         name  = name.slice(4);
       } else if (name.indexOf("unk:")==0) {
-         name = name.substr(4);
+         name = name.slice(4);
       }
 
       if (title) extras += ` title="${title}"`;
@@ -1143,7 +1143,7 @@ class BootstrapMenu extends JSRootMenu {
          for (let i = 0; i < myItems.length; i++)
             myItems[i].addEventListener('click', function() {
                let arg = this.getAttribute('arg'),
-                   cnt = this.getAttribute('id').substr(menu.menuname.length),
+                   cnt = this.getAttribute('id').slice(menu.menuname.length),
                    func = cnt ? menu.funcs[cnt] : null;
                menu.remove();
                if (typeof func == 'function') {

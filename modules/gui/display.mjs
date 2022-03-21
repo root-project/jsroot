@@ -216,18 +216,18 @@ class GridDisplay extends MDIDisplay {
 
       if ((kind.indexOf("grid") == 0) || kind2) {
          if (kind2) kind = kind + "x" + kind2;
-               else kind = kind.substr(4).trim();
+               else kind = kind.slice(4).trim();
          this.use_separarators = false;
          if (kind[0] === "i") {
             this.use_separarators = true;
-            kind = kind.substr(1);
+            kind = kind.slice(1);
          }
 
          let separ = kind.indexOf("x"), sizex, sizey;
 
          if (separ > 0) {
-            sizey = parseInt(kind.substr(separ + 1));
-            sizex = parseInt(kind.substr(0, separ));
+            sizey = parseInt(kind.slice(separ + 1));
+            sizex = parseInt(kind.slice(0, separ));
          } else {
             sizex = sizey = parseInt(kind);
          }
@@ -253,9 +253,9 @@ class GridDisplay extends MDIDisplay {
       }
 
       if (kind && kind.indexOf("_") > 0) {
-         let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
+         let arg = parseInt(kind.slice(kind.indexOf("_")+1), 10);
          if (Number.isInteger(arg) && (arg > 10)) {
-            kind = kind.substr(0, kind.indexOf("_"));
+            kind = kind.slice(0, kind.indexOf("_"));
             sizes = [];
             while (arg>0) {
                sizes.unshift(Math.max(arg % 10, 1));
@@ -615,7 +615,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       let main = d3_select(frame.parentNode), left = main.style('left'), top = main.style('top');
 
-      return { x: parseInt(left.substr(0, left.length-2)), y: parseInt(top.substr(0, top.length-2)),
+      return { x: parseInt(left.slice(0, left.length-2)), y: parseInt(top.slice(0, top.length-2)),
                w: main.node().clientWidth, h: main.node().clientHeight };
    }
 
@@ -852,7 +852,7 @@ class FlexibleDisplay extends MDIDisplay {
          let changeProp = (i,name,dd) => {
             if (i >= current.length) {
                let v = moving_div.style(name);
-               current[i] = parseInt(v.substr(0,v.length-2));
+               current[i] = parseInt(v.slice(0,v.length-2));
             }
             current[i] += dd;
             moving_div.style(name, Math.max(0, current[i])+"px");
@@ -1379,7 +1379,7 @@ class BrowserLayout {
          // if separator set for the first time, check if status line present
          hsepar = main.select(".jsroot_h_separator").style('bottom');
          if ((typeof hsepar=='string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
-            hsepar = hsepar.substr(0,hsepar.length-2);
+            hsepar = hsepar.slice(0,hsepar.length-2);
          else
             hsepar = null;
       }
@@ -1586,8 +1586,8 @@ class BrowserLayout {
          area.style('bottom', '40px').classed('jsroot_float_browser', true);
         let drag_move = d3_drag().on("start", () => {
            let sl = area.style('left'), st = area.style('top');
-           this._float_left = parseInt(sl.substr(0,sl.length-2));
-           this._float_top = parseInt(st.substr(0,st.length-2));
+           this._float_left = parseInt(sl.slice(0,sl.length-2));
+           this._float_top = parseInt(st.slice(0,st.length-2));
            this._max_left = main.node().clientWidth - area.node().offsetWidth - 1;
            this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
 
@@ -1605,7 +1605,7 @@ class BrowserLayout {
 
         let drag_resize = d3_drag().on("start", () => {
            let sw = area.style('width');
-           this._float_width = parseInt(sw.substr(0,sw.length-2));
+           this._float_width = parseInt(sw.slice(0,sw.length-2));
            this._float_height = area.node().clientHeight;
            this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
            this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
