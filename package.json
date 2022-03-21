@@ -61,7 +61,7 @@
     "rollup-plugin-ignore": "1.0.10"
   },
   "scripts": {
-    "build": "rm -rf bundle/bld/* && rollup -c bundle/rollup.config.js",
+    "build": "rm -rf bundle/bld/* && rollup -c",
     "clean": "rm -rf bundle/bld"
   }
 }

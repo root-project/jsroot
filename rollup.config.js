@@ -2,7 +2,7 @@ import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import ascii from "rollup-plugin-ascii";
 import {terser} from "rollup-plugin-terser";
-import * as meta from "../package.json";
+import * as meta from "./package.json";
 import ignore from "rollup-plugin-ignore";
 
 const ingnore_modules = ['fs'];
