@@ -2,13 +2,9 @@
 
 import { settings } from '../core.mjs';
 
-import { REVISION, DoubleSide, Color, Vector2,
-         BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-         LineDashedMaterial, LineBasicMaterial, ShapeUtils } from '../three.mjs';
+import { Vector2, BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, ShapeUtils } from '../three.mjs';
 
-import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
-
-import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './draw3d.mjs';
+import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 

@@ -1,8 +1,6 @@
 import { gStyle, settings } from '../core.mjs';
 
-import { REVISION,
-         Matrix4,
-         Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry,
+import { REVISION, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry,
          LineBasicMaterial, BufferAttribute, BufferGeometry } from '../three.mjs';
 
 import { floatToString, TRandom } from '../base/BasePainter.mjs';
@@ -19,7 +17,7 @@ import { RH1Painter } from './RH1Painter.mjs';
 
 import { RH2Painter } from './RH2Painter.mjs';
 
-import { assignFrame3DMethods } from './draw3d.mjs';
+import { assignFrame3DMethods } from './hist3d.mjs';
 
 /**
  * @summary Painter for RH3 classes

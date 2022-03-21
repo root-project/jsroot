@@ -18,7 +18,7 @@ import { TPavePainter } from '../hist/TPavePainter.mjs';
 
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 
-import { assignFrame3DMethods } from './draw3d.mjs';
+import { assignFrame3DMethods } from './hist3d.mjs';
 
 /**
  * @summary Painter for TH3 classes

@@ -6,7 +6,7 @@ import { RH2Painter as RH2Painter2D } from '../hist2d/RH2Painter.mjs';
 
 import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 
-import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './draw3d.mjs';
+import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 
 class RH2Painter extends RH2Painter2D {
 

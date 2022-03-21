@@ -2,7 +2,7 @@
 
 import { settings } from '../core.mjs';
 
-import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
+import { assignFrame3DMethods, drawBinsLego } from './hist3d.mjs';
 
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 
