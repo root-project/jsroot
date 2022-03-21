@@ -275,7 +275,7 @@ class TH2Painter extends THistPainter {
       }
 
       if (isany)
-         this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
+         return this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
    }
 
    /** @summary Scan TH2 histogram content */

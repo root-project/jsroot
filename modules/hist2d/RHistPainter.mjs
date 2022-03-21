@@ -501,6 +501,10 @@ class RHistPainter extends RObjectPainter {
       return indx;
    }
 
+   /** @summary Auto zoom into histogram non-empty range
+     * @abstract */
+   autoZoom() {}
+
    /** @summary Process click on histogram-defined buttons */
    clickButton(funcname) {
       // TODO: move to frame painter
@@ -511,7 +515,7 @@ class RHistPainter extends RObjectPainter {
                this.getFramePainter().zoomChangedInteractive('reset');
                return true;
             }
-            if (this.draw_content && (typeof this.autoZoom === 'function')) {
+            if (this.draw_content) {
                this.autoZoom();
                return true;
             }

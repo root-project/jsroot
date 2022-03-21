@@ -1095,7 +1095,7 @@ class TH1Painter extends THistPainter {
       }
 
       if ((right - left < dist) && (left < right))
-         this.getFramePainter().zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
+         return this.getFramePainter().zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */

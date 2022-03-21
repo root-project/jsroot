@@ -650,7 +650,7 @@ class TH3Painter extends THistPainter {
             for (k = k1; k < k2; ++k)
                min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
 
-      if (min>0) return; // if all points positive, no chance for autoscale
+      if (min > 0) return; // if all points positive, no chance for autoscale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
 
@@ -690,7 +690,8 @@ class TH3Painter extends THistPainter {
          isany = true;
       }
 
-      if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+      if (isany)
+         return this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
    }
 
    /** @summary Fill histogram context menu */

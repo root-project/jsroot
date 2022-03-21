@@ -723,7 +723,8 @@ class RH3Painter extends RHistPainter {
          isany = true;
       }
 
-      if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+      if (isany)
+         return this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
    }
 
    /** @summary Fill histogram context menu */

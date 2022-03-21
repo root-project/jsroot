@@ -1730,6 +1730,10 @@ class THistPainter extends ObjectPainter {
       return true;
    }
 
+   /** @summary Auto zoom into histogram non-empty range
+     * @abstract */
+   autoZoom() {}
+
    /** @summary Process click on histogram-defined buttons */
    clickButton(funcname) {
       let fp = this.getFramePainter();
@@ -1743,7 +1747,7 @@ class THistPainter extends ObjectPainter {
                fp.zoomChangedInteractive('reset');
                return true;
             }
-            if (this.draw_content && (typeof this.autoZoom === 'function')) {
+            if (this.draw_content) {
                this.autoZoom();
                return true;
             }

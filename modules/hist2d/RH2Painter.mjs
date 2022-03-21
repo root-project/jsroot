@@ -199,7 +199,8 @@ class RH2Painter extends RHistPainter {
          isany = true;
       }
 
-      if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
+      if (isany)
+         return this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
    }
 
    /** @summary Scan content of 2-dim histogram */

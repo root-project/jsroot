@@ -946,7 +946,7 @@ class RH1Painter extends RHistPainter {
       }
 
       if ((right - left < dist) && (left < right))
-         this.getFramePainter().zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
+         return this.getFramePainter().zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
