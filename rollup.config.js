@@ -11,9 +11,9 @@ for(let key in meta.dependencies)
    ingnore_modules.push(key);
 
 const config = {
-  input: "bundle/src/jsroot_hist.mjs",
+  input: "bundle/src/jsroot_full.mjs",
   output: {
-    file: "bundle/bld/jsroot_hist.js",
+    file: "bundle/bld/jsroot_full.js",
     format: "es",
     inlineDynamicImports: true,
     indent: false,
@@ -32,6 +32,17 @@ const config = {
   }
 };
 
+const config_hist = {
+   ...config,
+   input: "bundle/src/jsroot_hist.mjs",
+   output: {
+      ...config.output,
+      file: "bundle/bld/jsroot_hist.js",
+      inlineDynamicImports: true
+   }
+}
+
+
 const config_2d = {
    ...config,
    input: "bundle/src/jsroot_hist2d.mjs",
@@ -46,7 +57,7 @@ const config_minified = {
    ...config,
     output: {
       ...config.output,
-      file: "bundle/bld/jsroot_hist.min.js",
+      file: "bundle/bld/jsroot_full.min.js",
       inlineDynamicImports: true
     },
     plugins: [
@@ -65,6 +76,17 @@ const config_minified = {
     ]
 }
 
+const config_hist_minified = {
+   ...config_minified,
+   input: "bundle/src/jsroot_hist.mjs",
+   output: {
+     ...config.output,
+     file: "bundle/bld/jsroot_hist.min.js",
+     inlineDynamicImports: true
+   }
+}
+
+
 const config_2d_minified = {
    ...config_minified,
    input: "bundle/src/jsroot_hist2d.mjs",
@@ -77,7 +99,9 @@ const config_2d_minified = {
 
 export default [
   config,
+  config_hist,
   config_2d,
   config_minified,
+  config_hist_minified,
   config_2d_minified
 ];
