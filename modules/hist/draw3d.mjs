@@ -284,7 +284,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       let fp = obj_painter.getFramePainter();
       if (fp && fp.showContextMenu)
          fp.showContextMenu(kind, pos, p);
-   }
+   };
 
 }
 
