@@ -117,7 +117,7 @@ function drawTF2(dom, func, opt) {
 
    if (opt.indexOf("SAME") == 0)
       if (!getElementMainPainter(dom))
-         opt = "A_ADJUST_FRAME_" + opt.substr(4);
+         opt = "A_ADJUST_FRAME_" + opt.slice(4);
 
    return TH2Painter.draw(dom, hist, opt).then(hpainter => {
 

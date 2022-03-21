@@ -737,7 +737,7 @@ class TWebPaintingPainter extends ObjectPainter {
          let lastp = 0, obj = { _typename: "any" };
          for (let k = 0; k < names.length; ++k) {
             let p = str.indexOf(":", lastp+1);
-            obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
+            obj[names[k]] = parseInt(str.slice(lastp+1, (p > lastp) ? p : undefined));
             lastp = p;
          }
          return obj;
@@ -781,7 +781,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
                   check_attributes(oper);
 
-                  npoints = parseInt(arr[k].substr(1));
+                  npoints = parseInt(arr[k].slice(1));
 
                   for (n = 0; n < npoints; ++n)
                      d += ((n > 0) ? "L" : "M") +
@@ -796,7 +796,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
                   check_attributes(oper);
 
-                  npoints = parseInt(arr[k].substr(1));
+                  npoints = parseInt(arr[k].slice(1));
 
                   this.markeratt.resetPos();
                   for (n = 0; n < npoints; ++n)
@@ -813,7 +813,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
                      let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize,
                          angle = attr.fTextAngle,
-                         txt = arr[k].substr(1),
+                         txt = arr[k].slice(1),
                          group = this.draw_g.append("svg:g");
 
                      if (angle >= 360) angle -= Math.floor(angle/360) * 360;
@@ -823,7 +823,7 @@ class TWebPaintingPainter extends ObjectPainter {
                      if (oper == "h") {
                         let res = "";
                         for (n = 0; n < txt.length; n += 2)
-                           res += String.fromCharCode(parseInt(txt.substr(n,2), 16));
+                           res += String.fromCharCode(parseInt(txt.slice(n,n+2), 16));
                         txt = res;
                      }
 
