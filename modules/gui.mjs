@@ -1,4 +1,4 @@
-import { decodeUrl, settings, gStyle, internals, findFunction, parse } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
