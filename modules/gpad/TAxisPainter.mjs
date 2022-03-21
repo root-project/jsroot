@@ -38,7 +38,7 @@ function getTimeOffset(axis) {
    if (!axis) return dflt_time_offset;
    let idF = axis.fTimeFormat.indexOf('%F');
    if (idF < 0) return gStyle.fTimeOffset * 1000;
-   let sof = axis.fTimeFormat.substr(idF + 2);
+   let sof = axis.fTimeFormat.slice(idF + 2);
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
    // special case, used from DABC painters
@@ -48,8 +48,8 @@ function getTimeOffset(axis) {
    const next = (separ, min, max) => {
       let pos = sof.indexOf(separ);
       if (pos < 0) return min;
-      let val = parseInt(sof.substr(0, pos));
-      sof = sof.substr(pos + 1);
+      let val = parseInt(sof.slice(0, pos));
+      sof = sof.slice(pos + 1);
       if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
       return val;
    }, year = next("-", 1970, 2300),
@@ -68,11 +68,11 @@ function getTimeOffset(axis) {
 
    if (sof.indexOf('GMT') == 0) {
       offset += dt.getTimezoneOffset() * 60000;
-      sof = sof.substr(4).trim();
+      sof = sof.slice(4).trim();
       if (sof.length > 3) {
          let p = 0, sign = 1000;
          if (sof[0] == '-') { p = 1; sign = -1000; }
-         offset -= sign * (parseInt(sof.substr(p, 2)) * 3600 + parseInt(sof.substr(p + 2, 2)) * 60);
+         offset -= sign * (parseInt(sof.slice(p, p+2)) * 3600 + parseInt(sof.slice(p+2, p+4)) * 60);
       }
    }
 
@@ -496,7 +496,7 @@ class TAxisPainter extends ObjectPainter {
 
          let scale_range = this.scale_max - this.scale_min,
              idF = axis.fTimeFormat.indexOf('%F'),
-             tf1 = (idF >= 0) ? axis.fTimeFormat.substr(0, idF) : axis.fTimeFormat,
+             tf1 = (idF >= 0) ? axis.fTimeFormat.slice(0, idF) : axis.fTimeFormat,
              tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))

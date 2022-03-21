@@ -957,8 +957,8 @@ class TPadPainter extends ObjectPainter {
       if (!this._websocket) {
 
          function SetPadField(arg) {
-            this.pad[arg.substr(1)] = parseInt(arg[0]);
-            this.interactiveRedraw("pad", arg.substr(1));
+            this.pad[arg.slice(1)] = parseInt(arg[0]);
+            this.interactiveRedraw("pad", arg.slice(1));
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
@@ -1261,10 +1261,10 @@ class TPadPainter extends ObjectPainter {
          for (let n = 0; n < arr.length; ++n) {
             let name = arr[n], p = name.indexOf(":");
             if (p > 0) {
-               ListOfColors[parseInt(name.substr(0,p))] = d3_color("rgb(" + name.substr(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.slice(0,p))] = d3_color("rgb(" + name.slice(p+1) + ")").formatHex();
             } else {
                p = name.indexOf("=");
-               ListOfColors[parseInt(name.substr(0,p))] = d3_color("rgba(" + name.substr(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.slice(0,p))] = d3_color("rgba(" + name.slice(p+1) + ")").formatHex();
             }
          }
 
@@ -1400,9 +1400,9 @@ class TPadPainter extends ObjectPainter {
             let src = "";
 
             if (snap.fScripts.indexOf("load:") == 0)
-               src = snap.fScripts.substr(5).split(";");
+               src = snap.fScripts.slice(5).split(";");
             else if (snap.fScripts.indexOf("assert:") == 0)
-               src = snap.fScripts.substr(7);
+               src = snap.fScripts.slice(7);
 
             pr = src ? loadScript(arg) : injectCode(snap.fScripts);
          }
@@ -1519,7 +1519,7 @@ class TPadPainter extends ObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format=="svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ>0) ? res.substr(separ+7) : "";
+            return (separ>0) ? res.slice(separ+7) : "";
          });
 
       return Promise.resolve("");

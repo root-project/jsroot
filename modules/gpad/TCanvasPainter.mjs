@@ -229,7 +229,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf(".");
-      this.createImage(fname.substr(pnt+1))
+      this.createImage(fname.slice(pnt+1))
           .then(res => this.sendWebsocket("SAVE:" + fname + ":" + res));
    }
 
@@ -308,15 +308,15 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Handle websocket messages
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log("GET MSG len:" + msg.length + " " + msg.substr(0,60));
+      console.log("GET MSG len:" + msg.length + " " + msg.slice(0,60));
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.substr(0,6)=='SNAP6:') {
+      } else if (msg.slice(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6
 
-         let snap = parse(msg.substr(6));
+         let snap = parse(msg.slice(6));
 
          this.syncDraw(true).then(() => this.redrawPadSnap(snap)).then(() => {
             this.completeCanvasSnapDrawing();
@@ -325,18 +325,18 @@ class TCanvasPainter extends TPadPainter {
             handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
             this.confirmDraw();
          });
-      } else if (msg.substr(0,5)=='MENU:') {
+      } else if (msg.slice(0,5)=='MENU:') {
          // this is menu with exact identifier for object
-         let lst = parse(msg.substr(5));
+         let lst = parse(msg.slice(5));
          if (typeof this._getmenu_callback == 'function') {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
          }
-      } else if (msg.substr(0,4)=='CMD:') {
-         msg = msg.substr(4);
+      } else if (msg.slice(0,4)=='CMD:') {
+         msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
-             cmdid = msg.substr(0,p1),
-             cmd = msg.substr(p1+1),
+             cmdid = msg.slice(0,p1),
+             cmd = msg.slice(p1+1),
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.createImage(cmd.toLowerCase())
@@ -345,17 +345,17 @@ class TCanvasPainter extends TPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
          let kind = msg[1],
-             hist = parse(msg.substr(7));
+             hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.substr(0,5)=='SHOW:') {
-         let that = msg.substr(5),
+      } else if (msg.slice(0,5)=='SHOW:') {
+         let that = msg.slice(5),
              on = (that[that.length-1] == '1');
-         this.showSection(that.substr(0,that.length-2), on);
-      } else if (msg.substr(0,5) == "EDIT:") {
-         let obj_painter = this.findSnap(msg.substr(5));
-         console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
+         this.showSection(that.slice(0,that.length-2), on);
+      } else if (msg.slice(0,5) == "EDIT:") {
+         let obj_painter = this.findSnap(msg.slice(5));
+         console.log('GET EDIT ' + msg.slice(5) +  ' found ' + !!obj_painter);
          if (obj_painter)
             this.showSection("Editor", true)
                 .then(() => this.producePadEvent("select", obj_painter.getPadPainter(), obj_painter));
@@ -573,13 +573,13 @@ class TCanvasPainter extends TPadPainter {
             }
             break;
          default:
-            if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
+            if ((kind.slice(0,5) == "exec:") && painter && painter.snapid) {
                console.log('Call exec', painter.snapid);
 
                msg = "PRIMIT6:" + toJSON({
                   _typename: "TWebObjectOptions",
                   snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ""),
-                  opt: kind.substr(5),
+                  opt: kind.slice(5),
                   fcust: "exec",
                   fopt: []
                });
@@ -589,7 +589,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       if (msg) {
-         console.log("Sending " + msg.length + "  " + msg.substr(0,40));
+         console.log("Sending " + msg.length + "  " + msg.slice(0,40));
          this._websocket.send(msg);
       }
    }

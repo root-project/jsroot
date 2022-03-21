@@ -967,7 +967,7 @@ class RPadPainter extends RObjectPainter {
             for (let n = 0; n < arr.length; ++n) {
                let name = arr[n].fString, p = name.indexOf("=");
                if (p > 0)
-                  ListOfColors[parseInt(name.substr(0,p))] = name.substr(p+1);
+                  ListOfColors[parseInt(name.slice(0,p))] = name.slice(p+1);
             }
 
             this.root_colors = ListOfColors;
@@ -1150,7 +1150,7 @@ class RPadPainter extends RObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ>0) ? res.substr(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : "";
          });
 
       return Promise.resolve("");

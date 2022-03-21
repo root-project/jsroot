@@ -178,7 +178,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf(".");
-      this.createImage(fname.substr(pnt+1))
+      this.createImage(fname.slice(pnt+1))
           .then(res => { console.log('save', fname, res.length); this.sendWebsocket("SAVE:" + fname + ":" + res); });
    }
 
@@ -231,39 +231,39 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Hanler for websocket message
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log("GET_MSG " + msg.substr(0,30));
+      console.log("GET_MSG " + msg.slice(0,30));
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.substr(0,5)=='SNAP:') {
-         msg = msg.substr(5);
+      } else if (msg.slice(0,5)=='SNAP:') {
+         msg = msg.slice(5);
          let p1 = msg.indexOf(":"),
-             snapid = msg.substr(0,p1),
-             snap = parse(msg.substr(p1+1));
+             snapid = msg.slice(0,p1),
+             snap = parse(msg.slice(p1+1));
          this.syncDraw(true)
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
                  handle.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
                  this.confirmDraw();
               });
-      } else if (msg.substr(0,4)=='JSON') {
-         let obj = parse(msg.substr(4));
+      } else if (msg.slice(0,4)=='JSON') {
+         let obj = parse(msg.slice(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
-      } else if (msg.substr(0,9)=="REPL_REQ:") {
-         this.processDrawableReply(msg.substr(9));
-      } else if (msg.substr(0,4)=='CMD:') {
-         msg = msg.substr(4);
+      } else if (msg.slice(0,9)=="REPL_REQ:") {
+         this.processDrawableReply(msg.slice(9));
+      } else if (msg.slice(0,4)=='CMD:') {
+         msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
-             cmdid = msg.substr(0,p1),
-             cmd = msg.substr(p1+1),
+             cmdid = msg.slice(0,p1),
+             cmd = msg.slice(p1+1),
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
-            let relative_path = cmd.substr(9);
+            let relative_path = cmd.slice(9);
             if (!this.showUI5Panel) {
                handle.send(reply + "false");
             } else {
@@ -278,7 +278,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg: function(panel_handle, msg) {
-                     let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
+                     let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.slice(10) : "";
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
@@ -298,7 +298,7 @@ class RCanvasPainter extends RPadPainter {
                let addr = handle.href;
                if (relative_path.indexOf("../")==0) {
                   let ddd = addr.lastIndexOf("/",addr.length-2);
-                  addr = addr.substr(0,ddd) + relative_path.substr(2);
+                  addr = addr.slice(0,ddd) + relative_path.slice(2);
                } else {
                   addr += relative_path;
                }
@@ -309,16 +309,16 @@ class RCanvasPainter extends RPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
          let kind = msg[1],
-             hist = parse(msg.substr(7));
+             hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.substr(0,5)=='SHOW:') {
-         let that = msg.substr(5),
+      } else if (msg.slice(0,5)=='SHOW:') {
+         let that = msg.slice(5),
              on = that[that.length-1] == '1';
-         this.showSection(that.substr(0,that.length-2), on);
+         this.showSection(that.slice(0,that.length-2), on);
       } else {
-         console.log("unrecognized msg len:" + msg.length + " msg:" + msg.substr(0,20));
+         console.log("unrecognized msg len:" + msg.length + " msg:" + msg.slice(0,20));
       }
    }
 
@@ -367,7 +367,7 @@ class RCanvasPainter extends RPadPainter {
          this._submreq[req.reqid] = req; // fast access to submitted requests
       }
 
-      // console.log('Sending request ', msg.substr(0,60));
+      // console.log('Sending request ', msg.slice(0,60));
 
       this.sendWebsocket("REQ:" + msg);
       return req;
@@ -462,15 +462,15 @@ class RCanvasPainter extends RPadPainter {
             console.log('TPave is moved inside RCanvas - that to do?');
             break;
          default:
-            if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
-               this.submitExec(painter, kind.substr(5), subelem);
+            if ((kind.slice(0,5) == "exec:") && painter && painter.snapid) {
+               this.submitExec(painter, kind.slice(5), subelem);
             } else {
                console.log("UNPROCESSED CHANGES", kind);
             }
       }
 
       if (msg) {
-         console.log("RCanvas::processChanges want to send  " + msg.length + "  " + msg.substr(0,40));
+         console.log("RCanvas::processChanges want to send  " + msg.length + "  " + msg.slice(0,40));
       }
    }
 
