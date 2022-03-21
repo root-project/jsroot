@@ -10,6 +10,8 @@ import { TRandom, floatToString } from '../base/BasePainter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
+import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+
 import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
 
 import { TPavePainter } from '../hist/TPavePainter.mjs';
@@ -601,7 +603,7 @@ class TH3Painter extends THistPainter {
          main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
+         main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
          pr = this.draw3DBins().then(() => {
             main.render3D();
             this.updateStatWebCanvas();

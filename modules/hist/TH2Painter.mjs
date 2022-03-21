@@ -10,6 +10,8 @@ import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
 
 import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
+import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+
 import { TH2Painter as TH2Painter2D  } from '../hist2d/TH2Painter.mjs';
 
 
@@ -772,7 +774,7 @@ class TH2Painter extends TH2Painter2D {
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+            main.drawXYZ(main.toplevel, TAxisPainter, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
          }
 
          if (main.mode3d) {

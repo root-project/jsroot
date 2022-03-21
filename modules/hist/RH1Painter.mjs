@@ -2,8 +2,9 @@ import { settings } from '../core.mjs';
 
 import { RH1Painter as RH1Painter2D } from '../hist2d/RH1Painter.mjs';
 
-import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
+import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 
+import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
 
 class RH1Painter extends RH1Painter2D {
 
@@ -29,7 +30,7 @@ class RH1Painter extends RH1Painter2D {
          main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1 });
+         main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
       }
 
       if (!main.mode3d)

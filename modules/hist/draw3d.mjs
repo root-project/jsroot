@@ -9,7 +9,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector3, Matrix4, Line3,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight } from '../three.mjs';
 
-import { TAxisPainter, EAxisBits } from '../gpad/TAxisPainter.mjs';
+import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D,
@@ -476,7 +476,7 @@ function set3DOptions(hopt) {
 
 /** @summary Draw axes in 3D mode
   * @private */
-function drawXYZ(toplevel, opts) {
+function drawXYZ(toplevel, AxisPainter, opts) {
    if (!opts) opts = {};
 
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
@@ -520,17 +520,17 @@ function drawXYZ(toplevel, opts) {
    // factor 1.1 used in ROOT for lego plots
    if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-   this.x_handle = new TAxisPainter(null, this.xaxis);
+   this.x_handle = new AxisPainter(null, this.xaxis);
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                     { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this,"x");
 
-   this.y_handle = new TAxisPainter(null, this.yaxis);
+   this.y_handle = new AxisPainter(null, this.yaxis);
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                    { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this,"y");
 
-   this.z_handle = new TAxisPainter(null, this.zaxis);
+   this.z_handle = new AxisPainter(null, this.zaxis);
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this,"z");

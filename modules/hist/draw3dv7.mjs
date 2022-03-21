@@ -11,8 +11,6 @@ import { REVISION, DoubleSide,
          LineSegments, LineBasicMaterial, LineDashedMaterial,
          BufferAttribute, BufferGeometry } from '../three.mjs';
 
-import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
-
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base/base3d.mjs';
@@ -447,7 +445,7 @@ function set3DOptions(hopt) {
 
 /** @summary Draw axes in 3D mode
   * @private */
-function drawXYZ(toplevel, opts) {
+function drawXYZ(toplevel, AxisPainter, opts) {
    if (!opts) opts = {};
 
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
@@ -489,13 +487,13 @@ function drawXYZ(toplevel, opts) {
    // factor 1.1 used in ROOT for lego plots
    if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-   this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
+   this.x_handle = new AxisPainter(this.getDom(), this, this.xaxis, "x_");
    this.x_handle.setPadName(this.getPadName());
    this.x_handle.snapid = this.snapid;
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
    this.x_handle.assignFrameMembers(this,"x");
 
-   this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
+   this.y_handle = new AxisPainter(this.getDom(), this, this.yaxis, "y_");
    this.y_handle.setPadName(this.getPadName());
    this.y_handle.snapid = this.snapid;
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
@@ -503,7 +501,7 @@ function drawXYZ(toplevel, opts) {
 
    // this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-   this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
+   this.z_handle = new AxisPainter(this.getDom(), this, this.zaxis, "z_");
    this.z_handle.setPadName(this.getPadName());
    this.z_handle.snapid = this.snapid;
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);

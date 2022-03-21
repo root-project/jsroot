@@ -9,6 +9,8 @@ import { floatToString, TRandom } from '../base/BasePainter.mjs';
 
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
+import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
+
 import { RHistPainter } from '../hist2d/RHistPainter.mjs';
 
 import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
@@ -635,7 +637,7 @@ class RH3Painter extends RHistPainter {
       main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, { zoom: settings.Zooming, ndim: 3 });
+      main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
 
       return this.drawingBins(reason)
             .then(() => this.draw3D()) // called when bins received from server, must be reentrant
