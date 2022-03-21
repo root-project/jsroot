@@ -603,7 +603,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (xaxis && xaxis.fTitle && opts.draw) {
       const text3d = new TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      if (!opts.v7) text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
+      text3d.center = opts.v7 ? false : xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       lbls.push(text3d);
@@ -815,7 +815,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (yaxis && yaxis.fTitle && opts.draw) {
       const text3d = new TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      if (!opts.v7) text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
+      text3d.center = opts.v7 ? false : yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       lbls.push(text3d);
@@ -1050,7 +1050,7 @@ function assignFrame3DMethods(fpainter) {
 
 /** @summary Draw histograms in 3D mode
   * @private */
-function drawBinsLego(painter) {
+function drawBinsLego(painter, is_v7 = false) {
 
    if (!painter.draw_content) return;
 
@@ -1065,9 +1065,7 @@ function drawBinsLego(painter) {
          // reduced vertices
          rvertices = [ new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0) ],
          main = painter.getFramePainter(),
-         axis_zmin = main.z_handle.getScaleMin(),
-         axis_zmax = main.z_handle.getScaleMax(),
-         handle = painter.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+         handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
          histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
@@ -1076,7 +1074,9 @@ function drawBinsLego(painter) {
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 
-   let zmin, zmax, i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop;
+   let zmin, zmax, i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
+       axis_zmin = main.z_handle.getScaleMin(),
+       axis_zmax = main.z_handle.getScaleMax();
 
    const getBinContent = (ii,jj,level) => {
       // return bin content in binz1, binz2, reduced flags
@@ -1099,7 +1099,7 @@ function drawBinsLego(painter) {
 
       if (basehisto) return false; // do not draw empty bins on top of other bins
 
-      if (painter.options.Zero || (axis_zmin>0)) return true;
+      if (painter.options.Zero || (axis_zmin > 0)) return true;
 
       return painter._show_empty_bins;
    };
@@ -1111,11 +1111,20 @@ function drawBinsLego(painter) {
 
    if ((painter.options.Lego === 12) || (painter.options.Lego === 14)) {
       // drawing colors levels, axis can not exceed palette
-      let cntr = painter.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
-      levels = cntr.arr;
-      palette = painter.getHistPalette();
-      //axis_zmin = levels[0];
-      //axis_zmax = levels[levels.length-1];
+
+      if (is_v7) {
+         palette = main.getHistPalette();
+         painter.createContour(main, palette, { full_z_range: true });
+         levels = palette.getContour();
+         axis_zmin = levels[0];
+         axis_zmax = levels[levels.length-1];
+      } else {
+         let cntr = painter.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
+         levels = cntr.arr;
+         palette = painter.getHistPalette();
+         // axis_zmin = levels[0];
+         // axis_zmax = levels[levels.length-1];
+      }
    }
 
    for (let nlevel = 0; nlevel < levels.length-1; ++nlevel) {
@@ -1230,11 +1239,11 @@ function drawBinsLego(painter) {
       geometry.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
       // geometry.computeVertexNormals();
 
-      let rootcolor = histo.fFillColor,
+      let rootcolor = is_v7 ? 3 : histo.fFillColor,
           fcolor = painter.getColor(rootcolor);
 
       if (palette) {
-         fcolor = palette.calcColor(nlevel, levels.length);
+         fcolor = is_v7 ? palette.getColor(nlevel) : palette.calcColor(nlevel, levels.length);
       } else if ((painter.options.Lego === 1) || (rootcolor < 2)) {
          rootcolor = 1;
          fcolor = 'white';
@@ -1263,7 +1272,7 @@ function drawBinsLego(painter) {
                handle = this.handle,
                main = p.getFramePainter(),
                histo = p.getHisto(),
-               tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
+               tip = p.get3DToolTip(this.face_to_bins_index[intersect.faceIndex]);
 
          tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
          tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
@@ -1385,8 +1394,8 @@ function drawBinsLego(painter) {
    }
 
    // create boxes
-   const lcolor = painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
+   const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
+         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr("line_width", 1) : histo.fLineWidth }),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*

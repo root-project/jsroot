@@ -20,7 +20,7 @@ import { TH2Painter as TH2Painter2D  } from '../hist2d/TH2Painter.mjs';
 function drawContour3D(painter, realz) {
    // for contour plots one requires handle with full range
    let main = painter.getFramePainter(),
-       handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
        histo = painter.getHisto(), // get levels
        levels = painter.getContourLevels(), // init contour if not exists
        palette = painter.getHistPalette(),
@@ -51,7 +51,7 @@ function drawContour3D(painter, realz) {
 function drawSurf3D(painter) {
    let histo = painter.getHisto(),
        main = painter.getFramePainter(),
-       handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
        i,j, x1, y1, x2, y2, z11, z12, z21, z22,
        axis_zmin = main.z_handle.getScaleMin();
        // axis_zmax = main.z_handle.getScaleMax();
@@ -378,7 +378,7 @@ function drawSurf3D(painter) {
 
    if (painter.options.Surf === 13) {
 
-      handle = painter.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
       // get levels
       let levels = painter.getContourLevels(), // init contour
@@ -446,7 +446,7 @@ function drawSurf3D(painter) {
 function drawError3D(painter) {
    const main = painter.getFramePainter(),
          histo = painter.getHisto(),
-         handle = painter.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+         handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
          zmin = main.z_handle.getScaleMin(),
          zmax = main.z_handle.getScaleMax();
    let i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,

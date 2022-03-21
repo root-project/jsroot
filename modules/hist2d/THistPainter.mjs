@@ -2109,7 +2109,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Prepare handle for color draw */
-   prepareColorDraw(args) {
+   prepareDraw(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 

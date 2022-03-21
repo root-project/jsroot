@@ -19,7 +19,7 @@ import { RH1Painter } from './RH1Painter.mjs';
 
 import { RH2Painter } from './RH2Painter.mjs';
 
-import { assignFrame3DMethods } from './draw3dv7.mjs';
+import { assignFrame3DMethods } from './draw3d.mjs';
 
 /**
  * @summary Painter for RH3 classes

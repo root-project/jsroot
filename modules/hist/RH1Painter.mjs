@@ -4,7 +4,7 @@ import { RH1Painter as RH1Painter2D } from '../hist2d/RH1Painter.mjs';
 
 import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 
-import { assignFrame3DMethods, drawBinsLego } from './draw3dv7.mjs';
+import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
 
 class RH1Painter extends RH1Painter2D {
 
@@ -41,7 +41,7 @@ class RH1Painter extends RH1Painter2D {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
-         drawBinsLego(this);
+         drawBinsLego(this, true);
          this.updatePaletteDraw();
          main.render3D();
          main.addKeysHandler();

@@ -519,7 +519,7 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as colors */
    drawBinsColor() {
       const histo = this.getHisto(),
-            handle = this.prepareColorDraw(),
+            handle = this.prepareDraw(),
             cntr = this.getContour(),
             palette = this.getHistPalette(),
             entries = [],
@@ -831,7 +831,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw histogram bins as contour */
    drawBinsContour() {
-      let handle = this.prepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      let handle = this.prepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.getFramePainter(),
           frame_w = main.getFrameWidth(),
           frame_h = main.getFrameHeight(),
@@ -1177,7 +1177,7 @@ class TH2Painter extends THistPainter {
           show_err = (this.options.TextKind == "E"),
           use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
-      if (handle === null) handle = this.prepareColorDraw({ rounding: false });
+      if (handle === null) handle = this.prepareDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
@@ -1235,7 +1235,7 @@ class TH2Painter extends THistPainter {
       let histo = this.getObject(), cmd = "",
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
-          handle = this.prepareColorDraw({ rounding: false }),
+          handle = this.prepareDraw({ rounding: false }),
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
 
@@ -1305,7 +1305,7 @@ class TH2Painter extends THistPainter {
    drawBinsBox() {
 
       let histo = this.getObject(),
-          handle = this.prepareColorDraw({ rounding: false }),
+          handle = this.prepareDraw({ rounding: false }),
           main = this.getMainPainter();
 
       if (main===this) {
@@ -1536,7 +1536,7 @@ class TH2Painter extends THistPainter {
          parseOption(this.options.Violin, false);
 
       let histo = this.getHisto(),
-          handle = this.prepareColorDraw(),
+          handle = this.prepareDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           bars = "", lines = "", dashed_lines = "",
@@ -1863,7 +1863,7 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as scatter plot */
    drawBinsScatter() {
       let histo = this.getObject(),
-          handle = this.prepareColorDraw({ rounding: true, pixel_density: true }),
+          handle = this.prepareDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
