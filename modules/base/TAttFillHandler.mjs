@@ -141,7 +141,7 @@ class TAttFillHandler {
 
       if (color_as_svg) {
          this.color = color;
-         if (color != "none") indx = d3_color(color).hex().substr(1); // fictional index produced from color code
+         if (color != "none") indx = d3_color(color).hex().slice(1); // fictional index produced from color code
       } else {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
       }

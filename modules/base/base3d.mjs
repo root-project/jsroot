@@ -43,10 +43,10 @@ function createSVGRenderer(as_is, precision, doc) {
                  if ((name=="style") && value) {
                     let pos1 = value.indexOf(excl_style1);
                     if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
-                       value = value.substr(0, value.length - excl_style1.length);
+                       value = value.slice(0, value.length - excl_style1.length);
                     let pos2 = value.indexOf(excl_style2);
                     if ((pos2 >= 0) && (pos2 == value.length - excl_style2.length))
-                       value = value.substr(0, value.length - excl_style2.length);
+                       value = value.slice(0, value.length - excl_style2.length);
                  }
                  this._wrapper.path_attr[name] = value;
               }

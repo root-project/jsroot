@@ -49,7 +49,7 @@ class FontHandler {
                this.style = "oblique";
             else
                break;
-            fontName = fontName.substr(1);
+            fontName = fontName.slice(1);
          }
 
          this.name = fontName;

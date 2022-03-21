@@ -30,7 +30,7 @@ function createRootColors() {
       let s = entry.s;
       for (let n = 0; n < s.length; n += 6) {
          let num = entry.n + n / 6;
-         colorMap[num] = '#' + s.substr(n,6);
+         colorMap[num] = '#' + s.slice(n,n+6);
       }
    });
 

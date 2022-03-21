@@ -97,24 +97,24 @@ class RObjectPainter extends ObjectPainter {
             continue;
          }
 
-         if (pos > 0) { val = val.substr(pos); pos = 0; }
+         if (pos > 0) { val = val.slice(pos); pos = 0; }
 
          while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
 
-         let v = parseFloat(val.substr(0, pos));
+         let v = parseFloat(val.slice(0, pos));
          if (!Number.isFinite(v)) {
             console.log("Fail to parse RPadLength " + value);
             return Math.round(dflt*sizepx);
          }
 
-         val = val.substr(pos);
+         val = val.slice(pos);
          pos = 0;
          if (!operand) operand = 1;
          if ((val.length > 0) && (val[0] == '%')) {
-            val = val.substr(1);
+            val = val.slice(1);
             norm += operand*v*0.01;
          } else if ((val.length > 1) && (val[0] == 'p') && (val[1] == 'x')) {
-            val = val.substr(2);
+            val = val.slice(2);
             px += operand*v;
          } else {
             norm += operand*v;
@@ -147,7 +147,7 @@ class RObjectPainter extends ObjectPainter {
             val = "";
          }
       } else if (val[0] == "[") {
-         let ordinal = parseFloat(val.substr(1, val.length-2));
+         let ordinal = parseFloat(val.slice(1, val.length-1));
          val = "black";
          if (Number.isFinite(ordinal)) {
              let pp = this.getPadPainter(),

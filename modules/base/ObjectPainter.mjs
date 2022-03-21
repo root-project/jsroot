@@ -138,7 +138,7 @@ class ObjectPainter extends BasePainter {
       if (!this.options) return;
       if (!original) original = "";
       let pp = original.indexOf(";;");
-      if (pp >= 0) original = original.substr(0, pp);
+      if (pp >= 0) original = original.slice(0, pp);
       this.options.original = original;
       this.options_store = Object.assign({}, this.options);
    }
@@ -215,7 +215,7 @@ class ObjectPainter extends BasePainter {
       let res = this.getItemName(), obj = this.getObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
       if (!res) res = this.getClassName();
-      if (res.lenght > 20) res = res.substr(0, 17) + "...";
+      if (res.length > 20) res = res.slice(0, 17) + "...";
       return res;
    }
 
@@ -380,7 +380,7 @@ class ObjectPainter extends BasePainter {
 
       if (name.indexOf("prim#") == 0) {
          svg = svg.select(".primitives_layer");
-         name = name.substr(5);
+         name = name.slice(5);
       }
 
       let node = svg.node().firstChild;
@@ -1294,7 +1294,7 @@ class ObjectPainter extends BasePainter {
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
              if (execp.executeMenuCommand(item, args)) return;
-             let exec = item.fExec.substr(0, item.fExec.length-1) + args + ')';
+             let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
              if (cp) cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
          });
       }
@@ -1329,7 +1329,7 @@ class ObjectPainter extends BasePainter {
                if (lastclname != item.fClassName) {
                   lastclname = item.fClassName;
                   let p = lastclname.lastIndexOf("::"),
-                      shortname = (p > 0) ? lastclname.substr(p+2) : lastclname;
+                      shortname = (p > 0) ? lastclname.slice(p+2) : lastclname;
 
                   _menu.add("sub:" + shortname.replace(/[<>]/g,"_"));
                }

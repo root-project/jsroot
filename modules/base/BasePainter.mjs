@@ -152,15 +152,15 @@ class DrawOptions {
    check(name, postpart) {
       let pos = this.opt.indexOf(name);
       if (pos < 0) return false;
-      this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
+      this.opt = this.opt.slice(0, pos) + this.opt.slice(pos + name.length);
       this.part = "";
       if (!postpart) return true;
 
       let pos2 = pos;
       while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
       if (pos2 > pos) {
-         this.part = this.opt.substr(pos, pos2 - pos);
-         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+         this.part = this.opt.slice(pos, pos2);
+         this.opt = this.opt.slice(0, pos) + this.opt.slice(pos2);
       }
       return true;
    }
@@ -264,9 +264,9 @@ function buildSvgPath(kind, bins, height, ndig) {
       if ((ndig == 0) || (vvv === val)) return vvv.toString();
       let str = val.toFixed(ndig);
       while ((str[str.length - 1] == '0') && (str.lastIndexOf(".") < str.length - 1))
-         str = str.substr(0, str.length - 1);
+         str = str.slice(0, str.length - 1);
       if (str[str.length - 1] == '.')
-         str = str.substr(0, str.length - 1);
+         str = str.slice(0, str.length - 1);
       if (str == "-0") str = "0";
       return str;
    };
