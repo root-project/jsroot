@@ -16,6 +16,5 @@ package-lock.json
 httpcontrol.C
 httpserver.C
 Go4ExampleSimple
-demo/bundle/bundle
-demo/bundle/bundle.min
+bundle/bld
 

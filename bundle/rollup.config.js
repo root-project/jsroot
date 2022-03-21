@@ -2,7 +2,7 @@ import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import ascii from "rollup-plugin-ascii";
 import {terser} from "rollup-plugin-terser";
-import * as meta from "../../package.json";
+import * as meta from "../package.json";
 import ignore from "rollup-plugin-ignore";
 
 const ingnore_modules = ['fs'];
@@ -11,9 +11,9 @@ for(let key in meta.dependencies)
    ingnore_modules.push(key);
 
 const config = {
-  input: "jsroot_hist.mjs",
+  input: "bundle/src/jsroot_hist.mjs",
   output: {
-    file: "jsroot_hist.js",
+    file: "bundle/bld/jsroot_hist.js",
     format: "es",
     inlineDynamicImports: true,
     indent: false,
@@ -34,10 +34,10 @@ const config = {
 
 const config_2d = {
    ...config,
-   input: "jsroot_hist2d.mjs",
+   input: "bundle/src/jsroot_hist2d.mjs",
    output: {
       ...config.output,
-      file: "jsroot_hist2d.js",
+      file: "bundle/bld/jsroot_hist2d.js",
       inlineDynamicImports: true
    }
 }
@@ -46,7 +46,7 @@ const config_minified = {
    ...config,
     output: {
       ...config.output,
-      file: "jsroot_hist.min.js",
+      file: "bundle/bld/jsroot_hist.min.js",
       inlineDynamicImports: true
     },
     plugins: [
@@ -67,10 +67,10 @@ const config_minified = {
 
 const config_2d_minified = {
    ...config_minified,
-   input: "jsroot_hist2d.mjs",
+   input: "bundle/src/jsroot_hist2d.mjs",
    output: {
      ...config.output,
-     file: "jsroot_hist2d.min.js",
+     file: "bundle/bld/jsroot_hist2d.min.js",
      inlineDynamicImports: true
    }
 }

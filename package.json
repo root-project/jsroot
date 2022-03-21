@@ -49,5 +49,19 @@
     "moduels/*",
     "scripts/*",
     "LICENSE"
-  ]
+  ],
+  "devDependencies": {
+    "@rollup/plugin-json": "4",
+    "@rollup/plugin-node-resolve": "13",
+    "eslint": "8",
+    "mocha": "9",
+    "rollup": "2",
+    "rollup-plugin-ascii": "0.0",
+    "rollup-plugin-terser": "7",
+    "rollup-plugin-ignore": "1.0.10"
+  },
+  "scripts": {
+    "build": "rm -rf bundle/bld/* && rollup -c bundle/rollup.config.js",
+    "clean": "rm -rf bundle/bld"
+  }
 }
