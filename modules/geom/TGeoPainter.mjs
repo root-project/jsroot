@@ -775,8 +775,8 @@ class TGeoPainter extends ObjectPainter {
       if (macro >= 0) {
          let separ = opt.indexOf(";", macro+6);
          if (separ<0) separ = opt.length;
-         res.script_name = opt.substr(macro+6,separ-macro-6);
-         opt = opt.substr(0, macro) + opt.substr(separ+1);
+         res.script_name = opt.slice(macro+6, separ);
+         opt = opt.slice(0, macro) + opt.slice(separ+1);
          console.log('script', res.script_name, 'rest', opt);
       }
 
@@ -790,7 +790,7 @@ class TGeoPainter extends ObjectPainter {
          while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
 
          let name = opt.substring(p1+1, p2);
-         opt = opt.substr(0,p1) + opt.substr(p2);
+         opt = opt.slice(0,p1) + opt.slice(p2);
          // console.log("Modify visibility", sign,':',name);
 
          this.modifyVisisbility(name, sign);
@@ -1432,17 +1432,20 @@ class TGeoPainter extends ObjectPainter {
                if (obj.geo_name) {
                   itemname = obj.geo_name;
                   if (itemname.indexOf("<prnt>") == 0)
-                     itemname = (this.getItemName() || "top") + itemname.substr(6);
-                  name = itemname.substr(itemname.lastIndexOf("/")+1);
+                     itemname = (this.getItemName() || "top") + itemname.slice(6);
+                  name = itemname.slice(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
                   hdr = name;
                } else if (obj.stack) {
                   name = this._clones.resolveStack(obj.stack).name;
                   itemname = this.getStackFullName(obj.stack);
                   hdr = this.getItemName();
-                  if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
-                  if (name.length > 0) hdr = name; else
-                  if (!hdr) hdr = "header";
+                  if (name.indexOf("Nodes/") === 0)
+                     hdr = name.slice(6);
+                  else if (name.length > 0)
+                     hdr = name;
+                  else if (!hdr)
+                     hdr = "header";
 
                } else
                   continue;
@@ -1754,7 +1757,7 @@ class TGeoPainter extends ObjectPainter {
             if (!info) continue;
 
             if (info.indexOf("<prnt>")==0)
-               info = painter.getItemName() + info.substr(6);
+               info = painter.getItemName() + info.slice(6);
 
             names.push(info);
 
@@ -2948,8 +2951,8 @@ class TGeoPainter extends ObjectPainter {
          let funcname = "extract_geo_tracks";
 
          if (opt && opt.indexOf("$") > 0) {
-            funcname = opt.substr(0, opt.indexOf("$"));
-            opt = opt.substr(opt.indexOf("$")+1);
+            funcname = opt.slice(0, opt.indexOf("$"));
+            opt = opt.slice(opt.indexOf("$")+1);
          }
 
          let func = findFunction(funcname);
@@ -4658,8 +4661,8 @@ class TGeoPainter extends ObjectPainter {
 
       if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
-         opt = opt.substr(4);
-         if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
+         opt = opt.slice(4);
+         if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 
@@ -5000,7 +5003,7 @@ function createItem(node, obj, name) {
       if (typeof node._name === 'string') {
          sub._name = node._name;
          if (sub._name.lastIndexOf("s")===sub._name.length-1)
-            sub._name = sub._name.substr(0, sub._name.length-1);
+            sub._name = sub._name.slice(0, sub._name.length-1);
          sub._name += "_" + node._childs.length;
       } else {
          sub._name = "item_" + node._childs.length;
