@@ -33,7 +33,7 @@ if (src && (typeof src == "string")) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
       source_fullpath = src;
-      source_dir = source_fullpath.substr(0, pos);
+      source_dir = source_fullpath.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    }
    if (src.indexOf("file://") == 0) nodejs = true;
@@ -547,7 +547,7 @@ function parse(json) {
 
       if (typeof value === 'string') {
          if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
-         let ref = parseInt(value.substr(5));
+         let ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = false;
          return map[ref];
@@ -771,16 +771,16 @@ function decodeUrl(url) {
       }
 
       if ((eq < 0) && (firstq < 0)) {
-         res.opts[url.substr(0,pos)] = "";
+         res.opts[url.slice(0,pos)] = "";
       } if (eq > 0) {
          let val = url.slice(eq+1, pos);
-         if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.substr(1, val.length-2);
-         res.opts[url.substr(0,eq)] = val;
+         if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.slice(1, val.length-1);
+         res.opts[url.slice(0,eq)] = val;
       }
 
       if ((pos >= url.length) || (url[pos] == '#')) break;
 
-      url = url.substr(pos+1);
+      url = url.slice(pos+1);
    }
 
    return res;
@@ -809,7 +809,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if (!kind) kind = "buf";
 
    let method = "GET", async = true, p = kind.indexOf(";sync");
-   if (p > 0) { kind = kind.substr(0,p); async = false; }
+   if (p > 0) { kind = kind.slice(0,p); async = false; }
    switch (kind) {
       case "head": method = "HEAD"; break;
       case "posttext": method = "POST"; kind = "text"; break;
