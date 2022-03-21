@@ -483,7 +483,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
        textsize = Math.round(this.size_z3d * 0.05),
-       pad = this.getPadPainter().getRootPad(true),
+       pad = opts.v7 ? null : this.getPadPainter().getRootPad(true),
        xmin = this.xmin, xmax = this.xmax,
        ymin = this.ymin, ymax = this.ymax,
        zmin = this.zmin, zmax = this.zmax,
@@ -521,19 +521,32 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
    this.x_handle = new AxisPainter(null, this.xaxis);
+   if (opts.v7) {
+      this.x_handle.setPadName(this.getPadName());
+      this.x_handle.snapid = this.snapid;
+   }
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                     { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this,"x");
 
    this.y_handle = new AxisPainter(null, this.yaxis);
+   if (opts.v7) {
+      this.y_handle.setPadName(this.getPadName());
+      this.y_handle.snapid = this.snapid;
+   }
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                    { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this,"y");
 
    this.z_handle = new AxisPainter(null, this.zaxis);
+   if (opts.v7) {
+      this.z_handle.setPadName(this.getPadName());
+      this.z_handle.snapid = this.snapid;
+   }
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this,"z");
+
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
@@ -590,7 +603,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (xaxis && xaxis.fTitle && opts.draw) {
       const text3d = new TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
+      if (!opts.v7) text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       lbls.push(text3d);
@@ -802,7 +815,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (yaxis && yaxis.fTitle && opts.draw) {
       const text3d = new TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
+      if (!opts.v7) text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       lbls.push(text3d);
@@ -961,7 +974,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             posz = zaxis.TestBit(EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+             center_title = opts.v7 ? false : zaxis.TestBit(EAxisBits.kCenterTitle),
+             posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
          text3d.rotateZ(Math.PI/2);
 
