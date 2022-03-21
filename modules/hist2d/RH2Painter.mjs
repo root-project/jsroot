@@ -43,7 +43,7 @@ class RH2Painter extends RHistPainter {
       if (kind=="Projections") kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
-          width = parseInt(kind.substr(1));
+          width = parseInt(kind.slice(1));
           kind = kind[0];
       }
 

@@ -2997,7 +2997,7 @@ class TFile {
 
       if ((cycle === undefined) && (typeof dirname == 'string')) {
          const pos = dirname.lastIndexOf(';');
-         if (pos > 0) { cycle = parseInt(dirname.substr(pos + 1)); dirname = dirname.substr(0, pos); }
+         if (pos > 0) { cycle = parseInt(dirname.slice(pos + 1)); dirname = dirname.slice(0, pos); }
       }
 
       for (let j = 0; j < this.fDirectories.length; ++j) {

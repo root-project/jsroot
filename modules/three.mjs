@@ -26299,7 +26299,7 @@ class ImageLoader extends Loader {
 		image.addEventListener('load', onImageLoad, false);
 		image.addEventListener('error', onImageError, false);
 
-		if (url.substr(0, 5) !== 'data:') {
+		if (url.slice(0, 5) !== 'data:') {
 			if (this.crossOrigin !== undefined) image.crossOrigin = this.crossOrigin;
 		}
 
@@ -29595,7 +29595,7 @@ class LoaderUtils {
 	static extractUrlBase(url) {
 		const index = url.lastIndexOf('/');
 		if (index === -1) return './';
-		return url.substr(0, index + 1);
+		return url.slice(0, index + 1);
 	}
 
 	static resolveURL(url, path) {

@@ -20,7 +20,7 @@ function proivdeEvalPar(func) {
         if (this.fFormula && typeof this.fFormula.fFormula == "string") {
            if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
               isformula = true; pprefix = "p[";
-              _func = this.fFormula.fFormula.substr(21);
+              _func = this.fFormula.fFormula.slice(21);
            } else {
               _func = this.fFormula.fFormula;
               pprefix = "[p";

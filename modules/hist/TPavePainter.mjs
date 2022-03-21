@@ -288,7 +288,7 @@ class TPavePainter extends ObjectPainter {
                has_head = true;
                let max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
                if (lines[j].length > max_hlen + 5)
-                  lines[j] = lines[j].substr(0,max_hlen+2) + "...";
+                  lines[j] = lines[j].slice(0,max_hlen+2) + "...";
             }
             this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
                             width: width-2*margin_x, height: stepy, text: lines[j], color: tcolor });

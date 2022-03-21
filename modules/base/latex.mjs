@@ -1106,7 +1106,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
 
    if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
       let p = valign.indexOf("ex;");
-      valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.substr(16, valign.length - 1)) : null;
+      valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
    } else {
       valign = null;
    }

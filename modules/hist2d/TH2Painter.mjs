@@ -40,7 +40,7 @@ class TH2Painter extends THistPainter {
       if ((kind == "Projections") || (kind == "Off")) kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
-          width = parseInt(kind.substr(1));
+          width = parseInt(kind.slice(1));
           kind = kind[0];
       }
 
@@ -1474,7 +1474,7 @@ class TH2Painter extends THistPainter {
 
          let l = opt.indexOf("("), r = opt.lastIndexOf(")");
          if ((l >= 0) && (r > l+1))
-            res = parseInt(opt.substr(l+1, r-l-1));
+            res = parseInt(opt.slice(l+1, r));
 
          fOption = res;
 
