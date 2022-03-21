@@ -13,8 +13,6 @@ import { TPadPainter } from './gpad/TPadPainter.mjs';
 // v7 namespace prefix
 const _v7 = "ROOT::Experimental::";
 
-let init_v7; // function to load and init v7 sources
-
 function import_more() { return import('./draw/more.mjs'); }
 
 // list of registered draw functions
@@ -575,7 +573,7 @@ TPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
 internals.addDrawFunc = addDrawFunc;
 
 // load v7 only by demand
-init_v7 = function(arg) {
+function init_v7(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
       h.RPadPainter.prototype.drawObject = draw;
@@ -590,6 +588,7 @@ init_v7 = function(arg) {
       return h;
    });
 }
+
 
 // to avoid cross-dependnecy between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
