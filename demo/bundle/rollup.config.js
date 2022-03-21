@@ -13,8 +13,9 @@ for(let key in meta.dependencies)
 const config = {
   input: "jsroot_hist.mjs",
   output: {
-    dir: "bundle",
+    file: "jsroot_hist.js",
     format: "es",
+    inlineDynamicImports: true,
     indent: false,
     extend: true,
     banner: `// ${meta.homepage} v${meta.version}`
@@ -33,14 +34,20 @@ const config = {
 
 const config_2d = {
    ...config,
-   input: "jsroot_hist2d.mjs"
+   input: "jsroot_hist2d.mjs",
+   output: {
+      ...config.output,
+      file: "jsroot_hist2d.js",
+      inlineDynamicImports: true
+   }
 }
 
 const config_minified = {
    ...config,
     output: {
       ...config.output,
-      dir: "bundle.min"
+      file: "jsroot_hist.min.js",
+      inlineDynamicImports: true
     },
     plugins: [
       ...config.plugins,
@@ -60,7 +67,12 @@ const config_minified = {
 
 const config_2d_minified = {
    ...config_minified,
-   input: "jsroot_hist2d.mjs"
+   input: "jsroot_hist2d.mjs",
+   output: {
+     ...config.output,
+     file: "jsroot_hist2d.min.js",
+     inlineDynamicImports: true
+   }
 }
 
 export default [
