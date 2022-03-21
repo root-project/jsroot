@@ -86,8 +86,8 @@ const CustomStreamers = {
           pos = classv.lastIndexOf(";");
 
       if (pos > 0) {
-         clv = parseInt(classv.substr(pos + 1));
-         classv = classv.substr(0, pos);
+         clv = parseInt(classv.slice(pos + 1));
+         classv = classv.slice(0, pos);
       }
 
       let nobjects = buf.ntou4();
@@ -250,7 +250,7 @@ const CustomStreamers = {
 
          if ((p1 >= 0) && (p2 >= p1 + 2)) {
 
-            let arr = element.fTitle.substr(p1+1, p2 - p1 - 1).split(","), nbits = 32;
+            let arr = element.fTitle.slice(p1+1, p2).split(","), nbits = 32;
             if (!arr || arr.length < 2)
                throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
@@ -262,7 +262,7 @@ const CustomStreamers = {
                if (val.indexOf("pi") < 0) return parseFloat(val);
                val = val.trim();
                let sign = 1.;
-               if (val[0] == "-") { sign = -1; val = val.substr(1); }
+               if (val[0] == "-") { sign = -1; val = val.slice(1); }
                switch (val) {
                   case "2pi":
                   case "2*pi":
@@ -684,7 +684,7 @@ function createStreamerElement(name, typename, file) {
    let stltype = kNotSTL, pos = typename.indexOf("<");
    if ((pos > 0) && (typename.indexOf(">") > pos + 2))
       for (let stl = 1; stl < StlNames.length; ++stl)
-         if (typename.substr(0, pos) === StlNames[stl]) {
+         if (typename.slice(0, pos) === StlNames[stl]) {
             stltype = stl; break;
          }
 
@@ -699,7 +699,7 @@ function createStreamerElement(name, typename, file) {
    const isptr = (typename.lastIndexOf("*") === typename.length - 1);
 
    if (isptr)
-      elem.fTypeName = typename = typename.substr(0, typename.length - 1);
+      elem.fTypeName = typename = typename.slice(0, typename.length - 1);
 
    if (getArrayKind(typename) == 0) {
       elem.fType = kTString;
@@ -950,7 +950,7 @@ function createMemberStreamer(element, file) {
       case kObject: {
          let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
          if (classname[classname.length - 1] == "*")
-            classname = classname.substr(0, classname.length - 1);
+            classname = classname.slice(0, classname.length - 1);
 
          const arrkind = getArrayKind(classname);
 
@@ -980,7 +980,7 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kObjectp: {
          let classname = element.fTypeName;
          if (classname[classname.length - 1] == "*")
-            classname = classname.substr(0, classname.length - 1);
+            classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
          if (member.arrkind < 0) member.classname = classname;
@@ -1029,10 +1029,10 @@ function createMemberStreamer(element, file) {
          member.cntname = element.fCountName;
 
          if (member.typename.lastIndexOf("**") > 0) {
-            member.typename = member.typename.substr(0, member.typename.lastIndexOf("**"));
+            member.typename = member.typename.slice(0, member.typename.lastIndexOf("**"));
             member.isptrptr = true;
          } else {
-            member.typename = member.typename.substr(0, member.typename.lastIndexOf("*"));
+            member.typename = member.typename.slice(0, member.typename.lastIndexOf("*"));
             member.isptrptr = false;
          }
 
@@ -1118,7 +1118,7 @@ function createMemberStreamer(element, file) {
             let p1 = member.typename.indexOf("<"),
                p2 = member.typename.lastIndexOf(">");
 
-            member.conttype = member.typename.substr(p1 + 1, p2 - p1 - 1).trim();
+            member.conttype = member.typename.slice(p1 + 1, p2).trim();
 
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
@@ -1141,7 +1141,7 @@ function createMemberStreamer(element, file) {
 
                if (member.conttype.lastIndexOf("*") === member.conttype.length - 1) {
                   member.isptr = true;
-                  member.conttype = member.conttype.substr(0, member.conttype.length - 1);
+                  member.conttype = member.conttype.slice(0, member.conttype.length - 1);
                }
 
                if (element.fCtype === kObjectp) member.isptr = true;
@@ -1164,7 +1164,7 @@ function createMemberStreamer(element, file) {
             const p1 = member.typename.indexOf("<"),
                   p2 = member.typename.lastIndexOf(">");
 
-            member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
+            member.pairtype = "pair<" + member.typename.slice(p1 + 1, p2) + ">";
 
             // remember found streamer info from the file -
             // most probably it is the only one which should be used
@@ -2629,8 +2629,8 @@ class TDirectory {
       let pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.substr(0, pos),
-             subname = keyname.substr(pos+1),
+         let dirname = keyname.slice(0, pos),
+             subname = keyname.slice(pos+1),
              dirkey = this.getKey(dirname, undefined, true);
 
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
@@ -2713,17 +2713,17 @@ class TFile {
       if (typeof this.fURL != 'string') return this;
 
       if (this.fURL[this.fURL.length - 1] === "+") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+         this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fAcceptRanges = false;
       }
 
       if (this.fURL[this.fURL.length - 1] === "^") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+         this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fSkipHeadRequest = true;
       }
 
       if (this.fURL[this.fURL.length - 1] === "-") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+         this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fUseStampPar = false;
       }
 
@@ -2733,7 +2733,7 @@ class TFile {
       }
 
       const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
-      this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
+      this.fFileName = pos >= 0 ? this.fURL.slice(pos + 1) : this.fURL;
    }
 
    /** @summary Assign BufferArray with file contentOpen file
@@ -2776,7 +2776,7 @@ class TFile {
 
       if (filename && (typeof filename === 'string') && (filename.length > 0)) {
          const pos = fileurl.lastIndexOf("/");
-         fileurl = (pos < 0) ? filename : fileurl.substr(0, pos + 1) + filename;
+         fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
       }
 
       function send_new_request(increment) {
@@ -2883,7 +2883,7 @@ class TFile {
             let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
             if (hdr_range && hdr_range.indexOf("bytes") >= 0) {
-               let parts = hdr_range.substr(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
+               let parts = hdr_range.slice(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
                   segm_last = parseInt(parts[1]);
@@ -2917,9 +2917,9 @@ class TFile {
 
          let indx = hdr.indexOf("boundary="), boundary = "", n = first, o = 0;
          if (indx > 0) {
-            boundary = hdr.substr(indx + 9);
+            boundary = hdr.slice(indx + 9);
             if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
-               boundary = boundary.substr(1, boundary.length - 2);
+               boundary = boundary.slice(1, boundary.length - 1);
             boundary = "--" + boundary;
          } else console.error('Did not found boundary id in the response header');
 
@@ -2933,13 +2933,13 @@ class TFile {
                code2 = view.getUint8(o + 1);
 
                if ((code1 == 13) && (code2 == 10)) {
-                  if ((line.length > 2) && (line.substr(0, 2) == '--') && (line !== boundary))
+                  if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
                      return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
 
                   line = line.toLowerCase();
 
                   if ((line.indexOf("content-range") >= 0) && (line.indexOf("bytes") > 0)) {
-                     let parts = line.substr(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
+                     let parts = line.slice(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
                      if (parts.length === 3) {
                         segm_start = parseInt(parts[0]);
                         segm_last = parseInt(parts[1]);
@@ -3028,9 +3028,9 @@ class TFile {
       let pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashes (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.substr(0, pos),
-            subname = keyname.substr(pos + 1),
-            dir = this.getDir(dirname);
+         let dirname = keyname.slice(0, pos),
+             subname = keyname.slice(pos + 1),
+             dir = this.getDir(dirname);
 
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
@@ -3085,7 +3085,7 @@ class TFile {
 
       if (typeof cycle != 'number') cycle = -1;
       // remove leading slashes
-      while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
+      while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.slice(1);
 
       let isdir, read_key;
 
@@ -3175,16 +3175,16 @@ class TFile {
                   let prefix = (StlNames[elem.fSTLtype] || "undef") + "<";
                   if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
                      typ = elem.fCtype;
-                     typname = typname.substr(prefix.length, typname.length - prefix.length - 1).trim();
+                     typname = typname.slice(prefix.length, typname.length - 1).trim();
 
                      if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap))
-                        if (typname.indexOf(",") > 0) typname = typname.substr(0, typname.indexOf(",")).trim();
+                        if (typname.indexOf(",") > 0) typname = typname.slice(0, typname.indexOf(",")).trim();
                         else continue;
                   }
                }
                if (typ >= 60) continue;
             } else {
-               if ((typ > 20) && (typname[typname.length - 1] == "*")) typname = typname.substr(0, typname.length - 1);
+               if ((typ > 20) && (typname[typname.length - 1] == "*")) typname = typname.slice(0, typname.length - 1);
                typ = typ % 20;
             }
 
@@ -3746,7 +3746,7 @@ function openFile(arg) {
 
    if (isNodeJs() && (typeof arg == "string")) {
       if (arg.indexOf("file://") == 0)
-         file = new TNodejsFile(arg.substr(7));
+         file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf("http") !== 0)
          file = new TNodejsFile(arg);
    }
