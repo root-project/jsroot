@@ -58,7 +58,7 @@ function v6_require(need) {
 
    need.forEach((name,indx) => {
       if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
-         need[indx] = name.substr(5);
+         need[indx] = name.slice(5);
       else if (name == "2d")
          need[indx] = "painter";
       else if ((name == "jq2d") || (name == "jq"))

@@ -470,7 +470,7 @@ class WebWindowHandle {
       let addr = this.href;
       if (relative_path.indexOf("../")==0) {
          let ddd = addr.lastIndexOf("/",addr.length-2);
-         addr = addr.substr(0,ddd) + relative_path.substr(2);
+         addr = addr.slice(0,ddd) + relative_path.slice(2);
       } else {
          addr += relative_path;
       }
@@ -504,8 +504,8 @@ class WebWindowHandle {
 
          if (!href) {
             href = window.location.href;
-            if (href && href.indexOf("#") > 0) href = href.substr(0, href.indexOf("#"));
-            if (href && href.lastIndexOf("/") > 0) href = href.substr(0, href.lastIndexOf("/") + 1);
+            if (href && href.indexOf("#") > 0) href = href.slice(0, href.indexOf("#"));
+            if (href && href.lastIndexOf("/") > 0) href = href.slice(0, href.lastIndexOf("/") + 1);
          }
          this.href = href;
          ntry++;
@@ -570,16 +570,16 @@ class WebWindowHandle {
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
             let i1 = msg.indexOf(":"),
-               credit = parseInt(msg.substr(0, i1)),
+               credit = parseInt(msg.slice(0, i1)),
                i2 = msg.indexOf(":", i1 + 1),
-               // cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),  // TODO: take into account when sending messages
+               // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
                i3 = msg.indexOf(":", i2 + 1),
-               chid = parseInt(msg.substr(i2 + 1, i3 - i2));
+               chid = parseInt(msg.slice(i2 + 1, i3));
 
             this.ackn++;            // count number of received packets,
             this.cansend += credit; // how many packets client can send
 
-            msg = msg.substr(i3 + 1);
+            msg = msg.slice(i3 + 1);
 
             if (chid == 0) {
                console.log('GET chid=0 message', msg);
@@ -697,7 +697,7 @@ function connectWebWindow(arg) {
             onWebsocketMsg: (handle, msg) => {
                if (msg.indexOf(arg.first_recv) != 0)
                   return handle.close();
-               handle.first_msg = msg.substr(arg.first_recv.length);
+               handle.first_msg = msg.slice(arg.first_recv.length);
 
                if (!arg.prereq2) resolveFunc(handle);
             },

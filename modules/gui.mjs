@@ -32,7 +32,7 @@ function readStyleFromURL(url) {
             case "1": settings.ToolBar = 'popup'; break;
             case "2": settings.ToolBar = true; break;
          }
-         inter = inter.substr(1);
+         inter = inter.slice(1);
       }
       if (inter.length == 5) {
          settings.Tooltip = parseInt(inter[0]);
