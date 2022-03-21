@@ -13,7 +13,7 @@ import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 
 import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
 
-import { assignFrame3DMethods, drawBinsLego } from './draw3d.mjs';
+import { assignFrame3DMethods, drawBinsLego, drawBinsError3D } from './draw3d.mjs';
 
 
 class RH2Painter extends RH2Painter2D {
@@ -785,7 +785,7 @@ class RH2Painter extends RH2Painter2D {
          return this.drawSurf();
 
       if (this.options.Error)
-         return this.drawError();
+         return drawBinsError3D(this, true);
 
       if (this.options.Contour)
          return this.drawContour3D(true);

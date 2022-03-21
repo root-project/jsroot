@@ -1410,4 +1410,108 @@ function drawBinsLego(painter, is_v7 = false) {
    main.toplevel.add(line);
 }
 
-export { assignFrame3DMethods, drawBinsLego };
+/** @summary Draw TH2 histogram in error mode */
+function drawBinsError3D(painter, is_v7 = false) {
+   const main = painter.getFramePainter(),
+         histo = painter.getHisto(),
+         handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
+         zmin = main.z_handle.getScaleMin(),
+         zmax = main.z_handle.getScaleMax();
+   let i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
+       nsegments = 0, lpos = null, binindx = null, lindx = 0;
+
+   const check_skip_min = () => {
+       // return true if minimal histogram value should be skipped
+       if (painter.options.Zero || (zmin > 0)) return false;
+       return !painter._show_empty_bins;
+   };
+
+    // loop over the points - first loop counts points, second fill arrays
+   for (let loop = 0; loop < 2; ++loop) {
+
+       for (i=handle.i1;i<handle.i2;++i) {
+          x1 = handle.grx[i];
+          x2 = handle.grx[i+1];
+          for (j=handle.j1;j<handle.j2;++j) {
+             binz = histo.getBinContent(i+1, j+1);
+             if ((binz < zmin) || (binz > zmax)) continue;
+             if ((binz===zmin) && check_skip_min()) continue;
+
+             // just count number of segments
+             if (loop===0) { nsegments+=3; continue; }
+
+             bin = histo.getBin(i+1,j+1);
+             binerr = histo.getBinError(bin);
+             binindx[lindx/18] = bin;
+
+             y1 = handle.gry[j];
+             y2 = handle.gry[j+1];
+
+             z1 = main.grz((binz - binerr < zmin) ? zmin : binz-binerr);
+             z2 = main.grz((binz + binerr > zmax) ? zmax : binz+binerr);
+
+             lpos[lindx] = x1; lpos[lindx+3] = x2;
+             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
+             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
+             lindx+=6;
+
+             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
+             lpos[lindx+1] = y1; lpos[lindx+4] = y2;
+             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
+             lindx+=6;
+
+             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
+             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
+             lpos[lindx+2] = z1; lpos[lindx+5] = z2;
+             lindx+=6;
+          }
+       }
+
+       if (loop===0) {
+          if (nsegments===0) return;
+          lpos = new Float32Array(nsegments*6);
+          binindx = new Int32Array(nsegments/3);
+       }
+    }
+
+    // create lines
+    const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
+          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr("line_width", 1) : histo.fLineWidth }),
+          line = createLineSegments(lpos, material);
+
+    line.painter = painter;
+    line.intersect_index = binindx;
+    line.zmin = zmin;
+    line.zmax = zmax;
+    line.tip_color = (histo.fLineColor === 3) ? 0xFF0000 : 0x00FF00;
+
+    line.tooltip = function(intersect) {
+       if (!Number.isInteger(intersect.index)) {
+          console.error(`segment index not provided, three.js version ${REVISION}, expected 137`);
+          return null;
+       }
+
+       let pos = Math.floor(intersect.index / 6);
+       if ((pos<0) || (pos >= this.intersect_index.length)) return null;
+       let p = this.painter,
+           histo = p.getHisto(),
+           main = p.getFramePainter(),
+           tip = p.get3DToolTip(this.intersect_index[pos]);
+
+       tip.x1 = Math.max(-main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
+       tip.x2 = Math.min(main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
+       tip.y1 = Math.max(-main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
+       tip.y2 = Math.min(main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
+
+       tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
+       tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
+
+       tip.color = this.tip_color;
+
+       return tip;
+    };
+
+    main.toplevel.add(line);
+}
+
+export { assignFrame3DMethods, drawBinsLego, drawBinsError3D };
