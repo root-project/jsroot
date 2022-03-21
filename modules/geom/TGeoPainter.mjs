@@ -1161,8 +1161,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (on)
-         loadScript(source_dir + 'scripts/dat.gui.js')
-               .then(() => this.buildDatGui(globalThis.dat));
+         import('../gui/dat.gui.mjs').then(h => this.buildDatGui(h));
    }
 
    /** @summary build dat.gui elements
