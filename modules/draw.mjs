@@ -62,7 +62,7 @@ const drawFuncs = { lst: [
    { name: "TRatioPlot", icon: "img_mgraph", class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: "" },
    { name: "TMultiGraph", icon: "img_mgraph", class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
-   { name: "TWebPainting", icon: "img_graph", class: () => import_more().then(h => h.TWebPaintingPainter) },
+   { name: "TWebPainting", icon: "img_graph", class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
    { name: "TCanvasWebSnapshot", icon: "img_canvas", draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
    { name: "kind:Text", icon: "img_text", func: drawRawText },
