@@ -132,8 +132,7 @@ class RH2Painter extends RHistPainter {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      if (!this.isRH2Poly())
-         pp.addPadButton("th2color", "Toggle color", "ToggleColor");
+      pp.addPadButton("th2color", "Toggle color", "ToggleColor");
       pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
       pp.addPadButton("th2draw3d", "Toggle 3D mode", "Toggle3D");
       pp.showPadButtons();
@@ -154,8 +153,6 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      if (this.isRH2Poly()) return; // not implemented
-
       let i1 = this.getSelectIndex("x", "left", -1),
           i2 = this.getSelectIndex("x", "right", 1),
           j1 = this.getSelectIndex("y", "left", -1),
@@ -213,21 +210,7 @@ class RH2Painter extends RHistPainter {
 
       this.extractAxesProperties(2);
 
-      if (this.isRH2Poly()) {
-         this.gminposbin = null;
-         this.gminbin = this.gmaxbin = 0;
-
-         for (let n=0, len=histo.fBins.arr.length; n<len; ++n) {
-            let bin_content = histo.fBins.arr[n].fContent;
-            if (n===0) this.gminbin = this.gmaxbin = bin_content;
-
-            if (bin_content < this.gminbin) this.gminbin = bin_content; else
-               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
-
-            if (bin_content > 0)
-               if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
-         }
-      } else if (this.isDisplayItem()) {
+      if (this.isDisplayItem()) {
          // take min/max values from the display item
          this.gminbin = histo.fContMin;
          this.gminposbin = histo.fContMinPos > 0 ? histo.fContMinPos : null;
@@ -257,10 +240,6 @@ class RH2Painter extends RHistPainter {
          this.draw_content = false;
       } else {
          this.draw_content = this.gmaxbin > 0;
-         if (!this.draw_content  && this.options.Zero && this.isRH2Poly()) {
-            this.draw_content = true;
-            this.options.Line = 1;
-         }
       }
    }
 
@@ -819,87 +798,6 @@ class RH2Painter extends RHistPainter {
       return cmd;
    }
 
-   /** @summary draw TH2Poly as color */
-   drawPolyBinsColor() {
-      let histo = this.getHisto(),
-          pmain = this.getFramePainter(),
-          colPaths = [], textbins = [],
-          colindx, cmd, bin, item,
-          i, len = histo.fBins.arr.length,
-          palette = pmain.getHistPalette();
-
-      // force recalculations of contours
-      // use global coordinates
-      this.maxbin = this.gmaxbin;
-      this.minbin = this.gminbin;
-      this.minposbin = this.gminposbin;
-
-      this.createContour(pmain, palette);
-
-      for (i = 0; i < len; ++ i) {
-         bin = histo.fBins.arr[i];
-         colindx = palette.getContourIndex(bin.fContent);
-         if (colindx === null) continue;
-         if (bin.fContent === 0) {
-            if (!this.options.Zero || !this.options.Line) continue;
-            colindx = 0;
-         }
-
-         // check if bin outside visible range
-         if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
-             (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
-
-         cmd = this.createPolyBin(pmain, bin, this.options.Text && bin.fContent);
-
-         if (colPaths[colindx] === undefined)
-            colPaths[colindx] = cmd;
-         else
-            colPaths[colindx] += cmd;
-
-         if (this.options.Text) textbins.push(bin);
-      }
-
-      for (colindx = 0; colindx < colPaths.length; ++colindx)
-         if (colPaths[colindx]) {
-            item = this.draw_g
-                     .append("svg:path")
-                     .style("fill", colindx ? palette.getColor(colindx) : "none")
-                     .attr("d", colPaths[colindx]);
-            if (this.options.Line)
-               item.call(this.lineatt.func);
-         }
-
-      let pr = Promise.resolve(true);
-
-      if (textbins.length > 0) {
-         let textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
-             text_g = this.draw_g.append("svg:g").attr("class","th2poly_text");
-
-         this.startTextDrawing(textFont, 'font', text_g);
-
-         for (i = 0; i < textbins.length; ++ i) {
-            bin = textbins[i];
-
-            let lbl = "";
-
-            if (!this.options.TextKind) {
-               lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                          floatToString(bin.fContent, gStyle.fPaintTextFormat);
-            } else {
-               if (bin.fPoly) lbl = bin.fPoly.fName;
-               if (lbl === "Graph") lbl = "";
-               if (!lbl) lbl = bin.fNumber;
-            }
-
-            this.drawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
-         }
-
-         pr = this.finishTextDrawing(text_g, true);
-      }
-
-      return pr.then(() => { return { poly: true }; });
-   }
-
    /** @summary Draw RH2 bins as text */
    drawBinsText(handle) {
       let histo = this.getHisto(),
@@ -1405,28 +1303,24 @@ class RH2Painter extends RHistPainter {
 
       // if (this.lineatt.empty()) this.lineatt.color = 'cyan';
 
-      if (this.isRH2Poly()) {
-         pr = this.drawPolyBinsColor();
-      } else {
-         if (this.options.Scat)
-            handle = this.drawBinsScatter();
-         else if (this.options.Color)
-            handle = this.drawBinsColor();
-         else if (this.options.Box)
-            handle = this.drawBinsBox();
-         else if (this.options.Arrow)
-            handle = this.drawBinsArrow();
-         else if (this.options.Contour > 0)
-            handle = this.drawBinsContour(funcs, rect.width, rect.height);
-         else if (this.options.Candle)
-            handle = this.drawBinsCandle(funcs, rect.width);
+      if (this.options.Scat)
+         handle = this.drawBinsScatter();
+      else if (this.options.Color)
+         handle = this.drawBinsColor();
+      else if (this.options.Box)
+         handle = this.drawBinsBox();
+      else if (this.options.Arrow)
+         handle = this.drawBinsArrow();
+      else if (this.options.Contour > 0)
+         handle = this.drawBinsContour(funcs, rect.width, rect.height);
+      else if (this.options.Candle)
+         handle = this.drawBinsCandle(funcs, rect.width);
 
-         if (this.options.Text)
-            pr = this.drawBinsText(handle);
+      if (this.options.Text)
+         pr = this.drawBinsText(handle);
 
-         if (!handle && !pr)
-            handle = this.drawBinsColor();
-      }
+      if (!handle && !pr)
+         handle = this.drawBinsColor();
 
       if (!pr) pr = Promise.resolve(handle);
 
@@ -1825,11 +1719,6 @@ class RH2Painter extends RHistPainter {
 
          // here we deciding how histogram will look like and how will be shown
          // painter.decodeOptions(opt);
-
-         if (painter.isRH2Poly()) {
-            if (o.Mode3D) o.Lego = 12;
-                     else o.Color = true;
-         }
 
          painter._show_empty_bins = false;
 

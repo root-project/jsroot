@@ -107,8 +107,7 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Count statistic */
    countStat(cond) {
-      let profile = this.isRProfile(),
-          histo = this.getHisto(), xaxis = this.getAxis("x"),
+      let histo = this.getHisto(), xaxis = this.getAxis("x"),
           left = this.getSelectIndex("x", "left"),
           right = this.getSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
@@ -121,15 +120,9 @@ class RH1Painter extends RHistPainter {
 
          if (cond && !cond(xx)) continue;
 
-         if (profile) {
-            w = histo.fBinEntries[i + 1];
-            stat_sumwy += histo.fArray[i + 1];
-            stat_sumwy2 += histo.fSumw2[i + 1];
-         } else {
-            w = histo.getBinContent(i + 1);
-         }
+         w = histo.getBinContent(i + 1);
 
-         if ((xmax===null) || (w>wmax)) { xmax = xx; wmax = w; }
+         if ((xmax === null) || (w > wmax)) { xmax = xx; wmax = w; }
 
          stat_sumw += w;
          stat_sumwx += w * xx;
@@ -152,7 +145,7 @@ class RH1Painter extends RHistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany * res.meany));
       }
 
-      if (xmax!==null) {
+      if (xmax !== null) {
          res.xmax = xmax;
          res.wmax = wmax;
       }
@@ -180,47 +173,29 @@ class RH1Painter extends RHistPainter {
       if (print_name > 0)
          stat.addText(data.name);
 
-      if (this.isRProfile()) {
+      if (print_entries > 0)
+         stat.addText("Entries = " + stat.format(data.entries,"entries"));
 
-         if (print_entries > 0)
-            stat.addText("Entries = " + stat.format(data.entries,"entries"));
+      if (print_mean > 0)
+         stat.addText("Mean = " + stat.format(data.meanx));
 
-         if (print_mean > 0) {
-            stat.addText("Mean = " + stat.format(data.meanx));
-            stat.addText("Mean y = " + stat.format(data.meany));
-         }
+      if (print_rms > 0)
+         stat.addText("Std Dev = " + stat.format(data.rmsx));
 
-         if (print_rms > 0) {
-            stat.addText("Std Dev = " + stat.format(data.rmsx));
-            stat.addText("Std Dev y = " + stat.format(data.rmsy));
-         }
+      if (print_under > 0)
+         stat.addText("Underflow = " + stat.format(histo.getBinContent(0), "entries"));
 
-      } else {
+      if (print_over > 0)
+         stat.addText("Overflow = " + stat.format(histo.getBinContent(this.nbinsx+1), "entries"));
 
-         if (print_entries > 0)
-            stat.addText("Entries = " + stat.format(data.entries,"entries"));
+      if (print_integral > 0)
+         stat.addText("Integral = " + stat.format(data.integral,"entries"));
 
-         if (print_mean > 0)
-            stat.addText("Mean = " + stat.format(data.meanx));
+      if (print_skew > 0)
+         stat.addText("Skew = <not avail>");
 
-         if (print_rms > 0)
-            stat.addText("Std Dev = " + stat.format(data.rmsx));
-
-         if (print_under > 0)
-            stat.addText("Underflow = " + stat.format(histo.getBinContent(0), "entries"));
-
-         if (print_over > 0)
-            stat.addText("Overflow = " + stat.format(histo.getBinContent(this.nbinsx+1), "entries"));
-
-         if (print_integral > 0)
-            stat.addText("Integral = " + stat.format(data.integral,"entries"));
-
-         if (print_skew > 0)
-            stat.addText("Skew = <not avail>");
-
-         if (print_kurt > 0)
-            stat.addText("Kurt = <not avail>");
-      }
+      if (print_kurt > 0)
+         stat.addText("Kurt = <not avail>");
 
       return true;
    }
@@ -379,7 +354,6 @@ class RH1Painter extends RHistPainter {
           show_markers = options.Mark,
           show_line = options.Line,
           show_text = options.Text,
-          text_profile = show_text && (this.options.TextKind == "E") && this.isRProfile(),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           hints_err = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
@@ -453,17 +427,13 @@ class RH1Painter extends RHistPainter {
                yerr2 = Math.round(funcs.gry(bincont - binerr) - my); // down
             }
 
-            if (show_text) {
-               let cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
+            if (show_text && (bincont !== 0)) {
+               let lbl = (bincont === Math.round(bincont)) ? bincont.toString() : floatToString(bincont, gStyle.fPaintTextFormat);
 
-               if (cont!==0) {
-                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, gStyle.fPaintTextFormat);
-
-                  if (text_font.angle)
-                     this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size/5), width: 0, height: 0, text: lbl, latex: 0 });
-                  else
-                     this.drawText({ x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_font.size), width: Math.round((mx2-mx1)*0.8), height: text_font.size, text: lbl, latex: 0 });
-               }
+               if (text_font.angle)
+                  this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size / 5), width: 0, height: 0, text: lbl, latex: 0 });
+               else
+                  this.drawText({ x: Math.round(mx1 + (mx2 - mx1) * 0.1), y: Math.round(my - 2 - text_font.size), width: Math.round((mx2 - mx1) * 0.8), height: text_font.size, text: lbl, latex: 0 });
             }
 
             if (show_line && (path_line !== null))
@@ -778,8 +748,6 @@ class RH1Painter extends RHistPainter {
 
             gry1 = Math.round(funcs.gry(cont + binerr)); // up
             gry2 = Math.round(funcs.gry(cont - binerr)); // down
-
-            if ((cont==0) && this.isRProfile()) findbin = null;
 
             let dx = (grx2-grx1)*this.options.errorX;
             grx1 = Math.round(midx - dx);

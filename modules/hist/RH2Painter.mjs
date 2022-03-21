@@ -16,9 +16,6 @@ class RH2Painter extends RH2Painter2D {
 
       if (!this.draw_content) return;
 
-      if (this.isRH2Poly())
-         return this.drawPolyLego();
-
       if (this.options.Surf)
          return drawBinsSurf3D(this, true);
 

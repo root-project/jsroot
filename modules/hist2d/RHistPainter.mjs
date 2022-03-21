@@ -199,13 +199,6 @@ class RHistPainter extends RObjectPainter {
       return histo;
    }
 
-   /** @summary is RProfile (not exists yet) */
-   isRProfile() { return false; }
-
-   /** @summary is RH2Poly (not exists yet) */
-   isRH2Poly() { return false; }
-
-
    /** @summary Decode options */
    decodeOptions(/*opt*/) {
       if (!this.options) this.options = { Hist : 1 };
