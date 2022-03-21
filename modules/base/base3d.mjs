@@ -1502,11 +1502,11 @@ class PointsCreator {
 /** @summary Create material for 3D line
   * @desc Takes into account dashed properties
   * @private */
-function create3DLineMaterial(painter, arg) {
+function create3DLineMaterial(painter, arg, is_v7 = false) {
    if (!painter || !arg) return null;
 
    let lcolor, lstyle, lwidth;
-   if (typeof arg == 'string') {
+   if ((typeof arg == 'string') || is_v7) {
       lcolor = painter.v7EvalColor(arg+"color", "black");
       lstyle = parseInt(painter.v7EvalAttr(arg+"style", 0));
       lwidth = parseInt(painter.v7EvalAttr(arg+"width", 1));

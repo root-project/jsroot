@@ -4,17 +4,17 @@ import { constants, isBatchMode, getDocument } from '../core.mjs';
 
 import { rgb as d3_rgb } from '../d3.mjs';
 
-import { REVISION, DoubleSide, Object3D, Color, Vector3, Matrix4, Line3,
-         BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial,
+import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
+         BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
-         TextGeometry, Plane, Scene, PerspectiveCamera, PointLight } from '../three.mjs';
+         TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
 
 import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer } from '../base/base3d.mjs';
+         cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 
 import { translateLaTeX } from '../base/latex.mjs';
 
@@ -1514,4 +1514,456 @@ function drawBinsError3D(painter, is_v7 = false) {
     main.toplevel.add(line);
 }
 
-export { assignFrame3DMethods, drawBinsLego, drawBinsError3D };
+/** @summary Draw TH2 as 3D contour plot
+  * @private */
+function drawBinsContour3D(painter, realz = false, is_v7 = false) {
+   // for contour plots one requires handle with full range
+   let main = painter.getFramePainter(),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+       histo = painter.getHisto(), // get levels
+       levels = painter.getContourLevels(), // init contour if not exists
+       palette = painter.getHistPalette(),
+       layerz = 2*main.size_z3d, pnts = [];
+
+   painter.buildContour(handle, levels, palette,
+      (colindx, xp, yp, iminus, iplus, ilevel) => {
+          // ignore less than three points
+          if (iplus - iminus < 3) return;
+
+          if (realz) {
+             layerz = main.grz(levels[ilevel]);
+             if ((layerz < 0) || (layerz > 2*main.size_z3d)) return;
+          }
+
+          for (let i=iminus;i<iplus;++i) {
+             pnts.push(xp[i], yp[i], layerz);
+             pnts.push(xp[i+1], yp[i+1], layerz);
+          }
+      }
+   );
+
+   let lines = createLineSegments(pnts, create3DLineMaterial(painter, is_v7 ? "line_" : histo));
+   main.toplevel.add(lines);
+}
+
+
+/** @summary Draw TH2 histograms in surf mode */
+function drawBinsSurf3D(painter, is_v7 = false) {
+   let histo = painter.getHisto(),
+       main = painter.getFramePainter(),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+       i,j, x1, y1, x2, y2, z11, z12, z21, z22,
+       axis_zmin = main.z_handle.getScaleMin();
+       // axis_zmax = main.z_handle.getScaleMax();
+
+   // first adjust ranges
+
+   let main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value);
+
+   if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
+
+   let ilevels = null, levels = null, dolines = true, dogrid = false,
+       donormals = false, palette = null;
+
+   if (is_v7) {
+      let need_palette = 0;
+      switch(painter.options.Surf) {
+         case 11: need_palette = 2; break;
+         case 12:
+         case 15: // make surf5 same as surf2
+         case 17: need_palette = 2; dolines = false; break;
+         case 14: dolines = false; donormals = true; break;
+         case 16: need_palette = 1; dogrid = true; dolines = false; break;
+         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
+      }
+
+      if (need_palette > 0) {
+         palette = main.getHistPalette();
+         if (need_palette == 2)
+            painter.createContour(main, palette, { full_z_range: true });
+         ilevels = palette.getContour();
+      }
+
+   } else {
+      switch(painter.options.Surf) {
+         case 11: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); break;
+         case 12:
+         case 15: // make surf5 same as surf2
+         case 17: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); dolines = false; break;
+         case 14: dolines = false; donormals = true; break;
+         case 16: ilevels = painter.getContourLevels(); dogrid = true; dolines = false; break;
+         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
+      }
+   }
+
+   if (ilevels) {
+      // recalculate levels into graphical coordinates
+      levels = new Float32Array(ilevels.length);
+      for (let ll=0;ll<ilevels.length;++ll)
+         levels[ll] = main_grz(ilevels[ll]);
+   } else {
+      levels = [0, 2*main.size_z3d]; // just cut top/bottom parts
+   }
+
+   let loop, nfaces = [], pos = [], indx = [],    // buffers for faces
+       nsegments = 0, lpos = null, lindx = 0,     // buffer for lines
+       ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
+       normindx = [];                             // buffer to remember place of vertex for each bin
+
+   function CheckSide(z,level1, level2) {
+      if (z<level1) return -1;
+      if (z>level2) return 1;
+      return 0;
+   }
+
+   function AddLineSegment(x1,y1,z1, x2,y2,z2) {
+      if (!dolines) return;
+      let side1 = CheckSide(z1,0,2*main.size_z3d),
+          side2 = CheckSide(z2,0,2*main.size_z3d);
+      if ((side1===side2) && (side1!==0)) return;
+      if (!loop) return ++nsegments;
+
+      if (side1!==0) {
+         let diff = z2-z1;
+         z1 = (side1<0) ? 0 : 2*main.size_z3d;
+         x1 = x2 - (x2-x1)/diff*(z2-z1);
+         y1 = y2 - (y2-y1)/diff*(z2-z1);
+      }
+      if (side2!==0) {
+         let diff = z1-z2;
+         z2 = (side2<0) ? 0 : 2*main.size_z3d;
+         x2 = x1 - (x1-x2)/diff*(z1-z2);
+         y2 = y1 - (y1-y2)/diff*(z1-z2);
+      }
+
+      lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
+      lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
+   }
+
+   let pntbuf = new Float32Array(6*3), k = 0, lastpart = 0, // maximal 6 points
+       gridpnts = new Float32Array(2*3), gridcnt = 0;
+
+   function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
+      if (k>=pntbuf.length) console.log('more than 6 points???');
+
+      let part = (crossz - zz1) / (zz2 - zz1), shift = 3;
+      if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
+         // while second crossing point closer than first to original, move it in memory
+         pntbuf[k] = pntbuf[k-3];
+         pntbuf[k+1] = pntbuf[k-2];
+         pntbuf[k+2] = pntbuf[k-1];
+         k-=3; shift = 6;
+      }
+
+      pntbuf[k] = xx1 + part*(xx2-xx1);
+      pntbuf[k+1] = yy1 + part*(yy2-yy1);
+      pntbuf[k+2] = crossz;
+
+      if (with_grid && grid) {
+         gridpnts[gridcnt] = pntbuf[k];
+         gridpnts[gridcnt+1] = pntbuf[k+1];
+         gridpnts[gridcnt+2] = pntbuf[k+2];
+         gridcnt+=3;
+      }
+
+      k += shift;
+      lastpart = part;
+   }
+
+   function RememberVertex(indx, ii,jj) {
+      let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
+
+      if (normindx[bin]>=0)
+         return console.error('More than 8 vertexes for the bin');
+
+      let pos = bin+8+normindx[bin]; // position where write index
+      normindx[bin]--;
+      normindx[pos] = indx; // at this moment index can be overwritten, means all 8 position are there
+   }
+
+   function RecalculateNormals(arr) {
+      for (let ii=handle.i1;ii<handle.i2;++ii) {
+         for (let jj=handle.j1;jj<handle.j2;++jj) {
+            let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1)) * 8;
+
+            if (normindx[bin] === -1) continue; // nothing there
+
+            let beg = (normindx[bin] >=0) ? bin : bin+9+normindx[bin],
+                end = bin+8, sumx=0, sumy = 0, sumz = 0;
+
+            for (let kk=beg;kk<end;++kk) {
+               let indx = normindx[kk];
+               if (indx<0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+               sumx+=arr[indx];
+               sumy+=arr[indx+1];
+               sumz+=arr[indx+2];
+            }
+
+            sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
+
+            for (let kk=beg;kk<end;++kk) {
+               let indx = normindx[kk];
+               arr[indx] = sumx;
+               arr[indx+1] = sumy;
+               arr[indx+2] = sumz;
+            }
+         }
+      }
+   }
+
+   function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3, is_first) {
+
+      for (let lvl=1;lvl<levels.length;++lvl) {
+
+         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
+             side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
+             side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
+             side_sum = side1 + side2 + side3;
+
+         if (side_sum === 3) continue;
+         if (side_sum === -3) return;
+
+         if (!loop) {
+            let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
+            if (side1===0) ++npnts;
+            if (side2===0) ++npnts;
+            if (side3===0) ++npnts;
+
+            if ((npnts===1) || (npnts===2)) console.error('FOND npnts', npnts);
+
+            if (npnts>2) {
+               if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+               nfaces[lvl] += npnts-2;
+            }
+
+            // check if any(contours for given level exists
+            if (((side1>0) || (side2>0) || (side3>0)) &&
+                ((side1!==side2) || (side2!==side3) || (side3!==side1))) ++ngridsegments;
+
+            continue;
+         }
+
+         gridcnt = 0;
+
+         k = 0;
+         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
+
+         if (side1!==side2) {
+            // order is important, should move from 1->2 point, checked via lastpart
+            lastpart = 0;
+            if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+            if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
+         }
+
+         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
+
+         if (side2!==side3) {
+            // order is important, should move from 2->3 point, checked via lastpart
+            lastpart = 0;
+            if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+            if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
+         }
+
+         if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
+
+         if (side3!==side1) {
+            // order is important, should move from 3->1 point, checked via lastpart
+            lastpart = 0;
+            if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+            if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
+         }
+
+         if (k===0) continue;
+         if (k<9) { console.log('found less than 3 points', k/3); continue; }
+
+         if (grid && (gridcnt === 6)) {
+            for (let jj = 0; jj < 6; ++jj)
+               grid[gindx+jj] = gridpnts[jj];
+            gindx+=6;
+         }
+
+
+         // if three points and surf==14, remember vertex for each point
+
+         let buf = pos[lvl], s = indx[lvl];
+         if (donormals && (k===9)) {
+            RememberVertex(s, i, j);
+            RememberVertex(s+3, i+1, is_first ? j+1 : j);
+            RememberVertex(s+6, is_first ? i : i+1, j+1);
+         }
+
+         for (let k1 = 3; k1 < k-3; k1 += 3) {
+            buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
+            buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
+            buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
+         }
+         indx[lvl] = s;
+
+      }
+   }
+
+   if (donormals)
+      // for each bin maximal 8 points reserved
+      normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8).fill(-1);
+
+   for (loop = 0; loop < 2; ++loop) {
+      if (loop) {
+         for (let lvl = 1; lvl < levels.length; ++lvl)
+            if (nfaces[lvl]) {
+               pos[lvl] = new Float32Array(nfaces[lvl] * 9);
+               indx[lvl] = 0;
+            }
+         if (dolines && (nsegments > 0))
+            lpos = new Float32Array(nsegments * 6);
+         if (dogrid && (ngridsegments>0))
+            grid = new Float32Array(ngridsegments * 6);
+      }
+      for (i = handle.i1;i < handle.i2-1; ++i) {
+         x1 = handle.grx[i];
+         x2 = handle.grx[i+1];
+         for (j = handle.j1; j < handle.j2-1; ++j) {
+            y1 = handle.gry[j];
+            y2 = handle.gry[j+1];
+            z11 = main_grz(histo.getBinContent(i+1, j+1));
+            z12 = main_grz(histo.getBinContent(i+1, j+2));
+            z21 = main_grz(histo.getBinContent(i+2, j+1));
+            z22 = main_grz(histo.getBinContent(i+2, j+2));
+
+            AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12, true);
+
+            AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22, false);
+
+            AddLineSegment(x1,y2,z12, x1,y1,z11);
+            AddLineSegment(x1,y1,z11, x2,y1,z21);
+
+            if (i===handle.i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
+            if (j===handle.j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
+         }
+      }
+   }
+
+   for (let lvl = 1; lvl < levels.length; ++lvl)
+      if (pos[lvl]) {
+         if (indx[lvl] !== nfaces[lvl]*9)
+              console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+         let geometry = new BufferGeometry();
+         geometry.setAttribute( 'position', new BufferAttribute( pos[lvl], 3 ) );
+         geometry.computeVertexNormals();
+         if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
+
+         let fcolor, material;
+         if (is_v7) {
+            fcolor = palette ? palette.getColor(lvl-1) : painter.getColor(5);
+         } else if (palette) {
+            fcolor = palette.calcColor(lvl, levels.length);
+         } else {
+            fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
+            if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) fcolor = painter.getColor(48);
+         }
+         if (painter.options.Surf === 14)
+            material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+         else
+            material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+
+         let mesh = new Mesh(geometry, material);
+
+         main.toplevel.add(mesh);
+
+         mesh.painter = painter; // to let use it with context menu
+      }
+
+
+   if (lpos) {
+      if (nsegments*6 !== lindx)
+         console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
+
+      const lcolor = painter.getColor(histo.fLineColor),
+            material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
+            line = createLineSegments(lpos, material);
+      line.painter = painter;
+      main.toplevel.add(line);
+   }
+
+   if (grid) {
+      if (ngridsegments*6 !== gindx)
+         console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
+
+      const material = (painter.options.Surf === 1)
+                      ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
+                      : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) }),
+           line = createLineSegments(grid, material);
+      line.painter = painter;
+      main.toplevel.add(line);
+   }
+
+   if (painter.options.Surf === 17)
+      drawBinsContour3D(painter, false, is_v7);
+
+   if (painter.options.Surf === 13) {
+
+      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+
+      // get levels
+      let levels = painter.getContourLevels(), // init contour
+          palette = painter.getHistPalette(),
+          lastcolindx = -1, layerz = 2*main.size_z3d;
+
+      painter.buildContour(handle, levels, palette,
+         (colindx,xp,yp,iminus,iplus) => {
+             // no need for duplicated point
+             if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus])) iplus--;
+
+             // ignore less than three points
+             if (iplus - iminus < 3) return;
+
+             let pnts = [];
+
+             for (let i = iminus; i <= iplus; ++i)
+                if ((i === iminus) || (xp[i] !== xp[i-1]) || (yp[i] !== yp[i-1]))
+                   pnts.push(new Vector2(xp[i], yp[i]));
+
+             if (pnts.length < 3) return;
+
+             const faces = ShapeUtils.triangulateShape(pnts , []);
+
+             if (!faces || (faces.length === 0)) return;
+
+             if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
+                lastcolindx = colindx;
+                layerz+=0.0001*main.size_z3d; // change layers Z
+             }
+
+             const pos = new Float32Array(faces.length*9),
+                   norm = new Float32Array(faces.length*9);
+             let indx = 0;
+
+             for (let n = 0; n < faces.length; ++n) {
+                let face = faces[n];
+                for (let v = 0; v < 3; ++v) {
+                   let pnt = pnts[face[v]];
+                   pos[indx] = pnt.x;
+                   pos[indx+1] = pnt.y;
+                   pos[indx+2] = layerz;
+                   norm[indx] = 0;
+                   norm[indx+1] = 0;
+                   norm[indx+2] = 1;
+
+                   indx+=3;
+                }
+             }
+
+             const geometry = new BufferGeometry();
+             geometry.setAttribute('position', new BufferAttribute(pos, 3));
+             geometry.setAttribute('normal', new BufferAttribute(norm, 3));
+
+             const material = new MeshBasicMaterial({ color: palette.getColor(colindx), side: DoubleSide, opacity: 0.5, vertexColors: false }),
+                   mesh = new Mesh(geometry, material);
+             mesh.painter = painter;
+             main.toplevel.add(mesh);
+         }
+      );
+   }
+}
+
+
+export { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D };
