@@ -86,6 +86,8 @@ function v6_require(need) {
 
    let arr = [];
 
+   console.log('need', JSON.stringify(need));
+
    need.forEach(name => {
       if (name == "hist")
          arr.push(Promise.all([import("../modules/hist/TH1Painter.mjs"), import("../modules/hist/TH2Painter.mjs"), import("../modules/hist/THStackPainter.mjs")]).then(arr => {
@@ -99,6 +101,15 @@ function v6_require(need) {
             // copy all classes
             Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
             if (jsrp) jsrp.ensureTCanvas = arr[2].ensureTCanvas;
+            return globalThis.JSROOT;
+         }));
+      else if (name == "v7gpad")
+         arr.push(loadPainter().then(() => Promise.all([import("../modules/gpad/RAxisPainter.mjs"), import("../modules/gpad/RPadPainter.mjs"), import("../modules/gpad/RCanvasPainter.mjs")])).then(arr => {
+            // copy all classes
+            Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
+            if (jsrp) jsrp.ensureRCanvas = arr[2].ensureRCanvas;
+            arr[1].RPadPainter.prototype.drawObject = globalThis.JSROOT.draw;
+            arr[2].RPadPainter.prototype.getObjectDrawSettings = globalThis.JSROOT.getDrawSettings;
             return globalThis.JSROOT;
          }));
       else if (name == "io")
