@@ -1720,8 +1720,6 @@ function getNodeMatrix(kind, node) {
    return matrix;
 }
 
-let createGeometry; // will be function to create geometry
-
 /** @summary Returns number of faces for provided geometry
   * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
@@ -1976,7 +1974,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
  * @param {Object} shape - instance of TGeoShape object
  * @param {Number} limit - defines return value, see details
  * @private */
-createGeometry = function( shape, limit ) {
+function createGeometry( shape, limit ) {
    if (limit === undefined) limit = 0;
 
    try {
@@ -3598,4 +3596,5 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
 export { setGeoParams, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
+         createGeometry, numGeometryFaces, numGeometryVertices,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };

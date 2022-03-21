@@ -20,6 +20,21 @@ async function _sync() {
    return globalThis.JSROOT;
 }
 
+
+function loadPainter() {
+   if (jsrp) return Promise.resolve(jsrp);
+   return Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'),
+                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
+      globalThis.d3 = res[0]; // assign global d3
+      jsrp = {};
+      Object.assign(jsrp, res[1], res[2], res[3], res[4]);
+      globalThis.JSROOT.Painter = jsrp;
+      globalThis.JSROOT.BasePainter = res[3].BasePainter;
+      globalThis.JSROOT.ObjectPainter = res[4].ObjectPainter;
+      return jsrp;
+   });
+}
+
 exports.httpRequest = function(...args) {
    return _sync().then(() => import('../modules/core.mjs')).then(handle => handle.httpRequest(...args));
 }
@@ -91,11 +106,14 @@ function v6_require(need) {
       else if (name == "tree")
          arr.push(import("../modules/tree.mjs"));
       else if (name == "geom")
-         arr.push(geo ? Promise.resolve(geo) : Promise.all(import("../modules/geom/geobase.mjs"), import("../modules/geom/TGeoPainter.mjs")).then(res => {
+         arr.push(geo ? Promise.resolve(geo) : loadPainter().then(() => Promise.all([import("../modules/geom/geobase.mjs"), import("../modules/geom/TGeoPainter.mjs"), import("../modules/base/base3d.mjs")])).then(res => {
             geo = {};
             Object.assign(geo, res[0], res[1]);
             globalThis.JSROOT.GEO = geo;
             globalThis.JSROOT.TGeoPainter = res[1].TGeoPainter;
+            globalThis.JSROOT.Painter.createGeoPainter = res[1].createGeoPainter;
+            globalThis.JSROOT.Painter.GeoDrawingControl = res[1].GeoDrawingControl;
+            globalThis.JSROOT.Painter.PointsCreator = res[2].PointsCreator;
             return geo;
          }));
       else if (name == "math")
@@ -103,16 +121,7 @@ function v6_require(need) {
       else if (name == "latex")
          arr.push(import("../modules/base/latex.mjs"));
       else if (name == "painter")
-         arr.push(jsrp ? Promise.resolve(jsrp) : Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'),
-                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
-            globalThis.d3 = res[0]; // assign global d3
-            jsrp = {};
-            Object.assign(jsrp, res[1], res[2], res[3], res[4]);
-            globalThis.JSROOT.Painter = jsrp;
-            globalThis.JSROOT.BasePainter = res[3].BasePainter;
-            globalThis.JSROOT.ObjectPainter = res[4].ObjectPainter;
-            return jsrp;
-         }));
+         arr.push(loadPainter());
       else if (name == "hierarchy")
          arr.push(Promise.all([import("../modules/gui/HierarchyPainter.mjs"), import("../modules/draw/TTree.mjs")]).then(arr => {
             Object.assign(globalThis.JSROOT, arr[0], arr[1]);
@@ -181,6 +190,7 @@ exports.connectWebWindow = async function(arg) {
    }
 
    let h = await import('../modules/webwindow.mjs');
+   JSROOT.WebWindowHandle = h.WebWindowHandle;
    return h.connectWebWindow(arg);
 }
 
