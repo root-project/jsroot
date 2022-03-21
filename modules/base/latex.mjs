@@ -179,7 +179,7 @@ const symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').re
   * @private */
 const translateLaTeX = (str, more) => {
    while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
-      str = str.substr(1, str.length - 2);
+      str = str.slice(1, str.length - 1);
 
    return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, "");
 };
@@ -354,10 +354,10 @@ function parseLatex(node, arg, label, curr) {
       if (!lbrace) lbrace = "{";
       if (!rbrace) rbrace = "}";
 
-      const match = br => (pos + br.length <= label.length) && (label.substr(pos, br.length) == br);
+      const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) == br);
 
       if (check_first) {
-         if(!match(lbrace)) err = true; else label = label.substr(lbrace.length);
+         if(!match(lbrace)) err = true; else label = label.slice(lbrace.length);
       }
 
       while (!err && (n != 0) && (pos < label.length)) {
@@ -369,9 +369,9 @@ function parseLatex(node, arg, label, curr) {
          return -1;
       }
 
-      let sublabel = label.substr(0, pos - rbrace.length);
+      let sublabel = label.slice(0, pos - rbrace.length);
 
-      label = label.substr(pos);
+      label = label.slice(pos);
 
       return sublabel;
    };
@@ -402,7 +402,7 @@ function parseLatex(node, arg, label, curr) {
 
          nelements++;
 
-         let s = translateLaTeX(label.substr(0, best));
+         let s = translateLaTeX(label.slice(0, best));
          if ((s.length > 0) || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
@@ -456,7 +456,7 @@ function parseLatex(node, arg, label, curr) {
       if (!found) return true;
 
       // remove preceeding block and tag itself
-      label = label.substr(best + found.name.length);
+      label = label.slice(best + found.name.length);
 
       nelements++;
 
@@ -546,14 +546,14 @@ function parseLatex(node, arg, label, curr) {
          }
          while (label.length > 0) {
             if (label.charAt(0) == '_') {
-               label = label.substr(1);
+               label = label.slice(1);
                res.low = !res.low ? extractSubLabel(true) : -1;
                if (res.low === -1) {
                   console.log(`error with ${found.name} low limit`);
                   return false;
                }
             } else if (label.charAt(0) == '^') {
-               label = label.substr(1);
+               label = label.slice(1);
                res.up = !res.up ? extractSubLabel(true) : -1;
                if (res.up === -1) {
                   console.log(`error with ${found.name} upper limit`);
@@ -732,15 +732,15 @@ function parseLatex(node, arg, label, curr) {
       if (found.arg) {
          let pos = label.indexOf("]{");
          if (pos < 0) { console.log('missing argument for ', found.name); return false; }
-         foundarg = label.substr(0, pos);
+         foundarg = label.slice(0, pos);
          if (found.arg == 'int') {
             foundarg = parseInt(foundarg);
-            if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.substr(0, pos)); return false; }
+            if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.slice(0, pos)); return false; }
          } else if (found.arg == 'float') {
             foundarg = parseFloat(foundarg);
-            if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
+            if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.slice(0, pos)); return false; }
          }
-         label = label.substr(pos + 2);
+         label = label.slice(pos + 2);
       }
 
       if ((found.name == "#kern[") || (found.name == "#lower[")) {
@@ -1039,7 +1039,7 @@ const translateMath = (str, kind, color, painter) => {
 
       for (let x in symbols_map)
          if (x.length > 2)
-            str = str.replace(new RegExp(x, 'g'), "\\" + x.substr(1));
+            str = str.replace(new RegExp(x, 'g'), "\\" + x.slice(1));
 
       // replace all #color[]{} occurances
       let clean = "", first = true;
@@ -1048,26 +1048,26 @@ const translateMath = (str, kind, color, painter) => {
          if ((p < 0) && first) { clean = str; break; }
          first = false;
          if (p != 0) {
-            let norm = (p < 0) ? str : str.substr(0, p);
+            let norm = (p < 0) ? str : str.slice(0, p);
             clean += norm;
             if (p < 0) break;
          }
 
-         str = str.substr(p + 7);
+         str = str.slice(p + 7);
          p = str.indexOf("]{");
          if (p <= 0) break;
-         let colindx = parseInt(str.substr(0, p));
+         let colindx = parseInt(str.slice(0, p));
          if (!Number.isInteger(colindx)) break;
          let col = painter.getColor(colindx), cnt = 1;
-         str = str.substr(p + 2);
+         str = str.slice(p + 2);
          p = -1;
          while (cnt && (++p < str.length)) {
             if (str[p] == '{') cnt++; else if (str[p] == '}') cnt--;
          }
          if (cnt != 0) break;
 
-         let part = str.substr(0, p);
-         str = str.substr(p + 1);
+         let part = str.slice(0, p);
+         str = str.slice(p + 1);
          if (part)
             clean += "\\color{" + col + '}{' + part + "}";
       }
@@ -1096,7 +1096,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       if (!value || (typeof value !== "string") || (value.length < 3)) return null;
       let p = value.indexOf("ex");
       if ((p < 0) || (p !== value.length - 2)) return null;
-      value = parseFloat(value.substr(0, p));
+      value = parseFloat(value.slice(0, p));
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
    };
 
@@ -1106,7 +1106,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
 
    if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
       let p = valign.indexOf("ex;");
-      valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.substr(16, valign.length - 17)) : null;
+      valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.substr(16, valign.length - 1)) : null;
    } else {
       valign = null;
    }
