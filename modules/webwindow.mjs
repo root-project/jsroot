@@ -633,7 +633,7 @@ class WebWindowHandle {
   * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
   * @param {number} [arg.credits = 10] - number of packets which can be send to server without acknowledge
   * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
-  * @param {string} [arg.first_recv] - required prefix in the first message from TWebWindow, remain part of message will be returned in handle.first_msg
+  * @param {string} [arg.first_recv] - required prefix in the first message from RWebWindow, remain part of message will be returned in handle.first_msg
   * @param {string} [arg.href] - URL to RWebWindow, using window.location.href by default
   * @returns {Promise} ready-to-use WebWindowHandle instance  */
 function connectWebWindow(arg) {
@@ -707,7 +707,6 @@ function connectWebWindow(arg) {
             if (msg.indexOf(arg.first_recv) != 0)
                return handle.close();
             handle.first_msg = msg.slice(arg.first_recv.length);
-
             resolveFunc(handle);
          },
 
