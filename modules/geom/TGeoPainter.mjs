@@ -1,6 +1,6 @@
 /// 3D geometry painter
 
-import { httpRequest, loadScript, decodeUrl, browser, source_dir,
+import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from '../core.mjs';
 
