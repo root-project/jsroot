@@ -13,10 +13,14 @@ async function _sync() {
    if (sync_promises) {
       await Promise.all(sync_promises);
       sync_promises = [];
-
-      if (globalThis.JSROOT && getHPainter)
-         globalThis.JSROOT.hpainter = getHPainter();
    }
+
+   if (globalThis.JSROOT) {
+      if (getHPainter) globalThis.JSROOT.hpainter = getHPainter();
+      if (globalThis.JSROOT.batch_mode && globalThis.JSROOT.isBatchMode && !globalThis.JSROOT.isBatchMode())
+         globalThis.JSROOT.setBatchMode(true);
+   }
+
    return globalThis.JSROOT;
 }
 
