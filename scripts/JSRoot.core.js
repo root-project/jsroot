@@ -95,7 +95,7 @@ function v6_require(need) {
       else if (name == "more")
          arr.push(import("../modules/draw/more.mjs"));
       else if (name == "gpad")
-         arr.push(Promise.all([import("../modules/gpad/TAxisPainter.mjs"), import("../modules/gpad/TPadPainter.mjs"), import("../modules/gpad/TCanvasPainter.mjs")]).then(arr => {
+         arr.push(loadPainter().then(() => Promise.all([import("../modules/gpad/TAxisPainter.mjs"), import("../modules/gpad/TPadPainter.mjs"), import("../modules/gpad/TCanvasPainter.mjs")])).then(arr => {
             // copy all classes
             Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
             if (jsrp) jsrp.ensureTCanvas = arr[2].ensureTCanvas;

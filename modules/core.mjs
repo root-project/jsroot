@@ -16,7 +16,7 @@ let version = version_id + " " + version_date;
   * @desc Automatically detected and used to load other scripts or modules */
 let source_dir = "";
 
-let nodejs = ((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
+let nodejs = !!((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
 
 /** @summary internal data
   * @private */
@@ -49,10 +49,16 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-if (nodejs) {
-   internals.atob = await import('atob').then(hh => hh.default);
-   internals.xhr2 = await import('xhr2').then(hh => hh.default);
+
+/// FIXME: how to ensure that atob loaded, Qt5WebEngine?
+function load_node() {
+   return import('atob').then(h => {
+      internals.atob = h.default;
+   });
 }
+
+if (nodejs)
+   load_node();
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -331,9 +337,6 @@ let gStyle = {
    /** @summary default time offset, UTC time at 01/01/95   */
    fTimeOffset: 788918400
 };
-
-
-
 
 
 /** @summary Method returns current document in use
@@ -887,7 +890,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if ((kind == "bin") || (kind == "buf"))
       xhr.responseType = 'arraybuffer';
 
-   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0)) {
+   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz') > 0)) {
       xhr.nodejs_checkzip = true;
       xhr.responseType = 'arraybuffer';
    }
@@ -915,9 +918,18 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
-   return new Promise(function(accept, reject) {
-      let xhr = createHttpRequest(url, kind, accept, reject);
-      xhr.send(post_data || null);
+   if (!nodejs || internals.xhr2)
+      return new Promise((accept, reject) => {
+         let xhr = createHttpRequest(url, kind, accept, reject);
+         xhr.send(post_data || null);
+      });
+
+   return import('xhr2').then(h => {
+      internals.xhr2 = h.default;
+      return new Promise((accept, reject) => {
+         let xhr = createHttpRequest(url, kind, accept, reject);
+         xhr.send(post_data || null);
+      });
    });
 }
 
