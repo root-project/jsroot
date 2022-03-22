@@ -118,8 +118,6 @@ function createSVGRenderer(as_is, precision, doc) {
 }
 
 
-
-
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
  * @param {value} [render3d] - preconfigured value, will be used if applicable
  * @returns {value} - rendering kind, see constants.Render3D
@@ -387,8 +385,12 @@ function assign3DHandler(painter) {
    Object.assign(painter, Handling3DDrawings);
 }
 
-let canvas_handle = isNodeJs() ? await import('canvas') : null;
-let glfunc = isNodeJs() ? await import('gl') : null;
+let node_canvas, node_gl;
+
+if (isNodeJs()) {
+   node_canvas = await import('canvas').then(h => h.default);
+   node_gl = await import('gl').then(h => h.default);
+}
 
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
@@ -424,12 +426,12 @@ function createRender3D(width, height, render3d, args) {
       }
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      args.canvas = canvas_handle.default.createCanvas(width, height);
+      args.canvas = node_canvas.createCanvas(width, height);
       args.canvas.addEventListener = function() { }; // dummy
       args.canvas.removeEventListener = function() { }; // dummy
       args.canvas.style = {};
 
-      let gl = glfunc.default(width, height, { preserveDrawingBuffer: true });
+      let gl = node_gl(width, height, { preserveDrawingBuffer: true });
       if (!gl) throw(Error("Fail to create headless-gl"));
       args.context = gl;
       gl.canvas = args.canvas;

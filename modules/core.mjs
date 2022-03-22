@@ -50,15 +50,12 @@ function setBatchMode(on) { batch_mode = !!on; }
 function isNodeJs() { return nodejs; }
 
 
-/// FIXME: how to ensure that atob loaded, Qt5WebEngine?
-function load_node() {
-   return import('atob').then(h => {
-      internals.atob = h.default;
-   });
-}
+let node_atob, node_xhr2;
 
-if (nodejs)
-   load_node();
+if (nodejs) {
+   node_atob = await import('atob').then(h => h.default)
+   node_xhr2 = await import('xhr2').then(h => h.default);
+}
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -599,7 +596,7 @@ function parse(json) {
          if (value.b !== undefined) {
             // base64 coding
 
-            let atob_func = nodejs ? internals.atob : window.atob;
+            let atob_func = nodejs ? node_atob : window.atob;
 
             let buf = atob_func(value.b);
 
@@ -803,7 +800,7 @@ function findFunction(name) {
 /** @summary Method to create http request
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
-   let xhr = nodejs ? new internals.xhr2() : new XMLHttpRequest();
+   let xhr = nodejs ? new node_xhr2() : new XMLHttpRequest();
 
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
@@ -918,18 +915,9 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
-   if (!nodejs || internals.xhr2)
-      return new Promise((accept, reject) => {
-         let xhr = createHttpRequest(url, kind, accept, reject);
-         xhr.send(post_data || null);
-      });
-
-   return import('xhr2').then(h => {
-      internals.xhr2 = h.default;
-      return new Promise((accept, reject) => {
-         let xhr = createHttpRequest(url, kind, accept, reject);
-         xhr.send(post_data || null);
-      });
+   return new Promise((accept, reject) => {
+      let xhr = createHttpRequest(url, kind, accept, reject);
+      xhr.send(post_data || null);
    });
 }
 
