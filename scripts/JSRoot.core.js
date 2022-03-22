@@ -193,11 +193,14 @@ exports.connectWebWindow = async function(arg) {
 
    let prereq = "";
    if (arg.prereq) prereq = arg.prereq;
-   if (arg.prereq2) prereq += ";" + arg.prereq;
+   if (arg.prereq2) prereq += ";" + arg.prereq2;
 
    _openui5args = arg;
 
    if (prereq) {
+
+      console.log('loading prereq', prereq);
+
       await v6_require(prereq);
       delete arg.prereq;
       delete arg.prereq2;

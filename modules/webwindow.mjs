@@ -690,30 +690,31 @@ function connectWebWindow(arg) {
       handle.key = d.get("key");
       handle.token = d.get("token");
 
-      if (arg.first_recv) {
-         arg.receiver = {
-            onWebsocketOpened: () => {}, // dummy function when websocket connected
-
-            onWebsocketMsg: (handle, msg) => {
-               if (msg.indexOf(arg.first_recv) != 0)
-                  return handle.close();
-               handle.first_msg = msg.slice(arg.first_recv.length);
-
-               if (!arg.prereq2) resolveFunc(handle);
-            },
-
-            onWebsocketClosed: () => closeCurrentWindow() // when connection closed, close panel as well
-         };
+      if (arg.receiver) {
+         // when receiver exists, it handles itself callbacks
+         handle.setReceiver(arg.receiver);
+         handle.connect();
+         return resolveFunc(handle);
       }
 
-      if (!arg.receiver)
+      if (!arg.first_recv)
          return resolveFunc(handle);
 
-      // when receiver is exists, it handles itself callbacks
-      handle.setReceiver(arg.receiver);
-      handle.connect();
+      handle.setReceiver({
+         onWebsocketOpened: () => {}, // dummy function when websocket connected
 
-      resolveFunc(handle);
+         onWebsocketMsg: (handle, msg) => {
+            if (msg.indexOf(arg.first_recv) != 0)
+               return handle.close();
+            handle.first_msg = msg.slice(arg.first_recv.length);
+
+            resolveFunc(handle);
+         },
+
+         onWebsocketClosed: () => closeCurrentWindow() // when connection closed, close panel as well
+      });
+
+      handle.connect();
    });
 }
 
