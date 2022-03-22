@@ -364,9 +364,6 @@ function injectCode(code) {
          fs.writeFileSync(name, code);
          return import("file://" + name);
       }).finally(() => fs.unlinkSync(name));
-   } else if (browser.qt5) {
-      let res = eval(code); // only with Qt5WebEngine, no any other ways found yet
-      return Promise.resolve(res);
    } if (typeof document !== 'undefined') {
 
       // check if code already loaded - to avoid duplication
@@ -378,11 +375,8 @@ function injectCode(code) {
       let element = document.createElement("script");
       element.setAttribute("type", "text/javascript");
       element.innerHTML = code;
-      return new Promise((resolve, reject) => {
-         element.onload = () => resolve(true);
-         element.onerror = () => { element.remove(); reject(Error(`Fail to load code`)); };
-         document.head.appendChild(element);
-      });
+      document.head.appendChild(element);
+      return Promise.resolve(true);
    }
 
    return Promise.resolve(false);
