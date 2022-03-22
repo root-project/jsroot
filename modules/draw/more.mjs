@@ -4,8 +4,6 @@ import { BIT, isBatchMode } from '../core.mjs';
 
 import { rgb as d3_rgb } from '../d3.mjs';
 
-import { getColor } from '../base/colors.mjs';
-
 import { BasePainter } from '../base/BasePainter.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
