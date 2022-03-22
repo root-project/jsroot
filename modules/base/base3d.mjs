@@ -1464,15 +1464,26 @@ class PointsCreator {
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
-      const makePoints = (material) => {
-         let pnts = new Points(this.geom, material);
+      let makePoints = texture => {
+         let material_args = { size: 3*this.scale*k };
+         if (texture) {
+            material_args.map = texture;
+            material_args.transparent = true;
+         } else {
+            material_args.color = args.color || 'black';
+         }
+
+         let pnts = new Points(this.geom, new PointsMaterial(material_args));
          pnts.nvertex = 1;
          return pnts;
       };
 
       // this is plain creation of points, no need for texture loading
-      if (k !== 1)
-         return Promise.resolve(makePoints(new PointsMaterial({ size: 3*this.scale * k, color: args.color })));
+
+      if (k !== 1) {
+         let res = makePoints();
+         return this.noPromise ? res : Promise.resolve(res);
+      }
 
       let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
           w = handler.fill ? 1 : 7,
@@ -1491,6 +1502,9 @@ class PointsCreator {
                return new CanvasTexture(canvas);
             });
          });
+      } else if (this.noPromise) {
+         // only for v6 support
+         return makePoints(new TextureLoader().load(dataUrl));
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
             let loader = new TextureLoader();
@@ -1498,7 +1512,7 @@ class PointsCreator {
          });
       }
 
-      return promise.then(texture => makePoints(new PointsMaterial({ size: 3*this.scale, map: texture, transparent: true })));
+      return promise.then(makePoints);
    }
 
 } // class PointsCreator
