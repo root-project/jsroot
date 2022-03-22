@@ -53,7 +53,7 @@ function isNodeJs() { return nodejs; }
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-if (nodejs) {
+if (isNodeJs()) {
    node_atob = await import('atob').then(h => h.default)
    node_xhr2 = await import('xhr2').then(h => h.default);
 }
