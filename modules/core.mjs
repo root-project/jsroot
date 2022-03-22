@@ -16,7 +16,7 @@ let version = version_id + " " + version_date;
   * @desc Automatically detected and used to load other scripts or modules */
 let source_dir = "";
 
-let nodejs = false;
+let nodejs = ((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
 
 /** @summary internal data
   * @private */
@@ -36,7 +36,6 @@ if (src && (typeof src == "string")) {
       source_dir = source_fullpath.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    }
-   if (src.indexOf("file://") == 0) nodejs = true;
 }
 
 let batch_mode = nodejs;
