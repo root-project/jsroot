@@ -13,7 +13,7 @@ for(let key in meta.dependencies)
 const config = {
   input: "bundle/src/jsroot_full.mjs",
   output: {
-    file: "bundle/bld/jsroot_full.js",
+    file: "bundle/bld/jsroot_full.mjs",
     format: "es",
     inlineDynamicImports: true,
     indent: false,
@@ -37,7 +37,7 @@ const config_hist = {
    input: "bundle/src/jsroot_hist.mjs",
    output: {
       ...config.output,
-      file: "bundle/bld/jsroot_hist.js",
+      file: "bundle/bld/jsroot_hist.mjs",
       inlineDynamicImports: true
    }
 }
@@ -48,7 +48,7 @@ const config_2d = {
    input: "bundle/src/jsroot_hist2d.mjs",
    output: {
       ...config.output,
-      file: "bundle/bld/jsroot_hist2d.js",
+      file: "bundle/bld/jsroot_hist2d.mjs",
       inlineDynamicImports: true
    }
 }
@@ -57,7 +57,7 @@ const config_minified = {
    ...config,
     output: {
       ...config.output,
-      file: "bundle/bld/jsroot_full.min.js",
+      file: "bundle/bld/jsroot_full.min.mjs",
       inlineDynamicImports: true
     },
     plugins: [
@@ -81,7 +81,7 @@ const config_hist_minified = {
    input: "bundle/src/jsroot_hist.mjs",
    output: {
      ...config.output,
-     file: "bundle/bld/jsroot_hist.min.js",
+     file: "bundle/bld/jsroot_hist.min.mjs",
      inlineDynamicImports: true
    }
 }
@@ -92,7 +92,7 @@ const config_2d_minified = {
    input: "bundle/src/jsroot_hist2d.mjs",
    output: {
      ...config.output,
-     file: "bundle/bld/jsroot_hist2d.min.js",
+     file: "bundle/bld/jsroot_hist2d.min.mjs",
      inlineDynamicImports: true
    }
 }
