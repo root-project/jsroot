@@ -173,7 +173,6 @@ exports.define = function(req, factoryFunc) {
    sync_promises.push(pr); // will wait until other PRs are finished
 }
 
-
 exports.connectWebWindow = async function(arg) {
    await _sync();
 
@@ -187,9 +186,6 @@ exports.connectWebWindow = async function(arg) {
    if (arg.prereq2) prereq += ";" + arg.prereq;
 
    if (prereq) {
-      if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
-      if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
-      if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
       await v6_require(prereq);
       delete arg.prereq;
       delete arg.prereq2;
@@ -201,9 +197,53 @@ exports.connectWebWindow = async function(arg) {
    }
 
    let h = await import('../modules/webwindow.mjs');
-   JSROOT.WebWindowHandle = h.WebWindowHandle;
+   globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
    return h.connectWebWindow(arg);
 }
+
+/// duplicate function here, used before loading any other functionality
+exports.decodeUrl = function(url) {
+   let res = {
+      opts: {},
+      has: function(opt) { return this.opts[opt] !== undefined; },
+      get: function(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+   };
+
+   if (!url || (typeof url !== 'string')) {
+      if (typeof document === 'undefined') return res;
+      url = document.URL;
+   }
+   res.url = url;
+
+   let p1 = url.indexOf("?");
+   if (p1 < 0) return res;
+   url = decodeURI(url.slice(p1+1));
+
+   while (url.length > 0) {
+      // try to correctly handle quotes in the URL
+      let pos = 0, nq = 0, eq = -1, firstq = -1;
+      while ((pos < url.length) && ((nq!==0) || ((url[pos]!=="&") && (url[pos]!=="#")))) {
+         switch (url[pos]) {
+            case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
+            case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
+            case '=': if ((firstq < 0) && (eq < 0)) eq = pos; break;
+         }
+         pos++;
+      }
+      if ((eq < 0) && (firstq < 0)) {
+         res.opts[url.slice(0,pos)] = "";
+      } if (eq > 0) {
+         let val = url.slice(eq+1, pos);
+         if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.slice(1, val.length-1);
+         res.opts[url.slice(0,eq)] = val;
+      }
+      if ((pos >= url.length) || (url[pos] == '#')) break;
+      url = url.slice(pos+1);
+   }
+
+   return res;
+}
+
 
 // try to define global JSROOT
 if ((typeof globalThis !== "undefined") && !globalThis.JSROOT) {
