@@ -109,7 +109,7 @@ class TGraph2DPainter extends ObjectPainter {
    /** @summary Function handles tooltips in the mesh */
    graph2DTooltip(intersect) {
       if (!Number.isInteger(intersect.index)) {
-         console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
+         console.error(`intersect.index not provided, three.js version ${REVISION}`);
          return null;
       }
 

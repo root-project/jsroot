@@ -273,7 +273,7 @@ class RH3Painter extends RHistPainter {
 
          mesh.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.index)) {
-               console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
+               console.error(`intersect.index not provided, three.js version ${REVISION}`);
                return null;
             }
 
@@ -558,7 +558,7 @@ class RH3Painter extends RHistPainter {
 
          combined_bins.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error(`intersect.faceIndex not provided, three.js version ${REVISION}, expected 137`);
+               console.error(`intersect.faceIndex not provided, three.js version ${REVISION}`);
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);

@@ -1262,7 +1262,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.faceIndex)) {
-            console.error(`faceIndex not provided, three.js version ${REVISION}, expected 137`);
+            console.error(`faceIndex not provided, three.js version ${REVISION}`);
             return null;
          }
 
@@ -1487,7 +1487,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 
     line.tooltip = function(intersect) {
        if (!Number.isInteger(intersect.index)) {
-          console.error(`segment index not provided, three.js version ${REVISION}, expected 137`);
+          console.error(`segment index not provided, three.js version ${REVISION}`);
           return null;
        }
 

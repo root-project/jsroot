@@ -83,7 +83,7 @@ function drawPolyMarker3D() {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.index)) {
-            console.error(`intersect.index not provided, three.js version ${REVISION}, expected 137`);
+            console.error(`intersect.index not provided, three.js version ${REVISION}`);
             return null;
          }
          let indx = Math.floor(intersect.index / this.nvertex);
