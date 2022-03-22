@@ -52,10 +52,12 @@ function isNodeJs() { return nodejs; }
 
 let node_atob, node_xhr2;
 
+///_begin_exclude_in_qt5web_
 if (nodejs) {
    node_atob = await import('atob').then(h => h.default)
    node_xhr2 = await import('xhr2').then(h => h.default);
 }
+///_end_exclude_in_qt5web_
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -362,7 +364,10 @@ function injectCode(code) {
          fs.writeFileSync(name, code);
          return import("file://" + name);
       }).finally(() => fs.unlinkSync(name));
-   } else if (typeof document !== 'undefined') {
+   } else if (browser.qt5) {
+      let res = eval(code); // only with Qt5WebEngine, no any other ways found yet
+      return Promise.resolve(res);
+   } if (typeof document !== 'undefined') {
 
       // check if code already loaded - to avoid duplication
       let scripts = document.getElementsByTagName('script');
