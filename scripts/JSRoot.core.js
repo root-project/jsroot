@@ -24,10 +24,10 @@ async function _sync() {
 function loadPainter() {
    if (jsrp) return Promise.resolve(jsrp);
    return Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'),
-                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs')]).then(res => {
+                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs'), import('../modules/base/TAttLineHandler.mjs')]).then(res => {
+      if (jsrp) return jsrp;
       globalThis.d3 = res[0]; // assign global d3
-      jsrp = {};
-      Object.assign(jsrp, res[1], res[2], res[3], res[4]);
+      jsrp = Object.assign({}, res[1], res[2], res[3], res[4], res[5]);
       globalThis.JSROOT.Painter = jsrp;
       globalThis.JSROOT.BasePainter = res[3].BasePainter;
       globalThis.JSROOT.ObjectPainter = res[4].ObjectPainter;
@@ -115,14 +115,24 @@ function v6_require(need) {
       else if (name == "tree")
          arr.push(import("../modules/tree.mjs"));
       else if (name == "geom")
-         arr.push(geo ? Promise.resolve(geo) : loadPainter().then(() => Promise.all([import("../modules/geom/geobase.mjs"), import("../modules/geom/TGeoPainter.mjs"), import("../modules/base/base3d.mjs")])).then(res => {
-            geo = {};
-            Object.assign(geo, res[0], res[1]);
-            globalThis.JSROOT.GEO = geo;
+         arr.push(geo ? Promise.resolve(geo) : loadPainter().then(() => Promise.all([import("../modules/geom/geobase.mjs"),
+            import("../modules/geom/TGeoPainter.mjs"), import("../modules/base/base3d.mjs"), import("../modules/three.mjs")])).then(res => {
+
+            if (geo) return geo;
+
+            globalThis.JSROOT.GEO = geo = Object.assign({}, res[0], res[1]);
             globalThis.JSROOT.TGeoPainter = res[1].TGeoPainter;
             globalThis.JSROOT.Painter.createGeoPainter = res[1].createGeoPainter;
             globalThis.JSROOT.Painter.GeoDrawingControl = res[1].GeoDrawingControl;
-            globalThis.JSROOT.Painter.PointsCreator = res[2].PointsCreator;
+
+            class myPoints extends res[2].PointsCreator {
+               noPromise() { return true; }
+            };
+            globalThis.JSROOT.Painter.PointsCreator = myPoints;
+
+            if (!globalThis.THREE)
+               globalThis.THREE = Object.assign({}, res[3]); // copy methods, let add more
+
             return geo;
          }));
       else if (name == "math")

@@ -140,5 +140,5 @@ function getSvgLineStyle(indx) {
 }
 
 
-export { TAttLineHandler, getSvgLineStyle };
+export { TAttLineHandler, getSvgLineStyle, root_line_styles };
 
