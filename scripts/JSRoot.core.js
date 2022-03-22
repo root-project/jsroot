@@ -6,7 +6,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) : fact
 
 'use strict';
 
-let sync_promises = [], getHPainter,
+let sync_promises = [], getHPainter, _openui5args = {},
     jsrp = null, geo = null; // old JSROOT.Painter and JSROOT.GEO handles
 
 async function _sync() {
@@ -149,7 +149,7 @@ function v6_require(need) {
             return globalThis.JSROOT;
          }));
       else if (name == "openui5")
-         arr.push(import("../modules/gui/utils.mjs").then(handle => handle.loadOpenui5({ openui5src: JSROOT?.openui5src, openui5libs: JSROOT?.openui5libs, openui5theme: JSROOT?.openui5theme })));
+         arr.push(import("../modules/gui/utils.mjs").then(handle => handle.loadOpenui5(_openui5args)));
       else if (name == "interactive")
          arr.push(import("../modules/gui/utils.mjs").then(handle => { return { addMoveHandler: handle.addMoveHandler }; }));
       else if (name.indexOf(".js") >= 0)
@@ -195,10 +195,13 @@ exports.connectWebWindow = async function(arg) {
    if (arg.prereq) prereq = arg.prereq;
    if (arg.prereq2) prereq += ";" + arg.prereq;
 
+   _openui5args = arg;
+
    if (prereq) {
       await v6_require(prereq);
       delete arg.prereq;
       delete arg.prereq2;
+
       if (arg.prereq_logdiv && document) {
          let elem = document.getElementById(arg.prereq_logdiv);
          if (elem) elem.innerHTML = '';
