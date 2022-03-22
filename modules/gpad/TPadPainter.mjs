@@ -1404,7 +1404,7 @@ class TPadPainter extends ObjectPainter {
             else if (snap.fScripts.indexOf("assert:") == 0)
                src = snap.fScripts.slice(7);
 
-            pr = src ? loadScript(arg) : injectCode(snap.fScripts);
+            pr = src ? loadScript(src) : injectCode(snap.fScripts);
          }
 
          return pr.then(() => this.drawNextSnap(snap.fPrimitives));
