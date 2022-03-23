@@ -1207,7 +1207,7 @@
          case "posttext": method = "POST"; kind = "text"; break;
          case "postbuf":  method = "POST"; kind = "buf"; break;
          case "post":
-         case "multi":  method = "POST"; kind = buf; break;
+         case "multi":  method = "POST"; kind = "buf"; break;
       }
 
       xhr.kind = kind;
