@@ -8,81 +8,85 @@ import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 
 import * as jsroot_math from '../base/math.mjs';
 
+function funcEvalPar(x, y) {
+   if (! ('_func' in this) || (this._title !== this.fTitle)) {
+     let _func = this.fTitle, isformula = false, pprefix = "[";
+     if (_func === "gaus") _func = "gaus(0)";
+     if (this.fFormula && typeof this.fFormula.fFormula == "string") {
+        if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
+           isformula = true; pprefix = "p[";
+           _func = this.fFormula.fFormula.slice(21);
+        } else {
+           _func = this.fFormula.fFormula;
+           pprefix = "[p";
+        }
+        if (this.fFormula.fClingParameters && this.fFormula.fParams)
+           this.fFormula.fParams.forEach(pair => {
+              let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
+                  parvalue = this.fFormula.fClingParameters[pair.second];
+              _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
+           });
+
+     }
+
+     if ('formulas' in this)
+        this.formulas.forEach(entry => {
+          _func = _func.replaceAll(entry.fName, entry.fTitle);
+        });
+
+     _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
+                  .replace(/\b(TMath::Exp)/g, 'Math.exp')
+                  .replace(/\b(TMath::Abs)/g, 'Math.abs');
+
+     if (this._math)
+        _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                     .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
+                     .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
+                     .replace(/expo\(/g, 'this._math.expo(this, x, ')
+                     .replace(/landau\(/g, 'this._math.landau(this, x, ')
+                     .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
+                     .replace(/TMath::/g, 'this._math.')
+                     .replace(/ROOT::Math::/g, 'this._math.');
+
+     for (let i = 0; i < this.fNpar; ++i)
+       _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
+
+     _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
+                  .replace(/\b(cos)\b/gi, 'Math.cos')
+                  .replace(/\b(tan)\b/gi, 'Math.tan')
+                  .replace(/\b(exp)\b/gi, 'Math.exp')
+                  .replace(/\b(pow)\b/gi, 'Math.pow')
+                  .replace(/pi/g, 'Math.PI');
+     for (let n = 2; n < 10; ++n)
+        _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
+
+     if (isformula) {
+        _func = _func.replace(/x\[0\]/g,"x");
+        if (this._typename === "TF2") {
+           _func = _func.replace(/x\[1\]/g,"y");
+           this._func = new Function("x", "y", _func).bind(this);
+        } else {
+           this._func = new Function("x", _func).bind(this);
+        }
+     } else if (this._typename === "TF2")
+        this._func = new Function("x", "y", "return " + _func).bind(this);
+     else
+        this._func = new Function("x", "return " + _func).bind(this);
+
+     this._title = this.fTitle;
+   }
+
+   return this._func(x, y);
+}
+
 
 function proivdeEvalPar(func) {
 
    func._math = jsroot_math;
 
-   func.evalPar = function(x, y) {
-      if (! ('_func' in this) || (this._title !== this.fTitle)) {
-        let _func = this.fTitle, isformula = false, pprefix = "[";
-        if (_func === "gaus") _func = "gaus(0)";
-        if (this.fFormula && typeof this.fFormula.fFormula == "string") {
-           if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
-              isformula = true; pprefix = "p[";
-              _func = this.fFormula.fFormula.slice(21);
-           } else {
-              _func = this.fFormula.fFormula;
-              pprefix = "[p";
-           }
-           if (this.fFormula.fClingParameters && this.fFormula.fParams)
-              this.fFormula.fParams.forEach(pair => {
-                 let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
-                     parvalue = this.fFormula.fClingParameters[pair.second];
-                 _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
-              });
+   delete func._func;
 
-        }
-
-        if ('formulas' in this)
-           this.formulas.forEach(entry => {
-             _func = _func.replaceAll(entry.fName, entry.fTitle);
-           });
-
-        _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-                     .replace(/\b(TMath::Exp)/g, 'Math.exp')
-                     .replace(/\b(TMath::Abs)/g, 'Math.abs');
-
-        if (this._math)
-           _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
-                        .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
-                        .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
-                        .replace(/expo\(/g, 'this._math.expo(this, x, ')
-                        .replace(/landau\(/g, 'this._math.landau(this, x, ')
-                        .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
-                        .replace(/TMath::/g, 'this._math.')
-                        .replace(/ROOT::Math::/g, 'this._math.');
-
-        for (let i = 0; i < this.fNpar; ++i)
-          _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
-
-        _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
-                     .replace(/\b(cos)\b/gi, 'Math.cos')
-                     .replace(/\b(tan)\b/gi, 'Math.tan')
-                     .replace(/\b(exp)\b/gi, 'Math.exp')
-                     .replace(/\b(pow)\b/gi, 'Math.pow')
-                     .replace(/pi/g, 'Math.PI');
-        for (let n = 2; n < 10; ++n)
-           _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
-
-        if (isformula) {
-           _func = _func.replace(/x\[0\]/g,"x");
-           if (this._typename === "TF2") {
-              _func = _func.replace(/x\[1\]/g,"y");
-              this._func = new Function("x", "y", _func).bind(this);
-           } else {
-              this._func = new Function("x", _func).bind(this);
-           }
-        } else if (this._typename === "TF2")
-           this._func = new Function("x", "y", "return " + _func).bind(this);
-        else
-           this._func = new Function("x", "return " + _func).bind(this);
-
-        this._title = this.fTitle;
-      }
-
-      return this._func(x, y);
-   }
+   func.evalPar = funcEvalPar;
 }
 
 
@@ -208,6 +212,13 @@ class TF1Painter extends ObjectPainter {
       histo.fMaximum = tf1.fMaximum;
 
       return histo;
+   }
+
+   updateObject(obj /*, opt */) {
+      if (!this.matchObjectType(obj)) return false;
+      Object.assign(this.getObject(), obj);
+      proivdeEvalPar(this.getObject());
+      return true;
    }
 
    /** @summary Process tooltip event */
