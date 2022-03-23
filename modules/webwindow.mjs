@@ -646,7 +646,7 @@ function connectWebWindow(arg) {
    let d = decodeUrl();
 
    // special holder script, prevents headless chrome browser from too early exit
-   if (d.has("headless") && d.get("key") && (browser.isChromeHeadless || browser.isChrome))
+   if (d.has("headless") && d.get("key") && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
       loadScript("root_batch_holder.js?key=" + d.get("key"));
 
    if (!arg.platform)

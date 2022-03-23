@@ -187,41 +187,6 @@ exports.define = function(req, factoryFunc) {
    sync_promises.push(pr); // will wait until other PRs are finished
 }
 
-exports.connectWebWindow = async function(arg) {
-   await _sync();
-
-   if (typeof arg == 'function')
-      arg = { callback: arg };
-   else if (!arg || (typeof arg != 'object'))
-      arg = {};
-
-   let prereq = "";
-   if (arg.prereq) prereq = arg.prereq;
-   if (arg.prereq2) prereq += ";" + arg.prereq2;
-
-   _openui5args = arg;
-
-   if (prereq) {
-
-      console.log('loading prereq', prereq);
-
-      await v6_require(prereq);
-      delete arg.prereq;
-      delete arg.prereq2;
-
-      if (arg.prereq_logdiv && document) {
-         let elem = document.getElementById(arg.prereq_logdiv);
-         if (elem) elem.innerHTML = '';
-         delete arg.prereq_logdiv;
-      }
-   }
-
-   let h = await import('../modules/webwindow.mjs');
-   globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
-   h.WebWindowHandle.prototype.Send = h.WebWindowHandle.prototype.send;
-   return h.connectWebWindow(arg);
-}
-
 /// duplicate function here, used before loading any other functionality
 exports.decodeUrl = function(url) {
    let res = {
@@ -263,6 +228,55 @@ exports.decodeUrl = function(url) {
    }
 
    return res;
+}
+
+
+exports.connectWebWindow = function(arg) {
+   if (typeof arg == 'function')
+      arg = { callback: arg };
+   else if (!arg || (typeof arg != 'object'))
+      arg = {};
+
+   _openui5args = arg;
+
+   let d = exports.decodeUrl();
+
+   if (d.has("headless") && d.get("key")) {
+      let is_chrome = false;
+      if ((typeof document !== "undefined") && (typeof window !== "undefined"))
+         is_chrome = (!!window.chrome && !browser.isOpera) || (navigator.userAgent.indexOf('HeadlessChrome') >= 0);
+      if (is_chrome) {
+         let element = document.createElement("script");
+         element.setAttribute("type", "text/javascript");
+         element.setAttribute("src", "root_batch_holder.js?key=" + d.get("key"));
+         document.head.appendChild(element);
+         arg.ignore_chrome_batch_holder = true;
+      }
+   }
+
+   return _sync().then(() => {
+
+      let prereq = "";
+      if (arg.prereq) prereq = arg.prereq;
+      if (arg.prereq2) prereq += ";" + arg.prereq2;
+
+      if (!prereq) return;
+
+      return v6_require(prereq).then(() => {
+            delete arg.prereq;
+            delete arg.prereq2;
+
+            if (arg.prereq_logdiv && document) {
+               let elem = document.getElementById(arg.prereq_logdiv);
+               if (elem) elem.innerHTML = '';
+               delete arg.prereq_logdiv;
+            }
+         });
+   }).then(() => import('../modules/webwindow.mjs')).then(h => {
+      globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
+      h.WebWindowHandle.prototype.Send = h.WebWindowHandle.prototype.send;
+      return h.connectWebWindow(arg);
+   });
 }
 
 
