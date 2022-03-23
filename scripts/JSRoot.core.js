@@ -274,7 +274,6 @@ exports.connectWebWindow = function(arg) {
          });
    }).then(() => import('../modules/webwindow.mjs')).then(h => {
       globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
-      h.WebWindowHandle.prototype.Send = h.WebWindowHandle.prototype.send;
       return h.connectWebWindow(arg);
    });
 }
