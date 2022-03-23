@@ -31,11 +31,12 @@ function _sync() {
 
 function loadPainter() {
    if (jsrp) return Promise.resolve(jsrp);
-   return Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'),
-                import('../modules/base/colors.mjs'), import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs'), import('../modules/base/TAttLineHandler.mjs')]).then(res => {
+   return Promise.all([import('../modules/d3.mjs'), import('../modules/draw.mjs'), import('../modules/base/colors.mjs'),
+                       import('../modules/base/BasePainter.mjs'), import('../modules/base/ObjectPainter.mjs'),
+                       import('../modules/base/TAttLineHandler.mjs'), import('../modules/gui/menu.mjs')]).then(res => {
       if (jsrp) return jsrp;
       globalThis.d3 = res[0]; // assign global d3
-      jsrp = Object.assign({}, res[1], res[2], res[3], res[4], res[5]);
+      jsrp = Object.assign({}, res[1], res[2], res[3], res[4], res[5], res[6]);
       globalThis.JSROOT.Painter = jsrp;
       globalThis.JSROOT.BasePainter = res[3].BasePainter;
       globalThis.JSROOT.ObjectPainter = res[4].ObjectPainter;
