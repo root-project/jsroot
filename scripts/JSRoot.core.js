@@ -25,7 +25,7 @@ function _sync() {
       }
 
       return globalThis.JSROOT;
-   }
+   });
 }
 
 

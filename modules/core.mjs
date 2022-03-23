@@ -813,7 +813,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       case "posttext": method = "POST"; kind = "text"; break;
       case "postbuf":  method = "POST"; kind = "buf"; break;
       case "post":
-      case "multi":  method = "POST"; kind = buf; break;
+      case "multi":  method = "POST"; kind = "buf"; break;
    }
 
    xhr.kind = kind;
