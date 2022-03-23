@@ -216,14 +216,6 @@ exports.connectWebWindow = async function(arg) {
       }
    }
 
-   if (arg.receiver && typeof arg.receiver == 'object') {
-      ['WebsocketOpened', 'WebsocketMsg', 'WebsocketClosed', 'WebsocketError'].forEach(name => {
-         let old_name = 'On' + name, new_name = 'on' + name;
-         if (arg.receiver[old_name] && !arg.receiver[new_name])
-            arg.receiver[new_name] = arg.receiver[old_name];
-      });
-   }
-
    let h = await import('../modules/webwindow.mjs');
    globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
    h.WebWindowHandle.prototype.Send = h.WebWindowHandle.prototype.send;
