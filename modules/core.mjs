@@ -806,8 +806,8 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
    if (!kind) kind = "buf";
 
-   let method = "GET", async = true, p = kind.indexOf(";sync");
-   if (p > 0) { kind = kind.slice(0,p); async = false; }
+   let method = "GET", is_async = true, p = kind.indexOf(";sync");
+   if (p > 0) { kind = kind.slice(0,p); is_async = false; }
    switch (kind) {
       case "head": method = "HEAD"; break;
       case "posttext": method = "POST"; kind = "text"; break;
@@ -881,7 +881,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       this.http_callback(this.response);
    };
 
-   xhr.open(method, url, async);
+   xhr.open(method, url, is_async);
 
    if ((kind == "bin") || (kind == "buf"))
       xhr.responseType = 'arraybuffer';
