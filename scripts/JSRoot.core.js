@@ -9,19 +9,23 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) : fact
 let sync_promises = [], getHPainter, _openui5args = {},
     jsrp = null, geo = null; // old JSROOT.Painter and JSROOT.GEO handles
 
-async function _sync() {
+function _sync() {
+   let arr;
    if (sync_promises) {
-      await Promise.all(sync_promises);
+      arr = sync_promises;
       sync_promises = [];
    }
 
-   if (globalThis.JSROOT) {
-      if (getHPainter) globalThis.JSROOT.hpainter = getHPainter();
-      if (globalThis.JSROOT.batch_mode && globalThis.JSROOT.isBatchMode && !globalThis.JSROOT.isBatchMode())
-         globalThis.JSROOT.setBatchMode(true);
-   }
+   return Promise.all(arr).then(() => {
 
-   return globalThis.JSROOT;
+      if (globalThis.JSROOT) {
+         if (getHPainter) globalThis.JSROOT.hpainter = getHPainter();
+         if (globalThis.JSROOT.batch_mode && globalThis.JSROOT.isBatchMode && !globalThis.JSROOT.isBatchMode())
+            globalThis.JSROOT.setBatchMode(true);
+      }
+
+      return globalThis.JSROOT;
+   }
 }
 
 
