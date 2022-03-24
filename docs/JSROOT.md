@@ -512,7 +512,6 @@ One could try to invoke such dialog with "localfile" parameter in URL string:
 It could happen, that due to security limitations automatic popup will be blocked.
 
 
-
 ## JSROOT with THttpServer
 
 THttpServer provides http access to objects from running ROOT application.
@@ -596,7 +595,7 @@ Major JSROOT functions are locates in `main.mjs` module and can be imported like
        let filename = "https://root.cern/js/files/hsimple.root";
        let file = await openFile(filename);
        let obj = await file.readObject("hpxpy;1");
-       draw("drawing", obj, "colz");
+       await draw("drawing", obj, "colz");
    </script>
 
 Here the default location `https://root.cern/js/latest/` is specified. One could have a local copy on the file system or on a private web server.
@@ -611,7 +610,7 @@ Loading core module is enough to get main ROOT functionality - loading files and
 One also can load some components directly like:
 
     <script type='module'>
-       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/main.mjs';
+       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui.mjs';
 
        let h = new HierarchyPainter("example", "myTreeDiv");
 
@@ -685,7 +684,7 @@ The first argument is the id of the HTML div element, where drawing will be perf
 
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
-    import { httpRequest, draw } from 'https://root.cern/js/latest/modules/main.mjs';
+    import { httpRequest, draw, redraw, resize, cleanup } from 'https://root.cern/js/latest/modules/main.mjs';
     let filename = "https://root.cern/js/files/th2ul.json.gz";
     let obj = await httpRequest(filename, 'object');
     draw("drawing", obj, "lego");
@@ -724,8 +723,7 @@ One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore, callback functions are used to react when the I/O operation completed.
 For example, reading an object from a file and displaying it will look like:
 
-    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
-    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
+    import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
     let filename = "https://root.cern/js/files/hsimple.root";
     let file = await openFile(filename);
     let obj = await file.readObject("hpxpy;1");
@@ -876,7 +874,7 @@ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of O
 After loading is completed, one can use `sap` to access openui5 functionality like:
 
       <script type="module">
-         import { loadOpenui5 } from 'path_to_jsroot/modules/openui5.mjs';
+         import { loadOpenui5 } from 'path_to_jsroot/modules/main.mjs';
          let sap = await loadOpenui5();
          sap.registerModulePath("NavExample", "./");
          new sap.m.App ({
@@ -897,6 +895,37 @@ as `jsrootsys/modules/main.mjs`. And when trying to access files from local disk
 
 JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
 [source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository.
+
+
+### Migration v6 -> v7
+
+Loading of `JSRoot.core.js` will provide very similar functionality as with `v6` via global `JSROOT` object, but not everything was ported
+
+`JSROOT.define` and `JSROOT.require` only available after `JSRoot.core.js` loading, normally functionality should be loaded from modules directly (in most cases from `main.mjs`)
+
+Support of `require.js` and `openui5` loader was removed
+
+Core functionality should be imported from `main.mjs` module like:
+
+      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+
+Global `JSROOT.hpainter` disappear, one should use `getHPainter` function:
+
+      import { getHPainter } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+      let hpainter = getHPainter();
+
+All math functions in `JSROOT.Math` should be imported from `base/math.mjs` module:
+
+     import * as math from 'https://root.cern/js/7.0.0/modules/base/math.mjs';
+
+Indication of batch mode `JSROOT.batch_mode` should be accessed via functions:
+
+     import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+     let was_batch = isBatchMode();
+     if (!was_batch) setBatchMode(true);
+
+Function `JSROOT.extend` was remove, use `Object.assign` instead
+
 
 
 ### Migration v5 -> v6
@@ -927,23 +956,3 @@ Many function names where adjusted to naming conventions. Like:
    - `JSROOT.CreateTGraph` -> `JSROOT.createTGraph`
    - `JSROOT.Create` -> `JSROOT.create`
 
-
-### Migration v6 -> v7
-
-Remove direct support of require.js, probably loading of JSRoot.core.js will be possible but will not be guaranteed
-
-Remove minified scripts from distribution, one should load modules/main.mjs or scripts/JSRoot.core.js. Deployed code will be minified automatically.
-
-Core functionality should be imported from `main.mjs` module like:
-
-      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
-
-JSROOT.hpainter -> require('hierarchy').then(hh => hh.getHPainter())
-
-JSROOT.Math -> math = await require('math')
-
-JSROOT.batch_mode -> isBatchMode()
-
-JSROOT.extend -> Object.assign
-
-JSROOT.define and JSROOT.require deprecated, load necessary modules directly (in most cases `main.mjs`)

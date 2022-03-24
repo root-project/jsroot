@@ -160,4 +160,4 @@ function buildGUI(gui_element, gui_kind) {
    }).then(() => hpainter);
 }
 
-export { buildGUI, internals, readStyleFromURL };
+export { buildGUI, internals, readStyleFromURL, HierarchyPainter };
