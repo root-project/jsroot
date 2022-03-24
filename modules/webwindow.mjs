@@ -701,16 +701,16 @@ function connectWebWindow(arg) {
          return resolveFunc(handle);
 
       handle.setReceiver({
-         onWebsocketOpened: () => {}, // dummy function when websocket connected
+         onWebsocketOpened() {}, // dummy function when websocket connected
 
-         onWebsocketMsg: (handle, msg) => {
+         onWebsocketMsg(handle, msg) {
             if (msg.indexOf(arg.first_recv) != 0)
                return handle.close();
             handle.first_msg = msg.slice(arg.first_recv.length);
             resolveFunc(handle);
          },
 
-         onWebsocketClosed: () => closeCurrentWindow() // when connection closed, close panel as well
+         onWebsocketClosed() { closeCurrentWindow(); } // when connection closed, close panel as well
       });
 
       handle.connect();
