@@ -760,5 +760,5 @@ function drawTFrame(dom, obj, opt) {
    });
 }
 
-export { TCanvasPainter, ensureTCanvas, drawTPadSnapshot, drawTGaxis, drawTFrame };
-
+export { ensureTCanvas, drawTPadSnapshot, drawTGaxis, drawTFrame,
+         TPadPainter, TCanvasPainter };

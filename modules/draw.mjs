@@ -566,18 +566,21 @@ function makeSVG(args) {
    return _loadJSDOM().then(handle => build(handle.body.append('div')));
 }
 
-// only now one can draw primitives in the canvas
-TPadPainter.prototype.drawObject = draw;
-TPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
-
 internals.addDrawFunc = addDrawFunc;
+
+function assignPadPainterDraw(PadPainterClass) {
+   PadPainterClass.prototype.drawObject = draw;
+   PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
+}
+
+// only now one can draw primitives in the canvas
+assignPadPainterDraw(TPadPainter);
 
 // load v7 only by demand
 function init_v7(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
-      h.RPadPainter.prototype.drawObject = draw;
-      h.RPadPainter.prototype.getObjectDrawSettings = getDrawSettings;
+      assignPadPainterDraw(h.RPadPainter);
       switch(arg) {
          case 'more': return import('./draw/v7more.mjs');
          case 'pave': return import('./hist/RPavePainter.mjs');
@@ -607,4 +610,4 @@ function drawRooPlot(dom, plot) {
    });
 }
 
-export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot };
+export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot, assignPadPainterDraw };
