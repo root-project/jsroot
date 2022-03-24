@@ -32,9 +32,9 @@ import { createMenu, closeMenu } from '../gui/menu.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
-import { setGeoParams, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+import { geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
-         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
+         createGeometry, projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
@@ -4748,7 +4748,8 @@ ${img("evetrack", "CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hST
 .jsroot .geovis_all { background-color: yellow; }`);
    }
 
-   setGeoParams(settings.GeoGradPerSegm, settings.GeoCompressComp);
+   geoCfg("GradPerSegm", settings.GeoGradPerSegm);
+   geoCfg("CompressComp", settings.GeoCompressComp);
 
    let painter = new TGeoPainter(dom, obj);
 
@@ -5201,5 +5202,5 @@ function build(obj, opt) {
    return toplevel;
 }
 
-export { build, TGeoPainter, GeoDrawingControl,
+export { ClonedNodes, build, TGeoPainter, GeoDrawingControl,
          expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };

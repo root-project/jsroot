@@ -10,13 +10,16 @@ import { createBufferGeometry, createNormal,
 
 function JSROOT_BIT(n) { return 1 << n; }
 
+let cfg = {
+   GradPerSegm: 6,       // grad per segment in cylinder/spherical symmetry shapes
+   CompressComp: true    // use faces compression in composite shapes
+};
 
-let GradPerSegm = 6,       // grad per segment in cylinder/spherical symmetry shapes
-    CompressComp = true;   // use faces compression in composite shapes
+function geoCfg(name, value) {
+   if (value === undefined)
+      return cfg[name];
 
-function setGeoParams(segm, comp) {
-   GradPerSegm = segm;
-   CompressComp = comp;
+   cfg[name] = value;
 }
 
 
@@ -885,7 +888,7 @@ function createTubeBuffer( shape, faces_limit) {
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
 
-   let radiusSegments = Math.max(4, Math.round(thetaLength/GradPerSegm));
+   let radiusSegments = Math.max(4, Math.round(thetaLength/cfg.GradPerSegm));
 
    // external surface
    let numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
@@ -1012,7 +1015,7 @@ function createTubeBuffer( shape, faces_limit) {
 /** @summary Creates eltu geometrey
   * @private */
 function createEltuBuffer( shape , faces_limit ) {
-   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm));
+   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm));
 
    if (faces_limit < 0) return radiusSegments*4;
 
@@ -1063,8 +1066,8 @@ function createEltuBuffer( shape , faces_limit ) {
   * @private */
 function createTorusBuffer( shape, faces_limit ) {
    let radius = shape.fR,
-       radialSegments = Math.max(6, Math.round(360/GradPerSegm)),
-       tubularSegments = Math.max(8, Math.round(shape.fDphi/GradPerSegm)),
+       radialSegments = Math.max(6, Math.round(360/cfg.GradPerSegm)),
+       tubularSegments = Math.max(8, Math.round(shape.fDphi/cfg.GradPerSegm)),
        numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
    if (faces_limit < 0) return numfaces;
@@ -1162,7 +1165,7 @@ function createPolygonBuffer( shape, faces_limit ) {
       radiusSegments = shape.fNedges;
       factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
-      radiusSegments = Math.max(5, Math.round(thetaLength/GradPerSegm));
+      radiusSegments = Math.max(5, Math.round(thetaLength/cfg.GradPerSegm));
       factor = 1;
    }
 
@@ -1390,7 +1393,7 @@ function createXtruBuffer( shape, faces_limit ) {
   * @private */
 function createParaboloidBuffer( shape, faces_limit ) {
 
-   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
        heightSegments = 30;
 
    if (faces_limit > 0) {
@@ -1491,7 +1494,7 @@ function createHypeBuffer( shape, faces_limit ) {
    if ((shape.fTin===0) && (shape.fTout===0))
       return createTubeBuffer(shape, faces_limit);
 
-   let radiusSegments = Math.max(4, Math.round(360/GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
        heightSegments = 30,
        numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
 
@@ -1904,7 +1907,7 @@ function createComposite( shape, faces_limit ) {
       return geom1;
    }
 
-   bsp1 = new CsgGeometry(geom1, matrix1, CompressComp ? 0 : undefined);
+   bsp1 = new CsgGeometry(geom1, matrix1, cfg.CompressComp ? 0 : undefined);
 
    bsp2 = new CsgGeometry(geom2, matrix2, bsp1.maxid);
 
@@ -3594,7 +3597,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       process(toplevel, 0, 1, 1000000);
 }
 
-export { setGeoParams, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
+export { geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
          createGeometry, numGeometryFaces, numGeometryVertices,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };
