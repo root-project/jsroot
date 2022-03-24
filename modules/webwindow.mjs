@@ -2,7 +2,7 @@
 
 import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
 
-import { closeCurrentWindow, showProgress } from './gui/utils.mjs';
+import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';
 
 /**
  * @summary Class emulating web socket with long-poll http requests
@@ -677,7 +677,7 @@ function connectWebWindow(arg) {
    // only for debug purposes
    // arg.socket_kind = "longpoll";
 
-   return new Promise(resolveFunc => {
+   let main = new Promise(resolveFunc => {
       let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
       if (arg.href) handle.setHRef(arg.href); // apply href now  while connect can be called from other place
@@ -715,6 +715,10 @@ function connectWebWindow(arg) {
 
       handle.connect();
    });
+
+   if (!arg.ui5) return main;
+
+   return Promise.all([main, loadOpenui5(arg)]).then(arr => arr[0]);
 }
 
 export { WebWindowHandle, connectWebWindow };
