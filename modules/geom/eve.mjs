@@ -11,7 +11,7 @@ import * as geo3 from './geobase.mjs';
 import * as geo4 from './TGeoPainter.mjs';
 
 function initEVE() {
-   globalThis.THREE = three;
+   globalThis.THREE = Object.assign({}, three);
    // placeholder for all global functions used by EVE
    globalThis.EVE = Object.assign({ settings, browser, parse, decodeUrl, draw, redraw, root_line_styles, createMenu }, geo1, geo2, geo3, geo4);
 }
