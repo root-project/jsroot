@@ -10,9 +10,16 @@ import { TPavePainter } from '../hist/TPavePainter.mjs';
 
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
-let canvas_handle = isNodeJs() ? (await import('canvas'))?.default : null;
 
-let btoa_func = isNodeJs() ? (await import("btoa"))?.default : window.btoa;
+let canvas_handle, btoa_func = globalThis?.btoa;
+
+///_begin_exclude_in_qt5web_
+if (isNodeJs()) {
+   canvas_handle = await import('canvas').then(h => h.default);
+   btoa_func = await import("btoa").then(h => h.default);
+}
+///_end_exclude_in_qt5web_
+
 
 /**
  * @summary Painter for TASImage object.
