@@ -44,6 +44,10 @@ function loadPainter() {
    });
 }
 
+exports.asyncParse = function(obj) {
+   return _sync().then(() => import('../modules/core.mjs')).then(handle => handle.parse(obj));
+}
+
 exports.httpRequest = function(...args) {
    return _sync().then(() => import('../modules/core.mjs')).then(handle => handle.httpRequest(...args));
 }
