@@ -11,10 +11,10 @@ demo/node/*.svg
 node_modules/
 libs/three/node_modules/
 libs/d3/node_modules/
+build
 openui5dist
 package-lock.json
 httpcontrol.C
 httpserver.C
 Go4ExampleSimple
-bundle/bld
 
