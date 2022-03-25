@@ -1,5 +1,6 @@
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import modify from 'rollup-plugin-modify'
 import ascii from "rollup-plugin-ascii";
 import {terser} from "rollup-plugin-terser";
 import * as meta from "./package.json";
@@ -21,6 +22,10 @@ const config = {
     banner: `// ${meta.homepage} v${meta.version}`
   },
   plugins: [
+    modify({
+      find: /\bif\(isNodeJs\(\)\).+cutNodeJs\b/,
+      replace: ''
+     }),
     ignore(ingnore_modules),
     nodeResolve(),
     json(),
