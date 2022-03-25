@@ -12,10 +12,11 @@ for(let key in meta.dependencies)
    ingnore_modules.push(key);
 
 const config = {
-  input: "bundle/src/jsroot_full.mjs",
+  input: "modules/main.mjs",
   output: {
-    file: "bundle/bld/jsroot_full.mjs",
-    format: "es",
+    name: "JSROOT",
+    file: "build/jsroot.js",
+    format: "umd",
     inlineDynamicImports: true,
     indent: false,
     extend: true,
@@ -39,10 +40,10 @@ const config = {
 
 const config_hist = {
    ...config,
-   input: "bundle/src/jsroot_hist.mjs",
+   input: "modules//hist/bundle.mjs",
    output: {
       ...config.output,
-      file: "bundle/bld/jsroot_hist.mjs",
+      file: "build/hist.js",
       inlineDynamicImports: true
    }
 }
@@ -50,10 +51,10 @@ const config_hist = {
 
 const config_2d = {
    ...config,
-   input: "bundle/src/jsroot_hist2d.mjs",
+   input: "modules/hist2d/bundle.mjs",
    output: {
       ...config.output,
-      file: "bundle/bld/jsroot_hist2d.mjs",
+      file: "build/hist2d.js",
       inlineDynamicImports: true
    }
 }
@@ -62,7 +63,7 @@ const config_minified = {
    ...config,
     output: {
       ...config.output,
-      file: "bundle/bld/jsroot_full.min.mjs",
+      file: "build/jsroot.min.js",
       inlineDynamicImports: true
     },
     plugins: [
@@ -83,21 +84,20 @@ const config_minified = {
 
 const config_hist_minified = {
    ...config_minified,
-   input: "bundle/src/jsroot_hist.mjs",
+   input: "modules/hist/bundle.mjs",
    output: {
      ...config.output,
-     file: "bundle/bld/jsroot_hist.min.mjs",
+     file: "build/hist.min.js",
      inlineDynamicImports: true
    }
 }
 
-
 const config_2d_minified = {
    ...config_minified,
-   input: "bundle/src/jsroot_hist2d.mjs",
+   input: "modules/hist2d/bundle.mjs",
    output: {
      ...config.output,
-     file: "bundle/bld/jsroot_hist2d.min.mjs",
+     file: "build/hist2d.min.js",
      inlineDynamicImports: true
    }
 }

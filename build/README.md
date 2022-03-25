@@ -3,10 +3,10 @@
     npm install
     npm run-script build
 
-Should create number of scripts in `bundle/bld` directory.
+Should create number of scripts in `bundle` directory.
 After that one can import TH2Painter and draw:
 
-    import { TH1Painter } from './bundle/bld/jsroot_hist.min.js`
+    import { TH1Painter } from './bundle/jsroot_hist.min.js`
     TH1Painter.draw(dom, obj, opt)
 
 Size of bundle for histograms is ~1.2MiB,

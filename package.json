@@ -62,7 +62,6 @@
     "rollup-plugin-terser": "7"
   },
   "scripts": {
-    "build": "rm -rf bundle/bld/* && rollup -c",
-    "clean": "rm -rf bundle/bld"
+    "build": "rollup -c"
   }
 }
