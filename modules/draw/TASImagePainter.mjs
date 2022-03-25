@@ -11,13 +11,10 @@ import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
-let canvas_handle, btoa_func = globalThis?.btoa;
+let node_canvas, btoa_func = globalThis?.btoa;
 
 ///_begin_exclude_in_qt5web_
-if (isNodeJs()) {
-   canvas_handle = await import('canvas').then(h => h.default);
-   btoa_func = await import("btoa").then(h => h.default);
-}
+if (isNodeJs()) { node_canvas = await import('canvas').then(h => h.default); btoa_func = await import("btoa").then(h => h.default); } /// cutNodeJs
 ///_end_exclude_in_qt5web_
 
 
@@ -162,7 +159,7 @@ class TASImagePainter extends ObjectPainter {
          let canvas;
 
          if (isNodeJs()) {
-            canvas = canvas_handle.createCanvas(xmax - xmin, ymax - ymin);
+            canvas = node_canvas.createCanvas(xmax - xmin, ymax - ymin);
          } else {
             canvas = document.createElement('canvas');
             canvas.width = xmax - xmin;

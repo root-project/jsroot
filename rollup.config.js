@@ -1,6 +1,6 @@
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
-import modify from 'rollup-plugin-modify'
+import modify from 'rollup-plugin-modify';
 import ascii from "rollup-plugin-ascii";
 import {terser} from "rollup-plugin-terser";
 import * as meta from "./package.json";
