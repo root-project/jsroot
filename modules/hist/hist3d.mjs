@@ -216,7 +216,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
-   let axis_painter = this, obj_painter = this.getMainPainter();
+   let frame_painter = this, obj_painter = this.getMainPainter();
 
    this.control.processMouseMove = function(intersects) {
 
@@ -232,42 +232,35 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       }
 
       if (tip && !tip.use_itself) {
-         let delta_x = 1e-4*axis_painter.size_x3d,
-             delta_y = 1e-4*axis_painter.size_y3d,
-             delta_z = 1e-4*axis_painter.size_z3d;
+         let delta_x = 1e-4*frame_painter.size_x3d,
+             delta_y = 1e-4*frame_painter.size_y3d,
+             delta_z = 1e-4*frame_painter.size_z3d;
          if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
          tip.x1 -= delta_x; tip.x2 += delta_x;
          tip.y1 -= delta_y; tip.y2 += delta_y;
          tip.z1 -= delta_z; tip.z2 += delta_z;
       }
 
-      axis_painter.highlightBin3D(tip, mesh);
+      frame_painter.highlightBin3D(tip, mesh);
 
-      if (!tip && zoom_mesh && axis_painter.get3dZoomCoord) {
+      if (!tip && zoom_mesh && frame_painter.get3dZoomCoord) {
          let pnt = zoom_mesh.globalIntersect(this.raycaster),
              axis_name = zoom_mesh.zoom,
-             axis_value = axis_painter.get3dZoomCoord(pnt, axis_name);
+             axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
          if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
-         let taxis = axis_painter.getAxis(axis_name),
-             hint = { name: axis_name,
-                      title: "TAxis",
-                      line: "any info",
-                      only_status: true };
-
-         if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
-
-         hint.line = axis_name + " : " + axis_painter.axisAsText(axis_name, axis_value);
-
-         return hint;
+         return { name: axis_name,
+                  title: "axis object",
+                  line: axis_name + " : " + frame_painter.axisAsText(axis_name, axis_value),
+                  only_status: true };
       }
 
       return (tip && tip.lines) ? tip : "";
    };
 
    this.control.processMouseLeave = function() {
-      axis_painter.highlightBin3D(null);
+      frame_painter.highlightBin3D(null);
    };
 
    this.control.contextMenu = function(pos, intersects) {
