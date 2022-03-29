@@ -3101,7 +3101,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
    loadScripts(scripts, modules) {
-      if (!scripts && !modules)
+      if (!scripts?.length && !modules?.length)
          return Promise.resolve(true);
 
       return _ensureJSROOT().then(v6 => {
