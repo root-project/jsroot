@@ -632,6 +632,16 @@ function createStreamerInfoContent(lst) {
    return h;
 }
 
+/** @summary tag item in hierarchy painter as streamer info
+  * @desc this function used on THttpServer to mark streamer infos list
+  * as fictional TStreamerInfoList class, which has special draw function
+  * @private */
+function markAsStreamerInfo(h, item, obj) {
+   if (obj && (obj._typename == 'TList'))
+      obj._typename = 'TStreamerInfoList';
+}
+
+
 /** @summary Create hierarchy for object inspector
   * @private */
 function createInspectorContent(obj) {
@@ -2631,6 +2641,14 @@ class HierarchyPainter extends BasePainter {
       return this.getOnlineItemUrl(item) !== null;
    }
 
+   importModule(module) {
+      switch(module) {
+         case "core": return import('../core.mjs');
+         case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
+      }
+      return import(module);
+   }
+
    /** @summary method used to request object from the http server
      * @returns {Promise} with requested object
      * @private */
@@ -2688,19 +2706,22 @@ class HierarchyPainter extends BasePainter {
 
          let itemreq = createHttpRequest(url, req_kind, obj => {
 
-            let func = null;
+            let handleAfterRequest = func => {
+               if (typeof func == 'function') {
+                  let res = func(this, item, obj, option, itemreq);
+                  if (res && (typeof res == "object")) obj = res;
+               }
+               resolveFunc(obj);
+            };
 
-            if (!h_get && item && ('_after_request' in item)) {
-               func = findFunction(item._after_request);
-            } else if (draw_handle && ('after_request' in draw_handle))
-               func = draw_handle.after_request;
-
-            if (typeof func == 'function') {
-               let res = func(this, item, obj, option, itemreq);
-               if (res && (typeof res == "object")) obj = res;
+            if (!h_get && item?._after_request) {
+               if (item._module)
+                  this.importModule(item._module).then(h => handleAfterRequest(h[item._after_request]));
+               else
+                  handleAfterRequest(findFunction(item._after_request)); // v6 support
+            } else {
+               handleAfterRequest(draw_handle?.after_request)
             }
-
-            resolveFunc(obj);
          });
 
          itemreq.send(null);
@@ -3667,5 +3688,5 @@ function drawInspector(dom, obj) {
 internals.drawInspector = drawInspector;
 
 export { getHPainter, HierarchyPainter,
-         drawInspector, drawStreamerInfo, drawList,
+         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };
