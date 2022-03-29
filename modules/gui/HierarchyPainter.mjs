@@ -1828,22 +1828,22 @@ class HierarchyPainter extends BasePainter {
       if (!item || !item._player || (typeof item._player != 'string'))
          return null;
 
-      let player_func = findFunction(item._player);
+      let player_func = null;
 
-      if (!player_func)
-         if (item._prereq || (item._player.indexOf('JSROOT.') >= 0)) {
-            await this.loadScripts("", item._prereq);
-            player_func = findFunction(item._player);
-         }
-      if (!player_func && item._module) {
-         let hh = import(item._module);
+      if (item._module) {
+         let hh = await this.importModule(item._module);
          player_func = hh ? hh[item._player] : null;
+      } else {
+         if (item._prereq || (item._player.indexOf('JSROOT.') >= 0))
+            await this.loadScripts("", item._prereq);
+         player_func = findFunction(item._player);
       }
+
       if (typeof player_func != 'function')
          return null;
 
-      let mdi = await this.createDisplay();
-      return mdi ? player_func(this, itemname, option) : null;
+      await this.createDisplay();
+      return player_func(this, itemname, option);
    }
 
    /** @summary Checks if item can be displayed with given draw option
@@ -2644,6 +2644,7 @@ class HierarchyPainter extends BasePainter {
    importModule(module) {
       switch(module) {
          case "core": return import('../core.mjs');
+         case "draw_tree": return import('../draw/TTree.mjs');
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
       return import(module);
