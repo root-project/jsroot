@@ -455,7 +455,7 @@ function drawTree() {
       args.testio = true;
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
-   } else if (args.expr) {
+   } else if (args.expr || args.branch) {
       pr = treeDraw(tree, args);
    } else
       return Promise.resolve(painter);
