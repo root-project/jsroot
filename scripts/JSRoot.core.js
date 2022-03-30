@@ -86,7 +86,9 @@ exports.redraw = function(dom, obj, opt) {
    return _sync().then(() => import('../modules/draw.mjs')).then(handle => handle.redraw(dom, test_parse_workaround(obj), opt));
 }
 
+let workaround_settings = {};
 
+exports.settings = workaround_settings;
 
 /** @summary Old v6 method to load JSROOT functionality
   * @desc
@@ -321,7 +323,10 @@ if ((typeof globalThis !== "undefined") && !globalThis.JSROOT) {
    globalThis.JSROOT._complete_loading = _sync;
 
    let pr = Promise.all([import('../modules/core.mjs'), import('../modules/draw.mjs'), import('../modules/gui/HierarchyPainter.mjs')]).then(arr => {
+
       Object.assign(globalThis.JSROOT, arr[0], arr[1], arr[2]);
+
+      Object.assign(globalThis.JSROOT.settings, workaround_settings);
 
       globalThis.JSROOT._ = arr[0].internals;
 
