@@ -44,10 +44,6 @@ function loadPainter() {
    });
 }
 
-exports.asyncParse = function(obj) {
-   return _sync().then(() => import('../modules/core.mjs')).then(handle => handle.parse(obj));
-}
-
 exports.httpRequest = function(...args) {
    return _sync().then(() => import('../modules/core.mjs')).then(handle => handle.httpRequest(...args));
 }
@@ -63,6 +59,33 @@ exports.buildGUI = function(...args) {
 exports.openFile = function(...args) {
    return _sync().then(() => import('../modules/io.mjs')).then(handle => handle.openFile(...args));
 }
+
+exports.parse = function(json) {
+   if (typeof json == 'string')
+      json = JSON.parse(json);
+
+   if (json && typeof json == 'object')
+      json.$parse_workaround = true;
+   return json;
+}
+
+function test_parse_workaround(obj) {
+   if (obj && (typeof obj == 'object') && obj.$parse_workaround) {
+      delete obj.$parse_workaround;
+      if (JSROOT?.parse)
+         obj = JSROOT.parse(obj);
+   }
+   return obj;
+}
+
+exports.draw = function(dom, obj, opt) {
+   return _sync().then(() => import('../modules/draw.mjs')).then(handle => handle.draw(dom, test_parse_workaround(obj), opt));
+}
+
+exports.redraw = function(dom, obj, opt) {
+   return _sync().then(() => import('../modules/draw.mjs')).then(handle => handle.redraw(dom, test_parse_workaround(obj), opt));
+}
+
 
 
 /** @summary Old v6 method to load JSROOT functionality
