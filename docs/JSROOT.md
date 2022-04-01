@@ -596,7 +596,7 @@ Major JSROOT functions are locates in `main.mjs` module and can be imported like
        let file = await openFile(filename);
        let obj = await file.readObject("hpxpy;1");
        await draw("drawing", obj, "colz");
-   </script>
+    </script>
 
 Here the default location `https://root.cern/js/latest/` is specified. One could have a local copy on the file system or on a private web server.
 When JSROOT is used with THttpServer, the address looks like:
@@ -604,7 +604,7 @@ When JSROOT is used with THttpServer, the address looks like:
     <script type='module'>
        import { openFile } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
        ...
-   </script>
+    </script>
 
 Loading core module is enough to get main ROOT functionality - loading files and drawing objects.
 One also can load some components directly like:
@@ -621,7 +621,7 @@ One also can load some components directly like:
        // open file and display element
        await h.openRootFile("../../files/hsimple.root");
        await h.display("hpxpy;1","colz");
-   </script>
+    </script>
 
 
 After script loading one can configure different parameters in `gStyle` object.
