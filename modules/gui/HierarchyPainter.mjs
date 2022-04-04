@@ -2653,7 +2653,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary method used to request object from the http server
      * @returns {Promise} with requested object
      * @private */
-   getOnlineItem(item, itemname, option) {
+   async getOnlineItem(item, itemname, option) {
 
       let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
@@ -2671,7 +2671,12 @@ class HierarchyPainter extends BasePainter {
             req = 'h.json?compact=3';
             item._expand = onlineHierarchy; // use proper expand function
          } else if (item._make_request) {
-            func = findFunction(item._make_request);
+            if (item._module) {
+               let h = await this.importModule(item._module);
+               func = h[item._make_request];
+            } else {
+               func = findFunction(item._make_request);
+            }
          } else if (draw_handle && draw_handle.make_request) {
             func = draw_handle.make_request;
          }
@@ -2680,13 +2685,14 @@ class HierarchyPainter extends BasePainter {
             // ask to make request
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
-            if (dreq)
+            if (dreq) {
                if (typeof dreq == 'string') {
                   req = dreq;
                } else {
                   if ('req' in dreq) req = dreq.req;
                   if ('kind' in dreq) req_kind = dreq.kind;
                }
+            }
          }
 
          if ((req.length == 0) && (item._kind.indexOf("ROOT.") != 0))
