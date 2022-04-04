@@ -2680,8 +2680,10 @@ class HierarchyPainter extends BasePainter {
             // ask to make request
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
-            if (dreq!=null)
-               if (typeof dreq == 'string') req = dreq; else {
+            if (dreq)
+               if (typeof dreq == 'string') {
+                  req = dreq;
+               } else {
                   if ('req' in dreq) req = dreq.req;
                   if ('kind' in dreq) req_kind = dreq.kind;
                }
@@ -2698,7 +2700,8 @@ class HierarchyPainter extends BasePainter {
          return Promise.resolve(obj);
       }
 
-      if (req.length == 0) req = 'root.json.gz?compact=23';
+      if (req.length == 0)
+         req = 'root.json.gz?compact=23';
 
       if (url.length > 0) url += "/";
       url += req;
