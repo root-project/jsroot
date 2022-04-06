@@ -68976,13 +68976,16 @@ function draw(dom, obj, opt) {
    } else if (!handle.prereq && !handle.script) {
       return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
    } else {
-      promise = _ensureJSROOT().then(v6 => {
+
+      let init_promise = internals.ignore_v6 ? Promise.resolve(true) : _ensureJSROOT().then(v6 => {
          let pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
          return pr.then(() => {
             if (handle.script)
                return loadScript(handle.script);
          }).then(() => v6._complete_loading());
-      }).then(() => {
+      });
+
+      promise = init_promise.then(() => {
          let func = findFunction(handle.func);
 
          if (!func || (typeof func != 'function'))
@@ -75302,9 +75305,11 @@ class HierarchyPainter extends BasePainter {
                if (typeof handle.expand == 'function')
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
-                  let v6 = await _ensureJSROOT();
-                  await v6.require(handle.prereq);
-                  await v6._complete_loading();
+                  if (!internals.ignore_v6) {
+                     let v6 = await _ensureJSROOT();
+                     await v6.require(handle.prereq);
+                     await v6._complete_loading();
+                  }
                   _item._expand = handle.expand = findFunction(handle.expand);
                } else if (typeof handle.get_expand == 'function') {
                   _item._expand = handle.expand = await handle.get_expand();

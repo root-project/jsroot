@@ -2402,9 +2402,11 @@ class HierarchyPainter extends BasePainter {
                if (typeof handle.expand == 'function')
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
-                  let v6 = await _ensureJSROOT();
-                  await v6.require(handle.prereq);
-                  await v6._complete_loading();
+                  if (!internals.ignore_v6) {
+                     let v6 = await _ensureJSROOT();
+                     await v6.require(handle.prereq);
+                     await v6._complete_loading();
+                  }
                   _item._expand = handle.expand = findFunction(handle.expand);
                } else if (typeof handle.get_expand == 'function') {
                   _item._expand = handle.expand = await handle.get_expand();
