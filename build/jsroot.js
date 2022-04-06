@@ -108802,6 +108802,7 @@ exports.createTGraph = createTGraph;
 exports.createTHStack = createTHStack;
 exports.createTMultiGraph = createTMultiGraph;
 exports.createTPolyLine = createTPolyLine;
+exports.d3_select = select;
 exports.decodeUrl = decodeUrl;
 exports.draw = draw;
 exports.drawRawText = drawRawText;

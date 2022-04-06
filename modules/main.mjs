@@ -3,6 +3,8 @@
 
 export * from './core.mjs';
 
+export { select as d3_select } from './d3.mjs';
+
 export * from './base/BasePainter.mjs';
 
 export * from './base/ObjectPainter.mjs';
