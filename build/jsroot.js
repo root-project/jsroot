@@ -57825,7 +57825,7 @@ class TPadPainter extends ObjectPainter {
          if (isBatchMode()) {
             svg.attr("xmlns", "http://www.w3.org/2000/svg");
             svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-         } else {
+         } else if (!this.online_canvas) {
             svg.append("svg:title").text("ROOT canvas");
          }
 
@@ -98102,7 +98102,7 @@ class RPadPainter extends RObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (!isBatchMode())
+         if (!isBatchMode() && !this.online_canvas)
             svg.append("svg:title").text("ROOT canvas");
 
          frect = svg.append("svg:path").attr("class","canvas_fillrect");
