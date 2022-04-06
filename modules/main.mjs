@@ -7,7 +7,7 @@ export { drawingJSON, cleanup, resize } from './base/ObjectPainter.mjs';
 
 export { loadOpenui5, registerForResize } from './gui/utils.mjs';
 
-export { draw, redraw, makeSVG, setDefaultDrawOpt } from './draw.mjs';
+export { draw, redraw, makeSVG, addDrawFunc, setDefaultDrawOpt } from './draw.mjs';
 
 export { openFile } from './io.mjs';
 

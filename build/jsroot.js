@@ -11,7 +11,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "29/03/2022";
+let version_date = "6/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -31307,16 +31307,16 @@ class HierarchyPainter extends BasePainter {
 
       if (place == "item") {
 
-         if ('_player' in hitem)
+         if (hitem._player)
             return this.player(itemname);
 
-         if (handle && handle.aslink)
+         if (handle?.aslink)
             return window.open(itemname + "/");
 
-         if (handle && handle.execute)
+         if (handle?.execute)
             return this.executeCommand(itemname, node.parentNode);
 
-         if (handle && handle.ignore_online && this.isOnlineItem(hitem)) return;
+         if (handle?.ignore_online && this.isOnlineItem(hitem)) return;
 
          let can_draw = hitem._can_draw,
              can_expand = hitem._more,
@@ -31344,10 +31344,10 @@ class HierarchyPainter extends BasePainter {
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             // if already displayed, try to expand
-            if (dflt_expand || (handle && (handle.dflt === 'expand')) || this.isItemDisplayed(itemname)) can_draw = false;
+            if (dflt_expand || (handle?.dflt === 'expand') || this.isItemDisplayed(itemname)) can_draw = false;
          }
 
-         if (can_draw && !drawopt && handle && handle.dflt && (handle.dflt !== 'expand'))
+         if (can_draw && !drawopt && handle?.dflt && (handle?.dflt !== 'expand'))
             drawopt = handle.dflt;
 
          if (can_draw)
@@ -32375,7 +32375,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary method used to request object from the http server
      * @returns {Promise} with requested object
      * @private */
-   getOnlineItem(item, itemname, option) {
+   async getOnlineItem(item, itemname, option) {
 
       let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
@@ -32393,7 +32393,12 @@ class HierarchyPainter extends BasePainter {
             req = 'h.json?compact=3';
             item._expand = onlineHierarchy; // use proper expand function
          } else if (item._make_request) {
-            func = findFunction(item._make_request);
+            if (item._module) {
+               let h = await this.importModule(item._module);
+               func = h[item._make_request];
+            } else {
+               func = findFunction(item._make_request);
+            }
          } else if (draw_handle && draw_handle.make_request) {
             func = draw_handle.make_request;
          }
@@ -32402,11 +32407,14 @@ class HierarchyPainter extends BasePainter {
             // ask to make request
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
-            if (dreq!=null)
-               if (typeof dreq == 'string') req = dreq; else {
+            if (dreq) {
+               if (typeof dreq == 'string') {
+                  req = dreq;
+               } else {
                   if ('req' in dreq) req = dreq.req;
                   if ('kind' in dreq) req_kind = dreq.kind;
                }
+            }
          }
 
          if ((req.length == 0) && (item._kind.indexOf("ROOT.") != 0))
@@ -32420,7 +32428,8 @@ class HierarchyPainter extends BasePainter {
          return Promise.resolve(obj);
       }
 
-      if (req.length == 0) req = 'root.json.gz?compact=23';
+      if (req.length == 0)
+         req = 'root.json.gz?compact=23';
 
       if (url.length > 0) url += "/";
       url += req;
@@ -69974,7 +69983,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
-const createDefaultPalette = () => {
+function createDefaultPalette() {
    const hue2rgb = (p, q, t) => {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
@@ -69995,16 +70004,16 @@ const createDefaultPalette = () => {
       palette.push(HLStoRGB(hue, 0.5, 1));
    }
    return new ColorPalette(palette);
-};
+}
 
-const createGrayPalette = () => {
+function createGrayPalette() {
    let palette = [];
    for (let i = 0; i < 50; ++i) {
       const code = toHex((i+2)/60);
       palette.push('#'+code+code+code);
    }
    return new ColorPalette(palette);
-};
+}
 
 /** @summary Create color palette
   * @private */
@@ -95054,7 +95063,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    let url = hpainter.getOnlineItemUrl(itemname);
    if (!url) return null;
 
-   let root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01
+   let root_version = top._root_version || 400129; // by default use version number 6-27-01
 
    let mdi = hpainter.getDisplay();
    if (!mdi) return null;
@@ -95171,7 +95180,7 @@ function drawTree() {
       args.testio = true;
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
-   } else if (args.expr) {
+   } else if (args.expr || args.branch) {
       pr = treeDraw(tree, args);
    } else
       return Promise.resolve(painter);
@@ -108753,6 +108762,7 @@ exports.FlexibleDisplay = FlexibleDisplay;
 exports.GridDisplay = GridDisplay;
 exports.HierarchyPainter = HierarchyPainter;
 exports._ensureJSROOT = _ensureJSROOT;
+exports.addDrawFunc = addDrawFunc;
 exports.addMethods = addMethods;
 exports.browser = browser$1;
 exports.buildGUI = buildGUI;
