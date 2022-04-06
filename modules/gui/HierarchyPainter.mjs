@@ -2759,7 +2759,7 @@ class HierarchyPainter extends BasePainter {
 
          this.h._expand = onlineHierarchy;
 
-         let styles = [], scripts = [], v6_modules = [];
+         let styles = [], scripts = [], v6_modules = [], v7_imports = [];
          this.forEachItem(item => {
             if (item._childs !== undefined)
                item._expand = onlineHierarchy;
@@ -2767,7 +2767,9 @@ class HierarchyPainter extends BasePainter {
             if (item._autoload) {
                let arr = item._autoload.split(";");
                arr.forEach(name => {
-                  if ((name.length > 3) && (name.lastIndexOf(".js") == name.length-3)) {
+                  if ((name.length > 4) && (name.lastIndexOf(".mjs") == name.length-4)) {
+                     v7_imports.push(this.importModule(name));
+                  } else if ((name.length > 3) && (name.lastIndexOf(".js") == name.length-3)) {
                      if (!scripts.find(elem => elem == name)) scripts.push(name);
                   } else if ((name.length > 4) && (name.lastIndexOf(".css") == name.length-4)) {
                      if (!styles.find(elem => elem == name)) styles.push(name);
@@ -2780,6 +2782,7 @@ class HierarchyPainter extends BasePainter {
 
          return this.loadScripts(scripts, v6_modules)
                .then(() => loadScript(styles))
+               .then(() => Promise.all(v7_imports))
                .then(() => {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
