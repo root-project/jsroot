@@ -41,6 +41,9 @@ if (src && (typeof src == "string")) {
       source_fullpath = src;
       exports.source_dir = source_fullpath.slice(0, pos);
       console.log(`Set jsroot source_dir to ${exports.source_dir}, ${version}`);
+   } else {
+      console.log(`jsroot bundle, ${version}`);
+      internals.ignore_v6 = true;
    }
 }
 
@@ -76011,6 +76014,9 @@ class HierarchyPainter extends BasePainter {
    loadScripts(scripts, modules) {
       if (!scripts?.length && !modules?.length)
          return Promise.resolve(true);
+
+      if (internals.ignore_v6)
+         return loadScript(scripts);
 
       return _ensureJSROOT().then(v6 => {
          return v6.require(modules)

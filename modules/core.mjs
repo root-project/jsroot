@@ -35,6 +35,9 @@ if (src && (typeof src == "string")) {
       source_fullpath = src;
       source_dir = source_fullpath.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
+   } else {
+      console.log(`jsroot bundle, ${version}`);
+      internals.ignore_v6 = true;
    }
 }
 

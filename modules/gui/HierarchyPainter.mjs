@@ -3116,6 +3116,9 @@ class HierarchyPainter extends BasePainter {
       if (!scripts?.length && !modules?.length)
          return Promise.resolve(true);
 
+      if (internals.ignore_v6)
+         return loadScript(scripts);
+
       return _ensureJSROOT().then(v6 => {
          return v6.require(modules)
                   .then(() => loadScript(scripts))
