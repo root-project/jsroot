@@ -3309,7 +3309,7 @@ class HierarchyPainter extends BasePainter {
 
       let h0 = null;
       if (this.is_online) {
-         let func = internals.GetCachedHierarchy || findFunction('GetCachedHierarchy');
+         let func = internals.getCachedHierarchy || findFunction('GetCachedHierarchy');
          if (typeof func == 'function')
             h0 = func();
          if (typeof h0 !== 'object') h0 = "";
