@@ -11,7 +11,7 @@ let version_id = "modules";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "6/04/2022";
+let version_date = "12/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67888,6 +67888,7 @@ TH2Painter: TH2Painter
 
 /**
  * @summary Painter for TH3 classes
+ * @private
  */
 
 class TH3Painter extends THistPainter {

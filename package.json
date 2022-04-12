@@ -63,7 +63,7 @@
     "jsdoc": "^3.6.10"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c build/rollup.config.js",
     "doc": "jsdoc -c docs/jsdoc.json",
     "full": "jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull"
   }
