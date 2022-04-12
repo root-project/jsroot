@@ -105,7 +105,8 @@ class TSelector {
 /** @summary Checks array kind
   * @desc return 0 when not array
   * 1 - when arbitrary array
-  * 2 - when plain (1-dim) array with same-type content */
+  * 2 - when plain (1-dim) array with same-type content
+  * @private */
 function checkArrayPrototype(arr, check_content) {
    if (typeof arr !== 'object') return 0;
 

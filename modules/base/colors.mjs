@@ -114,7 +114,8 @@ function getColor(indx) {
 /** @summary Add new color
   * @param {string} rgb - color name or just string with rgb value
   * @param {array} [lst] - optional colors list, to which add colors
-  * @returns {number} index of new color */
+  * @returns {number} index of new color
+  * @private */
 function addColor(rgb, lst) {
    if (!lst) lst = gbl_colors_list;
    let indx = lst.indexOf(rgb);

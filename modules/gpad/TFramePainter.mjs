@@ -31,7 +31,8 @@ function setPainterTooltipEnabled(painter, on) {
       painter.control.setTooltipEnabled(on);
 }
 
-/** @summary Add drag for interactive rectangular elements for painter */
+/** @summary Add drag for interactive rectangular elements for painter
+  * @private */
 function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 

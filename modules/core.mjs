@@ -73,7 +73,8 @@ if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
-  * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array */
+  * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array
+  * @private */
 function isArrayProto(proto) {
     if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
     let p = proto.indexOf('Array]');
