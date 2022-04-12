@@ -48,7 +48,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
 /** @summary Custom streamers for root classes
   * @desc map of user-streamer function like func(buf,obj)
   * or alias (classname) which can be used to read that function
-  * or list of read functions */
+  * or list of read functions
+  * @private */
 const CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
@@ -482,8 +483,9 @@ function addUserStreamer(type, user_streamer) {
 }
 
 
- /** @summary these are streamers which do not handle version regularly
-  * @desc used for special classes like TRef or TBasket */
+/** @summary these are streamers which do not handle version regularly
+  * @desc used for special classes like TRef or TBasket
+  * @private */
 const DirectStreamers = {
    // do nothing for these classes
    TQObject() {},
@@ -3072,9 +3074,9 @@ class TFile {
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @returns {Promise} promise with object read
      * @example
-     *   let f = await openFile("https://root.cern/js/files/hsimple.root");
-     *   let obj = await f.readObject("hpxpy;1");
-     *   console.log(`Read object of type ${obj._typename}`); */
+     * let f = await openFile("https://root.cern/js/files/hsimple.root");
+     * let obj = await f.readObject("hpxpy;1");
+     * console.log(`Read object of type ${obj._typename}`); */
    readObject(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
@@ -3738,6 +3740,8 @@ class TNodejsFile extends TFile {
   * @param {string|object} arg - argument for file open like url, see details
   * @returns {object} - Promise with {@link TFile} instance when file is opened
   * @example
+  *
+  * import { openFile } from '/path_to_jsroot/modules/io.mjs';
   * let f = await openFile("https://root.cern/js/files/hsimple.root");
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {

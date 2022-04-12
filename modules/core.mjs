@@ -353,7 +353,8 @@ function getDocument() {
 
 /** @summary Inject javascript code
   * @desc Replacement for eval
-  * @returns {Promise} */
+  * @returns {Promise}
+  * @private */
 function injectCode(code) {
    if (nodejs) {
       let name, fs;
@@ -785,7 +786,8 @@ function decodeUrl(url) {
    return res;
 }
 
-/** @summary Find function with given name */
+/** @summary Find function with given name
+  * @private */
 function findFunction(name) {
    if (typeof name === 'function') return name;
    if (typeof name !== 'string') return null;
@@ -922,9 +924,10 @@ function httpRequest(url, kind, post_data) {
 }
 
 /** @summary Create some ROOT classes
-  * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
+  * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
   * @param {string} typename - ROOT class name
   * @example
+  * import { create } from 'path_to_jsroot/modules/core.mjs';
   * let obj = create("TNamed");
   * obj.fName = "name";
   * obj.fTitle = "title"; */

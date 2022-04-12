@@ -18,7 +18,8 @@ import { TPadPainter } from './TPadPainter.mjs';
 
 
 /** @summary direct draw of TFrame object,
-  * @desc pad or canvas should already exist */
+  * @desc pad or canvas should already exist
+  * @private */
 function directDrawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
    fp.addToPadPrimitives();
@@ -741,7 +742,8 @@ function drawTPadSnapshot(dom, snap /*, opt*/) {
    });
 }
 
-/** @summary draw TGaxis object */
+/** @summary draw TGaxis object
+  * @private */
 function drawTGaxis(dom, obj, opt) {
    let painter = new TAxisPainter(dom, obj, false);
    painter.disable_zooming = true;
@@ -751,7 +753,8 @@ function drawTGaxis(dom, obj, opt) {
    }).then(() => painter);
 }
 
-/** @summary draw TGaxis object */
+/** @summary draw TGaxis object
+  * @private */
 function drawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
    return ensureTCanvas(fp, false).then(() => {
