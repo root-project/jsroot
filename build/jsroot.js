@@ -79,7 +79,8 @@ if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
-  * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array */
+  * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array
+  * @private */
 function isArrayProto(proto) {
     if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
     let p = proto.indexOf('Array]');
@@ -358,7 +359,8 @@ function getDocument() {
 
 /** @summary Inject javascript code
   * @desc Replacement for eval
-  * @returns {Promise} */
+  * @returns {Promise}
+  * @private */
 function injectCode(code) {
    if (nodejs) {
       let name, fs;
@@ -790,7 +792,8 @@ function decodeUrl(url) {
    return res;
 }
 
-/** @summary Find function with given name */
+/** @summary Find function with given name
+  * @private */
 function findFunction(name) {
    if (typeof name === 'function') return name;
    if (typeof name !== 'string') return null;
@@ -927,9 +930,10 @@ function httpRequest(url, kind, post_data) {
 }
 
 /** @summary Create some ROOT classes
-  * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
+  * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
   * @param {string} typename - ROOT class name
   * @example
+  * import { create } from 'path_to_jsroot/modules/core.mjs';
   * let obj = create("TNamed");
   * obj.fName = "name";
   * obj.fTitle = "title"; */
@@ -7535,7 +7539,8 @@ function getAbsPosInCanvas(sel, pos) {
   * @param {number} value - value to convert
   * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
   * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
-  * @returns {string|Array} - converted value or array with value and actual format */
+  * @returns {string|Array} - converted value or array with value and actual format
+  * @private */
 function floatToString(value, fmt, ret_fmt) {
    if (!fmt) fmt = "6.4g";
 
@@ -8125,7 +8130,8 @@ class BasePainter {
 } // class BasePainter
 
 /** @summary Load and initialize JSDOM from nodes
-  * @returns {Promise} with d3 selection for d3_body */
+  * @returns {Promise} with d3 selection for d3_body
+   * @private */
 function _loadJSDOM() {
    return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
 
@@ -8157,7 +8163,7 @@ const root_fonts_aver_width = [0.5778,0.5314,
 
 /**
  * @summary Helper class for font handling
- *
+ * @private
  */
 
 class FontHandler {
@@ -8478,7 +8484,8 @@ const approximateLabelWidth = (label, font, fsize) => {
    return sum/1000*symbol_width;
 };
 
-/** array defines features supported by latex parser, used by both old and new parsers */
+/** @summary array defines features supported by latex parser, used by both old and new parsers
+  * @private */
 const latex_features = [
    { name: "#it{" }, // italic
    { name: "#bf{" }, // bold
@@ -9475,7 +9482,8 @@ function toHex(num,scale) {
    return s.length == 1 ? '0'+s : s;
 }
 
-/** @summary list of global root colors */
+/** @summary list of global root colors
+  * @private */
 let gbl_colors_list = [];
 
 /** @summary Generates all root colors, used also in jstests to reset colors
@@ -9576,7 +9584,8 @@ function adoptRootColors(objarr) {
 
 /** @summary Return ROOT color by index
   * @desc Color numbering corresponds typical ROOT colors
-  * @returns {String} with RGB color code or existing color name like 'cyan' */
+  * @returns {String} with RGB color code or existing color name like 'cyan'
+  * @private */
 function getColor(indx) {
    return gbl_colors_list[indx];
 }
@@ -9584,7 +9593,8 @@ function getColor(indx) {
 /** @summary Add new color
   * @param {string} rgb - color name or just string with rgb value
   * @param {array} [lst] - optional colors list, to which add colors
-  * @returns {number} index of new color */
+  * @returns {number} index of new color
+  * @private */
 function addColor(rgb, lst) {
    if (!lst) lst = gbl_colors_list;
    let indx = lst.indexOf(rgb);
@@ -9640,7 +9650,7 @@ const root_markers = [
 
 /**
   * @summary Handle for marker attributes
-  *
+  * @private
   */
 
 class TAttMarkerHandler {
@@ -9914,7 +9924,6 @@ class TAttMarkerHandler {
 
 /**
   * @summary Handle for fill attributes
-  *
   * @private
   */
 
@@ -10239,6 +10248,7 @@ const root_line_styles = [
 
 /**
   * @summary Handle for line attributes
+  * @private
   */
 
 class TAttLineHandler {
@@ -48350,6 +48360,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 }
 
+/** @summary Assign 3D methods for frame painter
+  * @private */
 function assignFrame3DMethods(fpainter) {
    Object.assign(fpainter, { create3DScene, render3D, resize3D, highlightBin3D, set3DOptions, drawXYZ });
 }
@@ -48410,7 +48422,6 @@ function drawBinsLego(painter, is_v7 = false) {
 
       return painter._show_empty_bins;
    };
-
 
    let levels = [ axis_zmin, axis_zmax ], palette = null;
 
@@ -48717,7 +48728,8 @@ function drawBinsLego(painter, is_v7 = false) {
    main.toplevel.add(line);
 }
 
-/** @summary Draw TH2 histogram in error mode */
+/** @summary Draw TH2 histogram in error mode
+  * @private */
 function drawBinsError3D(painter, is_v7 = false) {
    const main = painter.getFramePainter(),
          histo = painter.getHisto(),
@@ -48854,7 +48866,8 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
 }
 
 
-/** @summary Draw TH2 histograms in surf mode */
+/** @summary Draw TH2 histograms in surf mode
+  * @private */
 function drawBinsSurf3D(painter, is_v7 = false) {
    let histo = painter.getHisto(),
        main = painter.getFramePainter(),
@@ -49275,7 +49288,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 /// Special mathematical functions
 
 /**
- * A math namespace - all functions can be exported from math/base.mjs.
+ * A math namespace - all functions can be exported from base/math.mjs.
+ * Also all these functions can be used with TFormula calcualtions
  * @namespace Math
  */
 
@@ -49304,7 +49318,7 @@ function Polynomialeval(x, a, N) {
 /** @summary Polynomial1eval function
   * @desc calculates a value of a polynomial of the form:
   * x^N+a[0]x^(N-1) + ... + a[N-1]
-  * @private */
+  * @memberof Math */
 function Polynomial1eval(x, a, N) {
    if (N==0) return a[0];
 
@@ -49315,7 +49329,7 @@ function Polynomial1eval(x, a, N) {
 }
 
 /** @summary lgam function, logarithm from gamma
-  * @private */
+  * @memberof Math */
 function lgam(x) {
    let p, q, u, w, z;
    const kMAXLGM = 2.556348e305,
@@ -49407,7 +49421,7 @@ function lgam(x) {
 }
 
 /** @summary Stirling formula for the gamma function
-  * @private */
+  * @memberof Math */
 function stirf(x) {
    let y, w, v;
 
@@ -49438,10 +49452,8 @@ function stirf(x) {
    return y;
 }
 
-let erf;
-
 /** @summary complementary error function
-  * @private */
+  * @memberof Math */
 function erfc(a) {
    const erfP = [
       2.46196981473530512524E-10,
@@ -49514,8 +49526,8 @@ function erfc(a) {
 }
 
 /** @summary error function
-  * @private */
-erf = function(x) {
+  * @memberof Math */
+function erf(x) {
    if(Math.abs(x) > 1.0)
       return 1.0 - erfc(x);
 
@@ -49536,9 +49548,10 @@ erf = function(x) {
    let z = x * x;
 
    return x * Polynomialeval(z, erfT, 4) / Polynomial1eval(z, erfU, 5);
-};
+}
 
-/** @summary lognormal_cdf_c function */
+/** @summary lognormal_cdf_c function
+  * @memberof Math */
 function lognormal_cdf_c(x, m, s, x0) {
    if (x0 === undefined) x0 = 0;
    let z = (Math.log((x-x0))-m)/(s*kSqrt2);
@@ -49546,21 +49559,24 @@ function lognormal_cdf_c(x, m, s, x0) {
    else         return 0.5*(1.0 - erf(z));
 }
 
-/** @summary lognormal_cdf_c function */
+/** @summary lognormal_cdf_c function
+  * @memberof Math */
 function lognormal_cdf(x, m, s, x0 = 0) {
    let z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z < -1.) return 0.5*erfc(-z);
    else         return 0.5*(1.0 + erf(z));
 }
 
-/** @summary normal_cdf_c function */
+/** @summary normal_cdf_c function
+  * @memberof Math */
 function normal_cdf_c(x, sigma, x0 = 0) {
    let z = (x-x0)/(sigma*kSqrt2);
    if (z > 1.)  return 0.5*erfc(z);
    else         return 0.5*(1.-erf(z));
 }
 
-/** @summary normal_cdf function */
+/** @summary normal_cdf function
+  * @memberof Math */
 function normal_cdf(x, sigma, x0 = 0) {
    let z = (x-x0)/(sigma*kSqrt2);
    if (z < -1.) return erfc(-z);
@@ -49568,7 +49584,7 @@ function normal_cdf(x, sigma, x0 = 0) {
 }
 
 /** @summary log normal pdf
-  * @private */
+  * @memberof Math */
 function lognormal_pdf(x, m, s, x0 = 0) {
    if ((x-x0) <= 0)
       return 0.0;
@@ -49577,14 +49593,14 @@ function lognormal_pdf(x, m, s, x0 = 0) {
 }
 
 /** @summary normal pdf
-  * @private */
+  * @memberof Math */
 function normal_pdf(x, sigma = 1, x0 = 0) {
    let  tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
 /** @summary gamma calculation
-  * @private */
+  * @memberof Math */
 function gamma(x) {
    let p, q, z, i, sgngam = 1;
 
@@ -49687,9 +49703,8 @@ function gamma(x) {
    return z * p / q;
 }
 
-
 /** @summary ndtri function
-  * @private */
+  * @memberof Math */
 function ndtri(y0) {
    if ( y0 <= 0.0 )
       return Number.NEGATIVE_INFINITY;
@@ -49778,21 +49793,19 @@ function ndtri(y0) {
 }
 
 /** @summary normal_quantile function
-  * @private */
+  * @memberof Math */
 function normal_quantile(z, sigma) {
    return  sigma * ndtri(z);
 }
 
 /** @summary normal_quantile_c function
-  * @private */
+  * @memberof Math */
 function normal_quantile_c(z, sigma) {
    return - sigma * ndtri(z);
 }
 
-let igam;
-
 /** @summary igamc function
-  * @private */
+  * @memberof Math */
 function igamc(a,x) {
    // LM: for negative values returns 0.0
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -49852,8 +49865,8 @@ function igamc(a,x) {
 }
 
 /** @summary igam function
-  * @private */
-igam = function(a, x) {
+  * @memberof Math */
+function igam(a, x) {
 
    // LM: for negative values returns 1.0 instead of zero
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -49881,11 +49894,11 @@ igam = function(a, x) {
    } while( c/ans > kMACHEP );
 
    return ans * ax/a;
-};
+}
 
 
 /** @summary igami function
-  * @private */
+  * @memberof Math */
 function igami(a, y0) {
    // check the domain
    if (a <= 0) {
@@ -49996,7 +50009,7 @@ function igami(a, y0) {
 /** @summary landau_pdf function
   * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
   *  same algorithm is used in GSL
-  * @private */
+  * @memberof Math */
 function landau_pdf(x, xi, x0) {
    if (x0===undefined) x0 = 0;
    if (xi <= 0) return 0;
@@ -50054,7 +50067,7 @@ function landau_pdf(x, xi, x0) {
 }
 
 /** @summary Landau function
-  * @private */
+  * @memberof Math */
 function Landau(x, mpv, sigma, norm) {
    if (sigma <= 0) return 0;
    const den = landau_pdf((x - mpv) / sigma, 1, 0);
@@ -50063,25 +50076,25 @@ function Landau(x, mpv, sigma, norm) {
 }
 
 /** @summary inc_gamma_c
-  * @private */
+  * @memberof Math */
 function inc_gamma_c(a,x) {
    return igamc(a,x);
 }
 
 /** @summary inc_gamma
-  * @private */
+  * @memberof Math */
 function inc_gamma(a,x) {
    return igam(a,x);
 }
 
 /** @summary lgamma
-  * @private */
+  * @memberof Math */
 function lgamma(z) {
    return lgam(z);
 }
 
 /** @summary Probability density function of the beta distribution.
-  * @private */
+  * @memberof Math */
 function beta_pdf(x, a, b) {
   if (x < 0 || x > 1.0) return 0;
   if (x == 0 ) {
@@ -50098,22 +50111,21 @@ function beta_pdf(x, a, b) {
                     Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.));
 }
 
-
 /** @summary beta
-  * @private */
+  * @memberof Math */
 function beta(x,y) {
    return Math.exp(lgamma(x)+lgamma(y)-lgamma(x+y));
 }
 
 /** @summary chisquared_cdf_c
-  * @private */
+  * @memberof Math */
 function chisquared_cdf_c(x,r,x0) {
    if (x0===undefined) x0 = 0;
    return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
 }
 
 /** @summary Continued fraction expansion #1 for incomplete beta integral
-  * @private */
+  * @memberof Math */
 function incbcf(a,b,x) {
    let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
        k1, k2, k3, k4, k5, k6, k7, k8,
@@ -50199,7 +50211,7 @@ function incbcf(a,b,x) {
 }
 
 /** @summary Continued fraction expansion #2 for incomplete beta integral
-  * @private */
+  * @memberof Math */
 function incbd(a,b,x) {
    let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
        k1, k2, k3, k4, k5, k6, k7, k8,
@@ -50284,7 +50296,7 @@ function incbd(a,b,x) {
 }
 
 /** @summary ROOT::Math::Cephes::pseries
-  * @private */
+  * @memberof Math */
 function pseries(a,b,x) {
    let s, t, u, v, n, t1, z, ai;
 
@@ -50325,7 +50337,7 @@ function pseries(a,b,x) {
 }
 
 /** @summary ROOT::Math::Cephes::incbet
-  * @private */
+  * @memberof Math */
 function incbet(aa,bb,xx) {
    let a, b, t, x, xc, w, y, flag;
 
@@ -50416,8 +50428,8 @@ function incbet(aa,bb,xx) {
    return  t;
 }
 
-/** @summary ROOT::Math::Cephes::incbi
-  * @private */
+/** @summary copy of ROOT::Math::Cephes::incbi
+  * @memberof Math */
 function incbi(aa,bb,yy0) {
    let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt;
    let i, rflg, dir, nflg, ihalve = true;
@@ -50693,7 +50705,7 @@ function incbi(aa,bb,yy0) {
 }
 
 /** @summary Calculates the normalized (regularized) incomplete beta function.
-  * @private */
+  * @memberof Math */
 function inc_beta(x,a,b) {
    return incbet(a,b,x);
 }
@@ -50701,74 +50713,74 @@ function inc_beta(x,a,b) {
 const BetaIncomplete = inc_beta;
 
 /** @summary ROOT::Math::beta_quantile
-  * @private */
+  * @memberof Math */
 function beta_quantile(z,a,b) {
    return incbi(a,b,z);
 }
 
 /** @summary Complement of the cumulative distribution function of the beta distribution.
-  * @private */
+  * @memberof Math */
 function beta_cdf_c(x,a,b) {
    return inc_beta(1-x, b, a);
 }
 
 /** @summary chisquared_cdf
-  * @private */
+  * @memberof Math */
 function chisquared_cdf(x,r,x0=0) {
    return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
 }
 
 /** @summary gamma_quantile_c function
-  * @private */
+  * @memberof Math */
 function gamma_quantile_c(z, alpha, theta) {
    return theta * igami( alpha, z);
 }
 
 /** @summary gamma_quantile function
-  * @private */
+  * @memberof Math */
 function gamma_quantile(z, alpha, theta) {
    return theta * igami( alpha, 1.- z);
 }
 
 /** @summary breitwigner_cdf_c function
-  * @private */
+  * @memberof Math */
 function breitwigner_cdf_c(x,gamma, x0 = 0) {
    return 0.5 - Math.atan(2.0 * (x-x0) / gamma) / M_PI;
 }
 
 /** @summary breitwigner_cdf function
-  * @private */
+  * @memberof Math */
 function breitwigner_cdf(x, gamma, x0 = 0) {
    return 0.5 + Math.atan(2.0 * (x-x0) / gamma) / M_PI;
 }
 
 /** @summary cauchy_cdf_c function
-  * @private */
+  * @memberof Math */
 function cauchy_cdf_c(x, b, x0 = 0) {
    return 0.5 - Math.atan( (x-x0) / b) / M_PI;
 }
 
 /** @summary cauchy_cdf function
-  * @private */
+  * @memberof Math */
 function cauchy_cdf(x, b, x0 = 0) {
    return 0.5 + Math.atan( (x-x0) / b) / M_PI;
 }
 
 /** @summary cauchy_pdf function
-  * @private */
+  * @memberof Math */
 function cauchy_pdf(x, b = 1, x0 = 0) {
    return b/(M_PI * ((x-x0)*(x-x0) + b*b));
 }
 
 /** @summary gaussian_pdf function
-  * @private */
+  * @memberof Math */
 function gaussian_pdf(x, sigma = 1, x0 = 0) {
    let tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
 /** @summary gamma_pdf function
-  * @private */
+  * @memberof Math */
 function gamma_pdf(x, alpha, theta, x0 = 0) {
    if ((x - x0) < 0) {
       return 0.0;
@@ -50781,7 +50793,7 @@ function gamma_pdf(x, alpha, theta, x0 = 0) {
 }
 
 /** @summary tdistribution_cdf_c function
-  * @private */
+  * @memberof Math */
 function tdistribution_cdf_c(x, r, x0 = 0) {
    let p    = x - x0,
        sign = (p > 0) ? 1. : -1;
@@ -50789,7 +50801,7 @@ function tdistribution_cdf_c(x, r, x0 = 0) {
 }
 
 /** @summary tdistribution_cdf function
-  * @private */
+  * @memberof Math */
 function tdistribution_cdf(x, r, x0 = 0) {
    let p    = x - x0,
        sign = (p > 0) ? 1. : -1;
@@ -50797,26 +50809,26 @@ function tdistribution_cdf(x, r, x0 = 0) {
 }
 
 /** @summary tdistribution_pdf function
-  * @private */
+  * @memberof Math */
 function tdistribution_pdf(x, r, x0 = 0) {
    return (Math.exp (lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt (M_PI * r))
           * Math.pow ((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
 }
 
 /** @summary exponential_cdf_c function
-  * @private */
+  * @memberof Math */
 function exponential_cdf_c(x, lambda, x0 = 0) {
    return ((x-x0) < 0) ? 1.0 : Math.exp(-lambda * (x-x0));
 }
 
 /** @summary exponential_cdf function
-  * @private */
+  * @memberof Math */
 function exponential_cdf(x, lambda, x0 = 0) {
    return ((x-x0) < 0) ? 0.0 : -Math.expm1(-lambda * (x-x0));
 }
 
 /** @summary chisquared_pdf
-  * @private */
+  * @memberof Math */
 function chisquared_pdf(x,r,x0) {
    if (x0===undefined) x0 = 0;
    if ((x-x0) < 0) return 0.0;
@@ -50828,7 +50840,7 @@ function chisquared_pdf(x,r,x0) {
 }
 
 /** @summary Probability density function of the F-distribution.
-  * @private */
+  * @memberof Math */
 function fdistribution_pdf(x, n, m, x0 = 0) {
    if (n < 0 || m < 0)
       return Number.NaN;
@@ -50839,10 +50851,8 @@ function fdistribution_pdf(x, n, m, x0 = 0) {
                  + (n/2 -1) * Math.log(x-x0) - ((n+m)/2) * Math.log(m +  n*(x-x0)) );
 }
 
-let fdistribution_cdf;
-
 /** @summary fdistribution_cdf_c function
-  * @private */
+  * @memberof Math */
 function fdistribution_cdf_c(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
@@ -50855,8 +50865,8 @@ function fdistribution_cdf_c(x, n, m, x0 = 0) {
 }
 
 /** @summary fdistribution_cdf function
-  * @private */
-fdistribution_cdf = function(x, n, m, x0 = 0) {
+  * @memberof Math */
+function fdistribution_cdf(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
    let z = n * (x - x0) / (m + n * (x - x0));
@@ -50865,9 +50875,10 @@ fdistribution_cdf = function(x, n, m, x0 = 0) {
       return 1. - fdistribution_cdf_c(x, n, m, x0);
 
    return inc_beta(z, .5 * n, .5 * m);
-};
+}
 
-/** @summary Prob function */
+/** @summary Prob function
+  * @memberof Math */
 function Prob(chi2, ndf) {
    if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
 
@@ -50880,44 +50891,44 @@ function Prob(chi2, ndf) {
 }
 
 /** @summary Gaus function
-  * @private */
+  * @memberof Math */
 function Gaus(x, mean, sigma) {
    return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
 }
 
 /** @summary BreitWigner function
-  * @private */
+  * @memberof Math */
 function BreitWigner(x, mean, gamma) {
    return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
 }
 
 /** @summary Calculates Beta-function Gamma(p)*Gamma(q)/Gamma(p+q).
-  * @private */
+  * @memberof Math */
 function Beta(x,y) {
    return Math.exp(lgamma(x) + lgamma(y) - lgamma(x+y));
 }
 
 /** @summary GammaDist function
-  * @private */
+  * @memberof Math */
 function GammaDist(x, gamma, mu = 0, beta = 1) {
    if ((x < mu) || (gamma <= 0) || (beta <= 0)) return 0;
    return gamma_pdf(x, gamma, beta, mu);
 }
 
 /** @summary probability density function of Laplace distribution
-  * @private */
+  * @memberof Math */
 function LaplaceDist(x, alpha = 0, beta = 1) {
    return Math.exp(-Math.abs((x-alpha)/beta)) / (2.*beta);
 }
 
 /** @summary distribution function of Laplace distribution
-  * @private */
+  * @memberof Math */
 function LaplaceDistI(x, alpha = 0, beta = 1) {
    return (x <= alpha) ? 0.5*Math.exp(-Math.abs((x-alpha)/beta)) : 1 - 0.5*Math.exp(-Math.abs((x-alpha)/beta));
 }
 
 /** @summary density function for Student's t- distribution
-  * @private */
+  * @memberof Math */
 function Student(T, ndf) {
    if (ndf < 1) return 0;
 
@@ -50929,7 +50940,7 @@ function Student(T, ndf) {
 }
 
 /** @summary cumulative distribution function of Student's
-  * @private */
+  * @memberof Math */
 function StudentI(T, ndf) {
    let r = ndf;
 
@@ -50938,14 +50949,14 @@ function StudentI(T, ndf) {
 }
 
 /** @summary LogNormal function
-  * @private */
+  * @memberof Math */
 function LogNormal(x, sigma, theta = 0, m = 1) {
    if ((x < theta) || (sigma <= 0) || (m <= 0)) return 0;
    return lognormal_pdf(x, Math.log(m), sigma, theta);
 }
 
 /** @summary Computes the probability density function of the Beta distribution
-  * @private */
+  * @memberof Math */
 function BetaDist(x, p, q) {
    if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
      return 0;
@@ -50954,44 +50965,51 @@ function BetaDist(x, p, q) {
 }
 
 /** @summary Computes the distribution function of the Beta distribution.
-  * @private */
+  * @memberof Math */
 function BetaDistI(x, p, q) {
    if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
    return BetaIncomplete(x, p, q);
 }
 
-/** @summary gaus function for TFormula */
+/** @summary gaus function for TFormula
+  * @memberof Math */
 function gaus(f, x, i) {
    return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2));
 }
 
-/** @summary gausn function for TFormula */
+/** @summary gausn function for TFormula
+  * @memberof Math */
 function gausn(f, x, i) {
    return gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
 }
 
-/** @summary gausxy function for TFormula */
+/** @summary gausxy function for TFormula
+  * @memberof Math */
 function gausxy(f, x, y, i) {
    return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2))
                              * Math.exp(-0.5 * Math.pow((y-f.GetParValue(i+3)) / f.GetParValue(i+4), 2));
 }
 
-/** @summary expo function for TFormula */
+/** @summary expo function for TFormula
+  * @memberof Math */
 function expo(f, x, i) {
    return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
 }
 
-/** @summary landau function for TFormula */
+/** @summary landau function for TFormula
+  * @memberof Math */
 function landau(f, x, i) {
    return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
 }
 
-/** @summary landaun function for TFormula */
+/** @summary landaun function for TFormula
+  * @memberof Math */
 function landaun(f, x, i) {
    return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
 }
 
-/** @summary Crystal ball function */
+/** @summary Crystal ball function
+  * @memberof Math */
 function crystalball_function(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.)     return 0.;
    let z = (x - mean)/sigma;
@@ -51006,7 +51024,8 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
   return AA * Math.pow(arg,n);
 }
 
-/** @summary pdf definition of the crystal_ball which is defined only for n > 1 otherwise integral is diverging */
+/** @summary pdf definition of the crystal_ball which is defined only for n > 1 otherwise integral is diverging
+  * @memberof Math */
 function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.) return 0.;
    if (n <= 1) return Number.NaN;  // pdf is not normalized for n <=1
@@ -51017,7 +51036,8 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
    return N * crystalball_function(x,alpha,n,sigma,mean);
 }
 
-/** @summary compute the integral of the crystal ball function */
+/** @summary compute the integral of the crystal ball function
+  * @memberof Math */
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    if (sigma == 0) return 0;
    if (alpha==0) return 0.;
@@ -51054,6 +51074,8 @@ function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    return sigma * (intgaus + intpow);
 }
 
+/** @summary crystalball_cdf function
+  * @memberof Math */
 function crystalball_cdf(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
@@ -51067,6 +51089,8 @@ function crystalball_cdf(x, alpha, n, sigma, mean = 0) {
    return (alpha > 0) ? 1. - integral/totIntegral : integral/totIntegral;
 }
 
+/** @summary crystalball_cdf_c function
+  * @memberof Math */
 function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
@@ -51080,7 +51104,8 @@ function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
    return (alpha > 0) ? integral/totIntegral : 1. - (integral/totIntegral);
 }
 
-
+/** @summary ChebyshevN function
+  * @memberof Math */
 function ChebyshevN(n, x, c) {
    let d1 = 0.0, d2 = 0.0, y2 = 2.0 * x;
 
@@ -51093,48 +51118,70 @@ function ChebyshevN(n, x, c) {
    return x * d1 - d2 + c[0];
 }
 
+/** @summary Chebyshev1 function
+  * @memberof Math */
 function Chebyshev1(x, c0, c1) {
    return c0 + c1*x;
 }
 
+/** @summary Chebyshev2 function
+  * @memberof Math */
 function Chebyshev2(x, c0, c1, c2) {
    return c0 + c1*x + c2*(2.0*x*x - 1.0);
 }
 
+/** @summary Chebyshev3 function
+  * @memberof Math */
 function Chebyshev3(x, ...args) {
    return ChebyshevN(3, x, args);
 }
 
+/** @summary Chebyshev4 function
+  * @memberof Math */
 function Chebyshev4(x, ...args) {
    return ChebyshevN(4, x, args);
 }
 
+/** @summary Chebyshev5 function
+  * @memberof Math */
 function Chebyshev5(x, ...args) {
    return ChebyshevN(5, x, args);
 }
 
+/** @summary Chebyshev6 function
+  * @memberof Math */
 function Chebyshev6(x, ...args) {
    return ChebyshevN(6, x, args);
 }
 
+/** @summary Chebyshev7 function
+  * @memberof Math */
 function Chebyshev7(x, ...args) {
    return ChebyshevN(7, x, args);
 }
 
+/** @summary Chebyshev8 function
+  * @memberof Math */
 function Chebyshev8(x, ...args) {
    return ChebyshevN(8, x, args);
 }
 
+/** @summary Chebyshev9 function
+  * @memberof Math */
 function Chebyshev9(x, ...args) {
    return ChebyshevN(9, x, args);
 }
 
+/** @summary Chebyshev10 function
+  * @memberof Math */
 function Chebyshev10(x, ...args) {
    return ChebyshevN(10, x, args);
 }
 
 // =========================================================================
 
+/** @summary Caluclate ClopperPearson
+  * @memberof Math */
 function eff_ClopperPearson(total,passed,level,bUpper) {
    let alpha = (1.0 - level) / 2;
    if(bUpper)
@@ -51144,7 +51191,7 @@ function eff_ClopperPearson(total,passed,level,bUpper) {
 }
 
 /** @summary Caluclate normal
-  * @private */
+  * @memberof Math */
 function eff_Normal(total,passed,level,bUpper) {
    if (total == 0) return bUpper ? 1 : 0;
 
@@ -51160,7 +51207,7 @@ function eff_Normal(total,passed,level,bUpper) {
 }
 
 /** @summary Calculates the boundaries for the frequentist Wilson interval
-  * @private */
+  * @memberof Math */
 function eff_Wilson(total,passed,level,bUpper) {
    let alpha = (1.0 - level)/2;
    if (total == 0) return bUpper ? 1 : 0;
@@ -51176,7 +51223,7 @@ function eff_Wilson(total,passed,level,bUpper) {
 }
 
 /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
-  * @private */
+  * @memberof Math */
 function eff_AgrestiCoull(total,passed,level,bUpper) {
    let alpha = (1.0 - level)/2,
        kappa = normal_quantile(1 - alpha,1),
@@ -51190,7 +51237,7 @@ function eff_AgrestiCoull(total,passed,level,bUpper) {
 }
 
 /** @summary Calculates the boundaries using the  mid-P binomial
-  * @private */
+  * @memberof Math */
 function eff_MidPInterval(total,passed,level,bUpper) {
    const alpha = 1. - level, alpha_min = alpha/2 , tol = 1e-9; // tolerance
    let pmin = 0, pmax = 1, p = 0;
@@ -51224,7 +51271,7 @@ function eff_MidPInterval(total,passed,level,bUpper) {
 }
 
 /** @summary for a central confidence interval for a Beta distribution
-  * @private */
+  * @memberof Math */
 function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
    let  a = passed + alpha,
         b = total - passed + beta;
@@ -51242,7 +51289,7 @@ function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
 }
 
 /** @summary Return function to calculate boundary of TEfficiency
-  * @private */
+  * @memberof Math */
 function getTEfficiencyBoundaryFunc(option, isbayessian) {
    const  kFCP = 0,       ///< Clopper-Pearson interval (recommended by PDG)
           kFNormal = 1,   ///< Normal approximation
@@ -51288,11 +51335,11 @@ lognormal_cdf_c: lognormal_cdf_c,
 lognormal_cdf: lognormal_cdf,
 igami: igami,
 igamc: igamc,
-get igam () { return igam; },
+igam: igam,
 lgam: lgam,
 lgamma: lgamma,
 erfc: erfc,
-get erf () { return erf; },
+erf: erf,
 beta_pdf: beta_pdf,
 inc_beta: inc_beta,
 BetaIncomplete: BetaIncomplete,
@@ -51309,8 +51356,8 @@ beta_cdf_c: beta_cdf_c,
 Landau: Landau,
 fdistribution_pdf: fdistribution_pdf,
 FDist: fdistribution_pdf,
-get fdistribution_cdf () { return fdistribution_cdf; },
-get FDistI () { return fdistribution_cdf; },
+fdistribution_cdf: fdistribution_cdf,
+FDistI: fdistribution_cdf,
 fdistribution_cdf_c: fdistribution_cdf_c,
 normal_cdf_c: normal_cdf_c,
 gaussian_cdf_c: normal_cdf_c,
@@ -51704,7 +51751,8 @@ function addMoveHandler(painter, enabled) {
 }
 
 /** @summary Inject style
-  * @param {String} code - css string */
+  * @param {String} code - css string
+  * @private */
 function injectStyle(code, node) {
    if (isBatchMode() || !code || (typeof document === 'undefined'))
       return true;
@@ -52999,7 +53047,8 @@ function setPainterTooltipEnabled(painter, on) {
       painter.control.setTooltipEnabled(on);
 }
 
-/** @summary Add drag for interactive rectangular elements for painter */
+/** @summary Add drag for interactive rectangular elements for painter
+  * @private */
 function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 
@@ -54406,6 +54455,7 @@ const FrameInteractive = {
 
 /**
  * @summary Painter class for TFrame, main handler for interactivity
+ * @private
  */
 
 class TFramePainter extends ObjectPainter {
@@ -57557,6 +57607,7 @@ const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kSt
 
 /**
   * @summary Painter for TPad object
+  * @private
   */
 
 class TPadPainter extends ObjectPainter {
@@ -59436,7 +59487,8 @@ PadButtonsHandler: PadButtonsHandler
 
 
 /** @summary direct draw of TFrame object,
-  * @desc pad or canvas should already exist */
+  * @desc pad or canvas should already exist
+  * @private */
 function directDrawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
    fp.addToPadPrimitives();
@@ -60159,7 +60211,8 @@ function drawTPadSnapshot(dom, snap /*, opt*/) {
    });
 }
 
-/** @summary draw TGaxis object */
+/** @summary draw TGaxis object
+  * @private */
 function drawTGaxis(dom, obj, opt) {
    let painter = new TAxisPainter(dom, obj, false);
    painter.disable_zooming = true;
@@ -60169,7 +60222,8 @@ function drawTGaxis(dom, obj, opt) {
    }).then(() => painter);
 }
 
-/** @summary draw TGaxis object */
+/** @summary draw TGaxis object
+  * @private */
 function drawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
    return ensureTCanvas(fp, false).then(() => {
@@ -62156,7 +62210,6 @@ let TH1StatusBits = {
 
 /**
  * @summary Basic painter for histogram classes
- *
  * @private
  */
 
@@ -63714,7 +63767,7 @@ class THistPainter extends ObjectPainter {
 
 /**
  * @summary Painter for TH1 classes
- *
+ * @private
  */
 
 class TH1Painter$2 extends THistPainter {
@@ -64928,6 +64981,7 @@ TH1Painter: TH1Painter
 
 /**
  * @summary Painter for TH2 classes
+ * @private
  */
 
 class TH2Painter$2 extends THistPainter {
@@ -67619,7 +67673,8 @@ class TH2Painter$2 extends THistPainter {
 /// 3D TH2 drawing
 
 
-/** @summary Draw TH2Poly histogram as lego */
+/** @summary Draw TH2Poly histogram as lego
+  * @private */
 function drawTH2PolyLego(painter) {
    let histo = painter.getHisto(),
        pmain = painter.getFramePainter(),
@@ -69263,7 +69318,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
 /** @summary Custom streamers for root classes
   * @desc map of user-streamer function like func(buf,obj)
   * or alias (classname) which can be used to read that function
-  * or list of read functions */
+  * or list of read functions
+  * @private */
 const CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
@@ -69690,8 +69746,9 @@ const CustomStreamers = {
 };
 
 
- /** @summary these are streamers which do not handle version regularly
-  * @desc used for special classes like TRef or TBasket */
+/** @summary these are streamers which do not handle version regularly
+  * @desc used for special classes like TRef or TBasket
+  * @private */
 const DirectStreamers = {
    // do nothing for these classes
    TQObject() {},
@@ -72280,9 +72337,9 @@ class TFile {
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @returns {Promise} promise with object read
      * @example
-     *   let f = await openFile("https://root.cern/js/files/hsimple.root");
-     *   let obj = await f.readObject("hpxpy;1");
-     *   console.log(`Read object of type ${obj._typename}`); */
+     * let f = await openFile("https://root.cern/js/files/hsimple.root");
+     * let obj = await f.readObject("hpxpy;1");
+     * console.log(`Read object of type ${obj._typename}`); */
    readObject(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
@@ -72902,6 +72959,8 @@ class TNodejsFile extends TFile {
   * @param {string|object} arg - argument for file open like url, see details
   * @returns {object} - Promise with {@link TFile} instance when file is opened
   * @example
+  *
+  * import { openFile } from '/path_to_jsroot/modules/io.mjs';
   * let f = await openFile("https://root.cern/js/files/hsimple.root");
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {
@@ -78336,7 +78395,8 @@ class Geometry {
 
 } // class Geometry
 
-   /** @summary create geometry to make cut on specified axis */
+/** @summary create geometry to make cut on specified axis
+  * @private */
 function createNormal(axis_name, pos, size) {
    if (!size || (size < 10000)) size = 10000;
 
@@ -86945,7 +87005,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @returns {object} Object3D with created model
   * @example
-  * import { build } from './path_to_jsroot/modules/geom.mjs';
+  * import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
   * let obj3d = build(obj);
   * // this is three.js object and can be now inserted in the scene
   */
@@ -87383,6 +87443,7 @@ TGraphTimePainter: TGraphTimePainter
 
 /**
  * @summary Painter for TGraph2D classes
+ * @private
  */
 
 class TGraph2DPainter extends ObjectPainter {
@@ -92122,7 +92183,8 @@ class TSelector {
 /** @summary Checks array kind
   * @desc return 0 when not array
   * 1 - when arbitrary array
-  * 2 - when plain (1-dim) array with same-type content */
+  * 2 - when plain (1-dim) array with same-type content
+  * @private */
 function checkArrayPrototype(arr, check_content) {
    if (typeof arr !== 'object') return 0;
 
@@ -92302,7 +92364,8 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
 
 /** @summary Get branch with specified id
   * @desc All sub-branches checked as well
-  * @returns {Object} branch */
+  * @returns {Object} branch
+  * @private */
 function getTreeBranch(tree, id) {
    if (!Number.isInteger(id)) return;
    let res, seq = 0;
@@ -92384,7 +92447,8 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
 /** @summary Search branch with specified name
   * @param {string} name - name of the branch
-  * @returns {Object} found branch */
+  * @returns {Object} found branch
+  * @private */
 function findBranch(tree, name) {
    let res = findBranchComplex(tree, name, tree.fBranches, true);
    return (!res || (res.rest.length > 0)) ? null : res.branch;
@@ -100777,8 +100841,8 @@ registerMethods("ROOT::Experimental::RPalette", {
       return arr;
    },
 
-   /** @summary extract color with ordinal value between 0 and 1 */
    getColorOrdinal(value) {
+      // extract color with ordinal value between 0 and 1
       if (!this.fColors)
          return "black";
       if ((typeof value != "number") || (value < 0))
@@ -100803,10 +100867,10 @@ registerMethods("ROOT::Experimental::RPalette", {
       return this.extractRColor(next.fColor);
    },
 
-   /** @summary set full z scale range, used in zooming */
    setFullRange(min, max) {
-       this.full_min = min;
-       this.full_max = max;
+      // set full z scale range, used in zooming
+      this.full_min = min;
+      this.full_max = max;
    },
 
    createContour(logz, nlevels, zmin, zmax, zminpositive) {
@@ -100871,7 +100935,8 @@ function drawRFont() {
    return true;
 }
 
-/** @summary draw RAxis object */
+/** @summary draw RAxis object
+  * @private */
 function drawRAxis(dom, obj, opt) {
    let painter = new RAxisPainter(dom, obj, opt);
    painter.disable_zooming = true;
@@ -100880,7 +100945,8 @@ function drawRAxis(dom, obj, opt) {
            .then(() => painter);
 }
 
-/** @summary draw RFrame object */
+/** @summary draw RFrame object
+  * @private */
 function drawRFrame(dom, obj, opt) {
    let p = new RFramePainter(dom, obj);
    if (opt == "3d") p.mode3d = true;
