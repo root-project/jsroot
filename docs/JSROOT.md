@@ -633,6 +633,15 @@ one can configure custom format for different axes:
     settings.XValuesFormat = "4.2g";
     settings.YValuesFormat = "6.1f";
 
+One also can use build bundle to load all functionality at one and access it via `JSROOT` global handle:
+
+    <script src="https://root.cern/js/latest/build/jsroot.js"></script>
+    <script>
+       // getting json string from somewhere
+       let obj = JSROOT.parse(root_json);
+       JSROOT.draw("plain", obj, "colz");
+    </script>
+
 
 ### Use of JSON
 
