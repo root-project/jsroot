@@ -1,45 +1,27 @@
 {
-   "plugins": [
-        "plugins/markdown",
-        "plugins/summarize"
-    ],
-    "recurseDepth": 10,
     "source": {
-        "include": [ "modules/core.mjs",
-                     "modules/io.mjs",
-                     "modules/draw.mjs",
-                     "modules/tree.mjs",
-                     "modules/webwindow.mjs",
-                     "modules/base/BasePainter.mjs",
-                     "modules/base/ObjectPainter.mjs",
-                     "modules/gpad/TPadPainter.mjs",
-                     "modules/gpad/TCanvasPainter.mjs",
-                     "modules/hist/TH1Painter.mjs",
-                     "modules/hist/TH2Painter.mjs",
-                     "modules/hist/TH3Painter.mjs",
-                     "modules/hist/TPavePainter.mjs",
-                     "modules/geom/geobase.mjs",
-                     "modules/geom/TGeoPainter.mjs",
-                     "modules/gui/display.mjs",
-                     "modules/gui/menu.mjs",
-                     "modules/gui/HierarchyPainter.mjs" ],
-        "includePattern": ".+\\.mjs(doc|x)?$",
-        "excludePattern": "(^|\\/|\\\\)_"
+      "include": ["modules"],
+      "includePattern": ".mjs$",
+      "excludePattern": "(node_modules|main.mjs|three.mjs|d3.mjs|dat.gui.mjs)"
     },
     "sourceType": "module",
-    "opts": {
-       "destination": "./jsdoc"
-    },
-    "tags": {
-        "allowUnknownTags": true,
-        "dictionaries": ["jsdoc","closure"]
-    },
+    "recurseDepth": 10,
+    "plugins": [
+       "plugins/markdown",
+       "plugins/summarize"
+    ],
     "templates": {
+       "cleverLinks": true,
+       "monospaceLinks": true
+    },
+    "opts": {
+       "recurse": true,
+       "destination": "./docs/jsdoc/",
         "cleverLinks": true,
         "monospaceLinks": true,
         "name": "JSROOT",
         "default": {
-           "outputSourceFiles" : true
+           "outputSourceFiles": true
         },
         "applicationName": "JavaScript ROOT",
         "disqus": "",
