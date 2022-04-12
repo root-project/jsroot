@@ -1438,6 +1438,7 @@ const FrameInteractive = {
 
 /**
  * @summary Painter class for TFrame, main handler for interactivity
+ * @private
  */
 
 class TFramePainter extends ObjectPainter {

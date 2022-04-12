@@ -8,6 +8,7 @@ const root_line_styles = [
 
 /**
   * @summary Handle for line attributes
+  * @private
   */
 
 class TAttLineHandler {

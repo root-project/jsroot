@@ -49274,6 +49274,11 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
 /// Special mathematical functions
 
+/**
+ * A math namespace - all functions can be exported from math/base.mjs.
+ * @namespace Math
+ */
+
 const kMACHEP  = 1.11022302462515654042363166809e-16,
       kMINLOG  = -708.396418532264078748994506896,
       kMAXLOG  = 709.782712893383973096206318587,
@@ -49286,7 +49291,7 @@ const kMACHEP  = 1.11022302462515654042363166809e-16,
 /** @summary Polynomialeval function
   * @desc calculates a value of a polynomial of the form:
   * a[0]x^N+a[1]x^(N-1) + ... + a[N]
-  * @private */
+  * @memberof Math */
 function Polynomialeval(x, a, N) {
    if (N==0) return a[0];
 

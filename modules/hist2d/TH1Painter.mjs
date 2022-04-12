@@ -8,7 +8,7 @@ import { THistPainter } from './THistPainter.mjs';
 
 /**
  * @summary Painter for TH1 classes
- *
+ * @private
  */
 
 class TH1Painter extends THistPainter {

@@ -731,7 +731,6 @@ let TH1StatusBits = {
 
 /**
  * @summary Basic painter for histogram classes
- *
  * @private
  */
 

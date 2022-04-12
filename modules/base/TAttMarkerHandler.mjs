@@ -15,7 +15,7 @@ const root_markers = [
 
 /**
   * @summary Handle for marker attributes
-  *
+  * @private
   */
 
 class TAttMarkerHandler {

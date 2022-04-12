@@ -2,6 +2,7 @@
 
 /**
  * A math namespace - all functions can be exported from base/math.mjs.
+ * Also all these functions can be used with TFormula calcualtions
  * @namespace Math
  */
 

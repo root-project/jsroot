@@ -16,6 +16,7 @@ import { createLineSegments, PointsCreator } from '../base/base3d.mjs';
 
 /**
  * @summary Painter for TGraph2D classes
+ * @private
  */
 
 class TGraph2DPainter extends ObjectPainter {

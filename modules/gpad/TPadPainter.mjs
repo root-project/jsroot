@@ -169,6 +169,7 @@ const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kSt
 
 /**
   * @summary Painter for TPad object
+  * @private
   */
 
 class TPadPainter extends ObjectPainter {

@@ -14,6 +14,7 @@ import { THistPainter } from './THistPainter.mjs';
 
 /**
  * @summary Painter for TH2 classes
+ * @private
  */
 
 class TH2Painter extends THistPainter {

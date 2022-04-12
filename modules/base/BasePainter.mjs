@@ -654,7 +654,8 @@ class BasePainter {
 } // class BasePainter
 
 /** @summary Load and initialize JSDOM from nodes
-  * @returns {Promise} with d3 selection for d3_body */
+  * @returns {Promise} with d3 selection for d3_body
+   * @private */
 function _loadJSDOM() {
    return import("jsdom").then(handle => {
 

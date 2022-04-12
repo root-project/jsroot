@@ -4,7 +4,6 @@ import { getColor } from './colors.mjs';
 
 /**
   * @summary Handle for fill attributes
-  *
   * @private
   */
 
