@@ -1,5 +1,6 @@
 ddemo/
 docs/jsdoc/
+docs/jsdocfull/
 .settings
 .project
 .gitattributes
