@@ -102,6 +102,9 @@ function readStyleFromURL(url) {
 
 
 /** @summary Build main GUI
+  * @desc Used in many HTML files to create JSROOT GUI elements
+  * @param {String} gui_element - id of the `<div>` element
+  * @param {String} [gui_kind] - either "online", "nobrowser", "draw"
   * @returns {Promise} when completed  */
 function buildGUI(gui_element, gui_kind) {
    let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);

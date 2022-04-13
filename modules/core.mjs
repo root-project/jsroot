@@ -83,13 +83,11 @@ function isArrayProto(proto) {
     return proto.length == 14 ? 1 : 2;
 }
 
-/** @summary Specialized JSROOT constants, used in {@link settings}
-  * @namespace
-  * @private */
+/** @desc Specialized JSROOT constants, used in {@link settings}
+  * @namespace */
 let constants = {
    /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
-     * @namespace
-     * @private */
+     * @namespace */
    Render3D: {
       /** @summary Default 3D rendering, normally WebGL, if not supported - SVG */
       Default: 0,
@@ -107,20 +105,19 @@ let constants = {
       }
    },
    /** @summary Way to embed 3D into SVG, used for {@link settings.Embed3D}
-     * @namespace
-     * @private */
+     * @namespace */
    Embed3D: {
       /** @summary Do not embed 3D drawing, use complete space */
       NoEmbed: -1,
-      /** @summary Default embeding mode, on Firefox is really ```Embed```, on all other ```Overlay``` */
+      /** @summary Default embeding mode - on Firefox and latest Chrome is real ```Embed```, on all other ```Overlay``` */
       Default: 0,
-      /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how Chrome browser can be used */
+      /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how earlier Chrome browser can be used */
       Overlay: 1,
-      /** @summary Really embed WebGL Canvas into SVG, only works with Firefox */
+      /** @summary Really embed WebGL Canvas into SVG */
       Embed: 2,
-      /** @summary Embeding, but when SVG rendering or SVG image converion is used
-        * @private */
+      /** @summary Embeding, but when SVG rendering or SVG image converion is used */
       EmbedSVG: 3,
+      /** @summary Convert string values into number  */
       fromString: function(s) {
          if (s === "embed") return this.Embed;
          if (s === "overlay") return this.Overlay;
@@ -128,8 +125,7 @@ let constants = {
       }
    },
    /** @summary How to use latex in text drawing, used for {@link settings.Latex}
-     * @namespace
-     * @private */
+     * @namespace */
    Latex: {
       /** @summary do not use Latex at all for text drawing */
       Off: 0,
@@ -141,6 +137,7 @@ let constants = {
       MathJax: 3,
       /** @summary always use MathJax for text rendering */
       AlwaysMathJax: 4,
+      /** @summary Convert string values into number */
       fromString: function(s) {
          if (!s || (typeof s !== 'string'))
             return this.Normal;
@@ -164,12 +161,12 @@ let constants = {
    }
 };
 
-/** @summary Central JSROOT settings, independent from {@link gStyle}
+/** @desc Global JSROOT settings
   * @namespace */
 let settings = {
    /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants.Render3D.Default,
-   /** @summary Render of 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
+   /** @summary 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
    Render3DBatch: constants.Render3D.Default,
    /** @summary Way to embed 3D drawing in SVG, see {@link constants.Embed3D} for possible values */
    Embed3D: constants.Embed3D.Default,

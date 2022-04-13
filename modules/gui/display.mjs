@@ -127,7 +127,7 @@ class MDIDisplay extends BasePainter {
 /**
  * @summary Custom MDI display
  *
- * @desc All HTML frames should be created before and add via {@link CustomDisplay.addFrame} calls
+ * @desc All HTML frames should be created before and add via {@link CustomDisplay#addFrame} calls
  * @private
  */
 

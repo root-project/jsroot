@@ -2680,12 +2680,11 @@ class TDirectory {
       });
    }
 
-} // TDirectory
+} // class TDirectory
 
 /**
   * @summary Interface to read objects from ROOT files
   *
-  * @hideconstructor
   * @desc Use {@link openFile} to create instance of the class
   */
 
@@ -2739,7 +2738,7 @@ class TFile {
    }
 
    /** @summary Assign BufferArray with file contentOpen file
-    * @private */
+     * @private */
    assignFileContent(bufArray) {
       this.fFileContent = new TBuffer(new DataView(bufArray));
       this.fAcceptRanges = false;
@@ -2748,8 +2747,8 @@ class TFile {
    }
 
    /** @summary Open file
-    * @returns {Promise} after file keys are read
-    * @private */
+     * @returns {Promise} after file keys are read
+     * @private */
    _open() {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
          return this.readKeys();
@@ -3300,7 +3299,7 @@ class TFile {
 
    /** @summary Read the directory content from  a root file
      * @desc If directory was already read - return previously read object
-     * Same functionality as {@link TFile.readObject}
+     * Same functionality as {@link TFile#readObject}
      * @param {string} dir_name - directory name
      * @param {number} [cycle] - directory cycle
      * @returns {Promise} - promise with read directory */
