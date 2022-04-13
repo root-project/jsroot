@@ -55,7 +55,7 @@
     "@rollup/plugin-node-resolve": "13",
     "eslint": "8",
     "jsdoc": "^3.6.10",
-    "jaguarjs-jsdoc": "^1.1.0",
+    "docdash": "^1.2.0",
     "mocha": "9",
     "rollup": "2",
     "rollup-plugin-ascii": "0.0",
@@ -65,7 +65,7 @@
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
-    "doc": "jsdoc -a public -a undefined -c docs/jsdoc.json -t node_modules/jaguarjs-jsdoc",
-    "full": "jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -t node_modules/jaguarjs-jsdoc"
+    "doc": "jsdoc -a public -a undefined -c docs/jsdoc.json",
+    "full": "jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull"
   }
 }

@@ -17,27 +17,41 @@
     "opts": {
        "recurse": true,
        "destination": "./docs/jsdoc/",
-        "cleverLinks": true,
-        "monospaceLinks": true,
-        "name": "JSROOT",
-        "default": {
-           "outputSourceFiles": true
-        },
-        "applicationName": "JavaScript ROOT",
-        "disqus": "",
-        "googleAnalytics": "",
-        "openGraph": {
+       "template": "./node_modules/docdash",
+       "cleverLinks": true,
+       "monospaceLinks": true,
+       "name": "JSROOT",
+       "default": {
+          "outputSourceFiles": true
+       },
+       "applicationName": "JavaScript ROOT",
+       "disqus": "",
+       "googleAnalytics": "",
+       "openGraph": {
+         "title": "",
+         "type": "website",
+         "image": "",
+         "site_name": "",
+         "url": ""
+       },
+       "meta": {
           "title": "",
-          "type": "website",
-          "image": "",
-          "site_name": "",
-          "url": ""
-         },
-         "meta": {
-            "title": "",
-            "description": "",
-            "keyword": ""
-          },
-         "linenums": false
+          "description": "",
+          "keyword": ""
+       },
+       "linenums": false
+    },
+    "docdash": {
+       "collapse": true,
+       "sectionOrder": [
+           "Externals",
+           "Events",
+           "Mixins",
+           "Tutorials",
+           "Interfaces",
+           "Modules",
+           "Classes",
+           "Namespaces"
+        ]
     }
 }
