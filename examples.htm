@@ -102,442 +102,442 @@
 
       <div id="viewer">
       </div>
+   </body>
 
-      <script type="module">
-         import { settings, httpRequest, decodeUrl, version, source_dir } from './modules/core.mjs';
+   <script type="module">
+      import { settings, httpRequest, decodeUrl, version, source_dir } from './modules/core.mjs';
 
-         import { cleanup } from './modules/base/ObjectPainter.mjs';
+      import { cleanup } from './modules/base/ObjectPainter.mjs';
 
-         import { registerForResize } from './modules/gui/utils.mjs';
+      import { registerForResize } from './modules/gui/utils.mjs';
 
-         import { createRootColors } from './modules/base/colors.mjs';
+      import { createRootColors } from './modules/base/colors.mjs';
 
-         import { draw } from './modules/draw.mjs';
+      import { draw } from './modules/draw.mjs';
 
-         import { openFile } from './modules/io.mjs';
+      import { openFile } from './modules/io.mjs';
 
-         import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
+      import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
 
-         let jsroot_path = "./",
-             demo_path = "demo/",
-             filepath = "../files/",
-             extra_opts = "", // extra options like webgl=no or interactive=0
-             select_key = null, // select the only key like ?select=TH2
-             no_interactive = false, // disable interactivity
-             use_zstd = true,
-             examples_main = [];
+      let jsroot_path = "./",
+          demo_path = "demo/",
+          filepath = "../files/",
+          extra_opts = "", // extra options like webgl=no or interactive=0
+          select_key = null, // select the only key like ?select=TH2
+          no_interactive = false, // disable interactivity
+          use_zstd = true,
+          examples_main = [];
 
-         if (window.location.search.indexOf("nowebgl") > 0)
-            extra_opts = "&webgl=0";
+      if (window.location.search.indexOf("nowebgl") > 0)
+         extra_opts = "&webgl=0";
 
-         if (window.location.search.indexOf("noint") > 0) {
-            no_interactive = true;
-            extra_opts += "&interactive=0";
+      if (window.location.search.indexOf("noint") > 0) {
+         no_interactive = true;
+         extra_opts += "&interactive=0";
+      }
+
+      let host = window.location.host;
+
+      if (host.indexOf("localhost") >= 0) {
+         filepath = "https://root.cern/js/files/"; // "https://jsroot.gsi.de/files/";
+         use_zstd = false;
+      } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
+         filepath = "https://root.cern/js/files/";
+         use_zstd = false;
+      }
+
+      if (window.location.protocol == "file:") {
+         jsroot_path = "../index.htm";
+         demo_path = "../demo/",
+         filepath = "https://jsroot.gsi.de/files/";
+      }
+
+      let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
+
+      async function processClick(durl, filename, itemname, opt, jsonname) {
+
+         keyid = null; // stop execution of running test loop (if any)
+
+         if (getHPainter())
+            getHPainter().cleanup();
+
+         cleanup('viewer');
+
+         if (no_interactive) {
+            settings.Tooltip = 0;
+            settings.ContextMenu = false;
+            settings.Zooming = false;
+            settings.MoveResize = false;
+            settings.DragAndDrop = false;
          }
 
-         let host = window.location.host;
-
-         if (host.indexOf("localhost") >= 0) {
-            filepath = "https://root.cern/js/files/"; // "https://jsroot.gsi.de/files/";
-            use_zstd = false;
-         } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
-            filepath = "https://root.cern/js/files/";
-            use_zstd = false;
-         }
-
-         if (window.location.protocol == "file:") {
-            jsroot_path = "../index.htm";
-            demo_path = "../demo/",
-            filepath = "https://jsroot.gsi.de/files/";
-         }
-
-         let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
-
-         async function processClick(durl, filename, itemname, opt, jsonname) {
-
-            keyid = null; // stop execution of running test loop (if any)
-
-            if (getHPainter())
-               getHPainter().cleanup();
-
-            cleanup('viewer');
-
-            if (no_interactive) {
-               settings.Tooltip = 0;
-               settings.ContextMenu = false;
-               settings.Zooming = false;
-               settings.MoveResize = false;
-               settings.DragAndDrop = false;
+         if (durl.length > 0) {
+            let viewer = document.getElementById( 'viewer_frame' );
+            if (!viewer) {
+               document.getElementById('viewer').innerHTML = "";
+               viewer = document.createElement('iframe');
+               viewer.id = "viewer_frame";
+               document.getElementById('viewer').appendChild(viewer);
             }
+            viewer.src = jsroot_path + durl + (opt.length > 0 ? ("&opt=" + opt) : "") + extra_opts;
+            viewer.focus();
+          } else {
 
-            if (durl.length > 0) {
-               let viewer = document.getElementById( 'viewer_frame' );
-               if (!viewer) {
-                  document.getElementById('viewer').innerHTML = "";
-                  viewer = document.createElement('iframe');
-                  viewer.id = "viewer_frame";
-                  document.getElementById('viewer').appendChild(viewer);
-               }
-               viewer.src = jsroot_path + durl + (opt.length > 0 ? ("&opt=" + opt) : "") + extra_opts;
-               viewer.focus();
+             document.getElementById('viewer').innerHTML = "";
+             document.getElementById('viewer').style['background-color'] = "";
+
+             if (jsonname) {
+                httpRequest(jsonname, 'object')
+                      .then(obj => draw("viewer", obj, opt));
              } else {
-
-                document.getElementById('viewer').innerHTML = "";
-                document.getElementById('viewer').style['background-color'] = "";
-
-                if (jsonname) {
-                   httpRequest(jsonname, 'object')
-                         .then(obj => draw("viewer", obj, opt));
-                } else {
-                   openFile(filename)
-                         .then(file => file.readObject(itemname))
-                         .then(obj => draw("viewer", obj, opt));
-                }
+                openFile(filename)
+                      .then(file => file.readObject(itemname))
+                      .then(obj => draw("viewer", obj, opt));
              }
-         };
+          }
+      };
 
-         function setPageTitle(title) {
-            let arr = document.getElementsByTagName("meta");
-            for (let k=0;k<arr.length;++k) {
-               let elem = arr[k];
-               if (elem.getAttribute("property") == "og:title")
-                 elem.setAttribute("content", title);
-            }
+      function setPageTitle(title) {
+         let arr = document.getElementsByTagName("meta");
+         for (let k=0;k<arr.length;++k) {
+            let elem = arr[k];
+            if (elem.getAttribute("property") == "og:title")
+              elem.setAttribute("content", title);
+         }
+      }
+
+      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
+          elem.addEventListener( 'click', function (event) {
+             event.preventDefault();
+
+             if (event.ctrlKey)
+                return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
+
+             window.location.hash = shortname;
+             if (elem.title) setPageTitle(elem.title);
+             processClick(durl, filename, itemname, opt, jsonname);
+         });
+      };
+
+      async function runBigTest(interval, doinit) {
+         if (doinit) {
+            let running = (keyid != null); // indication that test running - no need to relaunch events
+            keyid = select_key || 'TH1'; optid = -1;
+            testfile = testobj = null;
+            let ii = decodeUrl().get("interval");
+            if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
+                                                 else testinterval = interval;
+            if (running) return;
+            return runBigTest(0);
          }
 
-         function setListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
-             elem.addEventListener( 'click', function (event) {
-                event.preventDefault();
+         function TestContinue() { runBigTest(); }
+         function TestFailure(err) { throw err; }
 
-                if (event.ctrlKey)
-                   return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
+         if (!keyid) return; // this is indication of test break
 
-                window.location.hash = shortname;
-                if (elem.title) setPageTitle(elem.title);
-                processClick(durl, filename, itemname, opt, jsonname);
-            });
-         };
+         if (!Number.isInteger(interval))
+            interval = testinterval;
+         if (interval > 0)
+            return setTimeout(() => runBigTest(0), interval);
 
-         async function runBigTest(interval, doinit) {
-            if (doinit) {
-               let running = (keyid != null); // indication that test running - no need to relaunch events
-               keyid = select_key || 'TH1'; optid = -1;
-               testfile = testobj = null;
-               let ii = decodeUrl().get("interval");
-               if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
-                                                    else testinterval = interval;
-               if (running) return;
-               return runBigTest(0);
-            }
-
-            function TestContinue() { runBigTest(); }
-            function TestFailure(err) { throw err; }
-
-            if (!keyid) return; // this is indication of test break
-
-            if (!Number.isInteger(interval))
-               interval = testinterval;
-            if (interval > 0)
-               return setTimeout(() => runBigTest(0), interval);
-
-            if (++optid >= examples_main[keyid].length) {
-               let found = false, next = null;
-               if (!select_key)
-                  for (let key in examples_main) {
-                     if (found) { next = key; break; }
-                     if (key == keyid) found = true;
-                  }
-               keyid = next;
-               if (!next) return; // stop condition
-               optid = -1; testfile = testobj = null;
-               // console.log("Switch key ", keyid);
-               return runBigTest(0);
-            }
-
-            let entry = examples_main[keyid][optid];
-
-            // exclude some entries from the test
-            if (entry.notest) return runBigTest(0);
-            if (!use_zstd && entry.zstd) return runBigTest(0);
-
-            let filename = "", itemname = "", jsonname = "", url = "", opt = "";
-
-            if (entry.file) {
-                filename = entry.file;
-                if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
-            }
-            if (entry.item) itemname = entry.item;
-            if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
-            if (entry.json) {
-               jsonname = entry.json;
-               if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
-            }
-
-            if (entry.url) {
-               url = entry.url.replace(/\$\$\$/g, filepath);
-            } else if (entry.items) {
-               url = "?nobrowser&file=" + filename;
-               if (entry.layout) url += "&layout=" + entry.layout;
-               url += "&items=[" + entry.items.join(",") + "]";
-               if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
-               if (entry.mathjax) url += "&mathjax";
-               if (entry.latex) url += "&latex=" + entry.latex;
-               if (entry.style) url += "&style=" + entry.style;
-            } else if (entry.asurl) {
-               url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
-               url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
-               url += itemname + "&opt=" + opt;
-               if (entry.mathjax) url += "&mathjax";
-               if (entry.latex) url += "&latex=" + entry.latex;
-               if (entry.style) url += "&style=" + entry.style;
-            }
-
-            // console.log('KEY ', keyid, 'opt', opt);
-            // if ((url.length==0) || (keyid != 'Misc')) return runBigTest(0);
-
-            if (hpainter) { hpainter.cleanup(); hpainter = null; }
-            cleanup('viewer');
-
-            createRootColors(); // ensure default colors
-
-            if (url.length > 0) {
-               if (no_interactive) url += "&interactive=0";
-
-               testfile = testobj = null;
-               // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
-
-               let d = decodeUrl(url),
-                   layout = d.get("layout", "simple"),
-                   nobrowser = d.has("nobrowser");
-
-               if (nobrowser) {
-                  document.getElementById('viewer').innerHTML = "";
-                  hpainter = new HierarchyPainter('root', null);
-                  hpainter.setDisplay(layout, "viewer");
-               } else {
-                  document.getElementById('viewer').innerHTML =
-                      "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>" +
-                      '<div id="browser"></div></div>' +
-                      '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
-
-                  hpainter = new HierarchyPainter('root', 'browser');
-                  hpainter.setDisplay(layout,"right-div");
+         if (++optid >= examples_main[keyid].length) {
+            let found = false, next = null;
+            if (!select_key)
+               for (let key in examples_main) {
+                  if (found) { next = key; break; }
+                  if (key == keyid) found = true;
                }
+            keyid = next;
+            if (!next) return; // stop condition
+            optid = -1; testfile = testobj = null;
+            // console.log("Switch key ", keyid);
+            return runBigTest(0);
+         }
 
-               hpainter.startGUI(null, url).then(TestContinue, TestFailure);
-            } else if (jsonname.length > 0) {
-               testfile = testobj = null;
-               httpRequest(jsonname, 'object').then(obj => {
-                  testobj = obj;
-                  return draw("viewer", obj, opt).then(TestContinue, TestFailure);
-               });
-            } else if (filename.length > 0) {
-                openFile(filename)
-                      .then(file => { testfile = file; return testfile.readObject(itemname); })
+         let entry = examples_main[keyid][optid];
+
+         // exclude some entries from the test
+         if (entry.notest) return runBigTest(0);
+         if (!use_zstd && entry.zstd) return runBigTest(0);
+
+         let filename = "", itemname = "", jsonname = "", url = "", opt = "";
+
+         if (entry.file) {
+             filename = entry.file;
+             if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
+         }
+         if (entry.item) itemname = entry.item;
+         if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
+         if (entry.json) {
+            jsonname = entry.json;
+            if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+         }
+
+         if (entry.url) {
+            url = entry.url.replace(/\$\$\$/g, filepath);
+         } else if (entry.items) {
+            url = "?nobrowser&file=" + filename;
+            if (entry.layout) url += "&layout=" + entry.layout;
+            url += "&items=[" + entry.items.join(",") + "]";
+            if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
+            if (entry.mathjax) url += "&mathjax";
+            if (entry.latex) url += "&latex=" + entry.latex;
+            if (entry.style) url += "&style=" + entry.style;
+         } else if (entry.asurl) {
+            url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
+            url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
+            url += itemname + "&opt=" + opt;
+            if (entry.mathjax) url += "&mathjax";
+            if (entry.latex) url += "&latex=" + entry.latex;
+            if (entry.style) url += "&style=" + entry.style;
+         }
+
+         // console.log('KEY ', keyid, 'opt', opt);
+         // if ((url.length==0) || (keyid != 'Misc')) return runBigTest(0);
+
+         if (hpainter) { hpainter.cleanup(); hpainter = null; }
+         cleanup('viewer');
+
+         createRootColors(); // ensure default colors
+
+         if (url.length > 0) {
+            if (no_interactive) url += "&interactive=0";
+
+            testfile = testobj = null;
+            // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
+
+            let d = decodeUrl(url),
+                layout = d.get("layout", "simple"),
+                nobrowser = d.has("nobrowser");
+
+            if (nobrowser) {
+               document.getElementById('viewer').innerHTML = "";
+               hpainter = new HierarchyPainter('root', null);
+               hpainter.setDisplay(layout, "viewer");
+            } else {
+               document.getElementById('viewer').innerHTML =
+                   "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>" +
+                   '<div id="browser"></div></div>' +
+                   '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
+
+               hpainter = new HierarchyPainter('root', 'browser');
+               hpainter.setDisplay(layout,"right-div");
+            }
+
+            hpainter.startGUI(null, url).then(TestContinue, TestFailure);
+         } else if (jsonname.length > 0) {
+            testfile = testobj = null;
+            httpRequest(jsonname, 'object').then(obj => {
+               testobj = obj;
+               return draw("viewer", obj, opt).then(TestContinue, TestFailure);
+            });
+         } else if (filename.length > 0) {
+             openFile(filename)
+                   .then(file => { testfile = file; return testfile.readObject(itemname); })
+                   .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
+                   .then(TestContinue, TestFailure);
+         } else if (itemname.length > 0) {
+             testfile.readObject(itemname)
                       .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
                       .then(TestContinue, TestFailure);
-            } else if (itemname.length > 0) {
-                testfile.readObject(itemname)
-                         .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
-                         .then(TestContinue, TestFailure);
+         } else {
+             draw("viewer", testobj, opt).then(TestContinue, TestFailure);
+         }
+      }
+
+      let txt = await httpRequest(demo_path + 'examples.json','text');
+
+      examples_main = JSON.parse(txt);
+      if (window.location.search.indexOf("?more") == 0) {
+         let txt_more = await httpRequest(demo_path + 'examples_more.json', 'text');
+         let examples_more = JSON.parse(txt_more);
+         for (let key in examples_more) {
+            if (key in examples_main) {
+               for (let n in examples_more[key])
+                  examples_main[key].push(examples_more[key][n]);
             } else {
-                draw("viewer", testobj, opt).then(TestContinue, TestFailure);
+               examples_main[key] = examples_more[key];
             }
          }
+      }
 
-         let txt = await httpRequest(demo_path + 'examples.json','text');
+      /// start filling content
 
-         examples_main = JSON.parse(txt);
-         if (window.location.search.indexOf("?more") == 0) {
-            let txt_more = await httpRequest(demo_path + 'examples_more.json', 'text');
-            let examples_more = JSON.parse(txt_more);
-            for (let key in examples_more) {
-               if (key in examples_main) {
-                  for (let n in examples_more[key])
-                     examples_main[key].push(examples_more[key][n]);
-               } else {
-                  examples_main[key] = examples_more[key];
+      // all painter assigned to viewer element will be automatically informed about resize
+      registerForResize('viewer');
+
+      let d = decodeUrl();
+
+      select_key = d.get("select");
+      if (!select_key && d.has("geom")) select_key = "TGeo";
+
+      document.getElementById( 'version' ).title = version + ", " + source_dir;
+
+      let content = document.getElementById( 'content' );
+
+      for (let key in examples_main) {
+
+         let opts = examples_main[key];
+
+         if (select_key && (key != select_key)) continue;
+
+         let header = document.createElement( 'h2' );
+         header.textContent = key;
+         content.appendChild( header );
+
+         if (window.location.hash == "#" + key.toLowerCase())
+            header.scrollIntoView();
+
+         let url = "", filename = "", itemname = "", jsonname = "", style = "";
+
+         for (let n = 0; n<opts.length; ++n) {
+            let entry = opts[n];
+
+            let shortname = key.toLowerCase().replace(" ","_");
+
+            jsonname = ""; url = ""; style = "";
+
+            if ('url' in entry) {
+               url = entry.url.replace(/\$\$\$/g,filepath);
+            } else if ('json' in entry) {
+               jsonname = entry.json;
+               if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+            } else {
+               if ('file' in entry) {
+                  url = ""; filename = entry.file;
+                  if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
                }
-            }
-         }
-
-         /// start filling content
-
-         // all painter assigned to viewer element will be automatically informed about resize
-         registerForResize('viewer');
-
-         let d = decodeUrl();
-
-         select_key = d.get("select");
-         if (!select_key && d.has("geom")) select_key = "TGeo";
-
-         document.getElementById( 'version' ).title = version + ", " + source_dir;
-
-         let content = document.getElementById( 'content' );
-
-         for (let key in examples_main) {
-
-            let opts = examples_main[key];
-
-            if (select_key && (key != select_key)) continue;
-
-            let header = document.createElement( 'h2' );
-            header.textContent = key;
-            content.appendChild( header );
-
-            if (window.location.hash == "#" + key.toLowerCase())
-               header.scrollIntoView();
-
-            let url = "", filename = "", itemname = "", jsonname = "", style = "";
-
-            for (let n = 0; n<opts.length; ++n) {
-               let entry = opts[n];
-
-               let shortname = key.toLowerCase().replace(" ","_");
-
-               jsonname = ""; url = ""; style = "";
-
-               if ('url' in entry) {
-                  url = entry.url.replace(/\$\$\$/g,filepath);
-               } else if ('json' in entry) {
-                  jsonname = entry.json;
-                  if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
-               } else {
-                  if ('file' in entry) {
-                     url = ""; filename = entry.file;
-                     if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
-                  }
-                  if ('item' in entry) {
-                     url = ""; itemname = entry.item; style = entry.style;
-                  } else if ('items' in entry) {
-                     url = "?nobrowser&file=" + filename;
-                     if (entry.layout) url += "&layout=" + entry.layout;
-                     url += "&items=[" + entry.items.join(",") + "]";
-                     if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
-                     if (entry.mathjax) url += "&mathjax";
-                     if (entry.latex) url += "&latex=" + entry.latex;
-                     if (entry.style) url += "&style=" + entry.style;
-                  }
-               }
-
-               let opt = ('opt' in entry) ? entry.opt : "";
-               let aaa = document.createElement( 'a' );
-
-               if ('name' in entry)
-                  aaa.textContent = entry.name;
-               else if (opt != "")
-                  aaa.textContent = opt;
-               else
-                  aaa.textContent = "<dflt>";
-
-               if (aaa.textContent != "<dflt>")
-                  shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
-
-               let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
-
-               if (entry.asurl) {
-                  if (jsonname)
-                     url = prefix + 'json=' + jsonname;
-                  else
-                     url = prefix + "file=" + filename + "&item=" + itemname;
-                  if (entry.style) url += "&style=" + entry.style;
+               if ('item' in entry) {
+                  url = ""; itemname = entry.item; style = entry.style;
+               } else if ('items' in entry) {
+                  url = "?nobrowser&file=" + filename;
+                  if (entry.layout) url += "&layout=" + entry.layout;
+                  url += "&items=[" + entry.items.join(",") + "]";
+                  if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                   if (entry.mathjax) url += "&mathjax";
                   if (entry.latex) url += "&latex=" + entry.latex;
-               }
-
-               if (url)
-                  aaa.href = jsroot_path + url;
-               else if (jsonname)
-                  aaa.href = jsroot_path + prefix + "json=" + jsonname;
-               else
-                  aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
-
-               if (opt)
-                  aaa.href += "&opt=" + opt;
-               if (style)
-                  aaa.href += "&style=" + style;
-
-               if (extra_opts) aaa.href += extra_opts;
-
-               if ('title' in entry) {
-                  aaa.title = entry.title;
-                  // aaa.href += "&title='" + entry.title + "'";
-               }
-
-               content.appendChild( aaa );
-               setListener(aaa, shortname, url, filename, itemname, opt, jsonname);
-
-               if (n < opts.length-1) {
-                  content.appendChild(document.createTextNode(", "));
-               } else {
-                  content.appendChild(document.createElement('br'));
-               }
-
-               if (window.location.hash == "#" + shortname) {
-                  aaa.focus();
-                  if (entry.title) setPageTitle(entry.title);
-                  processClick(url, filename, itemname, opt, jsonname);
+                  if (entry.style) url += "&style=" + entry.style;
                }
             }
+
+            let opt = ('opt' in entry) ? entry.opt : "";
+            let aaa = document.createElement( 'a' );
+
+            if ('name' in entry)
+               aaa.textContent = entry.name;
+            else if (opt != "")
+               aaa.textContent = opt;
+            else
+               aaa.textContent = "<dflt>";
+
+            if (aaa.textContent != "<dflt>")
+               shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
+
+            let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
+
+            if (entry.asurl) {
+               if (jsonname)
+                  url = prefix + 'json=' + jsonname;
+               else
+                  url = prefix + "file=" + filename + "&item=" + itemname;
+               if (entry.style) url += "&style=" + entry.style;
+               if (entry.mathjax) url += "&mathjax";
+               if (entry.latex) url += "&latex=" + entry.latex;
+            }
+
+            if (url)
+               aaa.href = jsroot_path + url;
+            else if (jsonname)
+               aaa.href = jsroot_path + prefix + "json=" + jsonname;
+            else
+               aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
+
+            if (opt)
+               aaa.href += "&opt=" + opt;
+            if (style)
+               aaa.href += "&style=" + style;
+
+            if (extra_opts) aaa.href += extra_opts;
+
+            if ('title' in entry) {
+               aaa.title = entry.title;
+               // aaa.href += "&title='" + entry.title + "'";
+            }
+
+            content.appendChild( aaa );
+            setListener(aaa, shortname, url, filename, itemname, opt, jsonname);
+
+            if (n < opts.length-1) {
+               content.appendChild(document.createTextNode(", "));
+            } else {
+               content.appendChild(document.createElement('br'));
+            }
+
+            if (window.location.hash == "#" + shortname) {
+               aaa.focus();
+               if (entry.title) setPageTitle(entry.title);
+               processClick(url, filename, itemname, opt, jsonname);
+            }
          }
+      }
 
-         if (window.location.search.indexOf("?more")==0) {
-             let div = document.createElement( 'h2' );
-             div.textContent = "Testing";
-             content.appendChild( div );
+      if (window.location.search.indexOf("?more")==0) {
+          let div = document.createElement( 'h2' );
+          div.textContent = "Testing";
+          content.appendChild( div );
 
-             let aaa = document.createElement( 'a' );
-             aaa.textContent = "run";
-             aaa.title = "Run all examples after each other";
-             content.appendChild( aaa );
-             aaa.addEventListener( 'click', function (event) {
-                 event.preventDefault();
-                 window.location.hash = "run";
-                 runBigTest(10,true);
-             });
+          let aaa = document.createElement( 'a' );
+          aaa.textContent = "run";
+          aaa.title = "Run all examples after each other";
+          content.appendChild( aaa );
+          aaa.addEventListener( 'click', function (event) {
+              event.preventDefault();
+              window.location.hash = "run";
+              runBigTest(10,true);
+          });
 
-             content.appendChild(document.createTextNode(", "));
+          content.appendChild(document.createTextNode(", "));
 
-             aaa = document.createElement( 'a' );
-             aaa.textContent = "slow";
-             aaa.title = "Run all examples slowly after each other";
-             content.appendChild( aaa );
-             aaa.addEventListener( 'click', function (event) {
-                 event.preventDefault();
-                 window.location.hash = "slow";
-                 runBigTest(5000,true);
-             });
+          aaa = document.createElement( 'a' );
+          aaa.textContent = "slow";
+          aaa.title = "Run all examples slowly after each other";
+          content.appendChild( aaa );
+          aaa.addEventListener( 'click', function (event) {
+              event.preventDefault();
+              window.location.hash = "slow";
+              runBigTest(5000,true);
+          });
 
-             content.appendChild(document.createTextNode(", "));
+          content.appendChild(document.createTextNode(", "));
 
-             aaa = document.createElement( 'a' );
-             aaa.textContent = "fast";
-             aaa.title = "Run all examples very fast";
-             content.appendChild( aaa );
-             aaa.addEventListener( 'click', function (event) {
-                 event.preventDefault();
-                 window.location.hash = "fast";
-                 runBigTest(1,true);
-             });
+          aaa = document.createElement( 'a' );
+          aaa.textContent = "fast";
+          aaa.title = "Run all examples very fast";
+          content.appendChild( aaa );
+          aaa.addEventListener( 'click', function (event) {
+              event.preventDefault();
+              window.location.hash = "fast";
+              runBigTest(1,true);
+          });
 
-             content.appendChild(document.createTextNode(", "));
-             aaa = document.createElement( 'a' );
-             aaa.textContent = "stop";
-             aaa.title = "Stop running example";
-             content.appendChild( aaa );
-             aaa.addEventListener( 'click', function (event) {
-                 event.preventDefault();
-                 keyid = null;
-             });
-         }
+          content.appendChild(document.createTextNode(", "));
+          aaa = document.createElement( 'a' );
+          aaa.textContent = "stop";
+          aaa.title = "Stop running example";
+          content.appendChild( aaa );
+          aaa.addEventListener( 'click', function (event) {
+              event.preventDefault();
+              keyid = null;
+          });
+      }
 
-         if (window.location.hash == "#run")
-            runBigTest(100,true);
-         else if (window.location.hash == "#fast")
-            runBigTest(1,true);
-         else if (window.location.hash == "#slow")
-            runBigTest(5000,true);
+      if (window.location.hash == "#run")
+         runBigTest(100,true);
+      else if (window.location.hash == "#fast")
+         runBigTest(1,true);
+      else if (window.location.hash == "#slow")
+         runBigTest(5000,true);
 
-      </script>
-   </body>
+   </script>
 </html>
