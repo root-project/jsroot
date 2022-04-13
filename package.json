@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "6.99.99",
+  "version": "7.0.0",
   "engines": {
     "node": ">=0.14.8"
   },
@@ -65,7 +65,7 @@
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
-    "doc": "jsdoc -a public -a undefined -c docs/jsdoc.json",
-    "full": "jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull"
+    "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md",
+    "full": "jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md"
   }
 }

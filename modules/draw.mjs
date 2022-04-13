@@ -286,7 +286,7 @@ function setDefaultDrawOpt(classname, opt) {
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options separated by space, comma or semicolon
   * @returns {Promise} with painter object
-  * @requires painter
+  * @public
   * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
   * let file = await openFile("https://root.cern/js/files/hsimple.root");
@@ -405,9 +405,9 @@ function draw(dom, obj, opt) {
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options
   * @returns {Promise} with painter object
-  * @requires painter
   * @desc If drawing was not done before, it will be performed with {@link draw}.
-  * Otherwise drawing content will be updated */
+  * Otherwise drawing content will be updated
+  * @public */
 function redraw(dom, obj, opt) {
 
    if (!obj || (typeof obj !== 'object'))

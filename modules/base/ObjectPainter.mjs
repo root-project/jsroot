@@ -1609,7 +1609,7 @@ function resize(dom, arg) {
 
 /** @summary Safely remove all drawings from specified element
   * @param {string|object} dom - id or DOM element
-  * @requires painter
+  * @public
   * @example
   * cleanup("drawing");
   * cleanup(document.querySelector("#drawing")); */
