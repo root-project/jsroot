@@ -2519,7 +2519,7 @@ function treeProcess(tree, selector, args) {
 
 }
 
-/** @summary  implementation of TTree::Draw
+/** @summary implementation of TTree::Draw
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
   * @param {string} [args.cut=undefined]   - cut expression (also can be part of 'expr' after '::')
