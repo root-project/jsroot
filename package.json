@@ -46,7 +46,7 @@
     "url": "https://github.com/root-project/jsroot.git"
   },
   "files": [
-    "moduels/*",
+    "modules/*",
     "scripts/*",
     "LICENSE"
   ],
