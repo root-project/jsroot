@@ -898,15 +898,15 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v6 -> v7
 
-   * Loading of `JSRoot.core.js` will provide very similar functionality as with `v6` via global `JSROOT` object, but not everything was ported
-
-   * `JSROOT.define()` and `JSROOT.require()` functions only available after `JSRoot.core.js` loading, normally functionality should be loaded from modules directly (in most cases from `main.mjs`)
-
-   * Support of `require.js` and `openui5` loader was removed
-
    * Core functionality should be imported from `main.mjs` module like:
 
       import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+
+   * It is still possible to use `JSRoot.core.js` script, which provides very similar (but not identical!) functionality as with `v6` via global `JSROOT` object
+
+   * `JSROOT.define()` and `JSROOT.require()` functions only available after `JSRoot.core.js` loading
+
+   * Support of `require.js` and `openui5` loaders was removed
 
    * Global hierarchy painter `JSROOT.hpainter` no longer existing, one can use `getHPainter` function:
 
@@ -923,7 +923,7 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
       let was_batch = isBatchMode();
       if (!was_batch) setBatchMode(true);
 
-   * Function `JSROOT.extend` was remove, use `Object.assign` instead
+   * `JSROOT.extend()` function  was removed, use `Object.assign()` instead
 
 
 ### Migration v5 -> v6
