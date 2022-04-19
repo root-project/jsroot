@@ -296,8 +296,11 @@ function keysHierarchy(folder, keys, file, dirname) {
    folder._childs = [];
 
    for (let i = 0; i < keys.length; ++i) {
-      let key = keys[i],
-          item = {
+      let key = keys[i];
+
+      if (settings.OnlyLastCycle && (i > 0) && (key.fName == keys[i-1].fName) && (key.fCycle < keys[i-1].fCycle)) continue;
+
+      let item = {
          _name: key.fName + ";" + key.fCycle,
          _cycle: key.fCycle,
          _kind: "ROOT." + key.fClassName,
@@ -307,24 +310,24 @@ function keysHierarchy(folder, keys, file, dirname) {
          _parent: folder
       };
 
-      if (key.fObjlen > 1e5) item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
+      if (key.fObjlen > 1e5)
+         item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
 
-      if ('fRealName' in key)
+      if (key.fRealName)
          item._realname = key.fRealName + ";" + key.fCycle;
 
       if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
-         let dir = null;
-         if (dirname && file) dir = file.getDir(dirname + key.fName);
-         if (!dir) {
+         let dir = (dirname && file) ? file.getDir(dirname + key.fName) : null;
+         if (dir) {
+            // remove cycle number - we have already directory
+            item._name = key.fName;
+            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+         } else  {
             item._more = true;
             item._expand = function(node, obj) {
                // one can get expand call from child objects - ignore them
                return keysHierarchy(node, obj.fKeys);
             };
-         } else {
-            // remove cycle number - we have already directory
-            item._name = key.fName;
-            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
          }
       } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
          if (settings.SkipStreamerInfos) continue;
