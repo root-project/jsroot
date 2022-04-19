@@ -1615,17 +1615,6 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-/** @summary Initialize JSROOT
-  * @desc Called when main JSRoot.core.js script is loaded.
-  * @private */
-if (source_fullpath) {
-
-   let d = decodeUrl(source_fullpath);
-
-   if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
-      settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
-}
-
 
 export {
 version_id,

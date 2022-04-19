@@ -18,6 +18,9 @@ function readStyleFromURL(url) {
       }
    }
 
+   if (d.has('wrong_http_response'))
+      settings.HandleWrongHttpResponse = true;
+
    let inter = d.get("interactive");
    if (inter === "nomenu")
       settings.ContextMenu = false;
