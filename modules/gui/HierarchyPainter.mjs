@@ -1718,6 +1718,15 @@ class HierarchyPainter extends BasePainter {
 
       menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
 
+      menu.add("sub:Toolbar");
+      menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
+      menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
+      menu.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
+      menu.add("separator");
+      menu.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
+      menu.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
+      menu.add("endsub:");
+
       menu.add("endsub:");
    }
 
