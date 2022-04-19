@@ -1708,6 +1708,8 @@ class HierarchyPainter extends BasePainter {
 
       menu.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
 
+      menu.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
+
       menu.add("endsub:");
 
       menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {

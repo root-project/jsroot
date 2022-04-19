@@ -1622,20 +1622,6 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-/** @summary Initialize JSROOT
-  * @desc Called when main JSRoot.core.js script is loaded.
-  * @private */
-if (source_fullpath) {
-
-   let d = decodeUrl(source_fullpath);
-
-   if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
-      settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
-   if (d.has('nosap'))
-      internals.sap = undefined; // let ignore sap loader even with openui5 loaded
-}
-
-
 export {
 version_id,
 version_date,

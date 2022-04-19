@@ -26,6 +26,9 @@ function readStyleFromURL(url) {
    let usestamp = d.get('usestamp')
    settings.UseStamp = (usestamp != "0") && (usestamp != "false");
 
+   if (d.has('wrong_http_response'))
+      settings.HandleWrongHttpResponse = true;
+
    let inter = d.get("interactive");
    if (inter === "nomenu")
       settings.ContextMenu = false;
