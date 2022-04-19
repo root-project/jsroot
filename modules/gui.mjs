@@ -23,6 +23,9 @@ function readStyleFromURL(url) {
       settings.OnlyLastCycle = (val != "0") && (val != "false");
    }
 
+   let usestamp = d.get('usestamp')
+   settings.UseStamp = (usestamp != "0") && (usestamp != "false");
+
    let inter = d.get("interactive");
    if (inter === "nomenu")
       settings.ContextMenu = false;

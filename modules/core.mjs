@@ -238,10 +238,10 @@ let settings = {
      * @default true */
    HandleKeys: true,
    /** @summary Let tweak browser caching
-     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
-     * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
-     * @default false */
-   NoCache: false,
+     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
+     * In such case browser will be forced to load file content disregards of server cache settings
+     * @default true */
+   UseStamp: true,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
@@ -1629,10 +1629,10 @@ if (source_fullpath) {
 
    let d = decodeUrl(source_fullpath);
 
-   if (d.has('nocache')) settings.NoCache = (new Date).getTime(); // use timestamp to overcome cache limitation
    if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
-   if (d.has('nosap')) internals.sap = undefined; // let ignore sap loader even with openui5 loaded
+   if (d.has('nosap'))
+      internals.sap = undefined; // let ignore sap loader even with openui5 loaded
 }
 
 

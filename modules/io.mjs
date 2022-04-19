@@ -1,6 +1,6 @@
 /// I/O methods of JavaScript ROOT
 
-import { httpRequest, createHttpRequest, BIT, loadScript, internals,
+import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs } from './core.mjs';
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
@@ -2695,8 +2695,10 @@ class TFile {
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
-      this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
+      // when disabled ('+' at the end of file name), complete file content read with single operation
+      this.fAcceptRanges = true;
+      // use additional time stamp parameter for file name to avoid browser caching problem
+      this.fUseStampPar = settings.UseStamp ? "stamp=" + (new Date).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
       this.fMaxRanges = 200; // maximal number of file ranges requested at once

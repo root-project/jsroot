@@ -1706,11 +1706,15 @@ class HierarchyPainter extends BasePainter {
          this.refreshHtml();
       });
 
+      menu.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+
       menu.add("endsub:");
 
       menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
           settings.Latex = value;
       });
+
+      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
 
       menu.add("endsub:");
    }
