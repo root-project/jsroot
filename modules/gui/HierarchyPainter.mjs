@@ -140,7 +140,7 @@ function saveSettings(expires = 365, name = "jsroot_settings") {
 
 /** @summary Read JSROOT settings from specified coockie parameter
   * @private */
-function readSettings(name = "jsroot_settings") {
+function readSettings(only_check = false, name = "jsroot_settings") {
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
    name += "=";
@@ -148,15 +148,15 @@ function readSettings(name = "jsroot_settings") {
       let c = ca[i];
       while (c.charAt(0) == ' ')
         c = c.substring(1);
-      if (c.indexOf(name) != 0)
-        continue;
+      if (c.indexOf(name) == 0) {
+         let s = JSON.parse(atob(c.substring(name.length, c.length)));
 
-      let s = JSON.parse(atob(c.substring(name.length, c.length)));
-
-      if (s && typeof s == 'object')
-         Object.assign(settings, s);
-
-      break;
+         if (s && typeof s == 'object') {
+            if (!only_check)
+               Object.assign(settings, s);
+            return true;
+          }
+       }
    }
 }
 
@@ -1772,10 +1772,12 @@ class HierarchyPainter extends BasePainter {
       menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
       menu.add("endsub:");
 
-
       menu.add("separator");
 
-      menu.add("Save settings", () => saveSettings());
+      menu.add("Save settings", () => {
+         let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
+         promise.then(res => { if (res) saveSettings(); });
+      });
       menu.add("Delete settings", () => saveSettings(-1));
 
       menu.add("endsub:");
