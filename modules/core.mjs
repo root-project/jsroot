@@ -237,10 +237,10 @@ let settings = {
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
    HandleKeys: true,
-  /** @summary Let tweak browser caching
-    * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
-    * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
-    * @default false */
+   /** @summary Let tweak browser caching
+     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
+     * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
+     * @default false */
    NoCache: false,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,

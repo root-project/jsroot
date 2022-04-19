@@ -1687,6 +1687,20 @@ class HierarchyPainter extends BasePainter {
          });
    }
 
+   /** @summary Fills settings menu items
+     * @private */
+   fillSettingsMenu(menu) {
+      menu.add("sub:Settings");
+
+      menu.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
+         settings.OnlyLastCycle = flag;
+         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+         this.refreshHtml();
+      });
+
+      menu.add("endsub:");
+   }
+
    /** @summary Handle context menu in the hieararchy
      * @private */
    tree_contextmenu(evnt, elem) {
@@ -1769,6 +1783,7 @@ class HierarchyPainter extends BasePainter {
 
             menu.add("Direct link", () => window.open(addr));
             menu.add("Only items", () => window.open(addr + "&nobrowser"));
+            this.fillSettingsMenu(menu);
          } else if (onlineprop) {
             this.fillOnlineMenu(menu, onlineprop, itemname);
          } else {
