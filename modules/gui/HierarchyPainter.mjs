@@ -1747,12 +1747,6 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
-      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
-          settings.Latex = value;
-      });
-
-      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
-
       menu.add("sub:Toolbar");
       menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
       menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
@@ -1771,10 +1765,29 @@ class HierarchyPainter extends BasePainter {
       menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
       menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
       menu.add("endsub:");
+      menu.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
       menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
       menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
       menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
       menu.add("endsub:");
+
+      menu.add("sub:Drawing");
+      menu.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => {
+          settings.OptimizeDraw = value;
+      });
+      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
+      menu.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
+      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
+          settings.Latex = value;
+      });
+      menu.add("endsub:");
+
+      menu.add("sub:Geometry");
+      menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
+      menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
+      menu.add("endsub:");
+
+      menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
 
       menu.add("separator");
 

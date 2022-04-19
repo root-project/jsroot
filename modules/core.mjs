@@ -183,6 +183,10 @@ let settings = {
    ZoomTouch: true,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
    MoveResize: true,
+   /** @summary Configures keybord key press handling
+     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
+     * @default true */
+   HandleKeys: true,
    /** @summary enables drag and drop functionality */
    DragAndDrop: true,
    /** @summary Show progress box */
@@ -220,20 +224,16 @@ let settings = {
    /** @summary how many items shown on one level of hierarchy */
    HierarchyLimit: 250,
    /** @summary custom format for all X values, when not specified {@link gStyle.fStatFormat} is used */
-   XValuesFormat : undefined,
+   XValuesFormat: undefined,
    /** @summary custom format for all Y values, when not specified {@link gStyle.fStatFormat} is used */
-   YValuesFormat : undefined,
+   YValuesFormat: undefined,
    /** @summary custom format for all Z values, when not specified {@link gStyle.fStatFormat} is used */
-   ZValuesFormat : undefined,
+   ZValuesFormat: undefined,
    /** @summary Let detect and solve problem when browser returns wrong content-length parameter
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
      * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
      * @default false */
    HandleWrongHttpResponse: false,
-   /** @summary Configures keybord key press handling
-     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
-     * @default true */
-   HandleKeys: true,
    /** @summary Let tweak browser caching
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
