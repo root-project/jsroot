@@ -1,6 +1,6 @@
 
 /** @summary version id
-  * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0" */
+  * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
 let version_id = "dev";
 
 /** @summary version date
@@ -9,7 +9,7 @@ let version_date = "19/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
-  * Like "6.99.99 21/02/2022" */
+  * Like "7.0.0 14/04/2022" */
 let version = version_id + " " + version_date;
 
 /** @summary Location of JSROOT scripts
@@ -21,19 +21,16 @@ let nodejs = !!((typeof process == 'object') && process.version && (typeof proce
 /** @summary internal data
   * @private */
 let internals = {
-   id_counter: 1          ///< unique id contner, starts from 1,
+   id_counter: 1          ///< unique id contner, starts from 1
 };
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
-
-let source_fullpath = "";
 
 const src = import.meta?.url;
 if (src && (typeof src == "string")) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
-      source_fullpath = src;
-      source_dir = source_fullpath.slice(0, pos);
+      source_dir = src.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    } else {
       console.log(`jsroot bundle, ${version}`);
