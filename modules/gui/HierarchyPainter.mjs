@@ -129,7 +129,9 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-/** @summary Save JSROOT settings as specified coockie parameter
+/** @summary Save JSROOT settings as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
   * @private */
 function saveSettings(expires = 365, name = "jsroot_settings") {
    let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
@@ -138,7 +140,9 @@ function saveSettings(expires = 365, name = "jsroot_settings") {
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
 }
 
-/** @summary Read JSROOT settings from specified coockie parameter
+/** @summary Read JSROOT settings from specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
   * @private */
 function readSettings(only_check = false, name = "jsroot_settings") {
    let decodedCookie = decodeURIComponent(document.cookie),
@@ -197,7 +201,7 @@ function drawList(dom, lst, opt) {
   * @private */
 function folderHierarchy(item, obj) {
 
-   if (!obj || !('fFolders' in obj) || (obj.fFolders===null)) return false;
+   if (!obj || !('fFolders' in obj) || (obj.fFolders === null)) return false;
 
    if (obj.fFolders.arr.length===0) { item._more = false; return true; }
 
@@ -377,7 +381,7 @@ function keysHierarchy(folder, keys, file, dirname) {
 /** @summary Create hierarchy for arbitrary object
   * @private */
 function objectHierarchy(top, obj, args = undefined) {
-   if (!top || (obj===null)) return false;
+   if (!top || (obj === null)) return false;
 
    top._childs = [];
 
