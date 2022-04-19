@@ -359,5 +359,5 @@ function injectStyle(code, node) {
    return true;
 }
 
-
-export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize, detectRightButton, addMoveHandler, injectStyle };
+export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize,
+         detectRightButton, addMoveHandler, injectStyle };

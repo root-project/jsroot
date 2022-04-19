@@ -2,11 +2,15 @@ import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse 
 
 import { select as d3_select } from './d3.mjs';
 
-import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
+import { HierarchyPainter, readSettings } from './gui/HierarchyPainter.mjs';
 
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
+
+   // first try to read settings from coockies
+   readSettings();
+
    let d = decodeUrl(url);
 
    if (d.has("optimize")) {
@@ -110,6 +114,7 @@ function readStyleFromURL(url) {
 
    if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
 }
+
 
 
 /** @summary Build main GUI

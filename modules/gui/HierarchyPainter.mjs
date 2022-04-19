@@ -129,6 +129,37 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
+/** @summary Save JSROOT settings as specified coockie parameter
+  * @private */
+function saveSettings(expires = 365, name = "jsroot_settings") {
+   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
+       d = new Date();
+   d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
+   document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
+}
+
+/** @summary Read JSROOT settings from specified coockie parameter
+  * @private */
+function readSettings(name = "jsroot_settings") {
+   let decodedCookie = decodeURIComponent(document.cookie),
+       ca = decodedCookie.split(';');
+   name += "=";
+   for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ')
+        c = c.substring(1);
+      if (c.indexOf(name) != 0)
+        continue;
+
+      let s = JSON.parse(atob(c.substring(name.length, c.length)));
+
+      if (s && typeof s == 'object')
+         Object.assign(settings, s);
+
+      break;
+   }
+}
+
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -1726,6 +1757,26 @@ class HierarchyPainter extends BasePainter {
       menu.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
       menu.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
       menu.add("endsub:");
+
+      menu.add("sub:Interactive");
+      menu.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
+      menu.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
+      menu.add("sub:Zooming");
+      menu.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
+      menu.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
+      menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
+      menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
+      menu.add("endsub:");
+      menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
+      menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
+      menu.add("endsub:");
+
+
+      menu.add("separator");
+
+      menu.add("Save settings", () => saveSettings());
+      menu.add("Delete settings", () => saveSettings(-1));
 
       menu.add("endsub:");
    }
@@ -3753,5 +3804,5 @@ function drawInspector(dom, obj) {
 internals.drawInspector = drawInspector;
 
 export { getHPainter, HierarchyPainter,
-         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo,
+         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo, readSettings,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };
