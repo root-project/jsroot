@@ -237,11 +237,16 @@ class JSRootMenu {
    }
 
    /** @summary Add selection menu entries
+     * @param {String} name - name of submenu
+     * @param {Array} values - array of string entries used as list for selection
+     * @param {String|Number} value - currently elected value, either name or index
+     * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
      * @protected */
    addSelectMenu(name, values, value, set_func) {
+      let use_number = (typeof value == "number");
       this.add("sub:" + name);
       for (let n = 0; n < values.length; ++n)
-         this.addchk(values[n] == value, values[n], values[n], res => set_func(res));
+         this.addchk(use_number ? (n == value) : (values[n] == value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
       this.add("endsub:");
    }
 
