@@ -189,6 +189,8 @@ let settings = {
    HandleKeys: true,
    /** @summary enables drag and drop functionality */
    DragAndDrop: true,
+   /** @summary Interactive dragging of TGraph points */
+   DragGraphs: true,
    /** @summary Show progress box */
    ProgressBox: true,
    /** @summary Show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button */
@@ -242,9 +244,7 @@ let settings = {
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
-   OnlyLastCycle: false,
-   /** @summary Interactive dragging of TGraph points */
-   DragGraphs: true
+   OnlyLastCycle: false
 };
 
 

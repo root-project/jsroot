@@ -1768,6 +1768,7 @@ class HierarchyPainter extends BasePainter {
       menu.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
       menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
       menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      menu.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
       menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
       menu.add("endsub:");
 
@@ -1780,6 +1781,13 @@ class HierarchyPainter extends BasePainter {
       menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
           settings.Latex = value;
       });
+      menu.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => {
+          settings.Render3D = value;
+      });
+      menu.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => {
+          settings.Embed3D = value;
+      });
+
       menu.add("endsub:");
 
       menu.add("sub:Geometry");

@@ -189,8 +189,14 @@ let settings = {
    ZoomTouch: true,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
    MoveResize: true,
+   /** @summary Configures keybord key press handling
+     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
+     * @default true */
+   HandleKeys: true,
    /** @summary enables drag and drop functionality */
    DragAndDrop: true,
+   /** @summary Interactive dragging of TGraph points */
+   DragGraphs: true,
    /** @summary Show progress box */
    ProgressBox: true,
    /** @summary Show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button */
@@ -226,20 +232,16 @@ let settings = {
    /** @summary how many items shown on one level of hierarchy */
    HierarchyLimit: 250,
    /** @summary custom format for all X values, when not specified {@link gStyle.fStatFormat} is used */
-   XValuesFormat : undefined,
+   XValuesFormat: undefined,
    /** @summary custom format for all Y values, when not specified {@link gStyle.fStatFormat} is used */
-   YValuesFormat : undefined,
+   YValuesFormat: undefined,
    /** @summary custom format for all Z values, when not specified {@link gStyle.fStatFormat} is used */
-   ZValuesFormat : undefined,
+   ZValuesFormat: undefined,
    /** @summary Let detect and solve problem when browser returns wrong content-length parameter
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
      * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
      * @default false */
    HandleWrongHttpResponse: false,
-   /** @summary Configures keybord key press handling
-     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
-     * @default true */
-   HandleKeys: true,
    /** @summary Let tweak browser caching
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
@@ -248,9 +250,7 @@ let settings = {
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
-   OnlyLastCycle: false,
-   /** @summary Interactive dragging of TGraph points */
-   DragGraphs: true
+   OnlyLastCycle: false
 };
 
 
@@ -73088,7 +73088,9 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-/** @summary Save JSROOT settings as specified coockie parameter
+/** @summary Save JSROOT settings as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
   * @private */
 function saveSettings(expires = 365, name = "jsroot_settings") {
    let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
@@ -73097,7 +73099,9 @@ function saveSettings(expires = 365, name = "jsroot_settings") {
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
 }
 
-/** @summary Read JSROOT settings from specified coockie parameter
+/** @summary Read JSROOT settings from specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
   * @private */
 function readSettings(only_check = false, name = "jsroot_settings") {
    let decodedCookie = decodeURIComponent(document.cookie),
@@ -73156,7 +73160,7 @@ function drawList(dom, lst, opt) {
   * @private */
 function folderHierarchy(item, obj) {
 
-   if (!obj || !('fFolders' in obj) || (obj.fFolders===null)) return false;
+   if (!obj || !('fFolders' in obj) || (obj.fFolders === null)) return false;
 
    if (obj.fFolders.arr.length===0) { item._more = false; return true; }
 
@@ -73336,7 +73340,7 @@ function keysHierarchy(folder, keys, file, dirname) {
 /** @summary Create hierarchy for arbitrary object
   * @private */
 function objectHierarchy(top, obj, args = undefined) {
-   if (!top || (obj===null)) return false;
+   if (!top || (obj === null)) return false;
 
    top._childs = [];
 
@@ -74700,12 +74704,6 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
-      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
-          settings.Latex = value;
-      });
-
-      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
-
       menu.add("sub:Toolbar");
       menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
       menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
@@ -74724,10 +74722,37 @@ class HierarchyPainter extends BasePainter {
       menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
       menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
       menu.add("endsub:");
+      menu.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
       menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
       menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      menu.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
       menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
       menu.add("endsub:");
+
+      menu.add("sub:Drawing");
+      menu.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => {
+          settings.OptimizeDraw = value;
+      });
+      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
+      menu.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
+      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
+          settings.Latex = value;
+      });
+      menu.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => {
+          settings.Render3D = value;
+      });
+      menu.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => {
+          settings.Embed3D = value;
+      });
+
+      menu.add("endsub:");
+
+      menu.add("sub:Geometry");
+      menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
+      menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
+      menu.add("endsub:");
+
+      menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
 
       menu.add("separator");
 
