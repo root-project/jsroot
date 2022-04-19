@@ -1,4 +1,4 @@
-// https://root.cern/js/ v6.99.99
+// https://root.cern/js/ v7.0.99
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -6,16 +6,16 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 })(this, (function (exports) { 'use strict';
 
 /** @summary version id
-  * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0" */
-let version_id = "modules";
+  * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
+let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "12/04/2022";
+let version_date = "19/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
-  * Like "6.99.99 21/02/2022" */
+  * Like "7.0.0 14/04/2022" */
 let version = version_id + " " + version_date;
 
 /** @summary Location of JSROOT scripts
@@ -27,19 +27,16 @@ let nodejs = !!((typeof process == 'object') && process.version && (typeof proce
 /** @summary internal data
   * @private */
 let internals = {
-   id_counter: 1          ///< unique id contner, starts from 1,
+   id_counter: 1          ///< unique id contner, starts from 1
 };
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
-
-let source_fullpath = "";
 
 const src = (typeof document === 'undefined' && typeof location === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));
 if (src && (typeof src == "string")) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
-      source_fullpath = src;
-      exports.source_dir = source_fullpath.slice(0, pos);
+      exports.source_dir = src.slice(0, pos);
       console.log(`Set jsroot source_dir to ${exports.source_dir}, ${version}`);
    } else {
       console.log(`jsroot bundle, ${version}`);
@@ -89,13 +86,11 @@ function isArrayProto(proto) {
     return proto.length == 14 ? 1 : 2;
 }
 
-/** @summary Specialized JSROOT constants, used in {@link settings}
-  * @namespace
-  * @private */
+/** @desc Specialized JSROOT constants, used in {@link settings}
+  * @namespace */
 let constants$1 = {
    /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
-     * @namespace
-     * @private */
+     * @namespace */
    Render3D: {
       /** @summary Default 3D rendering, normally WebGL, if not supported - SVG */
       Default: 0,
@@ -113,20 +108,19 @@ let constants$1 = {
       }
    },
    /** @summary Way to embed 3D into SVG, used for {@link settings.Embed3D}
-     * @namespace
-     * @private */
+     * @namespace */
    Embed3D: {
       /** @summary Do not embed 3D drawing, use complete space */
       NoEmbed: -1,
-      /** @summary Default embeding mode, on Firefox is really ```Embed```, on all other ```Overlay``` */
+      /** @summary Default embeding mode - on Firefox and latest Chrome is real ```Embed```, on all other ```Overlay``` */
       Default: 0,
-      /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how Chrome browser can be used */
+      /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how earlier Chrome browser can be used */
       Overlay: 1,
-      /** @summary Really embed WebGL Canvas into SVG, only works with Firefox */
+      /** @summary Really embed WebGL Canvas into SVG */
       Embed: 2,
-      /** @summary Embeding, but when SVG rendering or SVG image converion is used
-        * @private */
+      /** @summary Embeding, but when SVG rendering or SVG image converion is used */
       EmbedSVG: 3,
+      /** @summary Convert string values into number  */
       fromString: function(s) {
          if (s === "embed") return this.Embed;
          if (s === "overlay") return this.Overlay;
@@ -134,8 +128,7 @@ let constants$1 = {
       }
    },
    /** @summary How to use latex in text drawing, used for {@link settings.Latex}
-     * @namespace
-     * @private */
+     * @namespace */
    Latex: {
       /** @summary do not use Latex at all for text drawing */
       Off: 0,
@@ -147,6 +140,7 @@ let constants$1 = {
       MathJax: 3,
       /** @summary always use MathJax for text rendering */
       AlwaysMathJax: 4,
+      /** @summary Convert string values into number */
       fromString: function(s) {
          if (!s || (typeof s !== 'string'))
             return this.Normal;
@@ -170,12 +164,12 @@ let constants$1 = {
    }
 };
 
-/** @summary Central JSROOT settings, independent from {@link gStyle}
+/** @desc Global JSROOT settings
   * @namespace */
 let settings = {
    /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants$1.Render3D.Default,
-   /** @summary Render of 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
+   /** @summary 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
    Render3DBatch: constants$1.Render3D.Default,
    /** @summary Way to embed 3D drawing in SVG, see {@link constants.Embed3D} for possible values */
    Embed3D: constants$1.Embed3D.Default,
@@ -246,13 +240,15 @@ let settings = {
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
    HandleKeys: true,
-  /** @summary Let tweak browser caching
-    * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
-    * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
-    * @default false */
-   NoCache: false,
+   /** @summary Let tweak browser caching
+     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
+     * In such case browser will be forced to load file content disregards of server cache settings
+     * @default true */
+   UseStamp: true,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
+   /** @summary Show only last cycle for objects in TFile */
+   OnlyLastCycle: false,
    /** @summary Interactive dragging of TGraph points */
    DragGraphs: true
 };
@@ -1627,19 +1623,6 @@ function _ensureJSROOT() {
       if (globalThis.JSROOT?._complete_loading)
          return globalThis.JSROOT._complete_loading();
    }).then(() => globalThis.JSROOT);
-}
-
-/** @summary Initialize JSROOT
-  * @desc Called when main JSRoot.core.js script is loaded.
-  * @private */
-if (source_fullpath) {
-
-   let d = decodeUrl(source_fullpath);
-
-   if (d.has('nocache')) settings.NoCache = (new Date).getTime(); // use timestamp to overcome cache limitation
-   if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
-      settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
-   if (d.has('nosap')) internals.sap = undefined; // let ignore sap loader even with openui5 loaded
 }
 
 var core = /*#__PURE__*/Object.freeze({
@@ -10545,8 +10528,8 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options
      * @returns {boolean|Promise} for object redraw
-     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.updateObject} and
-      * then redraw correspondent pad via {@link ObjectPainter.redrawPad}. If possible one should redefine
+     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter#updateObject} and
+      * then redraw correspondent pad via {@link ObjectPainter#redrawPad}. If possible one should redefine
       * only updateObject function and keep this function unchanged. But for some special painters this function is the
       * only way to control how object can be update while requested from the server
       * @protected */
@@ -10632,7 +10615,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated.
-     * @desc Redirects to {@link TPadPainter.checkCanvasResize}
+     * @desc Redirects to {@link TPadPainter#checkCanvasResize}
      * @private */
    checkResize(arg) {
       let p = this.getCanvPainter();
@@ -10654,7 +10637,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Returns created <g> element used for object drawing
-     * @desc Element should be created by {@link ObjectPainter.createG}
+     * @desc Element should be created by {@link ObjectPainter#createG}
      * @protected */
    getG() { return this.draw_g; }
 
@@ -10847,7 +10830,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
-     * @desc Reverse transformation for {@link ObjectPainter.axisToSvg}
+     * @desc Reverse transformation for {@link ObjectPainter#axisToSvg}
      * @param {string} axis - name like "x" or "y"
      * @param {number} coord - graphics coordiante.
      * @param {boolean} ndc - kind of return value
@@ -11972,7 +11955,7 @@ function resize(dom, arg) {
 
 /** @summary Safely remove all drawings from specified element
   * @param {string|object} dom - id or DOM element
-  * @requires painter
+  * @public
   * @example
   * cleanup("drawing");
   * cleanup(document.querySelector("#drawing")); */
@@ -51961,14 +51944,14 @@ class JSRootMenu {
 
       this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
 
-      add(50, "ROOT 5", (curr>=10) && (curr<51));
+      add(50, "ROOT 5", (curr >= 10) && (curr < 51));
       add(51, "Deep Sea");
-      add(52, "Grayscale", (curr>0) && (curr<10));
+      add(52, "Grayscale", (curr > 0) && (curr < 10));
       add(53, "Dark body radiator");
       add(54, "Two-color hue");
       add(55, "Rainbow");
       add(56, "Inverted dark body radiator");
-      add(57, "Bird", (curr>113));
+      add(57, "Bird", (curr > 113));
       add(58, "Cubehelix");
       add(59, "Green Red Violet");
       add(60, "Blue Red Yellow");
@@ -51995,11 +51978,16 @@ class JSRootMenu {
    }
 
    /** @summary Add selection menu entries
+     * @param {String} name - name of submenu
+     * @param {Array} values - array of string entries used as list for selection
+     * @param {String|Number} value - currently elected value, either name or index
+     * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
      * @protected */
    addSelectMenu(name, values, value, set_func) {
+      let use_number = (typeof value == "number");
       this.add("sub:" + name);
       for (let n = 0; n < values.length; ++n)
-         this.addchk(values[n] == value, values[n], values[n], res => set_func(res));
+         this.addchk(use_number ? (n == value) : (values[n] == value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
       this.add("endsub:");
    }
 
@@ -55919,7 +55907,7 @@ class MDIDisplay extends BasePainter {
 /**
  * @summary Custom MDI display
  *
- * @desc All HTML frames should be created before and add via {@link CustomDisplay.addFrame} calls
+ * @desc All HTML frames should be created before and add via {@link CustomDisplay#addFrame} calls
  * @private
  */
 
@@ -68945,7 +68933,7 @@ function setDefaultDrawOpt(classname, opt) {
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options separated by space, comma or semicolon
   * @returns {Promise} with painter object
-  * @requires painter
+  * @public
   * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
   * let file = await openFile("https://root.cern/js/files/hsimple.root");
@@ -69064,9 +69052,9 @@ function draw(dom, obj, opt) {
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options
   * @returns {Promise} with painter object
-  * @requires painter
   * @desc If drawing was not done before, it will be performed with {@link draw}.
-  * Otherwise drawing content will be updated */
+  * Otherwise drawing content will be updated
+  * @public */
 function redraw(dom, obj, opt) {
 
    if (!obj || (typeof obj !== 'object'))
@@ -71943,12 +71931,11 @@ class TDirectory {
       });
    }
 
-} // TDirectory
+} // class TDirectory
 
 /**
   * @summary Interface to read objects from ROOT files
   *
-  * @hideconstructor
   * @desc Use {@link openFile} to create instance of the class
   */
 
@@ -71959,8 +71946,10 @@ class TFile {
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
-      this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
+      // when disabled ('+' at the end of file name), complete file content read with single operation
+      this.fAcceptRanges = true;
+      // use additional time stamp parameter for file name to avoid browser caching problem
+      this.fUseStampPar = settings.UseStamp ? "stamp=" + (new Date).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
       this.fMaxRanges = 200; // maximal number of file ranges requested at once
@@ -72002,7 +71991,7 @@ class TFile {
    }
 
    /** @summary Assign BufferArray with file contentOpen file
-    * @private */
+     * @private */
    assignFileContent(bufArray) {
       this.fFileContent = new TBuffer(new DataView(bufArray));
       this.fAcceptRanges = false;
@@ -72011,8 +72000,8 @@ class TFile {
    }
 
    /** @summary Open file
-    * @returns {Promise} after file keys are read
-    * @private */
+     * @returns {Promise} after file keys are read
+     * @private */
    _open() {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
          return this.readKeys();
@@ -72563,7 +72552,7 @@ class TFile {
 
    /** @summary Read the directory content from  a root file
      * @desc If directory was already read - return previously read object
-     * Same functionality as {@link TFile.readObject}
+     * Same functionality as {@link TFile#readObject}
      * @param {string} dir_name - directory name
      * @param {number} [cycle] - directory cycle
      * @returns {Promise} - promise with read directory */
@@ -73099,6 +73088,37 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
+/** @summary Save JSROOT settings as specified coockie parameter
+  * @private */
+function saveSettings(expires = 365, name = "jsroot_settings") {
+   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
+       d = new Date();
+   d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
+   document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
+}
+
+/** @summary Read JSROOT settings from specified coockie parameter
+  * @private */
+function readSettings(only_check = false, name = "jsroot_settings") {
+   let decodedCookie = decodeURIComponent(document.cookie),
+       ca = decodedCookie.split(';');
+   name += "=";
+   for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ')
+        c = c.substring(1);
+      if (c.indexOf(name) == 0) {
+         let s = JSON.parse(atob(c.substring(name.length, c.length)));
+
+         if (s && typeof s == 'object') {
+            if (!only_check)
+               Object.assign(settings, s);
+            return true;
+          }
+       }
+   }
+}
+
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -73266,8 +73286,11 @@ function keysHierarchy(folder, keys, file, dirname) {
    folder._childs = [];
 
    for (let i = 0; i < keys.length; ++i) {
-      let key = keys[i],
-          item = {
+      let key = keys[i];
+
+      if (settings.OnlyLastCycle && (i > 0) && (key.fName == keys[i-1].fName) && (key.fCycle < keys[i-1].fCycle)) continue;
+
+      let item = {
          _name: key.fName + ";" + key.fCycle,
          _cycle: key.fCycle,
          _kind: "ROOT." + key.fClassName,
@@ -73277,24 +73300,24 @@ function keysHierarchy(folder, keys, file, dirname) {
          _parent: folder
       };
 
-      if (key.fObjlen > 1e5) item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
+      if (key.fObjlen > 1e5)
+         item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
 
-      if ('fRealName' in key)
+      if (key.fRealName)
          item._realname = key.fRealName + ";" + key.fCycle;
 
       if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
-         let dir = null;
-         if (dirname && file) dir = file.getDir(dirname + key.fName);
-         if (!dir) {
+         let dir = (dirname && file) ? file.getDir(dirname + key.fName) : null;
+         if (dir) {
+            // remove cycle number - we have already directory
+            item._name = key.fName;
+            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+         } else  {
             item._more = true;
             item._expand = function(node, obj) {
                // one can get expand call from child objects - ignore them
                return keysHierarchy(node, obj.fKeys);
             };
-         } else {
-            // remove cycle number - we have already directory
-            item._name = key.fName;
-            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
          }
       } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
          if (settings.SkipStreamerInfos) continue;
@@ -74652,6 +74675,71 @@ class HierarchyPainter extends BasePainter {
          });
    }
 
+   /** @summary Fills settings menu items
+     * @private */
+   fillSettingsMenu(menu) {
+      menu.add("sub:Settings");
+
+      menu.add("sub:Files");
+
+      menu.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
+         settings.OnlyLastCycle = flag;
+         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+         this.refreshHtml();
+      });
+
+      menu.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
+         settings.SkipStreamerInfos = !flag;
+         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+         this.refreshHtml();
+      });
+
+      menu.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+
+      menu.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
+
+      menu.add("endsub:");
+
+      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
+          settings.Latex = value;
+      });
+
+      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
+
+      menu.add("sub:Toolbar");
+      menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
+      menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
+      menu.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
+      menu.add("separator");
+      menu.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
+      menu.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
+      menu.add("endsub:");
+
+      menu.add("sub:Interactive");
+      menu.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
+      menu.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
+      menu.add("sub:Zooming");
+      menu.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
+      menu.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
+      menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
+      menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
+      menu.add("endsub:");
+      menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
+      menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
+      menu.add("endsub:");
+
+      menu.add("separator");
+
+      menu.add("Save settings", () => {
+         let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
+         promise.then(res => { if (res) saveSettings(); });
+      });
+      menu.add("Delete settings", () => saveSettings(-1));
+
+      menu.add("endsub:");
+   }
+
    /** @summary Handle context menu in the hieararchy
      * @private */
    tree_contextmenu(evnt, elem) {
@@ -74734,6 +74822,7 @@ class HierarchyPainter extends BasePainter {
 
             menu.add("Direct link", () => window.open(addr));
             menu.add("Only items", () => window.open(addr + "&nobrowser"));
+            this.fillSettingsMenu(menu);
          } else if (onlineprop) {
             this.fillOnlineMenu(menu, onlineprop, itemname);
          } else {
@@ -76680,6 +76769,7 @@ drawInspector: drawInspector,
 drawStreamerInfo: drawStreamerInfo,
 drawList: drawList,
 markAsStreamerInfo: markAsStreamerInfo,
+readSettings: readSettings,
 folderHierarchy: folderHierarchy,
 taskHierarchy: taskHierarchy,
 listHierarchy: listHierarchy,
@@ -76690,6 +76780,10 @@ keysHierarchy: keysHierarchy
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
+
+   // first try to read settings from coockies
+   readSettings();
+
    let d = decodeUrl(url);
 
    if (d.has("optimize")) {
@@ -76700,6 +76794,17 @@ function readStyleFromURL(url) {
          if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
       }
    }
+
+   if (d.has("lastcycle")) {
+      let val = d.get("lastcycle");
+      settings.OnlyLastCycle = (val != "0") && (val != "false");
+   }
+
+   let usestamp = d.get('usestamp');
+   settings.UseStamp = (usestamp != "0") && (usestamp != "false");
+
+   if (d.has('wrong_http_response'))
+      settings.HandleWrongHttpResponse = true;
 
    let inter = d.get("interactive");
    if (inter === "nomenu")
@@ -76784,9 +76889,16 @@ function readStyleFromURL(url) {
 }
 
 
+
 /** @summary Build main GUI
-  * @returns {Promise} when completed  */
-function buildGUI(gui_element, gui_kind) {
+  * @desc Used in many HTML files to create JSROOT GUI elements
+  * @param {String} gui_element - id of the `<div>` element
+  * @param {String} gui_kind - either "online", "nobrowser", "draw"
+  * @returns {Promise} with {@link HierarchyPainter} instance
+  * @example
+  * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
+  * buildGUI("guiDiv"); */
+function buildGUI(gui_element, gui_kind = "") {
    let myDiv = (typeof gui_element == 'string') ? select('#' + gui_element) : select(gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));
@@ -94581,7 +94693,7 @@ function treeProcess(tree, selector, args) {
 
 }
 
-/** @summary  implementation of TTree::Draw
+/** @summary implementation of TTree::Draw
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
   * @param {string} [args.cut=undefined]   - cut expression (also can be part of 'expr' after '::')
