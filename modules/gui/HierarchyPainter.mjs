@@ -1692,11 +1692,21 @@ class HierarchyPainter extends BasePainter {
    fillSettingsMenu(menu) {
       menu.add("sub:Settings");
 
+      menu.add("sub:Files");
+
       menu.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
          settings.OnlyLastCycle = flag;
          this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
          this.refreshHtml();
       });
+
+      menu.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
+         settings.SkipStreamerInfos = !flag;
+         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+         this.refreshHtml();
+      });
+
+      menu.add("endsub:");
 
       menu.add("endsub:");
    }
