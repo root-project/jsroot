@@ -18,6 +18,11 @@ function readStyleFromURL(url) {
       }
    }
 
+   if (d.has("lastcycle")) {
+      let val = d.get("lastcycle");
+      settings.OnlyLastCycle = (val != "0") && (val != "false");
+   }
+
    let inter = d.get("interactive");
    if (inter === "nomenu")
       settings.ContextMenu = false;

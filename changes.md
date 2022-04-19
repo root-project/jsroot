@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. `settings.OnlyLastCycle` defines if only last object version show in TFile
+
+
 ## Changes in 7.0.0
 1. Use ES6 modules for code organization
 2. Rewrite code with ES6 classes; one have to use class syntax to derive from it
