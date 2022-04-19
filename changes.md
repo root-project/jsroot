@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. `settings.OnlyLastCycle` defines if only last object version show in TFile
+2. Let change many settings parameters via "Settings" menu of the top hierarchy item
 
 
 ## Changes in 7.0.0

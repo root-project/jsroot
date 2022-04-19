@@ -1708,6 +1708,10 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
+      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
+          settings.Latex = value;
+      });
+
       menu.add("endsub:");
    }
 
