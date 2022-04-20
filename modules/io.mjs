@@ -3207,95 +3207,93 @@ class TFile {
      * @private */
    readKeys() {
 
-      let file = this;
-
       // with the first readbuffer we read bigger amount to create header cache
       return this.readBuffer([0, 1024]).then(blob => {
-         let buf = new TBuffer(blob, 0, file);
+         let buf = new TBuffer(blob, 0, this);
 
          if (buf.substring(0, 4) !== 'root')
-            return Promise.reject(Error(`Not a ROOT file ${file.fURL}`));
+            return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
 
          buf.shift(4);
 
-         file.fVersion = buf.ntou4();
-         file.fBEGIN = buf.ntou4();
-         if (file.fVersion < 1000000) { //small file
-            file.fEND = buf.ntou4();
-            file.fSeekFree = buf.ntou4();
-            file.fNbytesFree = buf.ntou4();
+         this.fVersion = buf.ntou4();
+         this.fBEGIN = buf.ntou4();
+         if (this.fVersion < 1000000) { //small file
+            this.fEND = buf.ntou4();
+            this.fSeekFree = buf.ntou4();
+            this.fNbytesFree = buf.ntou4();
             buf.shift(4); // const nfree = buf.ntoi4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou4();
-            file.fNbytesInfo = buf.ntou4();
+            this.fNbytesName = buf.ntou4();
+            this.fUnits = buf.ntou1();
+            this.fCompress = buf.ntou4();
+            this.fSeekInfo = buf.ntou4();
+            this.fNbytesInfo = buf.ntou4();
          } else { // new format to support large files
-            file.fEND = buf.ntou8();
-            file.fSeekFree = buf.ntou8();
-            file.fNbytesFree = buf.ntou4();
+            this.fEND = buf.ntou8();
+            this.fSeekFree = buf.ntou8();
+            this.fNbytesFree = buf.ntou4();
             buf.shift(4); // const nfree = buf.ntou4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou8();
-            file.fNbytesInfo = buf.ntou4();
+            this.fNbytesName = buf.ntou4();
+            this.fUnits = buf.ntou1();
+            this.fCompress = buf.ntou4();
+            this.fSeekInfo = buf.ntou8();
+            this.fNbytesInfo = buf.ntou4();
          }
 
          // empty file
-         if (!file.fSeekInfo || !file.fNbytesInfo)
-            return Promise.reject(Error(`File ${file.fURL} does not provide streamer infos`));
+         if (!this.fSeekInfo || !this.fNbytesInfo)
+            return Promise.reject(Error(`File ${this.fURL} does not provide streamer infos`));
 
          // extra check to prevent reading of corrupted data
-         if (!file.fNbytesName || file.fNbytesName > 100000)
-            return Promise.reject(Error(`Cannot read directory info of the file ${file.fURL}`));
+         if (!this.fNbytesName || this.fNbytesName > 100000)
+            return Promise.reject(Error(`Cannot read directory info of the file ${this.fURL}`));
 
          //*-*-------------Read directory info
-         let nbytes = file.fNbytesName + 22;
+         let nbytes = this.fNbytesName + 22;
          nbytes += 4;  // fDatimeC.Sizeof();
          nbytes += 4;  // fDatimeM.Sizeof();
          nbytes += 18; // fUUID.Sizeof();
          // assume that the file may be above 2 Gbytes if file version is > 4
-         if (file.fVersion >= 40000) nbytes += 12;
+         if (this.fVersion >= 40000) nbytes += 12;
 
          // this part typically read from the header, no need to optimize
-         return file.readBuffer([file.fBEGIN, Math.max(300, nbytes)]);
+         return this.readBuffer([this.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
 
-         let buf3 = new TBuffer(blob3, 0, file);
+         let buf3 = new TBuffer(blob3, 0, this);
 
          // keep only title from TKey data
-         file.fTitle = buf3.readTKey().fTitle;
+         this.fTitle = buf3.readTKey().fTitle;
 
-         buf3.locate(file.fNbytesName);
+         buf3.locate(this.fNbytesName);
 
          // we read TDirectory part of TFile
-         buf3.classStreamer(file, 'TDirectory');
+         buf3.classStreamer(this, 'TDirectory');
 
-         if (!file.fSeekKeys)
-            return Promise.reject(Error(`Empty keys list in ${file.fURL}`));
+         if (!this.fSeekKeys)
+            return Promise.reject(Error(`Empty keys list in ${this.fURL}`));
 
          // read with same request keys and streamer infos
-         return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
+         return this.readBuffer([this.fSeekKeys, this.fNbytesKeys, this.fSeekInfo, this.fNbytesInfo]);
       }).then(blobs => {
 
-         const buf4 = new TBuffer(blobs[0], 0, file);
+         const buf4 = new TBuffer(blobs[0], 0, this);
 
          buf4.readTKey(); //
          const nkeys = buf4.ntoi4();
          for (let i = 0; i < nkeys; ++i)
-            file.fKeys.push(buf4.readTKey());
+            this.fKeys.push(buf4.readTKey());
 
-         const buf5 = new TBuffer(blobs[1], 0, file),
+         const buf5 = new TBuffer(blobs[1], 0, this),
                si_key = buf5.readTKey();
          if (!si_key)
-            return Promise.reject(Error(`Fail to read StreamerInfo data in ${file.fURL}`));
+            return Promise.reject(Error(`Fail to read StreamerInfo data in ${this.fURL}`));
 
-         file.fKeys.push(si_key);
-         return file.readObjBuffer(si_key);
+         this.fKeys.push(si_key);
+         return this.readObjBuffer(si_key);
       }).then(blob6 => {
-          file.extractStreamerInfos(blob6);
-          return file;
+          this.extractStreamerInfos(blob6);
+          return this;
       });
    }
 
