@@ -1268,7 +1268,7 @@ function createMemberStreamer(element, file) {
 
 
 /** @summary Analyze and returns arrays kind
-  * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
+  * @returns 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
   * @private */
 function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === "string") ||
@@ -1978,7 +1978,7 @@ function ZIP_inflate(arr, tgt) {
  *
  * @param input {Buffer} input data
  * @param output {Buffer} output data
- * @return {Number} number of decoded bytes
+ * @returns {Number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
@@ -2648,7 +2648,7 @@ class TDirectory {
    /** @summary Read object from the directory
      * @param {string} name - object name
      * @param {number} [cycle] - cycle number
-     * @return {Promise} with read object */
+     * @returns {Promise} with read object */
    readObject(obj_name, cycle) {
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }

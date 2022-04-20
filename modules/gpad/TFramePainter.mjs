@@ -1447,7 +1447,6 @@ class TFramePainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} tframe - TFrame object */
-
    constructor(dom, tframe) {
       super(dom, (tframe && tframe.$dummy) ? null : tframe);
       this.zoom_kind = 0;
@@ -2645,7 +2644,8 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Provide zooming of single axis
-     * @desc One can specify names like x/y/z but also second axis x2 or y2 */
+     * @desc One can specify names like x/y/z but also second axis x2 or y2
+     * @private */
    zoomSingle(name, vmin, vmax) {
       // disable zooming when axis conversion is enabled
       if (this.projection || !this[name+"_handle"]) return Promise.resolve(false);

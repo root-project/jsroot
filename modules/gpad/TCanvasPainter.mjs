@@ -27,7 +27,7 @@ function directDrawTFrame(dom, obj, opt) {
    return fp.redraw();
 }
 
-let TCanvasStatusBits = {
+const TCanvasStatusBits = {
    kShowEventStatus: BIT(15),
    kAutoExec: BIT(16),
    kMenuBar: BIT(17),
@@ -703,9 +703,9 @@ class TCanvasPainter extends TPadPainter {
 
 
 /** @summary Ensure TCanvas and TFrame for the painter object
- * @param {Object} painter  - painter object to process
- * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
- * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
+  * @param {Object} painter  - painter object to process
+  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
+  * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
 function ensureTCanvas(painter, frame_kind) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
