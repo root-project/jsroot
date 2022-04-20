@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "19/04/2022";
+let version_date = "20/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -45544,11 +45544,11 @@ class TAxisPainter extends ObjectPainter {
             if (this.vertical) {
                arg.x = fix_coord;
                arg.y = pos;
-               arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+               arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
             } else {
                arg.x = pos;
                arg.y = fix_coord;
-               arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+               arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
             }
 
             if (rotate_lbls)
@@ -45765,7 +45765,7 @@ class TAxisPainter extends ObjectPainter {
             title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
             this.drawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 90 : 270,
+                            rotate: (rotate < 0) ? 90 : 270,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
@@ -45773,7 +45773,7 @@ class TAxisPainter extends ObjectPainter {
             title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.drawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 180 : 0,
+                            rotate: (rotate < 0) ? 180 : 0,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          }
 
@@ -54451,7 +54451,6 @@ class TFramePainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} tframe - TFrame object */
-
    constructor(dom, tframe) {
       super(dom, (tframe && tframe.$dummy) ? null : tframe);
       this.zoom_kind = 0;
@@ -55649,7 +55648,8 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Provide zooming of single axis
-     * @desc One can specify names like x/y/z but also second axis x2 or y2 */
+     * @desc One can specify names like x/y/z but also second axis x2 or y2
+     * @private */
    zoomSingle(name, vmin, vmax) {
       // disable zooming when axis conversion is enabled
       if (this.projection || !this[name+"_handle"]) return Promise.resolve(false);
@@ -57749,7 +57749,7 @@ class TPadPainter extends ObjectPainter {
          return this.custom_palette;
 
       let cp = this.getCanvPainter();
-      return cp ? cp.custom_palette : null;
+      return cp?.custom_palette;
    }
 
    /** @summary Returns number of painters
@@ -57892,7 +57892,7 @@ class TPadPainter extends ObjectPainter {
                       .property('vertical', settings.ToolBarVert);
 
          factor = 0.66;
-         if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
+         if (this.pad?.fCw && this.pad?.fCh && (this.pad?.fCw > 0)) {
             factor = this.pad.fCh / this.pad.fCw;
             if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
@@ -58155,7 +58155,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Check if special objects appears in primitives
      * @desc it could be list of colors or palette */
    checkSpecialsInPrimitives(can) {
-      let lst = can ? can.fPrimitives : null;
+      let lst = can?.fPrimitives;
       if (!lst) return;
       for (let i = 0; i < lst.arr.length; ++i) {
          if (this.checkSpecial(lst.arr[i])) {
@@ -58170,7 +58170,7 @@ class TPadPainter extends ObjectPainter {
      * @desc used to find title drawing
      * @private */
    findInPrimitives(objname, objtype) {
-      let arr = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr : null;
+      let arr = this.pad?.fPrimitives?.arr;
 
       return arr ? arr.find(obj => (obj.fName == objname) && (objtype ? (obj.typename == objtype) : true)) : null;
    }
@@ -58198,7 +58198,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Return true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
-      let arr = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr : null;
+      let arr = this.pad?.fPrimitives?.arr;
       return arr && arr.find(obj => obj._typename != "TPad") ? true : false;
    }
 
@@ -58242,7 +58242,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Draw single primitive */
-   drawObject(dom, obj, opt) {
+   drawObject(/* dom, obj, opt */) {
       console.log('Not possible to draw object without loading of draw.mjs');
       return Promise.resolve(null);
    }
@@ -58257,7 +58257,7 @@ class TPadPainter extends ObjectPainter {
             this._start_tm = new Date().getTime();
 
          // set number of primitves
-         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
+         this._num_primitives = this.pad?.fPrimitives?.arr?.length || 0;
 
          // sync to prevent immediate pad redraw during normal drawing sequence
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
@@ -58266,7 +58266,7 @@ class TPadPainter extends ObjectPainter {
       if (indx >= this._num_primitives) {
          if (this._start_tm) {
             let spenttm = new Date().getTime() - this._start_tm;
-            if (spenttm > 1000) console.log(`Canvas ${this.pad ? this.pad.fName : "---"} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
+            if (spenttm > 1000) console.log(`Canvas ${this.pad?.fName || "---"} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
             delete this._start_tm;
          }
 
@@ -59484,7 +59484,7 @@ function directDrawTFrame(dom, obj, opt) {
    return fp.redraw();
 }
 
-let TCanvasStatusBits = {
+const TCanvasStatusBits = {
    kShowEventStatus: BIT(15),
    kAutoExec: BIT(16),
    kMenuBar: BIT(17),
@@ -60160,9 +60160,9 @@ class TCanvasPainter extends TPadPainter {
 
 
 /** @summary Ensure TCanvas and TFrame for the painter object
- * @param {Object} painter  - painter object to process
- * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
- * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
+  * @param {Object} painter  - painter object to process
+  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
+  * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
 function ensureTCanvas(painter, frame_kind) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
@@ -60433,14 +60433,14 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary draw TPaveLabel object */
-   drawPaveLabel(_width, _height) {
+   drawPaveLabel(width, height) {
       this.UseTextColor = true;
 
       let pave = this.getObject();
 
-      this.startTextDrawing(pave.fTextFont, _height/1.2);
+      this.startTextDrawing(pave.fTextFont, height/1.2);
 
-      this.drawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.getColor(pave.fTextColor) });
+      this.drawText({ align: pave.fTextAlign, width, height, text: pave.fLabel, color: this.getColor(pave.fTextColor) });
 
       return this.finishTextDrawing();
    }
@@ -60482,7 +60482,7 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor, latex: 1 });
+         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: tcolor, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
          let posy = j*stepy;
@@ -60494,7 +60494,7 @@ class TPavePainter extends ObjectPainter {
                this.drawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], color: tcolor });
          } else if (lines[j].indexOf('=') < 0) {
-            if (j==0) {
+            if (j == 0) {
                has_head = true;
                let max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
                if (lines[j].length > max_hlen + 5)
@@ -60672,7 +60672,7 @@ class TPavePainter extends ObjectPainter {
 
          this.startTextDrawing(pt.fTextFont, h/1.5, lbl_g);
 
-         this.drawText({ align: 22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
+         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
 
          promises.push(this.finishTextDrawing(lbl_g));
 
@@ -61480,7 +61480,7 @@ TPavePainter: TPavePainter,
 produceLegend: produceLegend
 });
 
-/// TH painting base class
+/// histogram painter base class
 
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
@@ -61671,7 +61671,6 @@ function getColorPalette(id) {
     return new ColorPalette(palette);
 }
 
-// ==============================================================================
 
 /**
  * @summary Class to decode histograms draw options
@@ -62073,9 +62072,9 @@ class THistDrawOptions {
 
       return res;
    }
-}
 
-// ==============================================================================
+} // class THistDrawOptions
+
 
 /**
  * @summary Handle for histogram contour
@@ -62180,13 +62179,12 @@ class HistContour {
 
       return (zindx < 0) ? null : palette.calcColorIndex(zindx, this.arr.length);
    }
-}
 
-// ==============================================================================
+} // class HistContour
 
-/** histogram status bits
+/** @summary histogram status bits
   * @private */
-let TH1StatusBits = {
+const TH1StatusBits = {
    kNoStats       : BIT(9),  // don't draw stats box
    kUserContour   : BIT(10), // user specified contour levels
    kCanRebin      : BIT(11), // can rebin axis
@@ -62195,6 +62193,7 @@ let TH1StatusBits = {
    kNoTitle       : BIT(17), // don't draw the histogram title
    kIsAverage     : BIT(18)  // Bin contents are average (used by Add)
 };
+
 
 /**
  * @summary Basic painter for histogram classes
@@ -63715,7 +63714,7 @@ class THistPainter extends ObjectPainter {
       return "[" + funcs.axisAsText(name, x1) + ", " + funcs.axisAsText(name, x2) + ")";
    }
 
-   /** @summary draw TH2 object
+   /** @summary generic draw function for histograms
      * @private */
    static _drawHist(painter, opt) {
 
@@ -66121,23 +66120,23 @@ class TH2Painter$2 extends THistPainter {
    /** @summary Draw TH2 bins as text */
    drawBinsText(handle) {
       let histo = this.getObject(),
-          posx, posy, sizex, sizey,
-          text_col = this.getColor(histo.fMarkerColor),
-          text_angle = -1*this.options.TextAngle,
-          text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
+          x, y, width, height,
+          color = this.getColor(histo.fMarkerColor),
+          rotate = -1*this.options.TextAngle,
+          draw_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
           profile2d = this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'),
           show_err = (this.options.TextKind == "E"),
-          use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
+          latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
       if (handle === null) handle = this.prepareDraw({ rounding: false });
 
-      if ((histo.fMarkerSize!==1) && text_angle)
+      if ((histo.fMarkerSize!==1) && rotate)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
 
       if (histo.fBarOffset !== 0) text_offset = histo.fBarOffset*1e-3;
 
-      this.startTextDrawing(42, text_size, text_g, text_size);
+      this.startTextDrawing(42, text_size, draw_g, text_size);
 
       for (let i = handle.i1; i < handle.i2; ++i) {
          let binw = handle.grx[i+1] - handle.grx[i];
@@ -66149,7 +66148,7 @@ class TH2Painter$2 extends THistPainter {
             if (profile2d)
                binz = histo.getBinEntries(i+1, j+1);
 
-            let lbl = (binz === Math.round(binz)) ? binz.toString() :
+            let text = (binz === Math.round(binz)) ? binz.toString() :
                          floatToString(binz, gStyle.fPaintTextFormat);
 
             if (show_err) {
@@ -66157,30 +66156,29 @@ class TH2Painter$2 extends THistPainter {
                    lble = (errz === Math.round(errz)) ? errz.toString() :
                             floatToString(errz, gStyle.fPaintTextFormat);
                if (this.options.TextLine)
-                  lbl += '\xB1' + lble;
+                  text += '\xB1' + lble;
                else
-                  lbl = "#splitline{" + lbl + "}{#pm" + lble + "}";
+                  text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (text_angle /*|| (histo.fMarkerSize!==1)*/) {
-               posx = Math.round(handle.grx[i] + binw*0.5);
-               posy = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
-               sizex = 0;
-               sizey = 0;
+            if (rotate /*|| (histo.fMarkerSize!==1)*/) {
+               x = Math.round(handle.grx[i] + binw*0.5);
+               y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
+               width = height = 0;
             } else {
-               posx = Math.round(handle.grx[i] + binw*0.1);
-               posy = Math.round(handle.gry[j+1] + binh*(0.1 + text_offset));
-               sizex = Math.round(binw*0.8);
-               sizey = Math.round(binh*0.8);
+               x = Math.round(handle.grx[i] + binw*0.1);
+               y = Math.round(handle.gry[j+1] + binh*(0.1 + text_offset));
+               width = Math.round(binw*0.8);
+               height = Math.round(binh*0.8);
             }
 
-            this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
+            this.drawText({ align: 22, x, y, width, height, rotate, text, color, latex, draw_g });
          }
       }
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
-      return this.finishTextDrawing(text_g, true).then(() => handle);
+      return this.finishTextDrawing(draw_g, true).then(() => handle);
    }
 
    /** @summary Draw TH2 bins as arrows */
@@ -67029,17 +67027,17 @@ class TH2Painter$2 extends THistPainter {
       let pnts = [];
 
       for (let n = 0; n < nbins; n++) {
-         let angle = (0.5-n/nbins) *Math.PI*2,
+         let angle = (0.5 - n/nbins)*Math.PI*2,
              cx = Math.round((0.9*rect.width/2 - 2*circle_size) * Math.cos(angle)),
              cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(angle)),
-             tx = Math.round(0.9*rect.width/2 * Math.cos(angle)),
-             ty = Math.round(0.9*rect.height/2 * Math.sin(angle)),
-             tangle = Math.round(angle / Math.PI * 180), talign = 12,
+             x = Math.round(0.9*rect.width/2 * Math.cos(angle)),
+             y = Math.round(0.9*rect.height/2 * Math.sin(angle)),
+             rotate = Math.round(angle/Math.PI*180), align = 12,
              color = palette ? palette.calcColor(n, nbins) : 'black';
 
          pnts.push({x: cx, y: cy, a: angle, color: color }); // remember points coordinates
 
-         if ((tangle < -90) || (tangle > 90)) { tangle += 180; talign = 32; }
+         if ((rotate < -90) || (rotate > 90)) { rotate += 180; align = 32; }
 
          let s2 = Math.round(text_size/2), s1 = 2*s2;
 
@@ -67048,7 +67046,7 @@ class TH2Painter$2 extends THistPainter {
                     .style('stroke', color)
                     .style('fill','none');
 
-         this.drawText({ align: talign, rotate: tangle, text: getBinLabel(n), x: tx, y: ty });
+         this.drawText({ align, rotate, text: getBinLabel(n), x, y });
       }
 
       let max_width = circle_size/2, max_value = 0, min_value = 0;
@@ -68696,6 +68694,7 @@ const drawFuncs = { lst: [
    { name: "TGraphTime", icon: "img_graph", class: () => Promise.resolve().then(function () { return TGraphTimePainter$1; }).then(h => h.TGraphTimePainter), opt: "once;repeat;first", theonly: true },
    { name: "TGraph2D", icon: "img_graph", class: () => Promise.resolve().then(function () { return TGraph2DPainter$1; }).then(h => h.TGraph2DPainter), opt: ";P;PCOL", theonly: true },
    { name: "TGraph2DErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
+   { name: "TGraph2DAsymmErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
    { name: "TGraphPolargram", icon: "img_graph", class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
    { name: "TGraphPolar", icon: "img_graph", class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ";F;L;P;PE", theonly: true },
    { name: /^TGraph/, icon: "img_graph", class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ";L;P" },
@@ -69913,8 +69912,8 @@ function getTypeId(typname, norecursion) {
    return -1;
 }
 
-   /** @summary create element of the streamer
-     * @private  */
+/** @summary create element of the streamer
+  * @private  */
 function createStreamerElement(name, typename, file) {
    const elem = {
       _typename: 'TStreamerElement', fName: name, fTypeName: typename,
@@ -70519,7 +70518,7 @@ function createMemberStreamer(element, file) {
 
 
 /** @summary Analyze and returns arrays kind
-  * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
+  * @returns 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
   * @private */
 function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === "string") ||
@@ -71229,7 +71228,7 @@ function ZIP_inflate(arr, tgt) {
  *
  * @param input {Buffer} input data
  * @param output {Buffer} output data
- * @return {Number} number of decoded bytes
+ * @returns {Number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
@@ -71899,7 +71898,7 @@ class TDirectory {
    /** @summary Read object from the directory
      * @param {string} name - object name
      * @param {number} [cycle] - cycle number
-     * @return {Promise} with read object */
+     * @returns {Promise} with read object */
    readObject(obj_name, cycle) {
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
@@ -72341,8 +72340,6 @@ class TFile {
       // remove leading slashes
       while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.slice(1);
 
-      let isdir, read_key;
-
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
@@ -72350,6 +72347,8 @@ class TFile {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == clTList))
             return this.fStreamerInfos;
+
+         let isdir = false;
 
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             let dir = this.getDir(obj_name, cycle);
@@ -72360,21 +72359,19 @@ class TFile {
          if (!isdir && only_dir)
             return Promise.reject(Error(`Key ${obj_name} is not directory}`));
 
-         read_key = key;
-
          return this.readObjBuffer(key).then(buf => {
 
             if (isdir) {
                let dir = new TDirectory(this, obj_name, cycle);
-               dir.fTitle = read_key.fTitle;
+               dir.fTitle = key.fTitle;
                return dir.readKeys(buf);
             }
 
             let obj = {};
             buf.mapObject(1, obj); // tag object itself with id==1
-            buf.classStreamer(obj, read_key.fClassName);
+            buf.classStreamer(obj, key.fClassName);
 
-            if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
+            if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
                return this._readFormulas(obj);
 
             return obj;
@@ -72383,7 +72380,7 @@ class TFile {
    }
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
-    * @private */
+     * @private */
    _readFormulas(tf1) {
 
       let arr = [];
@@ -72399,7 +72396,7 @@ class TFile {
    }
 
    /** @summary extract streamer infos from the buffer
-    * @private */
+     * @private */
    extractStreamerInfos(buf) {
       if (!buf) return;
 
@@ -72455,98 +72452,96 @@ class TFile {
    }
 
    /** @summary Read file keys
-    * @private */
+     * @private */
    readKeys() {
-
-      let file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
       return this.readBuffer([0, 1024]).then(blob => {
-         let buf = new TBuffer(blob, 0, file);
+         let buf = new TBuffer(blob, 0, this);
 
          if (buf.substring(0, 4) !== 'root')
-            return Promise.reject(Error(`Not a ROOT file ${file.fURL}`));
+            return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
 
          buf.shift(4);
 
-         file.fVersion = buf.ntou4();
-         file.fBEGIN = buf.ntou4();
-         if (file.fVersion < 1000000) { //small file
-            file.fEND = buf.ntou4();
-            file.fSeekFree = buf.ntou4();
-            file.fNbytesFree = buf.ntou4();
+         this.fVersion = buf.ntou4();
+         this.fBEGIN = buf.ntou4();
+         if (this.fVersion < 1000000) { //small file
+            this.fEND = buf.ntou4();
+            this.fSeekFree = buf.ntou4();
+            this.fNbytesFree = buf.ntou4();
             buf.shift(4); // const nfree = buf.ntoi4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou4();
-            file.fNbytesInfo = buf.ntou4();
+            this.fNbytesName = buf.ntou4();
+            this.fUnits = buf.ntou1();
+            this.fCompress = buf.ntou4();
+            this.fSeekInfo = buf.ntou4();
+            this.fNbytesInfo = buf.ntou4();
          } else { // new format to support large files
-            file.fEND = buf.ntou8();
-            file.fSeekFree = buf.ntou8();
-            file.fNbytesFree = buf.ntou4();
+            this.fEND = buf.ntou8();
+            this.fSeekFree = buf.ntou8();
+            this.fNbytesFree = buf.ntou4();
             buf.shift(4); // const nfree = buf.ntou4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou8();
-            file.fNbytesInfo = buf.ntou4();
+            this.fNbytesName = buf.ntou4();
+            this.fUnits = buf.ntou1();
+            this.fCompress = buf.ntou4();
+            this.fSeekInfo = buf.ntou8();
+            this.fNbytesInfo = buf.ntou4();
          }
 
          // empty file
-         if (!file.fSeekInfo || !file.fNbytesInfo)
-            return Promise.reject(Error(`File ${file.fURL} does not provide streamer infos`));
+         if (!this.fSeekInfo || !this.fNbytesInfo)
+            return Promise.reject(Error(`File ${this.fURL} does not provide streamer infos`));
 
          // extra check to prevent reading of corrupted data
-         if (!file.fNbytesName || file.fNbytesName > 100000)
-            return Promise.reject(Error(`Cannot read directory info of the file ${file.fURL}`));
+         if (!this.fNbytesName || this.fNbytesName > 100000)
+            return Promise.reject(Error(`Cannot read directory info of the file ${this.fURL}`));
 
          //*-*-------------Read directory info
-         let nbytes = file.fNbytesName + 22;
+         let nbytes = this.fNbytesName + 22;
          nbytes += 4;  // fDatimeC.Sizeof();
          nbytes += 4;  // fDatimeM.Sizeof();
          nbytes += 18; // fUUID.Sizeof();
          // assume that the file may be above 2 Gbytes if file version is > 4
-         if (file.fVersion >= 40000) nbytes += 12;
+         if (this.fVersion >= 40000) nbytes += 12;
 
          // this part typically read from the header, no need to optimize
-         return file.readBuffer([file.fBEGIN, Math.max(300, nbytes)]);
+         return this.readBuffer([this.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
 
-         let buf3 = new TBuffer(blob3, 0, file);
+         let buf3 = new TBuffer(blob3, 0, this);
 
          // keep only title from TKey data
-         file.fTitle = buf3.readTKey().fTitle;
+         this.fTitle = buf3.readTKey().fTitle;
 
-         buf3.locate(file.fNbytesName);
+         buf3.locate(this.fNbytesName);
 
          // we read TDirectory part of TFile
-         buf3.classStreamer(file, 'TDirectory');
+         buf3.classStreamer(this, 'TDirectory');
 
-         if (!file.fSeekKeys)
-            return Promise.reject(Error(`Empty keys list in ${file.fURL}`));
+         if (!this.fSeekKeys)
+            return Promise.reject(Error(`Empty keys list in ${this.fURL}`));
 
          // read with same request keys and streamer infos
-         return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
+         return this.readBuffer([this.fSeekKeys, this.fNbytesKeys, this.fSeekInfo, this.fNbytesInfo]);
       }).then(blobs => {
 
-         const buf4 = new TBuffer(blobs[0], 0, file);
+         const buf4 = new TBuffer(blobs[0], 0, this);
 
          buf4.readTKey(); //
          const nkeys = buf4.ntoi4();
          for (let i = 0; i < nkeys; ++i)
-            file.fKeys.push(buf4.readTKey());
+            this.fKeys.push(buf4.readTKey());
 
-         const buf5 = new TBuffer(blobs[1], 0, file),
+         const buf5 = new TBuffer(blobs[1], 0, this),
                si_key = buf5.readTKey();
          if (!si_key)
-            return Promise.reject(Error(`Fail to read StreamerInfo data in ${file.fURL}`));
+            return Promise.reject(Error(`Fail to read StreamerInfo data in ${this.fURL}`));
 
-         file.fKeys.push(si_key);
-         return file.readObjBuffer(si_key);
+         this.fKeys.push(si_key);
+         return this.readObjBuffer(si_key);
       }).then(blob6 => {
-          file.extractStreamerInfos(blob6);
-          return file;
+          this.extractStreamerInfos(blob6);
+          return this;
       });
    }
 
@@ -72593,8 +72588,8 @@ class TFile {
    }
 
    /** @summary Returns streamer for the class 'clname',
-    * @desc From the list of streamers or generate it from the streamer infos and add it to the list
-    * @private */
+     * @desc From the list of streamers or generate it from the streamer infos and add it to the list
+     * @private */
    getStreamer(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
@@ -72654,7 +72649,7 @@ class TFile {
    }
 
    /** @summary Here we produce list of members, resolving all base classes
-    * @private */
+     * @private */
    getSplittedStreamer(streamer, tgt) {
       if (!streamer) return tgt;
 
@@ -72695,7 +72690,7 @@ class TFile {
    }
 
    /** @summary Fully clenaup TFile data
-    * @private */
+     * @private */
    delete() {
       this.fDirectories = null;
       this.fKeys = null;
@@ -72705,7 +72700,7 @@ class TFile {
       this.fTagOffset = 0;
    }
 
-} // TFile
+} // class TFile
 
 /** @summary Function to read vector element in the streamer
   * @private */
@@ -87596,7 +87591,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       res.Color = d.check("COL");
       res.Line = d.check("LINE");
-      res.Error = d.check("ERR") && this.matchObjectType("TGraph2DErrors");
+      res.Error = d.check("ERR") && (this.matchObjectType("TGraph2DErrors") || this.matchObjectType("TGraph2DAsymmErrors"));
       res.Circles = d.check("P0");
       res.Markers = d.check("P");
 
@@ -87614,23 +87609,30 @@ class TGraph2DPainter extends ObjectPainter {
    /** @summary Create histogram for axes drawing */
    createHistogram() {
       let gr = this.getObject(),
+          asymm = this.matchObjectType("TGraph2DAsymmErrors"),
           xmin = gr.fX[0], xmax = xmin,
           ymin = gr.fY[0], ymax = ymin,
           zmin = gr.fZ[0], zmax = zmin;
 
       for (let p = 0; p < gr.fNpoints;++p) {
 
-         let x = gr.fX[p], y = gr.fY[p], z = gr.fZ[p],
-             errx = this.options.Error ? gr.fEX[p] : 0,
-             erry = this.options.Error ? gr.fEY[p] : 0,
-             errz = this.options.Error ? gr.fEZ[p] : 0;
+         let x = gr.fX[p], y = gr.fY[p], z = gr.fZ[p];
 
-         xmin = Math.min(xmin, x-errx);
-         xmax = Math.max(xmax, x+errx);
-         ymin = Math.min(ymin, y-erry);
-         ymax = Math.max(ymax, y+erry);
-         zmin = Math.min(zmin, z-errz);
-         zmax = Math.max(zmax, z+errz);
+         if (this.options.Error) {
+            xmin = Math.min(xmin, x - (asymm ? gr.fEXlow[p] : gr.fEX[p]));
+            xmax = Math.max(xmax, x + (asymm ? gr.fEXhigh[p] : gr.fEX[p]));
+            ymin = Math.min(ymin, y - (asymm ? gr.fEYlow[p] : gr.fEY[p]));
+            ymax = Math.max(ymax, y + (asymm ? gr.fEYhigh[p] : gr.fEY[p]));
+            zmin = Math.min(zmin, z - (asymm ? gr.fEZlow[p] : gr.fEZ[p]));
+            zmax = Math.max(zmax, z + (asymm ? gr.fEZhigh[p] : gr.fEZ[p]));
+         } else {
+            xmin = Math.min(xmin, x);
+            xmax = Math.max(xmax, x);
+            ymin = Math.min(ymin, y);
+            ymax = Math.max(ymax, y);
+            zmin = Math.min(zmin, z);
+            zmax = Math.max(zmax, z);
+         }
       }
 
       if (xmin >= xmax) xmax = xmin+1;
@@ -87776,13 +87778,15 @@ class TGraph2DPainter extends ObjectPainter {
          let size = Math.floor(countSelected(lvl_zmin, lvl_zmax) / step),
              pnts = null, select = 0,
              index = new Int32Array(size), icnt = 0,
-             err = null, line = null, ierr = 0, iline = 0;
+             err = null, asymm = false, line = null, ierr = 0, iline = 0;
 
          if (this.options.Markers || this.options.Circles)
             pnts = new PointsCreator(size, fp.webgl, scale/3);
 
-         if (this.options.Error)
+         if (this.options.Error) {
             err = new Float32Array(size*6*3);
+            asymm = this.matchObjectType("TGraph2DAsymmErrors");
+          }
 
          if (this.options.Line)
             line = new Float32Array((size-1)*6);
@@ -87806,26 +87810,26 @@ class TGraph2DPainter extends ObjectPainter {
             if (pnts) pnts.addPoint(x,y,z);
 
             if (err) {
-               err[ierr]   = fp.grx(graph.fX[i] - graph.fEX[i]);
+               err[ierr]   = fp.grx(graph.fX[i] - (asymm ? graph.fEXlow[i] : graph.fEX[i]));
                err[ierr+1] = y;
                err[ierr+2] = z;
-               err[ierr+3] = fp.grx(graph.fX[i] + graph.fEX[i]);
+               err[ierr+3] = fp.grx(graph.fX[i] + (asymm ? graph.fEXhigh[i] : graph.fEX[i]));
                err[ierr+4] = y;
                err[ierr+5] = z;
                ierr+=6;
                err[ierr]   = x;
-               err[ierr+1] = fp.gry(graph.fY[i] - graph.fEY[i]);
+               err[ierr+1] = fp.gry(graph.fY[i] - (asymm ? graph.fEYlow[i] : graph.fEY[i]));
                err[ierr+2] = z;
                err[ierr+3] = x;
-               err[ierr+4] = fp.gry(graph.fY[i] + graph.fEY[i]);
+               err[ierr+4] = fp.gry(graph.fY[i] + (asymm ? graph.fEYhigh[i] : graph.fEY[i]));
                err[ierr+5] = z;
                ierr+=6;
                err[ierr]   = x;
                err[ierr+1] = y;
-               err[ierr+2] = fp.grz(graph.fZ[i] - graph.fEZ[i]);
+               err[ierr+2] = fp.grz(graph.fZ[i] - (asymm ? graph.fEZlow[i] : graph.fEZ[i]));
                err[ierr+3] = x;
                err[ierr+4] = y;
-               err[ierr+5] = fp.grz(graph.fZ[i] + graph.fEZ[i]);
+               err[ierr+5] = fp.grz(graph.fZ[i] + (asymm ? graph.fEZhigh[i] : graph.fEZ[i]));
                ierr+=6;
             }
 
@@ -101881,7 +101885,7 @@ class RHistStatsPainter extends RPavePainter {
                   lines[j] = lines[j].slice(0,max_hlen+2) + "...";
             }
             this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
-                            width: width-2*margin_x, height: stepy, text: lines[j], draw_g: text_g });
+                            width: width - 2*margin_x, height: stepy, text: lines[j], draw_g: text_g });
          } else {
             let parts = lines[j].split("="), args = [];
 
@@ -103235,13 +103239,13 @@ class RH1Painter$2 extends RHistPainter {
                let lbl = (bincont === Math.round(bincont)) ? bincont.toString() : floatToString(bincont, gStyle.fPaintTextFormat);
 
                if (text_font.angle)
-                  this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size / 5), width: 0, height: 0, text: lbl, latex: 0 });
+                  this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size / 5), text: lbl, latex: 0 });
                else
                   this.drawText({ x: Math.round(mx1 + (mx2 - mx1) * 0.1), y: Math.round(my - 2 - text_font.size), width: Math.round((mx2 - mx1) * 0.8), height: text_font.size, text: lbl, latex: 0 });
             }
 
             if (show_line && (path_line !== null))
-               path_line += ((path_line.length===0) ? "M" : "L") + midx + "," + my;
+               path_line += ((path_line.length === 0) ? "M" : "L") + midx + "," + my;
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
@@ -104655,7 +104659,7 @@ class RH2Painter$2 extends RHistPainter {
    /** @summary Draw RH2 bins as text */
    drawBinsText(handle) {
       let histo = this.getHisto(),
-          i, j, binz, binw, binh, lbl, posx, posy, sizex, sizey;
+          i, j, binz, binw, binh, text, x, y, width, height;
 
       if (handle===null) handle = this.prepareDraw({ rounding: false });
 
@@ -104681,22 +104685,21 @@ class RH2Painter$2 extends RHistPainter {
             if (profile2d)
                binz = histo.getBinEntries(i+1, j+1);
 
-            lbl = (binz === Math.round(binz)) ? binz.toString() :
+            text = (binz === Math.round(binz)) ? binz.toString() :
                       floatToString(binz, gStyle.fPaintTextFormat);
 
             if (textFont.angle) {
-               posx = Math.round(handle.grx[i] + binw*0.5);
-               posy = Math.round(handle.gry[j+dj] + binh*(0.5 + text_offset));
-               sizex = 0;
-               sizey = 0;
+               x = Math.round(handle.grx[i] + binw*0.5);
+               y = Math.round(handle.gry[j+dj] + binh*(0.5 + text_offset));
+               width = height = 0;
             } else {
-               posx = Math.round(handle.grx[i] + binw*0.1);
-               posy = Math.round(handle.gry[j+dj] + binh*(0.1 + text_offset));
-               sizex = Math.round(binw*0.8);
-               sizey = Math.round(binh*0.8);
+               x = Math.round(handle.grx[i] + binw*0.1);
+               y = Math.round(handle.gry[j+dj] + binh*(0.1 + text_offset));
+               width = Math.round(binw*0.8);
+               height = Math.round(binh*0.8);
             }
 
-            this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
+            this.drawText({ align: 22, x, y, width, height, text, latex: 0, draw_g: text_g });
          }
 
       return this.finishTextDrawing(text_g, true).then(() => {
