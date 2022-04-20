@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.0.x
+1. Fix problem with irregular axis labels
+
+
 ## Changes in 7.0.0
 1. Use ES6 modules for code organization
 2. Rewrite code with ES6 classes; one have to use class syntax to derive from it
