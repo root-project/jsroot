@@ -662,8 +662,8 @@ function getTypeId(typname, norecursion) {
    return -1;
 }
 
-   /** @summary create element of the streamer
-     * @private  */
+/** @summary create element of the streamer
+  * @private  */
 function createStreamerElement(name, typename, file) {
    const elem = {
       _typename: 'TStreamerElement', fName: name, fTypeName: typename,
@@ -3132,7 +3132,7 @@ class TFile {
    }
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
-    * @private */
+     * @private */
    _readFormulas(tf1) {
 
       let arr = [];
@@ -3148,7 +3148,7 @@ class TFile {
    }
 
    /** @summary extract streamer infos from the buffer
-    * @private */
+     * @private */
    extractStreamerInfos(buf) {
       if (!buf) return;
 
@@ -3204,7 +3204,7 @@ class TFile {
    }
 
    /** @summary Read file keys
-    * @private */
+     * @private */
    readKeys() {
 
       let file = this;
@@ -3342,8 +3342,8 @@ class TFile {
    }
 
    /** @summary Returns streamer for the class 'clname',
-    * @desc From the list of streamers or generate it from the streamer infos and add it to the list
-    * @private */
+     * @desc From the list of streamers or generate it from the streamer infos and add it to the list
+     * @private */
    getStreamer(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
@@ -3403,7 +3403,7 @@ class TFile {
    }
 
    /** @summary Here we produce list of members, resolving all base classes
-    * @private */
+     * @private */
    getSplittedStreamer(streamer, tgt) {
       if (!streamer) return tgt;
 
@@ -3444,7 +3444,7 @@ class TFile {
    }
 
    /** @summary Fully clenaup TFile data
-    * @private */
+     * @private */
    delete() {
       this.fDirectories = null;
       this.fKeys = null;
@@ -3454,9 +3454,8 @@ class TFile {
       this.fTagOffset = 0;
    }
 
-} // TFile
+} // class TFile
 
-// =======================================================================
 
 /** @summary Reconstruct ROOT object from binary buffer
   * @desc Method can be used to reconstruct ROOT objects from binary buffer
