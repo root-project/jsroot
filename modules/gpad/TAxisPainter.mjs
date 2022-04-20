@@ -977,11 +977,11 @@ class TAxisPainter extends ObjectPainter {
             if (this.vertical) {
                arg.x = fix_coord;
                arg.y = pos;
-               arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+               arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
             } else {
                arg.x = pos;
                arg.y = fix_coord;
-               arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+               arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
             }
 
             if (rotate_lbls)
@@ -1198,7 +1198,7 @@ class TAxisPainter extends ObjectPainter {
             title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
             this.drawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 90 : 270,
+                            rotate: (rotate < 0) ? 90 : 270,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
@@ -1206,7 +1206,7 @@ class TAxisPainter extends ObjectPainter {
             title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.drawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 180 : 0,
+                            rotate: (rotate < 0) ? 180 : 0,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          }
 
