@@ -4,6 +4,7 @@
 1. `settings.OnlyLastCycle` defines if only last object version show in TFile (also as `lastcycle` URL parameter)
 2. Let change many settings parameters via "Settings" menu of the top hierarchy item
 3. Settings can be stored as cookies, automatically read with every next load of website
+4. Support new `TGraph2DAsymmErrors` class
 
 
 ## Changes in 7.0.0

@@ -49,6 +49,7 @@ const drawFuncs = { lst: [
    { name: "TGraphTime", icon: "img_graph", class: () => import('./hist/TGraphTimePainter.mjs').then(h => h.TGraphTimePainter), opt: "once;repeat;first", theonly: true },
    { name: "TGraph2D", icon: "img_graph", class: () => import('./hist/TGraph2DPainter.mjs').then(h => h.TGraph2DPainter), opt: ";P;PCOL", theonly: true },
    { name: "TGraph2DErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
+   { name: "TGraph2DAsymmErrors", sameas: "TGraph2D", opt: ";P;PCOL;ERR", theonly: true },
    { name: "TGraphPolargram", icon: "img_graph", class: () => import('./draw/TGraphPolarPainter.mjs').then(h => h.TGraphPolargramPainter), theonly: true },
    { name: "TGraphPolar", icon: "img_graph", class: () => import('./draw/TGraphPolarPainter.mjs').then(h => h.TGraphPolarPainter), opt: ";F;L;P;PE", theonly: true },
    { name: /^TGraph/, icon: "img_graph", class: () => import('./hist2d/TGraphPainter.mjs').then(h => h.TGraphPainter), opt: ";L;P" },

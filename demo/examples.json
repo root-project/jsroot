@@ -267,6 +267,7 @@
       { "opt": "", "file": "graph2d.root", "item": "Graph2D", "title": "example of TGraph2D" },
       { "name": "pcol", "item": "pcol", "title": "example of TGraph2D, color options" },
       { "opt": "err",  "item": "cerr", "title": "example of TGraph2DErrors, errors drawing" },
+      { "opt": "asymm",  "item": "asymm", "title": "example of TGraph2DAsymmErrors" },
       { "opt": "line",  "item": "line", "title": "line drawing with TGraph2D" }
    ],
    "TEfficiency" : [
