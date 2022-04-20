@@ -558,8 +558,9 @@ class TAxisPainter extends ObjectPainter {
    formatLabels(d) {
       let indx = parseFloat(d), a = this.getObject();
       if (!this.regular_labels)
-         indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
-      indx = Math.floor(indx);
+         indx = Math.round((indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins);
+      else
+         indx = Math.floor(indx);
       if ((indx < 0) || (indx >= a.fNbins)) return null;
       for (let i = 0; i < a.fLabels.arr.length; ++i) {
          let tstr = a.fLabels.arr[i];
