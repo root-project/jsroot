@@ -3090,8 +3090,6 @@ class TFile {
       // remove leading slashes
       while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.slice(1);
 
-      let isdir, read_key;
-
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
@@ -3099,6 +3097,8 @@ class TFile {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == clTList))
             return this.fStreamerInfos;
+
+         let isdir = false;
 
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             let dir = this.getDir(obj_name, cycle);
@@ -3109,21 +3109,19 @@ class TFile {
          if (!isdir && only_dir)
             return Promise.reject(Error(`Key ${obj_name} is not directory}`));
 
-         read_key = key;
-
          return this.readObjBuffer(key).then(buf => {
 
             if (isdir) {
                let dir = new TDirectory(this, obj_name, cycle);
-               dir.fTitle = read_key.fTitle;
+               dir.fTitle = key.fTitle;
                return dir.readKeys(buf);
             }
 
             let obj = {};
             buf.mapObject(1, obj); // tag object itself with id==1
-            buf.classStreamer(obj, read_key.fClassName);
+            buf.classStreamer(obj, key.fClassName);
 
-            if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
+            if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
                return this._readFormulas(obj);
 
             return obj;
