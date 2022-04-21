@@ -1088,7 +1088,7 @@ class HierarchyPainter extends BasePainter {
 
          return httpRequest(url + urlargs, 'text').then(res => {
             if (d3node.empty()) return res;
-            let col = ((res != null) && (res != 'false')) ? 'green' : 'red';
+            let col = (res && (res != 'false')) ? 'green' : 'red';
             d3node.style('background', col);
             if (hitem._title)
                d3node.attr('title', hitem._title + " lastres=" + res);

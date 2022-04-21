@@ -221,7 +221,7 @@
 
       async function runBigTest(interval, doinit) {
          if (doinit) {
-            let running = (keyid != null); // indication that test running - no need to relaunch events
+            let running = (keyid !== null); // indication that test running - no need to relaunch events
             keyid = select_key || 'TH1'; optid = -1;
             testfile = testobj = null;
             let ii = decodeUrl().get("interval");
@@ -492,9 +492,9 @@
           aaa.title = "Run all examples after each other";
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
-              event.preventDefault();
-              window.location.hash = "run";
-              runBigTest(10,true);
+             event.preventDefault();
+             window.location.hash = "run";
+             runBigTest(10,true);
           });
 
           content.appendChild(document.createTextNode(", "));
@@ -504,9 +504,9 @@
           aaa.title = "Run all examples slowly after each other";
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
-              event.preventDefault();
-              window.location.hash = "slow";
-              runBigTest(5000,true);
+             event.preventDefault();
+             window.location.hash = "slow";
+             runBigTest(5000,true);
           });
 
           content.appendChild(document.createTextNode(", "));
@@ -516,9 +516,9 @@
           aaa.title = "Run all examples very fast";
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
-              event.preventDefault();
-              window.location.hash = "fast";
-              runBigTest(1,true);
+             event.preventDefault();
+             window.location.hash = "fast";
+             runBigTest(1,true);
           });
 
           content.appendChild(document.createTextNode(", "));
@@ -527,8 +527,8 @@
           aaa.title = "Stop running example";
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
-              event.preventDefault();
-              keyid = null;
+             event.preventDefault();
+             keyid = null;
           });
       }
 
