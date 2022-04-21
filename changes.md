@@ -7,6 +7,12 @@
 4. Support new `TGraph2DAsymmErrors` class
 
 
+## Changes in 7.0.1
+
+1. Fix problem with irregular axis labels
+2. Correctly scale and tilt large number of axes labels
+
+
 ## Changes in 7.0.0
 1. Use ES6 modules for code organization
 2. Rewrite code with ES6 classes; one have to use class syntax to derive from it
