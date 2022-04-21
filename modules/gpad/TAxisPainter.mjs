@@ -1136,7 +1136,7 @@ class TAxisPainter extends ObjectPainter {
          labelMaxWidth = arr[1];
 
          if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
-            let labelSize = arr[0],
+            let labelSize = Math.max(arr[0], 5),
                 r = axis_g.append("svg:rect")
                           .attr("class", "axis_zoom")
                           .style("opacity", "0")
