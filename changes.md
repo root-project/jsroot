@@ -2,6 +2,7 @@
 
 ## Changes in 7.0.x
 1. Fix problem with irregular axis labels
+2. Correctly scale and tilt large number of axes labels
 
 
 ## Changes in 7.0.0
