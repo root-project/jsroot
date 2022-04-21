@@ -45864,7 +45864,7 @@ class TAxisPainter extends ObjectPainter {
       this.configureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
          time_scale: gaxis.fChopt.indexOf("t") >= 0,
          log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0,
-         reverse: reverse,
+         reverse,
          swap_side: reverse
       });
 
@@ -73362,7 +73362,8 @@ function objectHierarchy(top, obj, args = undefined) {
               _value: "",
               _vclass: 'h_value_num'
             };
-            while (item._name.length < namelen) item._name = "0" + item._name;
+            while (item._name.length < namelen)
+               item._name = "0" + item._name;
             top._childs.push(item);
          }
 
@@ -73391,7 +73392,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (compress) {
       arrcompress = true;
-      for (let k=0;k<obj.length;++k) {
+      for (let k = 0; k < obj.length; ++k) {
          let typ = typeof obj[k];
          if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
          arrcompress = false; break;
@@ -73438,7 +73439,7 @@ function objectHierarchy(top, obj, args = undefined) {
             item._value = obj[k].toString();
          } else {
             item._value = "";
-            for (let d=k;d<nextk;++d)
+            for (let d = k; d < nextk; ++d)
                item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
             item._value += " ]";
          }
@@ -73790,25 +73791,23 @@ class HierarchyPainter extends BasePainter {
       let painter = this;
 
       let folder = {
-         _name : file.fFileName,
-         _title : (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
-         _kind : "ROOT.TFile",
-         _file : file,
-         _fullurl : file.fFullURL,
-         _localfile : file.fLocalFile,
-         _had_direct_read : false,
+         _name: file.fFileName,
+         _title: (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
+         _kind: "ROOT.TFile",
+         _file: file,
+         _fullurl: file.fFullURL,
+         _localfile: file.fLocalFile,
+         _had_direct_read: false,
          // this is central get method, item or itemname can be used, returns promise
-         _get : function(item, itemname) {
-
-            let fff = this; // file item
+         _get: function(item, itemname) {
 
             if (item && item._readobj)
                return Promise.resolve(item._readobj);
 
-            if (item) itemname = painter.itemFullName(item, fff);
+            if (item) itemname = painter.itemFullName(item, this);
 
-            function ReadFileObject(file) {
-               if (!fff._file) fff._file = file;
+            const readFileObject = file => {
+               if (!this._file) this._file = file;
 
                if (!file) return Promise.resolve(null);
 
@@ -73817,20 +73816,20 @@ class HierarchyPainter extends BasePainter {
                   // if object was read even when item did not exist try to reconstruct new hierarchy
                   if (!item && obj) {
                      // first try to found last read directory
-                     let d = painter.findItem({name:itemname, top:fff, last_exists:true, check_keys:true });
-                     if ((d!=null) && ('last' in d) && (d.last!=fff)) {
+                     let d = painter.findItem({name: itemname, top: this, last_exists: true, check_keys: true});
+                     if ((d?.last !== undefined) && (d.last !== this)) {
                         // reconstruct only subdir hierarchy
-                        let dir = file.getDir(painter.itemFullName(d.last, fff));
+                        let dir = file.getDir(painter.itemFullName(d.last, this));
                         if (dir) {
                            d.last._name = d.last._keyname;
-                           let dirname = painter.itemFullName(d.last, fff);
+                           let dirname = painter.itemFullName(d.last, this);
                            keysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        keysHierarchy(fff, file.fKeys, file, "");
+                        keysHierarchy(this, file.fKeys, file, "");
                      }
-                     item = painter.findItem({name:itemname, top: fff});
+                     item = painter.findItem({name: itemname, top: this});
                   }
 
                   if (item) {
@@ -73841,11 +73840,11 @@ class HierarchyPainter extends BasePainter {
 
                   return obj;
                });
-            }
+            };
 
-            if (fff._file) return ReadFileObject(fff._file);
-            if (fff._localfile) return openFile(fff._localfile).then(f => ReadFileObject(f));
-            if (fff._fullurl) return openFile(fff._fullurl).then(f => ReadFileObject(f));
+            if (this._file) return readFileObject(this._file);
+            if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
+            if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
             return Promise.resolve(null);
          }
       };
@@ -96704,7 +96703,7 @@ class RAxisPainter extends RObjectPainter {
          smin = min; smax = max;
       }
 
-      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: labels_len > 0 });
+      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse, labels: labels_len > 0 });
 
       this.createG();
 
@@ -104139,9 +104138,9 @@ class RH2Painter$2 extends RHistPainter {
 
             if ((xside != 1) || (yside != 1)) continue;
 
-            if ((cond!=null) && !cond(xx,yy)) continue;
+            if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
             stat_sum0 += zz;
             stat_sumx1 += xx * zz;
@@ -104158,11 +104157,8 @@ class RH2Painter$2 extends RHistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
       }
 
-      if (res.wmax===null) res.wmax = 0;
+      if (res.wmax === null) res.wmax = 0;
       res.integral = stat_sum0;
-
-      // if (histo.fEntries > 1) res.entries = histo.fEntries;
-
       return res;
    }
 
