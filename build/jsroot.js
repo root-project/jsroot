@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "20/04/2022";
+let version_date = "21/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11259,7 +11259,7 @@ class ObjectPainter extends BasePainter {
           font_size = font.size, any_text = false, only_text = true;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
-         font.size = Math.floor(font.size / f);
+         font.size = Math.max(1, Math.floor(font.size / f));
 
       if (max_sz && (font.size > max_sz))
          font.size = max_sz;
@@ -45125,8 +45125,9 @@ class TAxisPainter extends ObjectPainter {
    formatLabels(d) {
       let indx = parseFloat(d), a = this.getObject();
       if (!this.regular_labels)
-         indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
-      indx = Math.floor(indx);
+         indx = Math.round((indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins);
+      else
+         indx = Math.floor(indx);
       if ((indx < 0) || (indx >= a.fNbins)) return null;
       for (let i = 0; i < a.fLabels.arr.length; ++i) {
          let tstr = a.fLabels.arr[i];
@@ -45492,12 +45493,12 @@ class TAxisPainter extends ObjectPainter {
             textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
          }
 
-         if ((textscale > 0.01) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
+         if ((textscale > 0.0001) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
             lbl_tilt = true;
 
          let scale = textscale * (lbl_tilt ? 3 : 1);
 
-         if ((scale > 0.01) && (scale < 1)) {
+         if ((scale > 0.0001) && (scale < 1)) {
             applied_scale = 1/scale;
             painter.scaleTextDrawing(applied_scale, label_g[0]);
          }
@@ -45702,7 +45703,7 @@ class TAxisPainter extends ObjectPainter {
          labelMaxWidth = arr[1];
 
          if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
-            let labelSize = arr[0],
+            let labelSize = Math.max(arr[0], 5),
                 r = axis_g.append("svg:rect")
                           .attr("class", "axis_zoom")
                           .style("opacity", "0")
@@ -96384,11 +96385,11 @@ class RAxisPainter extends RObjectPainter {
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
 
-         if ((textscale > 0.01) && (textscale < 0.8) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
+         if ((textscale > 0.0001) && (textscale < 0.8) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
             lbls_tilt = true;
 
          let scale = textscale * (lbls_tilt ? 3 : 1);
-         if ((scale > 0.01) && (scale < 1))
+         if ((scale > 0.0001) && (scale < 1))
             painter.scaleTextDrawing(1/scale, label_g);
       }
 
