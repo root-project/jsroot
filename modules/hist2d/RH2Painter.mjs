@@ -274,9 +274,9 @@ class RH2Painter extends RHistPainter {
 
             if ((xside != 1) || (yside != 1)) continue;
 
-            if ((cond!=null) && !cond(xx,yy)) continue;
+            if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
             stat_sum0 += zz;
             stat_sumx1 += xx * zz;
@@ -293,11 +293,8 @@ class RH2Painter extends RHistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
       }
 
-      if (res.wmax===null) res.wmax = 0;
+      if (res.wmax === null) res.wmax = 0;
       res.integral = stat_sum0;
-
-      // if (histo.fEntries > 1) res.entries = histo.fEntries;
-
       return res;
    }
 
