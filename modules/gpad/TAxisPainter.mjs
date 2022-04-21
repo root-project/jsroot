@@ -1297,7 +1297,7 @@ class TAxisPainter extends ObjectPainter {
       this.configureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
          time_scale: gaxis.fChopt.indexOf("t") >= 0,
          log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0,
-         reverse: reverse,
+         reverse,
          swap_side: reverse
       });
 

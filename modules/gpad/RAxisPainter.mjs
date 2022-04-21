@@ -968,7 +968,7 @@ class RAxisPainter extends RObjectPainter {
          smin = min; smax = max;
       }
 
-      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: labels_len > 0 });
+      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse, labels: labels_len > 0 });
 
       this.createG();
 
