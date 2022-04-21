@@ -836,25 +836,23 @@ class HierarchyPainter extends BasePainter {
       let painter = this;
 
       let folder = {
-         _name : file.fFileName,
-         _title : (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
-         _kind : "ROOT.TFile",
-         _file : file,
-         _fullurl : file.fFullURL,
-         _localfile : file.fLocalFile,
-         _had_direct_read : false,
+         _name: file.fFileName,
+         _title: (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
+         _kind: "ROOT.TFile",
+         _file: file,
+         _fullurl: file.fFullURL,
+         _localfile: file.fLocalFile,
+         _had_direct_read: false,
          // this is central get method, item or itemname can be used, returns promise
-         _get : function(item, itemname) {
-
-            let fff = this; // file item
+         _get: function(item, itemname) {
 
             if (item && item._readobj)
                return Promise.resolve(item._readobj);
 
-            if (item) itemname = painter.itemFullName(item, fff);
+            if (item) itemname = painter.itemFullName(item, this);
 
-            function ReadFileObject(file) {
-               if (!fff._file) fff._file = file;
+            const readFileObject = file => {
+               if (!this._file) this._file = file;
 
                if (!file) return Promise.resolve(null);
 
@@ -863,20 +861,20 @@ class HierarchyPainter extends BasePainter {
                   // if object was read even when item did not exist try to reconstruct new hierarchy
                   if (!item && obj) {
                      // first try to found last read directory
-                     let d = painter.findItem({name:itemname, top:fff, last_exists:true, check_keys:true });
-                     if ((d!=null) && ('last' in d) && (d.last!=fff)) {
+                     let d = painter.findItem({name: itemname, top: this, last_exists: true, check_keys: true});
+                     if ((d?.last !== undefined) && (d.last !== this)) {
                         // reconstruct only subdir hierarchy
-                        let dir = file.getDir(painter.itemFullName(d.last, fff));
+                        let dir = file.getDir(painter.itemFullName(d.last, this));
                         if (dir) {
                            d.last._name = d.last._keyname;
-                           let dirname = painter.itemFullName(d.last, fff);
+                           let dirname = painter.itemFullName(d.last, this);
                            keysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        keysHierarchy(fff, file.fKeys, file, "");
+                        keysHierarchy(this, file.fKeys, file, "");
                      }
-                     item = painter.findItem({name:itemname, top: fff});
+                     item = painter.findItem({name: itemname, top: this});
                   }
 
                   if (item) {
@@ -887,11 +885,11 @@ class HierarchyPainter extends BasePainter {
 
                   return obj;
                });
-            }
+            };
 
-            if (fff._file) return ReadFileObject(fff._file);
-            if (fff._localfile) return openFile(fff._localfile).then(f => ReadFileObject(f));
-            if (fff._fullurl) return openFile(fff._fullurl).then(f => ReadFileObject(f));
+            if (this._file) return readFileObject(this._file);
+            if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
+            if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
             return Promise.resolve(null);
          }
       };
