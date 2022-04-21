@@ -407,7 +407,8 @@ function objectHierarchy(top, obj, args = undefined) {
               _value: "",
               _vclass: 'h_value_num'
             };
-            while (item._name.length < namelen) item._name = "0" + item._name;
+            while (item._name.length < namelen)
+               item._name = "0" + item._name;
             top._childs.push(item);
          }
 
@@ -436,7 +437,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (compress) {
       arrcompress = true;
-      for (let k=0;k<obj.length;++k) {
+      for (let k = 0; k < obj.length; ++k) {
          let typ = typeof obj[k];
          if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
          arrcompress = false; break;
@@ -483,7 +484,7 @@ function objectHierarchy(top, obj, args = undefined) {
             item._value = obj[k].toString();
          } else {
             item._value = "";
-            for (let d=k;d<nextk;++d)
+            for (let d = k; d < nextk; ++d)
                item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
             item._value += " ]";
          }
