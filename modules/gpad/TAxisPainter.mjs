@@ -926,12 +926,12 @@ class TAxisPainter extends ObjectPainter {
             textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
          }
 
-         if ((textscale > 0.01) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
+         if ((textscale > 0.0001) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
             lbl_tilt = true;
 
          let scale = textscale * (lbl_tilt ? 3 : 1);
 
-         if ((scale > 0.01) && (scale < 1)) {
+         if ((scale > 0.0001) && (scale < 1)) {
             applied_scale = 1/scale;
             painter.scaleTextDrawing(applied_scale, label_g[0]);
          }
