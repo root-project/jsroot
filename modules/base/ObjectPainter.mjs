@@ -913,7 +913,7 @@ class ObjectPainter extends BasePainter {
           font_size = font.size, any_text = false, only_text = true;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
-         font.size = Math.floor(font.size / f);
+         font.size = Math.max(1, Math.floor(font.size / f));
 
       if (max_sz && (font.size > max_sz))
          font.size = max_sz;
