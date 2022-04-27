@@ -1037,6 +1037,7 @@ function create$1(typename, target) {
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
+      case 'TH1L64':
       case 'TH1F':
       case 'TH1D':
       case 'TH1S':
@@ -1049,6 +1050,7 @@ function create$1(typename, target) {
          extend$1(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case 'TH2I':
+      case 'TH2L64':
       case 'TH2F':
       case 'TH2D':
       case 'TH2S':
@@ -1061,6 +1063,7 @@ function create$1(typename, target) {
          extend$1(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
+      case 'TH3L64':
       case 'TH3F':
       case 'TH3D':
       case 'TH3S':
@@ -74043,7 +74046,7 @@ class HierarchyPainter extends BasePainter {
 
          return httpRequest(url + urlargs, 'text').then(res => {
             if (d3node.empty()) return res;
-            let col = ((res != null) && (res != 'false')) ? 'green' : 'red';
+            let col = (res && (res != 'false')) ? 'green' : 'red';
             d3node.style('background', col);
             if (hitem._title)
                d3node.attr('title', hitem._title + " lastres=" + res);
