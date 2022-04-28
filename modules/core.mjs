@@ -1,11 +1,11 @@
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0" */
-let version_id = "7.0.1";
+let version_id = "7.0.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "21/04/2022";
+let version_date = "28/04/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}

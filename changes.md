@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.0.x
+1. Fix TH2 arrow drawing
+
+
 ## Changes in 7.0.1
 1. Fix problem with irregular axis labels
 2. Correctly scale and tilt large number of axes labels
