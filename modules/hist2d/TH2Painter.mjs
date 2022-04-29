@@ -364,10 +364,10 @@ class TH2Painter extends THistPainter {
             gr = bin.fPoly; numgraphs = 1;
             if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
-            for (ngr=0;ngr<numgraphs;++ngr) {
+            for (ngr = 0; ngr < numgraphs; ++ngr) {
                if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
-               for (n=0;n<gr.fNpoints;++n) {
+               for (n = 0; n < gr.fNpoints; ++n) {
                   ++numpoints;
                   xx += gr.fX[n];
                   yy += gr.fY[n];
@@ -1682,9 +1682,8 @@ class TH2Painter extends THistPainter {
             else
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
 
-        if (isOption(kAnchor)) { // Draw the anchor line
+        if (isOption(kAnchor))  // Draw the anchor line
             lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2) + make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
-         }
 
          if (isOption(kWhiskerAll) && !isOption(kHistoZeroIndicator)) { // Whiskers are dashed
             dashed_lines += make_path(center, pnt.y1, "V", pnt.yy1) + make_path(center, pnt.y2, "V", pnt.yy2);
@@ -1695,9 +1694,9 @@ class TH2Painter extends THistPainter {
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
 
             // reset seed for each projection to have always same pixels
-            let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral));
-
-            let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
+            let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral)),
+                show_all = !isOption(kPointsOutliers), 
+                show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
                let bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2,
                    marker_x = center, marker_y = 0;
