@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "28/04/2022";
+let version_date = "2/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -55922,9 +55922,8 @@ class CustomDisplay extends MDIDisplay {
    }
 
    addFrame(divid, itemname) {
-      if (!(divid in this.frames)) this.frames[divid] = "";
-
-      this.frames[divid] += (itemname + ";");
+      let prev = this.frames[divid] || "";
+      this.frames[divid] = prev + (itemname + ";");
    }
 
    forEachFrame(userfunc) {
@@ -64316,8 +64315,7 @@ class TH1Painter$2 extends THistPainter {
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
                   if (path_fill !== null)
-                     path_fill += "M" + mx1 +","+(my-yerr1) +
-                                  "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                     path_fill += `M${mx1},${my-yerr1}h${mx2-mx1}v${yerr1+yerr2+1}h${mx1-mx2}z`;
                   if ((path_marker !== null) && do_marker) {
                      path_marker += this.markeratt.create(midx, my);
                      if (hints_marker !== null)
@@ -65322,10 +65320,10 @@ class TH2Painter$2 extends THistPainter {
             gr = bin.fPoly; numgraphs = 1;
             if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
-            for (ngr=0;ngr<numgraphs;++ngr) {
+            for (ngr = 0; ngr < numgraphs; ++ngr) {
                if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
-               for (n=0;n<gr.fNpoints;++n) {
+               for (n = 0; n < gr.fNpoints; ++n) {
                   ++numpoints;
                   xx += gr.fX[n];
                   yy += gr.fY[n];
@@ -66133,7 +66131,7 @@ class TH2Painter$2 extends THistPainter {
           show_err = (this.options.TextKind == "E"),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
-      if (handle === null) handle = this.prepareDraw({ rounding: false });
+      if (!handle) handle = this.prepareDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && rotate)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
@@ -66637,9 +66635,8 @@ class TH2Painter$2 extends THistPainter {
             else
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
 
-        if (isOption(kAnchor)) { // Draw the anchor line
+        if (isOption(kAnchor))  // Draw the anchor line
             lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2) + make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
-         }
 
          if (isOption(kWhiskerAll) && !isOption(kHistoZeroIndicator)) { // Whiskers are dashed
             dashed_lines += make_path(center, pnt.y1, "V", pnt.yy1) + make_path(center, pnt.y2, "V", pnt.yy2);
@@ -66650,9 +66647,9 @@ class TH2Painter$2 extends THistPainter {
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
 
             // reset seed for each projection to have always same pixels
-            let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral));
-
-            let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
+            let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral)),
+                show_all = !isOption(kPointsOutliers),
+                show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
                let bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2,
                    marker_x = center, marker_y = 0;
@@ -66933,7 +66930,7 @@ class TH2Painter$2 extends THistPainter {
 
            let path = "";
 
-           for (let n = 0;n < npix; ++n)
+           for (let n = 0; n < npix; ++n)
               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
            pattern.attr("width", cell_w[colindx])
@@ -66967,7 +66964,7 @@ class TH2Painter$2 extends THistPainter {
 
       this.createG(true);
 
-      let handle = null, pr;
+      let handle, pr;
 
       if (this.isTH2Poly()) {
          pr = this.drawPolyBinsColor();
@@ -67470,10 +67467,10 @@ class TH2Painter$2 extends THistPainter {
 
       if (pmain.reverse_y) {
          for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y<=h.gry[j+1]) && (pnt.y>=h.gry[j])) break;
+            if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
       } else {
          for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) break;
+            if ((pnt.y >= h.gry[j+1]) && (pnt.y <= h.gry[j])) break;
       }
 
       if ((i < h.i2) && (j < h.j2)) {
@@ -89338,8 +89335,8 @@ class TGraphPainter$1 extends ObjectPainter {
                lineatt = new TAttLineHandler({ attr: graph.fAttLine[k], std: false });
                fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
-            let sub_g = this.draw_g.append("svg:g");
-            let options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
+            let sub_g = this.draw_g.append("svg:g"),
+                options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }
@@ -89369,7 +89366,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       this.draw_g.selectAll('.grpoint').each(function() {
          let d = select(this).datum();
-         if (d===undefined) return;
+         if (d === undefined) return;
          let dist2 = Math.pow(pnt.x - d.grx1, 2);
          if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
          if (dist2 >= best_dist2) return;
@@ -89684,7 +89681,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Start moving of TGraph */
    moveStart(x,y) {
       this.pos_dx = this.pos_dy = 0;
-      let hint = this.extractTooltip({ x:x, y:y });
+      let hint = this.extractTooltip({x, y});
       if (hint && hint.exact && (hint.binindx !== undefined)) {
          this.move_binindx = hint.binindx;
          this.move_bin = hint.bin;

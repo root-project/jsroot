@@ -138,9 +138,8 @@ class CustomDisplay extends MDIDisplay {
    }
 
    addFrame(divid, itemname) {
-      if (!(divid in this.frames)) this.frames[divid] = "";
-
-      this.frames[divid] += (itemname + ";");
+      let prev = this.frames[divid] || "";
+      this.frames[divid] = prev + (itemname + ";");
    }
 
    forEachFrame(userfunc) {
