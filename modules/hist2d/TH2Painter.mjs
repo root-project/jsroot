@@ -1178,7 +1178,7 @@ class TH2Painter extends THistPainter {
           show_err = (this.options.TextKind == "E"),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
-      if (handle === null) handle = this.prepareDraw({ rounding: false });
+      if (!handle) handle = this.prepareDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && rotate)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
@@ -1695,7 +1695,7 @@ class TH2Painter extends THistPainter {
 
             // reset seed for each projection to have always same pixels
             let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral)),
-                show_all = !isOption(kPointsOutliers), 
+                show_all = !isOption(kPointsOutliers),
                 show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
                let bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2,
@@ -1977,7 +1977,7 @@ class TH2Painter extends THistPainter {
 
            let path = "";
 
-           for (let n = 0;n < npix; ++n)
+           for (let n = 0; n < npix; ++n)
               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
            pattern.attr("width", cell_w[colindx])
@@ -2011,7 +2011,7 @@ class TH2Painter extends THistPainter {
 
       this.createG(true);
 
-      let handle = null, pr;
+      let handle, pr;
 
       if (this.isTH2Poly()) {
          pr = this.drawPolyBinsColor();
@@ -2514,10 +2514,10 @@ class TH2Painter extends THistPainter {
 
       if (pmain.reverse_y) {
          for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y<=h.gry[j+1]) && (pnt.y>=h.gry[j])) break;
+            if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
       } else {
          for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) break;
+            if ((pnt.y >= h.gry[j+1]) && (pnt.y <= h.gry[j])) break;
       }
 
       if ((i < h.i2) && (j < h.j2)) {
