@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "2/05/2022";
+let version_date = "4/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9898,9 +9898,9 @@ class TAttMarkerHandler {
      * @param {number} width - width of sample SVG
      * @param {number} height - height of sample SVG
      * @private */
-   createSample(svg, width, height) {
+   createSample(svg, width, height, plain) {
+      if (plain) svg = select(svg);
       this.resetPos();
-
       svg.append("path")
          .attr("d", this.create(width / 2, height / 2))
          .call(this.func);
@@ -10215,14 +10215,16 @@ class TAttFillHandler {
    }
 
    /** @summary Create sample of fill pattern inside SVG
-    * @private */
-   createSample(sample_svg, width, height) {
+     * @private */
+   createSample(svg, width, height, plain) {
       // we need to create extra handle to change
-      const sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
+      if (plain) svg = select(svg);
 
-      sample_svg.append("path")
-         .attr("d", `M0,0h${width}v${height}h${-width}z`)
-         .call(sample.func);
+      const sample = new TAttFillHandler({ svg, pattern: this.pattern, color: this.color, color_as_svg: true });
+
+     svg.append("path")
+        .attr("d", `M0,0h${width}v${height}h${-width}z`)
+        .call(sample.func);
    }
 
 } // class TAttFillHandler
@@ -10351,7 +10353,8 @@ class TAttLineHandler {
    }
 
    /** @summary Create sample element inside primitive SVG - used in context menu */
-   createSample(svg, width, height) {
+   createSample(svg, width, height, plain) {
+      if (plain) svg = select(svg);
       svg.append("path")
          .attr("d", `M0,${height/2}h${width}`)
          .call(this.func);
