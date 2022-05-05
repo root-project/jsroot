@@ -129,22 +129,15 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-/** @summary Save JSROOT settings as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveSettings(expires = 365, name = "jsroot_settings") {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
+
+function saveCookie(obj, expires, name) {
+   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
        d = new Date();
    d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
 }
 
-/** @summary Read JSROOT settings from specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readSettings(only_check = false, name = "jsroot_settings") {
+function readCookie(name) {
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
    name += "=";
@@ -155,12 +148,71 @@ function readSettings(only_check = false, name = "jsroot_settings") {
       if (c.indexOf(name) == 0) {
          let s = JSON.parse(atob(c.substring(name.length, c.length)));
 
-         if (s && typeof s == 'object') {
-            if (!only_check)
-               Object.assign(settings, s);
-            return true;
-          }
-       }
+         return (s && typeof s == 'object') ? s : null;
+      }
+   }
+   return null;
+}
+
+/** @summary Save JSROOT settings as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveSettings(expires = 365, name = "jsroot_settings") {
+   saveCookie(settings, expires, name);
+}
+
+/** @summary Read JSROOT settings from specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readSettings(only_check = false, name = "jsroot_settings") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(settings, s);
+   return true;
+}
+
+/** @summary Save JSROOT gStyle object as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveStyle(expires = 365, name = "jsroot_style") {
+   saveCookie(gStyle, expires, name);
+}
+
+/** @summary Read JSROOT gStyle object specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readStyle(only_check = false, name = "jsroot_style") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(gStyle, s);
+   return true;
+}
+
+/** @summary Select predefined style
+  * @private */
+function selectStyle(name) {
+   gStyle.fName = name;
+   switch (name) {
+      case "Modern": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fFrameFillColor: 0, fCanvasBorderMode: 0,
+         fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
+         fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
+         fOptStat: 1111, fStatY: 0.935 }); break;
+      case "Plain": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
+         fPadColor: 0, fCanvasColor: 0,
+         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1 }); break;
+      case "Bold": Object.assign(gStyle, {
+         fCanvasColor: 10, fCanvasBorderMode: 0,
+         fFrameLineWidth: 3, fFrameFillColor: 10,
+         fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
+         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 }); break;
    }
 }
 
@@ -1796,13 +1848,17 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
 
+      menu.add("sub:Style");
+      ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
+      menu.add("endsub:");
+
       menu.add("separator");
 
       menu.add("Save settings", () => {
          let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
-         promise.then(res => { if (res) saveSettings(); });
+         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
       });
-      menu.add("Delete settings", () => saveSettings(-1));
+      menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); });
 
       menu.add("endsub:");
    }
@@ -3830,5 +3886,5 @@ function drawInspector(dom, obj) {
 internals.drawInspector = drawInspector;
 
 export { getHPainter, HierarchyPainter,
-         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo, readSettings,
+         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo, readSettings, readStyle,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };

@@ -343,7 +343,6 @@ let gStyle = {
    fTimeOffset: 788918400
 };
 
-
 /** @summary Method returns current document in use
   * @private */
 function getDocument() {
@@ -985,7 +984,7 @@ function create(typename, target) {
          create("TBox", obj);
          extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                       fCornerRadius: 0, fOption: "blNDC", fName: "title" });
+                       fCornerRadius: 0, fOption: "brNDC", fName: "title" });
          break;
       case 'TAttText':
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
