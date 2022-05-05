@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/05/2022";
+let version_date = "5/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -268,6 +268,10 @@ let gStyle = {
    fOptFile: 0,
    /** @summary Draw histogram title */
    fOptTitle: 1,
+   /** @summary Canvas fill color */
+   fCanvasColor: 19,
+   /** @summary Pad fill color */
+   fPadColor: 19,
    fPadBottomMargin: 0.1,
    fPadTopMargin: 0.1,
    fPadLeftMargin: 0.1,
@@ -1129,7 +1133,8 @@ function create(typename, target) {
          create("TAttLine", obj);
          create("TAttFill", obj);
          create("TAttPad", obj);
-         extend(obj, { fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
+         extend(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
+                       fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
                        fUtoAbsPixelk: 1, fUtoPixelk: 1, fUtoPixel: 1, fVtoAbsPixelk: 1,
                        fVtoPixelk: 1, fVtoPixel: 1, fAbsPixeltoXk: 1, fPixeltoXk: 1,
@@ -1155,7 +1160,8 @@ function create(typename, target) {
          break;
       case 'TCanvas':
          create("TPad", obj);
-         extend(obj, { fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
+         extend(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
+                       fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
