@@ -1414,10 +1414,9 @@ class THistPainter extends ObjectPainter {
 
       stats = create('TPaveStats');
       Object.assign(stats, {
-         fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
+         fName: 'stats', fOptStat: optstat, fOptFit: optfit,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
-         fFillColor: st.fStatColor, fFillStyle: st.fStatStyle,
-         fTextAngle: 0, fTextSize: st.fStatFontSize, fTextAlign: 12, fTextColor: st.fStatTextColor, fTextFont: st.fStatFont
+         fTextAlign: 12
       });
 
       if (histo._typename.match(/^TProfile/) || histo._typename.match(/^TH2/))

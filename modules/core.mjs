@@ -258,6 +258,7 @@ if (nodejs)
   * or can be load from the file providing style=itemname in the URL
   * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
 let gStyle = {
+   fName: "Modern",
    /** @summary Default log x scale */
    fOptLogx: 0,
    /** @summary Default log y scale */
@@ -269,9 +270,9 @@ let gStyle = {
    /** @summary Draw histogram title */
    fOptTitle: 1,
    /** @summary Canvas fill color */
-   fCanvasColor: 19,
+   fCanvasColor: 0,
    /** @summary Pad fill color */
-   fPadColor: 19,
+   fPadColor: 0,
    fPadBottomMargin: 0.1,
    fPadTopMargin: 0.1,
    fPadLeftMargin: 0.1,
@@ -282,14 +283,18 @@ let gStyle = {
    fPadGridY: false,
    fPadTickX: 0,
    fPadTickY: 0,
-   /** @summary Default color of stat box */
+   /** @summary fill color for stat box */
    fStatColor: 0,
-   /** @summary Default color of text in stat box */
+   /** @summary fill style for stat box */
+   fStatStyle: 1000,
+   /** @summary text color in stat box */
    fStatTextColor: 1,
-   fStatBorderSize: 1,
-   fStatFont: 42,
+   /** @summary text size in stat box */
    fStatFontSize: 0,
-   fStatStyle: 1001,
+   /** @summary stat text font */
+   fStatFont: 42,
+   /** @summary Stat border size */
+   fStatBorderSize: 1,
    /** @summary Printing format for stats */
    fStatFormat: "6.4g",
    fStatX: 0.98,
@@ -992,7 +997,10 @@ function create(typename, target) {
          break;
       case 'TPaveStats':
          create("TPaveText", obj);
-         extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
+         extend(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
+                       fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
+                       fBorderSize: gStyle.fStatBorderSize,
+                       fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
          break;
       case 'TLegend':
          create("TPave", obj);
