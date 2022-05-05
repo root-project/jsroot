@@ -340,7 +340,11 @@ let gStyle = {
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
-   fTimeOffset: 788918400
+   fTimeOffset: 788918400,
+   fLegendBorderSize: 1,
+   fLegendFont: 42,
+   fLegendTextSize: 0,
+   fLegendFillColor: 0
 };
 
 /** @summary Method returns current document in use
@@ -1004,7 +1008,8 @@ function create(typename, target) {
       case 'TLegend':
          create("TPave", obj);
          create("TAttText", obj);
-         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create("TList") });
+         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create("TList"),
+                       fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
          create("TObject", obj);
