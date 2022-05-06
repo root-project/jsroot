@@ -1098,17 +1098,8 @@ class BrowserLayout {
       }
    }
 
-   /** @summary method used to create basic elements
-     * @desc should be called only once */
-   create(with_browser) {
-      let main = this.main();
-
-      main.append("div").attr("id", this.drawing_divid())
-                        .classed("jsroot_draw_area", true)
-                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
-
-      if (with_browser) main.append("div").classed("jsroot_browser", true);
-
+   /** @summary Create or update CSS style */
+   createStyle() {
       let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
           title_color = settings.DarkMode ? '#ccc' : "inherit",
           text_color = settings.DarkMode ? '#ddd' : "inherit",
@@ -1205,7 +1196,21 @@ class BrowserLayout {
    vertical-align: middle;
    white-space: nowrap;
 }
-`, main.node());
+`, this.main().node(), "browser_layout_style");
+   }
+
+   /** @summary method used to create basic elements
+     * @desc should be called only once */
+   create(with_browser) {
+      let main = this.main();
+
+      main.append("div").attr("id", this.drawing_divid())
+                        .classed("jsroot_draw_area", true)
+                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
+
+      if (with_browser) main.append("div").classed("jsroot_browser", true);
+
+      this.createStyle();
    }
 
    /** @summary Create buttons in the layout */

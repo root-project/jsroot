@@ -1847,6 +1847,11 @@ class HierarchyPainter extends BasePainter {
       menu.add("endsub:");
 
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
+      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => {
+         settings.DarkMode = !settings.DarkMode;
+         if (this.brlayout) this.brlayout.createStyle();
+      });
+
 
       menu.add("sub:Style");
       ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
