@@ -1775,8 +1775,11 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Fills settings menu items
      * @private */
-   fillSettingsMenu(menu) {
-      menu.add("sub:Settings");
+   fillSettingsMenu(menu, alone) {
+      if (alone)
+         menu.add("header:Settings");
+      else
+         menu.add("sub:Settings");
 
       menu.add("sub:Files");
 
@@ -1861,7 +1864,7 @@ class HierarchyPainter extends BasePainter {
       });
       menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); });
 
-      menu.add("endsub:");
+      if (!alone) menu.add("endsub:");
    }
 
    /** @summary Toggle dark mode
@@ -3669,10 +3672,14 @@ class HierarchyPainter extends BasePainter {
 
       this.brlayout.setBrowserContent(guiCode);
 
-      if (this.is_online)
-          this.brlayout.setBrowserTitle('ROOT online server');
-       else
-          this.brlayout.setBrowserTitle('Read a ROOT file');
+      let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
+      if (title_elem) title_elem.on("contextmenu", evnt => {
+         evnt.preventDefault();
+         createMenu(evnt).then(menu => {
+            this.fillSettingsMenu(menu, true);
+            menu.show();
+         });
+      });
 
       let localfile_read_callback = null;
 

@@ -1279,8 +1279,9 @@ class BrowserLayout {
      * @desc Title also used for dragging of the float browser */
    setBrowserTitle(title) {
       let main = d3_select("#" + this.gui_div + " .jsroot_browser");
-      if (!main.empty())
-         main.select(".jsroot_browser_title").text(title).style('cursor',this.browser_kind == 'flex' ? "move" : null);
+      let elem = !main.empty() ? main.select(".jsroot_browser_title") : null;
+      if (elem) elem.text(title).style('cursor',this.browser_kind == 'flex' ? "move" : null);
+      return elem;
    }
 
    /** @summary Toggle browser kind
