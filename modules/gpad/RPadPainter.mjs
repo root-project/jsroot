@@ -361,6 +361,8 @@ class RPadPainter extends RObjectPainter {
            .style("bottom", 0);
       }
 
+      svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
