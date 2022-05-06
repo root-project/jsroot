@@ -1111,7 +1111,8 @@ class BrowserLayout {
 
       let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
           title_color = settings.DarkMode ? '#ccc' : "inherit",
-          text_color = settings.DarkMode ? '#ddd' : "inherit";
+          text_color = settings.DarkMode ? '#ddd' : "inherit",
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : "";
 
       injectStyle(`
 .jsroot_browser {
@@ -1139,6 +1140,8 @@ class BrowserLayout {
    pointer-events: all;
    box-sizing: initial;
 }
+.jsroot_browser_area input { ${input_style} }
+.jsroot_browser_area select { ${input_style} }
 .jsroot_browser_title {
    font-family: Verdana;
    font-size: 20px;
