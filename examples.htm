@@ -372,6 +372,12 @@
       select_key = d.get("select");
       if (!select_key && d.has("geom")) select_key = "TGeo";
 
+      if (d.has("dark")) {
+         settings.DarkMode = true;
+         document.getElementById("panel").style.background = "black";
+         document.getElementById("viewer").style.background = "black";
+      }
+
       document.getElementById( 'version' ).title = version + ", " + source_dir;
 
       let content = document.getElementById( 'content' );
@@ -457,6 +463,11 @@
                aaa.href += "&opt=" + opt;
             if (style)
                aaa.href += "&style=" + style;
+
+           if (settings.DarkMode) {
+              aaa.href += "&dark";
+              if (url) url += "&dark";
+           }
 
             if (extra_opts) aaa.href += extra_opts;
 
