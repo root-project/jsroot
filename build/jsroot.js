@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/05/2022";
+let version_date = "6/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -250,7 +250,9 @@ let settings = {
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
-   OnlyLastCycle: false
+   OnlyLastCycle: false,
+   /** @summary Configures dark mode for the GUI */
+   DarkMode: false
 };
 
 
@@ -264,6 +266,7 @@ if (nodejs)
   * or can be load from the file providing style=itemname in the URL
   * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
 let gStyle = {
+   fName: "Modern",
    /** @summary Default log x scale */
    fOptLogx: 0,
    /** @summary Default log y scale */
@@ -274,6 +277,10 @@ let gStyle = {
    fOptFile: 0,
    /** @summary Draw histogram title */
    fOptTitle: 1,
+   /** @summary Canvas fill color */
+   fCanvasColor: 0,
+   /** @summary Pad fill color */
+   fPadColor: 0,
    fPadBottomMargin: 0.1,
    fPadTopMargin: 0.1,
    fPadLeftMargin: 0.1,
@@ -284,14 +291,18 @@ let gStyle = {
    fPadGridY: false,
    fPadTickX: 0,
    fPadTickY: 0,
-   /** @summary Default color of stat box */
+   /** @summary fill color for stat box */
    fStatColor: 0,
-   /** @summary Default color of text in stat box */
+   /** @summary fill style for stat box */
+   fStatStyle: 1000,
+   /** @summary text color in stat box */
    fStatTextColor: 1,
-   fStatBorderSize: 1,
-   fStatFont: 42,
+   /** @summary text size in stat box */
    fStatFontSize: 0,
-   fStatStyle: 1001,
+   /** @summary stat text font */
+   fStatFont: 42,
+   /** @summary Stat border size */
+   fStatBorderSize: 1,
    /** @summary Printing format for stats */
    fStatFormat: "6.4g",
    fStatX: 0.98,
@@ -337,9 +348,12 @@ let gStyle = {
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
-   fTimeOffset: 788918400
+   fTimeOffset: 788918400,
+   fLegendBorderSize: 1,
+   fLegendFont: 42,
+   fLegendTextSize: 0,
+   fLegendFillColor: 0
 };
-
 
 /** @summary Method returns current document in use
   * @private */
@@ -982,7 +996,7 @@ function create$1(typename, target) {
          create$1("TBox", obj);
          extend$1(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                       fCornerRadius: 0, fOption: "blNDC", fName: "title" });
+                       fCornerRadius: 0, fOption: "brNDC", fName: "title" });
          break;
       case 'TAttText':
          extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
@@ -994,12 +1008,16 @@ function create$1(typename, target) {
          break;
       case 'TPaveStats':
          create$1("TPaveText", obj);
-         extend$1(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
+         extend$1(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
+                       fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
+                       fBorderSize: gStyle.fStatBorderSize,
+                       fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
          break;
       case 'TLegend':
          create$1("TPave", obj);
          create$1("TAttText", obj);
-         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1("TList") });
+         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1("TList"),
+                       fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
          create$1("TObject", obj);
@@ -1135,7 +1153,8 @@ function create$1(typename, target) {
          create$1("TAttLine", obj);
          create$1("TAttFill", obj);
          create$1("TAttPad", obj);
-         extend$1(obj, { fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
+         extend$1(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
+                       fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
                        fUtoAbsPixelk: 1, fUtoPixelk: 1, fUtoPixel: 1, fVtoAbsPixelk: 1,
                        fVtoPixelk: 1, fVtoPixel: 1, fAbsPixeltoXk: 1, fPixeltoXk: 1,
@@ -1161,7 +1180,8 @@ function create$1(typename, target) {
          break;
       case 'TCanvas':
          create$1("TPad", obj);
-         extend$1(obj, { fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
+         extend$1(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
+                       fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
@@ -51743,16 +51763,23 @@ function addMoveHandler(painter, enabled) {
 /** @summary Inject style
   * @param {String} code - css string
   * @private */
-function injectStyle(code, node) {
+function injectStyle(code, node, tag) {
    if (isBatchMode() || !code || (typeof document === 'undefined'))
       return true;
 
    let styles = (node || document).getElementsByTagName('style');
-   for (let n = 0; n < styles.length; ++n)
+   for (let n = 0; n < styles.length; ++n) {
+      if (tag && styles[n].getAttribute("tag") == tag) {
+         styles[n].innerHTML = code;
+         return true;
+      }
+
       if (styles[n].innerHTML == code)
          return true;
+   }
 
    let element = document.createElement("style");
+   if (tag) element.setAttribute("tag", tag);
    element.innerHTML = code;
    (node || document.head).appendChild(element);
    return true;
@@ -56885,16 +56912,12 @@ class BrowserLayout {
       }
    }
 
-   /** @summary method used to create basic elements
-     * @desc should be called only once */
-   create(with_browser) {
-      let main = this.main();
-
-      main.append("div").attr("id", this.drawing_divid())
-                        .classed("jsroot_draw_area", true)
-                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
-
-      if (with_browser) main.append("div").classed("jsroot_browser", true);
+   /** @summary Create or update CSS style */
+   createStyle() {
+      let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
+          title_color = settings.DarkMode ? '#ccc' : "inherit",
+          text_color = settings.DarkMode ? '#ddd' : "inherit",
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : "";
 
       injectStyle(`
 .jsroot_browser {
@@ -56909,14 +56932,25 @@ class BrowserLayout {
    overflow: hidden;
 }
 .jsroot_draw_area {
-   background-color: #E6E6FA;
+   background-color: ${bkgr_color};
    overflow: hidden;
    margin: 0;
    border: 0;
 }
+.jsroot_browser_area {
+   color: ${text_color};
+   background-color: ${bkgr_color};
+   font-size: 12px;
+   font-family: Verdana;
+   pointer-events: all;
+   box-sizing: initial;
+}
+.jsroot_browser_area input { ${input_style} }
+.jsroot_browser_area select { ${input_style} }
 .jsroot_browser_title {
    font-family: Verdana;
    font-size: 20px;
+   color: ${title_color};
 }
 .jsroot_browser_btns {
    pointer-events: all;
@@ -56926,13 +56960,6 @@ class BrowserLayout {
 }
 .jsroot_browser_btns:hover {
    opacity: 0.3;
-}
-.jsroot_browser_area {
-   background-color: #E6E6FA;
-   font-size: 12px;
-   font-family: Verdana;
-   pointer-events: all;
-   box-sizing: initial;
 }
 .jsroot_browser_area p {
    margin-top: 5px;
@@ -56944,7 +56971,7 @@ class BrowserLayout {
    margin-top: 2px;
 }
 .jsroot_status_area {
-   background-color: #E6E6FA;
+   background-color: ${bkgr_color};
    overflow: hidden;
    font-size: 12px;
    font-family: Verdana;
@@ -56983,7 +57010,21 @@ class BrowserLayout {
    vertical-align: middle;
    white-space: nowrap;
 }
-`, main.node());
+`, this.main().node(), "browser_layout_style");
+   }
+
+   /** @summary method used to create basic elements
+     * @desc should be called only once */
+   create(with_browser) {
+      let main = this.main();
+
+      main.append("div").attr("id", this.drawing_divid())
+                        .classed("jsroot_draw_area", true)
+                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
+
+      if (with_browser) main.append("div").classed("jsroot_browser", true);
+
+      this.createStyle();
    }
 
    /** @summary Create buttons in the layout */
@@ -57940,6 +57981,8 @@ class TPadPainter extends ObjectPainter {
            .style("right", 0)
            .style("bottom", 0);
       }
+
+      svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
@@ -62888,10 +62931,9 @@ class THistPainter extends ObjectPainter {
 
       stats = create$1('TPaveStats');
       Object.assign(stats, {
-         fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
+         fName: 'stats', fOptStat: optstat, fOptFit: optfit,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
-         fFillColor: st.fStatColor, fFillStyle: st.fStatStyle,
-         fTextAngle: 0, fTextSize: st.fStatFontSize, fTextAlign: 12, fTextColor: st.fStatTextColor, fTextFont: st.fStatFont
+         fTextAlign: 12
       });
 
       if (histo._typename.match(/^TProfile/) || histo._typename.match(/^TH2/))
@@ -66201,7 +66243,7 @@ class TH2Painter$2 extends THistPainter {
          return dy ? `v${dy}` : "";
       };
 
-      for (let loop = 0;loop < 2; ++loop)
+      for (let loop = 0; loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
             for (j = handle.j1; j < handle.j2; ++j) {
 
@@ -66238,7 +66280,7 @@ class TH2Painter$2 extends THistPainter {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        anr = Math.sqrt(2/(dx*dx + dy*dy));
+                        anr = Math.sqrt(9/(dx*dx + dy*dy));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
                         if (si || co)
@@ -72997,8 +73039,6 @@ function injectHStyle(node) {
 }
 .jsroot .h_tree img { border: 0px; vertical-align: middle; }
 .jsroot .h_tree a {
-    color: inherit;
-    white-space: nowrap;
     text-decoration: none;
     vertical-align: top;
     white-space: nowrap;
@@ -73006,6 +73046,7 @@ function injectHStyle(node) {
     display: inline-block;
     margin: 0;
 }
+
 .jsroot .h_tree p {
     font-weight: bold;
     white-space: nowrap;
@@ -73087,22 +73128,15 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-/** @summary Save JSROOT settings as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveSettings(expires = 365, name = "jsroot_settings") {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(settings)),
+
+function saveCookie(obj, expires, name) {
+   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
        d = new Date();
    d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
 }
 
-/** @summary Read JSROOT settings from specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readSettings(only_check = false, name = "jsroot_settings") {
+function readCookie(name) {
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
    name += "=";
@@ -73113,12 +73147,72 @@ function readSettings(only_check = false, name = "jsroot_settings") {
       if (c.indexOf(name) == 0) {
          let s = JSON.parse(atob(c.substring(name.length, c.length)));
 
-         if (s && typeof s == 'object') {
-            if (!only_check)
-               Object.assign(settings, s);
-            return true;
-          }
-       }
+         return (s && typeof s == 'object') ? s : null;
+      }
+   }
+   return null;
+}
+
+/** @summary Save JSROOT settings as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveSettings(expires = 365, name = "jsroot_settings") {
+   saveCookie(settings, expires, name);
+}
+
+/** @summary Read JSROOT settings from specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readSettings(only_check = false, name = "jsroot_settings") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(settings, s);
+   return true;
+}
+
+/** @summary Save JSROOT gStyle object as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveStyle(expires = 365, name = "jsroot_style") {
+   saveCookie(gStyle, expires, name);
+}
+
+/** @summary Read JSROOT gStyle object specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readStyle(only_check = false, name = "jsroot_style") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(gStyle, s);
+   return true;
+}
+
+/** @summary Select predefined style
+  * @private */
+function selectStyle(name) {
+   gStyle.fName = name;
+   switch (name) {
+      case "Modern": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fFrameFillColor: 0, fCanvasBorderMode: 0,
+         fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
+         fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
+         fOptStat: 1111, fStatY: 0.935,
+         fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 }); break;
+      case "Plain": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
+         fPadColor: 0, fCanvasColor: 0,
+         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 }); break;
+      case "Bold": Object.assign(gStyle, {
+         fCanvasColor: 10, fCanvasBorderMode: 0,
+         fFrameLineWidth: 3, fFrameFillColor: 10,
+         fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
+         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 }); break;
    }
 }
 
@@ -74751,16 +74845,36 @@ class HierarchyPainter extends BasePainter {
       menu.add("endsub:");
 
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
+      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
+
+      menu.add("sub:Style");
+      ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
+      menu.add("endsub:");
 
       menu.add("separator");
 
       menu.add("Save settings", () => {
          let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
-         promise.then(res => { if (res) saveSettings(); });
+         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
       });
-      menu.add("Delete settings", () => saveSettings(-1));
+      menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); });
 
       menu.add("endsub:");
+   }
+
+   /** @summary Toggle dark mode
+     * @private */
+   toggleDarkMode() {
+      settings.DarkMode = !settings.DarkMode;
+      if (this.brlayout)
+         this.brlayout.createStyle();
+      if (this.disp)
+         this.disp.forEachFrame(frame => {
+            let canvp = getElementCanvPainter(frame),
+                svg = canvp ? canvp.getCanvSvg() : null;
+
+            if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+          });
    }
 
    /** @summary Handle context menu in the hieararchy
@@ -76793,6 +76907,7 @@ drawStreamerInfo: drawStreamerInfo,
 drawList: drawList,
 markAsStreamerInfo: markAsStreamerInfo,
 readSettings: readSettings,
+readStyle: readStyle,
 folderHierarchy: folderHierarchy,
 taskHierarchy: taskHierarchy,
 listHierarchy: listHierarchy,
@@ -76806,8 +76921,12 @@ function readStyleFromURL(url) {
 
    // first try to read settings from coockies
    readSettings();
+   readStyle();
 
    let d = decodeUrl(url);
+
+   if (d.has("dark"))
+      settings.DarkMode = true;
 
    if (d.has("optimize")) {
       settings.OptimizeDraw = 2;
@@ -98378,6 +98497,8 @@ class RPadPainter extends RObjectPainter {
            .style("right", 0)
            .style("bottom", 0);
       }
+
+      svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio

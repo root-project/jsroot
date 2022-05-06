@@ -10,7 +10,7 @@ import { getRGBfromTColor } from '../base/colors.mjs';
 
 import { BasePainter, getElementRect, _loadJSDOM } from '../base/BasePainter.mjs';
 
-import { getElementMainPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
+import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { createMenu } from './menu.mjs';
 
@@ -1847,11 +1847,7 @@ class HierarchyPainter extends BasePainter {
       menu.add("endsub:");
 
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
-      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => {
-         settings.DarkMode = !settings.DarkMode;
-         if (this.brlayout) this.brlayout.createStyle();
-      });
-
+      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
 
       menu.add("sub:Style");
       ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
@@ -1866,6 +1862,21 @@ class HierarchyPainter extends BasePainter {
       menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); });
 
       menu.add("endsub:");
+   }
+
+   /** @summary Toggle dark mode
+     * @private */
+   toggleDarkMode() {
+      settings.DarkMode = !settings.DarkMode;
+      if (this.brlayout)
+         this.brlayout.createStyle();
+      if (this.disp)
+         this.disp.forEachFrame(frame => {
+            let canvp = getElementCanvPainter(frame),
+                svg = canvp ? canvp.getCanvSvg() : null;
+
+            if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+          });
    }
 
    /** @summary Handle context menu in the hieararchy
