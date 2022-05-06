@@ -39,8 +39,6 @@ function injectHStyle(node) {
 }
 .jsroot .h_tree img { border: 0px; vertical-align: middle; }
 .jsroot .h_tree a {
-    color: inherit;
-    white-space: nowrap;
     text-decoration: none;
     vertical-align: top;
     white-space: nowrap;
@@ -48,6 +46,7 @@ function injectHStyle(node) {
     display: inline-block;
     margin: 0;
 }
+
 .jsroot .h_tree p {
     font-weight: bold;
     white-space: nowrap;

@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "5/05/2022";
+let version_date = "6/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -244,7 +244,9 @@ let settings = {
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
-   OnlyLastCycle: false
+   OnlyLastCycle: false,
+   /** @summary Configures dark mode for the GUI */
+   DarkMode: false
 };
 
 

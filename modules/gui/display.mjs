@@ -2,7 +2,7 @@
 
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
 
-import { browser, internals, toJSON } from '../core.mjs';
+import { browser, internals, toJSON, settings } from '../core.mjs';
 
 import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 
@@ -1109,6 +1109,10 @@ class BrowserLayout {
 
       if (with_browser) main.append("div").classed("jsroot_browser", true);
 
+      let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
+          title_color = settings.DarkMode ? '#ccc' : "inherit",
+          text_color = settings.DarkMode ? '#ddd' : "inherit";
+
       injectStyle(`
 .jsroot_browser {
    pointer-events: none;
@@ -1122,14 +1126,23 @@ class BrowserLayout {
    overflow: hidden;
 }
 .jsroot_draw_area {
-   background-color: #E6E6FA;
+   background-color: ${bkgr_color};
    overflow: hidden;
    margin: 0;
    border: 0;
 }
+.jsroot_browser_area {
+   color: ${text_color};
+   background-color: ${bkgr_color};
+   font-size: 12px;
+   font-family: Verdana;
+   pointer-events: all;
+   box-sizing: initial;
+}
 .jsroot_browser_title {
    font-family: Verdana;
    font-size: 20px;
+   color: ${title_color};
 }
 .jsroot_browser_btns {
    pointer-events: all;
@@ -1139,13 +1152,6 @@ class BrowserLayout {
 }
 .jsroot_browser_btns:hover {
    opacity: 0.3;
-}
-.jsroot_browser_area {
-   background-color: #E6E6FA;
-   font-size: 12px;
-   font-family: Verdana;
-   pointer-events: all;
-   box-sizing: initial;
 }
 .jsroot_browser_area p {
    margin-top: 5px;
@@ -1157,7 +1163,7 @@ class BrowserLayout {
    margin-top: 2px;
 }
 .jsroot_status_area {
-   background-color: #E6E6FA;
+   background-color: ${bkgr_color};
    overflow: hidden;
    font-size: 12px;
    font-family: Verdana;

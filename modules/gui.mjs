@@ -14,6 +14,9 @@ function readStyleFromURL(url) {
 
    let d = decodeUrl(url);
 
+   if (d.has("dark"))
+      settings.DarkMode = true;
+
    if (d.has("optimize")) {
       settings.OptimizeDraw = 2;
       let optimize = d.get("optimize");
