@@ -48,6 +48,7 @@
   "files": [
     "modules/*",
     "scripts/*",
+    "build/*",
     "LICENSE"
   ],
   "devDependencies": {
