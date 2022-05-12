@@ -177,6 +177,7 @@ class JSRootMenu {
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`;
             let svg = "<svg width='50' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + lbl + "</text></svg>";
+
             this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
          }
 
@@ -723,12 +724,11 @@ class StandaloneMenu extends JSRootMenu {
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
 
-      let need_check_area = false;
-      menu.forEach(d => { if (d.checked !== undefined) need_check_area = true; });
-
-      let ncols = 0;
-
-      menu.forEach(d => { if (d.column) ncols++; });
+      let need_check_area = false, ncols = 0;
+      menu.forEach(d => {
+         if (d.checked) need_check_area = true;
+         if (d.column) ncols++;
+      });
 
       menu.forEach(d => {
          if (ncols > 0) {
@@ -768,8 +768,24 @@ class StandaloneMenu extends JSRootMenu {
 
          let text = document.createElement('div');
          text.className = "jsroot_ctxt_text";
+
          if (d.text.indexOf("<svg") >= 0) {
-            text.innerHTML = d.text;
+            if (need_check_area) {
+               text.style.display = 'flex';
+
+               let chk = document.createElement('span');
+               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.style.display = "inline-block";
+               chk.style.width = "1em";
+               text.appendChild(chk);
+
+               let sub = document.createElement('div');
+               sub.innerHTML = d.text;
+               text.appendChild(sub);
+            } else {
+               text.innerHTML = d.text;
+            }
+
          } else {
             if (need_check_area) {
                let chk = document.createElement('span');
@@ -785,7 +801,9 @@ class StandaloneMenu extends JSRootMenu {
             else
                sub.textContent = d.text;
             text.appendChild(sub);
+
          }
+
          hovArea.appendChild(text);
 
          if (d.hasOwnProperty('extraText') || d.sub) {
