@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "6/05/2022";
+let version_date = "12/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -51868,14 +51868,15 @@ class JSRootMenu {
      * @param {boolean} flag - flag
      * @param {string} name - item name
      * @param {function} func - func called when item is selected */
-   addchk(flag, name, arg, func) {
+   addchk(flag, name, arg, func, title) {
       let handler = func;
       if (typeof arg == 'function') {
+         title = func;
          func = arg;
          handler = res => func(res=="1");
          arg = flag ? "0" : "1";
       }
-      this.add((flag ? "chk:" : "unk:") + name, arg, handler);
+      this.add((flag ? "chk:" : "unk:") + name, arg, handler, title);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -51939,13 +51940,27 @@ class JSRootMenu {
             set_func(useid ? id : col);
          });
       });
-      for (let n = -1; n < 11; ++n) {
-         if ((n < 0) && useid) continue;
-         if ((n == 10) && (fill_kind !== 1)) continue;
-         let col = (n < 0) ? 'none' : getColor(n);
-         if ((n == 0) && (fill_kind == 1)) col = 'none';
-         let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
-         this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res));
+
+      for(let ncolumn = 0; ncolumn < 5; ++ncolumn) {
+         this.add("column:");
+
+         for (let nrow = 0; nrow < 10; nrow++) {
+            let n = ncolumn*10 + nrow;
+            if (!useid) --n; // use -1 as none color
+
+            let col = (n < 0) ? 'none' : getColor(n);
+            if ((n == 0) && (fill_kind == 1)) col = 'none';
+            let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
+                fill = (n == 1) ? "white" : "black",
+                stroke = (n == 1) ? "red" : "black",
+                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : "",
+                svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
+
+            this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
+         }
+
+         this.add("endcolumn:");
+
       }
       this.add("endsub:");
    }
@@ -52375,8 +52390,8 @@ class JSRootMenu {
           main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < args.length; ++n)
-         main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
-                          <input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
+         main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>`+
+                         `<input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
 
       main_content += '</fieldset></form>';
 
@@ -52426,15 +52441,23 @@ class StandaloneMenu extends JSRootMenu {
       if (name == "separator")
          return curr.push({ divider: true });
 
-      if (name.indexOf("header:")==0)
+      if (name.indexOf("header:") == 0)
          return curr.push({ text: name.slice(7), header: true });
 
-      if (name=="endsub:") return this.stack.pop();
+      if ((name == "endsub:") || (name == "endcolumn:"))
+         return this.stack.pop();
 
       if (typeof arg == 'function') { title = func; func = arg; arg = name; }
 
       let elem = {};
       curr.push(elem);
+
+      if (name == "column:") {
+         elem.column = true;
+         elem.sub = [];
+         this.stack.push(elem.sub);
+         return;
+      }
 
       if (name.indexOf("sub:")==0) {
          name = name.slice(4);
@@ -52471,14 +52494,27 @@ class StandaloneMenu extends JSRootMenu {
          outer.style.position = 'fixed';
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
+      } else if ((left < 0) && (top == left)) {
+         // column
+         outer.className = "jsroot_ctxt_column";
+         outer.style.width = (100/-left).toFixed(1) + "%";
       } else {
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
 
-      let need_check_area = false;
-      menu.forEach(d => { if (d.checked !== undefined) need_check_area = true; });
+      let need_check_area = false, ncols = 0;
+      menu.forEach(d => {
+         if (d.checked) need_check_area = true;
+         if (d.column) ncols++;
+      });
 
       menu.forEach(d => {
+         if (ncols > 0) {
+            outer.style.display = "flex";
+            if (d.column) this._buildContextmenu(d.sub, -ncols, -ncols, outer);
+            return;
+         }
+
          if (d.divider) {
             let hr = document.createElement('hr');
             hr.className = "jsroot_ctxt_divider";
@@ -52510,8 +52546,24 @@ class StandaloneMenu extends JSRootMenu {
 
          let text = document.createElement('div');
          text.className = "jsroot_ctxt_text";
+
          if (d.text.indexOf("<svg") >= 0) {
-            text.innerHTML = d.text;
+            if (need_check_area) {
+               text.style.display = 'flex';
+
+               let chk = document.createElement('span');
+               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.style.display = "inline-block";
+               chk.style.width = "1em";
+               text.appendChild(chk);
+
+               let sub = document.createElement('div');
+               sub.innerHTML = d.text;
+               text.appendChild(sub);
+            } else {
+               text.innerHTML = d.text;
+            }
+
          } else {
             if (need_check_area) {
                let chk = document.createElement('span');
@@ -52527,7 +52579,9 @@ class StandaloneMenu extends JSRootMenu {
             else
                sub.textContent = d.text;
             text.appendChild(sub);
+
          }
+
          hovArea.appendChild(text);
 
          if (d.hasOwnProperty('extraText') || d.sub) {
@@ -52569,7 +52623,6 @@ class StandaloneMenu extends JSRootMenu {
 
       //Now determine where the contextmenu will be
       if (loc === document.body) {
-
          if (left + outer.offsetWidth > docWidth) {
             //Does sub-contextmenu overflow window width?
             outer.style.left = docWidth - outer.offsetWidth + 'px';
@@ -52581,13 +52634,12 @@ class StandaloneMenu extends JSRootMenu {
             outer.style.overflowY = 'scroll';
             outer.style.overflowX = 'hidden';
             outer.style.height = docHeight + 'px';
-         }
-         else if (top + outer.offsetHeight > docHeight) {
+         } else if (top + outer.offsetHeight > docHeight) {
             //Does contextmenu overflow window height?
             outer.style.top = docHeight - outer.offsetHeight + 'px';
          }
 
-      } else {
+      } else if (outer.className != "jsroot_ctxt_column") {
 
          //if its sub-contextmenu
 
@@ -52637,7 +52689,7 @@ class StandaloneMenu extends JSRootMenu {
       let oldmenu = document.getElementById(this.menuname);
       if (oldmenu) oldmenu.remove();
 
-      this.element = this._buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
+      this.element = this._buildContextmenu(this.code, (event?.clientX || 0) + window.pageXOffset, (event?.clientY || 0) + window.pageYOffset, document.body);
 
       injectStyle(`
 .jsroot_ctxt_container {
@@ -52656,37 +52708,34 @@ class StandaloneMenu extends JSRootMenu {
    font-size: 13px;
    color: rgb(0, 0, 0, 0.8);
 }
-
+.jsroot_ctxt_column {
+   float: left;
+}
 .jsroot_ctxt_divider {
    width: 85%;
    margin: 3px auto;
    border: 1px solid rgb(0, 0, 0, 0.15);
 }
-
 .jsroot_ctxt_header {
    background-color: lightblue;
    padding: 3px 7px;
    font-weight: bold;
    border-bottom: 1px;
 }
-
 .jsroot_ctxt_text {
    margin: 0;
    padding: 3px 7px;
    pointer-events: none;
    white-space: nowrap;
 }
-
 .jsroot_ctxt_extraText {
    margin: 0;
    padding: 3px 7px;
    color: rgb(0, 0, 0, 0.6);
 }
-
 .jsroot_ctxt_focus {
    background-color: rgb(220, 220, 220);
 }
-
 .jsroot_ctxt_item:hover {
    background-color: rgb(235, 235, 235);
 }`, this.element);
@@ -52731,14 +52780,12 @@ class StandaloneMenu extends JSRootMenu {
    opacity: 0.2;
    background-color: white;
 }
-
 .jsroot_dialog {
    z-index: 100001;
    position: absolute;
    left: 50%;
    top: 50%;
 }
-
 .jsroot_dialog_body {
    position: relative;
    left: -50%;
@@ -52749,28 +52796,22 @@ class StandaloneMenu extends JSRootMenu {
    flex-flow: column;
    background-color: white;
 }
-
 .jsroot_dialog_header {
    flex: 0 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_content {
    flex: 1 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_footer {
    flex: 0 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_button {
    float: right;
    margin-right: 1em;
 }`, element.node());
-
-
 
       return new Promise(resolveFunc => {
          element.on("keyup", evnt => {
@@ -52842,6 +52883,9 @@ class BootstrapMenu extends JSRootMenu {
          this.code += '<hr class="dropdown-divider">';
          return;
       }
+
+      if ((name=="column:") || (name == "endcolumn:"))
+         return;
 
       if (name.indexOf("header:")==0) {
          this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
