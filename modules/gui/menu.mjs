@@ -93,14 +93,15 @@ class JSRootMenu {
      * @param {boolean} flag - flag
      * @param {string} name - item name
      * @param {function} func - func called when item is selected */
-   addchk(flag, name, arg, func) {
+   addchk(flag, name, arg, func, title) {
       let handler = func;
       if (typeof arg == 'function') {
+         title = func;
          func = arg;
          handler = res => func(res=="1");
          arg = flag ? "0" : "1";
       }
-      this.add((flag ? "chk:" : "unk:") + name, arg, handler);
+      this.add((flag ? "chk:" : "unk:") + name, arg, handler, title);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -164,13 +165,23 @@ class JSRootMenu {
             set_func(useid ? id : col);
          });
       });
-      for (let n = -1; n < 11; ++n) {
-         if ((n < 0) && useid) continue;
-         if ((n == 10) && (fill_kind !== 1)) continue;
-         let col = (n < 0) ? 'none' : getColor(n);
-         if ((n == 0) && (fill_kind == 1)) col = 'none';
-         let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
-         this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res));
+
+      for(let ncolumn = 0; ncolumn < 5; ++ncolumn) {
+         this.add("column:");
+
+         for (let nrow = 0; nrow < 10; nrow++) {
+            let n = ncolumn*10 + nrow;
+            if (!useid) --n; // use -1 as none color
+
+            let col = (n < 0) ? 'none' : getColor(n);
+            if ((n == 0) && (fill_kind == 1)) col = 'none';
+            let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`;
+            let svg = "<svg width='50' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + lbl + "</text></svg>";
+            this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
+         }
+
+         this.add("endcolumn:");
+
       }
       this.add("endsub:");
    }
