@@ -651,15 +651,23 @@ class StandaloneMenu extends JSRootMenu {
       if (name == "separator")
          return curr.push({ divider: true });
 
-      if (name.indexOf("header:")==0)
+      if (name.indexOf("header:") == 0)
          return curr.push({ text: name.slice(7), header: true });
 
-      if (name=="endsub:") return this.stack.pop();
+      if ((name == "endsub:") || (name == "endcolumn:"))
+         return this.stack.pop();
 
       if (typeof arg == 'function') { title = func; func = arg; arg = name; }
 
       let elem = {};
       curr.push(elem);
+
+      if (name == "column:") {
+         elem.column = true;
+         elem.sub = [];
+         this.stack.push(elem.sub);
+         return;
+      }
 
       if (name.indexOf("sub:")==0) {
          name = name.slice(4);
@@ -696,6 +704,10 @@ class StandaloneMenu extends JSRootMenu {
          outer.style.position = 'fixed';
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
+      } else if ((left < 0) && (top == left)) {
+         // column
+         outer.className = "jsroot_ctxt_column";
+         outer.style.width = (100/-left).toFixed(1) + "%";
       } else {
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
@@ -703,7 +715,16 @@ class StandaloneMenu extends JSRootMenu {
       let need_check_area = false;
       menu.forEach(d => { if (d.checked !== undefined) need_check_area = true; });
 
+      let ncols = 0;
+
+      menu.forEach(d => { if (d.column) ncols++; });
+
       menu.forEach(d => {
+         if (ncols > 0) {
+            if (d.column) this._buildContextmenu(d.sub, -ncols, -ncols, outer);
+            return;
+         }
+
          if (d.divider) {
             let hr = document.createElement('hr');
             hr.className = "jsroot_ctxt_divider";
@@ -881,6 +902,9 @@ class StandaloneMenu extends JSRootMenu {
    font-size: 13px;
    color: rgb(0, 0, 0, 0.8);
 }
+.jsroot_ctxt_column {
+   float: left;
+}
 .jsroot_ctxt_divider {
    width: 85%;
    margin: 3px auto;
@@ -1053,6 +1077,9 @@ class BootstrapMenu extends JSRootMenu {
          this.code += '<hr class="dropdown-divider">';
          return;
       }
+
+      if ((name=="column:") || (name == "endcolumn:"))
+         return;
 
       if (name.indexOf("header:")==0) {
          this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
