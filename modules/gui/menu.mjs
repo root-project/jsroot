@@ -600,8 +600,8 @@ class JSRootMenu {
           main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < args.length; ++n)
-         main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
-                          <input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
+         main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>`+
+                         `<input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
 
       main_content += '</fieldset></form>';
 
@@ -881,37 +881,31 @@ class StandaloneMenu extends JSRootMenu {
    font-size: 13px;
    color: rgb(0, 0, 0, 0.8);
 }
-
 .jsroot_ctxt_divider {
    width: 85%;
    margin: 3px auto;
    border: 1px solid rgb(0, 0, 0, 0.15);
 }
-
 .jsroot_ctxt_header {
    background-color: lightblue;
    padding: 3px 7px;
    font-weight: bold;
    border-bottom: 1px;
 }
-
 .jsroot_ctxt_text {
    margin: 0;
    padding: 3px 7px;
    pointer-events: none;
    white-space: nowrap;
 }
-
 .jsroot_ctxt_extraText {
    margin: 0;
    padding: 3px 7px;
    color: rgb(0, 0, 0, 0.6);
 }
-
 .jsroot_ctxt_focus {
    background-color: rgb(220, 220, 220);
 }
-
 .jsroot_ctxt_item:hover {
    background-color: rgb(235, 235, 235);
 }`, this.element);
@@ -956,14 +950,12 @@ class StandaloneMenu extends JSRootMenu {
    opacity: 0.2;
    background-color: white;
 }
-
 .jsroot_dialog {
    z-index: 100001;
    position: absolute;
    left: 50%;
    top: 50%;
 }
-
 .jsroot_dialog_body {
    position: relative;
    left: -50%;
@@ -974,28 +966,22 @@ class StandaloneMenu extends JSRootMenu {
    flex-flow: column;
    background-color: white;
 }
-
 .jsroot_dialog_header {
    flex: 0 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_content {
    flex: 1 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_footer {
    flex: 0 1 auto;
    padding: 5px;
 }
-
 .jsroot_dialog_button {
    float: right;
    margin-right: 1em;
 }`, element.node());
-
-
 
       return new Promise(resolveFunc => {
          element.on("keyup", evnt => {
