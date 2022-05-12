@@ -862,7 +862,7 @@ class StandaloneMenu extends JSRootMenu {
       let oldmenu = document.getElementById(this.menuname);
       if (oldmenu) oldmenu.remove();
 
-      this.element = this._buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
+      this.element = this._buildContextmenu(this.code, (event?.clientX || 0) + window.pageXOffset, (event?.clientY || 0) + window.pageYOffset, document.body);
 
       injectStyle(`
 .jsroot_ctxt_container {
