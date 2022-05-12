@@ -721,6 +721,7 @@ class StandaloneMenu extends JSRootMenu {
 
       menu.forEach(d => {
          if (ncols > 0) {
+            outer.style.display = "flex";
             if (d.column) this._buildContextmenu(d.sub, -ncols, -ncols, outer);
             return;
          }
@@ -815,7 +816,6 @@ class StandaloneMenu extends JSRootMenu {
 
       //Now determine where the contextmenu will be
       if (loc === document.body) {
-
          if (left + outer.offsetWidth > docWidth) {
             //Does sub-contextmenu overflow window width?
             outer.style.left = docWidth - outer.offsetWidth + 'px';
@@ -827,13 +827,12 @@ class StandaloneMenu extends JSRootMenu {
             outer.style.overflowY = 'scroll';
             outer.style.overflowX = 'hidden';
             outer.style.height = docHeight + 'px';
-         }
-         else if (top + outer.offsetHeight > docHeight) {
+         } else if (top + outer.offsetHeight > docHeight) {
             //Does contextmenu overflow window height?
             outer.style.top = docHeight - outer.offsetHeight + 'px';
          }
 
-      } else {
+      } else if (outer.className != "jsroot_ctxt_column") {
 
          //if its sub-contextmenu
 
