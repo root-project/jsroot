@@ -175,10 +175,13 @@ class JSRootMenu {
 
             let col = (n < 0) ? 'none' : getColor(n);
             if ((n == 0) && (fill_kind == 1)) col = 'none';
-            let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`;
-            let svg = "<svg width='50' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + lbl + "</text></svg>";
+            let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
+                fill = (n == 1) ? "white" : "black",
+                stroke = (n == 1) ? "red" : "black",
+                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : "",
+                svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
 
-            this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
+            this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
          }
 
          this.add("endcolumn:");
