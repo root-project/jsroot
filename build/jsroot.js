@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "12/05/2022";
+let version_date = "13/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8173,6 +8173,7 @@ const root_fonts_aver_width = [0.5778,0.5314,
  */
 
 class FontHandler {
+
    /** @summary constructor */
    constructor(fontIndex, size, scale, name, style, weight) {
       this.name = "Arial";
@@ -51834,10 +51835,12 @@ class JSRootMenu {
       this.cnt = 0;
    }
 
+   native() { return false; }
+
    load() { return Promise.resolve(this); }
 
    /** @summary Returns object with mouse event position when context menu was actiavted
-    * @desc Return object will have members "clientX" and "clientY" */
+     * @desc Return object will have members "clientX" and "clientY" */
    getEventPosition() { return this.show_evnt; }
 
    add(/*name, arg, func, title*/) {
@@ -51960,8 +51963,9 @@ class JSRootMenu {
          }
 
          this.add("endcolumn:");
-
+         if (!this.native()) break;
       }
+
       this.add("endsub:");
    }
 
@@ -51989,27 +51993,106 @@ class JSRootMenu {
    /** @summary Add palette menu entries
      * @protected */
    addPaletteMenu(curr, set_func) {
-      const add = (id, name, more) => this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func);
+      const add = (id, name, title, more) => {
+         if (!name)
+            name = `pal ${id}`;
+         else if (!title)
+            title = name;
+         if (title) title += `, code ${id}`;
+         this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
+      };
 
       this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
 
-      add(50, "ROOT 5", (curr >= 10) && (curr < 51));
-      add(51, "Deep Sea");
-      add(52, "Grayscale", (curr > 0) && (curr < 10));
-      add(53, "Dark body radiator");
-      add(54, "Two-color hue");
+      this.add("column:");
+
+      add(57, "Bird", "Default color palette", (curr > 113));
       add(55, "Rainbow");
-      add(56, "Inverted dark body radiator");
-      add(57, "Bird", (curr > 113));
+      add(51, "Deep Sea");
+      add(52, "Grayscale", "New gray scale");
+      add(1,  "", "Old gray scale", (curr > 0) && (curr < 10));
+      add(50, "ROOT 5", "Default color palette in ROOT 5", (curr >= 10) && (curr < 51));
+      add(53, "", "Dark body radiator");
+      add(54, "", "Two-color hue");
+      add(56, "", "Inverted dark body radiator");
       add(58, "Cubehelix");
-      add(59, "Green Red Violet");
-      add(60, "Blue Red Yellow");
+      add(59, "", "Green Red Violet");
+      add(60, "", "Blue Red Yellow");
       add(61, "Ocean");
-      add(62, "Color Printable On Grey");
+
+      this.add("endcolumn:");
+
+      if (!this.native())
+         return this.add("endsub:");
+
+      this.add("column:");
+
+      add(62, "", "Color Printable On Grey");
       add(63, "Alpine");
       add(64, "Aquamarine");
       add(65, "Army");
       add(66, "Atlantic");
+      add(67, "Aurora");
+      add(68, "Avocado");
+      add(69, "Beach");
+      add(70, "Black Body");
+      add(71, "", "Blue Green Yellow");
+      add(72, "Brown Cyan");
+      add(73, "CMYK");
+      add(74, "Candy");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(75, "Cherry");
+      add(76, "Coffee");
+      add(77, "", "Dark Rain Bow");
+      add(78, "", "Dark Terrain");
+      add(79, "Fall");
+      add(80, "Fruit Punch");
+      add(81, "Fuchsia");
+      add(82, "Grey Yellow");
+      add(83, "", "Green Brown Terrain");
+      add(84, "Green Pink");
+      add(85, "Island");
+      add(86, "Lake");
+      add(87, "", "Light Temperature");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(88, "", "Light Terrain");
+      add(89, "Mint");
+      add(90, "Neon");
+      add(91, "Pastel");
+      add(92, "Pearl");
+      add(93, "Pigeon");
+      add(94, "Plum");
+      add(95, "Red Blue");
+      add(96, "Rose");
+      add(97, "Rust");
+      add(98, "", "Sandy Terrain");
+      add(99, "Sienna");
+      add(100, "Solar");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(101, "", "South West");
+      add(102, "", "Starry Night");
+      add(103, "", "Sunset");
+      add(104, "", "Temperature Map");
+      add(105, "", "Thermometer");
+      add(106, "Valentine");
+      add(107, "", "Visible Spectrum");
+      add(108, "", "Water Melon");
+      add(109, "Cool");
+      add(110, "Copper");
+      add(111, "", "Gist Earth");
+      add(112, "Viridis");
+      add(113, "Cividis");
+
+      this.add("endcolumn:");
 
       this.add("endsub:");
    }
@@ -52112,13 +52195,80 @@ class JSRootMenu {
       }
       this.add("endsub:");
 
-      this.add("sub:font");
-      for (let n = 1; n < 16; ++n) {
-         this.addchk(n == Math.floor(obj.fTextFont / 10), n, n,
-            function(arg) { this.getObject().fTextFont = parseInt(arg) * 10 + 2; this.interactiveRedraw(true, "exec:SetTextFont(" + this.getObject().fTextFont + ")"); }.bind(painter));
+      this.addFontMenu("font", obj.fTextFont, function(fnt) {
+         this.getObject().fTextFont = fnt; this.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); }.bind(painter)
+      );
+
+      this.add("endsub:");
+   }
+
+   /** @summary Add line style menu
+     * @private */
+   addLineStyleMenu(name, value, set_func) {
+      this.add("sub:"+name, () => this.input("Enter line style id (1-solid)", value, "int", 1, 11).then(val => {
+         if (getSvgLineStyle(val)) set_func(val);
+      }));
+      for (let n = 1; n < 11; ++n) {
+         let dash = getSvgLineStyle(n),
+             svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
+
+         this.addchk((value == n), svg, n, arg => set_func(parseInt(arg)));
       }
       this.add("endsub:");
+   }
 
+   /** @summary Add fill style menu
+     * @private */
+   addFillStyleMenu(name, value, color_index, painter, set_func) {
+      this.add("sub:" + name, () => {
+         this.input("Enter fill style id (1001-solid, 3000..3010)", value, "int", 0, 4000).then(id => {
+            if ((id >= 0) && (id <= 4000)) set_func(id);
+         });
+      });
+
+      let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+
+      for (let n = 0; n < supported.length; ++n) {
+         let svg = supported[n];
+         if (painter) {
+            let sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
+            svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
+         }
+         this.addchk(value == supported[n], svg, supported[n], arg => set_func(parseInt(arg)));
+      }
+      this.add("endsub:");
+   }
+
+   addFontMenu(name, value, set_func) {
+      this.add("sub:" + name, () => {
+         this.input("Enter font id from [0..20]", Math.floor(value/10), "int", 0, 20).then(id => {
+            if ((id >= 0) && (id <= 20)) set_func(id*10 + 2);
+         });
+      });
+
+      this.add("column:");
+
+      for (let n = 1; n < 20; ++n) {
+         let handler = new FontHandler(n*10+2, 14),
+             txt = select(document.createElementNS("http://www.w3.org/2000/svg", "text")),
+             name = " " + handler.name.split(" ")[0] + " ",
+             fullname = handler.name;
+         if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
+         if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
+         txt.attr("x", 1).attr("y",15).text(name);
+         handler.setFont(txt);
+
+         let rect = (value != n*10+2) ? "" : "<rect width='90' height='18' style='fill:none;stroke:black'></rect>",
+             svg = "<svg width='90' height='18'>" + txt.node().outerHTML + rect + "</svg>";
+         this.add(svg, n, arg => set_func(parseInt(arg)*10+2), fullname);
+
+         if (n == 10) {
+            this.add("endcolumn:");
+            this.add("column:");
+         }
+      }
+
+      this.add("endcolumn:");
       this.add("endsub:");
    }
 
@@ -52137,20 +52287,10 @@ class JSRootMenu {
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
          this.addColorMenu("color", painter.lineatt.color,
             arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
-         this.add("sub:style", () => {
-            this.input("Enter line style id (1-solid)", painter.lineatt.style, "int", 1, 11).then(id => {
-               if (!getSvgLineStyle(id)) return;
-               painter.lineatt.change(undefined, undefined, id);
-               painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
-            });
+         this.addLineStyleMenu("style", painter.lineatt.style, id => {
+            painter.lineatt.change(undefined, undefined, id);
+            painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
          });
-         for (let n = 1; n < 11; ++n) {
-            let dash = getSvgLineStyle(n),
-                svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
-
-            this.addchk((painter.lineatt.style == n), svg, n, arg => { painter.lineatt.change(undefined, undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetLineStyle(${arg})`); });
-         }
-         this.add("endsub:");
          this.add("endsub:");
 
          if (('excl_side' in painter.lineatt) && (painter.lineatt.excl_side !== 0)) {
@@ -52172,27 +52312,14 @@ class JSRootMenu {
 
       if (painter.fillatt && painter.fillatt.used) {
          this.add("sub:" + preffix + "Fill att");
-         this.addColorMenu("color", painter.fillatt.colorindx,
-            arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
-         this.add("sub:style", () => {
-            this.input("Enter fill style id (1001-solid, 3000..3010)", painter.fillatt.pattern, "int", 0, 4000).then(id => {
-               if ((id < 0) || (id > 4000)) return;
-               painter.fillatt.change(undefined, id, painter.getCanvSvg());
-               painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
-            });
+         this.addColorMenu("color", painter.fillatt.colorindx, arg => {
+            painter.fillatt.change(arg, undefined, painter.getCanvSvg());
+            painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor"));
+         }, painter.fillatt.kind);
+         this.addFillStyleMenu("style", painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
+            painter.fillatt.change(undefined, id, painter.getCanvSvg());
+            painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
-
-         let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
-
-         for (let n = 0; n < supported.length; ++n) {
-            let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
-                svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
-            this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], arg => {
-               painter.fillatt.change(undefined, parseInt(arg), painter.getCanvSvg());
-               painter.interactiveRedraw(true, `exec:SetFillStyle(${arg})`);
-            });
-         }
-         this.add("endsub:");
          this.add("endsub:");
       }
 
@@ -52429,8 +52556,10 @@ class StandaloneMenu extends JSRootMenu {
       this.stack = [ this.code ];
    }
 
-  /** @summary Load required modules, noop for that menu class */
-  load() { return Promise.resolve(this); }
+   native() { return true; }
+
+   /** @summary Load required modules, noop for that menu class */
+   load() { return Promise.resolve(this); }
 
    /** @summary Add menu item
      * @param {string} name - item name
@@ -74887,6 +75016,8 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
+      menu.addPaletteMenu(settings.Palette, val => { settings.Palette = val; });
+
       menu.add("sub:Geometry");
       menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
       menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
@@ -74895,8 +75026,69 @@ class HierarchyPainter extends BasePainter {
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
       menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
 
-      menu.add("sub:Style");
+      function setStyleField(arg) { gStyle[arg.slice(1)] = parseInt(arg[0]); }
+      function addStyleIntField(name, field, arr) {
+         menu.add("sub:" + name);
+         for (let v = 0; v < arr.length; ++v)
+            menu.addchk(gStyle[field] == v, arr[v], `${v}${field}`, setStyleField);
+         menu.add("endsub:");
+      }
+
+      menu.add("sub:gStyle");
+
+      menu.add("sub:Pad");
+      menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
+      menu.add("sub:Grid");
+      menu.addchk(gStyle.fPadGridX, "X", flag => { gStyle.fPadGridX = flag; });
+      menu.addchk(gStyle.fPadGridY, "Y", flag => { gStyle.fPadGridY = flag; });
+      menu.addColorMenu("Color", gStyle.fGridColor, col => { gStyle.fGridColor = col; });
+      menu.addSizeMenu("Width", 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
+      menu.addLineStyleMenu("Style", gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
+      menu.add("endsub:");
+      addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Log X", "fOptLogx", ["off", "on", "log 2"]);
+      addStyleIntField("Log Y", "fOptLogy", ["off", "on", "log 2"]);
+      addStyleIntField("Log Z", "fOptLogz", ["off", "on", "log 2"]);
+      menu.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
+      menu.add("endsub:");
+
+      menu.add("sub:Frame");
+      menu.addColorMenu("Fill color", gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
+      menu.addColorMenu("Line color", gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
+      menu.addSizeMenu("Line width", 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
+      menu.addLineStyleMenu("Line style", gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
+      // fFrameBorderMode: 0,
+      menu.add("sub:Margins");
+      menu.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
+      menu.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
+      menu.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
+      menu.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
+      menu.add("endsub:");
+      menu.add("endsub:");
+
+      menu.addColorMenu("Canvas color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+
+      menu.add("sub:Stat box");
+      menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
+      menu.addColorMenu("Text color", gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
+      menu.addSizeMenu("Font size", 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
+      menu.addFontMenu("Font", gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
+      menu.add("Stat format", () => menu.input("Stat format", gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
+      menu.addSizeMenu("X: " + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
+      menu.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
+      menu.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
+      menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      menu.add("endsub:");
+
+      menu.add("separator");
+      menu.add("sub:Predefined");
       ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
+      menu.add("endsub:");
       menu.add("endsub:");
 
       menu.add("separator");
