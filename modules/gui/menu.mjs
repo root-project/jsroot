@@ -218,7 +218,11 @@ class JSRootMenu {
      * @protected */
    addPaletteMenu(curr, set_func) {
       const add = (id, name, title, more) => {
-         if (!name) name = `pal ${id}`;
+         if (!name)
+            name = `pal ${id}`;
+         else if (!title)
+            title = name;
+         if (title) title += `, code ${id}`;
          this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
       }
 
@@ -230,9 +234,9 @@ class JSRootMenu {
       add(55, "Rainbow");
       add(51, "Deep Sea");
       add(52, "Grayscale", "New gray scale");
-      add(1,  "pal1", "Old gray scale", (curr > 0) && (curr < 10));
+      add(1,  "", "Old gray scale", (curr > 0) && (curr < 10));
       add(50, "ROOT 5", "Default color palette in ROOT 5", (curr >= 10) && (curr < 51));
-      add(53, "pal53", "Dark body radiator");
+      add(53, "", "Dark body radiator");
       add(54, "", "Two-color hue");
       add(56, "", "Inverted dark body radiator");
       add(58, "Cubehelix");
