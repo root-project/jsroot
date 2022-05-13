@@ -1899,6 +1899,20 @@ class HierarchyPainter extends BasePainter {
 
       menu.addColorMenu("Canvas color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
 
+      menu.add("sub:Stat box");
+      menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
+      menu.addColorMenu("Text color", gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
+      menu.addSizeMenu("Font size", 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
+      menu.addFontMenu("Font", gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
+      menu.add("Stat format", () => menu.input("Stat format", gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
+      menu.addSizeMenu("X: " + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
+      menu.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
+      menu.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
+      menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      menu.add("endsub:");
+
       menu.add("separator");
       menu.add("sub:Predefined");
       ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));

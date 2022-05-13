@@ -466,6 +466,31 @@ class JSRootMenu {
       this.add("endsub:");
    }
 
+   addFontMenu(name, value, set_func) {
+      this.add("sub:" + name, () => {
+         this.input("Enter font id", value, "int", 0, 100).then(id => {
+            if ((id >= 0) && (id <= 100)) set_func(id);
+         });
+      });
+
+      let supported = ['Arial', 'Times New Roman italic',
+      'Times New Roman bold', 'Times New Roman bold italic', 'Arial',
+      'Arial oblique', 'Arial bold', 'Arial bold oblique', 'Courier New',
+      'Courier New oblique', 'Courier New bold', 'Courier New bold oblique',
+      'Symbol', 'Times New Roman', 'Wingdings', 'Symbol italic',
+      'Verdana', 'Verdana italic', 'Verdana bold italic', 'Verdana bold italic'];
+
+      for (let n = 0; n < supported.length; ++n) {
+         let code = supported[n];
+         //if (painter) {
+         //   let sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
+         //   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
+         //}
+         this.addchk(value == n*10+2, code, n*10+2, arg => set_func(parseInt(arg)));
+      }
+
+      this.add("endsub:");
+   }
 
    /** @summary Fill context menu for graphical attributes in painter
      * @private */
