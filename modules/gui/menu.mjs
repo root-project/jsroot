@@ -214,27 +214,98 @@ class JSRootMenu {
    /** @summary Add palette menu entries
      * @protected */
    addPaletteMenu(curr, set_func) {
-      const add = (id, name, more) => this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func);
+      const add = (id, name, title, more) => {
+         if (!name) name = `pal ${id}`;
+         this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
+      }
 
       this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
 
-      add(50, "ROOT 5", (curr >= 10) && (curr < 51));
-      add(51, "Deep Sea");
-      add(52, "Grayscale", (curr > 0) && (curr < 10));
-      add(53, "Dark body radiator");
-      add(54, "Two-color hue");
+      this.add("column:");
+
+      add(57, "Bird", "Default color palette", (curr > 113));
       add(55, "Rainbow");
-      add(56, "Inverted dark body radiator");
-      add(57, "Bird", (curr > 113));
+      add(51, "Deep Sea");
+      add(52, "Grayscale", "New gray scale");
+      add(1,  "pal1", "Old gray scale", (curr > 0) && (curr < 10));
+      add(50, "ROOT 5", "Default color palette in ROOT 5", (curr >= 10) && (curr < 51));
+      add(53, "pal53", "Dark body radiator");
+      add(54, "", "Two-color hue");
+      add(56, "", "Inverted dark body radiator");
       add(58, "Cubehelix");
-      add(59, "Green Red Violet");
-      add(60, "Blue Red Yellow");
+      add(59, "", "Green Red Violet");
+      add(60, "", "Blue Red Yellow");
       add(61, "Ocean");
-      add(62, "Color Printable On Grey");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(62, "", "Color Printable On Grey");
       add(63, "Alpine");
       add(64, "Aquamarine");
       add(65, "Army");
       add(66, "Atlantic");
+      add(67, "Aurora");
+      add(68, "Avocado");
+      add(69, "Beach");
+      add(70, "", "Black Body");
+      add(71, "", "Blue Green Yellow");
+      add(72, "", "Brown Cyan");
+      add(73, "CMYK");
+      add(74, "Candy");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(75, "Cherry");
+      add(76, "Coffee");
+      add(77, "", "Dark Rain Bow");
+      add(78, "", "Dark Terrain");
+      add(79, "Fall");
+      add(80, "Fruit Punch");
+      add(81, "Fuchsia");
+      add(82, "", "Grey Yellow");
+      add(83, "", "Green Brown Terrain");
+      add(84, "", "Green Pink");
+      add(85, "Island");
+      add(86, "Lake");
+      add(87, "", "Light Temperature");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(88, "", "Light Terrain");
+      add(89, "Mint");
+      add(90, "Neon");
+      add(91, "Pastel");
+      add(92, "Pearl");
+      add(93, "Pigeon");
+      add(94, "Plum");
+      add(95, "", "Red Blue");
+      add(96, "Rose");
+      add(97, "Rust");
+      add(98, "", "Sandy Terrain");
+      add(99, "Sienna");
+      add(100, "Solar");
+
+      this.add("endcolumn:");
+      this.add("column:");
+
+      add(101, "", "South West");
+      add(102, "", "Starry Night");
+      add(103, "", "Sunset");
+      add(104, "", "Temperature Map");
+      add(105, "", "Thermometer");
+      add(106, "Valentine");
+      add(107, "", "Visible Spectrum");
+      add(108, "", "Water Melon");
+      add(109, "Cool");
+      add(110, "Copper");
+      add(111, "", "Gist Earth");
+      add(112, "Viridis");
+      add(113, "Cividis");
+
+      this.add("endcolumn:");
 
       this.add("endsub:");
    }
