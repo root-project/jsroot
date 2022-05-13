@@ -59,10 +59,12 @@ class JSRootMenu {
       this.cnt = 0;
    }
 
+   native() { return false; }
+
    load() { return Promise.resolve(this); }
 
    /** @summary Returns object with mouse event position when context menu was actiavted
-    * @desc Return object will have members "clientX" and "clientY" */
+     * @desc Return object will have members "clientX" and "clientY" */
    getEventPosition() { return this.show_evnt; }
 
    add(/*name, arg, func, title*/) {
@@ -185,8 +187,9 @@ class JSRootMenu {
          }
 
          this.add("endcolumn:");
-
+         if (!this.native()) break;
       }
+
       this.add("endsub:");
    }
 
@@ -238,6 +241,10 @@ class JSRootMenu {
       add(61, "Ocean");
 
       this.add("endcolumn:");
+
+      if (!this.native())
+         return this.add("endsub:");
+
       this.add("column:");
 
       add(62, "", "Color Printable On Grey");
@@ -725,8 +732,10 @@ class StandaloneMenu extends JSRootMenu {
       this.stack = [ this.code ];
    }
 
-  /** @summary Load required modules, noop for that menu class */
-  load() { return Promise.resolve(this); }
+   native() { return true; }
+
+   /** @summary Load required modules, noop for that menu class */
+   load() { return Promise.resolve(this); }
 
    /** @summary Add menu item
      * @param {string} name - item name
