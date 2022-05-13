@@ -21,6 +21,7 @@ const root_fonts_aver_width = [0.5778,0.5314,
  */
 
 class FontHandler {
+
    /** @summary constructor */
    constructor(fontIndex, size, scale, name, style, weight) {
       this.name = "Arial";

@@ -12,6 +12,8 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 
+import { FontHandler } from '../base/FontHandler.mjs';
+
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors
   * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
@@ -419,12 +421,9 @@ class JSRootMenu {
       }
       this.add("endsub:");
 
-      this.add("sub:font");
-      for (let n = 1; n < 16; ++n) {
-         this.addchk(n == Math.floor(obj.fTextFont / 10), n, n,
-            function(arg) { this.getObject().fTextFont = parseInt(arg) * 10 + 2; this.interactiveRedraw(true, "exec:SetTextFont(" + this.getObject().fTextFont + ")"); }.bind(painter));
-      }
-      this.add("endsub:");
+      this.addFontMenu("font", obj.fTextFont, function(fnt) {
+         this.getObject().fTextFont = fnt; this.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); }.bind(painter)
+      );
 
       this.add("endsub:");
    }
@@ -468,27 +467,34 @@ class JSRootMenu {
 
    addFontMenu(name, value, set_func) {
       this.add("sub:" + name, () => {
-         this.input("Enter font id", value, "int", 0, 100).then(id => {
-            if ((id >= 0) && (id <= 100)) set_func(id);
+         this.input("Enter font id from [0..20]", Math.floor(value/10), "int", 0, 20).then(id => {
+            if ((id >= 0) && (id <= 20)) set_func(id*10 + 2);
          });
       });
 
-      let supported = ['Arial', 'Times New Roman italic',
-      'Times New Roman bold', 'Times New Roman bold italic', 'Arial',
-      'Arial oblique', 'Arial bold', 'Arial bold oblique', 'Courier New',
-      'Courier New oblique', 'Courier New bold', 'Courier New bold oblique',
-      'Symbol', 'Times New Roman', 'Wingdings', 'Symbol italic',
-      'Verdana', 'Verdana italic', 'Verdana bold italic', 'Verdana bold italic'];
+      this.add("column:");
 
-      for (let n = 0; n < supported.length; ++n) {
-         let code = supported[n];
-         //if (painter) {
-         //   let sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
-         //   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
-         //}
-         this.addchk(value == n*10+2, code, n*10+2, arg => set_func(parseInt(arg)));
+      for (let n = 1; n < 20; ++n) {
+         let handler = new FontHandler(n*10+2, 14),
+             txt = d3_select(document.createElementNS("http://www.w3.org/2000/svg", "text")),
+             name = " " + handler.name.split(" ")[0] + " ",
+             fullname = handler.name;
+         if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
+         if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
+         txt.attr("x", 1).attr("y",15).text(name);
+         handler.setFont(txt);
+
+         let rect = (value != n*10+2) ? "" : "<rect width='90' height='18' style='fill:none;stroke:black'></rect>",
+             svg = "<svg width='90' height='18'>" + txt.node().outerHTML + rect + "</svg>";
+         this.add(svg, n, arg => set_func(parseInt(arg)*10+2), fullname);
+
+         if (n == 10) {
+            this.add("endcolumn:");
+            this.add("column:");
+         }
       }
 
+      this.add("endcolumn:");
       this.add("endsub:");
    }
 
