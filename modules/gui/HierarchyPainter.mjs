@@ -1854,24 +1854,32 @@ class HierarchyPainter extends BasePainter {
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
       menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
 
-      const SetStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); };
+      function setStyleField(arg) { gStyle[arg.slice(1)] = parseInt(arg[0]); }
+      function addStyleIntField(name, field, arr) {
+         menu.add("sub:" + name);
+         for (let v = 0; v < arr.length; ++v)
+            menu.addchk(gStyle[field] == v, arr[v], `${v}${field}`, setStyleField);
+         menu.add("endsub:");
+      }
 
       menu.add("sub:gStyle");
 
       menu.add("sub:Pad");
       menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
-      menu.addchk(gStyle.fPadGridX, "Grid X", flag => { gStyle.fPadGridX = flag; });
-      menu.addchk(gStyle.fPadGridY, "Grid Y", flag => { gStyle.fPadGridY = flag; });
-      menu.add("sub:Ticks X");
-      menu.addchk(gStyle.fPadTickX == 0, "normal", "0fPadTickX", SetStyleField);
-      menu.addchk(gStyle.fPadTickX == 1, "ticks on both sides", "1fPadTickX", SetStyleField);
-      menu.addchk(gStyle.fPadTickX == 2, "labels on both sides", "2fPadTickX", SetStyleField);
+      menu.add("sub:Grid");
+      menu.addchk(gStyle.fPadGridX, "X", flag => { gStyle.fPadGridX = flag; });
+      menu.addchk(gStyle.fPadGridY, "Y", flag => { gStyle.fPadGridY = flag; });
+      menu.addColorMenu("Color", gStyle.fGridColor, col => { gStyle.fGridColor = col; });
+      menu.addLineStyleMenu("Style", gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
+      menu.addSizeMenu("Width", 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
       menu.add("endsub:");
-      menu.add("sub:Ticks Y");
-      menu.addchk(gStyle.fPadTickY == 0, "normal", "0fPadTickY", SetStyleField);
-      menu.addchk(gStyle.fPadTickY == 1, "ticks on both sides", "1fPadTickY", SetStyleField);
-      menu.addchk(gStyle.fPadTickY == 2, "labels on both sides", "2fPadTickY", SetStyleField);
-      menu.add("endsub:");
+      addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Log X", "fOptLogx", ["off", "on", "log 2"]);
+      addStyleIntField("Log Y", "fOptLogy", ["off", "on", "log 2"]);
+      addStyleIntField("Log Z", "fOptLogz", ["off", "on", "log 2"]);
+      menu.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
+
       menu.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
       menu.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
       menu.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
