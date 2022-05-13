@@ -1844,6 +1844,8 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
+      menu.addPaletteMenu(settings.Palette, val => { settings.Palette = val });
+
       menu.add("sub:Geometry");
       menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
       menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
@@ -1852,8 +1854,36 @@ class HierarchyPainter extends BasePainter {
       menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
       menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
 
-      menu.add("sub:Style");
+      const SetStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); };
+
+      menu.add("sub:gStyle");
+
+      menu.add("sub:Pad");
+      menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
+      menu.addchk(gStyle.fPadGridX, "Grid X", flag => { gStyle.fPadGridX = flag; });
+      menu.addchk(gStyle.fPadGridY, "Grid Y", flag => { gStyle.fPadGridY = flag; });
+      menu.add("sub:Ticks X");
+      menu.addchk(gStyle.fPadTickX == 0, "normal", "0fPadTickX", SetStyleField);
+      menu.addchk(gStyle.fPadTickX == 1, "ticks on both sides", "1fPadTickX", SetStyleField);
+      menu.addchk(gStyle.fPadTickX == 2, "labels on both sides", "2fPadTickX", SetStyleField);
+      menu.add("endsub:");
+      menu.add("sub:Ticks Y");
+      menu.addchk(gStyle.fPadTickY == 0, "normal", "0fPadTickY", SetStyleField);
+      menu.addchk(gStyle.fPadTickY == 1, "ticks on both sides", "1fPadTickY", SetStyleField);
+      menu.addchk(gStyle.fPadTickY == 2, "labels on both sides", "2fPadTickY", SetStyleField);
+      menu.add("endsub:");
+      menu.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
+      menu.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
+      menu.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
+      menu.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
+      menu.add("endsub:");
+
+      menu.addColorMenu("Canvas color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+
+      menu.add("separator");
+      menu.add("sub:Predefined");
       ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
+      menu.add("endsub:");
       menu.add("endsub:");
 
       menu.add("separator");

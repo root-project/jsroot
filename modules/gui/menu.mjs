@@ -259,9 +259,9 @@ class JSRootMenu {
       add(67, "Aurora");
       add(68, "Avocado");
       add(69, "Beach");
-      add(70, "", "Black Body");
+      add(70, "Black Body");
       add(71, "", "Blue Green Yellow");
-      add(72, "", "Brown Cyan");
+      add(72, "Brown Cyan");
       add(73, "CMYK");
       add(74, "Candy");
 
@@ -275,9 +275,9 @@ class JSRootMenu {
       add(79, "Fall");
       add(80, "Fruit Punch");
       add(81, "Fuchsia");
-      add(82, "", "Grey Yellow");
+      add(82, "Grey Yellow");
       add(83, "", "Green Brown Terrain");
-      add(84, "", "Green Pink");
+      add(84, "Green Pink");
       add(85, "Island");
       add(86, "Lake");
       add(87, "", "Light Temperature");
@@ -292,7 +292,7 @@ class JSRootMenu {
       add(92, "Pearl");
       add(93, "Pigeon");
       add(94, "Plum");
-      add(95, "", "Red Blue");
+      add(95, "Red Blue");
       add(96, "Rose");
       add(97, "Rust");
       add(98, "", "Sandy Terrain");
