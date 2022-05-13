@@ -432,7 +432,9 @@ class JSRootMenu {
    /** @summary Add line style menu
      * @private */
    addLineStyleMenu(name, value, set_func) {
-      this.add("sub:"+name, () => this.input("Enter line style id (1-solid)", value, "int", 1, 11).then(set_func));
+      this.add("sub:"+name, () => this.input("Enter line style id (1-solid)", value, "int", 1, 11).then(val => {
+         if (getSvgLineStyle(val)) set_func(val);
+      }));
       for (let n = 1; n < 11; ++n) {
          let dash = getSvgLineStyle(n),
              svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
@@ -441,6 +443,29 @@ class JSRootMenu {
       }
       this.add("endsub:");
    }
+
+   /** @summary Add fill style menu
+     * @private */
+   addFillStyleMenu(name, value, color_index, painter, set_func) {
+      this.add("sub:" + name, () => {
+         this.input("Enter fill style id (1001-solid, 3000..3010)", value, "int", 0, 4000).then(id => {
+            if ((id >= 0) && (id <= 4000)) set_func(id);
+         });
+      });
+
+      let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+
+      for (let n = 0; n < supported.length; ++n) {
+         let svg = supported[n];
+         if (painter) {
+            let sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
+            svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
+         }
+         this.addchk(value == supported[n], svg, supported[n], arg => set_func(parseInt(arg)));
+      }
+      this.add("endsub:");
+   }
+
 
    /** @summary Fill context menu for graphical attributes in painter
      * @private */
@@ -458,7 +483,6 @@ class JSRootMenu {
          this.addColorMenu("color", painter.lineatt.color,
             arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
          this.addLineStyleMenu("style", painter.lineatt.style, id => {
-            if (!getSvgLineStyle(id)) return;
             painter.lineatt.change(undefined, undefined, id);
             painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
          });
@@ -483,27 +507,14 @@ class JSRootMenu {
 
       if (painter.fillatt && painter.fillatt.used) {
          this.add("sub:" + preffix + "Fill att");
-         this.addColorMenu("color", painter.fillatt.colorindx,
-            arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
-         this.add("sub:style", () => {
-            this.input("Enter fill style id (1001-solid, 3000..3010)", painter.fillatt.pattern, "int", 0, 4000).then(id => {
-               if ((id < 0) || (id > 4000)) return;
-               painter.fillatt.change(undefined, id, painter.getCanvSvg());
-               painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
-            });
+         this.addColorMenu("color", painter.fillatt.colorindx, arg => {
+            painter.fillatt.change(arg, undefined, painter.getCanvSvg());
+            painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor"));
+         }, painter.fillatt.kind);
+         this.addFillStyleMenu("style", painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
+            painter.fillatt.change(undefined, id, painter.getCanvSvg());
+            painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
-
-         let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
-
-         for (let n = 0; n < supported.length; ++n) {
-            let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
-                svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
-            this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], arg => {
-               painter.fillatt.change(undefined, parseInt(arg), painter.getCanvSvg());
-               painter.interactiveRedraw(true, `exec:SetFillStyle(${arg})`);
-            });
-         }
-         this.add("endsub:");
          this.add("endsub:");
       }
 
