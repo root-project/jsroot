@@ -477,8 +477,8 @@ class JSRootMenu {
       for (let n = 1; n < 20; ++n) {
          let handler = new FontHandler(n*10+2, 14),
              txt = d3_select(document.createElementNS("http://www.w3.org/2000/svg", "text")),
-             name = " " + handler.name.split(" ")[0] + " ",
-             fullname = handler.name;
+             fullname = handler.getFontName(),
+             name = " " + fullname.split(" ")[0] + " ";
          if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
          if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
          txt.attr("x", 1).attr("y",15).text(name);

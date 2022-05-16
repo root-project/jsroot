@@ -130,6 +130,11 @@ class FontHandler {
       return res;
    }
 
+   /** @summary Returns font name */
+   getFontName() {
+      return this.isSymbol || this.name || "none";
+   }
+
 } // class FontHandler
 
 export { FontHandler };
