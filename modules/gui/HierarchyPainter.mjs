@@ -1844,8 +1844,6 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
-      menu.addPaletteMenu(settings.Palette, val => { settings.Palette = val });
-
       menu.add("sub:Geometry");
       menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
       menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
@@ -1863,6 +1861,12 @@ class HierarchyPainter extends BasePainter {
       }
 
       menu.add("sub:gStyle");
+
+      menu.add("sub:Canvas");
+      menu.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+      menu.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
+      menu.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      menu.add("endsub:");
 
       menu.add("sub:Pad");
       menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
@@ -1896,8 +1900,6 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
       menu.add("endsub:");
       menu.add("endsub:");
-
-      menu.addColorMenu("Canvas color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
 
       menu.add("sub:Stat box");
       menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
