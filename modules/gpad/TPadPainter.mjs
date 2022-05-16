@@ -541,9 +541,11 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
       } else {
          if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
+         let date = new Date();
+         if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
          dt.attr("transform", `translate(25, ${rect.height-5})`)
            .style("text-anchor", "start")
-           .text((new Date()).toISOString());
+           .text(date.toISOString());
       }
 
       if (!gStyle.fOptFile || !this.getItemName())
