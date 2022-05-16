@@ -269,6 +269,8 @@ let gStyle = {
    fOptLogz: 0,
    fOptDate: 0,
    fOptFile: 0,
+   fDateX: 0.01,
+   fDateY: 0.01,
    /** @summary Draw histogram title */
    fOptTitle: 1,
    /** @summary Canvas fill color */

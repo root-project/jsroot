@@ -541,11 +541,14 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
       } else {
          if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
-         let date = new Date(), posx = isBatchMode() ? 5 : 30; // in gui mode gap for the button
+         let date = new Date(),
+             posx = Math.round(rect.width * gStyle.fDateX),
+             posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         if (!isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr("transform", `translate(${posx}, ${rect.height-5})`)
+         dt.attr("transform", `translate(${posx}, ${posy})`)
            .style("text-anchor", "start")
-           .text(date.toISOString());
+           .text(date.toLocaleString('en-GB'));
       }
 
       if (!gStyle.fOptFile || !this.getItemName())
@@ -565,8 +568,10 @@ class TPadPainter extends ObjectPainter {
          df.remove();
       } else {
          if (df.empty()) df = info.append("text").attr("class", "canvas_item");
-         let rect = this.getPadRect();
-         df.attr("transform", `translate(${rect.width-5}, ${rect.height-5})`)
+         let rect = this.getPadRect(),
+             posx = Math.round(rect.width * (1 - gStyle.fDateX)),
+             posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         df.attr("transform", `translate(${posx}, ${posy})`)
            .style("text-anchor", "end")
            .text(item_name);
       }

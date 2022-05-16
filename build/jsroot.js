@@ -275,6 +275,8 @@ let gStyle = {
    fOptLogz: 0,
    fOptDate: 0,
    fOptFile: 0,
+   fDateX: 0.01,
+   fDateY: 0.01,
    /** @summary Draw histogram title */
    fOptTitle: 1,
    /** @summary Canvas fill color */
@@ -58196,11 +58198,14 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
       } else {
          if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
-         let date = new Date(), posx = isBatchMode() ? 5 : 30; // in gui mode gap for the button
+         let date = new Date(),
+             posx = Math.round(rect.width * gStyle.fDateX),
+             posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         if (!isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr("transform", `translate(${posx}, ${rect.height-5})`)
+         dt.attr("transform", `translate(${posx}, ${posy})`)
            .style("text-anchor", "start")
-           .text(date.toISOString());
+           .text(date.toLocaleString('en-GB'));
       }
 
       if (!gStyle.fOptFile || !this.getItemName())
@@ -58220,8 +58225,10 @@ class TPadPainter extends ObjectPainter {
          df.remove();
       } else {
          if (df.empty()) df = info.append("text").attr("class", "canvas_item");
-         let rect = this.getPadRect();
-         df.attr("transform", `translate(${rect.width-5}, ${rect.height-5})`)
+         let rect = this.getPadRect(),
+             posx = Math.round(rect.width * (1 - gStyle.fDateX)),
+             posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         df.attr("transform", `translate(${posx}, ${posy})`)
            .style("text-anchor", "end")
            .text(item_name);
       }
@@ -75085,6 +75092,8 @@ class HierarchyPainter extends BasePainter {
       menu.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
       menu.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
       menu.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      menu.addSizeMenu("Date X", 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, "configure gStyle.fDateX for date/item name drawings");
+      menu.addSizeMenu("Date Y", 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, "configure gStyle.fDateY for date/item name drawings");
       menu.add("endsub:");
 
       menu.add("sub:Pad");

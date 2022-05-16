@@ -7,7 +7,8 @@
 4. `settings.DarkMode` configures dark mode for GUI and drawings (also as `&dark` URL parameter)
 5. Support new `TGraph2DAsymmErrors` class
 6. Support `gStyle.fOptDate` and `gStyle.fOptFile` (also as `&optdate` and `&optfile` URL parameter)
-7. Support `gStyle.fHistTopMargin` (also as `&histmargin=value` URL parameter)
+7. Support `gStyle.fDateX` and `gStyle.fDateY` used for positioning date and file on canvas
+8. Support `gStyle.fHistTopMargin` (also as `&histmargin=value` URL parameter)
 
 
 ## Changes in 7.0.1
