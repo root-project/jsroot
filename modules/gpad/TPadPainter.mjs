@@ -541,9 +541,9 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
       } else {
          if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
-         let date = new Date();
+         let date = new Date(), posx = isBatchMode() ? 5 : 30; // in gui mode gap for the button
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr("transform", `translate(25, ${rect.height-5})`)
+         dt.attr("transform", `translate(${posx}, ${rect.height-5})`)
            .style("text-anchor", "start")
            .text(date.toISOString());
       }

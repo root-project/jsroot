@@ -6,6 +6,7 @@
 3. `settings.OnlyLastCycle` defines if only last object version show in TFile (also as `&lastcycle` URL parameter)
 4. `settings.DarkMode` configures dark mode for GUI and drawings (also as `&dark` URL parameter)
 5. Support new `TGraph2DAsymmErrors` class
+6. Support `gStyle.fOptDate` and `gStyle.fOptFile` (also as `&optdate` and `&optfile` URL parameter)
 
 
 ## Changes in 7.0.1

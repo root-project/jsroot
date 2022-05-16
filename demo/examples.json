@@ -158,12 +158,12 @@
      { "name": "waves", "file": "tutorials_graphs.root", "item": "waves", "title": "Draw several TF2 with col options, output of tutorials/graphs/waves.C" }
    ],
    "TCanvas" : [
-     { "name":"roofit", "file": "rf107.root", "item": "rf107_plotstyles;1" },
-     { "name":"subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
-     { "name":"zdemo", "file": "zdemo.root", "item": "zdemo;1" },
-     { "name":"legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
-     { "name":"time", "file": "ct.root", "item": "ct;1" },
-     { "name":"2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
+     { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1" },
+     { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
+     { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1" },
+     { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
+     { "name": "time", "file": "ct.root", "item": "ct;1" },
+     { "name": "2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
      { "name": "big", "file": "bigcanvas.root", "item": "big", "title": "100 histograms in subpads, for performance testing" },
      { "name": "log2", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "opt": "log2", "title": "log2 for both x and y axes" },
      { "name": "axes", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "opt": "ctx_oty_log2x", "title": "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" },
@@ -171,12 +171,12 @@
      { "name": "df105", "file": "df105_WBosonAnalysis.root", "item": "c", "opt": "", "title": "Output produced by tutorials/dataframe/df105_WBosonAnalysis.py macro" }
    ],
    "TRatioPlot" : [
-      { "name":"r1", "file": "ratioplot.root", "item": "ratioplot1;1", "title": "Output of tutorial hist/ratioplot1.C" },
-      { "name":"r2", "item": "ratioplot2;1", "title": "Output of tutorial hist/ratioplot2.C" },
-      { "name":"r3", "item": "ratioplot3;1", "title": "Output of tutorial hist/ratioplot3.C" },
-      { "name":"r4", "item": "ratioplot4;1", "title": "Output of tutorial hist/ratioplot4.C" },
-      { "name":"r5", "item": "ratioplot5;1", "title": "Output of tutorial hist/ratioplot5.C" },
-      { "name":"r6", "item": "ratioplot6;1", "title": "Output of tutorial hist/ratioplot6.C" }
+      { "name": "r1", "file": "ratioplot.root", "item": "ratioplot1;1", "title": "Output of tutorial hist/ratioplot1.C" },
+      { "name": "r2", "item": "ratioplot2;1", "title": "Output of tutorial hist/ratioplot2.C" },
+      { "name": "r3", "item": "ratioplot3;1", "title": "Output of tutorial hist/ratioplot3.C" },
+      { "name": "r4", "item": "ratioplot4;1", "title": "Output of tutorial hist/ratioplot4.C" },
+      { "name": "r5", "item": "ratioplot5;1", "title": "Output of tutorial hist/ratioplot5.C" },
+      { "name": "r6", "item": "ratioplot6;1", "title": "Output of tutorial hist/ratioplot6.C" }
    ],
    "TGeo" : [
      { "name": "logo", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "title":"Geometry from rootgeom.C example" },
@@ -223,28 +223,28 @@
      { "name": "qq", "file": "tutorials_math.root", "item": "chi2test", "title": "Example of TGraphQQ, output of tutorials/math/chi2test.C" }
    ],
    "TGraphErrors" : [
-     { "opt":"", "file": "graph.root", "item": "GraphErrors;1" },
-     { "opt":"l",  "title": "just line with errors" },
-     { "opt":"lx", "title": "suppress drawing of the errors" },
-     { "opt":"z" , "title": "do not draw ends"},
-     { "opt":">" , "title": "draw arrows at the ends"},
-     { "opt":"|>" , "title": "draw closed arrows at the ends"},
-     { "opt":"||" , "title": "do not draw main error lines, only ends"},
-     { "opt":"[]" , "title": "do not draw main error lines, only ends as brackets"},
-     { "opt":"0", "title": "do not draw errors for points outside range" },
-     { "opt":"2", "title": "filled rec" },
-     { "opt":"3" },
-     { "opt":"4" },
-     { "opt":"5", "title": "filled rec plus line contour" }
+     { "opt": "", "file": "graph.root", "item": "GraphErrors;1" },
+     { "opt": "l",  "title": "just line with errors" },
+     { "opt": "lx", "title": "suppress drawing of the errors" },
+     { "opt": "z" , "title": "do not draw ends"},
+     { "opt": ">" , "title": "draw arrows at the ends"},
+     { "opt": "|>" , "title": "draw closed arrows at the ends"},
+     { "opt": "||" , "title": "do not draw main error lines, only ends"},
+     { "opt": "[]" , "title": "do not draw main error lines, only ends as brackets"},
+     { "opt": "0", "title": "do not draw errors for points outside range" },
+     { "opt": "2", "title": "filled rec" },
+     { "opt": "3" },
+     { "opt": "4" },
+     { "opt": "5", "title": "filled rec plus line contour" }
    ],
    "TGraphAsymmErrors" : [
-     { "opt":"", "file": "graph.root", "item": "GraphAsymmErrors;1" },
-     { "opt":"z" , "title": "do not draw ends"},
-     { "opt":">" , "title": "draw arrows at the ends"},
-     { "opt":"|>" , "title": "draw closed arrows at the ends"},
-     { "opt":"||" , "title": "do not draw main error lines, only ends"},
-     { "opt":"[]" , "title": "do not draw main error lines, only ends as brackets"},
-     { "opt":"2", "title": "filled rec"  }
+     { "opt": "", "file": "graph.root", "item": "GraphAsymmErrors;1" },
+     { "opt": "z", "title": "do not draw ends"},
+     { "opt": ">", "title": "draw arrows at the ends"},
+     { "opt": "|>", "title": "draw closed arrows at the ends"},
+     { "opt": "||", "title": "do not draw main error lines, only ends"},
+     { "opt": "[]", "title": "do not draw main error lines, only ends as brackets"},
+     { "opt": "2", "title": "filled rec"  }
    ],
    "TGraphMultiErrors" : [
      { "name": "canv", "file": "graph.root", "item": "c5", "title": "Output of graph/gmultierrors.C macrot" },
