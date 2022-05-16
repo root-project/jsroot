@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "13/05/2022";
+let version_date = "16/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8230,10 +8230,8 @@ class FontHandler {
       if (arg != 'without-size')
          selection.attr("font-size", this.size)
                   .attr("xml:space", "preserve");
-      if (this.weight)
-         selection.attr("font-weight", this.weight);
-      if (this.style)
-         selection.attr("font-style", this.style);
+      selection.attr("font-weight", this.weight || null);
+      selection.attr("font-style", this.style || null);
    }
 
    /** @summary Set font size (optional) */
@@ -8282,6 +8280,11 @@ class FontHandler {
       if (this.weight) res += " " + this.weight;
       if (this.style) res += " " + this.style;
       return res;
+   }
+
+   /** @summary Returns font name */
+   getFontName() {
+      return this.isSymbol || this.name || "none";
    }
 
 } // class FontHandler
@@ -52251,8 +52254,8 @@ class JSRootMenu {
       for (let n = 1; n < 20; ++n) {
          let handler = new FontHandler(n*10+2, 14),
              txt = select(document.createElementNS("http://www.w3.org/2000/svg", "text")),
-             name = " " + handler.name.split(" ")[0] + " ",
-             fullname = handler.name;
+             fullname = handler.getFontName(),
+             name = " " + fullname.split(" ")[0] + " ";
          if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
          if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
          txt.attr("x", 1).attr("y",15).text(name);
