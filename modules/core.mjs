@@ -339,6 +339,8 @@ let gStyle = {
    fErrorX: 0.5,
    /** @summary when true, BAR and LEGO drawing using base = 0  */
    fHistMinimumZero: false,
+   /** @summary Margin between histogram's top and pad's top */
+   fHistTopMargin: 0.05,
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
@@ -953,7 +955,7 @@ function create(typename, target) {
          break;
       case 'TList':
       case 'THashList':
-         extend(obj, { name: typename, arr : [], opt : [] });
+         extend(obj, { name: typename, arr: [], opt: [] });
          break;
       case 'TAttAxis':
          extend(obj, { fNdivisions: 510, fAxisColor: 1,

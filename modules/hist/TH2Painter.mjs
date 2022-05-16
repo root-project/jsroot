@@ -231,7 +231,7 @@ class TH2Painter extends TH2Painter2D {
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
 
-         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (pad && pad.fLogz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
 
          this.deleteAttr();
 

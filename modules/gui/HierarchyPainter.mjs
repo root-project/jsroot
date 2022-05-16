@@ -1928,12 +1928,20 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
       menu.add("endsub:");
 
+      menu.add("sub:Legend");
+      menu.addColorMenu("Fill color", gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
+      menu.addFontMenu("Font", gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
+      menu.addSizeMenu("Text size", 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, "legend text size, when 0 - auto adjustment is used");
+      menu.add("endsub:");
+
       menu.add("sub:Histogram");
       menu.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
       menu.add("Text format", () => menu.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
       menu.add("Time offset", () => menu.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
       menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
-      menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; },"size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
+      menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
+      menu.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
 
       menu.add("endsub:");
 

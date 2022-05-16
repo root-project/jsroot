@@ -101,7 +101,7 @@ class TH1Painter extends THistPainter {
             else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
             else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
-            let dy = (hmax - hmin) * 0.05;
+            let dy = (hmax - hmin) * gStyle.fHistTopMargin;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
@@ -115,7 +115,8 @@ class TH1Painter extends THistPainter {
          if (hmin < 0) {
             hmin *= 2; hmax = 0;
          } else {
-            hmin = 0; hmax*=2; if (!hmax) hmax = 1;
+            hmin = 0; hmax *= 2;
+            if (!hmax) hmax = 1;
          }
       }
 
