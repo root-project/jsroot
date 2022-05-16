@@ -753,8 +753,8 @@ function toJSON(obj, spacing) {
 function decodeUrl(url) {
    let res = {
       opts: {},
-      has: function(opt) { return this.opts[opt] !== undefined; },
-      get: function(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+      has(opt) { return this.opts[opt] !== undefined; },
+      get(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
    };
 
    if (!url || (typeof url !== 'string')) {
