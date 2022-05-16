@@ -404,7 +404,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
 
-      let factor = null, svg = null, lmt = 5, rect = null, btns, frect;
+      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect;
 
       if (check_resize > 0) {
 
@@ -423,6 +423,7 @@ class TPadPainter extends ObjectPainter {
          if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
 
+         info = this.getLayerSvg("info_layer", this.this_pad_name);
          frect = svg.select(".canvas_fillrect");
 
       } else {
@@ -458,7 +459,7 @@ class TPadPainter extends ObjectPainter {
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg.append("svg:g").attr("class","primitives_layer");
-         svg.append("svg:g").attr("class","info_layer");
+         info = svg.append("svg:g").attr("class", "info_layer");
          if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
@@ -535,7 +536,38 @@ class TPadPainter extends ObjectPainter {
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
 
+      let dt = info.select(".canvas_date");
+      if (!gStyle.fOptDate) {
+         dt.remove();
+      } else {
+         if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
+         dt.attr("transform", `translate(25, ${rect.height-5})`)
+           .style("text-anchor", "start")
+           .text((new Date()).toISOString());
+      }
+
+      if (!gStyle.fOptFile || !this.getItemName())
+         info.select(".canvas_item").remove();
+      else
+         this.drawItemNameOnCanvas(this.getItemName());
+
       return true;
+   }
+
+   /** @summary Draw item name on canvas if gStyle.fOptFile is configured
+     * @private */
+   drawItemNameOnCanvas(item_name) {
+      let info = this.getLayerSvg("info_layer", this.this_pad_name),
+          df = info.select(".canvas_item");
+      if (!gStyle.fOptFile || !item_name) {
+         df.remove();
+      } else {
+         if (df.empty()) df = info.append("text").attr("class", "canvas_item");
+         let rect = this.getPadRect();
+         df.attr("transform", `translate(${rect.width-5}, ${rect.height-5})`)
+           .style("text-anchor", "end")
+           .text(item_name);
+      }
    }
 
    /** @summary Enlarge pad draw element when possible */

@@ -126,10 +126,13 @@ class ObjectPainter extends BasePainter {
      * @private */
    setItemName(name, opt, hpainter) {
       super.setItemName(name, opt, hpainter);
-      if (this.no_default_title || (name == "")) return;
+      if (this.no_default_title || !name) return;
       let can = this.getCanvSvg();
       if (!can.empty()) can.select("title").text(name);
                    else this.selectDom().attr("title", name);
+      let cp = this.getCanvPainter();
+      if (cp && (cp === this) || (this.isMainPainter() && (cp === this.getPadPainter())))
+         cp.drawItemNameOnCanvas(name);
    }
 
    /** @summary Store actual this.options together with original string

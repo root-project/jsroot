@@ -287,8 +287,8 @@ class RPadPainter extends RObjectPainter {
 
          let render_to = this.selectDom();
 
-         if (render_to.style('position')=='static')
-            render_to.style('position','relative');
+         if (render_to.style('position') == 'static')
+            render_to.style('position', 'relative');
 
          svg = render_to.append("svg")
              .attr("class", "jsroot root_canvas")
@@ -309,8 +309,8 @@ class RPadPainter extends RObjectPainter {
                  .on("mouseenter", () => this.showObjectStatus())
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg.append("svg:g").attr("class","primitives_layer");
-         svg.append("svg:g").attr("class","info_layer");
+         svg.append("svg:g").attr("class", "primitives_layer");
+         svg.append("svg:g").attr("class", "info_layer");
          if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
