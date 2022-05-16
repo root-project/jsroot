@@ -128,7 +128,6 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-
 function saveCookie(obj, expires, name) {
    let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
        d = new Date();
@@ -137,6 +136,7 @@ function saveCookie(obj, expires, name) {
 }
 
 function readCookie(name) {
+   if (typeof document == 'undefined') return null;
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
    name += "=";
@@ -1900,6 +1900,20 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
       menu.add("endsub:");
       menu.add("endsub:");
+
+      menu.add("sub:Title");
+      menu.addColorMenu("Fill color", gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
+      menu.addColorMenu("Text color", gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
+      menu.addSizeMenu("Font size", 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
+      menu.addFontMenu("Font", gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
+      menu.addSizeMenu("X: " + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
+      menu.addSizeMenu("Y: " + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
+      menu.addSizeMenu("W: " + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
+      menu.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
+      menu.add("endsub:");
+
 
       menu.add("sub:Stat box");
       menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
