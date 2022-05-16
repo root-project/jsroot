@@ -345,6 +345,8 @@ let gStyle = {
    fErrorX: 0.5,
    /** @summary when true, BAR and LEGO drawing using base = 0  */
    fHistMinimumZero: false,
+   /** @summary Margin between histogram's top and pad's top */
+   fHistTopMargin: 0.05,
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
@@ -759,8 +761,8 @@ function toJSON(obj, spacing) {
 function decodeUrl(url) {
    let res = {
       opts: {},
-      has: function(opt) { return this.opts[opt] !== undefined; },
-      get: function(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+      has(opt) { return this.opts[opt] !== undefined; },
+      get(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
    };
 
    if (!url || (typeof url !== 'string')) {
@@ -959,7 +961,7 @@ function create$1(typename, target) {
          break;
       case 'TList':
       case 'THashList':
-         extend$1(obj, { name: typename, arr : [], opt : [] });
+         extend$1(obj, { name: typename, arr: [], opt: [] });
          break;
       case 'TAttAxis':
          extend$1(obj, { fNdivisions: 510, fAxisColor: 1,
@@ -10502,10 +10504,13 @@ class ObjectPainter extends BasePainter {
      * @private */
    setItemName(name, opt, hpainter) {
       super.setItemName(name, opt, hpainter);
-      if (this.no_default_title || (name == "")) return;
+      if (this.no_default_title || !name) return;
       let can = this.getCanvSvg();
       if (!can.empty()) can.select("title").text(name);
                    else this.selectDom().attr("title", name);
+      let cp = this.getCanvPainter();
+      if (cp && (cp === this) || (this.isMainPainter() && (cp === this.getPadPainter())))
+         cp.drawItemNameOnCanvas(name);
    }
 
    /** @summary Store actual this.options together with original string
@@ -51974,7 +51979,7 @@ class JSRootMenu {
 
    /** @summary Add size selection menu entries
      * @protected */
-   addSizeMenu(name, min, max, step, size_value, set_func) {
+   addSizeMenu(name, min, max, step, size_value, set_func, title) {
       if (size_value === undefined) return;
 
       this.add("sub:" + name, () => {
@@ -51982,7 +51987,7 @@ class JSRootMenu {
          if (step >= 0.1) entry = size_value.toFixed(2);
          if (step >= 1) entry = size_value.toFixed(0);
          this.input("Enter value of " + name, entry, (step >= 1) ? "int" : "float").then(set_func);
-      });
+      }, title);
       for (let sz = min; sz <= max; sz += step) {
          let entry = sz.toFixed(2);
          if (step >= 0.1) entry = sz.toFixed(1);
@@ -58054,7 +58059,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
 
-      let factor = null, svg = null, lmt = 5, rect = null, btns, frect;
+      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect;
 
       if (check_resize > 0) {
 
@@ -58073,6 +58078,7 @@ class TPadPainter extends ObjectPainter {
          if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
 
+         info = this.getLayerSvg("info_layer", this.this_pad_name);
          frect = svg.select(".canvas_fillrect");
 
       } else {
@@ -58108,7 +58114,7 @@ class TPadPainter extends ObjectPainter {
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg.append("svg:g").attr("class","primitives_layer");
-         svg.append("svg:g").attr("class","info_layer");
+         info = svg.append("svg:g").attr("class", "info_layer");
          if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
@@ -58185,7 +58191,40 @@ class TPadPainter extends ObjectPainter {
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
 
+      let dt = info.select(".canvas_date");
+      if (!gStyle.fOptDate) {
+         dt.remove();
+      } else {
+         if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
+         let date = new Date(), posx = isBatchMode() ? 5 : 30; // in gui mode gap for the button
+         if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
+         dt.attr("transform", `translate(${posx}, ${rect.height-5})`)
+           .style("text-anchor", "start")
+           .text(date.toISOString());
+      }
+
+      if (!gStyle.fOptFile || !this.getItemName())
+         info.select(".canvas_item").remove();
+      else
+         this.drawItemNameOnCanvas(this.getItemName());
+
       return true;
+   }
+
+   /** @summary Draw item name on canvas if gStyle.fOptFile is configured
+     * @private */
+   drawItemNameOnCanvas(item_name) {
+      let info = this.getLayerSvg("info_layer", this.this_pad_name),
+          df = info.select(".canvas_item");
+      if (!gStyle.fOptFile || !item_name) {
+         df.remove();
+      } else {
+         if (df.empty()) df = info.append("text").attr("class", "canvas_item");
+         let rect = this.getPadRect();
+         df.attr("transform", `translate(${rect.width-5}, ${rect.height-5})`)
+           .style("text-anchor", "end")
+           .text(item_name);
+      }
    }
 
    /** @summary Enlarge pad draw element when possible */
@@ -62029,8 +62068,10 @@ class THistDrawOptions {
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
-      if (d.check('BASE0') || d.check('MIN0')) this.BaseLine = 0; else
-      if (gStyle.fHistMinimumZero) this.BaseLine = 0;
+      if (d.check('BASE0') || d.check('MIN0'))
+         this.BaseLine = 0;
+      else if (gStyle.fHistMinimumZero)
+         this.BaseLine = 0;
 
       if (d.check('PIE')) this.Pie = true; // not used
 
@@ -64072,7 +64113,7 @@ class TH1Painter$2 extends THistPainter {
             else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
             else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
-            let dy = (hmax - hmin) * 0.05;
+            let dy = (hmax - hmin) * gStyle.fHistTopMargin;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
@@ -64086,7 +64127,8 @@ class TH1Painter$2 extends THistPainter {
          if (hmin < 0) {
             hmin *= 2; hmax = 0;
          } else {
-            hmin = 0; hmax*=2; if (!hmax) hmax = 1;
+            hmin = 0; hmax *= 2;
+            if (!hmax) hmax = 1;
          }
       }
 
@@ -65143,7 +65185,8 @@ class TH1Painter extends TH1Painter$2 {
       let main = this.getFramePainter(), // who makes axis drawing
           is_main = this.isMainPainter(), // is main histogram
           histo = this.getHisto(),
-          pr = Promise.resolve(true);
+          pr = Promise.resolve(true),
+          zmult = 1 + 2*gStyle.fHistTopMargin;
 
       if (reason == "resize")  {
 
@@ -65160,7 +65203,7 @@ class TH1Painter extends TH1Painter$2 {
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
+            main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
          }
 
          if (main.mode3d) {
@@ -68094,7 +68137,8 @@ class TH2Painter extends TH2Painter$2 {
 
       } else {
 
-         let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
+         let pad = this.getPadPainter().getRootPad(true),
+             zmult = 1 + 2*gStyle.fHistTopMargin;
 
          this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
@@ -68102,7 +68146,7 @@ class TH2Painter extends TH2Painter$2 {
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
 
-         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (pad && pad.fLogz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
 
          this.deleteAttr();
 
@@ -68111,7 +68155,7 @@ class TH2Painter extends TH2Painter$2 {
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+            main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
          }
 
          if (main.mode3d) {
@@ -68135,8 +68179,8 @@ class TH2Painter extends TH2Painter$2 {
 
       //  (re)draw palette by resize while canvas may change dimension
       if (is_main)
-         pr = this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                     (this.options.Surf===11) || (this.options.Surf===12))).then(() => this.drawHistTitle());
+         pr = this.drawColorPalette(this.options.Zscale && ((this.options.Lego == 12) || (this.options.Lego == 14) ||
+                                     (this.options.Surf == 11) || (this.options.Surf == 12))).then(() => this.drawHistTitle());
 
       return pr.then(() => this);
    }
@@ -73305,7 +73349,6 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-
 function saveCookie(obj, expires, name) {
    let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
        d = new Date();
@@ -73314,6 +73357,7 @@ function saveCookie(obj, expires, name) {
 }
 
 function readCookie(name) {
+   if (typeof document == 'undefined') return null;
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
    name += "=";
@@ -75019,8 +75063,6 @@ class HierarchyPainter extends BasePainter {
 
       menu.add("endsub:");
 
-      menu.addPaletteMenu(settings.Palette, val => { settings.Palette = val; });
-
       menu.add("sub:Geometry");
       menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
       menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
@@ -75038,6 +75080,12 @@ class HierarchyPainter extends BasePainter {
       }
 
       menu.add("sub:gStyle");
+
+      menu.add("sub:Canvas");
+      menu.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+      menu.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
+      menu.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      menu.add("endsub:");
 
       menu.add("sub:Pad");
       menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
@@ -75072,7 +75120,18 @@ class HierarchyPainter extends BasePainter {
       menu.add("endsub:");
       menu.add("endsub:");
 
-      menu.addColorMenu("Canvas color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+      menu.add("sub:Title");
+      menu.addColorMenu("Fill color", gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
+      menu.addColorMenu("Text color", gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
+      menu.addSizeMenu("Font size", 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
+      menu.addFontMenu("Font", gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
+      menu.addSizeMenu("X: " + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
+      menu.addSizeMenu("Y: " + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
+      menu.addSizeMenu("W: " + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
+      menu.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
+      menu.add("endsub:");
 
       menu.add("sub:Stat box");
       menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
@@ -75086,6 +75145,23 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
       menu.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
       menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      menu.add("endsub:");
+
+      menu.add("sub:Legend");
+      menu.addColorMenu("Fill color", gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
+      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
+      menu.addFontMenu("Font", gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
+      menu.addSizeMenu("Text size", 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, "legend text size, when 0 - auto adjustment is used");
+      menu.add("endsub:");
+
+      menu.add("sub:Histogram");
+      menu.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
+      menu.add("Text format", () => menu.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
+      menu.add("Time offset", () => menu.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
+      menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
+      menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
+      menu.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
+
       menu.add("endsub:");
 
       menu.add("separator");
@@ -77172,8 +77248,12 @@ function readStyleFromURL(url) {
 
    let d = decodeUrl(url);
 
-   if (d.has("dark"))
-      settings.DarkMode = true;
+   function get_bool(name, field) {
+      if (d.has(name)) {
+         let val = d.get(name);
+         settings[field] = (val != "0") && (val != "false") && (val != "off");
+      }
+   }
 
    if (d.has("optimize")) {
       settings.OptimizeDraw = 2;
@@ -77184,13 +77264,9 @@ function readStyleFromURL(url) {
       }
    }
 
-   if (d.has("lastcycle")) {
-      let val = d.get("lastcycle");
-      settings.OnlyLastCycle = (val != "0") && (val != "false");
-   }
-
-   let usestamp = d.get('usestamp');
-   settings.UseStamp = (usestamp != "0") && (usestamp != "false");
+   get_bool("lastcycle", "OnlyLastCycle");
+   get_bool("usestamp", "UseStamp");
+   get_bool("dark", "DarkMode");
 
    if (d.has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true;
@@ -77220,11 +77296,7 @@ function readStyleFromURL(url) {
       }
    }
 
-   let tt = d.get("tooltip");
-   if ((tt == "off") || (tt == "false") || (tt == "0"))
-      settings.Tooltip = false;
-   else if (d.has("tooltip"))
-      settings.Tooltip = true;
+   get_bool("tooltip", "Tooltip");
 
    if (d.has("bootstrap") || d.has("bs"))
       settings.Bootstrap = true;
@@ -77240,12 +77312,6 @@ function readStyleFromURL(url) {
    if (d.has("notouch")) browser.touches = false;
    if (d.has("adjframe")) settings.CanAdjustFrame = true;
 
-   let optstat = d.get("optstat"), optfit = d.get("optfit");
-   if (optstat) gStyle.fOptStat = parseInt(optstat);
-   if (optfit) gStyle.fOptFit = parseInt(optfit);
-   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
-   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
-
    if (d.has("toolbar")) {
       let toolbar = d.get("toolbar", ""), val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
@@ -77256,8 +77322,8 @@ function readStyleFromURL(url) {
       settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
    }
 
-   if (d.has("skipsi") || d.has("skipstreamerinfos"))
-      settings.SkipStreamerInfos = true;
+   get_bool("skipsi", "SkipStreamerInfos");
+   get_bool("skipstreamerinfos", "SkipStreamerInfos");
 
    if (d.has("nodraggraphs"))
       settings.DragGraphs = false;
@@ -77267,16 +77333,35 @@ function readStyleFromURL(url) {
       if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
    }
 
-   let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
-       geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
+   let render3d = d.get("render3d"), embed3d = d.get("embed3d"), geosegm = d.get("geosegm");
    if (render3d) settings.Render3D = constants$1.Render3D.fromString(render3d);
    if (embed3d) settings.Embed3D = constants$1.Embed3D.fromString(embed3d);
    if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-   if (geocomp) settings.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
+   get_bool("geocomp", "GeoCompressComp");
 
    if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
-}
 
+   function get_int_style(name, field, dflt) {
+      if (!d.has(name)) return;
+      let val = d.get(name);
+      if (!val || (val == "true") || (val == "on"))
+         gStyle[field] = dflt;
+      else if ((val == "false") || (val == "off"))
+         gStyle[field] = 0;
+      else
+         gStyle[field] = parseInt(val);
+   }
+
+   if (d.has("histzero")) gStyle.fHistMinimumZero = true;
+   if (d.has("histmargin")) gStyle.fHistTopMargin = parseFloat(d.get("histmargin"));
+   get_int_style("optstat", "fOptStat", 1111);
+   get_int_style("optfit", "fOptFit", 0);
+   get_int_style("optdate", "fOptDate", 1);
+   get_int_style("optfile", "fOptFile", 1);
+   get_int_style("opttitle", "fOptTitle", 1);
+   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
+   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
+}
 
 
 /** @summary Build main GUI
@@ -77851,7 +77936,7 @@ class THStackPainter extends ObjectPainter {
       }
 
       if (stack.fMaximum != -1111) res.max = stack.fMaximum;
-      res.max *= 1.05;
+      res.max *= (1 + gStyle.fHistTopMargin);
       if (stack.fMinimum != -1111) res.min = stack.fMinimum;
 
       if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
@@ -90531,8 +90616,8 @@ class TF1Painter extends ObjectPainter {
             ymax = Math.max(bin.y, ymax);
          });
 
-         if (ymax > 0.0) ymax *= 1.05;
-         if (ymin < 0.0) ymin *= 1.05;
+         if (ymax > 0.0) ymax *= (1 + gStyle.fHistTopMargin);
+         if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
       let histo = create$1("TH1I"),
@@ -91866,8 +91951,8 @@ class TSplinePainter extends ObjectPainter {
             ymax = Math.max(knot.fY, ymax);
          });
 
-         if (ymax > 0.0) ymax *= 1.05;
-         if (ymin < 0.0) ymin *= 1.05;
+         if (ymax > 0.0) ymax *= (1 + gStyle.fHistTopMargin);
+         if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
       let histo = create$1("TH1I");
@@ -98671,8 +98756,8 @@ class RPadPainter extends RObjectPainter {
 
          let render_to = this.selectDom();
 
-         if (render_to.style('position')=='static')
-            render_to.style('position','relative');
+         if (render_to.style('position') == 'static')
+            render_to.style('position', 'relative');
 
          svg = render_to.append("svg")
              .attr("class", "jsroot root_canvas")
@@ -98693,8 +98778,8 @@ class RPadPainter extends RObjectPainter {
                  .on("mouseenter", () => this.showObjectStatus())
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg.append("svg:g").attr("class","primitives_layer");
-         svg.append("svg:g").attr("class","info_layer");
+         svg.append("svg:g").attr("class", "primitives_layer");
+         svg.append("svg:g").attr("class", "info_layer");
          if (!isBatchMode())
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
@@ -104198,7 +104283,8 @@ class RH1Painter extends RH1Painter$2 {
       this.mode3d = true;
 
       let main = this.getFramePainter(), // who makes axis drawing
-          is_main = this.isMainPainter(); // is main histogram
+          is_main = this.isMainPainter(), // is main histogram
+          zmult = 1 + 2*gStyle.fHistTopMargin;
 
       if (reason == "resize")  {
          if (is_main && main.resize3D()) main.render3D();
@@ -104214,7 +104300,7 @@ class RH1Painter extends RH1Painter$2 {
          main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult: 1.1, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
+         main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
       }
 
       if (!main.mode3d)
@@ -105995,7 +106081,7 @@ class RH2Painter extends RH2Painter$2 {
          return Promise.resolve(this);
       }
 
-      let zmult = 1.1;
+      let zmult = 1 + 2*gStyle.fHistTopMargin;
 
       this.zmin = main.logz ? this.gminposbin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin;
@@ -106010,7 +106096,7 @@ class RH2Painter extends RH2Painter$2 {
          main.create3DScene(this.options.Render3D);
          main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
          main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, RAxisPainter, { zmult: zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
+         main.drawXYZ(main.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
       }
 
       if (!main.mode3d)
