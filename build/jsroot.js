@@ -11,7 +11,7 @@ let version_id = "7.0.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "28/04/2022";
+let version_date = "16/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8202,10 +8202,8 @@ class FontHandler {
       if (arg != 'without-size')
          selection.attr("font-size", this.size)
                   .attr("xml:space", "preserve");
-      if (this.weight)
-         selection.attr("font-weight", this.weight);
-      if (this.style)
-         selection.attr("font-style", this.style);
+      selection.attr("font-weight", this.weight || null);
+      selection.attr("font-style", this.style || null);
    }
 
    /** @summary Set font size (optional) */

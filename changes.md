@@ -2,6 +2,7 @@
 
 ## Changes in 7.0.x
 1. Fix TH2 arrow drawing
+2. Fix - interactive change of fonts attributes
 
 
 ## Changes in 7.0.1
