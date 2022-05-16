@@ -78,10 +78,8 @@ class FontHandler {
       if (arg != 'without-size')
          selection.attr("font-size", this.size)
                   .attr("xml:space", "preserve");
-      if (this.weight)
-         selection.attr("font-weight", this.weight);
-      if (this.style)
-         selection.attr("font-style", this.style);
+      selection.attr("font-weight", this.weight || null);
+      selection.attr("font-style", this.style || null);
    }
 
    /** @summary Set font size (optional) */
