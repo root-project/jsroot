@@ -1914,7 +1914,6 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
       menu.add("endsub:");
 
-
       menu.add("sub:Stat box");
       menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
       menu.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
@@ -1927,6 +1926,15 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
       menu.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
       menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      menu.add("endsub:");
+
+      menu.add("sub:Histogram");
+      menu.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
+      menu.add("Text format", () => menu.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
+      menu.add("Time offset", () => menu.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
+      menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
+      menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; },"size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
+
       menu.add("endsub:");
 
       menu.add("separator");

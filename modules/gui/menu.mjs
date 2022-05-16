@@ -197,7 +197,7 @@ class JSRootMenu {
 
    /** @summary Add size selection menu entries
      * @protected */
-   addSizeMenu(name, min, max, step, size_value, set_func) {
+   addSizeMenu(name, min, max, step, size_value, set_func, title) {
       if (size_value === undefined) return;
 
       this.add("sub:" + name, () => {
@@ -205,7 +205,7 @@ class JSRootMenu {
          if (step >= 0.1) entry = size_value.toFixed(2);
          if (step >= 1) entry = size_value.toFixed(0);
          this.input("Enter value of " + name, entry, (step >= 1) ? "int" : "float").then(set_func);
-      });
+      }, title);
       for (let sz = min; sz <= max; sz += step) {
          let entry = sz.toFixed(2);
          if (step >= 0.1) entry = sz.toFixed(1);

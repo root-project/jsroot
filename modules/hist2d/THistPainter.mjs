@@ -335,8 +335,10 @@ class THistDrawOptions {
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
-      if (d.check('BASE0') || d.check('MIN0')) this.BaseLine = 0; else
-      if (gStyle.fHistMinimumZero) this.BaseLine = 0;
+      if (d.check('BASE0') || d.check('MIN0'))
+         this.BaseLine = 0;
+      else if (gStyle.fHistMinimumZero)
+         this.BaseLine = 0;
 
       if (d.check('PIE')) this.Pie = true; // not used
 

@@ -118,6 +118,7 @@ function readStyleFromURL(url) {
          gStyle[field] = parseInt(val);
    }
 
+   if (d.has("histzero")) gStyle.fHistMinimumZero = true;
    get_int_style("optstat", "fOptStat", 1111);
    get_int_style("optfit", "fOptFit", 0);
    get_int_style("optdate", "fOptDate", 1);
