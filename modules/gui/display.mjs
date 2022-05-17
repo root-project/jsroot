@@ -13,6 +13,19 @@ import { createMenu } from './menu.mjs';
 import { detectRightButton, injectStyle } from './utils.mjs';
 
 
+/** @summary Current hierarchy painter
+  * @desc Instance of {@link HierarchyPainter} object
+  * @private */
+let first_hpainter = null;
+
+/** @summary Returns current hierarchy painter object
+  * @private */
+function getHPainter() { return first_hpainter; }
+
+/** @summary Set hierarchy painter object
+  * @private */
+function setHPainter(hp) { first_hpainter = hp; }
+
 /**
  * @summary Base class to manage multiple document interface for drawings
  *
@@ -1677,4 +1690,5 @@ class BrowserLayout {
 
 } // class BrowserLayout
 
-export { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout };
+export { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout,
+         getHPainter, setHPainter };

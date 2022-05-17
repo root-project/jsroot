@@ -18,7 +18,7 @@ import { produceLegend } from '../hist/TPavePainter.mjs';
 
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
 
-import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout } from './display.mjs';
+import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
 
 import { showProgress, ToolbarIcons, registerForResize, injectStyle } from './utils.mjs';
 
@@ -812,7 +812,6 @@ let parseAsArray = val => {
 }
 
 
-
 /** @summary central function for expand of all online items
   * @private */
 function onlineHierarchy(node, obj) {
@@ -829,15 +828,6 @@ function onlineHierarchy(node, obj) {
 
    return false;
 }
-
-// ==============================================================
-
-/** @summary Current hierarchy painter
-  * @desc Instance of {@link HierarchyPainter} object
-  * @private */
-let first_hpainter = null;
-
-function getHPainter() { return first_hpainter; }
 
 /**
   * @summary Painter of hierarchical structures
@@ -867,8 +857,8 @@ class HierarchyPainter extends BasePainter {
       this.nobrowser = (frameid === null);
 
       // remember only very first instance
-      if (!first_hpainter)
-         first_hpainter = this;
+      if (!getHPainter())
+         setHPainter(this);
    }
 
    /** @summary Cleanup hierarchy painter
@@ -878,8 +868,8 @@ class HierarchyPainter extends BasePainter {
 
       super.cleanup();
 
-      if (first_hpainter === this)
-         first_hpainter = null;
+      if (GetHPainter() === this)
+         setHPainter(null);
    }
 
    /** @summary Create file hierarchy
@@ -3687,6 +3677,13 @@ class HierarchyPainter extends BasePainter {
       }
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
+   }
+
+   /** @summary Returns trus if status is exists */
+   hasStatusLine() {
+      if (this.status_disabled || !this.gui_div || !this.brlayout)
+         return false;
+      return this.brlayout.hasStatus();
    }
 
    /** @summary Create status line
