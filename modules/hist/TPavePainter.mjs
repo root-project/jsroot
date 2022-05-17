@@ -930,15 +930,16 @@ class TPavePainter extends ObjectPainter {
          menu.add("endsub:");
 
          menu.add("separator");
-      } else if (pave.fName === "title")
+      } else if (pave.fName === "title") {
          menu.add("Default position", function() {
-            pave.fX1NDC = 0.28;
-            pave.fY1NDC = 0.94;
-            pave.fX2NDC = 0.72;
-            pave.fY2NDC = 0.99;
+            pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
+            pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
+            pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
+            pave.fY2NDC = gStyle.fTitleY;
             pave.fInit = 1;
             this.interactiveRedraw(true, "pave_moved");
          });
+      }
 
       if (this.UseTextColor)
          menu.addTextAttributesMenu(this);
