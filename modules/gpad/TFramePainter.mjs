@@ -2644,14 +2644,13 @@ class TFramePainter extends ObjectPainter {
             if (pp && pp.painters)
                pp.painters.forEach(painter => {
                   if (painter && (typeof painter.unzoomUserRange == 'function'))
-                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
+                        changed = true;
             });
          }
       }
 
-      if (!changed) return Promise.resolve(false);
-
-      return this.interactiveRedraw("pad", "zoom").then(() => true);
+      return changed ? this.interactiveRedraw("pad", "zoom").then(() => true) : Promise.resolve(false);
    }
 
    /** @summary Provide zooming of single axis

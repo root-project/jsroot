@@ -723,13 +723,16 @@ class ObjectPainter extends BasePainter {
    interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
+      if ((typeof info == "string") && (info.indexOf("exec:") != 0))
+         reason = info;
+
       if (arg == "pad")
          res = this.redrawPad(reason);
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!isPromise(res)) res = Promise.resolve(false);
+      if (!isPromise(res))
+         res = Promise.resolve(false);
 
       return res.then(() => {
          // inform GED that something changes

@@ -1085,7 +1085,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       let showsubitems = true;
-      let redrawNext = indx => {
+      const redrawNext = indx => {
          while (indx < this.painters.length) {
             let sub = this.painters[indx++], res = 0;
             if (showsubitems || sub.this_pad_name)
@@ -1098,11 +1098,10 @@ class TPadPainter extends ObjectPainter {
       };
 
       return sync_promise.then(() => {
-         if (this.iscan) {
+         if (this.iscan)
             this.createCanvasSvg(2);
-         } else {
+         else
             showsubitems = this.createPadSvg(true);
-         }
          return redrawNext(0);
       }).then(() => {
          this.confirmDraw();

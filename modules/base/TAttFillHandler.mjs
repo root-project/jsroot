@@ -2,7 +2,7 @@ import { gStyle } from '../core.mjs';
 
 import { color as d3_color, rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 
-import { getColor } from './colors.mjs';
+import { getColor, findColor } from './colors.mjs';
 
 /**
   * @summary Handle for fill attributes
@@ -101,14 +101,6 @@ class TAttFillHandler {
          this.pattern = 0;
 
       this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
-   }
-
-   /** @summary Save fill attributes to style */
-   saveToStyle(name_color, name_pattern) {
-      if (name_color && this.colorindx)
-         gStyle[name_color] = this.colorindx;
-      if (name_pattern)
-         gStyle[name_pattern] = this.pattern;
    }
 
    /** @summary Method to change fill attributes.
@@ -333,6 +325,19 @@ class TAttFillHandler {
         .attr("d", `M0,0h${width}v${height}h${-width}z`)
         .call(sample.func);
    }
+
+   /** @summary Save fill attributes to style
+     * @private */
+   saveToStyle(name_color, name_pattern) {
+      if (name_color) {
+         let indx = this.colorindx ?? findColor(this.color);
+         if (indx >= 0) gStyle[name_color] = indx;
+      }
+      if (name_pattern)
+         gStyle[name_pattern] = this.pattern;
+   }
+
+
 
 } // class TAttFillHandler
 
