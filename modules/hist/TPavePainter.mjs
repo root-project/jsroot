@@ -868,13 +868,12 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, "pave_moved")
          });
 
-         menu.add("Save to gStyle", () => {
+         menu.add("Save to gStyle", function() {
             gStyle.fStatX = pave.fX2NDC;
             gStyle.fStatW = pave.fX2NDC - pave.fX1NDC;
             gStyle.fStatY = pave.fY2NDC;
             gStyle.fStatH = pave.fY2NDC - pave.fY1NDC;
-            gStyle.fStatColor = pave.fFillColor;
-            gStyle.fStatStyle = pave.fFillStyle;
+            if (this.fillatt) this.fillatt.saveToStyle("fStatColor", "fStatStyle");
             gStyle.fStatTextColor = pave.fTextColor;
             gStyle.fStatFontSize = pave.fTextSize;
             gStyle.fStatFont = pave.fTextFont;
@@ -952,11 +951,10 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, "pave_moved");
          });
 
-         menu.add("Save to gStyle", () => {
+         menu.add("Save to gStyle", function() {
             gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
             gStyle.fTitleY = pave.fY2NDC;
-            gStyle.fTitleColor = pave.fFillColor;
-            gStyle.fTitleStyle = pave.fFillStyle;
+           if (this.fillatt) this.fillatt.saveToStyle("fTitleColor", "fTitleStyle");
             gStyle.fTitleTextColor = pave.fTextColor;
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;

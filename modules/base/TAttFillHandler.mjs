@@ -97,9 +97,18 @@ class TAttFillHandler {
    verifyDirectChange(painter) {
       if (typeof this.pattern == 'string')
          this.pattern = parseInt(this.pattern);
-      if (!Number.isInteger(this.pattern)) this.pattern = 0;
+      if (!Number.isInteger(this.pattern))
+         this.pattern = 0;
 
       this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
+   }
+
+   /** @summary Save fill attributes to style */
+   saveToStyle(name_color, name_pattern) {
+      if (name_color && this.colorindx)
+         gStyle[name_color] = this.colorindx;
+      if (name_pattern)
+         gStyle[name_pattern] = this.pattern;
    }
 
    /** @summary Method to change fill attributes.

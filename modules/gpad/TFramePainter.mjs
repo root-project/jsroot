@@ -2488,13 +2488,8 @@ class TFramePainter extends ObjectPainter {
          gStyle.fPadTopMargin = 1 - this.fY2NDC;
          gStyle.fPadLeftMargin = this.fX1NDC;
          gStyle.fPadRightMargin = 1 - this.fX2NDC;
-
-         // fFrameFillColor: 0,
-         // fFrameFillStyle: 1001,
-         // fFrameLineColor: 1,
-         // fFrameLineWidth: 1,
-         //fFrameLineStyle: 1,
-
+         if (this.fillatt) this.fillatt.saveToStyle("fFrameFillColor", "fFrameFillStyle");
+         if (this.lineatt) this.lineatt.saveToStyle("fFrameLineColor", "fFrameLineWidth", "fFrameLineStyle");
       });
 
       menu.add("separator");
