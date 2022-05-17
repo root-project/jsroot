@@ -1018,6 +1018,16 @@ class TPadPainter extends ObjectPainter {
          menu.add("endsub:");
 
          menu.addAttributesMenu(this);
+         menu.add("Save to gStyle", function() {
+            if (this.fillatt) this.fillatt.saveToStyle(this.iscan ? "fCanvasColor" : "fPadColor");
+            gStyle.fPadGridX = this.pad.fGridX;
+            gStyle.fPadGridY = this.pad.fGridX;
+            gStyle.fPadTickX = this.pad.fTickx;
+            gStyle.fPadTickY = this.pad.fTicky;
+            gStyle.fOptLogx = this.pad.fLogx;
+            gStyle.fOptLogy = this.pad.fLogy;
+            gStyle.fOptLogz = this.pad.fLogz;
+         });
       }
 
       menu.add("separator");

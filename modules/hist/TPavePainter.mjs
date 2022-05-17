@@ -954,7 +954,7 @@ class TPavePainter extends ObjectPainter {
          menu.add("Save to gStyle", function() {
             gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
             gStyle.fTitleY = pave.fY2NDC;
-           if (this.fillatt) this.fillatt.saveToStyle("fTitleColor", "fTitleStyle");
+            if (this.fillatt) this.fillatt.saveToStyle("fTitleColor", "fTitleStyle");
             gStyle.fTitleTextColor = pave.fTextColor;
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;

@@ -1176,12 +1176,10 @@ function create$1(typename, target) {
                        fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
                        fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
                        fNumber: 0, fLogx: gStyle.fOptLogx, fLogy: gStyle.fOptLogy, fLogz: gStyle.fOptLogz,
-                       fTickx: gStyle.fPadTickX,
-                       fTicky: gStyle.fPadTickY,
+                       fTickx: gStyle.fPadTickX, fTicky: gStyle.fPadTickY,
                        fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
                        fBorderMode: 0, fModified: false,
-                       fGridx: gStyle.fPadGridX,
-                       fGridy: gStyle.fPadGridY,
+                       fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                        fPrimitives: create$1("TList"), fExecs: null,
                        fName: "pad", fTitle: "canvas" });
@@ -8489,7 +8487,7 @@ const extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,9
 
 /** @ummary Calculate approximate labels width
   * @private */
-const approximateLabelWidth = (label, font, fsize) => {
+function approximateLabelWidth(label, font, fsize) {
    let len = label.length,
        symbol_width = (fsize || font.size) * font.aver_width;
    if (font.isMonospace())
@@ -8505,7 +8503,7 @@ const approximateLabelWidth = (label, font, fsize) => {
    }
 
    return sum/1000*symbol_width;
-};
+}
 
 /** @summary array defines features supported by latex parser, used by both old and new parsers
   * @private */
@@ -9613,6 +9611,17 @@ function getColor(indx) {
    return gbl_colors_list[indx];
 }
 
+/** @summary Search for specified color in the list of colors
+  * @returns Color index or -1 if fails
+  * @private */
+function findColor(name) {
+   if (!name) return -1;
+   for (let indx = 0; indx < gbl_colors_list.length; ++indx)
+      if (gbl_colors_list[indx] == name)
+         return indx;
+   return -1;
+}
+
 /** @summary Add new color
   * @param {string} rgb - color name or just string with rgb value
   * @param {array} [lst] - optional colors list, to which add colors
@@ -10038,9 +10047,18 @@ class TAttFillHandler {
    verifyDirectChange(painter) {
       if (typeof this.pattern == 'string')
          this.pattern = parseInt(this.pattern);
-      if (!Number.isInteger(this.pattern)) this.pattern = 0;
+      if (!Number.isInteger(this.pattern))
+         this.pattern = 0;
 
       this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
+   }
+
+   /** @summary Save fill attributes to style */
+   saveToStyle(name_color, name_pattern) {
+      if (name_color && this.colorindx)
+         gStyle[name_color] = this.colorindx;
+      if (name_pattern)
+         gStyle[name_pattern] = this.pattern;
    }
 
    /** @summary Method to change fill attributes.
@@ -10297,12 +10315,14 @@ class TAttLineHandler {
      * @param {number} args.width - line width */
    setArgs(args) {
       if (args.attr) {
-         args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : getColor(args.attr.fLineColor));
+         this.color_index = args.attr.fLineColor;
+         args.color = args.color0 || (args.painter ? args.painter.getColor(this.color_index) : getColor(this.color_index));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          if (args.style === undefined) args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
+         this.color_index = args.color;
          args.color = args.painter ? args.painter.getColor(args.color) : getColor(args.color);
       }
 
@@ -10382,8 +10402,13 @@ class TAttLineHandler {
 
    /** @summary Change line attributes */
    change(color, width, style) {
-      if (color !== undefined) this.color = color;
-      if (width !== undefined) this.width = width;
+      if (color !== undefined) {
+         if (this.color !== color)
+            delete this.color_index;
+         this.color = color;
+      }
+      if (width !== undefined)
+         this.width = width;
       if (style !== undefined) {
          this.style = style;
          this.pattern = root_line_styles[this.style] || null;
@@ -10397,6 +10422,18 @@ class TAttLineHandler {
       svg.append("path")
          .attr("d", `M0,${height/2}h${width}`)
          .call(this.func);
+   }
+
+   saveToStyle(name_color, name_width, name_style) {
+      if (name_color) {
+         let indx = (this.color_index !== undefined) ? this.color_index : findColor(this.color);
+         if (indx >= 0)
+            gStyle[name_color] = indx;
+      }
+      if (name_width)
+        gStyle[name_width] = this.width;
+      if (name_style)
+        gStyle[name_style] = this.style;
    }
 
 } // class TAttLineHandler
@@ -54551,13 +54588,15 @@ const FrameInteractive = {
 
             fp = this;
 
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+            if (tch.length === 1)
+               pnt = { x: tch[0][0], y: tch[0][1], touch: true };
+            else if (ms.length === 2)
+               pnt = { x: ms[0], y: ms[1], touch: false };
 
             if ((pnt !== null) && (pp !== null)) {
                pnt.painters = true; // assign painter for every tooltip
                let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
-               for (let n=0;n<hints.length;++n)
+               for (let n = 0; n < hints.length; ++n)
                   if (hints[n] && hints[n].menu) {
                      let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
                      if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
@@ -54566,10 +54605,10 @@ const FrameInteractive = {
 
             if (sel) menu_painter = sel; else kind = "frame";
 
-            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+            if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
             fp.setLastEventPos(pnt);
-         } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
+         } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
             exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
          }
       } else if (kind == 'painter' && obj) {
@@ -55647,7 +55686,7 @@ class TFramePainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
-      if ((kind=="x") || (kind=="y") || (kind=="z") || (kind == "x2") || (kind == "y2")) {
+      if ((kind == "x") || (kind == "y") || (kind == "z") || (kind == "x2") || (kind == "y2")) {
          let faxis = obj || this[kind+'axis'];
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", () => this.unzoom(kind));
@@ -55715,6 +55754,15 @@ class TFramePainter extends ObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
+      menu.add("Save to gStyle", function() {
+         gStyle.fPadBottomMargin = this.fY1NDC;
+         gStyle.fPadTopMargin = 1 - this.fY2NDC;
+         gStyle.fPadLeftMargin = this.fX1NDC;
+         gStyle.fPadRightMargin = 1 - this.fX2NDC;
+         if (this.fillatt) this.fillatt.saveToStyle("fFrameFillColor", "fFrameFillStyle");
+         if (this.lineatt) this.lineatt.saveToStyle("fFrameLineColor", "fFrameLineWidth", "fFrameLineStyle");
+      });
+
       menu.add("separator");
       menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
       menu.add("Save as frame.svg", () => pp.saveAs("svg", 'frame', 'frame.svg'));
@@ -58651,7 +58699,8 @@ class TPadPainter extends ObjectPainter {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if (typeof obj.processTooltipEvent == 'function') painters.push(obj);
+            if (typeof obj.processTooltipEvent == 'function')
+               painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;
@@ -58698,6 +58747,16 @@ class TPadPainter extends ObjectPainter {
          menu.add("endsub:");
 
          menu.addAttributesMenu(this);
+         menu.add("Save to gStyle", function() {
+            if (this.fillatt) this.fillatt.saveToStyle(this.iscan ? "fCanvasColor" : "fPadColor");
+            gStyle.fPadGridX = this.pad.fGridX;
+            gStyle.fPadGridY = this.pad.fGridX;
+            gStyle.fPadTickX = this.pad.fTickx;
+            gStyle.fPadTickY = this.pad.fTicky;
+            gStyle.fOptLogx = this.pad.fLogx;
+            gStyle.fOptLogy = this.pad.fLogy;
+            gStyle.fOptLogz = this.pad.fLogz;
+         });
       }
 
       menu.add("separator");
@@ -61384,6 +61443,17 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, "pave_moved");
          });
 
+         menu.add("Save to gStyle", function() {
+            gStyle.fStatX = pave.fX2NDC;
+            gStyle.fStatW = pave.fX2NDC - pave.fX1NDC;
+            gStyle.fStatY = pave.fY2NDC;
+            gStyle.fStatH = pave.fY2NDC - pave.fY1NDC;
+            if (this.fillatt) this.fillatt.saveToStyle("fStatColor", "fStatStyle");
+            gStyle.fStatTextColor = pave.fTextColor;
+            gStyle.fStatFontSize = pave.fTextSize;
+            gStyle.fStatFont = pave.fTextFont;
+         });
+
          menu.add("SetStatFormat", () => {
             menu.input("Enter StatFormat", pave.fStatFormat).then(fmt => {
                if (!fmt) return;
@@ -61446,15 +61516,25 @@ class TPavePainter extends ObjectPainter {
          menu.add("endsub:");
 
          menu.add("separator");
-      } else if (pave.fName === "title")
+      } else if (pave.fName === "title") {
          menu.add("Default position", function() {
-            pave.fX1NDC = 0.28;
-            pave.fY1NDC = 0.94;
-            pave.fX2NDC = 0.72;
-            pave.fY2NDC = 0.99;
+            pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
+            pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
+            pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
+            pave.fY2NDC = gStyle.fTitleY;
             pave.fInit = 1;
             this.interactiveRedraw(true, "pave_moved");
          });
+
+         menu.add("Save to gStyle", function() {
+            gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
+            gStyle.fTitleY = pave.fY2NDC;
+            if (this.fillatt) this.fillatt.saveToStyle("fTitleColor", "fTitleStyle");
+            gStyle.fTitleTextColor = pave.fTextColor;
+            gStyle.fTitleFontSize = pave.fTextSize;
+            gStyle.fTitleFont = pave.fTextFont;
+         });
+      }
 
       if (this.UseTextColor)
          menu.addTextAttributesMenu(this);
@@ -65018,7 +65098,7 @@ class TH1Painter$2 extends THistPainter {
 
          res.exact = (Math.abs(midy - pnt_y) <= 5) || ((pnt_y >= gry1) && (pnt_y <= gry2));
 
-         res.menu = true; // one could show context menu
+         res.menu = res.exact; // one could show context menu when histogram is selected
          // distance to middle point, use to decide which menu to activate
          res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
 
@@ -104151,7 +104231,7 @@ class RH1Painter$2 extends RHistPainter {
 
          res.exact = (Math.abs(midy - pnt_y) <= 5) || ((pnt_y>=gry1) && (pnt_y<=gry2));
 
-         res.menu = true; // one could show context menu
+         res.menu = res.exact; // one could show context menu
          // distance to middle point, use to decide which menu to activate
          res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
 
