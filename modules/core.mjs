@@ -343,6 +343,11 @@ let gStyle = {
    fHistMinimumZero: false,
    /** @summary Margin between histogram's top and pad's top */
    fHistTopMargin: 0.05,
+   fHistFillColor: 0,
+   fHistFillStyle: 0, // 1001
+   fHistLineColor: 1, // 602
+   fHistLineStyle: 1,
+   fHistLineWidth: 1,
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
@@ -1048,6 +1053,8 @@ function create(typename, target) {
          create("TAttMarker", obj);
          extend(obj, { fBits: 8, fNcells: 0,
                        fXaxis: create("TAxis"), fYaxis: create("TAxis"), fZaxis: create("TAxis"),
+                       fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
+                       fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
