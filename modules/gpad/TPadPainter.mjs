@@ -970,7 +970,8 @@ class TPadPainter extends ObjectPainter {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if (typeof obj.processTooltipEvent == 'function') painters.push(obj);
+            if (typeof obj.processTooltipEvent == 'function')
+               painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;

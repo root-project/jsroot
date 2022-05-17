@@ -9,6 +9,7 @@
 6. Support `gStyle.fOptDate` and `gStyle.fOptFile` (also as `&optdate` and `&optfile` URL parameter)
 7. Support `gStyle.fDateX` and `gStyle.fDateY` used for positioning date and file on canvas
 8. Support `gStyle.fHistTopMargin` (also as `&histmargin=value` URL parameter)
+9. Let save frame, title and stats properties to `gStyle` via correspondent context menus
 
 
 ## Changes in 7.0.1

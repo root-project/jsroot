@@ -1319,13 +1319,15 @@ const FrameInteractive = {
 
             fp = this;
 
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+            if (tch.length === 1)
+               pnt = { x: tch[0][0], y: tch[0][1], touch: true };
+            else if (ms.length === 2)
+               pnt = { x: ms[0], y: ms[1], touch: false };
 
             if ((pnt !== null) && (pp !== null)) {
                pnt.painters = true; // assign painter for every tooltip
                let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
-               for (let n=0;n<hints.length;++n)
+               for (let n = 0; n < hints.length; ++n)
                   if (hints[n] && hints[n].menu) {
                      let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
                      if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
@@ -1334,10 +1336,10 @@ const FrameInteractive = {
 
             if (sel) menu_painter = sel; else kind = "frame";
 
-            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+            if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
             fp.setLastEventPos(pnt);
-         } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
+         } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
             exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
          }
       } else if (kind == 'painter' && obj) {

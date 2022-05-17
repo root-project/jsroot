@@ -965,7 +965,7 @@ class TH1Painter extends THistPainter {
 
          res.exact = (Math.abs(midy - pnt_y) <= 5) || ((pnt_y >= gry1) && (pnt_y <= gry2));
 
-         res.menu = true; // one could show context menu
+         res.menu = res.exact; // one could show context menu when histogram is selected
          // distance to middle point, use to decide which menu to activate
          res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
 
