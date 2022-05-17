@@ -350,8 +350,8 @@ let gStyle = {
    /** @summary Margin between histogram's top and pad's top */
    fHistTopMargin: 0.05,
    fHistFillColor: 0,
-   fHistFillStyle: 0, // 1001
-   fHistLineColor: 1, // 602
+   fHistFillStyle: 1001,
+   fHistLineColor: 602,
    fHistLineStyle: 1,
    fHistLineWidth: 1,
    /** @summary format for bin content */
@@ -56021,6 +56021,19 @@ class TFramePainter extends ObjectPainter {
 /// different display kinds and browser layout
 
 
+/** @summary Current hierarchy painter
+  * @desc Instance of {@link HierarchyPainter} object
+  * @private */
+let first_hpainter = null;
+
+/** @summary Returns current hierarchy painter object
+  * @private */
+function getHPainter() { return first_hpainter; }
+
+/** @summary Set hierarchy painter object
+  * @private */
+function setHPainter(hp) { first_hpainter = hp; }
+
 /**
  * @summary Base class to manage multiple document interface for drawings
  *
@@ -60115,16 +60128,26 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Returns true if event status shown in the canvas */
    hasEventStatus() {
-      if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.hasStatus() : false;
+      if (this.testUI5())
+         return false;
+      if (this.brlayout)
+         return this.brlayout.hasStatus();
+      let hp = getHPainter();
+      if (hp)
+         return hp.hasStatusLine();
+      return false;
    }
 
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
       if (this.testUI5()) return;
-      if (this.brlayout)
+      if (this.brlayout) {
          this.brlayout.createStatusLine(23, state);
+      } else {
+         let hp = getHPainter();
+         if (hp) hp.createStatusLine(23, state);
+      }
       this.processChanges("sbits", this);
    }
 
@@ -74051,7 +74074,6 @@ let parseAsArray = val => {
 };
 
 
-
 /** @summary central function for expand of all online items
   * @private */
 function onlineHierarchy(node, obj) {
@@ -74068,15 +74090,6 @@ function onlineHierarchy(node, obj) {
 
    return false;
 }
-
-// ==============================================================
-
-/** @summary Current hierarchy painter
-  * @desc Instance of {@link HierarchyPainter} object
-  * @private */
-let first_hpainter = null;
-
-function getHPainter() { return first_hpainter; }
 
 /**
   * @summary Painter of hierarchical structures
@@ -74106,8 +74119,8 @@ class HierarchyPainter extends BasePainter {
       this.nobrowser = (frameid === null);
 
       // remember only very first instance
-      if (!first_hpainter)
-         first_hpainter = this;
+      if (!getHPainter())
+         setHPainter(this);
    }
 
    /** @summary Cleanup hierarchy painter
@@ -74117,8 +74130,8 @@ class HierarchyPainter extends BasePainter {
 
       super.cleanup();
 
-      if (first_hpainter === this)
-         first_hpainter = null;
+      if (GetHPainter() === this)
+         setHPainter(null);
    }
 
    /** @summary Create file hierarchy
@@ -76923,6 +76936,13 @@ class HierarchyPainter extends BasePainter {
       }
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
+   }
+
+   /** @summary Returns trus if status is exists */
+   hasStatusLine() {
+      if (this.status_disabled || !this.gui_div || !this.brlayout)
+         return false;
+      return this.brlayout.hasStatus();
    }
 
    /** @summary Create status line
@@ -101162,15 +101182,24 @@ class RCanvasPainter extends RPadPainter {
    /** @summary returns true when event status area exist for the canvas */
    hasEventStatus() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.hasStatus() : false;
+      if (this.brlayout)
+         return this.brlayout.hasStatus();
+      let hp = getHPainter();
+      if (hp)
+         return hp.hasStatusLine();
+      return false;
    }
 
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
       if (this.testUI5()) return;
-      if (this.brlayout)
+      if (this.brlayout) {
          this.brlayout.createStatusLine(23, state);
+      } else {
+         let hp = getHPainter();
+         if (hp) hp.createStatusLine(23, state);
+      }
       this.processChanges("sbits", this);
    }
 
@@ -109530,6 +109559,7 @@ exports.resize = resize;
 exports.selectActivePad = selectActivePad;
 exports.setBatchMode = setBatchMode;
 exports.setDefaultDrawOpt = setDefaultDrawOpt;
+exports.setHPainter = setHPainter;
 exports.settings = settings;
 exports.toJSON = toJSON;
 exports.version = version;

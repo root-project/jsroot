@@ -6,7 +6,7 @@ import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../gui/utils.mjs';
 
-import { GridDisplay } from '../gui/display.mjs';
+import { GridDisplay, getHPainter } from '../gui/display.mjs';
 
 import { selectActivePad, cleanup, resize } from '../base/ObjectPainter.mjs';
 
@@ -485,15 +485,24 @@ class RCanvasPainter extends RPadPainter {
    /** @summary returns true when event status area exist for the canvas */
    hasEventStatus() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.hasStatus() : false;
+      if (this.brlayout)
+         return this.brlayout.hasStatus();
+      let hp = getHPainter();
+      if (hp)
+         return hp.hasStatusLine();
+      return false;
    }
 
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
       if (this.testUI5()) return;
-      if (this.brlayout)
+      if (this.brlayout) {
          this.brlayout.createStatusLine(23, state);
+      } else {
+         let hp = getHPainter();
+         if (hp) hp.createStatusLine(23, state);
+      }
       this.processChanges("sbits", this);
    }
 
