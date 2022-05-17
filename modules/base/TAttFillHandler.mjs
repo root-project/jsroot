@@ -1,3 +1,5 @@
+import { gStyle } from '../core.mjs';
+
 import { color as d3_color, rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 
 import { getColor } from './colors.mjs';
@@ -303,7 +305,7 @@ class TAttFillHandler {
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
       if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
-      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
+      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", gStyle.fHatchesLineWidth).style("fill", lfill);
 
       return true;
    }
