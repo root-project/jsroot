@@ -8,7 +8,7 @@ import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../t
 
 import { BasePainter } from '../base/BasePainter.mjs';
 
-import { cleanup, resize, drawRawText } from '../base/ObjectPainter.mjs';
+import { cleanup, resize, drawRawText, ObjectPainter } from '../base/ObjectPainter.mjs';
 
 import { TH1Painter } from '../hist/TH1Painter.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
@@ -239,7 +239,7 @@ function createTreePlayer(player) {
          if (!Number.isInteger(args.firstentry)) delete args.firstentry;
       }
 
-      if (args.drawopt) cleanup(this.drawid);
+      /* if (args.drawopt) */ cleanup(this.drawid);
 
       args.drawid = this.drawid;
 
@@ -381,13 +381,9 @@ function drawLeafPlayer(hpainter, itemname) {
   * @desc just envelope for real TTree::Draw method which do the main job
   * Can be also used for the branch and leaf object
   * @private */
-function drawTree() {
+function drawTree(dom, obj, opt) {
 
-   let painter = this,
-       obj = this.getObject(),
-       opt = this.getDrawOpt(),
-       tree = obj,
-       args = opt;
+   let tree = obj, args = opt;
 
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
@@ -437,13 +433,16 @@ function drawTree() {
       }
    }
 
+   let painter;
+
    if (args.player) {
+      painter = new ObjectPainter(dom, obj, opt);
       createTreePlayer(painter);
       painter.configureTree(tree);
       painter.showPlayer(args);
       args.drawid = painter.drawid;
    } else {
-      args.drawid = painter.getDom();
+      args.drawid = dom;
    }
 
    // use in result handling same function as for progress handling
