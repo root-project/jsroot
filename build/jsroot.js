@@ -11,7 +11,7 @@ let version_id = "7.0.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "16/05/2022";
+let version_date = "17/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -68738,12 +68738,12 @@ const drawFuncs = { lst: [
    { name: "kind:Command", icon: "img_execute", execute: true },
    { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.folderHierarchy) },
    { name: "TTask", icon: "img_task", get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.taskHierarchy), for_derived: true },
-   { name: "TTree", icon: "img_tree", get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TTree", icon: "img_tree", get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect" },
    { name: "TNtuple", sameas: "TTree" },
    { name: "TNtupleD", sameas: "TTree" },
-   { name: "TBranchFunc", icon: "img_leaf_method", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", noinspect: true, direct: true },
-   { name: /^TBranch/, icon: "img_branch", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true, direct: true },
-   { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true, direct: true },
+   { name: "TBranchFunc", icon: "img_leaf_method", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", noinspect: true },
+   { name: /^TBranch/, icon: "img_branch", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true },
+   { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true },
    { name: "TList", icon: "img_list", draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: "expand" },
    { name: "THashList", sameas: "TList" },
    { name: "TObjArray", sameas: "TList" },
@@ -95034,7 +95034,7 @@ function createTreePlayer(player) {
          if (!Number.isInteger(args.firstentry)) delete args.firstentry;
       }
 
-      if (args.drawopt) cleanup(this.drawid);
+      /* if (args.drawopt) */ cleanup(this.drawid);
 
       args.drawid = this.drawid;
 
@@ -95176,13 +95176,9 @@ function drawLeafPlayer(hpainter, itemname) {
   * @desc just envelope for real TTree::Draw method which do the main job
   * Can be also used for the branch and leaf object
   * @private */
-function drawTree() {
+function drawTree(dom, obj, opt) {
 
-   let painter = this,
-       obj = this.getObject(),
-       opt = this.getDrawOpt(),
-       tree = obj,
-       args = opt;
+   let tree = obj, args = opt;
 
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
@@ -95232,13 +95228,16 @@ function drawTree() {
       }
    }
 
+   let painter;
+
    if (args.player) {
+      painter = new ObjectPainter(dom, obj, opt);
       createTreePlayer(painter);
       painter.configureTree(tree);
       painter.showPlayer(args);
       args.drawid = painter.drawid;
    } else {
-      args.drawid = painter.getDom();
+      args.drawid = dom;
    }
 
    // use in result handling same function as for progress handling
