@@ -868,6 +868,18 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, "pave_moved")
          });
 
+         menu.add("Save to gStyle", () => {
+            gStyle.fStatX = pave.fX2NDC;
+            gStyle.fStatW = pave.fX2NDC - pave.fX1NDC;
+            gStyle.fStatY = pave.fY2NDC;
+            gStyle.fStatH = pave.fY2NDC - pave.fY1NDC;
+            gStyle.fStatColor = pave.fFillColor;
+            gStyle.fStatStyle = pave.fFillStyle;
+            gStyle.fStatTextColor = pave.fTextColor;
+            gStyle.fStatFontSize = pave.fTextSize;
+            gStyle.fStatFont = pave.fTextFont;
+         });
+
          menu.add("SetStatFormat", () => {
             menu.input("Enter StatFormat", pave.fStatFormat).then(fmt => {
                if (!fmt) return;
@@ -938,6 +950,16 @@ class TPavePainter extends ObjectPainter {
             pave.fY2NDC = gStyle.fTitleY;
             pave.fInit = 1;
             this.interactiveRedraw(true, "pave_moved");
+         });
+
+         menu.add("Save to gStyle", () => {
+            gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
+            gStyle.fTitleY = pave.fY2NDC;
+            gStyle.fTitleColor = pave.fFillColor;
+            gStyle.fTitleStyle = pave.fFillStyle;
+            gStyle.fTitleTextColor = pave.fTextColor;
+            gStyle.fTitleFontSize = pave.fTextSize;
+            gStyle.fTitleFont = pave.fTextFont;
          });
       }
 

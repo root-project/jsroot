@@ -2415,7 +2415,7 @@ class TFramePainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
-      if ((kind=="x") || (kind=="y") || (kind=="z") || (kind == "x2") || (kind == "y2")) {
+      if ((kind == "x") || (kind == "y") || (kind == "z") || (kind == "x2") || (kind == "y2")) {
          let faxis = obj || this[kind+'axis'];
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", () => this.unzoom(kind));
@@ -2483,6 +2483,20 @@ class TFramePainter extends ObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
+      menu.add("Save to gStyle", function() {
+         gStyle.fPadBottomMargin = this.fY1NDC;
+         gStyle.fPadTopMargin = 1 - this.fY2NDC;
+         gStyle.fPadLeftMargin = this.fX1NDC;
+         gStyle.fPadRightMargin = 1 - this.fX2NDC;
+
+         // fFrameFillColor: 0,
+         // fFrameFillStyle: 1001,
+         // fFrameLineColor: 1,
+         // fFrameLineWidth: 1,
+         //fFrameLineStyle: 1,
+
+      });
+
       menu.add("separator");
       menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
       menu.add("Save as frame.svg", () => pp.saveAs("svg", 'frame', 'frame.svg'));
