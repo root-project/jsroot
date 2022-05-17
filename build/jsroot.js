@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "16/05/2022";
+let version_date = "17/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -349,6 +349,11 @@ let gStyle = {
    fHistMinimumZero: false,
    /** @summary Margin between histogram's top and pad's top */
    fHistTopMargin: 0.05,
+   fHistFillColor: 0,
+   fHistFillStyle: 0, // 1001
+   fHistLineColor: 1, // 602
+   fHistLineStyle: 1,
+   fHistLineWidth: 1,
    /** @summary format for bin content */
    fPaintTextFormat: "g",
    /** @summary default time offset, UTC time at 01/01/95   */
@@ -356,7 +361,9 @@ let gStyle = {
    fLegendBorderSize: 1,
    fLegendFont: 42,
    fLegendTextSize: 0,
-   fLegendFillColor: 0
+   fLegendFillColor: 0,
+   fHatchesLineWidth: 1,
+   fHatchesSpacing: 1
 };
 
 /** @summary Method returns current document in use
@@ -1052,6 +1059,8 @@ function create$1(typename, target) {
          create$1("TAttMarker", obj);
          extend$1(obj, { fBits: 8, fNcells: 0,
                        fXaxis: create$1("TAxis"), fYaxis: create$1("TAxis"), fZaxis: create$1("TAxis"),
+                       fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
+                       fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
@@ -10147,12 +10156,13 @@ class TAttFillHandler {
             }
 
             let code = this.pattern % 1000,
-               k = code % 10,
-               j = ((code - k) % 100) / 10,
-               i = (code - j * 10 - k) / 100;
+                k = code % 10,
+                j = ((code - k) % 100) / 10,
+                i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            let sz = i * 12, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
+            let hatches_spacing = Math.round(Math.max(0.5, gStyle.fHatchesSpacing)*2) * 6,
+                sz = i * hatches_spacing, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
 
             w = h = 6 * sz; // we use at least 6 steps
 
@@ -10160,7 +10170,8 @@ class TAttFillHandler {
                pos = []; step = sz; y1 = 0; max = h;
 
                // reduce step for smaller angles to keep normal distance approx same
-               if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
+               if (Math.abs(dy) < 3)
+                  step = Math.round(sz / 12 * 9);
                if (dy == 0) {
                   step = Math.round(sz / 12 * 8);
                   y1 = step / 2;
@@ -10237,7 +10248,7 @@ class TAttFillHandler {
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
       if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
-      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
+      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", gStyle.fHatchesLineWidth).style("fill", lfill);
 
       return true;
    }
@@ -75170,7 +75181,11 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
       menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
       menu.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
-
+      menu.addColorMenu("Fill color", gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
+      menu.addColorMenu("Line color", gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
+      menu.addSizeMenu("Line width", 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
+      menu.addLineStyleMenu("Line style", gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
       menu.add("endsub:");
 
       menu.add("separator");

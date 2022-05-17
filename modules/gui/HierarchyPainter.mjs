@@ -1944,7 +1944,11 @@ class HierarchyPainter extends BasePainter {
       menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
       menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
       menu.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
-
+      menu.addColorMenu("Fill color", gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
+      menu.addFillStyleMenu("Fill style", gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
+      menu.addColorMenu("Line color", gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
+      menu.addSizeMenu("Line width", 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
+      menu.addLineStyleMenu("Line style", gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
       menu.add("endsub:");
 
       menu.add("separator");
