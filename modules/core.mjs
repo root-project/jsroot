@@ -344,8 +344,8 @@ let gStyle = {
    /** @summary Margin between histogram's top and pad's top */
    fHistTopMargin: 0.05,
    fHistFillColor: 0,
-   fHistFillStyle: 0, // 1001
-   fHistLineColor: 1, // 602
+   fHistFillStyle: 1001,
+   fHistLineColor: 602,
    fHistLineStyle: 1,
    fHistLineWidth: 1,
    /** @summary format for bin content */
