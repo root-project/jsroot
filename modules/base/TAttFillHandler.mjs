@@ -215,12 +215,13 @@ class TAttFillHandler {
             }
 
             let code = this.pattern % 1000,
-               k = code % 10,
-               j = ((code - k) % 100) / 10,
-               i = (code - j * 10 - k) / 100;
+                k = code % 10,
+                j = ((code - k) % 100) / 10,
+                i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            let sz = i * 12, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
+            let hatches_spacing = Math.round(Math.max(0.5, gStyle.fHatchesSpacing)*2) * 6,
+                sz = i * hatches_spacing, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
 
             w = h = 6 * sz; // we use at least 6 steps
 
@@ -228,7 +229,8 @@ class TAttFillHandler {
                pos = []; step = sz; y1 = 0; max = h;
 
                // reduce step for smaller angles to keep normal distance approx same
-               if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
+               if (Math.abs(dy) < 3)
+                  step = Math.round(sz / 12 * 9);
                if (dy == 0) {
                   step = Math.round(sz / 12 * 8);
                   y1 = step / 2;
