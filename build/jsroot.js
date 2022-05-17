@@ -10053,14 +10053,6 @@ class TAttFillHandler {
       this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
    }
 
-   /** @summary Save fill attributes to style */
-   saveToStyle(name_color, name_pattern) {
-      if (name_color && this.colorindx)
-         gStyle[name_color] = this.colorindx;
-      if (name_pattern)
-         gStyle[name_pattern] = this.pattern;
-   }
-
    /** @summary Method to change fill attributes.
      * @param {number} color - color index
      * @param {number} pattern - pattern index
@@ -10283,6 +10275,19 @@ class TAttFillHandler {
         .attr("d", `M0,0h${width}v${height}h${-width}z`)
         .call(sample.func);
    }
+
+   /** @summary Save fill attributes to style
+     * @private */
+   saveToStyle(name_color, name_pattern) {
+      if (name_color) {
+         let indx = this.colorindx ?? findColor(this.color);
+         if (indx >= 0) gStyle[name_color] = indx;
+      }
+      if (name_pattern)
+         gStyle[name_pattern] = this.pattern;
+   }
+
+
 
 } // class TAttFillHandler
 
@@ -11151,13 +11156,16 @@ class ObjectPainter extends BasePainter {
    interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
+      if ((typeof info == "string") && (info.indexOf("exec:") != 0))
+         reason = info;
+
       if (arg == "pad")
          res = this.redrawPad(reason);
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!isPromise(res)) res = Promise.resolve(false);
+      if (!isPromise(res))
+         res = Promise.resolve(false);
 
       return res.then(() => {
          // inform GED that something changes
@@ -55913,14 +55921,13 @@ class TFramePainter extends ObjectPainter {
             if (pp && pp.painters)
                pp.painters.forEach(painter => {
                   if (painter && (typeof painter.unzoomUserRange == 'function'))
-                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
+                        changed = true;
             });
          }
       }
 
-      if (!changed) return Promise.resolve(false);
-
-      return this.interactiveRedraw("pad", "zoom").then(() => true);
+      return changed ? this.interactiveRedraw("pad", "zoom").then(() => true) : Promise.resolve(false);
    }
 
    /** @summary Provide zooming of single axis
@@ -58814,7 +58821,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       let showsubitems = true;
-      let redrawNext = indx => {
+      const redrawNext = indx => {
          while (indx < this.painters.length) {
             let sub = this.painters[indx++], res = 0;
             if (showsubitems || sub.this_pad_name)
@@ -58827,11 +58834,10 @@ class TPadPainter extends ObjectPainter {
       };
 
       return sync_promise.then(() => {
-         if (this.iscan) {
+         if (this.iscan)
             this.createCanvasSvg(2);
-         } else {
+         else
             showsubitems = this.createPadSvg(true);
-         }
          return redrawNext(0);
       }).then(() => {
          this.confirmDraw();
@@ -69135,12 +69141,12 @@ const drawFuncs = { lst: [
    { name: "kind:Command", icon: "img_execute", execute: true },
    { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.folderHierarchy) },
    { name: "TTask", icon: "img_task", get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.taskHierarchy), for_derived: true },
-   { name: "TTree", icon: "img_tree", get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TTree", icon: "img_tree", get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: "player;testio", shift: "inspect" },
    { name: "TNtuple", sameas: "TTree" },
    { name: "TNtupleD", sameas: "TTree" },
-   { name: "TBranchFunc", icon: "img_leaf_method", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", noinspect: true, direct: true },
-   { name: /^TBranch/, icon: "img_branch", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true, direct: true },
-   { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true, direct: true },
+   { name: "TBranchFunc", icon: "img_leaf_method", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", noinspect: true },
+   { name: /^TBranch/, icon: "img_branch", draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true },
+   { name: /^TLeaf/, icon: "img_leaf", noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ";dump", ctrl: "dump", ignore_online: true },
    { name: "TList", icon: "img_list", draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: "expand" },
    { name: "THashList", sameas: "TList" },
    { name: "TObjArray", sameas: "TList" },
@@ -95767,7 +95773,7 @@ function createTreePlayer(player) {
          if (!Number.isInteger(args.firstentry)) delete args.firstentry;
       }
 
-      if (args.drawopt) cleanup(this.drawid);
+      /* if (args.drawopt) */ cleanup(this.drawid);
 
       args.drawid = this.drawid;
 
@@ -95909,13 +95915,9 @@ function drawLeafPlayer(hpainter, itemname) {
   * @desc just envelope for real TTree::Draw method which do the main job
   * Can be also used for the branch and leaf object
   * @private */
-function drawTree() {
+function drawTree(dom, obj, opt) {
 
-   let painter = this,
-       obj = this.getObject(),
-       opt = this.getDrawOpt(),
-       tree = obj,
-       args = opt;
+   let tree = obj, args = opt;
 
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
@@ -95965,13 +95967,16 @@ function drawTree() {
       }
    }
 
+   let painter;
+
    if (args.player) {
+      painter = new ObjectPainter(dom, obj, opt);
       createTreePlayer(painter);
       painter.configureTree(tree);
       painter.showPlayer(args);
       args.drawid = painter.drawid;
    } else {
-      args.drawid = painter.getDom();
+      args.drawid = dom;
    }
 
    // use in result handling same function as for progress handling
