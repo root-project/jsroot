@@ -52305,6 +52305,8 @@ class JSRootMenu {
       this.add("endsub:");
    }
 
+   /** @summary Add font selection menu
+     * @private */
    addFontMenu(name, value, set_func) {
       this.add("sub:" + name, () => {
          this.input("Enter font id from [0..20]", Math.floor(value/10), "int", 0, 20).then(id => {
@@ -53230,21 +53232,19 @@ class BootstrapMenu extends JSRootMenu {
          let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
 
          myModalEl.innerHTML =
-            `<div class="modal-dialog">
-              <div class="modal-content">
-               <div class="modal-header">
-                <h5 class="modal-title">${title}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-               </div>
-               <div class="modal-body">
-                  ${main_content}
-               </div>
-               <div class="modal-footer">
-                  ${close_btn}
-                  <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
-               </div>
-              </div>
-             </div>`;
+            `<div class="modal-dialog">`+
+              `<div class="modal-content">`+
+               `<div class="modal-header">`+
+                `<h5 class="modal-title">${title}</h5>`+
+                `<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>`+
+               `</div>`+
+               `<div class="modal-body">${main_content}</div>`+
+               `<div class="modal-footer">`+
+                  `${close_btn}`+
+                  `<button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>`+
+               `</div>`+
+              `</div>`+
+             `</div>`;
 
          document.body.appendChild(myModalEl);
 
@@ -74058,7 +74058,7 @@ function createStreamerInfoContent(lst) {
          info += ";";
          if (elem.fTitle) info += " // " + elem.fTitle;
 
-         item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
+         item._childs.push({ _name: info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
       }
       if (!item._childs.length) delete item._childs;
    }
@@ -74215,7 +74215,7 @@ class HierarchyPainter extends BasePainter {
 
       super.cleanup();
 
-      if (GetHPainter() === this)
+      if (getHPainter() === this)
          setHPainter(null);
    }
 

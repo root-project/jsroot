@@ -710,7 +710,7 @@ function createStreamerInfoContent(lst) {
          info += ";";
          if (elem.fTitle) info += " // " + elem.fTitle;
 
-         item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
+         item._childs.push({ _name: info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
       }
       if (!item._childs.length) delete item._childs;
    }
@@ -867,7 +867,7 @@ class HierarchyPainter extends BasePainter {
 
       super.cleanup();
 
-      if (GetHPainter() === this)
+      if (getHPainter() === this)
          setHPainter(null);
    }
 
