@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "17/05/2022";
+let version_date = "18/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -73394,7 +73394,6 @@ function injectHStyle(node) {
     display: inline-block;
     margin: 0;
 }
-
 .jsroot .h_tree p {
     font-weight: bold;
     white-space: nowrap;
@@ -73470,10 +73469,6 @@ ${img("member",16,"png","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0Q
 ${img("tf1",16,"png","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8/SMz///+Cf5VqAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4QHgSCla+2AAAAL0lEQVQI12MQYAACrAQXiFBoABINCgwMQgwcDAwSDEwMDKmhodMYJjAwaKDrAAEAoRAEjHDJ/uQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTEtMTRUMTc6Mjk6MjErMDE6MDDxcSccAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTExLTE0VDE3OjI5OjA1KzAxOjAwNka8zgAAAABJRU5ErkJggg==")}
 ${img("tf2",16,"png","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8A/wD////pL6WoAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4PNgzGaW1jAAAARUlEQVQI12NgEGDQZAASKkBigQKQ6GhgYBDiYgASIiAigIGBS8iBgUFhEpCnoAEkUkNDQxkagUIMrUDMMAVETAARQI0MAD5GCJ7tAr1aAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTExLTE0VDE2OjUxOjUzKzAxOjAwi1Gz3gAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xNFQxNjo1MTozNiswMTowMG5bLUIAAAAASUVORK5CYII=")}
 `, node);
-}
-
-function canExpandHandle(handle) {
-   return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
 function saveCookie(obj, expires, name) {
@@ -74175,6 +74170,10 @@ function onlineHierarchy(node, obj) {
    }
 
    return false;
+}
+
+function canExpandHandle(handle) {
+   return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
 /**
@@ -95591,6 +95590,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    this.last_progress = value;
 };
 
+/** @summary Draw result of tree drawing
+  * @private */
 function drawTreeDrawResult(dom, obj, opt) {
 
    let typ = obj._typename;
@@ -95611,6 +95612,8 @@ function drawTreeDrawResult(dom, obj, opt) {
 }
 
 
+/** @summary Handle callback function with progress of tree draw
+  * @private */
 function treeDrawProgress(obj, final) {
 
    // no need to update drawing if previous is not yet completed

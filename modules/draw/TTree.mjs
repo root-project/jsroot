@@ -57,6 +57,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    this.last_progress = value;
 }
 
+/** @summary Draw result of tree drawing
+  * @private */
 function drawTreeDrawResult(dom, obj, opt) {
 
    let typ = obj._typename;
@@ -77,6 +79,8 @@ function drawTreeDrawResult(dom, obj, opt) {
 }
 
 
+/** @summary Handle callback function with progress of tree draw
+  * @private */
 function treeDrawProgress(obj, final) {
 
    // no need to update drawing if previous is not yet completed
