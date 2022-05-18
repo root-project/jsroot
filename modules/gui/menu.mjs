@@ -226,7 +226,7 @@ class JSRootMenu {
             title = name;
          if (title) title += `, code ${id}`;
          this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
-      }
+      };
 
       this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
 
