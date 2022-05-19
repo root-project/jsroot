@@ -499,7 +499,7 @@ class TCanvasPainter extends TPadPainter {
       if (this.testUI5())
          return Promise.resolve(false);
 
-      console.log('Show section ' + that + ' flag = ' + on);
+      console.log(`Show section ${that} flag = ${on}`);
 
       switch(that) {
          case "Menu": break;

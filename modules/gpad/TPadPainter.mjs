@@ -991,9 +991,9 @@ class TPadPainter extends ObjectPainter {
    fillContextMenu(menu) {
 
       if (this.pad)
-         menu.add("header: " + this.pad._typename + "::" + this.pad.fName);
+         menu.add("header:" + this.pad._typename + "::" + this.pad.fName);
       else
-         menu.add("header: Canvas");
+         menu.add("header:Canvas");
 
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
 
