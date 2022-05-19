@@ -1197,7 +1197,12 @@ class RPadPainter extends RObjectPainter {
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
+      console.log('saveAs', kind, full_canvas, filename);
+
       this.produceImage(full_canvas, kind).then(imgdata => {
+         if (!imgdata)
+            return console.error(`Fail to produce image ${filename}`);
+
          let a = document.createElement('a');
          a.download = filename;
          a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
