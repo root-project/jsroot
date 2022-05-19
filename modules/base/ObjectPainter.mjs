@@ -517,8 +517,8 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Returns svg element for the frame in current pad
      * @protected */
-   getFrameSvg() {
-      let layer = this.getLayerSvg("primitives_layer");
+   getFrameSvg(pad_name) {
+      let layer = this.getLayerSvg("primitives_layer", pad_name);
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
