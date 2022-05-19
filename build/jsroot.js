@@ -10857,8 +10857,8 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Returns svg element for the frame in current pad
      * @protected */
-   getFrameSvg() {
-      let layer = this.getLayerSvg("primitives_layer");
+   getFrameSvg(pad_name) {
+      let layer = this.getLayerSvg("primitives_layer", pad_name);
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
@@ -58408,8 +58408,8 @@ class TPadPainter extends ObjectPainter {
       let fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
 
-      menu.add("Save as "+ fname+".png", fname+".png", () => this.saveAs("png", false));
-      menu.add("Save as "+ fname+".svg", fname+".svg", () => this.saveAs("svg", false));
+      menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
+      menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", false, arg));
 
       return true;
    }
@@ -59104,7 +59104,7 @@ class TPadPainter extends ObjectPainter {
    produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),
-          elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
+          elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -89205,7 +89205,7 @@ class TGraphPainter$1 extends ObjectPainter {
           height = pmain.getFrameHeight(),
           esz = this.error_size,
           isbar1 = (this.options.Bar === 1),
-          funcs = isbar1 ? pmain.getGrFuncs(painter.options.second_x, painter.options.second_y) : null,
+          funcs = isbar1 ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
           findbin = null, best_dist2 = 1e10, best = null,
           msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
@@ -99075,7 +99075,7 @@ class RPadPainter extends RObjectPainter {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
+      let elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
