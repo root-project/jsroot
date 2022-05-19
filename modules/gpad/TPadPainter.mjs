@@ -1041,11 +1041,9 @@ class TPadPainter extends ObjectPainter {
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
-      let fname = this.this_pad_name;
-      if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
-
-      menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
-      menu.add(`Save as ${fname}.svg", fname+".svg", arg => this.saveAs("svg", false, arg));
+      let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
+      menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", this.iscan, arg));
+      menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", this.iscan, arg));
 
       return true;
    }
@@ -1719,11 +1717,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Save pad in specified format
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
-      if (!filename) {
-         filename = this.this_pad_name;
-         if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
-         filename += "." + kind;
-      }
+      if (!filename)
+         filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
       this.produceImage(full_canvas, kind).then(imgdata => {
          let a = document.createElement('a');
          a.download = filename;
