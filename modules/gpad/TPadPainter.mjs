@@ -993,7 +993,7 @@ class TPadPainter extends ObjectPainter {
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
 
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
-      menu.add(`Save as ${fname}.svg", fname+".svg", arg => this.saveAs("svg", false, arg));
+      menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", false, arg));
 
       return true;
    }
