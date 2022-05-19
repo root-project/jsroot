@@ -1216,7 +1216,7 @@ class RPadPainter extends RObjectPainter {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
+      let elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
