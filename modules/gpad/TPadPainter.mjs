@@ -1734,13 +1734,13 @@ class TPadPainter extends ObjectPainter {
    produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),
-          elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
-
-      if (elem.empty()) return Promise.resolve("");
-
-      let painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
+          elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+          painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
           items = [], // keep list of replaced elements, which should be moved back at the end
           active_pp = null;
+
+      if (elem.empty())
+         return Promise.resolve("");
 
       painter.forEachPainterInPad(pp => {
 
@@ -1799,16 +1799,14 @@ class TPadPainter extends ObjectPainter {
 
       }, "pads");
 
-      let reEncode = data => {
+      const reEncode = data => {
          data = encodeURIComponent(data);
          data = data.replace(/%([0-9A-F]{2})/g, (match, p1) => {
            let c = String.fromCharCode('0x'+p1);
            return c === '%' ? '%25' : c;
          });
          return decodeURIComponent(data);
-      };
-
-      let reconstruct = () => {
+      }, reconstruct = () => {
          // reactivate border
          if (active_pp)
             active_pp.drawActiveBorder(null, true);
@@ -1839,9 +1837,7 @@ class TPadPainter extends ObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      let svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                 elem.node().innerHTML +
-                 '</svg>';
+      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
 
       if (internals.processSvgWorkarounds)
          svg = internals.processSvgWorkarounds(svg);
@@ -1853,9 +1849,8 @@ class TPadPainter extends ObjectPainter {
          return Promise.resolve(svg); // return SVG file as is
       }
 
-      let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-      let image = new Image();
+      let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
+          image = new Image();
 
       return new Promise(resolveFunc => {
          image.onload = function() {
@@ -1882,11 +1877,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process pad button click */
    clickPadButton(funcname, evnt) {
 
-      if (funcname == "CanvasSnapShot") return this.saveAs("png", true);
+      if (funcname == "CanvasSnapShot")
+         return this.saveAs("png", true);
 
-      if (funcname == "enlargePad") return this.enlargePad();
+      if (funcname == "enlargePad")
+         return this.enlargePad();
 
-      if (funcname == "PadSnapShot") return this.saveAs("png", false);
+      if (funcname == "PadSnapShot")
+         return this.saveAs("png", false);
 
       if (funcname == "PadContextMenus") {
 
