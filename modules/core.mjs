@@ -345,7 +345,7 @@ function getDocument() {
 
 /** @summary Inject javascript code
   * @desc Replacement for eval
-  * @returns {Promise}
+  * @returns {Promise} when code is injected
   * @private */
 function injectCode(code) {
    if (nodejs) {
@@ -358,7 +358,8 @@ function injectCode(code) {
          fs.writeFileSync(name, code);
          return import("file://" + name);
       }).finally(() => fs.unlinkSync(name));
-   } if (typeof document !== 'undefined') {
+   }
+   if (typeof document !== 'undefined') {
 
       // check if code already loaded - to avoid duplication
       let scripts = document.getElementsByTagName('script');
@@ -366,11 +367,15 @@ function injectCode(code) {
          if (scripts[n].innerHTML == code)
             return Promise.resolve(true);
 
-      let element = document.createElement("script");
-      element.setAttribute("type", "text/javascript");
-      element.innerHTML = code;
-      document.head.appendChild(element);
-      return Promise.resolve(true);
+      let promise = code.indexOf("JSROOT.require") >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+
+      return promise.then(() => {
+         let element = document.createElement("script");
+         element.setAttribute("type", "text/javascript");
+         element.innerHTML = code;
+         document.head.appendChild(element);
+         return true;
+      });
    }
 
    return Promise.resolve(false);
