@@ -370,11 +370,13 @@ function injectCode(code) {
       let promise = code.indexOf("JSROOT.require") >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
-         let element = document.createElement("script");
-         element.setAttribute("type", "text/javascript");
-         element.innerHTML = code;
-         document.head.appendChild(element);
-         return true;
+         return new Promise(resolve => {
+            let element = document.createElement("script");
+            element.setAttribute("type", "text/javascript");
+            element.innerHTML = code;
+            document.head.appendChild(element);
+            setTimeout(() => resolve(true), 10); // while onload event not fired, just postpone resolve
+         });
       });
    }
 
