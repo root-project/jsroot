@@ -1217,7 +1217,7 @@ class RPadPainter extends RObjectPainter {
    produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),
-          elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+          elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
           painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
           items = []; // keep list of replaced elements, which should be moved back at the end
 
