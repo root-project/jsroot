@@ -1494,7 +1494,7 @@ class TPadPainter extends ObjectPainter {
       MatchPrimitive(this.painters, snap.fPrimitives, "TFrame");
       MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", "title");
 
-      let isanyfound = false, isanyremove = false;
+      let isanyfound = false, isanyremove = false, ismainremove = false;
 
       // find and remove painters which no longer exists in the list
       for (let k = 0; k < this.painters.length; ++k) {
@@ -1505,16 +1505,20 @@ class TPadPainter extends ObjectPainter {
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            // console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()}`);
+            // console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()} ismain ${sub.isMainPainter()}`);
+            if (sub.isMainPainter()) ismainremove = true;
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
+
             isanyremove = true;
          }
       }
 
       if (isanyremove) {
          delete this.pads_cache;
+         if (ismainremove)
+            delete this.main_painter_ref;
       }
 
       if (!isanyfound) {
