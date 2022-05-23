@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "19/05/2022";
+let version_date = "23/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -59248,17 +59248,18 @@ class TPadPainter extends ObjectPainter {
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            // console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()}`);
+            // console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()} ismain ${sub.isMainPainter()}`);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
+            if (this.main_painter_ref === sub)
+               delete this.main_painter_ref;
          }
       }
 
-      if (isanyremove) {
+      if (isanyremove)
          delete this.pads_cache;
-      }
 
       if (!isanyfound) {
          // TODO: maybe just remove frame painter?
@@ -99703,12 +99704,13 @@ class RPadPainter extends RObjectPainter {
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
+            if (this.main_painter_ref === sub)
+               delete this.main_painter_ref;
          }
       }
 
-      if (isanyremove) {
+      if (isanyremove)
          delete this.pads_cache;
-      }
 
       if (!isanyfound) {
          let fp = this.getFramePainter();
