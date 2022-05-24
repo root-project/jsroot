@@ -1666,7 +1666,6 @@ class TFramePainter extends ObjectPainter {
      *    this.gr[x,y]  converts root scale into graphical value
      * @private */
    createXY(opts) {
-
       this.cleanXY(); // remove all previous configurations
 
       if (!opts) opts = { ndim: 1 };
@@ -2744,18 +2743,17 @@ class TFramePainter extends ObjectPainter {
       if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
 
       let fld = "zoom_changed_" + axis;
-      if (value === undefined) return this[fld];
+      if (value === undefined)
+         return this[fld] ? true : false;
 
       if (value === 'unzoom') {
-         // special handling of unzoom
-         if (this[fld])
-            delete this[fld];
-         else
-            this[fld] = true;
+         // special handling of unzoom, only if was never changed before flag set to true
+         this[fld] = (this[fld] === undefined);
          return;
       }
 
-      if (value) this[fld] = true;
+      if (value)
+         this[fld] = true;
    }
 
    /** @summary Convert graphical coordinate into axis value */
