@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "23/05/2022";
+let version_date = "24/05/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11707,7 +11707,7 @@ class ObjectPainter extends BasePainter {
 
       let canvp = this.getCanvPainter();
 
-      if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
+      if (!this.snapid || !canvp || canvp?._readonly || !canvp?._websocket)
          return Promise.resolve(menu);
 
       function DoExecMenu(arg) {
@@ -11958,7 +11958,7 @@ function drawRawText(dom, txt /*, opt*/) {
       }
 
       let frame = this.selectDom(),
-         main = frame.select("div");
+          main = frame.select("div");
       if (main.empty())
          main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
       main.html(txt);
@@ -54624,7 +54624,7 @@ const FrameInteractive = {
 
             fp.setLastEventPos(pnt);
          } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
-            exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
+            exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
          }
       } else if (kind == 'painter' && obj) {
          // this is used in 3D context menu to show special painter
@@ -55697,7 +55697,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
    fillContextMenu(menu, kind, obj) {
-      let main = this.getMainPainter(),
+      let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
@@ -89438,6 +89438,8 @@ class TGraphPainter$1 extends ObjectPainter {
       lines.push(this.getObjectHint());
 
       if (d && funcs) {
+         if (d.indx !== undefined)
+            lines.push("p = " + d.indx);
          lines.push("x = " + funcs.axisAsText("x", d.x));
          lines.push("y = " + funcs.axisAsText("y", d.y));
 
