@@ -387,8 +387,6 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Submit executable command for given painter */
    submitExec(painter, exec, subelem) {
-      console.log('SubmitExec', exec, painter.snapid, subelem);
-
       // snapid is intentionally ignored - only painter.snapid has to be used
       if (!this._websocket) return;
 

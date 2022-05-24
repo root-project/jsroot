@@ -1339,8 +1339,11 @@ const FrameInteractive = {
             if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
             fp.setLastEventPos(pnt);
-         } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
+         } else if ((kind == "x") || (kind == "y") || (kind == "z")) {
             exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
+
+            if (this.v7_frame && exec_painter && typeof exec_painter.v7EvalAttr === 'function')
+               exec_painter = null;
          }
       } else if (kind == 'painter' && obj) {
          // this is used in 3D context menu to show special painter

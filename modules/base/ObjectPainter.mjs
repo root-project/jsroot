@@ -1295,13 +1295,18 @@ class ObjectPainter extends BasePainter {
              return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0)) item.fClassName = "TAxis";
+         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0))
+            item.fClassName = "TAxis";
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
              if (execp.executeMenuCommand(item, args)) return;
+
              let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
-             if (cp) cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
+             if (cp?.v7canvas)
+                cp.submitExec(execp, exec, kind);
+             else if (cp)
+                cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
          });
       }
 
