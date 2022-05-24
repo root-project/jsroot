@@ -1461,6 +1461,8 @@ class TPadPainter extends ObjectPainter {
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
+            if (this.main_painter_ref === sub)
+               delete this.main_painter_ref;
          }
       }
 
