@@ -11,3 +11,6 @@ demo/node/*.svg
 node_modules/
 openui5dist
 package-lock.json
+build/
+docs/jsdoc/
+docs/jsdocfull/
