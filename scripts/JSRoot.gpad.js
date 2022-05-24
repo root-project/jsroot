@@ -1954,7 +1954,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
    TFramePainter.prototype.fillContextMenu = function(menu, kind, obj) {
-      let main = this.getMainPainter(),
+      let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
