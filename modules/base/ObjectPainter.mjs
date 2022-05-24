@@ -1292,7 +1292,10 @@ class ObjectPainter extends BasePainter {
          if (!execp.args_menu_id) return;
 
           if (!item.fArgs)
-             return execp.submitCanvExec(item.fExec, execp.args_menu_id);
+             if (cp?.v7canvas)
+                return cp.submitExec(execp, item.fExec, kind);
+             else
+                return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
          if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0))
