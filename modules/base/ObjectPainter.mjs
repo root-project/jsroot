@@ -1267,7 +1267,7 @@ class ObjectPainter extends BasePainter {
 
       let canvp = this.getCanvPainter();
 
-      if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
+      if (!this.snapid || !canvp || canvp?._readonly || !canvp?._websocket)
          return Promise.resolve(menu);
 
       function DoExecMenu(arg) {
@@ -1518,7 +1518,7 @@ function drawRawText(dom, txt /*, opt*/) {
       }
 
       let frame = this.selectDom(),
-         main = frame.select("div");
+          main = frame.select("div");
       if (main.empty())
          main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
       main.html(txt);
