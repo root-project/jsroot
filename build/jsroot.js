@@ -11732,16 +11732,24 @@ class ObjectPainter extends BasePainter {
          if (!execp.args_menu_id) return;
 
           if (!item.fArgs)
-             return execp.submitCanvExec(item.fExec, execp.args_menu_id);
+             if (cp?.v7canvas)
+                return cp.submitExec(execp, item.fExec, kind);
+             else
+                return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0)) item.fClassName = "TAxis";
+         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0))
+            item.fClassName = "TAxis";
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
              if (execp.executeMenuCommand(item, args)) return;
+
              let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
-             if (cp) cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
+             if (cp?.v7canvas)
+                cp.submitExec(execp, exec, kind);
+             else if (cp)
+                cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
          });
       }
 
@@ -54623,8 +54631,11 @@ const FrameInteractive = {
             if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
             fp.setLastEventPos(pnt);
-         } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
+         } else if ((kind == "x") || (kind == "y") || (kind == "z")) {
             exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
+
+            if (this.v7_frame && exec_painter && typeof exec_painter.v7EvalAttr === 'function')
+               exec_painter = null;
          }
       } else if (kind == 'painter' && obj) {
          // this is used in 3D context menu to show special painter
@@ -54947,7 +54958,6 @@ class TFramePainter extends ObjectPainter {
      *    this.gr[x,y]  converts root scale into graphical value
      * @private */
    createXY(opts) {
-
       this.cleanXY(); // remove all previous configurations
 
       if (!opts) opts = { ndim: 1 };
@@ -56025,18 +56035,17 @@ class TFramePainter extends ObjectPainter {
       if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
 
       let fld = "zoom_changed_" + axis;
-      if (value === undefined) return this[fld];
+      if (value === undefined)
+         return this[fld] ? true : false;
 
       if (value === 'unzoom') {
-         // special handling of unzoom
-         if (this[fld])
-            delete this[fld];
-         else
-            this[fld] = true;
+         // special handling of unzoom, only if was never changed before flag set to true
+         this[fld] = (this[fld] === undefined);
          return;
       }
 
-      if (value) this[fld] = true;
+      if (value)
+         this[fld] = true;
    }
 
    /** @summary Convert graphical coordinate into axis value */
@@ -97686,7 +97695,6 @@ class RFramePainter extends RObjectPainter {
      * @desc Must be used only for v6 objects, see TFramePainter for more details
      * @private */
    createXY(opts) {
-
       if (this.self_drawaxes) return;
 
       this.cleanXY(); // remove all previous configurations
@@ -98473,11 +98481,8 @@ class RFramePainter extends RObjectPainter {
       if (value === undefined) return this[fld];
 
       if (value === 'unzoom') {
-         // special handling of unzoom
-         if (this[fld])
-            delete this[fld];
-         else
-            this[fld] = true;
+         // special handling of unzoom, only if was never changed before flag set to true
+         this[fld] = (this[fld] === undefined);
          return;
       }
 
@@ -101182,12 +101187,15 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Submit executable command for given painter */
    submitExec(painter, exec, subelem) {
-      console.log('SubmitExec', exec, painter.snapid, subelem);
-
       // snapid is intentionally ignored - only painter.snapid has to be used
       if (!this._websocket) return;
 
-      if (subelem) {
+      if (subelem && (typeof subelem == 'string')) {
+         let len = subelem.length;
+         if ((len > 2) && (subelem.indexOf("#x") == len - 2)) subelem = "x"; else
+         if ((len > 2) && (subelem.indexOf("#y") == len - 2)) subelem = "y"; else
+         if ((len > 2) && (subelem.indexOf("#z") == len - 2)) subelem = "z";
+
          if ((subelem == "x") || (subelem == "y") || (subelem == "z"))
             exec = subelem + "axis#" + exec;
          else
