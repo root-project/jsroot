@@ -1340,7 +1340,7 @@ const FrameInteractive = {
 
             fp.setLastEventPos(pnt);
          } else if (!this.v7_frame && ((kind == "x") || (kind == "y") || (kind == "z"))) {
-            exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
+            exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
          }
       } else if (kind == 'painter' && obj) {
          // this is used in 3D context menu to show special painter
@@ -2413,7 +2413,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
    fillContextMenu(menu, kind, obj) {
-      let main = this.getMainPainter(),
+      let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
