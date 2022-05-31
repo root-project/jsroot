@@ -12,6 +12,7 @@ const symbols_map = {
    '#beta': '\u03B2',
    '#chi': '\u03C7',
    '#delta': '\u03B4',
+   '#digamma': '\u03DD',
    '#varepsilon': '\u03B5',
    '#phi': '\u03C6',
    '#gamma': '\u03B3',
@@ -38,6 +39,7 @@ const symbols_map = {
    '#Beta': '\u0392',
    '#Chi': '\u03A7',
    '#Delta': '\u0394',
+   '#Digamma': '\u03DC',
    '#Epsilon': '\u0395',
    '#Phi': '\u03A6',
    '#Gamma': '\u0393',
@@ -1032,7 +1034,7 @@ const math_symbols_map = {
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
-const translateMath = (str, kind, color, painter) => {
+function translateMath(str, kind, color, painter) {
 
    if (kind != 2) {
       for (let x in math_symbols_map)
@@ -1088,7 +1090,7 @@ const translateMath = (str, kind, color, painter) => {
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');
    return "\\color{" + color + '}{' + str + "}";
-};
+}
 
 /** @summary Workaround to fix size attributes in MathJax SVG
   * @private */
