@@ -1066,7 +1066,13 @@ const math_symbols_map = {
    'circdashbullet': 0x22B6,
    'dashdownarrow': 0x21E3,
    'dashuparrow': 0x21E1,
-   'complement': 0x2201
+   'complement': 0x2201,
+   'dbar': 0x18C,
+   'ddddot': 0x22EF,
+   'dddot': 0x22EF,
+   'ddots': 0x22F1,
+   'defineequal': 0x225D,
+   'defineeq': 0x225D
  };
 
 const mathjax_asis = [ '"', "'", "`", "=" ];
