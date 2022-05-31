@@ -10,6 +10,7 @@
 7. Support `gStyle.fDateX` and `gStyle.fDateY` used for positioning date and file on canvas
 8. Support `gStyle.fHistTopMargin` (also as `&histmargin=value` URL parameter)
 9. Let save frame, title and stats properties to `gStyle` via correspondent context menus
+10. Support majority of special symbols in TMathText
 
 
 ## Changes in 7.0.1

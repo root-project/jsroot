@@ -8315,6 +8315,7 @@ const symbols_map = {
    '#beta': '\u03B2',
    '#chi': '\u03C7',
    '#delta': '\u03B4',
+   '#digamma': '\u03DD',
    '#varepsilon': '\u03B5',
    '#phi': '\u03C6',
    '#gamma': '\u03B3',
@@ -8322,6 +8323,8 @@ const symbols_map = {
    '#iota': '\u03B9',
    '#varphi': '\u03C6',
    '#kappa': '\u03BA',
+   '#koppa': '\u03DF',
+   '#sampi': '\u03E1',
    '#lambda': '\u03BB',
    '#mu': '\u03BC',
    '#nu': '\u03BD',
@@ -8330,9 +8333,13 @@ const symbols_map = {
    '#theta': '\u03B8',
    '#rho': '\u03C1',
    '#sigma': '\u03C3',
+   '#stigma': '\u03DB',
+   '#san': '\u03FB',
+   '#sho': '\u03F8',
    '#tau': '\u03C4',
    '#upsilon': '\u03C5',
    '#varomega': '\u03D6',
+   '#varcoppa': '\u03D9',
    '#omega': '\u03C9',
    '#xi': '\u03BE',
    '#psi': '\u03C8',
@@ -8341,6 +8348,7 @@ const symbols_map = {
    '#Beta': '\u0392',
    '#Chi': '\u03A7',
    '#Delta': '\u0394',
+   '#Digamma': '\u03DC',
    '#Epsilon': '\u0395',
    '#Phi': '\u03A6',
    '#Gamma': '\u0393',
@@ -8348,6 +8356,9 @@ const symbols_map = {
    '#Iota': '\u0399',
    '#vartheta': '\u03D1',
    '#Kappa': '\u039A',
+   '#Koppa': '\u03DE',
+   '#varKoppa': '\u03D8',
+   '#Sampi': '\u03E0',
    '#Lambda': '\u039B',
    '#Mu': '\u039C',
    '#Nu': '\u039D',
@@ -8356,6 +8367,9 @@ const symbols_map = {
    '#Theta': '\u0398',
    '#Rho': '\u03A1',
    '#Sigma': '\u03A3',
+   '#Stigma': '\u03DA',
+   '#San': '\u03FA',
+   '#Sho': '\u03F7',
    '#Tau': '\u03A4',
    '#Upsilon': '\u03A5',
    '#varsigma': '\u03C2',
@@ -8365,6 +8379,7 @@ const symbols_map = {
    '#Zeta': '\u0396',
    '#varUpsilon': '\u03D2',
    '#epsilon': '\u03B5',
+   '#P': '\u00B6',
 
    // only required for MathJax to provide correct replacement
    '#sqrt': '\u221A',
@@ -9330,12 +9345,44 @@ const math_symbols_map = {
    'openclubsuit': "clubsuit",
    'openspadesuit': "spadesuit",
    'dasharrow': "dashrightarrow",
-   'downuparrows': "updownarrow"
+   'downuparrows': "updownarrow",
+   'comp': "circ"
  };
+
+ const mathjax_unicode = {
+   'Digamma': 0x191,
+   'Koppa': 0x3DE,
+   'koppa': 0x3DF,
+   'VarKoppa': 0x3D8,
+   'varkoppa': 0x3D9,
+   'Sampi': 0x3E0,
+   'sampi': 0x3E1,
+   'Stigma': 0x3DA,
+   'stigma': 0x3DB,
+   'San': 0x3FA,
+   'san': 0x3FB,
+   'Sho': 0x3F7,
+   'sho': 0x3F8,
+   'P': 0xB6,
+   'aa': 0xB0,
+   'bulletdashcirc': 0x22B7,
+   'circdashbullet': 0x22B6,
+   'dashdownarrow': 0x21E3,
+   'dashuparrow': 0x21E1,
+   'complement': 0x2201,
+   'dbar': 0x18C,
+   'ddddot': 0x22EF,
+   'dddot': 0x22EF,
+   'ddots': 0x22F1,
+   'defineequal': 0x225D,
+   'defineeq': 0x225D
+ };
+
+const mathjax_asis = [ '"', "'", "`", "=" ];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
-const translateMath = (str, kind, color, painter) => {
+function translateMath(str, kind, color, painter) {
 
    if (kind != 2) {
       for (let x in math_symbols_map)
@@ -9378,9 +9425,14 @@ const translateMath = (str, kind, color, painter) => {
 
       str = clean;
    } else {
-      str = str.replace(/\\\^/g, "\\hat");
+      if (str == "\\^") str = "\\unicode{0x5E}";
+      str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
+      for (let x in mathjax_unicode)
+         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
+      for(let x in mathjax_asis)
+         str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
       for (let x in mathjax_remap)
-         str = str.replace(new RegExp('\\\\' + x, 'g'), '\\' + mathjax_remap[x]);
+         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
    if (typeof color != 'string') return str;
@@ -9391,7 +9443,7 @@ const translateMath = (str, kind, color, painter) => {
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');
    return "\\color{" + color + '}{' + str + "}";
-};
+}
 
 /** @summary Workaround to fix size attributes in MathJax SVG
   * @private */
@@ -64307,7 +64359,7 @@ class TH1Painter$2 extends THistPainter {
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
-          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
+          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);
@@ -65254,7 +65306,6 @@ class TH1Painter$2 extends THistPainter {
 
       if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
-      // check if it makes sense to zoom inside specified axis range
       return false;
    }
 
@@ -68940,7 +68991,6 @@ class TH3Painter extends THistPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      // check if it makes sense to zoom inside specified axis range
       let obj = this.getHisto();
       if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
@@ -75510,8 +75560,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} [drawopt] - draw option for the item
      * @returns {Promise} with created painter object */
    display(itemname, drawopt) {
-      let h = this,
-          painter = null,
+      let painter = null,
           updating = false,
           item = null,
           display_itemname = itemname,
@@ -75524,27 +75573,27 @@ class HierarchyPainter extends BasePainter {
          drawopt = drawopt.slice(0, p);
       }
 
-      function complete(respainter, err) {
+      const complete = (respainter, err) => {
          if (err) console.log('When display ', itemname, 'got', err);
 
          if (updating && item) delete item._doing_update;
          if (!updating) showProgress();
          if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
-            respainter.setItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
+            respainter.setItemName(display_itemname, updating ? null : drawopt, this); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
 
          return respainter || painter;
-      }
+      };
 
-      return h.createDisplay().then(mdi => {
+      return this.createDisplay().then(mdi => {
 
          if (!mdi) return complete();
 
-         item = h.findItem(display_itemname);
+         item = this.findItem(display_itemname);
 
          if (item && ('_player' in item))
-            return h.player(display_itemname, drawopt).then(res => complete(res));
+            return this.player(display_itemname, drawopt).then(res => complete(res));
 
          updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:")==0);
 
@@ -75554,7 +75603,7 @@ class HierarchyPainter extends BasePainter {
             item._doing_update = true;
          }
 
-         if (item && !h.canDisplay(item, drawopt)) return complete();
+         if (item && !this.canDisplay(item, drawopt)) return complete();
 
          let divid = "", use_dflt_opt = false;
          if ((typeof drawopt == 'string') && (drawopt.indexOf("divid:") >= 0)) {
@@ -75570,7 +75619,7 @@ class HierarchyPainter extends BasePainter {
 
          if (!updating) showProgress("Loading " + display_itemname);
 
-         return h.getObject(display_itemname, drawopt).then(result => {
+         return this.getObject(display_itemname, drawopt).then(result => {
 
             if (!updating) showProgress();
 
@@ -104331,11 +104380,10 @@ class RH1Painter$2 extends RHistPainter {
    canZoomInside(axis,min,max) {
       let xaxis = this.getAxis("x");
 
-      if ((axis=="x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
+      if ((axis == "x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
 
-      if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis == "y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
-      // check if it makes sense to zoom inside specified axis range
       return false;
    }
 
