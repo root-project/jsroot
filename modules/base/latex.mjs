@@ -1030,20 +1030,6 @@ const math_symbols_map = {
    'upTheta': "Uptheta",
    'upUpsilon': "Upupsilon",
    'upXi': "Upxi",
-   'Digamma': 'unicode{x191}',
-   'Koppa': 'unicode{x3DE}',
-   'koppa': 'unicode{x3DF}',
-   'VarKoppa': 'unicode{x3D8}',
-   'varkoppa': 'unicode{x3D9}',
-   'Sampi': 'unicode{x3E0}',
-   'sampi': 'unicode{x3E1}',
-   'Stigma': 'unicode{x3DA}',
-   'stigma': 'unicode{x3DB}',
-   'San': 'unicode{x3FA}',
-   'san': 'unicode{x3FB}',
-   'Sho': 'unicode{x3F7}',
-   'sho': 'unicode{x3F8}',
-   'P': 'unicode{xB6}',
    'notcong': "ncong",
    'notgeq': "ngeq",
    'notgr': "ngtr",
@@ -1056,8 +1042,34 @@ const math_symbols_map = {
    'openclubsuit': "clubsuit",
    'openspadesuit': "spadesuit",
    'dasharrow': "dashrightarrow",
-   'downuparrows': "updownarrow"
+   'downuparrows': "updownarrow",
+   'comp': "circ"
  };
+
+ const mathjax_unicode = {
+   'Digamma': 0x191,
+   'Koppa': 0x3DE,
+   'koppa': 0x3DF,
+   'VarKoppa': 0x3D8,
+   'varkoppa': 0x3D9,
+   'Sampi': 0x3E0,
+   'sampi': 0x3E1,
+   'Stigma': 0x3DA,
+   'stigma': 0x3DB,
+   'San': 0x3FA,
+   'san': 0x3FB,
+   'Sho': 0x3F7,
+   'sho': 0x3F8,
+   'P': 0xB6,
+   'aa': 0xB0,
+   'bulletdashcirc': 0x22B7,
+   'circdashbullet': 0x22B6,
+   'dashdownarrow': 0x21E3,
+   'dashuparrow': 0x21E1,
+   'complement': 0x2201
+ };
+
+const mathjax_asis = [ '"', "'", "`", "=" ];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -1104,9 +1116,14 @@ function translateMath(str, kind, color, painter) {
 
       str = clean;
    } else {
-      str = str.replace(/\\\^/g, "\\hat");
+      if (str == "\\^") str = "\\unicode{0x5E}";
+      str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
+      for (let x in mathjax_unicode)
+         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
+      for(let x in mathjax_asis)
+         str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
       for (let x in mathjax_remap)
-         str = str.replace(new RegExp('\\\\' + x, 'g'), '\\' + mathjax_remap[x]);
+         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
    if (typeof color != 'string') return str;
