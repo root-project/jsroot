@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "31/05/2022";
+let version_date = "1/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9345,28 +9345,51 @@ const math_symbols_map = {
    'openclubsuit': "clubsuit",
    'openspadesuit': "spadesuit",
    'dasharrow': "dashrightarrow",
-   'downuparrows': "updownarrow",
-   'comp': "circ"
+   'comp': "circ",
+   'iiintop': "iiint",
+   'iintop': "iint",
+   'ointop': "oint"
  };
 
  const mathjax_unicode = {
-   'Digamma': 0x191,
+   'Digamma': 0x3DC,
+   'upDigamma': 0x3DC,
+   'digamma': 0x3DD,
+   'updigamma': 0x3DD,
    'Koppa': 0x3DE,
    'koppa': 0x3DF,
+   'upkoppa': 0x3DF,
+   'upKoppa': 0x3DE,
    'VarKoppa': 0x3D8,
+   'upVarKoppa': 0x3D8,
    'varkoppa': 0x3D9,
+   'upvarkoppa': 0x3D9,
+   'varkappa': 0x3BA, // not found archaic kappa - use normal
+   'upvarkappa': 0x3BA,
+   'varbeta': 0x3D0, // not found archaic beta - use normal
+   'upvarbeta': 0x3D0,
    'Sampi': 0x3E0,
+   'upSampi': 0x3E0,
    'sampi': 0x3E1,
+   'upsampi': 0x3E1,
    'Stigma': 0x3DA,
+   'upStigma': 0x3DA,
    'stigma': 0x3DB,
+   'upstigma': 0x3DB,
    'San': 0x3FA,
+   'upSan': 0x3FA,
    'san': 0x3FB,
+   'upsan': 0x3FB,
    'Sho': 0x3F7,
+   'upSho': 0x3F7,
    'sho': 0x3F8,
+   'upsho': 0x3F8,
    'P': 0xB6,
    'aa': 0xB0,
    'bulletdashcirc': 0x22B7,
    'circdashbullet': 0x22B6,
+   'downuparrows': 0x21F5,
+   'updownarrows': 0x21C5,
    'dashdownarrow': 0x21E3,
    'dashuparrow': 0x21E1,
    'complement': 0x2201,
@@ -9375,10 +9398,58 @@ const math_symbols_map = {
    'dddot': 0x22EF,
    'ddots': 0x22F1,
    'defineequal': 0x225D,
-   'defineeq': 0x225D
+   'defineeq': 0x225D,
+   'downdownharpoons': 0x2965,
+   'downupharpoons': 0x296F,
+   'updownharpoons': 0x296E,
+   'upupharpoons': 0x2963,
+   'hateq': 0x2259,
+   'ldbrack': 0x27E6,
+   'rdbrack': 0x27E7,
+   'leadsfrom': 0x219C,
+   'leftsquigarrow': 0x21DC,
+   'lightning': 0x2607,
+   'napprox': 0x2249,
+   'nasymp': 0x226D,
+   'nequiv': 0x2262,
+   'nsimeq': 0x2244,
+   'nsubseteq': 0x2288,
+   'nsubset': 0x2284,
+   'notapprox': 0x2249,
+   'notasymp': 0x226D,
+   'notequiv': 0x2262,
+   'notni': 0x220C,
+   'notsimeq': 0x2244,
+   'notsubseteq': 0x2288,
+   'notsubset': 0x2284,
+   'notsupseteq': 0x2289,
+   'notsupset': 0x2285,
+   'nsupset': 0x2285,
+   'setdif': 0x2216,
+   'simarrow': 0x2972,
+   't': 0x2040,
+   'u': 0x2C7,
+   'v': 0x2C7,
+   'undercurvearrowright': 0x293B,
+   'updbar': 0x18C,
+   'wwbar': 0x2015,
+   'awointop': 0x2232,
+   'awoint': 0x2233,
+   'barintop': 0x2A1C,
+   'barint': 0x2A1B,
+   'cwintop': 0x2231, // no opposite direction, use same
+   'cwint': 0x2231,
+   'cwointop': 0x2233,
+   'cwoint': 0x2232,
+   'oiiintop': 0x2230,
+   'oiiint': 0x2230,
+   'oiintop': 0x222F,
+   'oiint': 0x222F,
+   'slashintop': 0x2A0F,
+   'slashint': 0x2A0F
  };
 
-const mathjax_asis = [ '"', "'", "`", "=" ];
+const mathjax_asis = ['"', "'", "`", "=", "~"];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -9426,13 +9497,14 @@ function translateMath(str, kind, color, painter) {
       str = clean;
    } else {
       if (str == "\\^") str = "\\unicode{0x5E}";
+      if (str == "\\vec") str = "\\unicode{0x2192}";
       str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
       for (let x in mathjax_unicode)
-         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
+         str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
       for(let x in mathjax_asis)
          str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
       for (let x in mathjax_remap)
-         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\${mathjax_remap[x]}`);
+         str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
    if (typeof color != 'string') return str;
