@@ -1080,8 +1080,19 @@ const math_symbols_map = {
    'rdbrack': 0x27E7,
    'leadsfrom': 0x219C,
    'leftsquigarrow': 0x21DC,
-   'lightning': 0x2607
-
+   'lightning': 0x2607,
+   'napprox': 0x2249,
+   'nasymp': 0x226D,
+   'nequiv': 0x2262,
+   'notapprox': 0x2249,
+   'notasymp': 0x226D,
+   'notequiv': 0x2262,
+   'notni': 0x220C,
+   'notsimeq': 0x2244,
+   'notsubseteq': 0x2288,
+   'notsubset': 0x2284,
+   'notsupseteq': 0x2289,
+   'notsupset': 0x2285
  };
 
 const mathjax_asis = [ '"', "'", "`", "=" ];
