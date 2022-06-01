@@ -1052,22 +1052,32 @@ const math_symbols_map = {
    'updigamma': 0x3DD,
    'Koppa': 0x3DE,
    'koppa': 0x3DF,
+   'upkoppa': 0x3DF,
    'upKoppa': 0x3DE,
    'VarKoppa': 0x3D8,
    'upVarKoppa': 0x3D8,
    'varkoppa': 0x3D9,
+   'upvarkoppa': 0x3D9,
+   'varkappa': 0x3BA, // not found archaic kappa - use normal
+   'upvarkappa': 0x3BA,
+   'varbeta': 0x3D0, // not found archaic beta - use normal
+   'upvarbeta': 0x3D0,
    'Sampi': 0x3E0,
    'upSampi': 0x3E0,
    'sampi': 0x3E1,
+   'upsampi': 0x3E1,
    'Stigma': 0x3DA,
    'upStigma': 0x3DA,
    'stigma': 0x3DB,
+   'upstigma': 0x3DB,
    'San': 0x3FA,
    'upSan': 0x3FA,
    'san': 0x3FB,
+   'upsan': 0x3FB,
    'Sho': 0x3F7,
    'upSho': 0x3F7,
    'sho': 0x3F8,
+   'upsho': 0x3F8,
    'P': 0xB6,
    'aa': 0xB0,
    'bulletdashcirc': 0x22B7,
@@ -1086,6 +1096,7 @@ const math_symbols_map = {
    'downdownharpoons': 0x2965,
    'downupharpoons': 0x296F,
    'updownharpoons': 0x296E,
+   'upupharpoons': 0x2963,
    'hateq': 0x2259,
    'ldbrack': 0x27E6,
    'rdbrack': 0x27E7,
@@ -1110,14 +1121,19 @@ const math_symbols_map = {
    'nsupset': 0x2285,
    'setdif': 0x2216,
    'simarrow': 0x2972,
-   't': 0x2C6,
+   't': 0x2040,
    'u': 0x2C7,
+   'v': 0x2C7,
    'undercurvearrowright': 0x293B,
    'updbar': 0x18C,
-
+   'wwbar': 0x2015,
+   'awointop': 0x2232,
+   'awoint': 0x2233,
+   'barintop': 0x2A1C,
+   'barint': 0x2A1B,
  };
 
-const mathjax_asis = [ '"', "'", "`", "=" ];
+const mathjax_asis = [ '"', "'", "`", "=", "~" ];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -1165,6 +1181,7 @@ function translateMath(str, kind, color, painter) {
       str = clean;
    } else {
       if (str == "\\^") str = "\\unicode{0x5E}";
+      if (str == "\\vec") str = "\\unicode{0x2192}";
       str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
       for (let x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
