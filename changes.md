@@ -1,9 +1,10 @@
 # JSROOT changelog
 
-## Changes in 7.0.x
-1. Fix TH2 arrow drawing
+## Changes in 7.0.2
+1. Fix - TH2 arrow drawing
 2. Fix - interactive change of fonts attributes
 3. Fix - proper draw results of TTree::Draw
+4. Fix - draw new histogram on same canvas
 
 
 ## Changes in 7.0.1

@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.0.1
+// https://root.cern/js/ v7.0.2
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0" */
-let version_id = "7.0.x";
+let version_id = "7.0.2";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "17/05/2022";
+let version_date = "1/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -54339,7 +54339,7 @@ const FrameInteractive = {
 
             fp.setLastEventPos(pnt);
          } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
-            exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
+            exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
          }
       } else if (kind == 'painter' && obj) {
          // this is used in 3D context menu to show special painter
@@ -55413,7 +55413,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
    fillContextMenu(menu, kind, obj) {
-      let main = this.getMainPainter(),
+      let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
 
@@ -58884,6 +58884,8 @@ class TPadPainter extends ObjectPainter {
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
+            if (this.main_painter_ref === sub)
+               delete this.main_painter_ref;
          }
       }
 
@@ -98965,6 +98967,8 @@ class RPadPainter extends RObjectPainter {
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
+            if (this.main_painter_ref === sub)
+               delete this.main_painter_ref;
          }
       }
 
