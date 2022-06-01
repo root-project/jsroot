@@ -1042,7 +1042,10 @@ const math_symbols_map = {
    'openclubsuit': "clubsuit",
    'openspadesuit': "spadesuit",
    'dasharrow': "dashrightarrow",
-   'comp': "circ"
+   'comp': "circ",
+   'iiintop': "iiint",
+   'iintop': "iint",
+   'ointop': "oint"
  };
 
  const mathjax_unicode = {
@@ -1131,9 +1134,19 @@ const math_symbols_map = {
    'awoint': 0x2233,
    'barintop': 0x2A1C,
    'barint': 0x2A1B,
+   'cwintop': 0x2231, // no opposite direction, use same
+   'cwint': 0x2231,
+   'cwointop': 0x2233,
+   'cwoint': 0x2232,
+   'oiiintop': 0x2230,
+   'oiiint': 0x2230,
+   'oiintop': 0x222F,
+   'oiint': 0x222F,
+   'slashintop': 0x2A0F,
+   'slashint': 0x2A0F
  };
 
-const mathjax_asis = [ '"', "'", "`", "=", "~" ];
+const mathjax_asis = ['"', "'", "`", "=", "~"];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
