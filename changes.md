@@ -13,6 +13,13 @@
 10. Support majority of special symbols in TMathText
 
 
+## Changes in 7.0.2
+1. Fix - TH2 arrow drawing
+2. Fix - interactive change of fonts attributes
+3. Fix - proper draw results of TTree::Draw
+4. Fix - draw new histogram on same canvas
+
+
 ## Changes in 7.0.1
 1. Fix problem with irregular axis labels
 2. Correctly scale and tilt large number of axes labels
