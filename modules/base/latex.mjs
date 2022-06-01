@@ -1042,28 +1042,38 @@ const math_symbols_map = {
    'openclubsuit': "clubsuit",
    'openspadesuit': "spadesuit",
    'dasharrow': "dashrightarrow",
-   'downuparrows': "updownarrow",
    'comp': "circ"
  };
 
  const mathjax_unicode = {
-   'Digamma': 0x191,
+   'Digamma': 0x3DC,
+   'upDigamma': 0x3DC,
+   'digamma': 0x3DD,
+   'updigamma': 0x3DD,
    'Koppa': 0x3DE,
    'koppa': 0x3DF,
+   'upKoppa': 0x3DE,
    'VarKoppa': 0x3D8,
+   'upVarKoppa': 0x3D8,
    'varkoppa': 0x3D9,
    'Sampi': 0x3E0,
+   'upSampi': 0x3E0,
    'sampi': 0x3E1,
    'Stigma': 0x3DA,
+   'upStigma': 0x3DA,
    'stigma': 0x3DB,
    'San': 0x3FA,
+   'upSan': 0x3FA,
    'san': 0x3FB,
    'Sho': 0x3F7,
+   'upSho': 0x3F7,
    'sho': 0x3F8,
    'P': 0xB6,
    'aa': 0xB0,
    'bulletdashcirc': 0x22B7,
    'circdashbullet': 0x22B6,
+   'downuparrows': 0x21F5,
+   'updownarrows': 0x21C5,
    'dashdownarrow': 0x21E3,
    'dashuparrow': 0x21E1,
    'complement': 0x2201,
@@ -1075,6 +1085,7 @@ const math_symbols_map = {
    'defineeq': 0x225D,
    'downdownharpoons': 0x2965,
    'downupharpoons': 0x296F,
+   'updownharpoons': 0x296E,
    'hateq': 0x2259,
    'ldbrack': 0x27E6,
    'rdbrack': 0x27E7,
@@ -1084,6 +1095,9 @@ const math_symbols_map = {
    'napprox': 0x2249,
    'nasymp': 0x226D,
    'nequiv': 0x2262,
+   'nsimeq': 0x2244,
+   'nsubseteq': 0x2288,
+   'nsubset': 0x2284,
    'notapprox': 0x2249,
    'notasymp': 0x226D,
    'notequiv': 0x2262,
@@ -1092,7 +1106,15 @@ const math_symbols_map = {
    'notsubseteq': 0x2288,
    'notsubset': 0x2284,
    'notsupseteq': 0x2289,
-   'notsupset': 0x2285
+   'notsupset': 0x2285,
+   'nsupset': 0x2285,
+   'setdif': 0x2216,
+   'simarrow': 0x2972,
+   't': 0x2C6,
+   'u': 0x2C7,
+   'undercurvearrowright': 0x293B,
+   'updbar': 0x18C,
+
  };
 
 const mathjax_asis = [ '"', "'", "`", "=" ];
@@ -1145,11 +1167,11 @@ function translateMath(str, kind, color, painter) {
       if (str == "\\^") str = "\\unicode{0x5E}";
       str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
       for (let x in mathjax_unicode)
-         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
+         str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
       for(let x in mathjax_asis)
          str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
       for (let x in mathjax_remap)
-         str = str.replace(new RegExp(`(\\\\${x})`, 'g'), `\\${mathjax_remap[x]}`);
+         str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
    if (typeof color != 'string') return str;
