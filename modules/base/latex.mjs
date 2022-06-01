@@ -1072,7 +1072,16 @@ const math_symbols_map = {
    'dddot': 0x22EF,
    'ddots': 0x22F1,
    'defineequal': 0x225D,
-   'defineeq': 0x225D
+   'defineeq': 0x225D,
+   'downdownharpoons': 0x2965,
+   'downupharpoons': 0x296F,
+   'hateq': 0x2259,
+   'ldbrack': 0x27E6,
+   'rdbrack': 0x27E7,
+   'leadsfrom': 0x219C,
+   'leftsquigarrow': 0x21DC,
+   'lightning': 0x2607
+
  };
 
 const mathjax_asis = [ '"', "'", "`", "=" ];
