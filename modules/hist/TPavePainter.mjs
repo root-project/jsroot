@@ -337,19 +337,27 @@ class TPavePainter extends ObjectPainter {
 
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
-          nlines = 0, lines = [],
+          arr = pt.fLines.arr,
+          nlines = arr.length, lines = [],
           pp = this.getPadPainter(),
           pad_height = pp.getPadHeight(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length > 0),
-          promises = [];
+          promises = [],
+          stepy = height / (nlines || 1),
+          margin_x = pt.fMargin * width, max_font_size = 0;
+
+      // for single line (typically title) limit font size
+      if ((nlines == 1) && (pt.fTextSize > 0)) {
+         max_font_size = Math.round(pt.fTextSize * pad_height);
+         if (max_font_size < 3) max_font_size = 3;
+      }
 
       if (!text_g) text_g = this.draw_g;
 
       // first check how many text lines in the list
       pt.fLines.arr.forEach(entry => {
          if ((entry._typename == "TText") || (entry._typename == "TLatex")) {
-            nlines++; // count lines
             if ((entry.fX > 0) || (entry.fY > 0)) individual_positioning = true;
          }
       });
@@ -357,12 +365,12 @@ class TPavePainter extends ObjectPainter {
       let fast_draw = (nlines==1) && pp && pp._fast_drawing, nline = 0;
 
       // now draw TLine and TBox objects
-      pt.fLines.arr.forEach(entry => {
+      arr.forEach(entry => {
          let ytext = (nlines > 0) ? Math.round((1-(nline-0.5)/nlines)*height) : 0;
+         nline++; // just count line number
          switch (entry._typename) {
             case "TText":
             case "TLatex":
-               nline++; // just count line number
                if (individual_positioning) {
                   // each line should be drawn and scaled separately
 
@@ -405,29 +413,23 @@ class TPavePainter extends ObjectPainter {
                         .call(lineatt.func);
                } else {
                   let fillatt = this.createAttFill(entry);
-
                   text_g.append("svg:path")
                       .attr("d", `M${lx1},${ly1}H${lx2}V${ly2}H${lx1}Z`)
                       .call(fillatt.func);
                }
+               lines.push(null);
                break;
          }
       });
 
       if (!individual_positioning) {
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-         let stepy = height / nlines, margin_x = pt.fMargin * width, max_font_size = 0;
-
-         // for single line (typically title) limit font size
-         if ((nlines == 1) && (pt.fTextSize > 0)) {
-            max_font_size = Math.round(pt.fTextSize * pad_height);
-            if (max_font_size < 3) max_font_size = 3;
-         }
 
          this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
 
          for (let j = 0; j < nlines; ++j) {
             let arg = null, lj = lines[j];
+            if (!lj) continue;
 
             if (nlines == 1) {
                arg = { x: 0, y: 0, width: width, height: height };
