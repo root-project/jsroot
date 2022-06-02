@@ -11,6 +11,7 @@
 8. Support `gStyle.fHistTopMargin` (also as `&histmargin=value` URL parameter)
 9. Let save frame, title and stats properties to `gStyle` via correspondent context menus
 10. Support majority of special symbols in TMathText
+11. Fix several issues with TPaveText
 
 
 ## Changes in 7.0.2
