@@ -1383,6 +1383,7 @@ function getMethods(typename, obj) {
       m.AddText = function(txt) {
          let line = create("TLatex");
          line.fTitle = txt;
+         line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
       }
       m.Clear = function() {

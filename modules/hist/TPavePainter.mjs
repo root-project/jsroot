@@ -395,7 +395,7 @@ class TPavePainter extends ObjectPainter {
                      if (entry.fTextSize) arg.font_size = Math.round(entry.fTextSize * pad_height);
                   }
 
-                  arg.align = pt.fTextAlign;
+                  arg.align = entry.fTextAlign || pt.fTextAlign;
                   arg.draw_g = text_g;
                   arg.latex = (entry._typename == "TText" ? 0 : 1);
                   arg.text = entry.fTitle;
