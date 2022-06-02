@@ -190,7 +190,7 @@ class TPavePainter extends ObjectPainter {
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
+         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                       minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
@@ -337,7 +337,7 @@ class TPavePainter extends ObjectPainter {
 
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
-          arr = pt.fLines.arr,
+          arr = pt?.fLines?.arr || [],
           nlines = arr.length,
           pp = this.getPadPainter(),
           pad_height = pp.getPadHeight(),
@@ -354,7 +354,7 @@ class TPavePainter extends ObjectPainter {
 
       if (!text_g) text_g = this.draw_g;
 
-      let fast = (nlines==1) && pp && pp._fast_drawing, num_default = 0;
+      let fast = (nlines == 1) && pp && pp._fast_drawing, num_default = 0;
 
       for(let nline = 0; nline < nlines; ++nline) {
          let entry = arr[nline], texty = nline*stepy;
@@ -388,7 +388,7 @@ class TPavePainter extends ObjectPainter {
                   let arg = null;
 
                   if (nlines == 1) {
-                     arg = { x: 0, y: 0, width: width, height: height };
+                     arg = { x: 0, y: 0, width, height };
                   } else {
                      arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy };
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
