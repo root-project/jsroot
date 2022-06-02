@@ -430,7 +430,7 @@ class TPavePainter extends ObjectPainter {
             let arg = null, lj = lines[j];
 
             if (nlines == 1) {
-               arg = { x:0, y:0, width: width, height: height };
+               arg = { x: 0, y: 0, width: width, height: height };
             } else {
                arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
                if (lj.fTextColor) arg.color = this.getColor(lj.fTextColor);
