@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "1/06/2022";
+let version_date = "2/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1389,6 +1389,7 @@ function getMethods(typename, obj) {
       m.AddText = function(txt) {
          let line = create$1("TLatex");
          line.fTitle = txt;
+         line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
       };
       m.Clear = function() {
@@ -53527,6 +53528,10 @@ function addDragHandler(_painter, arg) {
       return change_size || change_pos;
    };
 
+   // add interactive styles when frame painter not there
+   if (_painter && !_painter.getFramePainter())
+      injectFrameStyle(_painter.draw_g);
+
    let drag_move = drag().subject(Object);
 
    drag_move
@@ -54006,6 +54011,15 @@ const TooltipHandler = {
 }; // TooltipHandler
 
 
+function injectFrameStyle(draw_g) {
+   injectStyle(`
+.jsroot rect.h1bin { stroke: #4572A7; fill: #4572A7; opacity: 0; }
+.jsroot rect.zoom { stroke: steelblue; fill-opacity: 0.1; }
+.jsroot path.zoom { stroke: steelblue; fill-opacity: 0.1; }
+.jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
+}
+
+
 const FrameInteractive = {
 
    addBasicInteractivity() {
@@ -54016,11 +54030,7 @@ const FrameInteractive = {
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
 
-      injectStyle(`
-.jsroot rect.h1bin { stroke: #4572A7; fill: #4572A7; opacity: 0; }
-.jsroot rect.zoom { stroke: steelblue; fill-opacity: 0.1; }
-.jsroot path.zoom { stroke: steelblue; fill-opacity: 0.1; }
-.jsroot svg:not(:root) { overflow: hidden; }`, this.draw_g.node());
+      injectFrameStyle(this.draw_g);
 
       let main_svg = this.draw_g.select(".main_layer");
 
@@ -60908,7 +60918,7 @@ class TPavePainter extends ObjectPainter {
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
+         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                       minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: browser$1.touches && settings.ContextMenu && this.UseContextMenu });
@@ -61055,43 +61065,38 @@ class TPavePainter extends ObjectPainter {
 
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
-          nlines = 0, lines = [],
+          arr = pt?.fLines?.arr || [],
+          nlines = arr.length,
           pp = this.getPadPainter(),
           pad_height = pp.getPadHeight(),
-          individual_positioning = false,
           draw_header = (pt.fLabel.length > 0),
-          promises = [];
+          promises = [],
+          stepy = height / (nlines || 1),
+          margin_x = pt.fMargin * width, max_font_size = 0;
+
+      // for single line (typically title) limit font size
+      if ((nlines == 1) && (pt.fTextSize > 0)) {
+         max_font_size = Math.round(pt.fTextSize * pad_height);
+         if (max_font_size < 3) max_font_size = 3;
+      }
 
       if (!text_g) text_g = this.draw_g;
 
-      // first check how many text lines in the list
-      pt.fLines.arr.forEach(entry => {
-         if ((entry._typename == "TText") || (entry._typename == "TLatex")) {
-            nlines++; // count lines
-            if ((entry.fX > 0) || (entry.fY > 0)) individual_positioning = true;
-         }
-      });
+      let fast = (nlines == 1) && pp && pp._fast_drawing, num_default = 0;
 
-      let fast_draw = (nlines==1) && pp && pp._fast_drawing, nline = 0;
+      for(let nline = 0; nline < nlines; ++nline) {
+         let entry = arr[nline], texty = nline*stepy;
 
-      // now draw TLine and TBox objects
-      pt.fLines.arr.forEach(entry => {
-         let ytext = (nlines > 0) ? Math.round((1-(nline-0.5)/nlines)*height) : 0;
-         switch (entry._typename) {
-            case "TText":
-            case "TLatex":
-               nline++; // just count line number
-               if (individual_positioning) {
-                  // each line should be drawn and scaled separately
-
-                  let lx = entry.fX, ly = entry.fY;
-
-                  lx = ((lx > 0) && (lx < 1)) ? Math.round(lx*width) : pt.fMargin * width;
-                  ly = ((ly > 0) && (ly < 1)) ? Math.round((1-ly)*height) : ytext;
-
-                  let jcolor = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
-                  if (!jcolor) {
-                     jcolor = tcolor;
+         switch(entry._typename) {
+            case 'TText':
+            case 'TLatex':
+               if (entry.fX || entry.fY) {
+                  // individual positioning
+                  let x = entry.fX ? entry.fX*width : margin_x,
+                      y = entry.fY ? (1 - entry.fY)*height : texty,
+                      color = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
+                  if (!color) {
+                     color = tcolor;
                      this.UseTextColor = true;
                   }
 
@@ -61099,72 +61104,61 @@ class TPavePainter extends ObjectPainter {
 
                   this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
 
-                  this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
-                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
+                  this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x, y, text: entry.fTitle, color,
+                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
-                  lines.push(entry); // make as before
+                  // default position
+                  if (num_default++ === 0)
+                     this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
+
+                  let arg = null;
+
+                  if (nlines == 1) {
+                     arg = { x: 0, y: 0, width, height };
+                  } else {
+                     arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy };
+                     if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
+                     if (entry.fTextSize) arg.font_size = Math.round(entry.fTextSize * pad_height);
+                  }
+
+                  arg.align = entry.fTextAlign || pt.fTextAlign;
+                  arg.draw_g = text_g;
+                  arg.latex = (entry._typename == "TText" ? 0 : 1);
+                  arg.text = entry.fTitle;
+                  arg.fast = fast;
+                  if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
+                  this.drawText(arg);
                }
                break;
-            case "TLine":
-            case "TBox":
-               let lx1 = entry.fX1, lx2 = entry.fX2,
-                   ly1 = entry.fY1, ly2 = entry.fY2;
-               if (lx1!==0) lx1 = Math.round(lx1*width);
-               lx2 = lx2 ? Math.round(lx2*width) : width;
-               ly1 = ly1 ? Math.round((1-ly1)*height) : ytext;
-               ly2 = ly2 ? Math.round((1-ly2)*height) : ytext;
 
-               if (entry._typename == "TLine") {
-                  let lineatt = new TAttLineHandler(entry);
-                  text_g.append("svg:path")
-                        .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
-                        .call(lineatt.func);
-               } else {
-                  let fillatt = this.createAttFill(entry);
+            case 'TLine':
+               let lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
+                   lx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
+                   ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
+                   ly2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy*0.5);
+               let lineatt = new TAttLineHandler(entry);
+               text_g.append("svg:path")
+                     .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
+                     .call(lineatt.func);
+               break;
 
-                  text_g.append("svg:path")
-                      .attr("d", `M${lx1},${ly1}H${lx2}V${ly2}H${lx1}Z`)
-                      .call(fillatt.func);
-               }
+            case 'TBox':
+               let bx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
+                   bx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
+                   by1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty),
+                   by2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy);
+               let fillatt = this.createAttFill(entry);
+               text_g.append("svg:path")
+                     .attr("d", `M${bx1},${by1}H${bx2}V${by2}H${bx1}Z`)
+                     .call(fillatt.func);
                break;
          }
-      });
-
-      if (!individual_positioning) {
-         // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-         let stepy = height / nlines, margin_x = pt.fMargin * width, max_font_size = 0;
-
-         // for single line (typically title) limit font size
-         if ((nlines == 1) && (pt.fTextSize > 0)) {
-            max_font_size = Math.round(pt.fTextSize * pad_height);
-            if (max_font_size < 3) max_font_size = 3;
-         }
-
-         this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
-
-         for (let j = 0; j < nlines; ++j) {
-            let arg = null, lj = lines[j];
-
-            if (nlines == 1) {
-               arg = { x:0, y:0, width: width, height: height };
-            } else {
-               arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
-               if (lj.fTextColor) arg.color = this.getColor(lj.fTextColor);
-               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize * pad_height);
-            }
-
-            arg.align = pt.fTextAlign;
-            arg.draw_g = text_g;
-            arg.latex = (lj._typename == "TText" ? 0 : 1);
-            arg.text = lj.fTitle;
-            arg.fast = fast_draw;
-            if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
-            this.drawText(arg);
-         }
-         promises.push(this.finishTextDrawing(text_g, nlines > 1));
       }
+
+      if (num_default > 0)
+         promises.push(this.finishTextDrawing(text_g, num_default > 1));
 
       if (draw_header) {
          let x = Math.round(width*0.25),
@@ -61187,7 +61181,7 @@ class TPavePainter extends ObjectPainter {
          this.UseTextColor = true;
       }
 
-      return Promise.all(promises).then(() => { return this; });
+      return Promise.all(promises).then(() => this);
    }
 
    /** @summary Method used to convert value to string according specified format
