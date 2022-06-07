@@ -45644,7 +45644,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Produce svg path for axis ticks */
    produceTicksPath(handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
-      let res = "", res2 = "", lastpos = 0, lasth = 0;
+      let res = "", res2 = "";
       this.ticks = [];
 
       while (handle.next(true)) {
@@ -45667,22 +45667,13 @@ class TAxisPainter extends ObjectPainter {
             h2 = -h1; h1 = 0;
          }
 
-         if (res.length == 0) {
-            res = this.vertical ? `M${h1},${handle.grpos}` : `M${handle.grpos},${-h1}`;
-            res2 = this.vertical ? `M${secondShift-h1},${handle.grpos}` : `M${handle.grpos},${secondShift+h1}`;
-         } else {
-            res += this.vertical ? `m${h1-lasth},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${lasth-h1}`;
-            res2 += this.vertical ? `m${lasth-h1},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${h1-lasth}`;
-         }
+         res += this.vertical ? `M${h1},${handle.grpos}H${h2}` : `M${handle.grpos},${-h1}V${-h2}`;
 
-         res += this.vertical ? `h${h2-h1}` : `v${h1-h2}`;
-         res2 += this.vertical ? `h${h1-h2}` : `v${h2-h1}`;
-
-         lastpos = handle.grpos;
-         lasth = h2;
+         if (secondShift)
+            res2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
       }
 
-      if (secondShift !== 0) res += res2;
+      if (secondShift) res += res2;
 
       return real_draw ? res  : "";
    }
@@ -45902,9 +45893,13 @@ class TAxisPainter extends ObjectPainter {
       if (is_gaxis && axis.TestBit(EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(EAxisBits.kTickMinus)) optionMinus = true;
 
-      if (optionPlus && optionMinus) { side = 1; ticksPlusMinus = 1; } else
-      if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
-      if (optionPlus) { side = (swap_side ^ vertical) ? -1 : 1; }
+      if (optionPlus && optionMinus) {
+         side = 1; ticksPlusMinus = 1;
+      } else if (optionMinus) {
+         side = (swap_side ^ vertical) ? 1 : -1;
+      } else if (optionPlus) {
+         side = (swap_side ^ vertical) ? -1 : 1;
+      }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
@@ -97027,7 +97022,7 @@ class RAxisPainter extends RObjectPainter {
 
       this.handle.reset();
 
-      let res = "", ticks_plusminus = 0, lastpos = 0, lasth = 0;
+      let res = "", ticks_plusminus = 0;
       if (this.ticksSide == "both") {
          side = 1;
          ticks_plusminus = 1;
@@ -97051,19 +97046,15 @@ class RAxisPainter extends RObjectPainter {
             if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
          }
 
-         if (ticks_plusminus > 0) h2 = -h1; else
-         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
-
-         if (res.length == 0) {
-            res = this.vertical ? "M"+h1+","+grpos : "M"+grpos+","+(-h1);
+         if (ticks_plusminus > 0) {
+            h2 = -h1;
+         } else if (side < 0) {
+            h2 = -h1; h1 = 0;
          } else {
-            res += this.vertical ? "m"+(h1-lasth)+","+(grpos-lastpos) : "m"+(grpos-lastpos)+","+(lasth-h1);
+            h2 = 0;
          }
 
-         res += this.vertical ? "h"+ (h2-h1) : "v"+ (h1-h2);
-
-         lastpos = grpos;
-         lasth = h2;
+         res += this.vertical ? `M${h1},${grpos}H${h2}` : `M${grpos},${-h1}V${-h2}`;
       }
 
       if (res)
