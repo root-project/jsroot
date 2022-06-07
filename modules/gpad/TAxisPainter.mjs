@@ -867,11 +867,7 @@ class TAxisPainter extends ObjectPainter {
             h2 = -h1; h1 = 0;
          }
 
-         if (!res)
-            res = this.vertical ? `M${h1},${handle.grpos}` : `M${handle.grpos},${-h1}`;
-         else
-            res += this.vertical ? `m${h1-lasth},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${lasth-h1}`;
-         res += this.vertical ? `h${h2-h1}` : `v${h1-h2}`;
+         res += this.vertical ? `M${h1},${handle.grpos}H${h2}` : `M${handle.grpos},${-h1}V${-h2}`;
 
          if (secondShift)
             res2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
