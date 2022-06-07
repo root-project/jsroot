@@ -697,7 +697,7 @@ class TAxisPainter extends ObjectPainter {
             }
 
             // for order==0 we should virtually remove "0." and extra label on top
-            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+            if (!order && (this.ndig < 4)) totallen -= (handle.major.length*2+3);
 
             if (totallen < bestlen) {
                bestlen = totallen;
@@ -791,8 +791,8 @@ class TAxisPainter extends ObjectPainter {
                acc_x += evnt.dx;
                acc_y += evnt.dy;
 
-               let set_x, set_y,
-                   p = vertical ? acc_y : acc_x, besti = 0;
+               let set_x, set_y, besti = 0,
+                   p = vertical ? acc_y : acc_x;
 
                for (let i=1; i<3; ++i)
                   if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
@@ -807,7 +807,7 @@ class TAxisPainter extends ObjectPainter {
 
                if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
                   new_x = set_x; new_y = set_y; curr_indx = besti;
-                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+                  title_g.attr('transform', `translate(${new_x},${new_y})`);
                }
 
           }).on("end", evnt => {
