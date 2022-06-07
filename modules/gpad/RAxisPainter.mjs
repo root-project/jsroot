@@ -574,7 +574,7 @@ class RAxisPainter extends RObjectPainter {
 
       this.handle.reset();
 
-      let res = "", ticks_plusminus = 0, lastpos = 0, lasth = 0;
+      let res = "", ticks_plusminus = 0;
       if (this.ticksSide == "both") {
          side = 1;
          ticks_plusminus = 1;
@@ -607,9 +607,6 @@ class RAxisPainter extends RObjectPainter {
          }
 
          res += this.vertical ? `M${h1},${grpos}H${h2}` : `M${grpos},${-h1}V${-h2}`;
-
-         lastpos = grpos;
-         lasth = h2;
       }
 
       if (res)

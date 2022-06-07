@@ -844,7 +844,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Produce svg path for axis ticks */
    produceTicksPath(handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
-      let res = "", res2 = "", lastpos = 0, lasth = 0;
+      let res = "", res2 = "";
       this.ticks = [];
 
       while (handle.next(true)) {
@@ -871,9 +871,6 @@ class TAxisPainter extends ObjectPainter {
 
          if (secondShift)
             res2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
-
-         lastpos = handle.grpos;
-         lasth = h2;
       }
 
       if (secondShift) res += res2;
