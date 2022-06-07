@@ -943,7 +943,7 @@ class TGraphPainter extends ObjectPainter {
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.getTooltips(d),
-                  rect: best, d3bin: findbin  };
+                  rect: best, d3bin: findbin };
 
        res.user_info = { obj: gr,  name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
@@ -1469,7 +1469,7 @@ class TGraphPainter extends ObjectPainter {
 
       let graph = this.getObject();
 
-      if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
+      if (indx >= (graph?.fFunctions?.arr?.length || 0))
          return Promise.resolve(this);
 
       let pp = this.getPadPainter(),
