@@ -598,16 +598,15 @@ class RAxisPainter extends RObjectPainter {
             if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
          }
 
-         if (ticks_plusminus > 0) h2 = -h1; else
-         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
-
-         if (res.length == 0) {
-            res = this.vertical ? "M"+h1+","+grpos : "M"+grpos+","+(-h1);
+         if (ticks_plusminus > 0) {
+            h2 = -h1;
+         } else if (side < 0) {
+            h2 = -h1; h1 = 0;
          } else {
-            res += this.vertical ? "m"+(h1-lasth)+","+(grpos-lastpos) : "m"+(grpos-lastpos)+","+(lasth-h1);
+            h2 = 0;
          }
 
-         res += this.vertical ? "h"+ (h2-h1) : "v"+ (h1-h2);
+         res += this.vertical ? `M${h1},${grpos}H${h2}` : `M${grpos},${-h1}V${-h2}`;
 
          lastpos = grpos;
          lasth = h2;
