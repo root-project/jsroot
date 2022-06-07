@@ -867,22 +867,20 @@ class TAxisPainter extends ObjectPainter {
             h2 = -h1; h1 = 0;
          }
 
-         if (res.length == 0) {
+         if (!res)
             res = this.vertical ? `M${h1},${handle.grpos}` : `M${handle.grpos},${-h1}`;
-            res2 = this.vertical ? `M${secondShift-h1},${handle.grpos}` : `M${handle.grpos},${secondShift+h1}`;
-         } else {
+         else
             res += this.vertical ? `m${h1-lasth},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${lasth-h1}`;
-            res2 += this.vertical ? `m${lasth-h1},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${h1-lasth}`;
-         }
-
          res += this.vertical ? `h${h2-h1}` : `v${h1-h2}`;
-         res2 += this.vertical ? `h${h1-h2}` : `v${h2-h1}`;
+
+         if (secondShift)
+            res2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
 
          lastpos = handle.grpos;
          lasth = h2;
       }
 
-      if (secondShift !== 0) res += res2;
+      if (secondShift) res += res2;
 
       return real_draw ? res  : "";
    }
@@ -1102,9 +1100,13 @@ class TAxisPainter extends ObjectPainter {
       if (is_gaxis && axis.TestBit(EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(EAxisBits.kTickMinus)) optionMinus = true;
 
-      if (optionPlus && optionMinus) { side = 1; ticksPlusMinus = 1; } else
-      if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
-      if (optionPlus) { side = (swap_side ^ vertical) ? -1 : 1; }
+      if (optionPlus && optionMinus) {
+         side = 1; ticksPlusMinus = 1;
+      } else if (optionMinus) {
+         side = (swap_side ^ vertical) ? 1 : -1;
+      } else if (optionPlus) {
+         side = (swap_side ^ vertical) ? -1 : 1;
+      }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
