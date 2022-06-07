@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "2/06/2022";
+let version_date = "7/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -64331,9 +64331,11 @@ class TH1Painter$2 extends THistPainter {
          value = histo.getBinContent(i + 1);
          hsum += profile ? histo.fBinEntries[i + 1] : value;
 
-         if ((i<left) || (i>=right)) continue;
+         if ((i < left) || (i >= right))
+            continue;
 
-         if ((value > 0) && ((hmin_nz == 0) || (value < hmin_nz))) hmin_nz = value;
+         if ((value > 0) && ((hmin_nz == 0) || (value < hmin_nz)))
+            hmin_nz = value;
 
          if (first) {
             hmin = hmax = value;
@@ -64367,9 +64369,13 @@ class TH1Painter$2 extends THistPainter {
 
       if (this.draw_content) {
          if (hmin >= hmax) {
-            if (hmin == 0) { this.ymin = 0; this.ymax = 1; }
-            else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-            else { this.ymin = 0; this.ymax = hmin * 2; }
+            if (hmin == 0) {
+               this.ymin = 0; this.ymax = 1;
+            } else if (hmin < 0) {
+               this.ymin = 2 * hmin; this.ymax = 0;
+            } else {
+               this.ymin = 0; this.ymax = hmin * 2;
+            }
          } else {
             let dy = (hmax - hmin) * gStyle.fHistTopMargin;
             this.ymin = hmin - dy;
@@ -64936,8 +64942,8 @@ class TH1Painter$2 extends THistPainter {
             }
             // end of use_minmax
          } else if ((gry !== curry) || lastbin) {
-            if (grx !== currx) res += "h"+(grx-currx);
-            if (gry !== curry) res += "v"+(gry-curry);
+            if (grx !== currx) res += `h${grx-currx}`;
+            if (gry !== curry) res += `v${gry-curry}`;
             curry = gry;
             currx = grx;
          }
@@ -65186,12 +65192,14 @@ class TH1Painter$2 extends THistPainter {
 
       if (findbin !== null) {
          // if bin on boundary found, check that x position is ok
-         if ((findbin === left) && (grx1 > pnt_x + gapx))  findbin = null; else
-         if ((findbin === right-1) && (grx2 < pnt_x - gapx)) findbin = null; else
-         // if bars option used check that bar is not match
-         if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
-         // exclude empty bin if empty bins suppressed
-         if (!this.options.Zero && (histo.getBinContent(findbin+1)===0)) findbin = null;
+         if ((findbin === left) && (grx1 > pnt_x + gapx))
+            findbin = null;
+         else if ((findbin === right-1) && (grx2 < pnt_x - gapx))
+            findbin = null;
+         else if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx))
+            findbin = null; // if bars option used check that bar is not match
+         else if (!this.options.Zero && (histo.getBinContent(findbin+1) === 0))
+            findbin = null; // exclude empty bin if empty bins suppressed
       }
 
       let ttrect = this.draw_g.select(".tooltip_bin");
@@ -65342,7 +65350,8 @@ class TH1Painter$2 extends THistPainter {
    autoZoom() {
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 1),
-          dist = right - left, histo = this.getHisto();
+          dist = right - left,
+          histo = this.getHisto();
 
       if ((dist == 0) || !histo) return;
 
@@ -65368,9 +65377,9 @@ class TH1Painter$2 extends THistPainter {
    canZoomInside(axis,min,max) {
       let histo = this.getHisto();
 
-      if ((axis=="x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
+      if ((axis == "x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
 
-      if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis == "y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
       return false;
    }
@@ -90114,7 +90123,7 @@ class TGraphPainter$1 extends ObjectPainter {
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.getTooltips(d),
-                  rect: best, d3bin: findbin  };
+                  rect: best, d3bin: findbin };
 
        res.user_info = { obj: gr,  name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
@@ -90640,7 +90649,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       let graph = this.getObject();
 
-      if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
+      if (indx >= (graph?.fFunctions?.arr?.length || 0))
          return Promise.resolve(this);
 
       let pp = this.getPadPainter(),
