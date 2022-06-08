@@ -1252,7 +1252,6 @@ class TGraphPainter extends ObjectPainter {
       let exec = "";
 
       if (this.move_binindx === undefined) {
-
          this.draw_g.attr("transform", null);
 
          let pmain = this.getFramePainter(),
@@ -1262,16 +1261,16 @@ class TGraphPainter extends ObjectPainter {
                let bin = this.bins[k];
                bin.x = funcs.revertAxis("x", funcs.grx(bin.x) + this.pos_dx);
                bin.y = funcs.revertAxis("y", funcs.gry(bin.y) + this.pos_dy);
-               exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
+               exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
                if ((bin.indx == 0) && this.matchObjectType('TCutG'))
-                  exec += "SetPoint(" + (this.getObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
+                  exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
             }
             this.drawGraph();
          }
       } else {
-         exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+         exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
          if ((this.move_bin.indx == 0) && this.matchObjectType('TCutG'))
-            exec += ";;SetPoint(" + (this.getObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+            exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
          delete this.move_binindx;
       }
 
@@ -1382,7 +1381,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Find TF1/TF2 in TGraph list of functions */
    findFunc() {
       let gr = this.getObject();
-      if (gr && gr.fFunctions)
+      if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
@@ -1393,12 +1392,11 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Find stat box in TGraph list of functions */
    findStat() {
       let gr = this.getObject();
-      if (gr && gr.fFunctions)
+      if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
          }
-
       return null;
    }
 
@@ -1418,13 +1416,10 @@ class TGraphPainter extends ObjectPainter {
 
       this.create_stats = true;
 
-      let st = gStyle;
+      const st = gStyle;
 
       stats = create('TPaveStats');
-      Object.assign(stats, { fName : 'stats',
-                             fOptStat: 0,
-                             fOptFit: st.fOptFit || 111,
-                             fBorderSize : 1} );
+      Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;

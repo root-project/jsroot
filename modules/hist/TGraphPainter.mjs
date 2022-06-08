@@ -6,6 +6,8 @@ import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
 
 class TGraphPainter extends TGraphPainter2D {
 
+   /** @summary Draw TGraph points in 3D
+     * @private */
    drawBins3D(fp, graph) {
 
       if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
@@ -45,13 +47,13 @@ class TGraphPainter extends TGraphPainter2D {
      * @private */
    drawAxisHisto() {
       let histo = this.createHistogram();
-      return TH1Painter.draw(this.getDom(), histo, this.options.Axis)
+      return TH1Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
    static draw(dom, graph, opt) {
       return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }
 
-}
+} // class TGraphPainter
 
 export { TGraphPainter };
