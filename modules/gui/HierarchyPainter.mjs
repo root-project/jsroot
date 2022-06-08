@@ -1667,7 +1667,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Fills settings menu items
      * @private */
    fillSettingsMenu(menu, alone) {
-      menu.addSettingsMenu(alone, arg => {
+      menu.addSettingsMenu(true, alone, arg => {
          if (arg == "refresh") {
             this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
             this.refreshHtml();
@@ -1676,9 +1676,9 @@ class HierarchyPainter extends BasePainter {
                this.brlayout.createStyle();
             if (this.disp)
                this.disp.forEachFrame(frame => {
-                  let canvp = getElementCanvPainter(frame),
-                      svg = canvp ? canvp.getCanvSvg() : null;
-                  if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+                  let canvp = getElementCanvPainter(frame);
+                  if (typeof canvp?.changeDarkMode == 'function')
+                     canvp.changeDarkMode();
                });
          }
       });

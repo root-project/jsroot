@@ -1028,7 +1028,7 @@ class TPadPainter extends ObjectPainter {
          }, "Store pad fill attributes, grid, tick and log scale settings to gStyle");
 
          if (this.iscan)
-            menu.addSettingsMenu(false, arg => {
+            menu.addSettingsMenu(false, false, arg => {
                if (arg == "dark") this.changeDarkMode();
             });
       }
