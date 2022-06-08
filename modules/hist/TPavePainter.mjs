@@ -226,7 +226,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary draw TPaveLabel object */
    drawPaveLabel(width, height) {
       let pave = this.getObject();
-      if (!pave.fLabel)
+      if (!pave.fLabel || !pave.fLabel.trim())
          return Promise.resolve(this);
 
       this.UseTextColor = true;
@@ -365,7 +365,7 @@ class TPavePainter extends ObjectPainter {
          switch(entry._typename) {
             case 'TText':
             case 'TLatex':
-               if (!entry.fTitle) continue;
+               if (!entry.fTitle || !entry.fTitle.trim()) continue;
 
                if (entry.fX || entry.fY) {
                   // individual positioning
