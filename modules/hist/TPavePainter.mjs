@@ -1047,9 +1047,9 @@ class TPavePainter extends ObjectPainter {
 
       // adjust the size of the stats box with the number of lines
       let nlines = pave.fLines.arr.length,
-          stath = nlines * gStyle.StatFontSize;
-      if ((stath <= 0) || (gStyle.StatFont % 10 === 3)) {
-         stath = 0.25 * nlines * gStyle.StatH;
+          stath = nlines * gStyle.fStatFontSize;
+      if ((stath <= 0) || (gStyle.fStatFont % 10 === 3)) {
+         stath = 0.25 * nlines * gStyle.fStatH;
          pave.fY1NDC = pave.fY2NDC - stath;
       }
 
