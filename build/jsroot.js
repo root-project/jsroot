@@ -58664,7 +58664,7 @@ class TPadPainter extends ObjectPainter {
            .style("bottom", 0);
       }
 
-      svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+      svg.style("filter", settings.DarkMode || this.pad?.$dark ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
@@ -59143,9 +59143,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Changes canvas dark mode
      * @private */
    changeDarkMode(mode) {
-      if (mode === undefined)
-         mode = settings.DarkMode;
-      this.getCanvSvg().style("filter", mode ? "invert(100%)" : null);
+      this.getCanvSvg().style("filter", (mode ?? settings.DarkMode) ? "invert(100%)" : null);
    }
 
    /** @summary Fill pad context menu
@@ -60964,14 +60962,12 @@ function ensureTCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
 
    // simple check - if canvas there, can use painter
-   let svg_c = painter.getCanvSvg(),
-       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
-       pr = Promise.resolve(true);
+   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+       promise = painter.getCanvSvg().empty()
+                 ? TCanvasPainter.draw(painter.getDom(), null, noframe)
+                 : Promise.resolve(true);
 
-   if (svg_c.empty())
-      pr = TCanvasPainter.draw(painter.getDom(), null, noframe);
-
-   return pr.then(() => {
+   return promise.then(() => {
       if ((frame_kind !== false) &&  painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
          directDrawTFrame(painter.getDom(), null, frame_kind);
 
@@ -64514,7 +64510,7 @@ class THistPainter extends ObjectPainter {
       if (handle.kind === 'time')
          return funcs.axisAsText(name, (x1+x2)/2);
 
-      return "[" + funcs.axisAsText(name, x1) + ", " + funcs.axisAsText(name, x2) + ")";
+      return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
    }
 
    /** @summary generic draw function for histograms
@@ -99031,7 +99027,7 @@ class RPadPainter extends RObjectPainter {
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
          svg.style("display", "none");
-         console.warn("Hide canvas while geometry too small w=",rect.width," h=",rect.height);
+         console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
          svg.style("display", null);
@@ -99325,6 +99321,12 @@ class RPadPainter extends RObjectPainter {
       return hints;
    }
 
+   /** @summary Changes canvas dark mode
+     * @private */
+   changeDarkMode(mode) {
+      this.getCanvSvg().style("filter", (mode ?? settings.DarkMode)  ? "invert(100%)" : null);
+   }
+
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
@@ -99336,8 +99338,13 @@ class RPadPainter extends RObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
 
-      if (!this._websocket)
+      if (!this._websocket) {
          menu.addAttributesMenu(this);
+         if (this.iscan)
+            menu.addSettingsMenu(false, false, arg => {
+               if (arg == "dark") this.changeDarkMode();
+            });
+      }
 
       menu.add("separator");
 
