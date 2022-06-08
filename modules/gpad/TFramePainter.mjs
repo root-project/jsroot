@@ -1,22 +1,13 @@
-/// TCanvas painting
-
 import { gStyle, settings, isBatchMode, browser } from '../core.mjs';
-
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
-
 import { getActivePad, ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
-
 import { EAxisBits, TAxisPainter } from './TAxisPainter.mjs';
-
 import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
-
 import { FontHandler } from '../base/FontHandler.mjs';
-
 import { createMenu, closeMenu } from '../gui/menu.mjs';
-
 import { detectRightButton, injectStyle } from '../gui/utils.mjs';
+
 
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;

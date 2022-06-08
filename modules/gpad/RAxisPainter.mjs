@@ -1,17 +1,13 @@
 import { settings, isBatchMode } from '../core.mjs';
-
 import { select as d3_select, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
-
 import { AxisPainterMethods, chooseTimeFormat } from './TAxisPainter.mjs';
-
 import { createMenu } from '../gui/menu.mjs';
-
 import { addDragHandler } from './TFramePainter.mjs';
-
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
+
 
 /**
  * @summary Axis painter for v7

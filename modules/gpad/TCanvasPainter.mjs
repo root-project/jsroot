@@ -1,19 +1,10 @@
-/// TCanvas painting
-
 import { BIT, settings, create, parse, toJSON, isBatchMode } from '../core.mjs';
-
 import { select as d3_select } from '../d3.mjs';
-
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons } from '../gui/utils.mjs';
-
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
-
 import { cleanup, resize, selectActivePad } from '../base/ObjectPainter.mjs';
-
 import { TAxisPainter } from './TAxisPainter.mjs';
-
 import { TFramePainter } from './TFramePainter.mjs';
-
 import { TPadPainter } from './TPadPainter.mjs';
 
 

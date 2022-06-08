@@ -1,7 +1,6 @@
-
 import { select as d3_select } from '../d3.mjs';
-
 import { settings, internals, isNodeJs } from '../core.mjs';
+
 
 /** @summary Returns visible rect of element
   * @param {object} elem - d3.select object with element

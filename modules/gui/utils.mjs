@@ -1,11 +1,8 @@
-
 import { settings, isBatchMode, source_dir } from '../core.mjs';
-
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
-
 import { BasePainter } from '../base/BasePainter.mjs';
-
 import { resize } from '../base/ObjectPainter.mjs';
+
 
 /** @summary Display progress message in the left bottom corner.
   * @desc Previous message will be overwritten

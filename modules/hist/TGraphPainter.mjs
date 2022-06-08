@@ -1,8 +1,7 @@
 import { TGraphPainter as TGraphPainter2D } from '../hist2d/TGraphPainter.mjs';
-
 import { TH1Painter } from './TH1Painter.mjs';
-
 import { createLineSegments, create3DLineMaterial } from '../base/base3d.mjs';
+
 
 class TGraphPainter extends TGraphPainter2D {
 

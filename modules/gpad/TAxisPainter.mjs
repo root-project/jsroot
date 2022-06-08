@@ -1,16 +1,11 @@
-/// TCanvas painting
-
 import { gStyle, BIT, settings, constants, isBatchMode } from '../core.mjs';
-
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
-
 import { floatToString } from '../base/BasePainter.mjs';
-
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { FontHandler } from '../base/FontHandler.mjs';
+
 
 const EAxisBits = {
    kDecimals: BIT(7),

@@ -1,13 +1,8 @@
 import { BIT, create, createHistogram } from '../core.mjs';
-
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { TGraphPainter } from '../hist2d/TGraphPainter.mjs';
-
 import { TF1Painter } from '../hist/TF1Painter.mjs';
-
 import { TH2Painter } from '../hist2d/TH2Painter.mjs';
-
 import { getTEfficiencyBoundaryFunc } from '../base/math.mjs';
 
 

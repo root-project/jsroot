@@ -1,12 +1,10 @@
-/// Basic functions for work with TGeo classes
-
 import { FrontSide, Object3D, Box3, Mesh, Vector2, Vector3, Matrix4,
          MeshLambertMaterial, Color,
          PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
-
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
+
 
 function JSROOT_BIT(n) { return 1 << n; }
 

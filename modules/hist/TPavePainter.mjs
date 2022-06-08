@@ -1,23 +1,13 @@
 import { gStyle, browser, settings, clone, create, isBatchMode } from '../core.mjs';
-
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
-
 import { Prob } from '../base/math.mjs';
-
 import { floatToString } from '../base/BasePainter.mjs';
-
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
-
 import { createMenu } from '../gui/menu.mjs';
-
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
-
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
-
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 /**
@@ -1260,7 +1250,7 @@ function produceLegend(dom, opt) {
 
    // no entries - no need to draw legend
    let szx = 0.4, szy = leg.fPrimitives.arr.length;
-   if (!szy) return;
+   if (!szy) return Promise.resolve(null);
    if (szy > 8) szy = 8;
    szy *= 0.1;
 

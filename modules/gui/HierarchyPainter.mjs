@@ -1,25 +1,15 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from '../core.mjs';
-
 import { select as d3_select } from '../d3.mjs';
-
 import { openFile } from '../io.mjs';
-
 import { getRGBfromTColor } from '../base/colors.mjs';
-
 import { BasePainter, getElementRect, _loadJSDOM } from '../base/BasePainter.mjs';
-
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { createMenu } from './menu.mjs';
-
 import { produceLegend } from '../hist/TPavePainter.mjs';
-
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
-
 import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
-
 import { showProgress, ToolbarIcons, registerForResize, injectStyle } from './utils.mjs';
 
 function injectHStyle(node) {

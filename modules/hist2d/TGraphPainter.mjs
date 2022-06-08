@@ -1,17 +1,10 @@
 import { gStyle, BIT, settings, create, createHistogram, isBatchMode } from '../core.mjs';
-
 import { select as d3_select } from '../d3.mjs';
-
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
-
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-
 import { TH1Painter } from './TH1Painter.mjs';
-
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-
 import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
-
 import { addMoveHandler } from '../gui/utils.mjs';
 
 

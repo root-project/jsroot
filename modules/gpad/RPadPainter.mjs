@@ -1,23 +1,14 @@
-import { gStyle, settings, constants, internals,
-         addMethods, isPromise, isBatchMode } from '../core.mjs';
-
+import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
-
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
-
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
-
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
-
 import { selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
-
 import { registerForResize } from '../gui/utils.mjs';
-
 import { BrowserLayout } from '../gui/display.mjs';
-
 import { createMenu, closeMenu } from '../gui/menu.mjs';
-
 import { PadButtonsHandler } from './TPadPainter.mjs';
+
 
 /**
  * @summary Painter class for RPad
