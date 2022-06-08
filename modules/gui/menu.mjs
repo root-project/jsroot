@@ -1,6 +1,6 @@
 import { loadScript, source_dir, settings, gStyle, internals } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select, color as d3_color } from '../d3.mjs';
-import { injectStyle, selectgStyle } from './utils.mjs';
+import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle } from './utils.mjs';
 import { getColor, getRootColors } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
@@ -731,6 +731,91 @@ class JSRootMenu {
       this.add("endsub:");
 
       this.add("endsub:");
+   }
+
+   /** @summary Fill menu to edit settings properties
+     * @private */
+   addSettingsMenu(alone, handle_func) {
+      if (alone)
+         this.add("header:Settings");
+      else
+         this.add("sub:Settings");
+
+      this.add("sub:Files");
+
+      this.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
+         settings.OnlyLastCycle = flag;
+         if (handle_func) handle_func("refresh");
+      });
+
+      this.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
+         settings.SkipStreamerInfos = !flag;
+         if (handle_func) handle_func("refresh");
+      });
+
+      this.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+
+      this.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
+
+      this.add("endsub:");
+
+      this.add("sub:Toolbar");
+      this.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
+      this.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
+      this.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
+      this.add("separator");
+      this.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
+      this.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
+      this.add("endsub:");
+
+      this.add("sub:Interactive");
+      this.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
+      this.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
+      this.add("sub:Zooming");
+      this.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
+      this.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
+      this.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
+      this.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
+      this.add("endsub:");
+      this.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
+      this.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
+      this.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      this.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
+      this.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
+      this.add("endsub:");
+
+      this.add("sub:Drawing");
+      this.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => { settings.OptimizeDraw = value; });
+      this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
+      this.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
+      this.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => { settings.Latex = value; });
+      this.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => { settings.Render3D = value; });
+      this.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => { settings.Embed3D = value; });
+
+      this.add("endsub:");
+
+      this.add("sub:Geometry");
+      this.add("Grad per segment:  " + settings.GeoGradPerSegm, () => this.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
+      this.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
+      this.add("endsub:");
+
+      this.add("Hierarchy limit:  " + settings.HierarchyLimit, () => this.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
+      this.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => {
+         settings.DarkMode = !settings.DarkMode;
+         if (handle_func) handle_func("dark");
+      });
+
+      this.addgStyleMenu();
+
+      this.add("separator");
+
+      this.add("Save settings", () => {
+         let promise = readSettings(true) ? Promise.resolve(true) : this.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
+         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
+      }, "Store settings and gStyle as cookies");
+      this.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); }, "Delete settings and gStyle from cookies");
+
+      if (!alone) this.add("endsub:");
    }
 
    /** @summary Run modal dialog

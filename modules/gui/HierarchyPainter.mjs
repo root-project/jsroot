@@ -113,71 +113,6 @@ ${img("tf2",16,"png","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAAL
 `, node);
 }
 
-function saveCookie(obj, expires, name) {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
-       d = new Date();
-   d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
-   document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
-}
-
-function readCookie(name) {
-   if (typeof document == 'undefined') return null;
-   let decodedCookie = decodeURIComponent(document.cookie),
-       ca = decodedCookie.split(';');
-   name += "=";
-   for(let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ')
-        c = c.substring(1);
-      if (c.indexOf(name) == 0) {
-         let s = JSON.parse(atob(c.substring(name.length, c.length)));
-
-         return (s && typeof s == 'object') ? s : null;
-      }
-   }
-   return null;
-}
-
-/** @summary Save JSROOT settings as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveSettings(expires = 365, name = "jsroot_settings") {
-   saveCookie(settings, expires, name);
-}
-
-/** @summary Read JSROOT settings from specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readSettings(only_check = false, name = "jsroot_settings") {
-   let s = readCookie(name);
-   if (!s) return false;
-   if (!only_check)
-      Object.assign(settings, s);
-   return true;
-}
-
-/** @summary Save JSROOT gStyle object as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveStyle(expires = 365, name = "jsroot_style") {
-   saveCookie(gStyle, expires, name);
-}
-
-/** @summary Read JSROOT gStyle object specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readStyle(only_check = false, name = "jsroot_style") {
-   let s = readCookie(name);
-   if (!s) return false;
-   if (!only_check)
-      Object.assign(gStyle, s);
-   return true;
-}
-
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -1732,108 +1667,27 @@ class HierarchyPainter extends BasePainter {
    /** @summary Fills settings menu items
      * @private */
    fillSettingsMenu(menu, alone) {
-      if (alone)
-         menu.add("header:Settings");
-      else
-         menu.add("sub:Settings");
-
-      menu.add("sub:Files");
-
-      menu.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
-         settings.OnlyLastCycle = flag;
-         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
-         this.refreshHtml();
+      menu.addSettingsMenu(alone, arg => {
+         if (arg == "refresh") {
+            this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+            this.refreshHtml();
+         } else if (arg == "dark") {
+            if (this.brlayout)
+               this.brlayout.createStyle();
+            if (this.disp)
+               this.disp.forEachFrame(frame => {
+                  let canvp = getElementCanvPainter(frame),
+                      svg = canvp ? canvp.getCanvSvg() : null;
+                  if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+               });
+         }
       });
-
-      menu.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
-         settings.SkipStreamerInfos = !flag;
-         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
-         this.refreshHtml();
-      });
-
-      menu.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
-
-      menu.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
-
-      menu.add("endsub:");
-
-      menu.add("sub:Toolbar");
-      menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
-      menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
-      menu.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
-      menu.add("separator");
-      menu.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
-      menu.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
-      menu.add("endsub:");
-
-      menu.add("sub:Interactive");
-      menu.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
-      menu.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
-      menu.add("sub:Zooming");
-      menu.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
-      menu.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
-      menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
-      menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
-      menu.add("endsub:");
-      menu.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
-      menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
-      menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
-      menu.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
-      menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
-      menu.add("endsub:");
-
-      menu.add("sub:Drawing");
-      menu.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => {
-          settings.OptimizeDraw = value;
-      });
-      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
-      menu.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
-      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
-          settings.Latex = value;
-      });
-      menu.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => {
-          settings.Render3D = value;
-      });
-      menu.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => {
-          settings.Embed3D = value;
-      });
-
-      menu.add("endsub:");
-
-      menu.add("sub:Geometry");
-      menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
-      menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
-      menu.add("endsub:");
-
-      menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
-      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
-
-      menu.addgStyleMenu();
-
-      menu.add("separator");
-
-      menu.add("Save settings", () => {
-         let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
-         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
-      }, "Store settings and gStyle as cookies");
-      menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); }, "Delete settings and gStyle from cookies");
-
-      if (!alone) menu.add("endsub:");
    }
 
    /** @summary Toggle dark mode
      * @private */
    toggleDarkMode() {
       settings.DarkMode = !settings.DarkMode;
-      if (this.brlayout)
-         this.brlayout.createStyle();
-      if (this.disp)
-         this.disp.forEachFrame(frame => {
-            let canvp = getElementCanvPainter(frame),
-                svg = canvp ? canvp.getCanvSvg() : null;
-
-            if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
-          });
    }
 
    /** @summary Handle context menu in the hieararchy
@@ -3869,5 +3723,5 @@ function drawInspector(dom, obj) {
 internals.drawInspector = drawInspector;
 
 export { getHPainter, HierarchyPainter,
-         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo, readSettings, readStyle,
+         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };
