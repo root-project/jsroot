@@ -979,9 +979,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Changes canvas dark mode
      * @private */
    changeDarkMode(mode) {
-      if (mode === undefined)
-         mode = settings.DarkMode;
-      this.getCanvSvg().style("filter", mode ? "invert(100%)" : null);
+      this.getCanvSvg().style("filter", (mode ?? settings.DarkMode) ? "invert(100%)" : null);
    }
 
    /** @summary Fill pad context menu

@@ -1185,6 +1185,7 @@ class THistPainter extends ObjectPainter {
          return fp.drawAxes2(opts.second_x, opts.second_y);
       } else if (this.options.darkMode) {
          let pp = this.getPadPainter();
+         console.log('Apply dark mode', pp?.iscan);
          if (pp?.changeDarkMode) pp.changeDarkMode(true);
       }
 
