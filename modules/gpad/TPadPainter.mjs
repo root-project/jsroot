@@ -500,7 +500,7 @@ class TPadPainter extends ObjectPainter {
            .style("bottom", 0);
       }
 
-      svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
+      svg.style("filter", settings.DarkMode || this.pad?.$dark ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio

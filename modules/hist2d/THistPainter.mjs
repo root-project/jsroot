@@ -305,6 +305,8 @@ class THistDrawOptions {
          return false;
       };
 
+      if (d.check('DARK')) this.darkMode = true;
+
       if (d.check('FILL_', true) && d.getColor())
          this.histoFillColor = d.color;
 
@@ -1181,6 +1183,9 @@ class THistPainter extends ObjectPainter {
          fp.createXY2(opts);
 
          return fp.drawAxes2(opts.second_x, opts.second_y);
+      } else if (this.options.darkMode) {
+         let pp = this.getPadPainter();
+         if (pp?.changeDarkMode) pp.changeDarkMode(true);
       }
 
       if (this.options.adjustFrame) {
@@ -2236,7 +2241,7 @@ class THistPainter extends ObjectPainter {
       if (handle.kind === 'time')
          return funcs.axisAsText(name, (x1+x2)/2);
 
-      return "[" + funcs.axisAsText(name, x1) + ", " + funcs.axisAsText(name, x2) + ")";
+      return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
    }
 
    /** @summary generic draw function for histograms
