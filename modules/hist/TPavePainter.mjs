@@ -187,8 +187,9 @@ class TPavePainter extends ObjectPainter {
          if (isBatchMode() || (pt._typename === "TPave")) return this;
 
          // here all kind of interactive settings
-         rect.style("pointer-events", "visibleFill")
-             .on("mouseenter", () => this.showObjectStatus());
+         if (rect)
+            rect.style("pointer-events", "visibleFill")
+                .on("mouseenter", () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                       minwidth: 10, minheight: 20, canselect: true,
@@ -216,7 +217,7 @@ class TPavePainter extends ObjectPainter {
 
       if (pave && pave.fInit) {
          res.fcust = "pave";
-         res.fopt = [pave.fX1NDC,pave.fY1NDC,pave.fX2NDC,pave.fY2NDC];
+         res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
       }
 
       return res;
@@ -224,9 +225,11 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary draw TPaveLabel object */
    drawPaveLabel(width, height) {
-      this.UseTextColor = true;
-
       let pave = this.getObject();
+      if (!pave.fLabel)
+         return Promise.resolve(this);
+
+      this.UseTextColor = true;
 
       this.startTextDrawing(pave.fTextFont, height/1.2);
 
@@ -362,6 +365,8 @@ class TPavePainter extends ObjectPainter {
          switch(entry._typename) {
             case 'TText':
             case 'TLatex':
+               if (!entry.fTitle) continue;
+
                if (entry.fX || entry.fY) {
                   // individual positioning
                   let x = entry.fX ? entry.fX*width : margin_x,
