@@ -51986,6 +51986,94 @@ function injectStyle(code, node, tag) {
    return true;
 }
 
+/** @summary Select predefined style
+  * @private */
+function selectgStyle(name) {
+   gStyle.fName = name;
+   switch (name) {
+      case "Modern": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fFrameFillColor: 0, fCanvasBorderMode: 0,
+         fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
+         fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
+         fOptStat: 1111, fStatY: 0.935,
+         fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 }); break;
+      case "Plain": Object.assign(gStyle, {
+         fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
+         fPadColor: 0, fCanvasColor: 0,
+         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 }); break;
+      case "Bold": Object.assign(gStyle, {
+         fCanvasColor: 10, fCanvasBorderMode: 0,
+         fFrameLineWidth: 3, fFrameFillColor: 10,
+         fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
+         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 }); break;
+   }
+}
+
+function saveCookie(obj, expires, name) {
+   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
+       d = new Date();
+   d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
+   document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
+}
+
+function readCookie(name) {
+   if (typeof document == 'undefined') return null;
+   let decodedCookie = decodeURIComponent(document.cookie),
+       ca = decodedCookie.split(';');
+   name += "=";
+   for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ')
+        c = c.substring(1);
+      if (c.indexOf(name) == 0) {
+         let s = JSON.parse(atob(c.substring(name.length, c.length)));
+
+         return (s && typeof s == 'object') ? s : null;
+      }
+   }
+   return null;
+}
+
+/** @summary Save JSROOT settings as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveSettings(expires = 365, name = "jsroot_settings") {
+   saveCookie(settings, expires, name);
+}
+
+/** @summary Read JSROOT settings from specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readSettings(only_check = false, name = "jsroot_settings") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(settings, s);
+   return true;
+}
+
+/** @summary Save JSROOT gStyle object as specified cookie parameter
+  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
+  * @param {String} name - cookie parameter name
+  * @private */
+function saveStyle(expires = 365, name = "jsroot_style") {
+   saveCookie(gStyle, expires, name);
+}
+
+/** @summary Read JSROOT gStyle object specified cookie parameter
+  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {String} name - cookie parameter name
+  * @private */
+function readStyle(only_check = false, name = "jsroot_style") {
+   let s = readCookie(name);
+   if (!s) return false;
+   if (!only_check)
+      Object.assign(gStyle, s);
+   return true;
+}
+
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors
   * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
@@ -52599,6 +52687,202 @@ class JSRootMenu {
                   arg => { faxis.fTickLength = arg; painter.interactiveRedraw("pad", `exec:SetTickLength(${arg})`, kind); });
       }
       this.add("endsub:");
+   }
+
+   /** @summary Fill menu to edit settings properties
+     * @private */
+   addSettingsMenu(with_hierarchy, alone, handle_func) {
+      if (alone)
+         this.add("header:Settings");
+      else
+         this.add("sub:Settings");
+
+      this.add("sub:Files");
+
+      if (with_hierarchy) {
+         this.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
+            settings.OnlyLastCycle = flag;
+            if (handle_func) handle_func("refresh");
+         });
+
+         this.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
+            settings.SkipStreamerInfos = !flag;
+            if (handle_func) handle_func("refresh");
+         });
+      }
+
+      this.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+
+      this.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
+
+      this.add("endsub:");
+
+      this.add("sub:Toolbar");
+      this.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
+      this.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
+      this.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
+      this.add("separator");
+      this.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
+      this.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
+      this.add("endsub:");
+
+      this.add("sub:Interactive");
+      this.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
+      this.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
+      this.add("sub:Zooming");
+      this.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
+      this.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
+      this.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
+      this.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
+      this.add("endsub:");
+      this.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
+      this.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
+      this.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
+      this.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
+      this.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
+      this.add("endsub:");
+
+      this.add("sub:Drawing");
+      this.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => { settings.OptimizeDraw = value; });
+      this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
+      this.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
+      this.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => { settings.Latex = value; });
+      this.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => { settings.Render3D = value; });
+      this.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => { settings.Embed3D = value; });
+
+      this.add("endsub:");
+
+      this.add("sub:Geometry");
+      this.add("Grad per segment:  " + settings.GeoGradPerSegm, () => this.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
+      this.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
+      this.add("endsub:");
+
+      if (with_hierarchy)
+         this.add("Hierarchy limit:  " + settings.HierarchyLimit, () => this.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => {
+            settings.HierarchyLimit = val;
+            if (handle_func) handle_func("refresh");
+         }));
+
+      this.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => {
+         settings.DarkMode = !settings.DarkMode;
+         if (handle_func) handle_func("dark");
+      });
+
+      const setStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); },
+            addStyleIntField = (name, field, arr) => {
+         this.add("sub:" + name);
+         for (let v = 0; v < arr.length; ++v)
+            this.addchk(gStyle[field] == v, arr[v], `${v}${field}`, setStyleField);
+         this.add("endsub:");
+      };
+
+      this.add("sub:gStyle");
+
+      this.add("sub:Canvas");
+      this.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+      this.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
+      this.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      this.addSizeMenu("Date X", 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, "configure gStyle.fDateX for date/item name drawings");
+      this.addSizeMenu("Date Y", 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, "configure gStyle.fDateY for date/item name drawings");
+      this.add("endsub:");
+
+      this.add("sub:Pad");
+      this.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
+      this.add("sub:Grid");
+      this.addchk(gStyle.fPadGridX, "X", flag => { gStyle.fPadGridX = flag; });
+      this.addchk(gStyle.fPadGridY, "Y", flag => { gStyle.fPadGridY = flag; });
+      this.addColorMenu("Color", gStyle.fGridColor, col => { gStyle.fGridColor = col; });
+      this.addSizeMenu("Width", 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
+      this.addLineStyleMenu("Style", gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
+      this.add("endsub:");
+      addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
+      addStyleIntField("Log X", "fOptLogx", ["off", "on", "log 2"]);
+      addStyleIntField("Log Y", "fOptLogy", ["off", "on", "log 2"]);
+      addStyleIntField("Log Z", "fOptLogz", ["off", "on", "log 2"]);
+      this.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
+      this.add("endsub:");
+
+      this.add("sub:Frame");
+      this.addColorMenu("Fill color", gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
+      this.addFillStyleMenu("Fill style", gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
+      this.addColorMenu("Line color", gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
+      this.addSizeMenu("Line width", 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
+      this.addLineStyleMenu("Line style", gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
+      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
+      // fFrameBorderMode: 0,
+      this.add("sub:Margins");
+      this.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
+      this.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
+      this.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
+      this.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
+      this.add("endsub:");
+      this.add("endsub:");
+
+      this.add("sub:Title");
+      this.addColorMenu("Fill color", gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
+      this.addFillStyleMenu("Fill style", gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
+      this.addColorMenu("Text color", gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
+      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
+      this.addSizeMenu("Font size", 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
+      this.addFontMenu("Font", gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
+      this.addSizeMenu("X: " + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
+      this.addSizeMenu("Y: " + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
+      this.addSizeMenu("W: " + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
+      this.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
+      this.add("endsub:");
+
+      this.add("sub:Stat box");
+      this.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
+      this.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
+      this.addColorMenu("Text color", gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
+      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
+      this.addSizeMenu("Font size", 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
+      this.addFontMenu("Font", gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
+      this.add("Stat format", () => this.input("Stat format", gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
+      this.addSizeMenu("X: " + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
+      this.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
+      this.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
+      this.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      this.add("endsub:");
+
+      this.add("sub:Legend");
+      this.addColorMenu("Fill color", gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
+      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
+      this.addFontMenu("Font", gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
+      this.addSizeMenu("Text size", 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, "legend text size, when 0 - auto adjustment is used");
+      this.add("endsub:");
+
+      this.add("sub:Histogram");
+      this.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
+      this.add("Text format", () => this.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
+      this.add("Time offset", () => this.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
+      this.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
+      this.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
+      this.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
+      this.addColorMenu("Fill color", gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
+      this.addFillStyleMenu("Fill style", gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
+      this.addColorMenu("Line color", gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
+      this.addSizeMenu("Line width", 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
+      this.addLineStyleMenu("Line style", gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
+      this.add("endsub:");
+
+      this.add("separator");
+      this.add("sub:Predefined");
+      ["Modern", "Plain", "Bold"].forEach(name => this.addchk((gStyle.fName == name), name, name, selectgStyle));
+      this.add("endsub:");
+
+      this.add("endsub:"); // gStyle
+
+      this.add("separator");
+
+      this.add("Save settings", () => {
+         let promise = readSettings(true) ? Promise.resolve(true) : this.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
+         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
+      }, "Store settings and gStyle as cookies");
+      this.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); }, "Delete settings and gStyle from cookies");
+
+      if (!alone) this.add("endsub:");
    }
 
    /** @summary Run modal dialog
@@ -58856,6 +59140,14 @@ class TPadPainter extends ObjectPainter {
       return hints;
    }
 
+   /** @summary Changes canvas dark mode
+     * @private */
+   changeDarkMode(mode) {
+      if (mode === undefined)
+         mode = settings.DarkMode;
+      this.getCanvSvg().style("filter", mode ? "invert(100%)" : null);
+   }
+
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
@@ -58898,6 +59190,11 @@ class TPadPainter extends ObjectPainter {
             gStyle.fOptLogy = this.pad.fLogy;
             gStyle.fOptLogz = this.pad.fLogz;
          }, "Store pad fill attributes, grid, tick and log scale settings to gStyle");
+
+         if (this.iscan)
+            menu.addSettingsMenu(false, false, arg => {
+               if (arg == "dark") this.changeDarkMode();
+            });
       }
 
       menu.add("separator");
@@ -73578,94 +73875,6 @@ ${img("tf2",16,"png","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAAL
 `, node);
 }
 
-function saveCookie(obj, expires, name) {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
-       d = new Date();
-   d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
-   document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
-}
-
-function readCookie(name) {
-   if (typeof document == 'undefined') return null;
-   let decodedCookie = decodeURIComponent(document.cookie),
-       ca = decodedCookie.split(';');
-   name += "=";
-   for(let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ')
-        c = c.substring(1);
-      if (c.indexOf(name) == 0) {
-         let s = JSON.parse(atob(c.substring(name.length, c.length)));
-
-         return (s && typeof s == 'object') ? s : null;
-      }
-   }
-   return null;
-}
-
-/** @summary Save JSROOT settings as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveSettings(expires = 365, name = "jsroot_settings") {
-   saveCookie(settings, expires, name);
-}
-
-/** @summary Read JSROOT settings from specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readSettings(only_check = false, name = "jsroot_settings") {
-   let s = readCookie(name);
-   if (!s) return false;
-   if (!only_check)
-      Object.assign(settings, s);
-   return true;
-}
-
-/** @summary Save JSROOT gStyle object as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
-  * @private */
-function saveStyle(expires = 365, name = "jsroot_style") {
-   saveCookie(gStyle, expires, name);
-}
-
-/** @summary Read JSROOT gStyle object specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
-  * @private */
-function readStyle(only_check = false, name = "jsroot_style") {
-   let s = readCookie(name);
-   if (!s) return false;
-   if (!only_check)
-      Object.assign(gStyle, s);
-   return true;
-}
-
-/** @summary Select predefined style
-  * @private */
-function selectStyle(name) {
-   gStyle.fName = name;
-   switch (name) {
-      case "Modern": Object.assign(gStyle, {
-         fFrameBorderMode: 0, fFrameFillColor: 0, fCanvasBorderMode: 0,
-         fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
-         fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
-         fOptStat: 1111, fStatY: 0.935,
-         fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 }); break;
-      case "Plain": Object.assign(gStyle, {
-         fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
-         fPadColor: 0, fCanvasColor: 0,
-         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 }); break;
-      case "Bold": Object.assign(gStyle, {
-         fCanvasColor: 10, fCanvasBorderMode: 0,
-         fFrameLineWidth: 3, fFrameFillColor: 10,
-         fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
-         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 }); break;
-   }
-}
-
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -75218,211 +75427,27 @@ class HierarchyPainter extends BasePainter {
    /** @summary Fills settings menu items
      * @private */
    fillSettingsMenu(menu, alone) {
-      if (alone)
-         menu.add("header:Settings");
-      else
-         menu.add("sub:Settings");
-
-      menu.add("sub:Files");
-
-      menu.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
-         settings.OnlyLastCycle = flag;
-         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
-         this.refreshHtml();
+      menu.addSettingsMenu(true, alone, arg => {
+         if (arg == "refresh") {
+            this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+            this.refreshHtml();
+         } else if (arg == "dark") {
+            if (this.brlayout)
+               this.brlayout.createStyle();
+            if (this.disp)
+               this.disp.forEachFrame(frame => {
+                  let canvp = getElementCanvPainter(frame);
+                  if (typeof canvp?.changeDarkMode == 'function')
+                     canvp.changeDarkMode();
+               });
+         }
       });
-
-      menu.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
-         settings.SkipStreamerInfos = !flag;
-         this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
-         this.refreshHtml();
-      });
-
-      menu.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
-
-      menu.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
-
-      menu.add("endsub:");
-
-      menu.add("sub:Toolbar");
-      menu.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
-      menu.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
-      menu.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
-      menu.add("separator");
-      menu.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
-      menu.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
-      menu.add("endsub:");
-
-      menu.add("sub:Interactive");
-      menu.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
-      menu.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
-      menu.add("sub:Zooming");
-      menu.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
-      menu.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
-      menu.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
-      menu.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
-      menu.add("endsub:");
-      menu.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
-      menu.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
-      menu.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
-      menu.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
-      menu.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
-      menu.add("endsub:");
-
-      menu.add("sub:Drawing");
-      menu.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => {
-          settings.OptimizeDraw = value;
-      });
-      menu.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
-      menu.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
-      menu.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => {
-          settings.Latex = value;
-      });
-      menu.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => {
-          settings.Render3D = value;
-      });
-      menu.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => {
-          settings.Embed3D = value;
-      });
-
-      menu.add("endsub:");
-
-      menu.add("sub:Geometry");
-      menu.add("Grad per segment:  " + settings.GeoGradPerSegm, () => menu.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
-      menu.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
-      menu.add("endsub:");
-
-      menu.add("Hierarchy limit:  " + settings.HierarchyLimit, () => menu.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => { settings.HierarchyLimit = val; }));
-      menu.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => this.toggleDarkMode());
-
-      function setStyleField(arg) { gStyle[arg.slice(1)] = parseInt(arg[0]); }
-      function addStyleIntField(name, field, arr) {
-         menu.add("sub:" + name);
-         for (let v = 0; v < arr.length; ++v)
-            menu.addchk(gStyle[field] == v, arr[v], `${v}${field}`, setStyleField);
-         menu.add("endsub:");
-      }
-
-      menu.add("sub:gStyle");
-
-      menu.add("sub:Canvas");
-      menu.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
-      menu.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
-      menu.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
-      menu.addSizeMenu("Date X", 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, "configure gStyle.fDateX for date/item name drawings");
-      menu.addSizeMenu("Date Y", 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, "configure gStyle.fDateY for date/item name drawings");
-      menu.add("endsub:");
-
-      menu.add("sub:Pad");
-      menu.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
-      menu.add("sub:Grid");
-      menu.addchk(gStyle.fPadGridX, "X", flag => { gStyle.fPadGridX = flag; });
-      menu.addchk(gStyle.fPadGridY, "Y", flag => { gStyle.fPadGridY = flag; });
-      menu.addColorMenu("Color", gStyle.fGridColor, col => { gStyle.fGridColor = col; });
-      menu.addSizeMenu("Width", 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
-      menu.addLineStyleMenu("Style", gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
-      menu.add("endsub:");
-      addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
-      addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
-      addStyleIntField("Log X", "fOptLogx", ["off", "on", "log 2"]);
-      addStyleIntField("Log Y", "fOptLogy", ["off", "on", "log 2"]);
-      addStyleIntField("Log Z", "fOptLogz", ["off", "on", "log 2"]);
-      menu.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
-      menu.add("endsub:");
-
-      menu.add("sub:Frame");
-      menu.addColorMenu("Fill color", gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
-      menu.addFillStyleMenu("Fill style", gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
-      menu.addColorMenu("Line color", gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
-      menu.addSizeMenu("Line width", 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
-      menu.addLineStyleMenu("Line style", gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
-      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
-      // fFrameBorderMode: 0,
-      menu.add("sub:Margins");
-      menu.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
-      menu.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
-      menu.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
-      menu.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
-      menu.add("endsub:");
-      menu.add("endsub:");
-
-      menu.add("sub:Title");
-      menu.addColorMenu("Fill color", gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
-      menu.addFillStyleMenu("Fill style", gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
-      menu.addColorMenu("Text color", gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
-      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
-      menu.addSizeMenu("Font size", 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
-      menu.addFontMenu("Font", gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
-      menu.addSizeMenu("X: " + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
-      menu.addSizeMenu("Y: " + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
-      menu.addSizeMenu("W: " + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
-      menu.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
-      menu.add("endsub:");
-
-      menu.add("sub:Stat box");
-      menu.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
-      menu.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
-      menu.addColorMenu("Text color", gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
-      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
-      menu.addSizeMenu("Font size", 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
-      menu.addFontMenu("Font", gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
-      menu.add("Stat format", () => menu.input("Stat format", gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
-      menu.addSizeMenu("X: " + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
-      menu.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
-      menu.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
-      menu.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
-      menu.add("endsub:");
-
-      menu.add("sub:Legend");
-      menu.addColorMenu("Fill color", gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
-      menu.addSizeMenu("Border size", 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
-      menu.addFontMenu("Font", gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
-      menu.addSizeMenu("Text size", 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, "legend text size, when 0 - auto adjustment is used");
-      menu.add("endsub:");
-
-      menu.add("sub:Histogram");
-      menu.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
-      menu.add("Text format", () => menu.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
-      menu.add("Time offset", () => menu.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
-      menu.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
-      menu.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
-      menu.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
-      menu.addColorMenu("Fill color", gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
-      menu.addFillStyleMenu("Fill style", gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
-      menu.addColorMenu("Line color", gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
-      menu.addSizeMenu("Line width", 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
-      menu.addLineStyleMenu("Line style", gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
-      menu.add("endsub:");
-
-      menu.add("separator");
-      menu.add("sub:Predefined");
-      ["Modern", "Plain", "Bold"].forEach(name => menu.addchk((gStyle.fName == name), name, () => selectStyle.bind(this, name)()));
-      menu.add("endsub:");
-      menu.add("endsub:");
-
-      menu.add("separator");
-
-      menu.add("Save settings", () => {
-         let promise = readSettings(true) ? Promise.resolve(true) : menu.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
-         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
-      }, "Store settings and gStyle as cookies");
-      menu.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); }, "Delete settings and gStyle from cookies");
-
-      if (!alone) menu.add("endsub:");
    }
 
    /** @summary Toggle dark mode
      * @private */
    toggleDarkMode() {
       settings.DarkMode = !settings.DarkMode;
-      if (this.brlayout)
-         this.brlayout.createStyle();
-      if (this.disp)
-         this.disp.forEachFrame(frame => {
-            let canvp = getElementCanvPainter(frame),
-                svg = canvp ? canvp.getCanvSvg() : null;
-
-            if (svg) svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
-          });
    }
 
    /** @summary Handle context menu in the hieararchy
@@ -77464,8 +77489,6 @@ drawInspector: drawInspector,
 drawStreamerInfo: drawStreamerInfo,
 drawList: drawList,
 markAsStreamerInfo: markAsStreamerInfo,
-readSettings: readSettings,
-readStyle: readStyle,
 folderHierarchy: folderHierarchy,
 taskHierarchy: taskHierarchy,
 listHierarchy: listHierarchy,
