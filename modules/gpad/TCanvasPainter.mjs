@@ -712,14 +712,12 @@ function ensureTCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
 
    // simple check - if canvas there, can use painter
-   let svg_c = painter.getCanvSvg(),
-       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
-       pr = Promise.resolve(true);
+   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+       promise = painter.getCanvSvg().empty()
+                 ? TCanvasPainter.draw(painter.getDom(), null, noframe)
+                 : Promise.resolve(true);
 
-   if (svg_c.empty())
-      pr = TCanvasPainter.draw(painter.getDom(), null, noframe);
-
-   return pr.then(() => {
+   return promise.then(() => {
       if ((frame_kind !== false) &&  painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
          directDrawTFrame(painter.getDom(), null, frame_kind);
 
