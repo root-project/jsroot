@@ -305,8 +305,6 @@ class THistDrawOptions {
          return false;
       };
 
-      if (d.check('DARK')) this.darkMode = true;
-
       if (d.check('FILL_', true) && d.getColor())
          this.histoFillColor = d.color;
 
@@ -1183,10 +1181,6 @@ class THistPainter extends ObjectPainter {
          fp.createXY2(opts);
 
          return fp.drawAxes2(opts.second_x, opts.second_y);
-      } else if (this.options.darkMode) {
-         let pp = this.getPadPainter();
-         console.log('Apply dark mode', pp?.iscan);
-         if (pp?.changeDarkMode) pp.changeDarkMode(true);
       }
 
       if (this.options.adjustFrame) {
