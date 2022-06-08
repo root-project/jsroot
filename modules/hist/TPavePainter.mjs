@@ -244,13 +244,13 @@ class TPavePainter extends ObjectPainter {
       if (this.isStats()) this.fillStatistic();
 
       let pt = this.getObject(), lines = [],
-          tcolor = this.getColor(pt.fTextColor),
+          color = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
       // now draw TLine and TBox objects
       for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
-         if ((entry._typename=="TText") || (entry._typename=="TLatex"))
+         if ((entry._typename == "TText") || (entry._typename == "TLatex"))
             lines.push(entry.fTitle);
       }
 
@@ -275,17 +275,17 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: tcolor, latex: 1 });
+         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
-         let posy = j*stepy;
+         let y = j*stepy;
          this.UseTextColor = true;
 
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split("|");
             for (let n = 0; n < parts.length; ++n)
-               this.drawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
-                               width: width/num_cols, height: stepy, text: parts[n], color: tcolor });
+               this.drawText({ align: "middle", x: width * n / num_cols, y, latex: 0,
+                               width: width/num_cols, height: stepy, text: parts[n], color });
          } else if (lines[j].indexOf('=') < 0) {
             if (j == 0) {
                has_head = true;
@@ -293,15 +293,15 @@ class TPavePainter extends ObjectPainter {
                if (lines[j].length > max_hlen + 5)
                   lines[j] = lines[j].slice(0,max_hlen+2) + "...";
             }
-            this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
-                            width: width-2*margin_x, height: stepy, text: lines[j], color: tcolor });
+            this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y,
+                            width: width-2*margin_x, height: stepy, text: lines[j], color });
          } else {
             let parts = lines[j].split("="), args = [];
 
             for (let n = 0; n < 2; ++n) {
                let arg = {
-                  align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
-                  width: width-2*margin_x, height: stepy, text: parts[n], color: tcolor,
+                  align: (n == 0) ? "start" : "end", x: margin_x, y,
+                  width: width-2*margin_x, height: stepy, text: parts[n], color,
                   _expected_width: width-2*margin_x, _args: args,
                   post_process: function(painter) {
                     if (this._args[0].ready && this._args[1].ready)
@@ -414,8 +414,8 @@ class TPavePainter extends ObjectPainter {
                let lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    lx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
-                   ly2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy*0.5);
-               let lineatt = new TAttLineHandler(entry);
+                   ly2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy*0.5),
+                   lineatt = new TAttLineHandler(entry);
                text_g.append("svg:path")
                      .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
                      .call(lineatt.func);
@@ -425,8 +425,8 @@ class TPavePainter extends ObjectPainter {
                let bx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    bx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    by1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty),
-                   by2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy);
-               let fillatt = this.createAttFill(entry);
+                   by2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy),
+                   fillatt = this.createAttFill(entry);
                text_g.append("svg:path")
                      .attr("d", `M${bx1},${by1}H${bx2}V${by2}H${bx1}Z`)
                      .call(fillatt.func);
@@ -894,7 +894,7 @@ class TPavePainter extends ObjectPainter {
             menu.addchk(opt, name, opt * 100 + pos, function(arg) {
                let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit,
                    oldopt = parseInt(arg / 100);
-               newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
+               newopt -= (oldopt > 0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
                if (arg % 100 < 10) {
                   pave.fOptStat = newopt;
                   this.interactiveRedraw(true, `exec:SetOptStat(${newopt})`);
