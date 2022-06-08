@@ -8332,8 +8332,6 @@ class FontHandler {
 
 } // class FontHandler
 
-/// latex parsing and rendering
-
 const symbols_map = {
    // greek letters
    '#alpha': '\u03B1',
@@ -44834,8 +44832,6 @@ if (typeof window !== 'undefined') {
 	}
 }
 
-/// TCanvas painting
-
 const EAxisBits = {
    kDecimals: BIT(7),
    kTickPlus: BIT(9),
@@ -49521,8 +49517,6 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    }
 }
 
-/// Special mathematical functions
-
 /**
  * A math namespace - all functions can be exported from base/math.mjs.
  * Also all these functions can be used with TFormula calcualtions
@@ -52011,8 +52005,6 @@ function injectStyle(code, node, tag) {
    return true;
 }
 
-/// context menu
-
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors
   * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
@@ -53451,8 +53443,6 @@ function closeMenu(menuname) {
    if (x) { x.parentNode.removeChild(x); return true; }
    return false;
 }
-
-/// TCanvas painting
 
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
@@ -56242,9 +56232,6 @@ class TFramePainter extends ObjectPainter {
 
 } // class TFramePainter
 
-/// different display kinds and browser layout
-
-
 /** @summary Current hierarchy painter
   * @desc Instance of {@link HierarchyPainter} object
   * @private */
@@ -57921,9 +57908,6 @@ class BrowserLayout {
    }
 
 } // class BrowserLayout
-
-/// TPad painting
-
 
 function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
@@ -59998,9 +59982,6 @@ TPadPainter: TPadPainter,
 PadButtonsHandler: PadButtonsHandler
 });
 
-/// TCanvas painting
-
-
 /** @summary direct draw of TFrame object,
   * @desc pad or canvas should already exist
   * @private */
@@ -62007,7 +61988,7 @@ function produceLegend(dom, opt) {
 
    // no entries - no need to draw legend
    let szx = 0.4, szy = leg.fPrimitives.arr.length;
-   if (!szy) return;
+   if (!szy) return Promise.resolve(null);
    if (szy > 8) szy = 8;
    szy *= 0.1;
 
@@ -62025,9 +62006,6 @@ __proto__: null,
 TPavePainter: TPavePainter,
 produceLegend: produceLegend
 });
-
-/// histogram painter base class
-
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
@@ -65457,10 +65435,9 @@ class TH1Painter$2 extends THistPainter {
 
 } // class TH1Painter
 
-/// 3D TH1 drawing
-
 /** @summary Draw 1-D histogram in 3D
   * @private */
+
 class TH1Painter extends TH1Painter$2 {
 
    draw3D(reason) {
@@ -68204,9 +68181,6 @@ class TH2Painter$2 extends THistPainter {
 
 } // class TH2Painter
 
-/// 3D TH2 drawing
-
-
 /** @summary Draw TH2Poly histogram as lego
   * @private */
 function drawTH2PolyLego(painter) {
@@ -68478,8 +68452,6 @@ var TH2Painter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TH2Painter: TH2Painter
 });
-
-/// 3D TH3 drawing
 
 /**
  * @summary Painter for TH3 classes
@@ -77718,9 +77690,6 @@ __proto__: null,
 'default': _rollup_plugin_ignore_empty_module_placeholder
 });
 
-/// more ROOT classes
-
-
 /** @summary Draw TText
   * @private */
 function drawText$1() {
@@ -79295,8 +79264,6 @@ function createNormal(axis_name, pos, size) {
 
    return new Geometry(node);
 }
-
-/// Basic functions for work with TGeo classes
 
 function JSROOT_BIT(n) { return 1 << n; }
 
@@ -82832,8 +82799,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
    else
       process(toplevel, 0, 1, 1000000);
 }
-
-/// 3D geometry painter
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
@@ -88155,8 +88120,6 @@ drawPolyMarker3D: drawPolyMarker3D,
 drawPolyLine3D: drawPolyLine3D
 });
 
-/// more ROOT classes
-
 /**
  * @summary Painter for TGraphTime object
  *
@@ -88306,8 +88269,6 @@ var TGraphTimePainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TGraphTimePainter: TGraphTimePainter
 });
-
-/// 3D TGraph2D drawing
 
 /**
  * @summary Painter for TGraph2D classes
@@ -88673,8 +88634,6 @@ var TGraph2DPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TGraph2DPainter: TGraph2DPainter
 });
-
-/// more ROOT classes
 
 /**
  * @summary Painter for TGraphPolargram objects.
@@ -89217,9 +89176,6 @@ TGraphPolargramPainter: TGraphPolargramPainter,
 TGraphPolarPainter: TGraphPolarPainter
 });
 
-/// more ROOT classes
-
-
 const kNotEditable = BIT(18);   // bit set if graph is non editable
 
 /**
@@ -89269,7 +89225,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Returns object if this drawing TGraphMultiErrors object */
    get_gme() {
       let graph = this.getObject();
-      return graph._typename == "TGraphMultiErrors" ? graph : null;
+      return graph?._typename == "TGraphMultiErrors" ? graph : null;
    }
 
    /** @summary Decode options */
@@ -89476,9 +89432,10 @@ class TGraphPainter$1 extends ObjectPainter {
    }
 
    /** @summary Create histogram for graph
-     * @descgraph bins should be created when calling this function
+     * @desc graph bins should be created when calling this function
      * @param {object} histo - existing histogram instance
-     * @param {boolean} only_set_ranges - when specified, just assign ranges */
+     * @param {boolean} [set_x] - set X axis range
+     * @param {boolean} [set_y] - set Y axis range */
    createHistogram(histo, set_x, set_y) {
       let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
@@ -89627,14 +89584,14 @@ class TGraphPainter$1 extends ObjectPainter {
           getFrameHeight: function() { return this.ph; },
           grx: function(value) {
              if (this.pad.fLogx)
-                value = (value>0) ? Math.log10(value) : this.pad.fUxmin;
+                value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
              else
                 value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
              return value*this.pw;
           },
           gry: function(value) {
              if (this.pad.fLogy)
-                value = (value>0) ? Math.log10(value) : this.pad.fUymin;
+                value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
              return (1-value)*this.ph;
@@ -89969,7 +89926,7 @@ class TGraphPainter$1 extends ObjectPainter {
             draw_g.append("svg:path")
                   .attr("d", path)
                   .call(this.markeratt.func);
-            if ((nodes===null) && (this.draw_kind == "none") && main_block)
+            if ((nodes === null) && (this.draw_kind == "none") && main_block)
                this.draw_kind = (options.Mark == 101) ? "path" : "mark";
          }
          if (want_tooltip && hints_marker)
@@ -89987,18 +89944,18 @@ class TGraphPainter$1 extends ObjectPainter {
           yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
           yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
           path2 = "",
-          makeLine = (x1,y1,x2,y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`;
+          makeLine = (x1,y1,x2,y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`,
+          yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1,
+          yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
 
-      let yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
-      if (yxmin < funcs.scale_ymin){
+      if (yxmin < funcs.scale_ymin) {
          let xymin = (graph.fXq2 - graph.fXq1)*(funcs.scale_ymin-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
          path2 = makeLine(xymin, funcs.scale_ymin, xqmin, yqmin);
       } else {
          path2 = makeLine(funcs.scale_xmin, yxmin, xqmin, yqmin);
       }
 
-      let yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
-      if (yxmax > funcs.scale_ymax){
+      if (yxmax > funcs.scale_ymax) {
          let xymax = (graph.fXq2-graph.fXq1)*(funcs.scale_ymax-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
          path2 += makeLine(xqmax, yqmax, xymax, funcs.scale_ymax);
       } else {
@@ -90011,12 +89968,12 @@ class TGraphPainter$1 extends ObjectPainter {
       this.draw_g.append("path")
                  .attr("d", makeLine(xqmin,yqmin,xqmax,yqmax))
                  .call(latt1.func)
-                 .style("fill","none");
+                 .style("fill", "none");
 
       this.draw_g.append("path")
                  .attr("d", path2)
                  .call(latt2.func)
-                 .style("fill","none");
+                 .style("fill", "none");
    }
 
    drawBins3D(/*fp, graph*/) {
@@ -90171,9 +90128,8 @@ class TGraphPainter$1 extends ObjectPainter {
 
       if (hint.usepath) return this.showTooltipForPath(hint);
 
-      let d = select(hint.d3bin).datum();
-
-      let ttrect = this.draw_g.select(".tooltip_bin");
+      let d = select(hint.d3bin).datum(),
+          ttrect = this.draw_g.select(".tooltip_bin");
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -90291,7 +90247,7 @@ class TGraphPainter$1 extends ObjectPainter {
    testEditable(arg) {
       let obj = this.getObject();
       if (!obj) return false;
-      if ((arg == "toggle") || ((arg!==undefined) && (!arg != obj.TestBit(kNotEditable))))
+      if ((arg == "toggle") || ((arg !== undefined) && (!arg != obj.TestBit(kNotEditable))))
          obj.InvertBit(kNotEditable);
       return !obj.TestBit(kNotEditable);
    }
@@ -90368,8 +90324,7 @@ class TGraphPainter$1 extends ObjectPainter {
       }
 
       if (ttbin.empty())
-         ttbin = this.draw_g.append("svg:g")
-                             .attr("class","tooltip_bin");
+         ttbin = this.draw_g.append("svg:g").attr("class","tooltip_bin");
 
       hint.changed = ttbin.property("current_bin") !== hint.bin;
 
@@ -90455,7 +90410,6 @@ class TGraphPainter$1 extends ObjectPainter {
       let exec = "";
 
       if (this.move_binindx === undefined) {
-
          this.draw_g.attr("transform", null);
 
          let pmain = this.getFramePainter(),
@@ -90465,16 +90419,16 @@ class TGraphPainter$1 extends ObjectPainter {
                let bin = this.bins[k];
                bin.x = funcs.revertAxis("x", funcs.grx(bin.x) + this.pos_dx);
                bin.y = funcs.revertAxis("y", funcs.gry(bin.y) + this.pos_dy);
-               exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
+               exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
                if ((bin.indx == 0) && this.matchObjectType('TCutG'))
-                  exec += "SetPoint(" + (this.getObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
+                  exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
             }
             this.drawGraph();
          }
       } else {
-         exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+         exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
          if ((this.move_bin.indx == 0) && this.matchObjectType('TCutG'))
-            exec += ";;SetPoint(" + (this.getObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+            exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
          delete this.move_binindx;
       }
 
@@ -90585,7 +90539,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Find TF1/TF2 in TGraph list of functions */
    findFunc() {
       let gr = this.getObject();
-      if (gr && gr.fFunctions)
+      if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
@@ -90596,12 +90550,11 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Find stat box in TGraph list of functions */
    findStat() {
       let gr = this.getObject();
-      if (gr && gr.fFunctions)
+      if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
          }
-
       return null;
    }
 
@@ -90621,13 +90574,10 @@ class TGraphPainter$1 extends ObjectPainter {
 
       this.create_stats = true;
 
-      let st = gStyle;
+      const st = gStyle;
 
       stats = create$1('TPaveStats');
-      Object.assign(stats, { fName : 'stats',
-                             fOptStat: 0,
-                             fOptFit: st.fOptFit || 111,
-                             fBorderSize : 1} );
+      Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
@@ -91101,9 +91051,6 @@ TF1Painter: TF1Painter,
 proivdeEvalPar: proivdeEvalPar
 });
 
-/// more ROOT classes
-
-
 const kIsBayesian       = BIT(14),  ///< Bayesian statistics are used
       kPosteriorMode    = BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
  //   kShortestInterval = BIT(16),  ///< Use shortest interval, not implemented - too complicated
@@ -91322,9 +91269,6 @@ var TEfficiencyPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TEfficiencyPainter: TEfficiencyPainter
 });
-
-/// more ROOT classes
-
 
 /**
  * @summary Painter class for TRatioPlot
@@ -91776,6 +91720,8 @@ class TMultiGraphPainter$2 extends ObjectPainter {
 
 class TGraphPainter extends TGraphPainter$1 {
 
+   /** @summary Draw TGraph points in 3D
+     * @private */
    drawBins3D(fp, graph) {
 
       if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
@@ -91815,14 +91761,14 @@ class TGraphPainter extends TGraphPainter$1 {
      * @private */
    drawAxisHisto() {
       let histo = this.createHistogram();
-      return TH1Painter.draw(this.getDom(), histo, this.options.Axis)
+      return TH1Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
    static draw(dom, graph, opt) {
       return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }
 
-}
+} // class TGraphPainter
 
 class TMultiGraphPainter extends TMultiGraphPainter$2 {
 
@@ -91843,7 +91789,7 @@ class TMultiGraphPainter extends TMultiGraphPainter$2 {
       return TMultiGraphPainter._drawMG(new TMultiGraphPainter(dom, mgraph), opt);
    }
 
-}
+} // class TMultiGraphPainter
 
 var TMultiGraphPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
@@ -92013,7 +91959,7 @@ class TWebPaintingPainter extends ObjectPainter {
       return painter.redraw();
    }
 
-}
+} // class TWebPaintingPainter
 
 var TWebPaintingPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
@@ -92483,7 +92429,7 @@ __proto__: null,
 TSplinePainter: TSplinePainter
 });
 
-/** @summary Draw TArrow
+/** @summary Drawing TArrow
   * @private */
 class TArrowPainter extends ObjectPainter {
 
@@ -92495,7 +92441,7 @@ class TArrowPainter extends ObjectPainter {
          dx = -dx; dy = -dy;
       }
       res += `l${Math.round(dx)},${Math.round(dy)}`;
-      if (x0 && (y0===undefined)) res+="z";
+      if (x0 && (y0 === undefined)) res += "z";
       return res;
    }
 
@@ -92606,15 +92552,12 @@ class TArrowPainter extends ObjectPainter {
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
-}
+} // class TArrowPainter
 
 var TArrowPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TArrowPainter: TArrowPainter
 });
-
-/// more ROOT classes
-
 
 let node_canvas, btoa_func = globalThis?.btoa;
 
@@ -92959,7 +92902,6 @@ class TASImagePainter extends ObjectPainter {
                      return painter;
                  });
    }
-
 
 } // class TASImagePainter
 
@@ -100956,8 +100898,6 @@ class WebWindowHandle {
 
 } // class WebWindowHandle
 
-/// JavaScript ROOT graphics for ROOT v7 classes
-
 /**
  * @summary Painter class for RCanvas
  *
@@ -101563,6 +101503,7 @@ class RCanvasPainter extends RPadPainter {
 
 } // class RCanvasPainter
 
+
 /** @summary draw RPadSnapshot object
   * @private */
 function drawRPadSnapshot(dom, snap /*, opt*/) {
@@ -101851,8 +101792,6 @@ RObjectPainter: RObjectPainter,
 RPadPainter: RPadPainter,
 RCanvasPainter: RCanvasPainter
 });
-
-/// JavaScript ROOT v7 graphics for different classes
 
 /** @summary draw RText object
   * @private */
@@ -104619,8 +104558,6 @@ __proto__: null,
 RH1Painter: RH1Painter
 });
 
-/// JavaScript ROOT v7 graphics for histogram classes
-
 /**
  * @summary Painter for RH2 classes
  *
@@ -106333,10 +106270,7 @@ class RH2Painter$2 extends RHistPainter {
 
 } //  class RH2Painter
 
-/// ROOT7 histogram 3D graphics
-
 class RH2Painter extends RH2Painter$2 {
-
 
    /** Draw histogram bins in 3D, using provided draw options */
    draw3DBins() {
