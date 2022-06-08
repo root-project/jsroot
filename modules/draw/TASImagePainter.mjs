@@ -1,5 +1,3 @@
-/// more ROOT classes
-
 import { create, isNodeJs } from '../core.mjs';
 
 import { toHex } from '../base/colors.mjs';

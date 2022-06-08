@@ -1,5 +1,3 @@
-/// more ROOT classes
-
 import { settings, create, isBatchMode } from '../core.mjs';
 
 import { scaleLinear, select as d3_select, pointer as d3_pointer } from '../d3.mjs';

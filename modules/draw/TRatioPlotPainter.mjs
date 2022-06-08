@@ -1,5 +1,3 @@
-/// more ROOT classes
-
 import { create } from '../core.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';

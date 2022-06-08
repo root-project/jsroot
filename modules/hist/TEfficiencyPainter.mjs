@@ -1,5 +1,3 @@
-/// more ROOT classes
-
 import { BIT, create, createHistogram } from '../core.mjs';
 
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
