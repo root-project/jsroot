@@ -97,11 +97,7 @@ class ObjectPainter extends BasePainter {
    getObject() { return this.draw_object; }
 
    /** @summary Returns drawn object class name */
-   getClassName() {
-      let obj = this.getObject(),
-          clname = obj ? obj._typename : "";
-      return clname || "";
-   }
+   getClassName() { return this.getObject()?._typename || ""; }
 
    /** @summary Checks if drawn object matches with provided typename
      * @param {string|object} arg - typename (or object with _typename member)
@@ -171,7 +167,6 @@ class ObjectPainter extends BasePainter {
       let sett = pp.getObjectDrawSettings('ROOT.' + obj._typename, 'nosame');
       return sett?.opts;
    }
-
 
    /** @summary Central place to update objects drawing
      * @param {object} obj - new version of object, values will be updated in original object
@@ -269,7 +264,6 @@ class ObjectPainter extends BasePainter {
    checkResize(arg) {
       let p = this.getCanvPainter();
       if (!p) return false;
-
       // only canvas should be checked
       p.checkCanvasResize(arg);
       return true;
@@ -622,8 +616,6 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std) this.markeratt = handler;
-
-      // handler.used = false; // mark that line handler is not yet used
       return handler;
    }
 
@@ -650,8 +642,6 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std) this.lineatt = handler;
-
-      // handler.used = false; // mark that line handler is not yet used
       return handler;
    }
 
@@ -688,9 +678,6 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std) this.fillatt = handler;
-
-      // handler.used = false; // mark that fill handler is not yet used
-
       return handler;
    }
 
@@ -754,10 +741,9 @@ class ObjectPainter extends BasePainter {
      * @private */
    executeMenuCommand(method) {
 
-      if (method.fName == "Inspect") {
+      if (method.fName == "Inspect")
          // primitve inspector, keep it here
          return this.showInspector();
-      }
 
       return false;
    }
@@ -1312,7 +1298,7 @@ class ObjectPainter extends BasePainter {
          this._got_menu = true;
 
          if (reply && (_reqid !== reply.fId))
-            console.error('missmatch between request ' + _reqid + ' and reply ' + reply.fId + ' identifiers');
+            console.error(`missmatch between request ${_reqid} and reply ${reply.fId}  identifiers`);
 
          let items = reply ? reply.fItems : null;
 
@@ -1587,7 +1573,6 @@ function selectActivePad(args) {
 function getActivePad() {
    return $active_pp;
 }
-
 
 /** @summary Check resize of drawn element
   * @param {string|object} dom - id or DOM element

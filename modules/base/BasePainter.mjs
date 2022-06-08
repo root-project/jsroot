@@ -70,13 +70,13 @@ function floatToString(value, fmt, ret_fmt) {
 
    fmt = fmt.trim();
    let len = fmt.length;
-   if (len<2)
+   if (len < 2)
       return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
    let last = fmt[len-1];
    fmt = fmt.slice(0,len-1);
    let isexp, prec = fmt.indexOf(".");
-   prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
-   if (!Number.isInteger(prec) || (prec <=0)) prec = 4;
+   prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
+   if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
    if ((last=='e') || (last=='E')) { isexp = true; } else
@@ -178,7 +178,7 @@ class DrawOptions {
       val = val ? parseFloat(val) : Number.NaN;
       return !Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
    }
-}
+} // class DrawOptions
 
 
 /** @summary Simple random generator with controlled seed
@@ -206,8 +206,7 @@ class TRandom {
       result /= 4294967296;
       return result + 0.5;
    }
-}
-
+} // class TRandom
 
 
 /** @summary Function used to provide svg:path for the smoothed curves.
