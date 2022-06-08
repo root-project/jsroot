@@ -1112,7 +1112,8 @@ class ObjectPainter extends BasePainter {
      * @protected */
    drawText(arg) {
 
-      if (!arg.text) arg.text = "";
+      if (!arg.text)
+         arg.text = "";
 
       arg.draw_g = arg.draw_g || this.draw_g;
       if (!arg.draw_g || arg.draw_g.empty()) return;
@@ -1215,8 +1216,7 @@ class ObjectPainter extends BasePainter {
          return this._postprocessDrawText(arg, arg.txt_node);
       }
 
-      arg.mj_node = arg.draw_g.append("svg:g")
-                           .attr('visibility', 'hidden'); // hide text until drawing is finished
+      arg.mj_node = arg.draw_g.append("svg:g").attr('visibility', 'hidden'); // hide text until drawing is finished
 
       produceMathjax(this, arg.mj_node, arg).then(() => {
          arg.ready = true;
