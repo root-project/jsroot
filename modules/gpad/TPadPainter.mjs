@@ -976,6 +976,14 @@ class TPadPainter extends ObjectPainter {
       return hints;
    }
 
+   /** @summary Changes canvas dark mode
+     * @private */
+   changeDarkMode(mode) {
+      if (mode === undefined)
+         mode = settings.DarkMode;
+      this.getCanvSvg().style("filter", mode ? "invert(100%)" : null);
+   }
+
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
@@ -1018,6 +1026,11 @@ class TPadPainter extends ObjectPainter {
             gStyle.fOptLogy = this.pad.fLogy;
             gStyle.fOptLogz = this.pad.fLogz;
          }, "Store pad fill attributes, grid, tick and log scale settings to gStyle");
+
+         if (this.iscan)
+            menu.addSettingsMenu(false, arg => {
+               if (arg == "dark") this.changeDarkMode();
+            });
       }
 
       menu.add("separator");
