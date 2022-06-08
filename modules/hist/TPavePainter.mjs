@@ -832,14 +832,13 @@ class TPavePainter extends ObjectPainter {
                     .on("dblclick", () => this.getFramePainter().unzoom("z"));
 
       if (settings.ZoomWheel)
-            this.draw_g.on("wheel", evnt => {
-               let pos = d3_pointer(evnt, this.draw_g.node()),
-                   coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width;
-
-               let item = this.z_handle.analyzeWheelEvent(evnt, coord);
-               if (item && item.changed)
-                  this.getFramePainter().zoom("z", item.min, item.max);
-            });
+         this.draw_g.on("wheel", evnt => {
+            let pos = d3_pointer(evnt, this.draw_g.node()),
+                coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
+                item = this.z_handle.analyzeWheelEvent(evnt, coord);
+            if (item && item.changed)
+               this.getFramePainter().zoom("z", item.min, item.max);
+         });
    }
 
    /** @summary Fill context menu for the TPave object */
@@ -857,7 +856,7 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, "pave_moved")
          });
 
-         menu.add("Save to gStyle", function() {
+         menu.add("Save to gStyle", () => {
             gStyle.fStatX = pave.fX2NDC;
             gStyle.fStatW = pave.fX2NDC - pave.fX1NDC;
             gStyle.fStatY = pave.fY2NDC;
@@ -866,7 +865,7 @@ class TPavePainter extends ObjectPainter {
             gStyle.fStatTextColor = pave.fTextColor;
             gStyle.fStatFontSize = pave.fTextSize;
             gStyle.fStatFont = pave.fTextFont;
-         });
+         }, "Store stats position and graphical attributes to gStyle");
 
          menu.add("SetStatFormat", () => {
             menu.input("Enter StatFormat", pave.fStatFormat).then(fmt => {
@@ -893,8 +892,8 @@ class TPavePainter extends ObjectPainter {
             let opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
             menu.addchk(opt, name, opt * 100 + pos, function(arg) {
-               let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
-               let oldopt = parseInt(arg / 100);
+               let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit,
+                   oldopt = parseInt(arg / 100);
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
                if (arg % 100 < 10) {
                   pave.fOptStat = newopt;
@@ -947,7 +946,7 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleTextColor = pave.fTextColor;
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;
-         });
+         }, "Store title position and graphical attributes to gStyle");
       }
 
       if (this.UseTextColor)

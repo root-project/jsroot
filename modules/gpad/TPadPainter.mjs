@@ -1027,7 +1027,7 @@ class TPadPainter extends ObjectPainter {
             gStyle.fOptLogx = this.pad.fLogx;
             gStyle.fOptLogy = this.pad.fLogy;
             gStyle.fOptLogz = this.pad.fLogz;
-         });
+         }, "Store pad fill attributes, grid, tick and log scale settings to gStyle");
       }
 
       menu.add("separator");

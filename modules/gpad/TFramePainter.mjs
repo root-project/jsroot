@@ -2503,7 +2503,7 @@ class TFramePainter extends ObjectPainter {
          gStyle.fPadRightMargin = 1 - this.fX2NDC;
          if (this.fillatt) this.fillatt.saveToStyle("fFrameFillColor", "fFrameFillStyle");
          if (this.lineatt) this.lineatt.saveToStyle("fFrameLineColor", "fFrameLineWidth", "fFrameLineStyle");
-      });
+      }, "Store frame position and graphical attributes to gStyle");
 
       menu.add("separator");
       menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
