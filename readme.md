@@ -1,29 +1,15 @@
 # JavaScript ROOT
 
-JavaScript ROOT provides interactive ROOT-like graphics in the web browsers.
+JavaScript ROOT provides interactive ROOT-like graphics in the web browsers and in `node.js`.
 Data can be read and displayed from ROOT binary and JSON files.
 `JSROOT` implements user interface for THttpServer class.
-SVG files can be produced in `node.js`.
 
 ## Examples
 
+[![Color draw for TH2](https://root.cern/js/files/img/th2.png)](https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz)   [![2-dimensional TTree::Draw with cut options](https://root.cern/js/files/img/ttree.png)](https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz%3E4)    [![Several variants of THStack drawing](https://root.cern/js/files/img/thstack.png)](https://root.cern/js/latest/?nobrowser&file=../files/histpainter6.root&item=draw_hstack;1)   [![Drawing of TGeo model superimposed with tracks and hits](https://root.cern/js/files/img/geo_tracks.png)](https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1)
 
-[![2-dimensional TTree::Draw with cut options](https://root.cern/js/files/img/ttree.png)](https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz%3E4)  [![Several variants of THStack drawing](https://root.cern/js/files/img/thstack.png)](https://root.cern/js/latest/?nobrowser&file=../files/histpainter6.root&item=draw_hstack;1)  [![Drawing of TGeo model superimposed with tracks and hits](https://root.cern/js/files/img/geo_tracks.png)](https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1)
-
-
-<a href="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz%3E4"><img src="https://root.cern/js/files/img/ttree.png" align="left" hspace="10" vspace="6" alt="TTree::Draw()" title="2-dimensional TTree::Draw with cut options"></a>
-<a href="https://root.cern/js/latest/?nobrowser&file=../files/histpainter6.root&item=draw_hstack;1"><img src="https://root.cern/js/files/img/thstack.png" align="left" hspace="10" vspace="6" alt="THStack" title="Several variants of THStack drawing"></a>
-<a href="https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1"><img src="https://root.cern/js/files/img/geo_tracks.png" align="left" hspace="10" vspace="6" alt="Geometry" title="Drawing of TGeo model superimposed with tracks and hits"></a>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
 
 ### In web browser
-
 ```javascript
 ...
    <body>
@@ -39,7 +25,6 @@ SVG files can be produced in `node.js`.
 ```
 
 ### In node.js
-
 ```javascript
 import { openFile, makeSVG } from "jsroot";
 import { writeFileSync } from "fs";
@@ -49,15 +34,19 @@ let svg = await makeSVG({ object: obj, option: "lego2,pal50", width: 1200, heigh
 writeFileSync("lego2.svg", svg);
 ```
 
-### From latest release
-
-[examples](https://root.cern/js/latest/examples.htm)
+### More examples
+[Supported classes/options](https://root.cern/js/latest/examples.htm)
 
 [API examples](https://root.cern/js/latest/api.htm)
 
 
-## Documentation
+## Install
+```
+npm install jsroot
+```
 
+
+## Documentation
 [Tutorial](docs/JSROOT.md)
 
 [THttpServer](docs/HttpServer.md)
@@ -66,12 +55,7 @@ writeFileSync("lego2.svg", svg);
 
 [Reference API](https://root.cern/js/latest/jsdoc/global.html)
 
-
 ## Links
-
 [https://root.cern/js/](https://root.cern/js/)
 
 [https://jsroot.gsi.de](https://jsroot.gsi.de/)
-
-
-
