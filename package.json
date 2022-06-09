@@ -67,5 +67,12 @@
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
     "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md"
-  }
+  },
+  "keywords": [
+    "ROOT",
+    "interactive",
+    "svg",
+    "webgl",
+    "THttpServer"
+  ]
 }
