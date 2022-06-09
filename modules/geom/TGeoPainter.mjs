@@ -432,6 +432,9 @@ class GeoDrawingControl extends InteractiveControl {
 } // class GeoDrawingControl
 
 
+const stageInit = 0, stageCollect = 1, stageWorkerCollect = 2, stageAnalyze = 3, stageCollShapes = 4,
+      stageStartBuild = 5, stageWorkerBuild = 6, stageBuild = 7, stageBuildReady = 8, stageWaitMain = 9, stageBuildProj = 10;
+
 /**
  * @summary Painter class for geometries drawing
  *
@@ -460,7 +463,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
-      this.drawing_stage = 0; //
+      this.drawing_stage = stageInit; //
+      this.drawing_log = "Init";
       this.ctrl = {
          clipIntersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
@@ -497,6 +501,31 @@ class TGeoPainter extends ObjectPainter {
 
       this.cleanup(true);
    }
+
+   /** @summary Change drawing stage
+     * @private */
+   changeStage(value, msg) {
+      this.drawing_stage = value;
+      if (!msg)
+         switch(value) {
+            case stageInit: msg = "Building done"; break;
+            case stageCollect: msg = "collect visibles"; break;
+            case stageWorkerCollect: msg = "worker collect visibles"; break;
+            case stageAnalyze: msg = "Analyse visibles"; break;
+            case stageCollShapes: msg = "collect shapes for building"; break;
+            case stageStartBuild: msg = "Start build shapes"; break;
+            case stageWorkerBuild: msg = "Worker build shapes"; break;
+            case stageBuild: msg = "Build shapes"; break;
+            case stageBuildReady: msg = "Build ready"; break;
+            case stageWaitMain: msg = "Wait for main painter"; break;
+            case stageBuildProj: msg = "Build projection"; break;
+            default: msg = `stage ${value}`;
+         }
+      this.drawing_log = msg;
+   }
+
+   /** @summary Check drawing stage */
+   isStage(value) { return value === this.drawing_stage; }
 
    /** @summary Create toolbar */
    createToolbar() {
@@ -1857,13 +1886,13 @@ class TGeoPainter extends ObjectPainter {
      * @returns {number} next operation kind, see desc */
    nextDrawAction() {
 
-      if (!this._clones || (this.drawing_stage == 0)) return false;
+      if (!this._clones || this.isStage(stageInit)) return false;
 
-      if (this.drawing_stage == 1) {
+      if (this.isStage(stageCollect)) {
 
          if (this._geom_viewer) {
             this._draw_all_nodes = false;
-            this.drawing_stage = 3;
+            this.changeStage(stageAnalyze);
             return true;
          }
 
@@ -1914,7 +1943,7 @@ class TGeoPainter extends ObjectPainter {
             this._draw_all_nodes = res.complete;
             // let tm2 = new Date().getTime();
             // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
-            this.drawing_stage = 3;
+            this.changeStage(stageAnalyze);
             return true;
          }
 
@@ -1926,26 +1955,19 @@ class TGeoPainter extends ObjectPainter {
 
          this.submitToWorker(job);
 
-         this.drawing_stage = 2;
-
-         this.drawing_log = "Worker select visibles";
+         this.changeStage(stageWorkerCollect);
 
          return 2; // we now waiting for the worker reply
       }
 
-      if (this.drawing_stage == 2) {
+      if (this.isStage(stageWorkerCollect)) {
          // do nothing, we are waiting for worker reply
-
-         this.drawing_log = "Worker select visibles";
-
          return 2;
       }
 
-      if (this.drawing_stage == 3) {
+      if (this.isStage(stageAnalyze)) {
          // here we merge new and old list of nodes for drawing,
-         // normally operation is fast and can be implemented with one call
-
-         this.drawing_log = "Analyse visibles";
+         // normally operation is fast and can be implemented with one c
 
          if (this._new_append_nodes) {
 
@@ -1971,13 +1993,11 @@ class TGeoPainter extends ObjectPainter {
 
          this._draw_nodes = this._new_draw_nodes;
          delete this._new_draw_nodes;
-         this.drawing_stage = 4;
+         this.changeStage(stageCollShapes);
          return true;
       }
 
-      if (this.drawing_stage === 4) {
-
-         this.drawing_log = "Collect shapes";
+      if (this.isStage(stageCollShapes)) {
 
          // collect shapes
          let shapes = this._clones.collectShapes(this._draw_nodes);
@@ -1985,11 +2005,11 @@ class TGeoPainter extends ObjectPainter {
          // merge old and new list with produced shapes
          this._build_shapes = this._clones.mergeShapesLists(this._build_shapes, shapes);
 
-         this.drawing_stage = 5;
+         this.changeStage(stageStartBuild);
          return true;
       }
 
-      if (this.drawing_stage === 5) {
+      if (this.isStage(stageStartBuild)) {
          // this is building of geometries,
          // one can ask worker to build them or do it ourself
 
@@ -2012,28 +2032,27 @@ class TGeoPainter extends ObjectPainter {
             if (cnt > 0) {
                /// only if some geom missing, submit job to the worker
                this.submitToWorker(job);
-               this.drawing_log = "Worker build shapes";
-               this.drawing_stage = 6;
+               this.changeStage(stageWorkerBuild);
                return 2;
             }
          }
 
-         this.drawing_stage = 7;
+         this.changeStage(stageBuild);
       }
 
-      if (this.drawing_stage === 6) {
+      if (this.isStage(stageWorkerBuild)) {
          // waiting shapes from the worker, worker should activate our code
          return 2;
       }
 
-      if ((this.drawing_stage === 7) || (this.drawing_stage === 8)) {
+      if (this.isStage(stageBuild) || this.isStage(stageBuildReady)) {
 
-         if (this.drawing_stage === 7) {
+         if (this.isStage(stageBuild)) {
             // building shapes
             let res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
-               this.drawing_stage = 8;
+               this.changeStage(stageBuildReady);
             } else {
                this.ctrl.info.num_shapes = res.shapes;
                this.drawing_log = "Creating: " + res.shapes + " / " + this._build_shapes.length + " shapes,  "  + res.faces + " faces";
@@ -2053,7 +2072,7 @@ class TGeoPainter extends ObjectPainter {
             /// shape can be provided with entry itself
             let shape = entry.server_shape || this._build_shapes[entry.shapeid];
             if (!shape.ready) {
-               if (this.drawing_stage === 8) console.warn('shape marked as not ready when should');
+               if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
                ready = false;
                continue;
             }
@@ -2072,42 +2091,37 @@ class TGeoPainter extends ObjectPainter {
 
          if (ready) {
             if (this.ctrl.project) {
-               this.drawing_log = "Build projection";
-               this.drawing_stage = 10;
+               this.changeStage(stageBuildProj);
                return true;
             }
-
-            this.drawing_log = "Building done";
-            this.drawing_stage = 0;
+            this.changeStage(stageInit);
             return false;
          }
 
-         if (this.drawing_stage > 7)
+         if (!this.isStage(stageBuild))
             this.drawing_log = `Building meshes ${this.ctrl.info.num_meshes} / ${this.ctrl.info.num_faces}`;
          return true;
       }
 
-      if (this.drawing_stage === 9) {
+      if (this.isStage(stageWaitMain)) {
          // wait for main painter to be ready
 
          if (!this._main_painter) {
-            console.warn('MAIN PAINTER DISAPPER');
-            this.drawing_stage = 0;
+            this.changeStage(stageInit, "Lost main painter");
             return false;
          }
          if (!this._main_painter._drawing_ready) return 1;
 
-         this.drawing_stage = 10; // just do projection
+         this.changeStage(stageBuildProj); // just do projection
       }
 
-      if (this.drawing_stage === 10) {
+      if (this.isStage(stageBuildProj)) {
          this.doProjection();
-         this.drawing_log = "Building done";
-         this.drawing_stage = 0;
+         this.changeStage(stageInit);
          return false;
       }
 
-      console.error('never come here stage = ' + this.drawing_stage);
+      console.error(`never come here, stage ${this.drawing_stage}`);
 
       return false;
    }
@@ -2180,7 +2194,8 @@ class TGeoPainter extends ObjectPainter {
      * @desc These nodes excluded from selection logic and always inserted into the model
      * Shape already should be created and assigned to the node */
    appendMoreNodes(nodes, from_drawing) {
-      if (this.drawing_stage && !from_drawing) {
+
+      if (!this.isStage(stageInit) && !from_drawing) {
          this._provided_more_nodes = nodes;
          return;
       }
@@ -2462,7 +2477,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Start geometry drawing */
    startDrawGeometry(force) {
 
-      if (!force && (this.drawing_stage!==0)) {
+      if (!force && !this.isStage(stageInit)) {
          this._draw_nodes_again = true;
          return;
       }
@@ -2473,9 +2488,8 @@ class TGeoPainter extends ObjectPainter {
       this._startm = new Date().getTime();
       this._last_render_tm = this._startm;
       this._last_render_meshes = 0;
-      this.drawing_stage = 1;
+      this.changeStage(stageCollect);
       this._drawing_ready = false;
-      this.drawing_log = "collect visible";
       this.ctrl.info.num_meshes = 0;
       this.ctrl.info.num_faces = 0;
       this.ctrl.info.num_shapes = 0;
@@ -2484,15 +2498,12 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.project) {
          if (this._clones_owner) {
             if (this._full_geom) {
-               this.drawing_stage = 10;
-               this.drawing_log = "build projection";
+               this.changeStage(stageBuildProj);
             } else {
                this._full_geom = new Object3D();
             }
-
          } else {
-            this.drawing_stage = 9;
-            this.drawing_log = "wait for main painter";
+            this.changeStage(stageWaitMain);
          }
       }
 
@@ -3616,7 +3627,7 @@ class TGeoPainter extends ObjectPainter {
    continueDraw() {
 
       // nothing to do - exit
-      if (this.drawing_stage === 0) return;
+      if (this.isStage(stageInit)) return;
 
       let tm0 = new Date().getTime(),
           interval = this._first_drawing ? 1000 : 200,
@@ -3632,7 +3643,7 @@ class TGeoPainter extends ObjectPainter {
 
          // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) {
-            this.drawing_stage = 0;
+            this.changeStage(stageInit, "Abort build after 100s");
             break;
          }
 
@@ -3839,7 +3850,7 @@ class TGeoPainter extends ObjectPainter {
       if ('collect' in job) {
          this._new_draw_nodes = job.new_nodes;
          this._draw_all_nodes = job.complete;
-         this.drawing_stage = 3;
+         this.changeStage(stageAnalyze);
          // invoke methods immediately
          return this.continueDraw();
       }
@@ -3872,9 +3883,7 @@ class TGeoPainter extends ObjectPainter {
 
          job.tm4 = new Date().getTime();
 
-         // console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
-
-         this.drawing_stage = 7; // first check which shapes are used, than build meshes
+         this.changeStage(stageBuild); // first check which shapes are used, than build meshes
 
          // invoke methods immediately
          return this.continueDraw();
@@ -4461,7 +4470,7 @@ class TGeoPainter extends ObjectPainter {
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
 
-      this.drawing_stage = 0;
+      this.changeStage(stageInit, "cleanup");
       delete this.drawing_log;
 
       delete this._datgui;
@@ -4497,7 +4506,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._bloomComposer)
             this._bloomComposer.setSize( this._scene_width, this._scene_height );
 
-         if (!this.drawing_stage)
+         if (this.isStage(stageInit))
             this.render3D();
       }
 
