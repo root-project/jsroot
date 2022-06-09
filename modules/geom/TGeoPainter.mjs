@@ -1874,8 +1874,11 @@ class TGeoPainter extends ObjectPainter {
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._clones.countVisibles() || this._clones.markVisibles(),
+         let numvis = this._first_drawing ? this._clones.countVisibles() : 0,
              matrix = null, frustum = null;
+
+         if (!numvis)
+            numvis = this._clones.markVisibles(false, false, !!this.geo_manager && !this.ctrl.showtop);
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
