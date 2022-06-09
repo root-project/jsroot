@@ -7,7 +7,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
-let version_id = "7.1.0";
+let version_id = "7.1.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
@@ -84647,8 +84647,11 @@ class TGeoPainter extends ObjectPainter {
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._clones.countVisibles() || this._clones.markVisibles(),
+         let numvis = this._first_drawing ? this._clones.countVisibles() : 0,
              matrix = null, frustum = null;
+
+         if (!numvis)
+            numvis = this._clones.markVisibles(false, false, !!this.geo_manager && !this.ctrl.showtop);
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection

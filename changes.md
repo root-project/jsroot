@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.1.x
+1. Fix - let modify node visibility bits via context menu
+
+
 ## Changes in 7.1.0
 1. Let change `settings` and `gStyle` parameters via "Settings" menu of the top hierarchy item
 2. Settings and gStyle can be stored as cookies, automatically read when next time loading webpage
