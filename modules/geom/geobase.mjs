@@ -2424,11 +2424,9 @@ class ClonedNodes {
 
    /** @summary Count all visisble nodes */
    countVisibles() {
-      let cnt = 0;
-      if (this.nodes)
-         for (let k = 0; k < this.nodes.length; ++k)
-            if (this.nodes[k].vis)
-               cnt++;
+      let cnt = 0, len = this.nodes?.length || 0;
+      for (let k = 0; k < len; ++k)
+          if (this.nodes[k].vis) cnt++;
       return cnt;
    }
 
@@ -2440,9 +2438,8 @@ class ClonedNodes {
 
       let res = 0;
 
-      for (let n=0;n<this.nodes.length;++n) {
-         let clone = this.nodes[n],
-             obj = this.origin[n];
+      for (let n = 0; n < this.nodes.length; ++n) {
+         let clone = this.nodes[n], obj = this.origin[n];
 
          clone.vis = 0; // 1 - only with last level
          delete clone.nochlds;
@@ -2453,13 +2450,15 @@ class ClonedNodes {
                   // on screen bits used always, childs always checked
                   clone.vis = testGeoBit(obj.fVolume, geoBITS.kVisOnScreen) ? 99 : 0;
 
-                  if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
+                  if ((n == 0) && clone.vis && hide_top_volume) clone.vis = 0;
 
                   if (copy_bits) {
                      setGeoBit(obj.fVolume, geoBITS.kVisNone, false);
                      setGeoBit(obj.fVolume, geoBITS.kVisThis, (clone.vis > 0));
                      setGeoBit(obj.fVolume, geoBITS.kVisDaughters, true);
+                     setGeoBit(obj, geoBITS.kVisDaughters, true);
                   }
+
                } else {
                   clone.vis = !testGeoBit(obj.fVolume, geoBITS.kVisNone) &&
                                testGeoBit(obj.fVolume, geoBITS.kVisThis) ? 99 : 0;
@@ -2471,7 +2470,7 @@ class ClonedNodes {
                   if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
 
                   // special handling for top node
-                  if (n==0) {
+                  if (n === 0) {
                      if (hide_top_volume) clone.vis = 0;
                      delete clone.nochlds;
                   }
@@ -2481,7 +2480,7 @@ class ClonedNodes {
             clone.vis = obj.fRnrSelf ? 99 : 0;
 
             // when the only node is selected, draw it
-            if ((n===0) && (this.nodes.length===1)) clone.vis = 99;
+            if ((n === 0) && (this.nodes.length === 1)) clone.vis = 99;
 
             this.vislevel = 9999; // automatically take all volumes
          }
@@ -3595,7 +3594,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       process(toplevel, 0, 1, 1000000);
 }
 
-export { geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
+export { kindGeo, kindEve, kindShape,
+         geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
          createGeometry, numGeometryFaces, numGeometryVertices,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };

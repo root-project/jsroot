@@ -21,7 +21,7 @@ import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-import { geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+import { kindGeo, kindEve, geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
@@ -1490,14 +1490,14 @@ class TGeoPainter extends ObjectPainter {
 
                let wireframe = this.accessObjectWireFrame(obj);
 
-               if (wireframe!==undefined)
+               if (wireframe !== undefined)
                   menu.addchk(wireframe, "Wireframe", n, function(indx) {
                      let m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.render3D();
                   });
 
-               if (++cnt>1)
+               if (++cnt > 1)
                   menu.add("Manifest", n, function(indx) {
 
                      if (this._last_manifest)
@@ -1528,7 +1528,6 @@ class TGeoPainter extends ObjectPainter {
                if (!this._geom_viewer)
                menu.add("Hide", n, function(indx) {
                   let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
-                  const kindGeo = 0, kindEve = 1;
                   if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                      setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
                      updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
@@ -1774,7 +1773,7 @@ class TGeoPainter extends ObjectPainter {
             if (obj.stack) info = painter.getStackFullName(obj.stack);
             if (!info) continue;
 
-            if (info.indexOf("<prnt>")==0)
+            if (info.indexOf("<prnt>") == 0)
                info = painter.getItemName() + info.slice(6);
 
             names.push(info);
@@ -1831,11 +1830,11 @@ class TGeoPainter extends ObjectPainter {
    addTransformControl() {
       if (this._tcontrols) return;
 
-      if ( !this.ctrl._debug && !this.ctrl._grid ) return;
+      if (!this.ctrl._debug && !this.ctrl._grid) return;
 
-      this._tcontrols = new TransformControls( this._camera, this._renderer.domElement );
-      this._scene.add( this._tcontrols );
-      this._tcontrols.attach( this._toplevel );
+      this._tcontrols = new TransformControls(this._camera, this._renderer.domElement);
+      this._scene.add(this._tcontrols);
+      this._tcontrols.attach(this._toplevel);
       //this._tcontrols.setSize( 1.1 );
 
       window.addEventListener( 'keydown', event => {
@@ -1879,11 +1878,11 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Main function in geometry creation loop
-     * @desc Return false when nothing todo
-     * return true if one could perform next action immediately
-     * return 1 when call after short timeout required
-     * return 2 when call must be done from processWorkerReply
-     * @returns {number} next operation kind, see desc */
+     * @desc Returns:
+     * - false when nothing todo
+     * - true if one could perform next action immediately
+     * - 1 when call after short timeout required
+     * - 2 when call must be done from processWorkerReply */
    nextDrawAction() {
 
       if (!this._clones || this.isStage(stageInit)) return false;
@@ -1903,8 +1902,11 @@ class TGeoPainter extends ObjectPainter {
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._clones.countVisibles() || this._clones.markVisibles(),
+         let numvis = this._first_drawing ? this._clones.countVisibles() : 0,
              matrix = null, frustum = null;
+
+         if (!numvis)
+            numvis = this._clones.markVisibles(false, false, !!this.geo_manager && !this.ctrl.showtop);
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
@@ -3533,7 +3535,7 @@ class TGeoPainter extends ObjectPainter {
          let spent = new Date().getTime() - this._start_drawing_time;
 
          if (!this._scene)
-            console.log('Creating clones', this._clones.nodes.length, 'takes', spent, 'uniquevis', uniquevis);
+            console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
 
          if (this.options._count)
             return this.drawCount(uniquevis, spent);
@@ -4619,7 +4621,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Redraw TGeo object */
-   redrawObject(obj, opt) {
+   redrawObject(obj /*, opt */) {
       if (!this.updateObject(obj))
          return false;
 
@@ -4628,9 +4630,7 @@ class TGeoPainter extends ObjectPainter {
       let draw_obj = this.getGeometry(), name_prefix = "";
       if (this.geo_manager) name_prefix = draw_obj.fName;
 
-      this.prepareObjectDraw(draw_obj, name_prefix);
-
-      return true;
+      return this.prepareObjectDraw(draw_obj, name_prefix);
    }
 
   /** @summary draw TGeo object */
