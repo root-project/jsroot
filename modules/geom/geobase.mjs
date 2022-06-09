@@ -2751,9 +2751,9 @@ class ClonedNodes {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
 
-         let dflt = { kWhite:0,  kBlack:1, kGray:920,
-               kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
-               kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+         let dflt = { kWhite: 0,  kBlack: 1, kGray: 920,
+                      kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
+                      kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 };
 
          let nmax = 110, col = [];
          for (let i=0;i<nmax;i++) col.push(dflt.kGray);
@@ -2787,7 +2787,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
             _opacity = entry.opacity || 1;
-         prop.fillcolor = new Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
+         prop.fillcolor = new Color( entry.color ? `rgb(${entry.color})` : "blue" );
          prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
@@ -2817,7 +2817,7 @@ class ClonedNodes {
             prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: FrontSide, vertexColors: false,
-                             depthWrite: _opacity == 1 } );
+                             depthWrite:  _opacity == 1 } );
             prop.material.inherentOpacity = _opacity;
          }
 
@@ -2845,14 +2845,14 @@ class ClonedNodes {
          else if (volume.fLineColor >= 0)
             prop.fillcolor = root_colors[volume.fLineColor];
 
-         if (volume.fMedium && volume.fMedium.fMaterial) {
-            let mat = volume.fMedium.fMaterial,
-                fillstyle = mat.fFillStyle,
-                transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+         let mat = volume?.fMedium?.fMaterial;
+
+         if (mat) {
+            let fillstyle = mat.fFillStyle,
+                transparency = (fillstyle >= 3000 && fillstyle <= 3100) ? fillstyle - 3000 : 0;
 
             if (this.use_dflt_colors) {
-               let matZ = Math.round(mat.fZ),
-                   icol = this.dflt_table[matZ];
+               let matZ = Math.round(mat.fZ), icol = this.dflt_table[matZ];
                prop.fillcolor = root_colors[icol];
                if (mat.fDensity < 0.1) transparency = 60;
             }
@@ -2865,10 +2865,10 @@ class ClonedNodes {
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
+         prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: FrontSide, vertexColors: false,
-                              depthWrite: _opacity == 1 } );
+                              depthWrite: _opacity == 1 });
          prop.material.inherentOpacity = _opacity;
       }
 
@@ -2938,7 +2938,7 @@ class ClonedNodes {
       if ((options === 'mesh') || (options === 'delete_mesh')) {
          let mesh = null;
          if (three_prnt)
-            for (let n=0; (n<three_prnt.children.length) && !mesh;++n) {
+            for (let n = 0; (n < three_prnt.children.length) && !mesh; ++n) {
                let chld = three_prnt.children[n];
                if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
             }
