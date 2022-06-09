@@ -479,20 +479,20 @@ class TGeoPainter extends ObjectPainter {
       };
 
       this.ctrl.depthMethodItems = [
-         {name: 'Default', value: "dflt"},
-         {name: 'Raytraicing', value: "ray"},
-         {name: 'Boundary box', value: "box"},
-         {name: 'Mesh size', value: "size"},
-         {name: 'Central point', value: "pnt" }
+         { name: 'Default', value: "dflt" },
+         { name: 'Raytraicing', value: "ray" },
+         { name: 'Boundary box', value: "box" },
+         { name: 'Mesh size', value: "size" },
+         { name: 'Central point', value: "pnt" }
        ];
 
       this.ctrl.ssao.outputItems = [
-         {name: 'Default', value: SSAOPass.OUTPUT.Default},
-         {name: 'SSAO Only', value: SSAOPass.OUTPUT.SSAO},
-         {name: 'SSAO Only + Blur', value: SSAOPass.OUTPUT.Blur},
-         {name: 'Beauty', value: SSAOPass.OUTPUT.Beauty},
-         {name: 'Depth', value: SSAOPass.OUTPUT.Depth},
-         {name: 'Normal', value: SSAOPass.OUTPUT.Normal}
+         { name: 'Default', value: SSAOPass.OUTPUT.Default },
+         { name: 'SSAO Only', value: SSAOPass.OUTPUT.SSAO },
+         { name: 'SSAO Only + Blur', value: SSAOPass.OUTPUT.Blur },
+         { name: 'Beauty', value: SSAOPass.OUTPUT.Beauty },
+         { name: 'Depth', value: SSAOPass.OUTPUT.Depth },
+         { name: 'Normal', value: SSAOPass.OUTPUT.Normal }
       ];
 
       this.cleanup(true);
@@ -1540,7 +1540,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (obj.jsroot_special) unique = false;
 
-         for (let k = 0; (k<n) && unique;++k)
+         for (let k = 0; (k < n) && unique;++k)
             if (intersects[k].object === obj) unique = false;
 
          if (!unique) intersects.splice(n,1);
@@ -1658,7 +1658,7 @@ class TGeoPainter extends ObjectPainter {
       // check if selections are the same
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
-         for (let k = 0;( k < curr_mesh.length) && same; ++k) {
+         for (let k = 0; (k < curr_mesh.length) && same; ++k) {
             if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
          }
       }
@@ -1707,7 +1707,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Configure depth method, used for render order production.
-    * @param {string} method - Allowed values: "ray", "box","pnt", "size", "dflt" */
+     * @param {string} method - Allowed values: "ray", "box","pnt", "size", "dflt" */
    setDepthMethod(method) {
       if (this.ctrl)
          this.ctrl.depthMethod = method;
@@ -1892,7 +1892,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          this._current_face_limit = this.ctrl.maxlimit;
-         if (matrix) this._current_face_limit*=1.25;
+         if (matrix) this._current_face_limit *= 1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -2083,7 +2083,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (this.drawing_stage > 7)
-            this.drawing_log = "Building meshes " + this.ctrl.info.num_meshes + " / " + this.ctrl.info.num_faces;
+            this.drawing_log = `Building meshes ${this.ctrl.info.num_meshes} / ${this.ctrl.info.num_faces}`;
          return true;
       }
 
@@ -3459,7 +3459,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Prepare drawings
      * @desc Return value used as promise for painter */
-   prepareObjectDraw(draw_obj, name_prefix, first_time) {
+   prepareObjectDraw(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
@@ -3480,7 +3480,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones = this._main_painter._clones;
 
-         console.log('Reuse clones', this._clones.nodes.length, 'from main painter');
+         console.log(`Reuse clones ${this._clones.nodes.length} from main painter`);
 
       } else if (!draw_obj) {
 
@@ -4679,7 +4679,7 @@ class TGeoPainter extends ObjectPainter {
          painter.addExtra(extras, extras_path);
       }
 
-      return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix, true));
+      return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
    }
 
 } // class TGeoPainter
@@ -4810,9 +4810,7 @@ function provideMenu(menu, item, hpainter) {
       }
 
       findItemWithPainter(item, 'testGeomChanges');
-
    }, ToggleMenuBit = arg => {
-
       toggleGeoBit(vol, arg);
       let newname = item._icon.split(" ")[0] + provideVisStyle(vol);
       hpainter.forEachItem(m => {
@@ -4825,7 +4823,6 @@ function provideMenu(menu, item, hpainter) {
 
       hpainter.updateTreeNode(item);
       findItemWithPainter(item, 'testGeomChanges');
-
    };
 
    if ((item._geoobj._typename.indexOf("TGeoNode")===0) && findItemWithPainter(item))
