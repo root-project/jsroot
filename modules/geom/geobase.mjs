@@ -3411,7 +3411,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
    function setdefaults(top) {
       if (!top) return;
-      top.traverse(function(obj) {
+      top.traverse(obj => {
          obj.renderOrder = 0;
          if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
       });
@@ -3423,7 +3423,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
       if (!obj.children) return;
 
-      for (let k=0;k<obj.children.length;++k) {
+      for (let k = 0; k < obj.children.length; ++k) {
          let chld = obj.children[k];
          if (chld.$jsroot_order === lvl) {
             if (chld.material) {
@@ -3444,9 +3444,10 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       // resort meshes using ray caster and camera position
       // idea to identify meshes which are in front or behind
 
-      if (arr.length > 300) {
+      if (arr.length > 1000) {
          // too many of them, just set basic level and exit
-         for (let i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
+         for (let i = 0; i < arr.length; ++i)
+            arr[i].renderOrder = (minorder + maxorder)/2;
          return false;
       }
 
@@ -3455,7 +3456,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       // first calculate distance to the camera
       // it gives preliminary order of volumes
 
-      for (let i=0;i<arr.length;++i) {
+      for (let i = 0; i < arr.length; ++i) {
          let mesh = arr[i],
              box3 = mesh.$jsroot_box3;
 
@@ -3472,21 +3473,18 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             continue;
          }
 
-         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max)),
+             pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
 
-         let pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.min.x, box3.max.y, box3.min.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.max.x, box3.min.y, box3.min.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.max.x, box3.max.y, box3.min.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.max.x, box3.min.y, box3.max.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.min.x, box3.max.y, box3.max.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
 
@@ -3503,54 +3501,53 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
 
       if (method==="ray")
-      for (let i=arr.length - 1; i >= 0; --i) {
-         let mesh = arr[i],
-             box3 = mesh.$jsroot_box3,
-             direction = box3.getCenter(tmp_vect);
+         for (let i=arr.length - 1; i >= 0; --i) {
+            let mesh = arr[i], intersects,
+                box3 = mesh.$jsroot_box3,
+                direction = box3.getCenter(tmp_vect);
 
-         for(let ntry=0; ntry<2;++ntry) {
+            for(let ntry = 0; ntry < 2; ++ntry) {
 
-            direction.sub(origin).normalize();
+               direction.sub(origin).normalize();
 
-            raycast.set( origin, direction );
+               raycast.set( origin, direction );
 
-            let intersects = raycast.intersectObjects(arr, false); // only plain array
+               intersects = raycast.intersectObjects(arr, false) || []; // only plain array
+               let unique = [];
 
-            let unique = [];
+               for (let k1 = 0; k1 < intersects.length; ++k1) {
+                  if (unique.indexOf(intersects[k1].object) < 0)
+                     unique.push(intersects[k1].object);
+                  // if (intersects[k1].object === mesh) break; // trace until object itself
+               }
 
-            for (let k1 = 0; k1 < intersects.length; ++k1) {
-               if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
-               // if (intersects[k1].object === mesh) break; // trace until object itself
+               intersects = unique;
+
+               if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
+                  console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
+
+               if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
+
+               let pos = mesh.geometry.attributes.position.array;
+
+               direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
+
+               direction.applyMatrix4(mesh.matrixWorld);
             }
 
-            intersects = unique;
-
-            if ((intersects.indexOf(mesh)<0) && (ntry>0))
-               console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
-
-            if ((intersects.indexOf(mesh)>=0) || (ntry>0)) break;
-
-            let pos = mesh.geometry.attributes.position.array;
-
-            direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
-
-            direction.applyMatrix4(mesh.matrixWorld);
-         }
-
-         // now push first object in intersects to the front
-         for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
-            let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
-                i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
-            if (i1<i2) continue;
-            for (let ii=i2;ii<i1;++ii) {
-               resort[ii] = resort[ii+1];
-               resort[ii].$jsroot_index = ii;
+            // now push first object in intersects to the front
+            for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
+               let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+                   i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
+               if (i1 < i2) continue;
+               for (let ii = i2; ii < i1; ++ii) {
+                  resort[ii] = resort[ii+1];
+                  resort[ii].$jsroot_index = ii;
+               }
+               resort[i1] = mesh2;
+               mesh2.$jsroot_index = i1;
             }
-            resort[i1] = mesh2;
-            mesh2.$jsroot_index = i1;
          }
-
-      }
 
       for (let i = 0; i < resort.length; ++i) {
          resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
@@ -3588,7 +3585,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
    }
 
-   if (!method || (method==="dflt"))
+   if (!method || (method == "dflt"))
       setdefaults(toplevel);
    else
       process(toplevel, 0, 1, 1000000);
