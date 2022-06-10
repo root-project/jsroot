@@ -14,7 +14,7 @@ To start the http server, at any time, create an instance of the [THttpServer](h
 auto serv = new THttpServer("http:8080");
 ```
 
-This will start a [civetweb](https://github.com/civetweb/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
+This will start a [civetweb](https://github.com/civetweb/civetweb)-based http server on the port 8080. Then one should be able to open the address `http://localhost:8080` in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
 
 There is a [server snapshot](https://root.cern/js/latest/httpserver.C/?layout=simple&item=Canvases/c1) of running macro [tutorials/http/httpserver.C](https://github.com/root-project/root/blob/master/tutorials/http/httpserver.C) from ROOT tutorials.
 
@@ -37,10 +37,6 @@ Following URL parameters are supported:
 | websocket_timeout=tm  | set web sockets timeout in seconds (default 300) |
 | websocket_disable     | disable web sockets handling (default enabled) |
 | cors=domain           | define value for CORS header "Access-Control-Allow-Origin" in server response |
-| global                | scans global ROOT lists for existing objects (default) |
-| noglobal              | disable scan of global lists |
-| basic_sniffer         | use basic `TRootSniffer` without support of hist, gpad, graph, tree classes |
-
 
 If necessary, one could bind http server to specific IP address like:
 
@@ -50,10 +46,13 @@ new THttpServer("http:192.168.1.17:8080")
 
 One also can provide extra arguments for THttpServer itself:
 
-   - readonly, ro   - use server in read-only mode (default)
-   - readwrite, rw  - use server in read-write mode
-   - global         - let scan global directories for canvases and files (default)
-   - noglobal       - disable scan of global directories
+| Name           |    Description    |
+| :------------- | :---------------- |
+| readonly, ro   | use server in read-only mode (default) |
+| readwrite, rw  | use server in read-write mode |
+| global         | let scan global directories for canvases and files (default) |
+| noglobal       | disable scan of global directories |
+| basic_sniffer  | use basic `TRootSniffer` without support of hist, gpad, graph, tree classes |
 
 Example:
 
@@ -176,7 +175,7 @@ auto serv = new THttpServer("http:8080?auth_file=.htdigest&auth_domain=domain_na
 
 After that, the web browser will automatically request to input a name/password for the domain "domain_name"
 
-Based on authorized accounts, one could restrict or enable access to some elements in the server objects hierarchy, using THttpServer::Restrict() method.
+Based on authorized accounts, one could restrict or enable access to some elements in the server objects hierarchy, using `THttpServer::Restrict()` method.
 
 For instance, one could hide complete folder from 'guest' account:
 
@@ -205,7 +204,7 @@ One could provide several options for the same item, separating them with '&' si
 serv->Restrict("/Folder/histo1",  "allow_method=GetTitle&hide=guest");
 ```
 
-Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation.
+Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern/doc/master/classTRootSniffer.html#a8af1f11cbfb9c895f968ec0594794120) method documentation.
 
 
 ## Using FastCGI interface
@@ -247,44 +246,42 @@ All user access will be ruled by the main web server. Authorized account names c
 Since Apache version 2.4 FastCGI is directly supported - there is no need to compile and install external modules any more.
 One only need to enable `mod_proxy` and `mod_proxy_fcgi` modules and add following line to **Apache2** configuration file:
 
-     ProxyPass "/root.app/" "fcgi://localhost:9000/" enablereuse=on
+```
+ProxyPass "/root.app/" "fcgi://localhost:9000/" enablereuse=on
+```
 
 More information can be found in [FastCGI proxy docu](https://httpd.apache.org/docs/2.4/mod/mod_proxy_fcgi.html).
-After restarting apache server one should be able to open address:
-
-     http://apache_host_name/root.app/
-
+After restarting apache server one should be able to open address: `http://apache_host_name/root.app/`.
 There are many ways to configure user authentication in Apache. Example of digest auth for FastCGI server:
 
-    <Location "/root.app/">
-       AuthType Digest
-       AuthName "root"
-       AuthDigestDomain "/root.app/" "root"
-       AuthDigestProvider file
-       AuthUserFile "/srv/auth/auth.txt"
-       Require valid-user
-    </Location>
-
+```
+<Location "/root.app/">
+   AuthType Digest
+   AuthName "root"
+   AuthDigestDomain "/root.app/" "root"
+   AuthDigestProvider file
+   AuthUserFile "/srv/auth/auth.txt"
+   Require valid-user
+</Location>
+```
 
 ### Configure fastcgi with lighttpd
 
 An example of configuration file for **lighttpd** server is:
 
-    server.modules += ( "mod_fastcgi" )
-    fastcgi.server = (
-       "/root.app" =>
-         (( "host" => "192.168.1.11",
-            "port" => 9000,
-            "check-local" => "disable",
-            "docroot" => "/"
-         ))
-    )
+```
+server.modules += ( "mod_fastcgi" )
+fastcgi.server = (
+   "/root.app" =>
+     (( "host" => "192.168.1.11",
+        "port" => 9000,
+        "check-local" => "disable",
+        "docroot" => "/"
+     ))
+)
+```
 
-Be aware, that with *lighttpd* one should specify IP address of the host, where ROOT application is running. Address of the ROOT application will be following:
-
-    http://lighttpd_host_name/root.app/
-
-Example of authorization configuration for FastCGI connection:
+Be aware, that with *lighttpd* one should specify IP address of the host, where ROOT application is running. Address of the ROOT application will be following: `http://lighttpd_host_name/root.app/`. Example of authorization configuration for FastCGI connection:
 
     auth.require = ( "/root.app" => (
                        "method" => "digest",
@@ -295,11 +292,11 @@ Example of authorization configuration for FastCGI connection:
 
 ## Integration with existing applications
 
-In many practical cases no change of existing code is required. Opened files (and all objects inside), existing canvas and histograms are automatically scanned by the server and will be available to the users. If necessary, any object can be registered directly to the server with a **`THttpServer::Register()`** call.
+In many practical cases no change of existing code is required. Opened files (and all objects inside), existing canvas and histograms are automatically scanned by the server and will be available to the users. If necessary, any object can be registered directly to the server with a [THttpServer::Register()](https://root.cern/doc/master/classTHttpServer.html#a73658daf379e87a4832fe9dc5c1483ed) call.
 
-Central point of integration - when and how THttpServer get access to data from a running application. By default it is done during the gSystem->ProcessEvents() call - THttpServer uses a synchronous timer which is activated every 100 ms. Such approach works perfectly when running macros in an interactive ROOT session.
+Central point of integration - when and how THttpServer get access to data from a running application. By default it is done during the `gSystem->ProcessEvents()` call - THttpServer uses a synchronous timer which is activated every 100 ms. Such approach works perfectly when running macros in an interactive ROOT session.
 
-If an application runs in compiled code and does not contain gSystem->ProcessEvents() calls, two method are available.
+If an application runs in compiled code and does not contain `gSystem->ProcessEvents()` calls, two method are available.
 
 ### Asynchronous timer
 
@@ -359,18 +356,20 @@ Then, its representation will look like:
 
 The following requests can be performed:
 
-  - `root.bin`   - binary data produced by object streaming with TBufferFile
-  - `root.json`  - ROOT JSON representation for object and objects members
-  - `root.xml`   - ROOT XML representation
-  - `root.png`   - PNG image (if object drawing implemented)
-  - `root.gif`   - GIF image
-  - `root.jpeg`  - JPEG image
-  - `exe.json`   - method execution in the object
-  - `exe.bin`    - method execution, return result in binary form
-  - `cmd.json`   - command execution
-  - `item.json`  - item (object) properties, specified on the server
-  - `multi.json` - perform several requests at once
-  - `multi.bin`  - perform several requests at once, return result in binary form
+| Name         |    Description    |
+| :----------- | :---------------- |
+|  `root.bin`   | binary data produced by object streaming with `TBufferFile` |
+|  `root.json`  | ROOT JSON representation for object and objects members |
+|  `root.xml`   | ROOT XML representation |
+|  `root.png`   | PNG image (if object drawing implemented) |
+|  `root.gif`   | GIF image |
+|  `root.jpeg`  | JPEG image |
+|  `exe.json`   | method execution in the object |
+|  `exe.bin`    | method execution, return result in binary form |
+|  `cmd.json`   | command execution |
+|  `item.json`  | item (object) properties, specified on the server |
+|  `multi.json` | perform several requests at once |
+|  `multi.bin`  | perform several requests at once, return result in binary form |
 
 All data will be automatically zipped if '.gz' extension is appended. Like:
 
@@ -387,7 +386,7 @@ If the access to the server is restricted with htdigest, it is recommended to us
 
 ### Objects data access in JSON format
 
-Request `root.json` implemented with [TBufferJSON](https://root.cern/root/html/TBufferJSON.html) class. TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern/js/) for drawing. `root.json` request returns either complete object or just object member like:
+Request `root.json` implemented with [TBufferJSON](https://root.cern/doc/master/classTBufferJSON.html) class. TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern/js/) for drawing. `root.json` request returns either complete object or just object member like:
 
 ```bash
     [shell] wget http://localhost:8080/Objects/subfolder/obj/fTitle/root.json
@@ -418,8 +417,7 @@ One should remember that JSON representation always includes names of the data f
 
 ### Generating images out of objects
 
-For the ROOT classes which are implementing Draw method (like [TH1](https://root.cern/root/html/TH1.html) or [TGraph](https://root.cern/root/html/TGraph.html))
-one could produce images with requests: `root.png`, `root.gif`, `root.jpeg`. For example:
+For the ROOT classes which are implementing Draw method (like [TH1](https://root.cern/doc/master/classTH1.html) or [TGraph](https://root.cern/doc/master/classTGraph.html)) one could produce images with requests: `root.png`, `root.gif`, `root.jpeg`. For example:
 
 ```bash
 [shell] wget "http://localhost:8080/Files/hsimple.root/hpx/root.png?w=500&h=500&opt=lego1" -O lego1.png
@@ -457,7 +455,7 @@ serv->Restrict("/Histograms/hist1", "allow_method=Rebin"); // allow only Rebin m
 'exe.json' accepts following parameters:
 
    - `method` - name of method to execute
-   - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
+   - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern/doc/master/classTClass.html#a2bef3a3d4bf3d8f8e97e989b63699746) for details)
    - `compact` - compact parameter, used to compress return value
    - `_ret_object_` - name of the object which should be returned as result of method execution (used together with remote TTree::Draw call)
 
@@ -485,7 +483,7 @@ If method required object as argument, it could be posted in binary or XML forma
 [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_&_post_class_=TH1I&c1=10' --post-file=h.bin -O res.json
 ```
 
-Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern/root/html/TBufferXML.html#TBufferXML:ConvertToXML)) method, only string with XML code could be specified:
+Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern/doc/master/classTBufferXML.html#a31320042dda441167ecb1b6f13092e89)) method, only string with XML code could be specified:
 
 ```bash
 [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_xml_&c1=10' --post-file=h.xml -O res.json
@@ -508,7 +506,7 @@ It can be invoked with `cmd.json` request like:
 [shell] wget http://localhost:8080/Folder/Start/cmd.json -O result.txt
 ```
 
-If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution.
+If command fails, `false` will be returned, otherwise result of `gROOT->ProcessLineSync()` execution.
 
 If command definition include arguments:
 
@@ -537,7 +535,7 @@ subfolder/item1/exe.json?method=GetTitle\n
 If such requests saved in 'req.txt' file, one could submit it with command:
 
 ```bash
-    [shell] wget http://localhost:8080/multi.json?number=3 --post-file=req.txt -O result.json
+[shell] wget http://localhost:8080/multi.json?number=3 --post-file=req.txt -O result.json
 ```
 
 For `multi.json` request one could use only requests, returning JSON format (like `root.json` or `exe.json`). Result will be JSON array.
@@ -550,7 +548,7 @@ For `multi.bin` any kind of requests can be used. It returns binary buffer with 
 ```
 
 While POST data in request used to transfer list of multiple requests, it is not possible to submit
-such kind of requests, which themselvs require data from POST block.
+such kind of requests, which themselves require data from POST block.
 
 To use `multi.json` request from the JavaScript, one should create special 'POST' HTTP request and properly parse it. JSROOT provides special method to do this:
 
@@ -570,9 +568,9 @@ Here argument "multi" identifies, that server response should be parsed with `pa
 ## Websockets supports
 
 Websockets support available starting from ROOT v6.12.
-Minimal example provided in `$ROOTSYS/tutorials/http/ws.C` macro.
+Minimal example provided in [$ROOTSYS/tutorials/http/ws.C](https://root.cern/doc/master/ws_8C.html) macro.
 
-To work with websockets, subclass of THttpWSHandler should be created and registered to THttpServer:
+To work with websockets, subclass of [THttpWSHandler](https://root.cern/doc/master/classTHttpWSHandler.html) should be created and registered to THttpServer:
 
 ```cpp
 #include "THttpWSHandler.h"
