@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "9/06/2022";
+let version_date = "10/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -35194,7 +35194,7 @@ function cureLocalIntersections(start, triangles, dim) {
 		const a = p.prev,
 					b = p.next.next;
 
-		if (!equals(a, b) && intersects$1(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
+		if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
 			triangles.push(a.i / dim);
 			triangles.push(p.i / dim);
 			triangles.push(b.i / dim); // remove two nodes involved
@@ -35466,7 +35466,7 @@ function equals(p1, p2) {
 } // check if two segments intersect
 
 
-function intersects$1(p1, q1, p2, q2) {
+function intersects(p1, q1, p2, q2) {
 	const o1 = sign(area(p1, q1, p2));
 	const o2 = sign(area(p1, q1, q2));
 	const o3 = sign(area(p2, q2, p1));
@@ -35498,7 +35498,7 @@ function intersectsPolygon(a, b) {
 	let p = a;
 
 	do {
-		if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i && intersects$1(p, p.next, a, b)) return true;
+		if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i && intersects(p, p.next, a, b)) return true;
 		p = p.next;
 	} while (p !== a);
 
@@ -79827,16 +79827,16 @@ function create8edgesBuffer( v, faces_limit ) {
 
    let creator = (faces_limit > 0) ? new PolygonsCreator : new GeometryCreator(12);
 
-   for (let n=0;n<indicies.length;n+=4) {
+   for (let n = 0; n < indicies.length; n += 4) {
       let i1 = indicies[n]*3,
           i2 = indicies[n+1]*3,
           i3 = indicies[n+2]*3,
           i4 = indicies[n+3]*3;
       creator.addFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
                        v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
-      if (n===0)
+      if (n === 0)
          creator.setNormal(0,0,1);
-      else if (n===20)
+      else if (n === 20)
          creator.setNormal(0,0,-1);
       else
          creator.calcNormal();
@@ -79930,7 +79930,7 @@ function createArb8Buffer( shape, faces_limit ) {
    let map = [], // list of existing faces (with all rotations)
        numfaces = 0;
 
-   for (let k=0;k<indicies.length;k+=3) {
+   for (let k = 0; k < indicies.length; k += 3) {
       let id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
           id2 = indicies[k+1]*100 + indicies[k+2]*10 + indicies[k],
           id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
@@ -80051,9 +80051,8 @@ function createSphereBuffer( shape, faces_limit ) {
    if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
    if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
 
-   let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
-
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
+   let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut,
+       creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
    for (let side = 0; side < 2; ++side) {
       if ((side===1) && noInside) break;
@@ -80065,9 +80064,7 @@ function createSphereBuffer( shape, faces_limit ) {
       // use direct algorithm for the sphere - here normals and position can be calculated directly
       for (let k = 0; k < heightSegments; ++k) {
 
-         let k1 = k + d1, k2 = k + d2;
-
-         let skip = 0;
+         let k1 = k + d1, k2 = k + d2, skip = 0;
          if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
          if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
@@ -80176,12 +80173,10 @@ function createTubeBuffer( shape, faces_limit) {
 
    let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-   let calcZ;
-   if (shape._typename == "TGeoCtub")
-      calcZ = (x,y,z) => {
-         let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
-         return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
-      };
+   const calcZ = (shape._typename !== "TGeoCtub") ? null : (x,y,z) => {
+      let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
+      return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
+   };
 
    // create outer/inner tube
    for (let side = 0; side < 2; ++side) {
@@ -80197,11 +80192,7 @@ function createTubeBuffer( shape, faces_limit) {
       }
 
       if (side === 1) { nxy *= -1; nz *= -1; }
-      let reduce = 0;
-      if (R[0] <= 0)
-         reduce = 2;
-      else if (R[1] <= 0)
-         reduce = 1;
+      let reduce = (R[0] <= 0) ? 2 : ((R[1] <= 0) ? 1 : 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
@@ -80226,8 +80217,8 @@ function createTubeBuffer( shape, faces_limit) {
       let d1 = side, d2 = 1- side,
           sign = (side == 0) ? 1 : -1,
           reduce = (innerR[side] <= 0) ? 2 : 0;
-      if ((reduce==2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
-      for (let seg=0;seg<radiusSegments;++seg) {
+      if ((reduce === 2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
+      for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
                innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
                outerR[side] * _cos[seg+d1], outerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -80251,7 +80242,7 @@ function createTubeBuffer( shape, faces_limit) {
                        outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
                        outerR[0] * _cos[0], outerR[0] * _sin[0],  shape.fDZ,
                        innerR[0] * _cos[0], innerR[0] * _sin[0],  shape.fDZ,
-                       (outerR[0] === innerR[0]) ? 2 : ((innerR[1]===outerR[1]) ? 1 : 0) );
+                       (outerR[0] === innerR[0]) ? 2 : ((innerR[1]===outerR[1]) ? 1 : 0));
       if (calcZ) creator.recalcZ(calcZ);
       creator.calcNormal();
 
@@ -80288,7 +80279,7 @@ function createEltuBuffer( shape , faces_limit ) {
        nx1, ny1, nx2 = 1, ny2 = 0;
 
    // create tube faces
-   for (let seg=0; seg<radiusSegments; ++seg) {
+   for (let seg = 0; seg < radiusSegments; ++seg) {
       creator.addFace4(x[seg],   y[seg],   +shape.fDZ,
                        x[seg],   y[seg],   -shape.fDZ,
                        x[seg+1], y[seg+1], -shape.fDZ,
@@ -80305,7 +80296,7 @@ function createEltuBuffer( shape , faces_limit ) {
    }
 
    // create top/bottom sides
-   for (let side=0;side<2;++side) {
+   for (let side = 0; side < 2; ++side) {
       let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
       for (let seg=0; seg<radiusSegments; ++seg) {
          creator.addFace3(0,          0,          sign*shape.fDZ,
@@ -80350,10 +80341,9 @@ function createTorusBuffer( shape, faces_limit ) {
       _cost[t] = Math.cos(angle);
    }
 
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
-
-   // use vectors for normals calculation
-   let p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
+   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces),
+       // use vectors for normals calculation
+       p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
        n1 = new Vector3(), n2 = new Vector3(), n3 = new Vector3(), n4 = new Vector3(),
        center1 = new Vector3(), center2 = new Vector3();
 
@@ -80394,9 +80384,9 @@ function createTorusBuffer( shape, faces_limit ) {
    if (shape.fDphi !== 360)
       for (let t=0;t<=tubularSegments;t+=tubularSegments) {
          let tube1 = shape.fRmax, tube2 = shape.fRmin,
-             d1 = (t>0) ? 0 : 1, d2 = 1 - d1,
+             d1 = (t > 0) ? 0 : 1, d2 = 1 - d1,
              skip = (shape.fRmin) > 0 ?  0 : 1,
-             nsign = t>0 ? 1 : -1;
+             nsign = (t > 0) ? 1 : -1;
          for (let n=0;n<radialSegments;++n) {
             creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
@@ -80478,7 +80468,7 @@ function createPolygonBuffer( shape, faces_limit ) {
 
    let cut_faces = null;
 
-   if (pnts!==null) {
+   if (pnts !== null) {
       if (pnts.length === shape.fNz * 2) {
          // special case - all layers are there, create faces ourself
          cut_faces = [];
@@ -80528,9 +80518,9 @@ function createPolygonBuffer( shape, faces_limit ) {
             nz = Math.sin(angle);
          }
 
-         if (side>0) { nxy*=-1; nz*=-1; }
+         if (side > 0) { nxy*=-1; nz*=-1; }
 
-         for (let seg=0;seg < radiusSegments;++seg) {
+         for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                              r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                              r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
@@ -80625,11 +80615,11 @@ function createXtruBuffer( shape, faces_limit ) {
       }
    }
 
-   for (let layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
+   for (let layer = 0; layer <= shape.fNz-1; layer += (shape.fNz-1)) {
       let z = shape.fZ[layer], scale = shape.fScale[layer],
           x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
-      for (let n=0;n<faces.length;++n) {
+      for (let n = 0; n < faces.length; ++n) {
          let face = faces[n],
              pnt1 = pnts[face[0]],
              pnt2 = pnts[face[(layer===0) ? 2 : 1]],
@@ -80672,8 +80662,8 @@ function createParaboloidBuffer( shape, faces_limit ) {
    let ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
 
    let numfaces = (heightSegments+1)*radiusSegments*2;
-   if (rmin===0) numfaces -= radiusSegments*2; // complete layer
-   if (rmax===0) numfaces -= radiusSegments*2; // complete layer
+   if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
+   if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
 
    if (faces_limit < 0) return numfaces;
 
@@ -80693,7 +80683,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
 
       let layerz = 0, radius = 0, nxy = 0, nz = -1;
 
-      if ((layer === 0) && (rmin===0)) continue;
+      if ((layer === 0) && (rmin === 0)) continue;
 
       if ((layer === heightSegments + 1) && (lastr === 0)) break;
 
@@ -80713,11 +80703,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
       nxy = shape.fA * radius;
       nz = (shape.fA > 0) ? -1 : 1;
 
-      let skip = 0;
-      if (lastr === 0)
-         skip = 1;
-      else if (radius === 0)
-         skip = 2;
+      let skip = (lastr === 0) ? 1 : ((radius === 0) ? 2 : 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
@@ -80727,7 +80713,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
 
          // use analytic normal values when open/closing paraboloid around 0
          // cut faces (top or bottom) set with simple normal
-         if ((skip===0) || ((layer===1) && (rmin===0)) || ((layer===heightSegments+1) && (rmax===0)))
+         if ((skip === 0) || ((layer === 1) && (rmin === 0)) || ((layer === heightSegments+1) && (rmax === 0)))
             creator.setNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
                                lastnxy*_cos[seg],   lastnxy*_sin[seg],   lastnz,
                                lastnxy*_cos[seg+1], lastnxy*_sin[seg+1], lastnz,
@@ -80780,13 +80766,13 @@ function createHypeBuffer( shape, faces_limit ) {
           d1 = 1- side, d2 = 1 - d1;
 
       // vertical layers
-      for (let layer=0;layer<heightSegments;++layer) {
+      for (let layer = 0; layer < heightSegments; ++layer) {
          let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
              z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
              r1 = Math.sqrt(r0*r0+tsq*z1*z1),
              r2 = Math.sqrt(r0*r0+tsq*z2*z2);
 
-         for (let seg=0; seg<radiusSegments; ++seg) {
+         for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                              r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                              r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
@@ -80991,7 +80977,7 @@ function geomBoundingBox(geom) {
    else if (geom.polygons)
       polygons = geom.polygons;
 
-   if (polygons!==null) {
+   if (polygons !== null) {
       let box = new Box3();
       for (let n = 0; n < polygons.length; ++n) {
          let polygon = polygons[n], nvert = polygon.vertices.length;
@@ -81023,8 +81009,6 @@ function createHalfSpace(shape, geom) {
       let box = geomBoundingBox(geom);
       if (box) sz = box.getSize(new Vector3()).length() * 1000;
    }
-
-   // console.log('normal', normal, 'vertex', vertex, 'size', sz);
 
    let v0 = new Vector3(-sz, -sz/2, 0),
        v1 = new Vector3(0, sz, 0),
@@ -81139,8 +81123,8 @@ function createComposite( shape, faces_limit ) {
 
    if (countGeometryFaces(bsp1) === 0) {
       geoWarn('Zero faces in comp shape'
-            + ' left: ' + shape.fNode.fLeft._typename +  ' ' + countGeometryFaces(geom1) + ' faces'
-            + ' right: ' + shape.fNode.fRight._typename + ' ' + countGeometryFaces(geom2) + ' faces'
+            + ` left: ${shape.fNode.fLeft._typename} ${countGeometryFaces(geom1)} faces`
+            + ` right: ${shape.fNode.fRight._typename} ${countGeometryFaces(geom2)} faces`
             + '  use first');
       bsp1 = new Geometry(geom1, matrix1);
    }
@@ -81260,64 +81244,66 @@ function provideObjectInfo(obj) {
    }
 
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
-       useexp = (sz>1e7) || (sz<1e-7),
+       useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
           if (v===undefined) return "???";
-          if ((v==Math.round(v) && v<1e7)) return Math.round(v);
+          if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
 
    info.push(shape._typename);
 
-   info.push("DX="+conv(shape.fDX) + " DY="+conv(shape.fDY) + " DZ="+conv(shape.fDZ));
+   info.push(`DX=${conv(shape.fDX)} DY=${conv(shape.fDY)} DZ=${conv(shape.fDZ)}`);
 
    switch (shape._typename) {
       case "TGeoBBox": break;
-      case "TGeoPara": info.push("Alpha=" + shape.fAlpha + " Phi=" + shape.fPhi + " Theta=" + shape.fTheta); break;
-      case "TGeoTrd2": info.push("Dy1=" + conv(shape.fDy1) + " Dy2=" + conv(shape.fDy1));
-      case "TGeoTrd1": info.push("Dx1=" + conv(shape.fDx1) + " Dx2=" + conv(shape.fDx1)); break;
+      case "TGeoPara": info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
+      case "TGeoTrd2": info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+      case "TGeoTrd1": info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
       case "TGeoArb8": break;
       case "TGeoTrap": break;
       case "TGeoGtra": break;
       case "TGeoSphere":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
-         info.push("Theta1=" + shape.fTheta1 + " Theta2=" + shape.fTheta2);
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         info.push(`Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
          break;
       case "TGeoConeSeg":
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         // no break;
       case "TGeoCone":
-         info.push("Rmin1=" + conv(shape.fRmin1) + " Rmax1=" + conv(shape.fRmax1));
-         info.push("Rmin2=" + conv(shape.fRmin2) + " Rmax2=" + conv(shape.fRmax2));
+         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`);
+         info.push(`Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
          break;
       case "TGeoCtub":
       case "TGeoTubeSeg":
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         // no break
       case "TGeoEltu":
       case "TGeoTube":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
          break;
       case "TGeoTorus":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("Phi1=" + shape.fPhi1 + " Dphi=" + shape.fDphi);
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
          break;
       case "TGeoPcon":
       case "TGeoPgon": break;
       case "TGeoXtru": break;
       case "TGeoParaboloid":
-         info.push("Rlo=" + conv(shape.fRlo) + " Rhi=" + conv(shape.fRhi));
-         info.push("A=" + conv(shape.fA) + " B=" + conv(shape.fB));
+         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`);
+         info.push(`A=${conv(shape.fA)} B=${conv(shape.fB)}`);
          break;
       case "TGeoHype":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("StIn=" + conv(shape.fStIn) + " StOut=" + conv(shape.fStOut));
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
       case "TGeoCompositeShape": break;
       case "TGeoShapeAssembly": break;
       case "TGeoScaledShape":
          info = provideObjectInfo(shape.fShape);
          if (shape.fScale)
-            info.unshift('Scale X=' + shape.fScale.fScale[0] + " Y=" + shape.fScale.fScale[1] + " Z=" + shape.fScale.fScale[2]);
+            info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
          break;
    }
 
@@ -81479,21 +81465,21 @@ class ClonedNodes {
    cleanup(drawnodes, drawshapes) {
 
       if (drawnodes) {
-         for (let n=0;n<drawnodes.length;++n) {
+         for (let n = 0;n < drawnodes.length; ++n) {
             delete drawnodes[n].stack;
             drawnodes[n] = undefined;
          }
       }
 
       if (drawshapes) {
-         for (let n=0;n<drawshapes.length;++n) {
+         for (let n = 0; n < drawshapes.length; ++n) {
             delete drawshapes[n].geom;
             drawshapes[n] = undefined;
          }
       }
 
       if (this.nodes) {
-         for (let n=0;n<this.nodes.length;++n) {
+         for (let n = 0; n < this.nodes.length; ++n) {
             if (this.nodes[n])
                delete this.nodes[n].chlds;
          }
@@ -81852,7 +81838,7 @@ class ClonedNodes {
       //   res.name = this.getNodeName(0);
 
       if (stack)
-         for(let lvl=0;lvl<stack.length;++lvl) {
+         for(let lvl = 0; lvl < stack.length; ++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
 
@@ -81861,7 +81847,7 @@ class ClonedNodes {
 
             let subname = this.getNodeName(res.id);
             if (subname) {
-               if (res.name) res.name+="/";
+               if (res.name) res.name += "/";
                res.name += subname;
             }
 
@@ -81884,12 +81870,12 @@ class ClonedNodes {
 
       let node = this.nodes[0], stack = [];
 
-      for (let k=1;k<ids.length;++k) {
+      for (let k = 1; k < ids.length; ++k) {
          let nodeid = ids[k];
          if (!node) return null;
          let chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
-            console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
+            console.error(`wrong nodes ids ${ids[k]} is not child of ${ids[k-1]}`);
             return null;
          }
 
@@ -81904,7 +81890,7 @@ class ClonedNodes {
    buildIdsByStack(stack) {
       if (!stack) return null;
       let node = this.nodes[0], ids = [0];
-      for (let k=0;k<stack.length;++k) {
+      for (let k = 0; k < stack.length; ++k) {
          let id = node.chlds[stack[k]];
          ids.push(id);
          node = this.nodes[id];
@@ -81956,9 +81942,9 @@ class ClonedNodes {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
 
-         let dflt = { kWhite:0,  kBlack:1, kGray:920,
-               kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
-               kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+         let dflt = { kWhite: 0,  kBlack: 1, kGray: 920,
+                      kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
+                      kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 };
 
          let nmax = 110, col = [];
          for (let i=0;i<nmax;i++) col.push(dflt.kGray);
@@ -81992,7 +81978,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
             _opacity = entry.opacity || 1;
-         prop.fillcolor = new Color$1( entry.color ? "rgb(" + entry.color + ")" : "blue" );
+         prop.fillcolor = new Color$1( entry.color ? `rgb(${entry.color})` : "blue" );
          prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
@@ -82022,7 +82008,7 @@ class ClonedNodes {
             prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: FrontSide, vertexColors: false,
-                             depthWrite: _opacity == 1 } );
+                             depthWrite:  _opacity == 1 } );
             prop.material.inherentOpacity = _opacity;
          }
 
@@ -82050,14 +82036,14 @@ class ClonedNodes {
          else if (volume.fLineColor >= 0)
             prop.fillcolor = root_colors[volume.fLineColor];
 
-         if (volume.fMedium && volume.fMedium.fMaterial) {
-            let mat = volume.fMedium.fMaterial,
-                fillstyle = mat.fFillStyle,
-                transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+         let mat = volume?.fMedium?.fMaterial;
+
+         if (mat) {
+            let fillstyle = mat.fFillStyle,
+                transparency = (fillstyle >= 3000 && fillstyle <= 3100) ? fillstyle - 3000 : 0;
 
             if (this.use_dflt_colors) {
-               let matZ = Math.round(mat.fZ),
-                   icol = this.dflt_table[matZ];
+               let matZ = Math.round(mat.fZ), icol = this.dflt_table[matZ];
                prop.fillcolor = root_colors[icol];
                if (mat.fDensity < 0.1) transparency = 60;
             }
@@ -82070,10 +82056,10 @@ class ClonedNodes {
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
+         prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: FrontSide, vertexColors: false,
-                              depthWrite: _opacity == 1 } );
+                              depthWrite: _opacity == 1 });
          prop.material.inherentOpacity = _opacity;
       }
 
@@ -82091,7 +82077,7 @@ class ClonedNodes {
       for(let lvl=0; lvl<=stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
-         if (lvl>0)  node = this.nodes[node.chlds[nchld]];
+         if (lvl > 0)  node = this.nodes[node.chlds[nchld]];
 
          let obj3d = undefined;
 
@@ -82143,7 +82129,7 @@ class ClonedNodes {
       if ((options === 'mesh') || (options === 'delete_mesh')) {
          let mesh = null;
          if (three_prnt)
-            for (let n=0; (n<three_prnt.children.length) && !mesh;++n) {
+            for (let n = 0; (n < three_prnt.children.length) && !mesh; ++n) {
                let chld = three_prnt.children[n];
                if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
             }
@@ -82434,7 +82420,7 @@ class ClonedNodes {
           tm1 = new Date().getTime(),
           res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
-      for (let n=0;n<lst.length;++n) {
+      for (let n = 0; n < lst.length; ++n) {
          let item = lst[n];
 
          // if enough faces are produced, nothing else is required
@@ -82616,7 +82602,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
    function setdefaults(top) {
       if (!top) return;
-      top.traverse(function(obj) {
+      top.traverse(obj => {
          obj.renderOrder = 0;
          if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
       });
@@ -82628,7 +82614,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
       if (!obj.children) return;
 
-      for (let k=0;k<obj.children.length;++k) {
+      for (let k = 0; k < obj.children.length; ++k) {
          let chld = obj.children[k];
          if (chld.$jsroot_order === lvl) {
             if (chld.material) {
@@ -82649,9 +82635,10 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       // resort meshes using ray caster and camera position
       // idea to identify meshes which are in front or behind
 
-      if (arr.length > 300) {
+      if (arr.length > 1000) {
          // too many of them, just set basic level and exit
-         for (let i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
+         for (let i = 0; i < arr.length; ++i)
+            arr[i].renderOrder = (minorder + maxorder)/2;
          return false;
       }
 
@@ -82660,7 +82647,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       // first calculate distance to the camera
       // it gives preliminary order of volumes
 
-      for (let i=0;i<arr.length;++i) {
+      for (let i = 0; i < arr.length; ++i) {
          let mesh = arr[i],
              box3 = mesh.$jsroot_box3;
 
@@ -82677,21 +82664,18 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             continue;
          }
 
-         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max)),
+             pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
 
-         let pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.min.x, box3.max.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.max.x, box3.min.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.max.x, box3.max.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.max.x, box3.min.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-
          pnt.set(box3.min.x, box3.max.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
 
@@ -82708,54 +82692,53 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
 
       if (method==="ray")
-      for (let i=arr.length - 1; i >= 0; --i) {
-         let mesh = arr[i],
-             box3 = mesh.$jsroot_box3,
-             direction = box3.getCenter(tmp_vect);
+         for (let i=arr.length - 1; i >= 0; --i) {
+            let mesh = arr[i], intersects,
+                box3 = mesh.$jsroot_box3,
+                direction = box3.getCenter(tmp_vect);
 
-         for(let ntry=0; ntry<2;++ntry) {
+            for(let ntry = 0; ntry < 2; ++ntry) {
 
-            direction.sub(origin).normalize();
+               direction.sub(origin).normalize();
 
-            raycast.set( origin, direction );
+               raycast.set( origin, direction );
 
-            let intersects = raycast.intersectObjects(arr, false); // only plain array
+               intersects = raycast.intersectObjects(arr, false) || []; // only plain array
+               let unique = [];
 
-            let unique = [];
+               for (let k1 = 0; k1 < intersects.length; ++k1) {
+                  if (unique.indexOf(intersects[k1].object) < 0)
+                     unique.push(intersects[k1].object);
+                  // if (intersects[k1].object === mesh) break; // trace until object itself
+               }
 
-            for (let k1 = 0; k1 < intersects.length; ++k1) {
-               if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
-               // if (intersects[k1].object === mesh) break; // trace until object itself
+               intersects = unique;
+
+               if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
+                  console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
+
+               if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
+
+               let pos = mesh.geometry.attributes.position.array;
+
+               direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
+
+               direction.applyMatrix4(mesh.matrixWorld);
             }
 
-            intersects = unique;
-
-            if ((intersects.indexOf(mesh)<0) && (ntry>0))
-               console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
-
-            if ((intersects.indexOf(mesh)>=0) || (ntry>0)) break;
-
-            let pos = mesh.geometry.attributes.position.array;
-
-            direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
-
-            direction.applyMatrix4(mesh.matrixWorld);
-         }
-
-         // now push first object in intersects to the front
-         for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
-            let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
-                i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
-            if (i1<i2) continue;
-            for (let ii=i2;ii<i1;++ii) {
-               resort[ii] = resort[ii+1];
-               resort[ii].$jsroot_index = ii;
+            // now push first object in intersects to the front
+            for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
+               let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+                   i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
+               if (i1 < i2) continue;
+               for (let ii = i2; ii < i1; ++ii) {
+                  resort[ii] = resort[ii+1];
+                  resort[ii].$jsroot_index = ii;
+               }
+               resort[i1] = mesh2;
+               mesh2.$jsroot_index = i1;
             }
-            resort[i1] = mesh2;
-            mesh2.$jsroot_index = i1;
          }
-
-      }
 
       for (let i = 0; i < resort.length; ++i) {
          resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
@@ -82793,7 +82776,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
    }
 
-   if (!method || (method==="dflt"))
+   if (!method || (method == "dflt"))
       setdefaults(toplevel);
    else
       process(toplevel, 0, 1, 1000000);
