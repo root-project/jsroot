@@ -37,6 +37,12 @@ Following URL parameters are supported:
 | websocket_timeout=tm  | set web sockets timeout in seconds (default 300) |
 | websocket_disable     | disable web sockets handling (default enabled) |
 | cors=domain           | define value for CORS header "Access-Control-Allow-Origin" in server response |
+| log=filename          | configure civetweb log file |
+| max_age=value         | configures "Cache-Control: max_age=value" http header for all file-related requests, default 3600 |
+| nocache               | try to fully disable cache control for file requests |
+| winsymlinks=no        | do not resolve symbolic links on file system (Windows only), default true |
+| dirlisting=no         | enable/disable directory listing for browsing filesystem (default no) |
+
 
 If necessary, one could bind http server to specific IP address like:
 
