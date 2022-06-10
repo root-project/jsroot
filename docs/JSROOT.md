@@ -86,9 +86,9 @@ Many examples of URL string usage can be found on [JSROOT API examples](https://
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
 ```html
-    <iframe width="700" height="400"
-            src="https://root.cern/js/latest/?nobrowser&file=https://root.cern/js/files/hsimple.root&item=hpxpy&opt=colz">
-    </iframe>
+<iframe width="700" height="400"
+        src="https://root.cern/js/latest/?nobrowser&file=https://root.cern/js/files/hsimple.root&item=hpxpy&opt=colz">
+</iframe>
 ```
 
 
@@ -398,17 +398,17 @@ One could use wildcard symbol like '+TUBE1*'.
 Another way to configure visibility flags is usage of ROOT macros, which typically looks like:
 
 ```cpp
-    {
-      TGeoManager::Import("http://root.cern/files/alice2.root");
-      gGeoManager->DefaultColors();
-      //   gGeoManager->SetVisLevel(4);
-      gGeoManager->GetVolume("HALL")->InvisibleAll();
-      gGeoManager->GetVolume("ZDCC")->InvisibleAll();
-      gGeoManager->GetVolume("ZDCA")->InvisibleAll();
-      ...
-      gGeoManager->GetVolume("ALIC")->Draw("ogl");
-      new TBrowser;
-    }
+{
+   TGeoManager::Import("http://root.cern/files/alice2.root");
+   gGeoManager->DefaultColors();
+   //   gGeoManager->SetVisLevel(4);
+   gGeoManager->GetVolume("HALL")->InvisibleAll();
+   gGeoManager->GetVolume("ZDCC")->InvisibleAll();
+   gGeoManager->GetVolume("ZDCA")->InvisibleAll();
+   //  ...
+   gGeoManager->GetVolume("ALIC")->Draw("ogl");
+   new TBrowser;
+}
 ```
 
 Example of such macro can be found in root tutorials.
@@ -481,22 +481,18 @@ Alternative - enable CORS requests in the browser. It can be easily done with [C
 Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to `modules/gui.mjs` script like:
 
 ```javascript
-    ...
-    <script type="module">
-       import { openFile, draw } from 'https://root.cern/js/latest/modules/gui.mjs';
-
-    </script>
-    ...
+<script type="module">
+   import { openFile, draw } from 'https://root.cern/js/latest/modules/gui.mjs';
+   // ...
+</script>
 ```
 
 In the main `<div>` element one can specify many custom parameters like one do it in URL string:
 
-```javascript
-    ...
-     <div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
-       loading scripts ...
-     </div>
-    ...
+```html
+<div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
+   loading scripts ...
+</div>
 ```
 
 ## Reading local ROOT files
@@ -592,43 +588,43 @@ Many different examples of JSROOT API usage can be found on [JSROOT API examples
 Major JSROOT functions are located in `main.mjs` module and can be imported like:
 
 ```javascript
-    <script type='module'>
-       import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
-       let filename = "https://root.cern/js/files/hsimple.root";
-       let file = await openFile(filename);
-       let obj = await file.readObject("hpxpy;1");
-       await draw("drawing", obj, "colz");
-    </script>
+<script type='module'>
+   import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
+   let filename = "https://root.cern/js/files/hsimple.root";
+   let file = await openFile(filename);
+   let obj = await file.readObject("hpxpy;1");
+   await draw("drawing", obj, "colz");
+</script>
 ```
 
 Here the default location `https://root.cern/js/latest/` is specified. One always can install JSROOT on private web server.
 When JSROOT is used with THttpServer, the address looks like:
 
 ```javascript
-    <script type='module'>
-       import { httpRequest, draw } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
-       let obj = await httpRequest('http://your_root_server:8080/Objects/hist/root.json','object');
-       await draw("drawing", obj, "hist");
-    </script>
+<script type='module'>
+   import { httpRequest, draw } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
+   let obj = await httpRequest('http://your_root_server:8080/Objects/hist/root.json','object');
+   await draw("drawing", obj, "hist");
+</script>
 ```
 
 Loading main module is enough to get public JSROOT functionality - reading files and drawing objects.
 One also can load some special components directly like:
 
 ```javascript
-    <script type='module'>
-       import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui.mjs';
+<script type='module'>
+   import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui.mjs';
 
-       let h = new HierarchyPainter("example", "myTreeDiv");
+   let h = new HierarchyPainter("example", "myTreeDiv");
 
-       // configure 'simple' in provided <div> element
-       // one also can specify "grid2x2" or "flex" or "tabs"
-       h.setDisplay("simple", "myMainDiv");
+   // configure 'simple' in provided <div> element
+   // one also can specify "grid2x2" or "flex" or "tabs"
+   h.setDisplay("simple", "myMainDiv");
 
-       // open file and display element
-       await h.openRootFile("../../files/hsimple.root");
-       await h.display("hpxpy;1","colz");
-    </script>
+   // open file and display element
+   await h.openRootFile("../../files/hsimple.root");
+   await h.display("hpxpy;1","colz");
+</script>
 ```
 
 After script loading one can configure different parameters in `gStyle` object.
@@ -636,28 +632,28 @@ It is instance of the `TStyle` object and behaves like `gStyle` variable in ROOT
 to change stat format using to display value in stats box:
 
 ```javascript
-    import { gStyle } from 'https://root.cern/js/latest/modules/main.mjs';
-    gStyle.fStatFormat = "7.5g";
+import { gStyle } from 'https://root.cern/js/latest/modules/main.mjs';
+gStyle.fStatFormat = "7.5g";
 ```
 
 There is also `settings` object which contains all other JSROOT settings. For instance,
 one can configure custom format for different axes:
 
 ```javascript
-    import { settings } from 'https://root.cern/js/latest/modules/main.mjs';
-    settings.XValuesFormat = "4.2g";
-    settings.YValuesFormat = "6.1f";
+import { settings } from 'https://root.cern/js/latest/modules/main.mjs';
+settings.XValuesFormat = "4.2g";
+settings.YValuesFormat = "6.1f";
 ```
 
-One also can use build bundle to load all functionality at one and access it via `JSROOT` global handle:
+One also can use `build/jsroot.js` bundle to load all functionality at one and access it via `JSROOT` global handle:
 
 ```javascript
-    <script src="https://root.cern/js/latest/build/jsroot.js"></script>
-    <script>
-       // getting json string from somewhere
-       let obj = JSROOT.parse(root_json);
-       JSROOT.draw("plain", obj, "colz");
-    </script>
+<script src="https://root.cern/js/latest/build/jsroot.js"></script>
+<script>
+   // getting json string from somewhere
+   let obj = JSROOT.parse(root_json);
+   JSROOT.draw("plain", obj, "colz");
+</script>
 ```
 
 
@@ -671,18 +667,16 @@ THttpServer provides a JSON representation for every registered object with an u
 Such JSON representation generated using the [TBufferJSON](https://root.cern/doc/master/classTBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
 
 ```cpp
-    ...
-    obj->SaveAs("file.json");
-    ...
+obj->SaveAs("file.json");
 ```
 
 To access data from a remote web server, it is recommended to use the `httpRequest` method.
 For instance to receive object from a THttpServer server one could do:
 
 ```javascript
-    import { httpRequest } from 'https://root.cern/js/latest/modules/main.mjs';
-    let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
-    console.log('Read object of type ', obj._typename);
+import { httpRequest } from 'https://root.cern/js/latest/modules/main.mjs';
+let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
+console.log('Read object of type ', obj._typename);
 ```
 
 Function returns Promise, which provides parsed object (or Error in case of failure).
@@ -690,8 +684,8 @@ Function returns Promise, which provides parsed object (or Error in case of fail
 If JSON string was obtained by different method, it could be parsed with `parse` function:
 
 ```javascript
-    import { parse } from 'https://root.cern/js/latest/modules/main.mjs';
-    let obj = parse(json_string);
+import { parse } from 'https://root.cern/js/latest/modules/main.mjs';
+let obj = parse(json_string);
 ```
 
 
@@ -699,17 +693,15 @@ If JSON string was obtained by different method, it could be parsed with `parse`
 
 After an object has been created, one can directly draw it. If HTML page has `<div>` element:
 
-```javascript
-    ...
-    <div id="drawing"></div>
-    ...
+```html
+<div id="drawing"></div>
 ```
 
 One could use the `draw` function:
 
 ```javascript
-    import { draw } from 'https://root.cern/js/latest/modules/main.mjs';
-    draw("drawing", obj, "colz");
+import { draw } from 'https://root.cern/js/latest/modules/main.mjs';
+draw("drawing", obj, "colz");
 ```
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
@@ -717,25 +709,25 @@ The first argument is the id of the HTML div element, where drawing will be perf
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
 ```javascript
-    import { httpRequest, draw, redraw, resize, cleanup } from 'https://root.cern/js/latest/modules/main.mjs';
-    let filename = "https://root.cern/js/files/th2ul.json.gz";
-    let obj = await httpRequest(filename, 'object');
-    draw("drawing", obj, "lego");
+import { httpRequest, draw, redraw, resize, cleanup } from 'https://root.cern/js/latest/modules/main.mjs';
+let filename = "https://root.cern/js/files/th2ul.json.gz";
+let obj = await httpRequest(filename, 'object');
+draw("drawing", obj, "lego");
 ```
 
 In very seldom cases one need to access painter object, created in `draw()` function. This can be done via
 handling Promise results like:
 
 ```javascript
-    let painter = await draw("drawing", obj, "colz");
-    console.log('Object type in painter', painter.getClassName());
+let painter = await draw("drawing", obj, "colz");
+console.log('Object type in painter', painter.getClassName());
 ```
 
 One is also able to update the drawing with a new version of the object:
 
 ```javascript
-    // after some interval request object again
-    redraw("drawing", obj2, "colz");
+// after some interval request object again
+redraw("drawing", obj2, "colz");
 ```
 
 The `redraw` function will call `draw` if the drawing was not performed before.
@@ -744,19 +736,19 @@ In the case when changing of HTML layout leads to resize of element with JSROOT 
 one should call `resize()` to let JSROOT adjust drawing size. One should do:
 
 ```javascript
-    resize("drawing");
+resize("drawing");
 ```
 
  As second argument one could specify exact size for draw elements like:
 
 ```javascript
-    resize("drawing", { width: 500, height: 200 } );
+resize("drawing", { width: 500, height: 200 } );
 ```
 
 To correctly cleanup JSROOT drawings from HTML element, one should call:
 
 ```javascript
-    cleanup("drawing");
+cleanup("drawing");
 ```
 
 
@@ -768,12 +760,12 @@ Therefore promises are used to retrieve results when the I/O operation is comple
 For example, reading an object from a file and displaying it will look like:
 
 ```javascript
-    import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
-    let filename = "https://root.cern/js/files/hsimple.root";
-    let file = await openFile(filename);
-    let obj = await file.readObject("hpxpy;1");
-    await draw("drawing", obj, "colz");
-    console.log("drawing completed");
+import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
+let filename = "https://root.cern/js/files/hsimple.root";
+let file = await openFile(filename);
+let obj = await file.readObject("hpxpy;1");
+await draw("drawing", obj, "colz");
+console.log("drawing completed");
 ```
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
@@ -784,47 +776,47 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 Simple TTree::Draw operation can be performed with following code:
 
 ```javascript
-    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
-    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
-    let file = await openFile("https://root.cern/js/files/hsimple.root");
-    let tree = await file.readObject("ntuple;1");
-    draw("drawing", tree, "px:py::pz>5");
+import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
+let file = await openFile("https://root.cern/js/files/hsimple.root");
+let tree = await file.readObject("ntuple;1");
+draw("drawing", tree, "px:py::pz>5");
 ```
 
 To get access to selected branches, one should use `TSelector` class:
 
 ```javascript
-    import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
-    import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
-    import { TSelector, treeProcess } from 'https://root.cern/js/latest/modules/tree.mjs';
+import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
+import { TSelector, treeProcess } from 'https://root.cern/js/latest/modules/tree.mjs';
 
-    let file = await openFile("https://root.cern/js/files/hsimple.root");
-    let tree = await file.readObject("ntuple;1");
-    let selector = new TSelector();
+let file = await openFile("https://root.cern/js/files/hsimple.root");
+let tree = await file.readObject("ntuple;1");
+let selector = new TSelector();
 
-    selector.AddBranch("px");
-    selector.AddBranch("py");
+selector.AddBranch("px");
+selector.AddBranch("py");
 
-    let cnt = 0, sumpx = 0, sumpy = 0;
+let cnt = 0, sumpx = 0, sumpy = 0;
 
-    selector.Begin = function() {
-       // function called before reading of TTree starts
-    }
+selector.Begin = function() {
+   // function called before reading of TTree starts
+}
 
-    selector.Process = function() {
-       // function called for every entry
-       sumpx += this.tgtobj.px;
-       sumpy += this.tgtobj.py;
-       cnt++;
-    }
+selector.Process = function() {
+   // function called for every entry
+   sumpx += this.tgtobj.px;
+   sumpy += this.tgtobj.py;
+   cnt++;
+}
 
-    selector.Terminate = function(res) {
-       if (!res || (cnt===0)) return;
-       var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
-       console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
-    }
+selector.Terminate = function(res) {
+   if (!res || (cnt===0)) return;
+   let meanpx = sumpx/cnt, meanpy = sumpy/cnt;
+   console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
+}
 
-    await treeProcess(tree, selector);
+await treeProcess(tree, selector);
 ```
 
 Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
@@ -837,8 +829,8 @@ will be called.
 As third parameter of treeProcess() function one could provide object with arguments
 
 ```javascript
-    let args = { numentries: 1000, firstentry: 500 };
-    treeProcess(tree, selector, args);
+let args = { numentries: 1000, firstentry: 500 };
+treeProcess(tree, selector, args);
 ```
 
 
@@ -850,10 +842,10 @@ If necessary, one can create three.js model for supported object directly and us
 separately. This can be done with the function:
 
 ```javascript
-    import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
-    let opt = { numfaces: 100000 };
-    let obj3d = build(obj, opt);
-    scene.add( obj3d );
+import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
+let opt = { numfaces: 100000 };
+let obj3d = build(obj, opt);
+scene.add( obj3d );
 ```
 
 Following options can be specified:
@@ -868,8 +860,8 @@ When transparent volumes appeared in the model, one could use `produceRenderOrde
 to correctly set rendering order. It should be used as:
 
 ```javascript
-    import { produceRenderOrder } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
-    produceRenderOrder(scene, camera.position, 'box');
+import { produceRenderOrder } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
+produceRenderOrder(scene, camera.position, 'box');
 ```
 
 Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.
@@ -881,37 +873,39 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geomet
 
 To install latest JSROOT release, just do:
 
+```bash
     [shell] npm install jsroot
+```
 
 To use in the Node.js scripts, one should add following line:
 
 ```javascript
-    import { httpRequest, makeSVG } from 'jsroot';
+import { httpRequest, makeSVG } from 'jsroot';
 ```
 
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
 ```javascript
-    import { openFile, makeSVG } from 'jsroot';
-    import { writeFileSync } from 'fs';
+import { openFile, makeSVG } from 'jsroot';
+import { writeFileSync } from 'fs';
 
-    let file = await openFile("https://root.cern/js/files/hsimple.root");
-    let obj = await file.readObject("hpx;1");
-    let svg = await makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
-    writeFileSync("lego2.svg", svg);
+let file = await openFile("https://root.cern/js/files/hsimple.root");
+let obj = await file.readObject("hpx;1");
+let svg = await makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
+writeFileSync("lego2.svg", svg);
 ```
 
 It is also possible to convert any JavaScript object into ROOT JSON string, using `toJSON()` function. Like:
 
 ```javascript
-    import { toJSON, openFile, makeSVG } from 'jsroot';
-    import { writeFileSync } from 'fs';
+import { toJSON, openFile, makeSVG } from 'jsroot';
+import { writeFileSync } from 'fs';
 
-    let file = await openFile("https://root.cern/js/files/hsimple.root");
-    let obj = await file.readObject("hpx;1");
-    let json = await toJSON(obj);
-    writrFileSync("hpxpy.json", json);
+let file = await openFile("https://root.cern/js/files/hsimple.root");
+let obj = await file.readObject("hpx;1");
+let json = await toJSON(obj);
+writrFileSync("hpxpy.json", json);
 ```
 
 Such JSON string could be parsed by any other JSROOT-based application.
@@ -920,7 +914,9 @@ When WebGL rendering is used (lego plots or TGeo drawing), on the Linux one need
 to make it working. To run JSROOT on headless machine, one have to use `xvfb-run` utility,
 see also [here](https://github.com/stackgl/headless-gl#how-can-headless-gl-be-used-on-a-headless-linux-machine):
 
-    xvfb-run -s "-ac -screen 0 1280x1024x24" node geomsvg.js
+```bash
+[shell] xvfb-run -s "-ac -screen 0 1280x1024x24" node geomsvg.js
+```
 
 
 ### Use with OpenUI5
@@ -929,20 +925,20 @@ see also [here](https://github.com/stackgl/headless-gl#how-can-headless-gl-be-us
 JSROOT provides `loadOpenui5` function to load supported OpenUI5:
 
 ```javascript
-    <script type="module">
-       import { loadOpenui5 } from 'path_to_jsroot/modules/main.mjs';
-       let sap = await loadOpenui5();
-       sap.registerModulePath("NavExample", "./");
-       new sap.m.App ({
-          pages: [
-             new sap.m.Page({
-               title: "Nav Container",
-               enableScrolling : true,
-               content: [ new sap.ui.core.ComponentContainer({ name : "NavExample" })]
-             })
-           ]
-       }).placeAt("content");
-    </script>
+<script type="module">
+   import { loadOpenui5 } from 'path_to_jsroot/modules/main.mjs';
+   let sap = await loadOpenui5();
+   sap.registerModulePath("NavExample", "./");
+   new sap.m.App ({
+      pages: [
+         new sap.m.Page({
+           title: "Nav Container",
+           enableScrolling : true,
+           content: [ new sap.ui.core.ComponentContainer({ name : "NavExample" })]
+         })
+       ]
+   }).placeAt("content");
+</script>
 ```
 
 JSROOT uses <https://openui5.hana.ondemand.com> when no other source is specified.
@@ -951,7 +947,7 @@ There are small details when using OpenUI5 with THttpServer. First of all, locat
 as `/jsrootsys/modules/main.mjs`. And then trying to access files from local disk, one should specify `/currentdir/` folder:
 
 ```javascript
-    jQuery.sap.registerModulePath("NavExample", "/currentdir/");
+jQuery.sap.registerModulePath("NavExample", "/currentdir/");
 ```
 
 JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
@@ -963,7 +959,7 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
    * Core functionality should be imported from `main.mjs` module like:
 
 ```javascript
-      import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
 ```
 
    * It is still possible to use `JSRoot.core.js` script, which provides very similar (but not identical!) functionality as with `v6` via global `JSROOT` object
@@ -975,22 +971,22 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
    * Global hierarchy painter `JSROOT.hpainter` no longer existing, one can use `getHPainter` function:
 
 ```javascript
-      import { getHPainter } from 'https://root.cern/js/7.0.0/modules/main.mjs';
-      let hpainter = getHPainter();
+import { getHPainter } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+let hpainter = getHPainter();
 ```
 
    * All math functions previously available via `JSROOT.Math` should be imported from `base/math.mjs` module:
 
 ```javascript
-      import * as math from 'https://root.cern/js/7.0.0/modules/base/math.mjs';
+import * as math from 'https://root.cern/js/7.0.0/modules/base/math.mjs';
 ```
 
    * Indication of batch mode `JSROOT.batch_mode` should be accessed via functions:
 
 ```javascript
-      import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.0.0/modules/main.mjs';
-      let was_batch = isBatchMode();
-      if (!was_batch) setBatchMode(true);
+import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+let was_batch = isBatchMode();
+if (!was_batch) setBatchMode(true);
 ```
 
    * `JSROOT.extend()` function  was removed, use `Object.assign()` instead
