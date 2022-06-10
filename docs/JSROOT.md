@@ -741,14 +741,17 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
+```javascript
     import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
     import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
     let file = await openFile("https://root.cern/js/files/hsimple.root");
     let tree = await file.readObject("ntuple;1");
     draw("drawing", tree, "px:py::pz>5");
+```
 
 To get access to selected branches, one should use `TSelector` class:
 
+```javascript
     import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
     import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
     import { TSelector, treeProcess } from 'https://root.cern/js/latest/modules/tree.mjs';
@@ -780,6 +783,7 @@ To get access to selected branches, one should use `TSelector` class:
     }
 
     await treeProcess(tree, selector);
+```
 
 Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
 
@@ -790,8 +794,10 @@ will be called.
 
 As third parameter of treeProcess() function one could provide object with arguments
 
+```javascript
     let args = { numentries: 1000, firstentry: 500 };
     treeProcess(tree, selector, args);
+```
 
 
 ### TGeo API
@@ -817,8 +823,10 @@ Following options can be specified:
 When transparent volumes appeared in the model, one could use `produceRenderOrder()` function
 to correctly set rendering order. It should be used as:
 
+```javascript
     import { produceRenderOrder } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
     produceRenderOrder(scene, camera.position, 'box');
+```
 
 Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.
 
@@ -833,11 +841,14 @@ To install latest JSROOT release, just do:
 
 To use in the Node.js scripts, one should add following line:
 
-     import { httpRequest, makeSVG } from 'jsroot';
+```javascript
+    import { httpRequest, makeSVG } from 'jsroot';
+```
 
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
+```javascript
     import { openFile, makeSVG } from 'jsroot';
     import { writeFileSync } from 'fs';
 
@@ -845,9 +856,11 @@ create SVG output. For example, to create SVG image with lego plot, one should d
     let obj = await file.readObject("hpx;1");
     let svg = await makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 });
     writeFileSync("lego2.svg", svg);
+```
 
 It is also possible to convert any JavaScript object into ROOT JSON string, using `toJSON()` function. Like:
 
+```javascript
     import { toJSON, openFile, makeSVG } from 'jsroot';
     import { writeFileSync } from 'fs';
 
@@ -855,6 +868,7 @@ It is also possible to convert any JavaScript object into ROOT JSON string, usin
     let obj = await file.readObject("hpx;1");
     let json = await toJSON(obj);
     writrFileSync("hpxpy.json", json);
+```
 
 Such JSON string could be parsed by any other JSROOT-based application.
 
@@ -870,6 +884,7 @@ see also [here](https://github.com/stackgl/headless-gl#how-can-headless-gl-be-us
 [OpenUI5](http://openui5.org/) is a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications.
 JSROOT provides `loadOpenui5` function to load supported OpenUI5:
 
+```javascript
     <script type="module">
        import { loadOpenui5 } from 'path_to_jsroot/modules/main.mjs';
        let sap = await loadOpenui5();
@@ -884,13 +899,16 @@ JSROOT provides `loadOpenui5` function to load supported OpenUI5:
            ]
        }).placeAt("content");
     </script>
+```
 
 JSROOT uses <https://openui5.hana.ondemand.com> when no other source is specified.
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT modules should be specified
 as `/jsrootsys/modules/main.mjs`. And then trying to access files from local disk, one should specify `/currentdir/` folder:
 
+```javascript
     jQuery.sap.registerModulePath("NavExample", "/currentdir/");
+```
 
 JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
 [source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository.
@@ -900,7 +918,9 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
    * Core functionality should be imported from `main.mjs` module like:
 
+```javascript
       import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+```
 
    * It is still possible to use `JSRoot.core.js` script, which provides very similar (but not identical!) functionality as with `v6` via global `JSROOT` object
 
@@ -910,18 +930,24 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
    * Global hierarchy painter `JSROOT.hpainter` no longer existing, one can use `getHPainter` function:
 
+```javascript
       import { getHPainter } from 'https://root.cern/js/7.0.0/modules/main.mjs';
       let hpainter = getHPainter();
+```
 
    * All math functions previously available via `JSROOT.Math` should be imported from `base/math.mjs` module:
 
+```javascript
       import * as math from 'https://root.cern/js/7.0.0/modules/base/math.mjs';
+```
 
    * Indication of batch mode `JSROOT.batch_mode` should be accessed via functions:
 
+```javascript
       import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.0.0/modules/main.mjs';
       let was_batch = isBatchMode();
       if (!was_batch) setBatchMode(true);
+```
 
    * `JSROOT.extend()` function  was removed, use `Object.assign()` instead
 
