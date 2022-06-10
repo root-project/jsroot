@@ -1760,7 +1760,7 @@ function geomBoundingBox(geom) {
    else if (geom.polygons)
       polygons = geom.polygons;
 
-   if (polygons!==null) {
+   if (polygons !== null) {
       let box = new Box3();
       for (let n = 0; n < polygons.length; ++n) {
          let polygon = polygons[n], nvert = polygon.vertices.length;
@@ -1792,8 +1792,6 @@ function createHalfSpace(shape, geom) {
       let box = geomBoundingBox(geom);
       if (box) sz = box.getSize(new Vector3()).length() * 1000;
    }
-
-   // console.log('normal', normal, 'vertex', vertex, 'size', sz);
 
    let v0 = new Vector3(-sz, -sz/2, 0),
        v1 = new Vector3(0, sz, 0),
@@ -1908,8 +1906,8 @@ function createComposite( shape, faces_limit ) {
 
    if (countGeometryFaces(bsp1) === 0) {
       geoWarn('Zero faces in comp shape'
-            + ' left: ' + shape.fNode.fLeft._typename +  ' ' + countGeometryFaces(geom1) + ' faces'
-            + ' right: ' + shape.fNode.fRight._typename + ' ' + countGeometryFaces(geom2) + ' faces'
+            + ` left: ${shape.fNode.fLeft._typename} ${countGeometryFaces(geom1)} faces`
+            + ` right: ${shape.fNode.fRight._typename} ${countGeometryFaces(geom2)} faces`
             + '  use first');
       bsp1 = new CsgGeometry(geom1, matrix1);
    }
@@ -2029,64 +2027,66 @@ function provideObjectInfo(obj) {
    }
 
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
-       useexp = (sz>1e7) || (sz<1e-7),
+       useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
           if (v===undefined) return "???";
-          if ((v==Math.round(v) && v<1e7)) return Math.round(v);
+          if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
 
    info.push(shape._typename);
 
-   info.push("DX="+conv(shape.fDX) + " DY="+conv(shape.fDY) + " DZ="+conv(shape.fDZ));
+   info.push(`DX=${conv(shape.fDX)} DY=${conv(shape.fDY)} DZ=${conv(shape.fDZ)}`);
 
    switch (shape._typename) {
       case "TGeoBBox": break;
-      case "TGeoPara": info.push("Alpha=" + shape.fAlpha + " Phi=" + shape.fPhi + " Theta=" + shape.fTheta); break;
-      case "TGeoTrd2": info.push("Dy1=" + conv(shape.fDy1) + " Dy2=" + conv(shape.fDy1));
-      case "TGeoTrd1": info.push("Dx1=" + conv(shape.fDx1) + " Dx2=" + conv(shape.fDx1)); break;
+      case "TGeoPara": info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
+      case "TGeoTrd2": info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+      case "TGeoTrd1": info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
       case "TGeoArb8": break;
       case "TGeoTrap": break;
       case "TGeoGtra": break;
       case "TGeoSphere":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
-         info.push("Theta1=" + shape.fTheta1 + " Theta2=" + shape.fTheta2);
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         info.push(`Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
          break;
       case "TGeoConeSeg":
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         // no break;
       case "TGeoCone":
-         info.push("Rmin1=" + conv(shape.fRmin1) + " Rmax1=" + conv(shape.fRmax1));
-         info.push("Rmin2=" + conv(shape.fRmin2) + " Rmax2=" + conv(shape.fRmax2));
+         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`);
+         info.push(`Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
          break;
       case "TGeoCtub":
       case "TGeoTubeSeg":
-         info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
+         // no break
       case "TGeoEltu":
       case "TGeoTube":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
          break;
       case "TGeoTorus":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("Phi1=" + shape.fPhi1 + " Dphi=" + shape.fDphi);
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
          break;
       case "TGeoPcon":
       case "TGeoPgon": break;
       case "TGeoXtru": break;
       case "TGeoParaboloid":
-         info.push("Rlo=" + conv(shape.fRlo) + " Rhi=" + conv(shape.fRhi));
-         info.push("A=" + conv(shape.fA) + " B=" + conv(shape.fB));
+         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`);
+         info.push(`A=${conv(shape.fA)} B=${conv(shape.fB)}`);
          break;
       case "TGeoHype":
-         info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
-         info.push("StIn=" + conv(shape.fStIn) + " StOut=" + conv(shape.fStOut));
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
+         info.push(`StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
       case "TGeoCompositeShape": break;
       case "TGeoShapeAssembly": break;
       case "TGeoScaledShape":
          info = provideObjectInfo(shape.fShape);
          if (shape.fScale)
-            info.unshift('Scale X=' + shape.fScale.fScale[0] + " Y=" + shape.fScale.fScale[1] + " Z=" + shape.fScale.fScale[2]);
+            info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
          break;
    }
 
@@ -2260,21 +2260,21 @@ class ClonedNodes {
    cleanup(drawnodes, drawshapes) {
 
       if (drawnodes) {
-         for (let n=0;n<drawnodes.length;++n) {
+         for (let n = 0;n < drawnodes.length; ++n) {
             delete drawnodes[n].stack;
             drawnodes[n] = undefined;
          }
       }
 
       if (drawshapes) {
-         for (let n=0;n<drawshapes.length;++n) {
+         for (let n = 0; n < drawshapes.length; ++n) {
             delete drawshapes[n].geom;
             drawshapes[n] = undefined;
          }
       }
 
       if (this.nodes) {
-         for (let n=0;n<this.nodes.length;++n) {
+         for (let n = 0; n < this.nodes.length; ++n) {
             if (this.nodes[n])
                delete this.nodes[n].chlds;
          }
@@ -2633,7 +2633,7 @@ class ClonedNodes {
       //   res.name = this.getNodeName(0);
 
       if (stack)
-         for(let lvl=0;lvl<stack.length;++lvl) {
+         for(let lvl = 0; lvl < stack.length; ++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
 
@@ -2642,7 +2642,7 @@ class ClonedNodes {
 
             let subname = this.getNodeName(res.id);
             if (subname) {
-               if (res.name) res.name+="/";
+               if (res.name) res.name += "/";
                res.name += subname;
             }
 
@@ -2665,12 +2665,12 @@ class ClonedNodes {
 
       let node = this.nodes[0], stack = [];
 
-      for (let k=1;k<ids.length;++k) {
+      for (let k = 1; k < ids.length; ++k) {
          let nodeid = ids[k];
          if (!node) return null;
          let chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
-            console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
+            console.error(`wrong nodes ids ${ids[k]} is not child of ${ids[k-1]}`);
             return null;
          }
 
@@ -2685,7 +2685,7 @@ class ClonedNodes {
    buildIdsByStack(stack) {
       if (!stack) return null;
       let node = this.nodes[0], ids = [0];
-      for (let k=0;k<stack.length;++k) {
+      for (let k = 0; k < stack.length; ++k) {
          let id = node.chlds[stack[k]];
          ids.push(id);
          node = this.nodes[id];
@@ -2872,7 +2872,7 @@ class ClonedNodes {
       for(let lvl=0; lvl<=stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
-         if (lvl>0)  node = this.nodes[node.chlds[nchld]];
+         if (lvl > 0)  node = this.nodes[node.chlds[nchld]];
 
          let obj3d = undefined;
 
@@ -3215,7 +3215,7 @@ class ClonedNodes {
           tm1 = new Date().getTime(),
           res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
-      for (let n=0;n<lst.length;++n) {
+      for (let n = 0; n < lst.length; ++n) {
          let item = lst[n];
 
          // if enough faces are produced, nothing else is required
