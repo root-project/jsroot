@@ -568,16 +568,16 @@ function create8edgesBuffer( v, faces_limit ) {
 
    let creator = (faces_limit > 0) ? new PolygonsCreator : new GeometryCreator(12);
 
-   for (let n=0;n<indicies.length;n+=4) {
+   for (let n = 0; n < indicies.length; n += 4) {
       let i1 = indicies[n]*3,
           i2 = indicies[n+1]*3,
           i3 = indicies[n+2]*3,
           i4 = indicies[n+3]*3;
       creator.addFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
                        v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
-      if (n===0)
+      if (n === 0)
          creator.setNormal(0,0,1);
-      else if (n===20)
+      else if (n === 20)
          creator.setNormal(0,0,-1);
       else
          creator.calcNormal();
@@ -671,7 +671,7 @@ function createArb8Buffer( shape, faces_limit ) {
    let map = [], // list of existing faces (with all rotations)
        numfaces = 0;
 
-   for (let k=0;k<indicies.length;k+=3) {
+   for (let k = 0; k < indicies.length; k += 3) {
       let id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
           id2 = indicies[k+1]*100 + indicies[k+2]*10 + indicies[k],
           id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
@@ -792,9 +792,8 @@ function createSphereBuffer( shape, faces_limit ) {
    if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
    if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
 
-   let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
-
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
+   let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut,
+       creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
    for (let side = 0; side < 2; ++side) {
       if ((side===1) && noInside) break;
@@ -806,9 +805,7 @@ function createSphereBuffer( shape, faces_limit ) {
       // use direct algorithm for the sphere - here normals and position can be calculated directly
       for (let k = 0; k < heightSegments; ++k) {
 
-         let k1 = k + d1, k2 = k + d2;
-
-         let skip = 0;
+         let k1 = k + d1, k2 = k + d2, skip = 0;
          if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
          if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
@@ -917,12 +914,10 @@ function createTubeBuffer( shape, faces_limit) {
 
    let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-   let calcZ;
-   if (shape._typename == "TGeoCtub")
-      calcZ = (x,y,z) => {
-         let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
-         return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
-      };
+   const calcZ = (shape._typename !== "TGeoCtub") ? null : (x,y,z) => {
+      let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
+      return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
+   };
 
    // create outer/inner tube
    for (let side = 0; side < 2; ++side) {
@@ -939,11 +934,7 @@ function createTubeBuffer( shape, faces_limit) {
 
       if (side === 1) { nxy *= -1; nz *= -1; };
 
-      let reduce = 0;
-      if (R[0] <= 0)
-         reduce = 2;
-      else if (R[1] <= 0)
-         reduce = 1;
+      let reduce = (R[0] <= 0) ? 2 : ((R[1] <= 0) ? 1 : 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
@@ -968,8 +959,8 @@ function createTubeBuffer( shape, faces_limit) {
       let d1 = side, d2 = 1- side,
           sign = (side == 0) ? 1 : -1,
           reduce = (innerR[side] <= 0) ? 2 : 0;
-      if ((reduce==2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
-      for (let seg=0;seg<radiusSegments;++seg) {
+      if ((reduce === 2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
+      for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
                innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
                outerR[side] * _cos[seg+d1], outerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -993,7 +984,7 @@ function createTubeBuffer( shape, faces_limit) {
                        outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
                        outerR[0] * _cos[0], outerR[0] * _sin[0],  shape.fDZ,
                        innerR[0] * _cos[0], innerR[0] * _sin[0],  shape.fDZ,
-                       (outerR[0] === innerR[0]) ? 2 : ((innerR[1]===outerR[1]) ? 1 : 0) );
+                       (outerR[0] === innerR[0]) ? 2 : ((innerR[1]===outerR[1]) ? 1 : 0));
       if (calcZ) creator.recalcZ(calcZ);
       creator.calcNormal();
 
@@ -1030,7 +1021,7 @@ function createEltuBuffer( shape , faces_limit ) {
        nx1, ny1, nx2 = 1, ny2 = 0;
 
    // create tube faces
-   for (let seg=0; seg<radiusSegments; ++seg) {
+   for (let seg = 0; seg < radiusSegments; ++seg) {
       creator.addFace4(x[seg],   y[seg],   +shape.fDZ,
                        x[seg],   y[seg],   -shape.fDZ,
                        x[seg+1], y[seg+1], -shape.fDZ,
@@ -1047,7 +1038,7 @@ function createEltuBuffer( shape , faces_limit ) {
    }
 
    // create top/bottom sides
-   for (let side=0;side<2;++side) {
+   for (let side = 0; side < 2; ++side) {
       let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
       for (let seg=0; seg<radiusSegments; ++seg) {
          creator.addFace3(0,          0,          sign*shape.fDZ,
@@ -1092,10 +1083,9 @@ function createTorusBuffer( shape, faces_limit ) {
       _cost[t] = Math.cos(angle);
    }
 
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
-
-   // use vectors for normals calculation
-   let p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
+   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces),
+       // use vectors for normals calculation
+       p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
        n1 = new Vector3(), n2 = new Vector3(), n3 = new Vector3(), n4 = new Vector3(),
        center1 = new Vector3(), center2 = new Vector3();
 
@@ -1136,9 +1126,9 @@ function createTorusBuffer( shape, faces_limit ) {
    if (shape.fDphi !== 360)
       for (let t=0;t<=tubularSegments;t+=tubularSegments) {
          let tube1 = shape.fRmax, tube2 = shape.fRmin,
-             d1 = (t>0) ? 0 : 1, d2 = 1 - d1,
+             d1 = (t > 0) ? 0 : 1, d2 = 1 - d1,
              skip = (shape.fRmin) > 0 ?  0 : 1,
-             nsign = t>0 ? 1 : -1;
+             nsign = (t > 0) ? 1 : -1;
          for (let n=0;n<radialSegments;++n) {
             creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
@@ -1220,7 +1210,7 @@ function createPolygonBuffer( shape, faces_limit ) {
 
    let cut_faces = null;
 
-   if (pnts!==null) {
+   if (pnts !== null) {
       if (pnts.length === shape.fNz * 2) {
          // special case - all layers are there, create faces ourself
          cut_faces = [];
@@ -1270,9 +1260,9 @@ function createPolygonBuffer( shape, faces_limit ) {
             nz = Math.sin(angle);
          }
 
-         if (side>0) { nxy*=-1; nz*=-1; }
+         if (side > 0) { nxy*=-1; nz*=-1; }
 
-         for (let seg=0;seg < radiusSegments;++seg) {
+         for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                              r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                              r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
@@ -1367,11 +1357,11 @@ function createXtruBuffer( shape, faces_limit ) {
       }
    }
 
-   for (let layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
+   for (let layer = 0; layer <= shape.fNz-1; layer += (shape.fNz-1)) {
       let z = shape.fZ[layer], scale = shape.fScale[layer],
           x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
-      for (let n=0;n<faces.length;++n) {
+      for (let n = 0; n < faces.length; ++n) {
          let face = faces[n],
              pnt1 = pnts[face[0]],
              pnt2 = pnts[face[(layer===0) ? 2 : 1]],
@@ -1414,8 +1404,8 @@ function createParaboloidBuffer( shape, faces_limit ) {
    let ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
 
    let numfaces = (heightSegments+1)*radiusSegments*2;
-   if (rmin===0) numfaces -= radiusSegments*2; // complete layer
-   if (rmax===0) numfaces -= radiusSegments*2; // complete layer
+   if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
+   if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
 
    if (faces_limit < 0) return numfaces;
 
@@ -1435,7 +1425,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
 
       let layerz = 0, radius = 0, nxy = 0, nz = -1;
 
-      if ((layer === 0) && (rmin===0)) continue;
+      if ((layer === 0) && (rmin === 0)) continue;
 
       if ((layer === heightSegments + 1) && (lastr === 0)) break;
 
@@ -1455,11 +1445,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
       nxy = shape.fA * radius;
       nz = (shape.fA > 0) ? -1 : 1;
 
-      let skip = 0;
-      if (lastr === 0)
-         skip = 1;
-      else if (radius === 0)
-         skip = 2;
+      let skip = (lastr === 0) ? 1 : ((radius === 0) ? 2 : 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
@@ -1469,7 +1455,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
 
          // use analytic normal values when open/closing paraboloid around 0
          // cut faces (top or bottom) set with simple normal
-         if ((skip===0) || ((layer===1) && (rmin===0)) || ((layer===heightSegments+1) && (rmax===0)))
+         if ((skip === 0) || ((layer === 1) && (rmin === 0)) || ((layer === heightSegments+1) && (rmax === 0)))
             creator.setNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
                                lastnxy*_cos[seg],   lastnxy*_sin[seg],   lastnz,
                                lastnxy*_cos[seg+1], lastnxy*_sin[seg+1], lastnz,
@@ -1522,13 +1508,13 @@ function createHypeBuffer( shape, faces_limit ) {
           d1 = 1- side, d2 = 1 - d1;
 
       // vertical layers
-      for (let layer=0;layer<heightSegments;++layer) {
+      for (let layer = 0; layer < heightSegments; ++layer) {
          let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
              z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
              r1 = Math.sqrt(r0*r0+tsq*z1*z1),
              r2 = Math.sqrt(r0*r0+tsq*z2*z2);
 
-         for (let seg=0; seg<radiusSegments; ++seg) {
+         for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                              r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                              r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
