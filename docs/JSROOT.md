@@ -85,9 +85,11 @@ Many examples of URL string usage can be found on [JSROOT API examples](https://
 
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
+```html
     <iframe width="700" height="400"
             src="https://root.cern/js/latest/?nobrowser&file=https://root.cern/js/files/hsimple.root&item=hpxpy&opt=colz">
     </iframe>
+```
 
 
 ## Supported ROOT classes by JSROOT
@@ -395,6 +397,7 @@ One could use wildcard symbol like '+TUBE1*'.
 
 Another way to configure visibility flags is usage of ROOT macros, which typically looks like:
 
+```cpp
     {
       TGeoManager::Import("http://root.cern/files/alice2.root");
       gGeoManager->DefaultColors();
@@ -406,6 +409,7 @@ Another way to configure visibility flags is usage of ROOT macros, which typical
       gGeoManager->GetVolume("ALIC")->Draw("ogl");
       new TBrowser;
     }
+```
 
 Example of such macro can be found in root tutorials.
 
@@ -476,21 +480,24 @@ Alternative - enable CORS requests in the browser. It can be easily done with [C
 
 Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to `modules/gui.mjs` script like:
 
+```javascript
     ...
     <script type="module">
        import { openFile, draw } from 'https://root.cern/js/latest/modules/gui.mjs';
 
     </script>
     ...
+```
 
 In the main `<div>` element one can specify many custom parameters like one do it in URL string:
 
+```javascript
     ...
      <div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
        loading scripts ...
      </div>
     ...
-
+```
 
 ## Reading local ROOT files
 
@@ -584,6 +591,7 @@ Many different examples of JSROOT API usage can be found on [JSROOT API examples
 
 Major JSROOT functions are located in `main.mjs` module and can be imported like:
 
+```javascript
     <script type='module'>
        import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
        let filename = "https://root.cern/js/files/hsimple.root";
@@ -591,19 +599,23 @@ Major JSROOT functions are located in `main.mjs` module and can be imported like
        let obj = await file.readObject("hpxpy;1");
        await draw("drawing", obj, "colz");
     </script>
+```
 
 Here the default location `https://root.cern/js/latest/` is specified. One always can install JSROOT on private web server.
 When JSROOT is used with THttpServer, the address looks like:
 
+```javascript
     <script type='module'>
        import { httpRequest, draw } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
        let obj = await httpRequest('http://your_root_server:8080/Objects/hist/root.json','object');
        await draw("drawing", obj, "hist");
     </script>
+```
 
 Loading main module is enough to get public JSROOT functionality - reading files and drawing objects.
 One also can load some special components directly like:
 
+```javascript
     <script type='module'>
        import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui.mjs';
 
@@ -617,30 +629,36 @@ One also can load some special components directly like:
        await h.openRootFile("../../files/hsimple.root");
        await h.display("hpxpy;1","colz");
     </script>
-
+```
 
 After script loading one can configure different parameters in `gStyle` object.
 It is instance of the `TStyle` object and behaves like `gStyle` variable in ROOT. For instance,
 to change stat format using to display value in stats box:
 
+```javascript
     import { gStyle } from 'https://root.cern/js/latest/modules/main.mjs';
     gStyle.fStatFormat = "7.5g";
+```
 
 There is also `settings` object which contains all other JSROOT settings. For instance,
 one can configure custom format for different axes:
 
+```javascript
     import { settings } from 'https://root.cern/js/latest/modules/main.mjs';
     settings.XValuesFormat = "4.2g";
     settings.YValuesFormat = "6.1f";
+```
 
 One also can use build bundle to load all functionality at one and access it via `JSROOT` global handle:
 
+```javascript
     <script src="https://root.cern/js/latest/build/jsroot.js"></script>
     <script>
        // getting json string from somewhere
        let obj = JSROOT.parse(root_json);
        JSROOT.draw("plain", obj, "colz");
     </script>
+```
 
 
 ### Use of JSON
@@ -652,72 +670,94 @@ THttpServer provides a JSON representation for every registered object with an u
 
 Such JSON representation generated using the [TBufferJSON](https://root.cern/doc/master/classTBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
 
+```cpp
     ...
     obj->SaveAs("file.json");
     ...
+```
 
 To access data from a remote web server, it is recommended to use the `httpRequest` method.
 For instance to receive object from a THttpServer server one could do:
 
+```javascript
     import { httpRequest } from 'https://root.cern/js/latest/modules/main.mjs';
     let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
     console.log('Read object of type ', obj._typename);
+```
 
 Function returns Promise, which provides parsed object (or Error in case of failure).
 
 If JSON string was obtained by different method, it could be parsed with `parse` function:
 
+```javascript
     import { parse } from 'https://root.cern/js/latest/modules/main.mjs';
     let obj = parse(json_string);
+```
 
 
 ### Objects drawing
 
 After an object has been created, one can directly draw it. If HTML page has `<div>` element:
 
+```javascript
     ...
     <div id="drawing"></div>
     ...
+```
 
 One could use the `draw` function:
 
+```javascript
     import { draw } from 'https://root.cern/js/latest/modules/main.mjs';
     draw("drawing", obj, "colz");
+```
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
 
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
+```javascript
     import { httpRequest, draw, redraw, resize, cleanup } from 'https://root.cern/js/latest/modules/main.mjs';
     let filename = "https://root.cern/js/files/th2ul.json.gz";
     let obj = await httpRequest(filename, 'object');
     draw("drawing", obj, "lego");
+```
 
 In very seldom cases one need to access painter object, created in `draw()` function. This can be done via
 handling Promise results like:
 
+```javascript
     let painter = await draw("drawing", obj, "colz");
     console.log('Object type in painter', painter.getClassName());
+```
 
 One is also able to update the drawing with a new version of the object:
 
+```javascript
     // after some interval request object again
     redraw("drawing", obj2, "colz");
+```
 
 The `redraw` function will call `draw` if the drawing was not performed before.
 
 In the case when changing of HTML layout leads to resize of element with JSROOT drawing,
 one should call `resize()` to let JSROOT adjust drawing size. One should do:
 
+```javascript
     resize("drawing");
+```
 
  As second argument one could specify exact size for draw elements like:
 
+```javascript
     resize("drawing", { width: 500, height: 200 } );
+```
 
 To correctly cleanup JSROOT drawings from HTML element, one should call:
 
+```javascript
     cleanup("drawing");
+```
 
 
 ### File API
@@ -727,12 +767,14 @@ One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore promises are used to retrieve results when the I/O operation is completed.
 For example, reading an object from a file and displaying it will look like:
 
+```javascript
     import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
     let filename = "https://root.cern/js/files/hsimple.root";
     let file = await openFile(filename);
     let obj = await file.readObject("hpxpy;1");
     await draw("drawing", obj, "colz");
     console.log("drawing completed");
+```
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
 
@@ -807,10 +849,12 @@ Any supported TGeo object can be drawn directly with normal `draw()` function.
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
 
+```javascript
     import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
     let opt = { numfaces: 100000 };
     let obj3d = build(obj, opt);
     scene.add( obj3d );
+```
 
 Following options can be specified:
 
