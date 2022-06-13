@@ -718,7 +718,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    xcont.xyid = 2;
 
    if (opts.draw) {
-      xtickslines = createLineSegments(ticks, lineMaterial);
+      let material = (this.x_handle.ticksColor == 'black') && (this.x_handle.ticksWidth == 1) ? lineMaterial :
+                      new LineBasicMaterial({ color: this.x_handle.ticksColor, linewidth: this.x_handle.ticksWidth, vertexColors: false });
+      xtickslines = createLineSegments(ticks, material);
       xcont.add(xtickslines);
    }
 
@@ -745,7 +747,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    xcont.rotation.x = 3/4*Math.PI;
 
    if (opts.draw)
-      xcont.add(new LineSegments(xtickslines.geometry, lineMaterial));
+      xcont.add(new LineSegments(xtickslines.geometry, xtickslines.material));
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
@@ -818,7 +820,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
-         yticksline = createLineSegments(ticks, lineMaterial);
+         let material = (this.y_handle.ticksColor == 'black') && (this.y_handle.ticksWidth == 1) ? lineMaterial :
+                         new LineBasicMaterial({ color: this.y_handle.ticksColor, linewidth: this.y_handle.ticksWidth, vertexColors: false });
+         yticksline = createLineSegments(ticks, material);
          ycont.add(yticksline);
       }
 
@@ -846,7 +850,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ycont.position.set(grmaxx, 0, grminz);
       ycont.rotation.y = -3/4*Math.PI;
       if (opts.draw)
-         ycont.add(new LineSegments(yticksline.geometry, lineMaterial));
+         ycont.add(new LineSegments(yticksline.geometry, yticksline.material));
 
       lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
@@ -946,7 +950,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       top.add(lines2);
    }
 
-   let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, lineMaterial) : null;
+   let zcont = [],
+       zticksmaterial = (this.z_handle.ticksColor == 'black') && (this.z_handle.ticksWidth == 1) ? lineMaterial :
+                         new LineBasicMaterial({ color: this.z_handle.ticksColor, linewidth: this.z_handle.ticksWidth, vertexColors: false }),
+       zticksline = opts.draw ? createLineSegments(ticks, zticksmaterial) : null;
    for (let n = 0; n < 4; ++n) {
       zcont.push(new Object3D());
 
@@ -981,8 +988,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (opts.draw && zticksline)
-         zcont[n].add(n==0 ? zticksline : new LineSegments(zticksline.geometry, lineMaterial));
-      if (opts.zoom) zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
+         zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
+      if (opts.zoom)
+         zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
 
       zcont[n].zid = n + 2;
       top.add(zcont[n]);
