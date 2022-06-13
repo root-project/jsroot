@@ -367,7 +367,7 @@ function resize3D() {
 function highlightBin3D(tip, selfmesh) {
 
    let changed = false, tooltip_mesh = null, changed_self = true,
-       want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
+       want_remove = !tip || (tip.x1 === undefined) || !this.enable_highlight,
        mainp = this.getMainPainter();
 
    if (mainp && (!mainp.provideUserTooltip || !mainp.hasUserTooltip())) mainp = null;
@@ -412,8 +412,8 @@ function highlightBin3D(tip, selfmesh) {
          pos = new Float32Array(indicies.length*3);
          norm = new Float32Array(indicies.length*3);
          const geom = new BufferGeometry();
-         geom.setAttribute( 'position', new BufferAttribute( pos, 3 ) );
-         geom.setAttribute( 'normal', new BufferAttribute( norm, 3 ) );
+         geom.setAttribute('position', new BufferAttribute( pos, 3 ));
+         geom.setAttribute('normal', new BufferAttribute( norm, 3 ));
          const material = new MeshBasicMaterial({ color: color, opacity: opacity, vertexColors: false });
          tooltip_mesh = new Mesh(geom, material);
       } else {
@@ -423,11 +423,11 @@ function highlightBin3D(tip, selfmesh) {
          tooltip_mesh.material.opacity = opacity;
       }
 
-      if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
-      if (tip.y1 === tip.y2) console.warn('same tip Y', tip.y1, tip.y2);
+      if (tip.x1 === tip.x2) console.warn(`same tip X ${tip.x1} ${tip.x2}`);
+      if (tip.y1 === tip.y2) console.warn(`same tip Y ${tip.y1} ${tip.y2}`);
       if (tip.z1 === tip.z2) { tip.z2 = tip.z1 + 0.0001; } // avoid zero faces
 
-      for (let k = 0,nn = -3; k < indicies.length; ++k) {
+      for (let k = 0, nn = -3; k < indicies.length; ++k) {
          let vert = vertices[indicies[k]];
          pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
          pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
@@ -604,8 +604,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let pos = point[kind], min = this[`scale_${kind}min`], max = this[`scale_${kind}max`];
 
       switch(kind) {
-         case "x": pos = (pos+this.size_x3d)/2/this.size_x3d; break;
-         case "y": pos = (pos+this.size_y3d)/2/this.size_y3d; break;
+         case "x": pos = (pos + this.size_x3d)/2/this.size_x3d; break;
+         case "y": pos = (pos + this.size_y3d)/2/this.size_y3d; break;
          case "z": pos = pos/2/this.size_z3d; break;
       }
       if (this["log"+kind]) {
@@ -631,7 +631,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       mesh.zoom = kind;
       mesh.size_3d = size_3d;
       mesh.use_y_for_z = use_y_for_z;
-      if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+      if (kind == "y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
       mesh.v1 = new Vector3(positions[0], positions[1], positions[2]);
       mesh.v2 = new Vector3(positions[6], positions[7], positions[8]);
@@ -682,8 +682,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             // original vertices [0, 2, 1, 0, 3, 2]
             // if (kind==="z") gg.vertices[1].x = gg.vertices[2].x = ticklen;
             //            else gg.vertices[2].y = gg.vertices[3].y = -ticklen;
-            if (kind==="z") pos[6] = pos[3] = pos[15] = ticklen;
-                       else pos[4] = pos[16] = pos[13] = -ticklen;
+            if (kind == "z") pos[6] = pos[3] = pos[15] = ticklen;
+                        else pos[4] = pos[16] = pos[13] = -ticklen;
             tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
          } else {
@@ -870,10 +870,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       top.add(ycont);
    }
 
-
-   lbls = []; text_scale = 1;
-
-   ticks = []; // just array, will be used for the buffer geometry
+   lbls = []; text_scale = 1; ticks = []; // just array, will be used for the buffer geometry
 
    let zgridx = null, zgridy = null, lastmajorz = null,
        zaxis = this.zaxis, maxzlblwidth = 0;
