@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "10/06/2022";
+let version_date = "13/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -976,7 +976,7 @@ function create(typename, target) {
       case 'TAttAxis':
          extend(obj, { fNdivisions: 510, fAxisColor: 1,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
-                       fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont : 42 });
+                       fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case 'TAxis':
          create("TNamed", obj);

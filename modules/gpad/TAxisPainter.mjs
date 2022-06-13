@@ -394,7 +394,6 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Use in GED to identify kind of axis */
    getAxisType() { return "TAxis"; }
 
-
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
      * Therefore one should distinguish when caclulated coordinates used for axis drawing itself or for calculation of frame coordinates
@@ -1024,7 +1023,7 @@ class TAxisPainter extends ObjectPainter {
    drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(), chOpt = "",
-          is_gaxis = (axis && axis._typename === 'TGaxis'),
+          is_gaxis = axis?._typename === 'TGaxis',
           axis_g = layer, tickSize,
           scaling_size, draw_lines = true,
           pp = this.getPadPainter(),
@@ -1034,12 +1033,14 @@ class TAxisPainter extends ObjectPainter {
           swap_side = this.swap_side || false;
 
       // shift for second ticks set (if any)
-      if (!secondShift) secondShift = 0; else
-      if (this.invert_side) secondShift = -secondShift;
+      if (!secondShift)
+         secondShift = 0;
+      else if (this.invert_side)
+         secondShift = -secondShift;
 
       if (is_gaxis) {
          this.createAttLine({ attr: axis });
-         draw_lines = (axis.fLineColor != 0);
+         draw_lines = axis.fLineColor != 0;
          chOpt = axis.fChopt;
          tickSize = axis.fTickSize;
          scaling_size = vertical ? 1.7*h : 0.6*w;
@@ -1072,15 +1073,15 @@ class TAxisPainter extends ObjectPainter {
 
       let side = 1, ticksPlusMinus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
-          optionPlus = (chOpt.indexOf("+")>=0),
-          optionMinus = (chOpt.indexOf("-")>=0),
-          optionSize = (chOpt.indexOf("S")>=0),
-          // optionY = (chOpt.indexOf("Y")>=0),
-          // optionUp = (chOpt.indexOf("0")>=0),
-          // optionDown = (chOpt.indexOf("O")>=0),
-          optionUnlab = (chOpt.indexOf("U")>=0) || this.optionUnlab,  // no labels
-          optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
-          optionInt = (chOpt.indexOf("I")>=0),    // integer labels
+          optionPlus = (chOpt.indexOf("+") >= 0),
+          optionMinus = (chOpt.indexOf("-") >= 0),
+          optionSize = (chOpt.indexOf("S") >= 0),
+          // optionY = (chOpt.indexOf("Y") >= 0),
+          // optionUp = (chOpt.indexOf("0") >= 0),
+          // optionDown = (chOpt.indexOf("O") >= 0),
+          optionUnlab = (chOpt.indexOf("U") >= 0) || this.optionUnlab,  // no labels
+          optionNoopt = (chOpt.indexOf("N") >= 0),  // no ticks position optimization
+          optionInt = (chOpt.indexOf("I") >= 0),  // integer labels
           optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
 
       if (text_scaling_size <= 0) text_scaling_size = 0.0001;

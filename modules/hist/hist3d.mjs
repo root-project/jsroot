@@ -523,7 +523,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.y_handle.snapid = this.snapid;
    }
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
-                                   { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
+                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this,"y");
 
    this.z_handle = new AxisPainter(null, this.zaxis);
@@ -534,7 +534,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this,"z");
-
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
@@ -621,7 +620,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       else
          positions = new Float32Array([-size_3d,0,0, size_3d,-ticklen*4,0, size_3d,0,0, -size_3d,0,0, -size_3d,-ticklen*4,0, size_3d,-ticklen*4,0]);
 
-      geom.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+      geom.setAttribute('position', new BufferAttribute(positions, 3));
       geom.computeVertexNormals();
 
       let material = new MeshBasicMaterial({ transparent: true, vertexColors: false, side: DoubleSide, opacity: 0 }),
@@ -651,8 +650,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let min = -this.size_3d, max = this.size_3d;
          if (this.zoom==="z") { min = 0; max = 2*this.size_3d; }
 
-         if (pnt[this.zoom] < min) pnt[this.zoom] = min; else
-         if (pnt[this.zoom] > max) pnt[this.zoom] = max;
+         if (pnt[this.zoom] < min)
+            pnt[this.zoom] = min;
+         else if (pnt[this.zoom] > max)
+            pnt[this.zoom] = max;
 
          return pnt;
       }
@@ -716,7 +717,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (opts.draw) {
       xtickslines = createLineSegments(ticks, lineMaterial);
       xcont.add(xtickslines);
-    }
+   }
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
