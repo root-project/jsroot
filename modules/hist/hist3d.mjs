@@ -470,7 +470,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
-       textsize = Math.round(this.size_z3d * 0.05),
+       textScaling = this.size_z3d,
        pad = opts.v7 ? null : this.getPadPainter().getRootPad(true),
        xmin = this.xmin, xmax = this.xmax,
        ymin = this.ymin, ymax = this.ymax,
@@ -481,8 +481,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       grminx = this.xmin; grmaxx = this.xmax;
       grminy = this.ymin; grmaxy = this.ymax;
       grminz = this.zmin; grmaxz = this.zmax;
-      textsize = (grmaxz - grminz) * 0.05;
+      textScaling = (grmaxz - grminz);
    }
+
+   let textsize = Math.round(textScaling * 0.05);
 
    if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
       xmin = this.zoom_xmin; xmax = this.zoom_xmax;
@@ -516,7 +518,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                     { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this, "x");
-   this.x_handle.extractDrawAttributes();
+   this.x_handle.extractDrawAttributes(textScaling/0.035*0.05);
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
@@ -526,7 +528,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this, "y");
-   this.y_handle.extractDrawAttributes();
+   this.y_handle.extractDrawAttributes(textScaling/0.035*0.05);
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
@@ -536,7 +538,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this, "z");
-   this.z_handle.extractDrawAttributes();
+   this.z_handle.extractDrawAttributes(textScaling/0.035*0.05);
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
@@ -576,7 +578,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && lbl && (lbl.length > 0) && opts.draw) {
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.x_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -792,7 +794,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && opts.draw) {
-         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.y_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -893,7 +895,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (lbl === null) { is_major = false; lbl = ""; }
 
       if (is_major && lbl && opts.draw) {
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.z_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;

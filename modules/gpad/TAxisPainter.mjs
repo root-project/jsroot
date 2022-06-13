@@ -409,7 +409,7 @@ class TAxisPainter extends ObjectPainter {
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
-      this.max_tick_size = opts.max_tick_size || 0;
+      this.maxTickSize = opts.maxTickSize || 0;
 
       let axis = this.getObject();
 
@@ -1015,40 +1015,46 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
-   extractDrawAttributes() {
+   extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
           is_gaxis = axis?._typename === 'TGaxis',
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || 10,
-          pad_h = pp?.getPadHeight() || 10;
+          pad_h = pp?.getPadHeight() || 10,
+          tickSize = 0, tickScalingSize = 0;
 
-      this.scalingSize = Math.min(pad_w, pad_h);
+      this.scalingSize = scalingSize || Math.min(pad_w, pad_h);
       if (this.scalingSize < 10)
          this.scalingSize = 10;
 
       if (is_gaxis) {
-         this.optionSize = axis.fChopt.indexOf("S") >= 0;
+         let optionSize = axis.fChopt.indexOf("S") >= 0;
          this.optionUnlab = axis.fChopt.indexOf("U") >= 0;
          this.optionMinus = (axis.fChopt.indexOf("-") >= 0) || axis.TestBit(EAxisBits.kTickMinus);
          this.optionPlus = (axis.fChopt.indexOf("+") >= 0) || axis.TestBit(EAxisBits.kTickPlus);
          this.optionNoopt = (axis.fChopt.indexOf("N") >= 0);  // no ticks position optimization
          this.optionInt = (axis.fChopt.indexOf("I") >= 0);  // integer labels
+
          this.createAttLine({ attr: axis });
-         this.tickSize = this.optionSize ? axis.fTickSize : 0.03;
+         tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
+         tickSize = optionSize ? axis.fTickSize : 0.03;
          this.titleColor = this.getColor(axis.fTextColor);
       } else {
-         this.optionSize = true;
          this.optionUnlab = false;
          this.optionMinus = this.vertical ^ this.invert_side;
          this.optionPlus = !this.optionMinus;
          this.optionNoopt = false;  // no ticks position optimization
          this.optionInt = false;  // integer labels
          this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
-         this.tickSize = axis.fTickLength;
+         tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
+         tickSize = axis.fTickLength;
          this.titleColor = this.getColor(axis.fTitleColor);
       }
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
+
+      this.tickSize = Math.round(tickSize * tickScalingSize);
+      if (this.maxTickSize && (this.tickSize > this.maxTickSize)) this.tickSize = this.maxTickSize;
 
       // now used only in 3D drawing
       this.ticksColor = this.lineatt.color;
@@ -1056,7 +1062,7 @@ class TAxisPainter extends ObjectPainter {
 
       this.labelSize = Math.round((axis.fLabelSize < 1) ? axis.fLabelSize * this.scalingSize : axis.fLabelSize);
       this.labelOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
-      this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize);
+      this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
 
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
    }
@@ -1065,10 +1071,10 @@ class TAxisPainter extends ObjectPainter {
      * @returns {Promise} for drawing ready */
    drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
-      let axis = this.getObject(), chOpt = "",
+      let axis = this.getObject(),
           is_gaxis = axis?._typename === 'TGaxis',
           axis_g = layer,
-          scaling_size, draw_lines = true,
+          draw_lines = true,
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || 10,
           pad_h = pp?.getPadHeight() || 10,
@@ -1080,15 +1086,10 @@ class TAxisPainter extends ObjectPainter {
       else if (this.invert_side)
          secondShift = -secondShift;
 
-      this.extractDrawAttributes();
+      this.extractDrawAttributes(undefined, w, h);
 
       if (is_gaxis) {
          draw_lines = axis.fLineColor != 0;
-         chOpt = axis.fChopt;
-         scaling_size = this.vertical ? 1.7*h : 0.6*w;
-      } else {
-         chOpt = (this.vertical ^ this.invert_side) ? "-S" : "+S";
-         scaling_size = this.vertical ? pad_w : pad_h;
       }
 
       // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
@@ -1121,25 +1122,21 @@ class TAxisPainter extends ObjectPainter {
          side = (swap_side ^ this.vertical) ? -1 : 1;
       }
 
-      let tickSize = Math.round((this.optionSize ? this.tickSize : 0.03) * scaling_size);
-      if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
-
       // first draw ticks
 
       const handle = this.createTicks(false, this.optionNoexp, this.optionNoopt, this.optionInt);
 
-      axis_lines += this.produceTicksPath(handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
+      axis_lines += this.produceTicksPath(handle, side, this.tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
 
       if (!disable_axis_drawing && axis_lines && !this.lineatt.empty())
          axis_g.append("svg:path")
                .attr("d", axis_lines)
                .call(this.lineatt.func);
 
-
       let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0, labelsMaxWidth = 0,
           // draw labels (sometime on both sides)
           pr = (disable_axis_drawing || this.optionUnlab) ? Promise.resolve(0) :
-                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, tickSize, ticksPlusMinus, max_text_width);
+                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, this.tickSize, ticksPlusMinus, max_text_width);
 
       return pr.then(maxw => {
 
@@ -1154,10 +1151,8 @@ class TAxisPainter extends ObjectPainter {
 
             if (this.vertical) {
                let rw = (labelsMaxWidth || 2*labelSize) + 3;
-               r.attr("x", (side > 0) ? -rw : 0)
-                .attr("y", 0)
-                .attr("width", rw)
-                .attr("height", h);
+               r.attr("x", (side > 0) ? -rw : 0).attr("y", 0)
+                .attr("width", rw).attr("height", h);
             } else {
                r.attr("x", 0).attr("y", (side > 0) ? 0 : -labelSize - 3)
                 .attr("width", w).attr("height", labelSize + 3);
@@ -1202,7 +1197,8 @@ class TAxisPainter extends ObjectPainter {
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.width - tickSize) title_shift_x = Math.round(rect.width - tickSize);
+               if (title_shift_x < rect.width - this.tickSize)
+                  title_shift_x = Math.round(rect.width - this.tickSize);
             }
 
             title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));

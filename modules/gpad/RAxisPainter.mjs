@@ -791,11 +791,11 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
-   extractDrawAttributes() {
+   extractDrawAttributes(scalingSize) {
       let pp = this.getPadPainter(),
           rect = pp?.getPadRect() || { width: 10, height: 10 };
 
-      this.scalingSize = this.vertical ? rect.width : rect.height;
+      this.scalingSize = scalingSize || (this.vertical ? rect.width : rect.height);
 
       this.createv7AttLine("line_");
 
@@ -813,7 +813,7 @@ class RAxisPainter extends RObjectPainter {
       this.fTitle = this.v7EvalAttr("title_value", "");
 
       if (this.fTitle) {
-         this.titleFont = this.v7EvalFont("title", { size: 0.03 }, pp?.getPadHeight() || 10);
+         this.titleFont = this.v7EvalFont("title", { size: 0.03 }, scalingSize || pp?.getPadHeight() || 10);
          this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
          this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
@@ -828,8 +828,8 @@ class RAxisPainter extends RObjectPainter {
       this.labelsFont.roundAngle(180);
       if (this.labelsFont.angle) this.labelsFont.angle = 270;
 
-      if (this.max_tick_size && (this.ticksSize > this.max_tick_size))
-         this.ticksSize = this.max_tick_size;
+      if (this.maxTickSize && (this.ticksSize > this.maxTickSize))
+         this.ticksSize = this.maxTickSize;
    }
 
    /** @summary Performs axis drawing
