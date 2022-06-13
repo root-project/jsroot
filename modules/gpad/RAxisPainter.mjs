@@ -799,6 +799,8 @@ class RAxisPainter extends RObjectPainter {
 
       this.createv7AttLine("line_");
 
+      this.optionUnlab = this.v7EvalAttr("labels_hide", false);
+
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scalingSize, this.endingStyle ? 0.02 : 0));
       this.startingSize = Math.round(this.v7EvalLength("starting_size", this.scalingSize, 0));
@@ -807,7 +809,6 @@ class RAxisPainter extends RObjectPainter {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
-      this.optionUnlab = this.v7EvalAttr("labels_hide", false);
 
       this.fTitle = this.v7EvalAttr("title_value", "");
 
@@ -829,7 +830,6 @@ class RAxisPainter extends RObjectPainter {
 
       if (this.max_tick_size && (this.ticksSize > this.max_tick_size))
          this.ticksSize = this.max_tick_size;
-
    }
 
    /** @summary Performs axis drawing
