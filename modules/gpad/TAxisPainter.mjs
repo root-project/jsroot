@@ -1018,17 +1018,35 @@ class TAxisPainter extends ObjectPainter {
       });
    }
 
+   /** @summary Extract major draw attributes, which are also used in interactive operations
+     * @private  */
+   extractDrawAttributes() {
+      let axis = this.getObject(),
+          is_gaxis = axis?._typename === 'TGaxis';
+
+      if (is_gaxis) {
+         this.createAttLine({ attr: axis });
+         this.tickSize = (axis.fChopt.indexOf("S") >= 0) ? axis.fTickSize : 0.03;
+      } else {
+         this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
+         this.tickSize = axis.fTickLength;
+      }
+      // now used only in 3D drawing
+      this.ticksColor = this.lineatt.color;
+      this.ticksWidth = this.lineatt.width;
+   }
+
    /** @summary function draws TAxis or TGaxis object
      * @returns {Promise} for drawing ready */
    drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(), chOpt = "",
           is_gaxis = axis?._typename === 'TGaxis',
-          axis_g = layer, tickSize,
+          axis_g = layer,
           scaling_size, draw_lines = true,
           pp = this.getPadPainter(),
-          pad_w = pp ? pp.getPadWidth() : 10,
-          pad_h = pp ? pp.getPadHeight() : 10,
+          pad_w = pp?.getPadWidth() || 10,
+          pad_h = pp?.getPadHeight() || 10,
           vertical = this.vertical,
           swap_side = this.swap_side || false;
 
@@ -1038,16 +1056,14 @@ class TAxisPainter extends ObjectPainter {
       else if (this.invert_side)
          secondShift = -secondShift;
 
+      this.extractDrawAttributes();
+
       if (is_gaxis) {
-         this.createAttLine({ attr: axis });
          draw_lines = axis.fLineColor != 0;
          chOpt = axis.fChopt;
-         tickSize = axis.fTickSize;
          scaling_size = vertical ? 1.7*h : 0.6*w;
       } else {
-         this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
          chOpt = (vertical ^ this.invert_side) ? "-S" : "+S";
-         tickSize = axis.fTickLength;
          scaling_size = vertical ? pad_w : pad_h;
       }
 
@@ -1075,7 +1091,7 @@ class TAxisPainter extends ObjectPainter {
           text_scaling_size = Math.min(pad_w, pad_h),
           optionPlus = (chOpt.indexOf("+") >= 0),
           optionMinus = (chOpt.indexOf("-") >= 0),
-          optionSize = (chOpt.indexOf("S") >= 0),
+          optionSize = (chOpt.indexOf("S") >= 0), // now handled in extractDrawAttributes
           // optionY = (chOpt.indexOf("Y") >= 0),
           // optionUp = (chOpt.indexOf("0") >= 0),
           // optionDown = (chOpt.indexOf("O") >= 0),
@@ -1097,7 +1113,7 @@ class TAxisPainter extends ObjectPainter {
          side = (swap_side ^ vertical) ? -1 : 1;
       }
 
-      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
+      let tickSize = Math.round((optionSize ? this.tickSize : 0.03) * scaling_size);
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
 
       // first draw ticks

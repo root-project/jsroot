@@ -515,7 +515,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                     { log: pad ? pad.fLogx : 0 });
-   this.x_handle.assignFrameMembers(this,"x");
+   this.x_handle.assignFrameMembers(this, "x");
+   this.x_handle.extractDrawAttributes();
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
@@ -524,7 +525,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
-   this.y_handle.assignFrameMembers(this,"y");
+   this.y_handle.assignFrameMembers(this, "y");
+   this.y_handle.extractDrawAttributes();
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
@@ -533,7 +535,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
-   this.z_handle.assignFrameMembers(this,"z");
+   this.z_handle.assignFrameMembers(this, "z");
+   this.z_handle.extractDrawAttributes();
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 

@@ -809,7 +809,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
    extractDrawAttributes() {
-       this.createv7AttLine("line_");
+      this.createv7AttLine("line_");
 
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scaling_size, this.endingStyle ? 0.02 : 0));
@@ -826,6 +826,11 @@ class RAxisPainter extends RObjectPainter {
       if (this.max_tick_size && (this.ticksSize > this.max_tick_size)) this.ticksSize = this.max_tick_size;
    }
 
+   /** @summary Provides line colors for axis */
+   getLineColor() { return this.v7EvalColor("line_color", "black"); }
+
+   getTicksColor() { return this.v7EvalColor("ticks_color", ""); }
+
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
    drawAxis(layer, transform, side) {
@@ -836,7 +841,7 @@ class RAxisPainter extends RObjectPainter {
       if (!this.standalone) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
-            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+            axis_g = layer.append("svg:g").attr("class", this.name + "_container");
          else
             axis_g.selectAll("*").remove();
       }
