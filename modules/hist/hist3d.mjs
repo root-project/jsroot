@@ -541,11 +541,21 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
    let textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
-       lineMaterial = new LineBasicMaterial({ color: 0x000000, vertexColors: false }),
+       lineMaterial,
        ticklen = textsize*0.5, lbls = [], text_scale = 1,
        xticks = this.x_handle.createTicks(false, true),
        yticks = this.y_handle.createTicks(false, true),
        zticks = this.z_handle.createTicks(false, true);
+
+   function getLineMaterial(handle, kind) {
+      let color = (kind == "ticks") ? handle.ticksColor : handle.lineatt.color,
+          linewidth = (kind == "ticks") ? handle.ticksWidth : handle.lineatt.width;
+      if ((color != "black") || (linewidth != 1))
+         return new LineBasicMaterial({ color, linewidth, vertexColors: false });
+      if (!lineMaterial)
+         lineMaterial = new LineBasicMaterial({ color: 0x000000, vertexColors: false });
+      return lineMaterial;
+   }
 
    // main element, where all axis elements are placed
    let top = new Object3D();
@@ -718,9 +728,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    xcont.xyid = 2;
 
    if (opts.draw) {
-      let material = (this.x_handle.ticksColor == 'black') && (this.x_handle.ticksWidth == 1) ? lineMaterial :
-                      new LineBasicMaterial({ color: this.x_handle.ticksColor, linewidth: this.x_handle.ticksWidth, vertexColors: false });
-      xtickslines = createLineSegments(ticks, material);
+      xtickslines = createLineSegments(ticks, getLineMaterial(this.x_handle, "ticks"));
       xcont.add(xtickslines);
    }
 
@@ -820,9 +828,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
-         let material = (this.y_handle.ticksColor == 'black') && (this.y_handle.ticksWidth == 1) ? lineMaterial :
-                         new LineBasicMaterial({ color: this.y_handle.ticksColor, linewidth: this.y_handle.ticksWidth, vertexColors: false });
-         yticksline = createLineSegments(ticks, material);
+         yticksline = createLineSegments(ticks, getLineMaterial(this.y_handle, "ticks"));
          ycont.add(yticksline);
       }
 
@@ -947,10 +953,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       top.add(lines2);
    }
 
-   let zcont = [],
-       zticksmaterial = (this.z_handle.ticksColor == 'black') && (this.z_handle.ticksWidth == 1) ? lineMaterial :
-                         new LineBasicMaterial({ color: this.z_handle.ticksColor, linewidth: this.z_handle.ticksWidth, vertexColors: false }),
-       zticksline = opts.draw ? createLineSegments(ticks, zticksmaterial) : null;
+   let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, getLineMaterial(this.z_handle, "ticks")) : null;
    for (let n = 0; n < 4; ++n) {
       zcont.push(new Object3D());
 
@@ -1005,35 +1008,38 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    zcont[3].position.set(grminx,grminy,0);
    zcont[3].rotation.z = -3/4*Math.PI;
 
-   let linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
+   let linex_material = getLineMaterial(this.x_handle),
+       linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], linex_material, null, true);
    for(let n = 0; n < 2; ++n) {
-      let line = new LineSegments(linex_geom, lineMaterial);
+      let line = new LineSegments(linex_geom, linex_material);
       line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
       line.xyboxid = 2; line.bottom = (n == 0);
       top.add(line);
 
-      line = new LineSegments(linex_geom, lineMaterial);
+      line = new LineSegments(linex_geom, linex_material);
       line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
       line.xyboxid = 4; line.bottom = (n == 0);
       top.add(line);
    }
 
-   let liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
+   let liney_material = getLineMaterial(this.y_handle),
+       liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], liney_material, null, true);
    for(let n = 0; n < 2; ++n) {
-      let line = new LineSegments(liney_geom, lineMaterial);
+      let line = new LineSegments(liney_geom, liney_material);
       line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
       line.xyboxid = 3; line.bottom = (n == 0);
       top.add(line);
 
-      line = new LineSegments(liney_geom, lineMaterial);
+      line = new LineSegments(liney_geom, liney_material);
       line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
       line.xyboxid = 1; line.bottom = (n == 0);
       top.add(line);
    }
 
-   let linez_geom = createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
+   let linez_material = getLineMaterial(this.z_handle),
+       linez_geom = createLineSegments([0,0,grminz, 0,0,grmaxz], linez_material, null, true);
    for(let n = 0; n < 4; ++n) {
-      let line = new LineSegments(linez_geom, lineMaterial);
+      let line = new LineSegments(linez_geom, linez_material);
       line.zboxid = zcont[n].zid;
       line.position.copy(zcont[n].position);
       top.add(line);
