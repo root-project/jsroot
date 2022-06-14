@@ -824,9 +824,12 @@ class RAxisPainter extends RObjectPainter {
          delete this.titlePos;
       }
 
-      this.labelsFont = this.v7EvalFont("labels", { size: 0.03 });
+      // TODO: remove old scaling factors for labels and ticks
+      this.labelsFont = this.v7EvalFont("labels", { size: scalingSize ? 0.05 : 0.03 });
       this.labelsFont.roundAngle(180);
       if (this.labelsFont.angle) this.labelsFont.angle = 270;
+
+      if (scalingSize) this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
 
       if (this.maxTickSize && (this.ticksSize > this.maxTickSize))
          this.ticksSize = this.maxTickSize;

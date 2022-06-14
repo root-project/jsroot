@@ -516,9 +516,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
-                                    { log: pad ? pad.fLogx : 0 });
+                               { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this, "x");
-   this.x_handle.extractDrawAttributes(textScaling/0.035*0.05);
+   this.x_handle.extractDrawAttributes(textScaling);
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
@@ -528,7 +528,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this, "y");
-   this.y_handle.extractDrawAttributes(textScaling/0.035*0.05);
+   this.y_handle.extractDrawAttributes(textScaling);
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
@@ -536,15 +536,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.z_handle.snapid = this.snapid;
    }
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                                    { log: pad ? pad.fLogz : 0 });
+                               { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this, "z");
-   this.z_handle.extractDrawAttributes(textScaling/0.035*0.05);
+   this.z_handle.extractDrawAttributes(textScaling);
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
    let textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
-       lineMaterial,
-       ticklen = textsize*0.5, lbls = [], text_scale = 1,
+       lineMaterial, text_scale = 1,
        xticks = this.x_handle.createTicks(false, true),
        yticks = this.y_handle.createTicks(false, true),
        zticks = this.z_handle.createTicks(false, true);
@@ -552,6 +551,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    function getLineMaterial(handle, kind) {
       let color = (kind == "ticks") ? handle.ticksColor : handle.lineatt.color,
           linewidth = (kind == "ticks") ? handle.ticksWidth : handle.lineatt.width;
+      if (!color) color = 'black';
       if ((color != "black") || (linewidth != 1))
          return new LineBasicMaterial({ color, linewidth, vertexColors: false });
       if (!lineMaterial)
@@ -564,7 +564,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    top.axis_draw = true; // mark element as axis drawing
    toplevel.add(top);
 
-   let ticks = [], maxtextheight = 0, xaxis = this.xaxis;
+   let ticks = [], lbls = [], maxtextheight = 0, xaxis = this.xaxis;
 
    while (xticks.next()) {
       let grx = xticks.grpos,
@@ -599,7 +599,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          }
       }
 
-      ticks.push(grx, 0, 0, grx, (is_major ? -ticklen : -ticklen * 0.6), 0);
+      ticks.push(grx,0,0, grx,this.x_handle.ticksSize*(is_major ? -1 : -0.6),0);
    }
 
    if (xaxis && xaxis.fTitle && opts.draw) {
@@ -629,11 +629,11 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      let positions, geom = new BufferGeometry();
+      let positions, geom = new BufferGeometry(), tsz = this[kind+"_handle"].ticksSize;
       if (kind === "z")
-         positions = new Float32Array([0,0,0, ticklen*4,0,2*size_3d, ticklen*4,0,0, 0,0,0, 0,0,2*size_3d, ticklen*4,0,2*size_3d]);
+         positions = new Float32Array([0,0,0, tsz*4,0,2*size_3d, tsz*4,0,0, 0,0,0, 0,0,2*size_3d, tsz*4,0,2*size_3d]);
       else
-         positions = new Float32Array([-size_3d,0,0, size_3d,-ticklen*4,0, size_3d,0,0, -size_3d,0,0, -size_3d,-ticklen*4,0, size_3d,-ticklen*4,0]);
+         positions = new Float32Array([-size_3d,0,0, size_3d,-tsz*4,0, size_3d,0,0, -size_3d,0,0, -size_3d,-tsz*4,0, size_3d,-tsz*4,0]);
 
       geom.setAttribute('position', new BufferAttribute(positions, 3));
       geom.computeVertexNormals();
@@ -642,6 +642,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           mesh = new Mesh(geom, material);
       mesh.zoom = kind;
       mesh.size_3d = size_3d;
+      mesh.tsz = tsz;
       mesh.use_y_for_z = use_y_for_z;
       if (kind == "y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
@@ -673,7 +674,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          return pnt;
       }
 
-      mesh.showSelection = function(pnt1,pnt2) {
+      mesh.showSelection = function(pnt1, pnt2) {
          // used to show selection
 
          let tgtmesh = this.children ? this.children[0] : null, gg, kind = this.zoom;
@@ -692,10 +693,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             let pos = gg.getAttribute('position').array;
 
             // original vertices [0, 2, 1, 0, 3, 2]
-            // if (kind==="z") gg.vertices[1].x = gg.vertices[2].x = ticklen;
-            //            else gg.vertices[2].y = gg.vertices[3].y = -ticklen;
-            if (kind == "z") pos[6] = pos[3] = pos[15] = ticklen;
-                        else pos[4] = pos[16] = pos[13] = -ticklen;
+            // if (kind==="z") gg.vertices[1].x = gg.vertices[2].x = this.tsz;
+            //            else gg.vertices[2].y = gg.vertices[3].y = -this.tsz;
+            if (kind == "z") pos[6] = pos[3] = pos[15] = this.tsz;
+                        else pos[4] = pos[16] = pos[13] = -this.tsz;
             tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
          } else {
@@ -740,7 +741,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
-            0,          text_scale,  0,  (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
+            0,          text_scale,  0,  (-maxtextheight*text_scale - 1.5*this.x_handle.ticksSize) * (lbl.gry || 1),
             0,          0,           1,  0,
             0,          0,           0,  1);
 
@@ -765,7 +766,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
-            0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
+            0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*this.x_handle.ticksSize) * (lbl.gry || 1),
             0,           0,         -1, 0,
             0,           0,          0, 1);
       let mesh = new Mesh(lbl, textMaterial);
@@ -813,7 +814,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             if (this.y_handle.isCenteredLabels()) text3d.gry += space/2;
          }
       }
-      ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
+      ticks.push(0,gry,0, this.y_handle.ticksSize*(is_major ? -1 : -0.6),gry,0);
    }
 
    if (yaxis && yaxis.fTitle && opts.draw) {
@@ -840,7 +841,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              posy = lbl.center ? lbl.gry + w/2 : grmaxy,
              m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
+         m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize) * (lbl.grx || 1),
                -text_scale,  0, 0, posy,
                0, 0,  1, 0,
                0, 0,  0, 1);
@@ -864,7 +865,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
              m = new Matrix4();
-         m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
+         m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize)*(lbl.grx || 1),
                text_scale, 0, 0,  posy,
                0,         0, -1,  0,
                0, 0, 0, 1);
@@ -918,7 +919,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (zgridy && is_major)
          zgridy.push(0,grminy,grz, 0,grmaxy,grz);
 
-      ticks.push(0, 0, grz, (is_major ? ticklen : ticklen * 0.6), 0, grz);
+      ticks.push(0,0,grz, this.z_handle.ticksSize*(is_major ? 1 : 0.6),0,grz);
    }
 
    if (zgridx && (zgridx.length > 0)) {
@@ -962,7 +963,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lbls.forEach(lbl => {
          let m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale,          0,  0, 2*ticklen,
+         m.set(-text_scale,          0,  0, 2*this.z_handle.ticksSize,
                          0,          0,  1, 0,
                          0, text_scale,  0, lbl.grz);
          let mesh = new Mesh(lbl, textMaterial);
@@ -981,7 +982,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.rotateZ(Math.PI/2);
 
          let m = new Matrix4();
-         m.set(-text_scale,          0,  0, 3*ticklen + maxzlblwidth,
+         m.set(-text_scale,          0,  0, 3*this.y_handle.ticksSize + maxzlblwidth,
                          0,          0,  1, 0,
                          0, text_scale,  0, posz);
          let mesh = new Mesh(text3d, textMaterial);

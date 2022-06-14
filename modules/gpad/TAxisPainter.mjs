@@ -1023,9 +1023,8 @@ class TAxisPainter extends ObjectPainter {
           pad_h = pp?.getPadHeight() || 10,
           tickSize = 0, tickScalingSize = 0;
 
-      this.scalingSize = scalingSize || Math.min(pad_w, pad_h);
-      if (this.scalingSize < 10)
-         this.scalingSize = 10;
+      // TODO: remove old scaling factors for labels and ticks
+      this.scalingSize = scalingSize/3.5*5 || Math.max(Math.min(pad_w, pad_h), 10);
 
       if (is_gaxis) {
          let optionSize = axis.fChopt.indexOf("S") >= 0;
@@ -1053,8 +1052,13 @@ class TAxisPainter extends ObjectPainter {
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
 
-      this.tickSize = Math.round(tickSize * tickScalingSize);
-      if (this.maxTickSize && (this.tickSize > this.maxTickSize)) this.tickSize = this.maxTickSize;
+      this.ticksSize = tickSize * tickScalingSize;
+      if (scalingSize)
+         this.ticksSize *= 5/6; // this is old scaling factor for ticks in lego plots
+      else
+         this.ticksSize = Math.round(this.ticksSize);
+
+      if (this.maxTickSize && (this.ticksSize > this.maxTickSize)) this.ticksSize = this.maxTickSize;
 
       // now used only in 3D drawing
       this.ticksColor = this.lineatt.color;
@@ -1126,7 +1130,7 @@ class TAxisPainter extends ObjectPainter {
 
       const handle = this.createTicks(false, this.optionNoexp, this.optionNoopt, this.optionInt);
 
-      axis_lines += this.produceTicksPath(handle, side, this.tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
+      axis_lines += this.produceTicksPath(handle, side, this.ticksSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
 
       if (!disable_axis_drawing && axis_lines && !this.lineatt.empty())
          axis_g.append("svg:path")
@@ -1136,7 +1140,7 @@ class TAxisPainter extends ObjectPainter {
       let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0, labelsMaxWidth = 0,
           // draw labels (sometime on both sides)
           pr = (disable_axis_drawing || this.optionUnlab) ? Promise.resolve(0) :
-                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, this.tickSize, ticksPlusMinus, max_text_width);
+                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, this.ticksSize, ticksPlusMinus, max_text_width);
 
       return pr.then(maxw => {
 
@@ -1197,8 +1201,8 @@ class TAxisPainter extends ObjectPainter {
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.width - this.tickSize)
-                  title_shift_x = Math.round(rect.width - this.tickSize);
+               if (title_shift_x < rect.width - this.ticksSize)
+                  title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
             title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
