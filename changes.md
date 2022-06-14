@@ -2,6 +2,7 @@
 
 ## Changes in 7.1.x
 1. Fix - let modify node visibility bits via context menu
+2. Fix - menu position adjusting
 
 
 ## Changes in 7.1.0
