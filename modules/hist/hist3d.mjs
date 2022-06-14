@@ -470,7 +470,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
-       textScaling = this.size_z3d,
+       scalingSize = this.size_z3d,
        pad = opts.v7 ? null : this.getPadPainter().getRootPad(true),
        xmin = this.xmin, xmax = this.xmax,
        ymin = this.ymin, ymax = this.ymax,
@@ -481,10 +481,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       grminx = this.xmin; grmaxx = this.xmax;
       grminy = this.ymin; grmaxy = this.ymax;
       grminz = this.zmin; grmaxz = this.zmax;
-      textScaling = (grmaxz - grminz);
+      scalingSize = (grmaxz - grminz);
    }
 
-   let textsize = Math.round(textScaling * 0.05);
+   let textsize = Math.round(scalingSize * 0.05);
 
    if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
       xmin = this.zoom_xmin; xmax = this.zoom_xmax;
@@ -518,7 +518,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this, "x");
-   this.x_handle.extractDrawAttributes(textScaling);
+   this.x_handle.extractDrawAttributes(scalingSize);
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
@@ -528,7 +528,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this, "y");
-   this.y_handle.extractDrawAttributes(textScaling);
+   this.y_handle.extractDrawAttributes(scalingSize);
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
@@ -538,12 +538,11 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this, "z");
-   this.z_handle.extractDrawAttributes(textScaling);
+   this.z_handle.extractDrawAttributes(scalingSize);
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-   let textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
-       lineMaterial, text_scale = 1,
+   let textMaterial, lineMaterial, text_scale = 1,
        xticks = this.x_handle.createTicks(false, true),
        yticks = this.y_handle.createTicks(false, true),
        zticks = this.z_handle.createTicks(false, true);
@@ -559,12 +558,21 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       return lineMaterial;
    }
 
+   function getTextMaterial(handle, kind) {
+      let color = (kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color;
+      if (color && (color != 'black'))
+         return new MeshBasicMaterial({ color, vertexColors: false });
+      if (!textMaterial)
+         textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false });
+      return textMaterial;
+   }
+
    // main element, where all axis elements are placed
    let top = new Object3D();
    top.axis_draw = true; // mark element as axis drawing
    toplevel.add(top);
 
-   let ticks = [], lbls = [], maxtextheight = 0, xaxis = this.xaxis;
+   let ticks = [], lbls = [], maxtextheight = 0;
 
    while (xticks.next()) {
       let grx = xticks.grpos,
@@ -572,7 +580,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          lbl = this.x_handle.format(xticks.tick, 2);
 
       if (xticks.last_major()) {
-         if (!xaxis || !xaxis.fTitle) lbl = "x";
+         if (!this.x_handle.fTitle) lbl = "x";
       } else if (lbl === null) {
          is_major = false; lbl = "";
       }
@@ -602,12 +610,13 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ticks.push(grx,0,0, grx,this.x_handle.ticksSize*(is_major ? -1 : -0.6),0);
    }
 
-   if (xaxis && xaxis.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+   if (this.x_handle.fTitle && opts.draw) {
+      const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = opts.v7 ? false : xaxis.TestBit(EAxisBits.kCenterTitle);
+      text3d.center = this.x_handle.titleCenter;
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
+      text3d.kind = "title";
       lbls.push(text3d);
    }
 
@@ -745,7 +754,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,          0,           1,  0,
             0,          0,           0,  1);
 
-      let mesh = new Mesh(lbl, textMaterial);
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -769,19 +778,16 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*this.x_handle.ticksSize) * (lbl.gry || 1),
             0,           0,         -1, 0,
             0,           0,          0, 1);
-      let mesh = new Mesh(lbl, textMaterial);
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
 
-   //xcont.add(new Mesh(ggg2, textMaterial));
    xcont.xyid = 4;
    if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
    top.add(xcont);
 
    lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
-
-   let yaxis = this.yaxis;
 
    while (yticks.next()) {
       let gry = yticks.grpos,
@@ -789,7 +795,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
-         if (!yaxis || !yaxis.fTitle) lbl = "y";
+         if (!this.y_handle.fTitle) lbl = "y";
       }  else if (lbl === null) {
          is_major = false; lbl = "";
       }
@@ -817,12 +823,13 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ticks.push(0,gry,0, this.y_handle.ticksSize*(is_major ? -1 : -0.6),gry,0);
    }
 
-   if (yaxis && yaxis.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+   if (this.y_handle.fTitle && opts.draw) {
+      const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = opts.v7 ? false : yaxis.TestBit(EAxisBits.kCenterTitle);
+      text3d.center = this.y_handle.titleCenter;
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
+      text3d.kind = "title";
       lbls.push(text3d);
    }
 
@@ -846,7 +853,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0, 0,  1, 0,
                0, 0,  0, 1);
 
-         let mesh = new Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -870,7 +877,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0,         0, -1,  0,
                0, 0, 0, 1);
 
-         let mesh = new Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -881,8 +888,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls = []; text_scale = 1; ticks = []; // just array, will be used for the buffer geometry
 
-   let zgridx = null, zgridy = null, lastmajorz = null,
-       zaxis = this.zaxis, maxzlblwidth = 0;
+   let zgridx = null, zgridy = null, lastmajorz = null, maxzlblwidth = 0;
 
    if (this.size_z3d) {
       zgridx = []; zgridy = [];
@@ -904,7 +910,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.grz = grz;
          lbls.push(text3d);
 
-         if ((lastmajorz !== null) && (draw_height>0))
+         if ((lastmajorz !== null) && (draw_height > 0))
             text_scale = Math.min(text_scale, 0.9*(grz - lastmajorz)/draw_height);
 
          maxzlblwidth = Math.max(maxzlblwidth, draw_width);
@@ -966,26 +972,26 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          m.set(-text_scale,          0,  0, 2*this.z_handle.ticksSize,
                          0,          0,  1, 0,
                          0, text_scale,  0, lbl.grz);
-         let mesh = new Mesh(lbl, textMaterial);
+         let mesh = new Mesh(lbl, getTextMaterial(this.z_handle));
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       });
 
-      if (zaxis && zaxis.fTitle && opts.draw) {
-         let text3d = new TextGeometry(translateLaTeX(zaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      if (this.z_handle.fTitle && opts.draw) {
+         let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             center_title = opts.v7 ? false : zaxis.TestBit(EAxisBits.kCenterTitle),
+             center_title = this.z_handle.titleCenter,
              posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
          text3d.rotateZ(Math.PI/2);
 
          let m = new Matrix4();
-         m.set(-text_scale,          0,  0, 3*this.y_handle.ticksSize + maxzlblwidth,
+         m.set(-text_scale,          0,  0, 3*this.z_handle.ticksSize + maxzlblwidth,
                          0,          0,  1, 0,
                          0, text_scale,  0, posz);
-         let mesh = new Mesh(text3d, textMaterial);
+         let mesh = new Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       }

@@ -818,6 +818,7 @@ class RAxisPainter extends RObjectPainter {
 
          this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
          this.titlePos = this.v7EvalAttr("title_position", "right");
+         this.titleCenter = this.titlePos == "center";
       } else {
          delete this.titleFont;
          delete this.titleOffset;
