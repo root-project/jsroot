@@ -45544,10 +45544,9 @@ class TAxisPainter extends ObjectPainter {
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
 
-            let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = this.getObject(),
-                title_length = vertical ? box.height : box.width,
-                opposite = axis.TestBit(EAxisBits.kOppositeTitle);
+            let box = title_g.node().getBBox(); // check that elements visible, request precise value
+                this.getObject();
+                let title_length = vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -45567,9 +45566,9 @@ class TAxisPainter extends ObjectPainter {
                alt_pos[1] += off;
             }
 
-            if (axis.TestBit(EAxisBits.kCenterTitle))
+            if (this.titleCenter)
                curr_indx = 1;
-            else if (reverse ^ opposite)
+            else if (reverse ^ this.titleOpposite)
                curr_indx = 0;
             else
                curr_indx = 2;
@@ -45627,14 +45626,14 @@ class TAxisPainter extends ObjectPainter {
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
                if (curr_indx == 1) {
-                  set_bit(abits.kCenterTitle, true);
-                  set_bit(abits.kOppositeTitle, false);
+                  set_bit(abits.kCenterTitle, true); this.titleCenter = true;
+                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                } else if (curr_indx == 0) {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, true);
+                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+                  set_bit(abits.kOppositeTitle, true); this.titleOpposite = true;
                } else {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, false);
+                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                }
 
                drag_rect.remove();
@@ -45881,6 +45880,7 @@ class TAxisPainter extends ObjectPainter {
          this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
          this.titleFont.setColor(titleColor);
          this.titleCenter = axis.TestBit(EAxisBits.kCenterTitle);
+         this.titleOpposite = axis.TestBit(EAxisBits.kOppositeTitle);
       } else {
          delete this.titleFont;
          delete this.titleSize;
@@ -46000,7 +46000,6 @@ class TAxisPainter extends ObjectPainter {
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
          let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/this.scalingSize),
-             center = axis.TestBit(EAxisBits.kCenterTitle),
              opposite = axis.TestBit(EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
 
@@ -46008,7 +46007,7 @@ class TAxisPainter extends ObjectPainter {
 
          let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
 
-         this.title_align = center ? "middle" : (myxor ? "begin" : "end");
+         this.title_align = this.titleCenter ? "middle" : (myxor ? "begin" : "end");
 
          if (this.vertical) {
             title_offest_k *= -side*pad_w;
@@ -46022,7 +46021,7 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
-            title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
+            title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 90 : 270,
@@ -46030,7 +46029,7 @@ class TAxisPainter extends ObjectPainter {
          } else {
             title_offest_k *= side*pad_h;
 
-            title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
+            title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 180 : 0,
@@ -48182,6 +48181,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: this.x_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
+      text3d.opposite = this.x_handle.titleOpposite;
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       text3d.kind = "title";
@@ -48314,7 +48314,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
+          posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
@@ -48339,7 +48339,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = lbl.center ? lbl.grx + w/2 : grmaxx,
+          posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
@@ -48395,6 +48395,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: this.y_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
+      text3d.opposite = this.y_handle.titleOpposite;
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       text3d.kind = "title";
@@ -48413,7 +48414,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lbls.forEach(lbl => {
 
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-             posy = lbl.center ? lbl.gry + w/2 : grmaxy,
+             posy = lbl.center ? lbl.gry + w/2 : (lbl.opposite ? grminy + w : grmaxy),
              m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize) * (lbl.grx || 1),
@@ -48438,7 +48439,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-             posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
+             posy = lbl.center ? lbl.gry - w/2 : (lbl.opposite ? grminy : grmaxy - w),
              m = new Matrix4();
          m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize)*(lbl.grx || 1),
                text_scale, 0, 0,  posy,
@@ -48498,7 +48499,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    if (zgridx && (zgridx.length > 0)) {
 
-      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: this.x_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridx, material);
 
       lines1.position.set(0,grmaxy,0);
@@ -48515,7 +48516,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    if (zgridy && (zgridy.length > 0)) {
 
-      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: this.y_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridy, material);
 
       lines1.position.set(grmaxx,0, 0);
@@ -48549,9 +48550,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: this.z_handle.titleFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             center_title = this.z_handle.titleCenter,
-             posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+             posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
 
          text3d.rotateZ(Math.PI/2);
 
@@ -97215,31 +97214,29 @@ class RAxisPainter extends RObjectPainter {
          return Promise.resolve(this);
 
       let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-          center = (this.titlePos == "center"),
-          opposite = (this.titlePos == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
       let rotated = this.isTitleRotated();
 
       this.startTextDrawing(this.titleFont, 'font', title_g);
 
-      this.title_align = center ? "middle" : (opposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
+      this.title_align = this.titleCenter ? "middle" : (this.titleOpposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
 
       if (this.vertical) {
          title_basepos = Math.round(-side*(lgaps[side]));
          title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
-         title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         title_shift_y = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
          this.drawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       } else {
-         title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         title_shift_x = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
          title_basepos = Math.round(side*lgaps[side]);
          title_shift_y = title_basepos + Math.round(side*this.titleOffset);
          this.drawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       }
 
-      title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
+      title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
              .property('basepos', title_basepos)
              .property('shift_x', title_shift_x)
              .property('shift_y', title_shift_y);
@@ -97278,7 +97275,8 @@ class RAxisPainter extends RObjectPainter {
 
          this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
          this.titlePos = this.v7EvalAttr("title_position", "right");
-         this.titleCenter = this.titlePos == "center";
+         this.titleCenter = (this.titlePos == "center");
+         this.titleOpposite = (this.titlePos == "left");
       } else {
          delete this.titleFont;
          delete this.titleOffset;

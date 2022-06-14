@@ -610,6 +610,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: this.x_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
+      text3d.opposite = this.x_handle.titleOpposite;
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       text3d.kind = "title";
@@ -742,7 +743,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
+          posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
@@ -767,7 +768,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls.forEach(lbl => {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = lbl.center ? lbl.grx + w/2 : grmaxx,
+          posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
@@ -823,6 +824,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: this.y_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
+      text3d.opposite = this.y_handle.titleOpposite;
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       text3d.kind = "title";
@@ -841,7 +843,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lbls.forEach(lbl => {
 
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-             posy = lbl.center ? lbl.gry + w/2 : grmaxy,
+             posy = lbl.center ? lbl.gry + w/2 : (lbl.opposite ? grminy + w : grmaxy),
              m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize) * (lbl.grx || 1),
@@ -866,7 +868,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-             posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
+             posy = lbl.center ? lbl.gry - w/2 : (lbl.opposite ? grminy : grmaxy - w),
              m = new Matrix4();
          m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize)*(lbl.grx || 1),
                text_scale, 0, 0,  posy,
@@ -926,7 +928,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    if (zgridx && (zgridx.length > 0)) {
 
-      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: this.x_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridx, material);
 
       lines1.position.set(0,grmaxy,0);
@@ -943,7 +945,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    if (zgridy && (zgridy.length > 0)) {
 
-      const material = new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+      const material = new LineDashedMaterial({ color: this.y_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridy, material);
 
       lines1.position.set(grmaxx,0, 0);
@@ -977,9 +979,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: this.z_handle.titleFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             center_title = this.z_handle.titleCenter,
-             posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+             posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
 
          text3d.rotateZ(Math.PI/2);
 

@@ -755,31 +755,29 @@ class RAxisPainter extends RObjectPainter {
          return Promise.resolve(this);
 
       let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-          center = (this.titlePos == "center"),
-          opposite = (this.titlePos == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
       let rotated = this.isTitleRotated();
 
       this.startTextDrawing(this.titleFont, 'font', title_g);
 
-      this.title_align = center ? "middle" : (opposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
+      this.title_align = this.titleCenter ? "middle" : (this.titleOpposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
 
       if (this.vertical) {
          title_basepos = Math.round(-side*(lgaps[side]));
          title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
-         title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         title_shift_y = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
          this.drawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       } else {
-         title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         title_shift_x = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
          title_basepos = Math.round(side*lgaps[side]);
          title_shift_y = title_basepos + Math.round(side*this.titleOffset);
          this.drawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       }
 
-      title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
+      title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
              .property('basepos', title_basepos)
              .property('shift_x', title_shift_x)
              .property('shift_y', title_shift_y);
@@ -818,7 +816,8 @@ class RAxisPainter extends RObjectPainter {
 
          this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
          this.titlePos = this.v7EvalAttr("title_position", "right");
-         this.titleCenter = this.titlePos == "center";
+         this.titleCenter = (this.titlePos == "center");
+         this.titleOpposite = (this.titlePos == "left");
       } else {
          delete this.titleFont;
          delete this.titleOffset;

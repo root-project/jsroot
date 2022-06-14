@@ -740,8 +740,7 @@ class TAxisPainter extends ObjectPainter {
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
                 axis = this.getObject(),
-                title_length = vertical ? box.height : box.width,
-                opposite = axis.TestBit(EAxisBits.kOppositeTitle);
+                title_length = vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -761,9 +760,9 @@ class TAxisPainter extends ObjectPainter {
                alt_pos[1] += off;
             }
 
-            if (axis.TestBit(EAxisBits.kCenterTitle))
+            if (this.titleCenter)
                curr_indx = 1;
-            else if (reverse ^ opposite)
+            else if (reverse ^ this.titleOpposite)
                curr_indx = 0;
             else
                curr_indx = 2;
@@ -821,14 +820,14 @@ class TAxisPainter extends ObjectPainter {
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
                if (curr_indx == 1) {
-                  set_bit(abits.kCenterTitle, true);
-                  set_bit(abits.kOppositeTitle, false);
+                  set_bit(abits.kCenterTitle, true); this.titleCenter = true;
+                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                } else if (curr_indx == 0) {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, true);
+                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+                  set_bit(abits.kOppositeTitle, true); this.titleOpposite = true;
                } else {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, false);
+                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                }
 
                drag_rect.remove();
@@ -1075,6 +1074,7 @@ class TAxisPainter extends ObjectPainter {
          this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
          this.titleFont.setColor(titleColor);
          this.titleCenter = axis.TestBit(EAxisBits.kCenterTitle);
+         this.titleOpposite = axis.TestBit(EAxisBits.kOppositeTitle);
       } else {
          delete this.titleFont;
          delete this.titleSize;
@@ -1194,7 +1194,6 @@ class TAxisPainter extends ObjectPainter {
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
          let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/this.scalingSize),
-             center = axis.TestBit(EAxisBits.kCenterTitle),
              opposite = axis.TestBit(EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
 
@@ -1202,7 +1201,7 @@ class TAxisPainter extends ObjectPainter {
 
          let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
 
-         this.title_align = center ? "middle" : (myxor ? "begin" : "end");
+         this.title_align = this.titleCenter ? "middle" : (myxor ? "begin" : "end");
 
          if (this.vertical) {
             title_offest_k *= -side*pad_w;
@@ -1216,7 +1215,7 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
-            title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
+            title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 90 : 270,
@@ -1224,7 +1223,7 @@ class TAxisPainter extends ObjectPainter {
          } else {
             title_offest_k *= side*pad_h;
 
-            title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
+            title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 180 : 0,
