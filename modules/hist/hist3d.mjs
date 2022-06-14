@@ -484,8 +484,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       scalingSize = (grmaxz - grminz);
    }
 
-   let textsize = Math.round(scalingSize * 0.05);
-
    if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
       xmin = this.zoom_xmin; xmax = this.zoom_xmax;
    }
@@ -542,7 +540,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-   let textMaterial, lineMaterial, text_scale = 1,
+   let textMaterials = {}, lineMaterials = {}, text_scale = 1,
        xticks = this.x_handle.createTicks(false, true),
        yticks = this.y_handle.createTicks(false, true),
        zticks = this.z_handle.createTicks(false, true);
@@ -551,20 +549,18 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let color = (kind == "ticks") ? handle.ticksColor : handle.lineatt.color,
           linewidth = (kind == "ticks") ? handle.ticksWidth : handle.lineatt.width;
       if (!color) color = 'black';
-      if ((color != "black") || (linewidth != 1))
-         return new LineBasicMaterial({ color, linewidth, vertexColors: false });
-      if (!lineMaterial)
-         lineMaterial = new LineBasicMaterial({ color: 0x000000, vertexColors: false });
-      return lineMaterial;
+      let name = `${color}_${linewidth}`;
+      if (!lineMaterials[name])
+         lineMaterials[name] = new LineBasicMaterial({ color, linewidth, vertexColors: false });
+      return lineMaterials[name];
    }
 
    function getTextMaterial(handle, kind) {
       let color = (kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color;
-      if (color && (color != 'black'))
-         return new MeshBasicMaterial({ color, vertexColors: false });
-      if (!textMaterial)
-         textMaterial = new MeshBasicMaterial({ color: 0x000000, vertexColors: false });
-      return textMaterial;
+      if (!color) color = 'black';
+      if (!textMaterials[color])
+         textMaterials[color] = new MeshBasicMaterial({ color, vertexColors: false });
+      return textMaterials[color];
    }
 
    // main element, where all axis elements are placed
@@ -611,7 +607,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.x_handle.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: this.x_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.gry = 2; // factor 2 shift
@@ -824,7 +820,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.y_handle.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: this.y_handle.titleFont.size, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.grx = 2; // factor 2 shift
@@ -978,7 +974,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       if (this.z_handle.fTitle && opts.draw) {
-         let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: this.z_handle.titleFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,

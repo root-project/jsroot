@@ -886,8 +886,7 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Draw axis labels
      * @returns {Promise} with array label size and max width */
    drawLabels(axis_g, axis, w, h, handle, side, labelsFont, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
-      let label_color = this.getColor(axis.fLabelColor),
-          center_lbls = this.isCenteredLabels(),
+      let center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
@@ -940,7 +939,7 @@ class TAxisPainter extends ObjectPainter {
 
             if (mod && mod.fLabText) lbl = mod.fLabText;
 
-            let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
+            let arg = { text: lbl, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
                 pos = Math.round(this.func(lbl_pos[nmajor]));
 
             if (mod && mod.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
@@ -984,7 +983,7 @@ class TAxisPainter extends ObjectPainter {
          }
 
          if (this.order)
-            this.drawText({ color: label_color,
+            this.drawText({ color: labelsFont.color,
                             x: this.vertical ? side*5 : w+5,
                             y: this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side),
                             align: this.vertical ? ((side < 0) ? 30 : 10) : ( (this.has_obstacle ^ (side < 0)) ? 13 : 10 ),
@@ -1068,6 +1067,7 @@ class TAxisPainter extends ObjectPainter {
       this.labelOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
+      this.labelsFont.setColor(this.getColor(axis.fLabelColor));
 
       this.fTitle = axis.fTitle;
       if (this.fTitle) {
