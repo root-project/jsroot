@@ -7,7 +7,8 @@
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "type": "module",
-  "module": "modules/main.mjs",
+  "main": "./build/jsroot.js",
+  "module": "./modules/main.mjs",
   "exports": {
     ".": "./modules/main.mjs",
     "./core": "./modules/core.mjs",
@@ -29,7 +30,6 @@
       "email": "s.linev@gsi.de"
     }
   ],
-  "license": "MIT",
   "dependencies": {
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
@@ -45,6 +45,11 @@
     "type": "git",
     "url": "https://github.com/root-project/jsroot.git"
   },
+  "bugs": {
+    "url": "https://github.com/root-project/jsroot/issues"
+  },
+  "license": "MIT",
+  "author": "linev",
   "files": [
     "modules/*",
     "scripts/*",
