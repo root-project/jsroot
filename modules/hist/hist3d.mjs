@@ -610,7 +610,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
-      text3d.offsety = this.x_handle.labelOffset + this.x_handle.titleOffset;
+      text3d.offsety = 1.6 * this.x_handle.titleOffset;
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       text3d.kind = "title";
       lbls.push(text3d);
@@ -698,8 +698,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             let pos = gg.getAttribute('position').array;
 
             // original vertices [0, 2, 1, 0, 3, 2]
-            // if (kind==="z") gg.vertices[1].x = gg.vertices[2].x = this.tsz;
-            //            else gg.vertices[2].y = gg.vertices[3].y = -this.tsz;
             if (kind == "z") pos[6] = pos[3] = pos[15] = this.tsz;
                         else pos[4] = pos[16] = pos[13] = -this.tsz;
             tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
@@ -711,13 +709,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let pos = gg.getAttribute('position').array;
 
          if (kind == "z") {
-            // gg.vertices[0].z = gg.vertices[1].z = pnt1[kind];
-            // gg.vertices[2].z = gg.vertices[3].z = pnt2[kind];
             pos[2] = pos[11] = pos[8] = pnt1[kind];
             pos[5] = pos[17] = pos[14] = pnt2[kind];
          } else {
-            // gg.vertices[0].x = gg.vertices[3].x = pnt1[kind];
-            // gg.vertices[1].x = gg.vertices[2].x = pnt2[kind];
             pos[0] = pos[9] = pos[12] = pnt1[kind];
             pos[6] = pos[3] = pos[15] = pnt2[kind];
          }
@@ -801,12 +795,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-         // text3d.translate(-draw_width/2, 0, 0);
          text3d.center = true;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
          text3d.gry = gry;
+         text3d.offsetx = this.y_handle.labelOffset;
          lbls.push(text3d);
 
          if (!yticks.last_major()) {
@@ -824,7 +818,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.opposite = this.y_handle.titleOpposite;
-      text3d.grx = 2; // factor 2 shift
+      text3d.offsetx = 1.6 * this.y_handle.titleOffset;
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       text3d.kind = "title";
       lbls.push(text3d);
@@ -845,7 +839,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              posy = lbl.center ? lbl.gry + w/2 : (lbl.opposite ? grminy + w : grmaxy),
              m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize) * (lbl.grx || 1),
+         m.set(0, text_scale,  0, -maxtextheight*text_scale - this.y_handle.ticksSize - lbl.offsetx,
                -text_scale,  0, 0, posy,
                0, 0,  1, 0,
                0, 0,  0, 1);
@@ -869,7 +863,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry - w/2 : (lbl.opposite ? grminy : grmaxy - w),
              m = new Matrix4();
-         m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*this.y_handle.ticksSize)*(lbl.grx || 1),
+         m.set(0, text_scale, 0,  -maxtextheight*text_scale - this.y_handle.ticksSize - lbl.offsetx,
                text_scale, 0, 0,  posy,
                0,         0, -1,  0,
                0, 0, 0, 1);
@@ -966,7 +960,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lbls.forEach(lbl => {
          let m = new Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale,          0,  0, 2*this.z_handle.ticksSize,
+         m.set(-text_scale,          0,  0, 1.2*this.z_handle.ticksSize + this.z_handle.labelOffset,
                          0,          0,  1, 0,
                          0, text_scale,  0, lbl.grz);
          let mesh = new Mesh(lbl, getTextMaterial(this.z_handle));
@@ -983,7 +977,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.rotateZ(Math.PI/2);
 
          let m = new Matrix4();
-         m.set(-text_scale,          0,  0, 3*this.z_handle.ticksSize + maxzlblwidth,
+         m.set(-text_scale,          0,  0, 1.2*this.z_handle.ticksSize + maxzlblwidth + this.z_handle.titleOffset,
                          0,          0,  1, 0,
                          0, text_scale,  0, posz);
          let mesh = new Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
