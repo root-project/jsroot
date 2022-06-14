@@ -581,7 +581,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          is_major = false; lbl = "";
       }
 
-      if (is_major && lbl && (lbl.length > 0) && opts.draw) {
+      if (is_major && lbl && opts.draw) {
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.x_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -796,7 +796,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          is_major = false; lbl = "";
       }
 
-      if (is_major && opts.draw) {
+      if (is_major && lbl && opts.draw) {
          const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.y_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
