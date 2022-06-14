@@ -1021,7 +1021,7 @@ class TAxisPainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || 10,
           pad_h = pp?.getPadHeight() || 10,
-          tickSize = 0, tickScalingSize = 0;
+          tickSize = 0, tickScalingSize = 0, titleColor;
 
       // TODO: remove old scaling factors for labels and ticks
       this.scalingSize = scalingSize/3.5*5 || Math.max(Math.min(pad_w, pad_h), 10);
@@ -1037,7 +1037,7 @@ class TAxisPainter extends ObjectPainter {
          this.createAttLine({ attr: axis });
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
-         this.titleColor = this.getColor(axis.fTextColor);
+         titleColor = this.getColor(axis.fTextColor);
       } else {
          this.optionUnlab = false;
          this.optionMinus = this.vertical ^ this.invert_side;
@@ -1047,7 +1047,7 @@ class TAxisPainter extends ObjectPainter {
          this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
          tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
          tickSize = axis.fTickLength;
-         this.titleColor = this.getColor(axis.fTitleColor);
+         titleColor = this.getColor(axis.fTitleColor);
       }
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
@@ -1067,6 +1067,10 @@ class TAxisPainter extends ObjectPainter {
       this.labelSize = Math.round((axis.fLabelSize < 1) ? axis.fLabelSize * this.scalingSize : axis.fLabelSize);
       this.labelOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
+
+      this.titleSize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * this.scalingSize);
+      this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
+      this.titleFont.setColor(titleColor);
 
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
    }
@@ -1137,7 +1141,7 @@ class TAxisPainter extends ObjectPainter {
                .attr("d", axis_lines)
                .call(this.lineatt.func);
 
-      let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0, labelsMaxWidth = 0,
+      let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, labelsMaxWidth = 0,
           // draw labels (sometime on both sides)
           pr = (disable_axis_drawing || this.optionUnlab) ? Promise.resolve(0) :
                 this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, this.ticksSize, ticksPlusMinus, max_text_width);
@@ -1180,14 +1184,13 @@ class TAxisPainter extends ObjectPainter {
          if (!axis.fTitle || disable_axis_drawing) return true;
 
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
-         title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * this.scalingSize);
 
          let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/this.scalingSize),
              center = axis.TestBit(EAxisBits.kCenterTitle),
              opposite = axis.TestBit(EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
 
-         this.startTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+         this.startTextDrawing(this.titleFont, 'font', title_g);
 
          let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
 
@@ -1209,7 +1212,7 @@ class TAxisPainter extends ObjectPainter {
 
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 90 : 270,
-                            text: axis.fTitle, color: this.titleColor, draw_g: title_g });
+                            text: axis.fTitle, color: this.titleFont.color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
 
@@ -1217,7 +1220,7 @@ class TAxisPainter extends ObjectPainter {
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate < 0) ? 180 : 0,
-                            text: axis.fTitle, color: this.titleColor, draw_g: title_g });
+                            text: axis.fTitle, color: this.titleFont.color, draw_g: title_g });
          }
 
          if (this.vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
@@ -1232,10 +1235,10 @@ class TAxisPainter extends ObjectPainter {
             if (axis_rect) {
                let title_rect = title_g.node().getBoundingClientRect();
                if ((axis_rect.left != axis_rect.right) && (title_rect.left != title_rect.right))
-                  title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                               Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+                  title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - this.titleFont.size*0.3) :
+                                               Math.round(axis_rect.right - title_rect.left + this.titleFont.size*0.3);
                else
-                  title_shift_x = -1 * Math.round(((side > 0) ? (this.labelOffset + labelsMaxWidth) : 0) + title_fontsize*0.7);
+                  title_shift_x = -1 * Math.round(((side > 0) ? (this.labelOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
             }
 
             title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
