@@ -6,7 +6,6 @@ import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
-import { EAxisBits } from '../gpad/TAxisPainter.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
@@ -588,7 +587,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
-         // text3d.translate(-draw_width/2, 0, 0);
+         text3d.offsety = this.x_handle.labelOffset;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
@@ -611,7 +610,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
-      text3d.gry = 2; // factor 2 shift
+      text3d.offsety = this.x_handle.labelOffset + this.x_handle.titleOffset;
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       text3d.kind = "title";
       lbls.push(text3d);
@@ -747,7 +746,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
-            0,          text_scale,  0,  (-maxtextheight*text_scale - 1.5*this.x_handle.ticksSize) * (lbl.gry || 1),
+            0,          text_scale,  0,  -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
             0,          0,           1,  0,
             0,          0,           0,  1);
 
@@ -772,7 +771,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           m = new Matrix4();
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
-            0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*this.x_handle.ticksSize) * (lbl.gry || 1),
+            0,           text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
             0,           0,         -1, 0,
             0,           0,          0, 1);
       let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
