@@ -378,6 +378,7 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
+   if (process?.env?.APP_ENV !== 'browser') {
       let name, fs;
       return import('tmp').then(tmp => {
          name = tmp.tmpNameSync() + ".js";
@@ -387,6 +388,9 @@ function injectCode(code) {
          fs.writeFileSync(name, code);
          return import("file://" + name);
       }).finally(() => fs.unlinkSync(name));
+   } else {
+      return Promise.resolve(true); // dummy for webpack
+   }
    }
    if (typeof document !== 'undefined') {
 
