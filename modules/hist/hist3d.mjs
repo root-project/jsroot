@@ -571,7 +571,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    while (xticks.next()) {
       let grx = xticks.grpos,
-         is_major = (xticks.kind===1),
+         is_major = xticks.kind === 1,
          lbl = this.x_handle.format(xticks.tick, 2);
 
       if (xticks.last_major()) {
@@ -594,11 +594,16 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.grx = grx;
          lbls.push(text3d);
 
+         let space = 0;
          if (!xticks.last_major()) {
-            let space = (xticks.next_major_grpos() - grx);
+            space = (xticks.next_major_grpos() - grx);
             if (draw_width > 0)
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
-            if (this.x_handle.isCenteredLabels()) text3d.grx += space/2;
+         }
+
+         if (this.x_handle.isCenteredLabels()) {
+            if (!space) space = Math.min(grx - grminx, grmaxx - grx);
+            text3d.grx += space/2;
          }
       }
 
@@ -803,11 +808,15 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.offsetx = this.y_handle.labelOffset;
          lbls.push(text3d);
 
+         let space = 0;
          if (!yticks.last_major()) {
-            let space = (yticks.next_major_grpos() - gry);
+            space = (yticks.next_major_grpos() - gry);
             if (draw_width > 0)
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
-            if (this.y_handle.isCenteredLabels()) text3d.gry += space/2;
+         }
+         if (this.y_handle.isCenteredLabels()) {
+            if (!space) space = Math.min(gry - grminy, grmaxy - gry);
+            text3d.gry += space/2;
          }
       }
       ticks.push(0,gry,0, this.y_handle.ticksSize*(is_major ? -1 : -0.6),gry,0);
@@ -957,12 +966,20 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    for (let n = 0; n < 4; ++n) {
       zcont.push(new Object3D());
 
-      lbls.forEach(lbl => {
-         let m = new Matrix4();
+      lbls.forEach((lbl,indx) => {
+         let m = new Matrix4(), grz = lbl.grz;
+
+         if (this.z_handle.isCenteredLabels()) {
+            if (indx < lbls.length - 1)
+               grz = (grz + lbls[indx+1].grz) / 2;
+            else if (indx > 0)
+               grz = Math.min(1.5*grz - lbls[indx-1].grz*0.5, grmaxz);
+         }
+
          // matrix to swap y and z scales and shift along z to its position
          m.set(-text_scale,          0,  0, 1.2*this.z_handle.ticksSize + this.z_handle.labelOffset,
                          0,          0,  1, 0,
-                         0, text_scale,  0, lbl.grz);
+                         0, text_scale,  0, grz);
          let mesh = new Mesh(lbl, getTextMaterial(this.z_handle));
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
