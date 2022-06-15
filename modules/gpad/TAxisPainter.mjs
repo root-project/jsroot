@@ -1022,8 +1022,7 @@ class TAxisPainter extends ObjectPainter {
           pad_h = pp?.getPadHeight() || 10,
           tickSize = 0, tickScalingSize = 0, titleColor;
 
-      // TODO: remove old scaling factors for labels and ticks
-      this.scalingSize = scalingSize/3.5*5 || Math.max(Math.min(pad_w, pad_h), 10);
+      this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
       if (is_gaxis) {
          let optionSize = axis.fChopt.indexOf("S") >= 0;
@@ -1051,11 +1050,9 @@ class TAxisPainter extends ObjectPainter {
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
 
-      this.ticksSize = tickSize * tickScalingSize;
-      if (scalingSize)
-         this.ticksSize *= 5/6; // this is old scaling factor for ticks in lego plots
-      else
-         this.ticksSize = Math.round(this.ticksSize);
+      this.ticksSize = Math.round(tickSize * tickScalingSize);
+      if (scalingSize && (this.ticksSize < 0))
+         this.ticksSize = -this.ticksSize;
 
       if (this.maxTickSize && (this.ticksSize > this.maxTickSize)) this.ticksSize = this.maxTickSize;
 

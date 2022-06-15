@@ -807,6 +807,8 @@ class RAxisPainter extends RObjectPainter {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
+      if (scalingSize && (this.ticksSize < 0))
+         this.ticksSize = -this.ticksSize;
 
       this.fTitle = this.v7EvalAttr("title_value", "");
 
