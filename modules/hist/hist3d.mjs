@@ -587,7 +587,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
-         text3d.offsety = this.x_handle.labelOffset + (grmaxy - grminy) * 0.005;
+         text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
@@ -805,7 +805,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          maxtextheight = Math.max(maxtextheight, draw_height);
 
          text3d.gry = gry;
-         text3d.offsetx = this.y_handle.labelOffset + (grmaxx - grminx) * 0.005;
+         text3d.offsetx = this.y_handle.labelsOffset + (grmaxx - grminx) * 0.005;
          lbls.push(text3d);
 
          let space = 0;
@@ -977,7 +977,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          }
 
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale,          0,  0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + this.z_handle.labelOffset,
+         m.set(-text_scale,          0,  0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + this.z_handle.labelsOffset,
                          0,          0,  1, 0,
                          0, text_scale,  0, grz);
          let mesh = new Mesh(lbl, getTextMaterial(this.z_handle));

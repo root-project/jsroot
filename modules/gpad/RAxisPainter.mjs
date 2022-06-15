@@ -806,7 +806,6 @@ class RAxisPainter extends RObjectPainter {
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
-      this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
       if (scalingSize && (this.ticksSize < 0))
          this.ticksSize = -this.ticksSize;
 
@@ -830,6 +829,7 @@ class RAxisPainter extends RObjectPainter {
       this.labelsFont = this.v7EvalFont("labels", { size: scalingSize ? 0.05 : 0.03 });
       this.labelsFont.roundAngle(180);
       if (this.labelsFont.angle) this.labelsFont.angle = 270;
+      this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
 
       if (scalingSize) this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
 
