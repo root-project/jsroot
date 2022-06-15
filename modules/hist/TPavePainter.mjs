@@ -95,8 +95,8 @@ class TPavePainter extends ObjectPainter {
 
       let pad_rect = this.getPadPainter().getPadRect(),
           brd = pt.fBorderSize,
-          dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
-          dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
+          dx = (opt.indexOf("L") >= 0) ? -1 : ((opt.indexOf("R") >= 0) ? 1 : 0),
+          dy = (opt.indexOf("T") >= 0) ? -1 : ((opt.indexOf("B") >= 0) ? 1 : 0);
 
       // container used to recalculate coordinates
       this.createG();
@@ -107,9 +107,6 @@ class TPavePainter extends ObjectPainter {
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
       this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
-
-      //if (!this.lineatt)
-      //   this.lineatt = new TAttLineHandler(pt, brd>0 ? 1 : 0);
 
       this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -182,7 +179,7 @@ class TPavePainter extends ObjectPainter {
                 .on("mouseenter", () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
-                                      minwidth: 10, minheight: 20, canselect: true,
+                                minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
 
@@ -1018,7 +1015,6 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill statistic */
    fillStatistic() {
-
       let pp = this.getPadPainter();
       if (pp && pp._fast_drawing) return false;
 
@@ -1038,7 +1034,7 @@ class TPavePainter extends ObjectPainter {
       // adjust the size of the stats box with the number of lines
       let nlines = pave.fLines.arr.length,
           stath = nlines * gStyle.fStatFontSize;
-      if ((stath <= 0) || (gStyle.fStatFont % 10 === 3)) {
+      if (!pave.fInit && ((stath <= 0) || (gStyle.fStatFont % 10 === 3))) {
          stath = 0.25 * nlines * gStyle.fStatH;
          pave.fY1NDC = pave.fY2NDC - stath;
       }
