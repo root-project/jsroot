@@ -84,7 +84,7 @@ function addDragHandler(_painter, arg) {
 
       if (change_size || change_pos) {
          if (change_size && ('resize' in arg)) arg.resize(newwidth, newheight);
-         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldxx, newy - oldy);
+         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldx, newy - oldy);
 
          if (change_size || change_pos) {
             if ('obj' in arg) {
