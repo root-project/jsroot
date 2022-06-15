@@ -739,7 +739,6 @@ class TAxisPainter extends ObjectPainter {
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = this.getObject(),
                 title_length = vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
@@ -789,7 +788,7 @@ class TAxisPainter extends ObjectPainter {
                let set_x, set_y, besti = 0,
                    p = vertical ? acc_y : acc_x;
 
-               for (let i=1; i<3; ++i)
+               for (let i = 1; i < 3; ++i)
                   if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
 
                if (vertical) {
