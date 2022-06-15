@@ -444,12 +444,16 @@ function loadScript(url) {
    let element, isstyle = url.indexOf(".css") > 0;
 
    if (nodejs) {
-      if (isstyle)
-         return Promise.resolve(null);
-      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-         return httpRequest(url, "text").then(code => injectCode(code));
+      if (process.env.APP_ENV !== 'browser') {
+         if (isstyle)
+            return Promise.resolve(null);
+         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+            return httpRequest(url, "text").then(code => injectCode(code));
 
-      return import(url);
+         return import(url);
+      } else {
+         return Promise.resolve(null);
+      }
    }
 
    const match_url = src => {
