@@ -103,8 +103,11 @@ function addDragHandler(_painter, arg) {
    };
 
    // add interactive styles when frame painter not there
-   if (_painter && !_painter.getFramePainter())
-      injectFrameStyle(_painter.draw_g);
+   if (_painter) {
+      let fp = _painter.getFramePainter();
+      if (!fp || fp.mode3d)
+         injectFrameStyle(_painter.draw_g);
+   }
 
    let drag_move = d3_drag().subject(Object);
 
