@@ -11,7 +11,7 @@ let version_id = "7.1.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "14/06/2022";
+let version_date = "15/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -53785,7 +53785,7 @@ function addDragHandler(_painter, arg) {
 
       if (change_size || change_pos) {
          if (change_size && ('resize' in arg)) arg.resize(newwidth, newheight);
-         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldxx, newy - oldy);
+         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldx, newy - oldy);
 
          if (change_size || change_pos) {
             if ('obj' in arg) {
@@ -53804,8 +53804,11 @@ function addDragHandler(_painter, arg) {
    };
 
    // add interactive styles when frame painter not there
-   if (_painter && !_painter.getFramePainter())
-      injectFrameStyle(_painter.draw_g);
+   if (_painter) {
+      let fp = _painter.getFramePainter();
+      if (!fp || fp.mode3d)
+         injectFrameStyle(_painter.draw_g);
+   }
 
    let drag_move = drag().subject(Object);
 
