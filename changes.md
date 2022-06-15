@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Use TAxis attributes in lego plots - ticks/labels/title colors, sizes, offsets
+2. Correctly resize stats box when number of lines changes
 
 
 ## Changes in 7.1.0

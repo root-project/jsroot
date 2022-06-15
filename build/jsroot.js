@@ -46839,7 +46839,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
-         text3d.offsety = this.x_handle.labelOffset;
+         text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
@@ -46867,7 +46867,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
-      text3d.offsety = 1.6 * this.x_handle.titleOffset;
+      text3d.offsety = 1.6 * this.x_handle.titleOffset + (grmaxy - grminy) * 0.005;
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       text3d.kind = "title";
       lbls.push(text3d);
@@ -46891,7 +46891,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      let positions, geom = new BufferGeometry(), tsz = this[kind+"_handle"].ticksSize;
+      let positions, geom = new BufferGeometry(), tsz = Math.max(this[kind+"_handle"].ticksSize, 0.005 * size_3d);
       if (kind === "z")
          positions = new Float32Array([0,0,0, tsz*4,0,2*size_3d, tsz*4,0,0, 0,0,0, 0,0,2*size_3d, tsz*4,0,2*size_3d]);
       else
@@ -47057,7 +47057,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          maxtextheight = Math.max(maxtextheight, draw_height);
 
          text3d.gry = gry;
-         text3d.offsetx = this.y_handle.labelOffset;
+         text3d.offsetx = this.y_handle.labelsOffset + (grmaxx - grminx) * 0.005;
          lbls.push(text3d);
 
          let space = 0;
@@ -47079,7 +47079,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.opposite = this.y_handle.titleOpposite;
-      text3d.offsetx = 1.6 * this.y_handle.titleOffset;
+      text3d.offsetx = 1.6 * this.y_handle.titleOffset + (grmaxx - grminx) * 0.005;
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       text3d.kind = "title";
       lbls.push(text3d);
@@ -47229,7 +47229,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          }
 
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale,          0,  0, 1.2*this.z_handle.ticksSize + this.z_handle.labelOffset,
+         m.set(-text_scale,          0,  0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + this.z_handle.labelsOffset,
                          0,          0,  1, 0,
                          0, text_scale,  0, grz);
          let mesh = new Mesh(lbl, getTextMaterial(this.z_handle));
@@ -47246,7 +47246,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          text3d.rotateZ(Math.PI/2);
 
          let m = new Matrix4();
-         m.set(-text_scale,          0,  0, 1.2*this.z_handle.ticksSize + maxzlblwidth + this.z_handle.titleOffset,
+         m.set(-text_scale,          0,  0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + maxzlblwidth + this.z_handle.titleOffset,
                          0,          0,  1, 0,
                          0, text_scale,  0, posz);
          let mesh = new Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
@@ -49253,8 +49253,7 @@ class TAxisPainter extends ObjectPainter {
           pad_h = pp?.getPadHeight() || 10,
           tickSize = 0, tickScalingSize = 0, titleColor;
 
-      // TODO: remove old scaling factors for labels and ticks
-      this.scalingSize = scalingSize/3.5*5 || Math.max(Math.min(pad_w, pad_h), 10);
+      this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
       if (is_gaxis) {
          let optionSize = axis.fChopt.indexOf("S") >= 0;
@@ -49282,11 +49281,9 @@ class TAxisPainter extends ObjectPainter {
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
 
-      this.ticksSize = tickSize * tickScalingSize;
-      if (scalingSize)
-         this.ticksSize *= 5/6; // this is old scaling factor for ticks in lego plots
-      else
-         this.ticksSize = Math.round(this.ticksSize);
+      this.ticksSize = Math.round(tickSize * tickScalingSize);
+      if (scalingSize && (this.ticksSize < 0))
+         this.ticksSize = -this.ticksSize;
 
       if (this.maxTickSize && (this.ticksSize > this.maxTickSize)) this.ticksSize = this.maxTickSize;
 
@@ -49295,7 +49292,7 @@ class TAxisPainter extends ObjectPainter {
       this.ticksWidth = this.lineatt.width;
 
       this.labelSize = Math.round((axis.fLabelSize < 1) ? axis.fLabelSize * this.scalingSize : axis.fLabelSize);
-      this.labelOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
+      this.labelsOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
       this.labelsFont.setColor(this.getColor(axis.fLabelColor));
@@ -49387,7 +49384,7 @@ class TAxisPainter extends ObjectPainter {
       let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, labelsMaxWidth = 0,
           // draw labels (sometime on both sides)
           pr = (disable_axis_drawing || this.optionUnlab) ? Promise.resolve(0) :
-                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelOffset, this.ticksSize, ticksPlusMinus, max_text_width);
+                this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelsOffset, this.ticksSize, ticksPlusMinus, max_text_width);
 
       return pr.then(maxw => {
 
@@ -49479,7 +49476,7 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - this.titleFont.size*0.3) :
                                                Math.round(axis_rect.right - title_rect.left + this.titleFont.size*0.3);
                else
-                  title_shift_x = -1 * Math.round(((side > 0) ? (this.labelOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
+                  title_shift_x = -1 * Math.round(((side > 0) ? (this.labelsOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
             }
 
             title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
@@ -53848,7 +53845,7 @@ function addDragHandler(_painter, arg) {
 
       if (change_size || change_pos) {
          if (change_size && ('resize' in arg)) arg.resize(newwidth, newheight);
-         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldxx, newy - oldy);
+         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldx, newy - oldy);
 
          if (change_size || change_pos) {
             if ('obj' in arg) {
@@ -53867,8 +53864,11 @@ function addDragHandler(_painter, arg) {
    };
 
    // add interactive styles when frame painter not there
-   if (_painter && !_painter.getFramePainter())
-      injectFrameStyle(_painter.draw_g);
+   if (_painter) {
+      let fp = _painter.getFramePainter();
+      if (!fp || fp.mode3d)
+         injectFrameStyle(_painter.draw_g);
+   }
 
    let drag_move = drag().subject(Object);
 
@@ -61114,12 +61114,13 @@ class TPavePainter extends ObjectPainter {
          return Promise.resolve(this);
       }
 
-      let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
+      let pt = this.getObject(), opt = pt.fOption.toUpperCase(),
+          fp = this.getFramePainter(), pp = this.getPadPainter();
 
       if (pt.fInit === 0) {
          this.stored = Object.assign({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
-         let pad = this.getPadPainter().getRootPad(true);
+         let pad = pp.getRootPad(true);
 
          if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
@@ -61162,17 +61163,39 @@ class TPavePainter extends ObjectPainter {
 
          if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == "TLegend")) {
             pt.fX1NDC = Math.max(pad ? pad.fLeftMargin : 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, pad ? 1-pad.fRightMargin : 1);
+            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, pad ? 1 - pad.fRightMargin : 1);
             let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(pad ? 1-pad.fTopMargin : 1, pt.fY1NDC + h0);
+            pt.fY2NDC = Math.min(pad ? 1 - pad.fTopMargin : 1, pt.fY1NDC + h0);
             pt.fY1NDC = Math.max(pt.fY2NDC - h0, pad ? pad.fBottomMargin : 0);
          }
       }
 
-      let pad_rect = this.getPadPainter().getPadRect(),
+      // fill stats before drawing to have coordinates early
+      if (this.isStats() && !(pp && pp._fast_drawing)) {
+
+         let main = pt.$main_painter || this.getMainPainter();
+
+         if (typeof main?.fillStatistic == 'function') {
+
+            let dostat = parseInt(pt.fOptStat), dofit = parseInt(pt.fOptFit);
+            if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
+            if (!Number.isInteger(dofit)) dofit = gStyle.fOptFit;
+
+            // we take statistic from main painter
+            if (main.fillStatistic(this, dostat, dofit)) {
+
+               // adjust the size of the stats box with the number of lines
+               let nlines = pt.fLines?.arr.length || 0;
+               if ((nlines > 0) && !this.moved_interactive && ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3)))
+                  pt.fY1NDC = pt.fY2NDC - nlines * 0.25 * gStyle.fStatH;
+            }
+         }
+      }
+
+      let pad_rect = pp.getPadRect(),
           brd = pt.fBorderSize,
-          dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
-          dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
+          dx = (opt.indexOf("L") >= 0) ? -1 : ((opt.indexOf("R") >= 0) ? 1 : 0),
+          dy = (opt.indexOf("T") >= 0) ? -1 : ((opt.indexOf("B") >= 0) ? 1 : 0);
 
       // container used to recalculate coordinates
       this.createG();
@@ -61183,9 +61206,6 @@ class TPavePainter extends ObjectPainter {
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
       this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
-
-      //if (!this.lineatt)
-      //   this.lineatt = new TAttLineHandler(pt, brd>0 ? 1 : 0);
 
       this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -61258,8 +61278,8 @@ class TPavePainter extends ObjectPainter {
                 .on("mouseenter", () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
-                                      minwidth: 10, minheight: 20, canselect: true,
-                        redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
+                                minwidth: 10, minheight: 20, canselect: true,
+                        redraw: () => { this.moved_interactive = true; this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: browser$1.touches && settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && settings.ContextMenu)
@@ -61306,8 +61326,6 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary draw TPaveStats object */
    drawPaveStats(width, height) {
-
-      if (this.isStats()) this.fillStatistic();
 
       let pt = this.getObject(), lines = [],
           color = this.getColor(pt.fTextColor),
@@ -62088,36 +62106,6 @@ class TPavePainter extends ObjectPainter {
             else
                this.addText(parname + " = " + parvalue);
          }
-
-      return true;
-   }
-
-   /** @summary Fill statistic */
-   fillStatistic() {
-
-      let pp = this.getPadPainter();
-      if (pp && pp._fast_drawing) return false;
-
-      let pave = this.getObject(),
-          main = pave.$main_painter || this.getMainPainter();
-
-      if (pave.fName !== "stats") return false;
-      if (!main || (typeof main.fillStatistic !== 'function')) return false;
-
-      let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
-      if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
-      if (!Number.isInteger(dofit)) dofit = gStyle.fOptFit;
-
-      // we take statistic from main painter
-      if (!main.fillStatistic(this, dostat, dofit)) return false;
-
-      // adjust the size of the stats box with the number of lines
-      let nlines = pave.fLines.arr.length,
-          stath = nlines * gStyle.fStatFontSize;
-      if ((stath <= 0) || (gStyle.fStatFont % 10 === 3)) {
-         stath = 0.25 * nlines * gStyle.fStatH;
-         pave.fY1NDC = pave.fY2NDC - stath;
-      }
 
       return true;
    }
@@ -97280,7 +97268,8 @@ class RAxisPainter extends RObjectPainter {
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
-      this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
+      if (scalingSize && (this.ticksSize < 0))
+         this.ticksSize = -this.ticksSize;
 
       this.fTitle = this.v7EvalAttr("title_value", "");
 
@@ -97302,6 +97291,7 @@ class RAxisPainter extends RObjectPainter {
       this.labelsFont = this.v7EvalFont("labels", { size: scalingSize ? 0.05 : 0.03 });
       this.labelsFont.roundAngle(180);
       if (this.labelsFont.angle) this.labelsFont.angle = 270;
+      this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
 
       if (scalingSize) this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
 
