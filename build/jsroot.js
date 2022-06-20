@@ -58,7 +58,7 @@ function isNodeJs() { return nodejs; }
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-if (process?.env?.APP_ENV !== 'browser') ;
+
 ///_end_exclude_in_qt5web_
 
 let browser$1 = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
@@ -383,7 +383,7 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-      if (process?.env?.APP_ENV !== 'browser') {
+      if (process.env?.APP_ENV !== 'browser') {
          let name, fs;
          return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(tmp => {
             name = tmp.tmpNameSync() + ".js";
@@ -45193,7 +45193,7 @@ function assign3DHandler(painter) {
 let node_canvas$1, node_gl;
 
 ///_begin_exclude_in_qt5web_
-if (process?.env?.APP_ENV !== 'browser') ;
+
 ///_end_exclude_in_qt5web_
 
 
@@ -76469,11 +76469,11 @@ class HierarchyPainter extends BasePainter {
          case "draw_tree": return Promise.resolve().then(function () { return TTree; });
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
-     if (process?.env?.APP_ENV !== 'browser') {
+      if (typeof process != 'object' || process?.env?.APP_ENV !== 'browser') {
          return import(module);
-     } else {
+      } else {
          return Promise.resolve(true);
-     }
+      }
    }
 
    /** @summary method used to request object from the http server
@@ -92613,7 +92613,7 @@ TArrowPainter: TArrowPainter
 let node_canvas, btoa_func = globalThis?.btoa;
 
 ///_begin_exclude_in_qt5web_
-if (process?.env?.APP_ENV !== 'browser') ;
+
 ///_end_exclude_in_qt5web_
 
 

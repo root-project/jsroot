@@ -24,7 +24,7 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\bif\(isNodeJs\(\)\).+cutNodeJs\b/,
+      find: /\bif\(isNodeJs\(\).+cutNodeJs\b/,
       replace: ''
      }),
     ignore(ingnore_modules),
