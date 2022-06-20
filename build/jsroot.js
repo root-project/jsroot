@@ -82666,7 +82666,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
    function setdefaults(top) {
       if (!top) return;
       top.traverse(obj => {
-         obj.renderOrder = 0;
+         obj.renderOrder = obj.defaultOrder || 0;
          if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
       });
    }
@@ -82718,7 +82718,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            mesh.$jsroot_distance = box3.getSize(new Vector3());
+            let sz = box3.getSize(new Vector3());
+            mesh.$jsroot_distance = sz.x*sz.y*sz.z;
             continue;
          }
 
@@ -82804,7 +82805,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
       for (let i = 0; i < resort.length; ++i) {
-         resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
+         resort[i].renderOrder = Math.round( maxorder - (i+1) / (resort.length+1) * (maxorder-minorder));
          delete resort[i].$jsroot_index;
          delete resort[i].$jsroot_distance;
       }
@@ -84757,12 +84758,9 @@ class TGeoPainter extends ObjectPainter {
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
-            // let tm1 = new Date().getTime();
             let res = this._clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
-            // let tm2 = new Date().getTime();
-            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.changeStage(stageAnalyze);
             return true;
          }
@@ -84957,21 +84955,22 @@ class TGeoPainter extends ObjectPainter {
 
       // workaround for the TGeoOverlap, where two branches should get predefined color
       if (this._splitColors && entry.stack) {
-         if (entry.stack[0]===0) entry.custom_color = "green"; else
-         if (entry.stack[0]===1) entry.custom_color = "blue";
+         if (entry.stack[0] === 0)
+            entry.custom_color = "green";
+         else if (entry.stack[0] === 1)
+            entry.custom_color = "blue";
       }
 
       let prop = this._clones.getDrawEntryProperties(entry, getRootColors()),
-          obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl);
+          obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl),
+          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
 
       prop.material.wireframe = this.ctrl.wireframe;
 
       prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
 
-      let mesh, matrix = obj3d.absMatrix || obj3d.matrixWorld;
-
       if (matrix.determinant() > -0.9) {
-         mesh = new Mesh( shape.geom, prop.material );
+         mesh = new Mesh(shape.geom, prop.material);
       } else {
          mesh = createFlippedMesh(shape, prop.material);
       }
@@ -84980,7 +84979,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (obj3d.absMatrix) {
          mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose( mesh.position, mesh.quaternion, mesh.scale );
+         mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
          mesh.updateMatrixWorld();
       }
 
@@ -84997,7 +84996,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.ctrl._debug || this.ctrl._full) {
          let wfg = new WireframeGeometry( mesh.geometry ),
-             wfm = new LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
+             wfm = new LineBasicMaterial({ color: prop.fillcolor, linewidth: prop.linewidth || 1 }),
              helper = new LineSegments(wfg, wfm);
          obj3d.add(helper);
       }
@@ -85943,7 +85942,7 @@ class TGeoPainter extends ObjectPainter {
       if (!name) name = "tracks";
 
       let extras = null, lst = [];
-      for (let n=0;n<this._toplevel.children.length;++n) {
+      for (let n = 0; n < this._toplevel.children.length; ++n) {
          let chld = this._toplevel.children[n];
          if (!chld._extras) continue;
          if (action==='collect') { lst.push(chld); continue; }
@@ -85951,7 +85950,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (action==='collect') {
-         for (let k=0;k<lst.length;++k) this._toplevel.remove(lst[k]);
+         for (let k = 0; k < lst.length; ++k)
+            this._toplevel.remove(lst[k]);
          return lst;
       }
 
@@ -86011,7 +86011,7 @@ class TGeoPainter extends ObjectPainter {
       let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = createLineSegments(buf, lineMaterial);
 
-      line.renderOrder = 1000000; // to bring line to the front
+      line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
       line.geo_object = track;
       line.hightlightWidthScale = 2;
@@ -86054,7 +86054,7 @@ class TGeoPainter extends ObjectPainter {
       let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line3d = createLineSegments(buf, lineMaterial);
 
-      line3d.renderOrder = 1000000; // to bring line to the front
+      line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
       line3d.geo_name = itemname;
       line3d.geo_object = line;
       line3d.hightlightWidthScale = 2;
@@ -86092,7 +86092,7 @@ class TGeoPainter extends ObjectPainter {
       let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = createLineSegments(buf, lineMaterial);
 
-      line.renderOrder = 1000000; // to bring line to the front
+      line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
       line.geo_object = track;
       line.hightlightWidthScale = 2;
@@ -86129,7 +86129,7 @@ class TGeoPainter extends ObjectPainter {
                        projz ? projv : hit.fP[i*3+2]);
 
       return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit_style }).then(mesh => {
-         mesh.renderOrder = 1000000; // to bring points to the front
+         mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
          mesh.geo_object = hit;
@@ -86140,13 +86140,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw extra shape on the geometry */
    drawExtraShape(obj, itemname) {
-      let toplevel = build(obj);
-      if (!toplevel) return false;
+      let mesh = build(obj);
+      if (!mesh) return false;
 
-      toplevel.geo_name = itemname;
-      toplevel.geo_object = obj;
+      mesh.geo_name = itemname;
+      mesh.geo_object = obj;
 
-      this.addToExtrasContainer(toplevel);
+      this.addToExtrasContainer(mesh);
       return true;
    }
 
@@ -86362,10 +86362,6 @@ class TGeoPainter extends ObjectPainter {
       let promise = Promise.resolve(true);
 
       if (!this._scene) {
-
-         // this is limit for the visible faces, number of volumes does not matter
-         this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
-
          this._first_drawing = true;
 
          this._on_pad = !!this.getPadPainter();
@@ -86394,7 +86390,7 @@ class TGeoPainter extends ObjectPainter {
 
             assign3DHandler(this);
 
-            let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+            let size = this.getSizeFor3d(undefined, getRender3DKind(this.options.Render3D));
 
             this._fit_main_area = (size.can3d === -1);
 
@@ -86404,6 +86400,10 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return promise.then(() => {
+
+         // this is limit for the visible faces, number of volumes does not matter
+         if (this._first_drawing)
+            this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
