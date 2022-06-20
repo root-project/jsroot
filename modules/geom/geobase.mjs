@@ -3464,7 +3464,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            mesh.$jsroot_distance = box3.getSize(new Vector3());
+            mesh.$jsroot_distance = box3.getSize(new Vector3()).length();
             continue;
          }
 
