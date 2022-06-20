@@ -1939,12 +1939,9 @@ class TGeoPainter extends ObjectPainter {
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
-            // let tm1 = new Date().getTime();
             let res = this._clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
-            // let tm2 = new Date().getTime();
-            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.changeStage(stageAnalyze);
             return true;
          }
@@ -3546,10 +3543,6 @@ class TGeoPainter extends ObjectPainter {
       let promise = Promise.resolve(true);
 
       if (!this._scene) {
-
-         // this is limit for the visible faces, number of volumes does not matter
-         this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
-
          this._first_drawing = true;
 
          this._on_pad = !!this.getPadPainter();
@@ -3578,7 +3571,7 @@ class TGeoPainter extends ObjectPainter {
 
             assign3DHandler(this);
 
-            let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+            let size = this.getSizeFor3d(undefined, getRender3DKind(this.options.Render3D));
 
             this._fit_main_area = (size.can3d === -1);
 
@@ -3588,6 +3581,10 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return promise.then(() => {
+
+         // this is limit for the visible faces, number of volumes does not matter
+         if (this._first_drawing)
+            this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
