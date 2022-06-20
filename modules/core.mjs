@@ -52,7 +52,7 @@ function isNodeJs() { return nodejs; }
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-if (typeof process !== 'object' || process?.env?.APP_ENV !== 'browser') {
+if (globalThis.process?.env?.APP_ENV !== 'browser') {
 if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); } /// cutNodeJs
 }
 ///_end_exclude_in_qt5web_
@@ -379,7 +379,7 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-      if (process?.env?.APP_ENV !== 'browser') {
+      if (globalThis.process?.env?.APP_ENV !== 'browser') {
          let name, fs;
          return import('tmp').then(tmp => {
             name = tmp.tmpNameSync() + ".js";

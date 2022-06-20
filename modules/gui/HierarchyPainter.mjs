@@ -2655,7 +2655,7 @@ class HierarchyPainter extends BasePainter {
          case "draw_tree": return import('../draw/TTree.mjs');
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
-     if (typeof process !== 'object' || process?.env?.APP_ENV !== 'browser') {
+     if (globalThis.process?.env?.APP_ENV !== 'browser') {
          return import(module);
      } else {
          return Promise.resolve(true);
