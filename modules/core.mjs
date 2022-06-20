@@ -16,6 +16,8 @@ let version = version_id + " " + version_date;
   * @desc Automatically detected and used to load other scripts or modules */
 let source_dir = "";
 
+let process = globalThis?.process || {};
+
 let nodejs = !!((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
 
 /** @summary internal data
@@ -49,7 +51,7 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_atob, node_xhr2, process = globalThis?.process || {};
+let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
 if (process.env?.APP_ENV !== 'browser') {
