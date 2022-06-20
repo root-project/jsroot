@@ -3398,7 +3398,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
    function setdefaults(top) {
       if (!top) return;
       top.traverse(obj => {
-         obj.renderOrder = 0;
+         obj.renderOrder = obj.defaultOrder || 0;
          if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
       });
    }
@@ -3450,7 +3450,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            mesh.$jsroot_distance = box3.getSize(new Vector3()).length();
+            let sz = box3.getSize(new Vector3());
+            mesh.$jsroot_distance = sz.x*sz.y*sz.z;
             continue;
          }
 
@@ -3537,6 +3538,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
       for (let i = 0; i < resort.length; ++i) {
          resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
+         console.log('order', resort[i].renderOrder);
          delete resort[i].$jsroot_index;
          delete resort[i].$jsroot_distance;
       }
