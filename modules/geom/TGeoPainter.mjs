@@ -3696,7 +3696,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._last_camera_position = origin; // remember current camera position
 
-      if (!this.ctrl.project && this._webgl)
+      if (!this.ctrl.project)
          produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
 
