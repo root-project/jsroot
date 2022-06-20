@@ -49,11 +49,12 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
+if (process?.env?.APP_ENV !== 'browser') {
 if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); } /// cutNodeJs
+}
 ///_end_exclude_in_qt5web_
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
@@ -378,19 +379,19 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-   if (process?.env?.APP_ENV !== 'browser') {
-      let name, fs;
-      return import('tmp').then(tmp => {
-         name = tmp.tmpNameSync() + ".js";
-         return import('fs');
-      }).then(_fs => {
-         fs = _fs;
-         fs.writeFileSync(name, code);
-         return import("file://" + name);
-      }).finally(() => fs.unlinkSync(name));
-   } else {
-      return Promise.resolve(true); // dummy for webpack
-   }
+      if (process?.env?.APP_ENV !== 'browser') {
+         let name, fs;
+         return import('tmp').then(tmp => {
+            name = tmp.tmpNameSync() + ".js";
+            return import('fs');
+         }).then(_fs => {
+            fs = _fs;
+            fs.writeFileSync(name, code);
+            return import("file://" + name);
+         }).finally(() => fs.unlinkSync(name));
+      } else {
+         return Promise.resolve(true); // dummy for webpack
+      }
    }
    if (typeof document !== 'undefined') {
 

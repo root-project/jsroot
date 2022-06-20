@@ -384,7 +384,9 @@ function assign3DHandler(painter) {
 let node_canvas, node_gl;
 
 ///_begin_exclude_in_qt5web_
+if (process?.env?.APP_ENV !== 'browser') {
 if(isNodeJs()) { node_canvas = await import('canvas').then(h => h.default); node_gl = await import('gl').then(h => h.default); } /// cutNodeJs
+}
 ///_end_exclude_in_qt5web_
 
 
