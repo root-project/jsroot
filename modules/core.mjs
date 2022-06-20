@@ -49,10 +49,10 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_atob, node_xhr2;
+let node_atob, node_xhr2, process = globalThis?.process || {};
 
 ///_begin_exclude_in_qt5web_
-if (globalThis.process?.env?.APP_ENV !== 'browser') {
+if (process.env?.APP_ENV !== 'browser') {
 if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); } /// cutNodeJs
 }
 ///_end_exclude_in_qt5web_
@@ -379,7 +379,7 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-      if (globalThis.process?.env?.APP_ENV !== 'browser') {
+      if (process.env?.APP_ENV !== 'browser') {
          let name, fs;
          return import('tmp').then(tmp => {
             name = tmp.tmpNameSync() + ".js";

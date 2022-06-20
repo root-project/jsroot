@@ -2655,11 +2655,12 @@ class HierarchyPainter extends BasePainter {
          case "draw_tree": return import('../draw/TTree.mjs');
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
-     if (globalThis.process?.env?.APP_ENV !== 'browser') {
+      let process = globalThis?.process || {}
+      if (process.env?.APP_ENV !== 'browser') {
          return import(module);
-     } else {
+      } else {
          return Promise.resolve(true);
-     }
+      }
    }
 
    /** @summary method used to request object from the http server
