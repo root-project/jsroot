@@ -3531,7 +3531,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
             if (method === 'size') {
-               mesh.$jsroot_distance = box3.getSize(new THREE.Vector3());
+               mesh.$jsroot_distance = box3.getSize(new THREE.Vector3()).length();
                continue;
             }
 
