@@ -3537,8 +3537,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
       for (let i = 0; i < resort.length; ++i) {
-         resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
-         console.log('order', resort[i].renderOrder);
+         resort[i].renderOrder = Math.round( maxorder - (i+1) / (resort.length+1) * (maxorder-minorder));
          delete resort[i].$jsroot_index;
          delete resort[i].$jsroot_distance;
       }
