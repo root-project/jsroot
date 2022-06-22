@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "20/06/2022";
+let version_date = "22/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -76463,17 +76463,16 @@ class HierarchyPainter extends BasePainter {
       return this.getOnlineItemUrl(item) !== null;
    }
 
+   /** @summary Dynamic module import, supports special shorcuts from core or draw_tree
+     * @returns {Promise} with module
+     * @private */
    importModule(module) {
       switch(module) {
          case "core": return Promise.resolve().then(function () { return core; });
          case "draw_tree": return Promise.resolve().then(function () { return TTree; });
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
-      if (typeof process != 'object' || process?.env?.APP_ENV !== 'browser') {
-         return import(module);
-      } else {
-         return Promise.resolve(true);
-      }
+      return import(/* webpackIgnore: true */ module);
    }
 
    /** @summary method used to request object from the http server
