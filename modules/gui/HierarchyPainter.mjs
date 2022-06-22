@@ -2649,17 +2649,16 @@ class HierarchyPainter extends BasePainter {
       return this.getOnlineItemUrl(item) !== null;
    }
 
+   /** @summary Dynamic module import, supports special shorcuts from core or draw_tree
+     * @returns {Promise} with module
+     * @private */
    importModule(module) {
       switch(module) {
          case "core": return import('../core.mjs');
          case "draw_tree": return import('../draw/TTree.mjs');
          case "hierarchy": return Promise.resolve({ HierarchyPainter, markAsStreamerInfo });
       }
-      if (typeof process != 'object' || process?.env?.APP_ENV !== 'browser') {
-         return import(module);
-      } else {
-         return Promise.resolve(true);
-      }
+      return import(/* webpackIgnore: true */ module);
    }
 
    /** @summary method used to request object from the http server
