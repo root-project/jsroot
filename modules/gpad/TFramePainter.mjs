@@ -362,7 +362,7 @@ const TooltipHandler = {
 
          if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
 
-         let dist2 = (pnt.x - hints[k].x) * (pnt.x - hints[k].x) + (pnt.y - hints[k].y) * (pnt.y - hints[k].y);
+         let dist2 = (pnt.x - hints[k].x) ** 2 + (pnt.y - hints[k].y) ** 2;
          if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
       }
 

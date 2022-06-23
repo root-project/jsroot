@@ -894,8 +894,8 @@ class TGraphPainter extends ObjectPainter {
       this.draw_g.selectAll('.grpoint').each(function() {
          let d = d3_select(this).datum();
          if (d === undefined) return;
-         let dist2 = Math.pow(pnt.x - d.grx1, 2);
-         if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
+         let dist2 = (pnt.x - d.grx1) ** 2;
+         if (pnt.nproc === 1) dist2 += (pnt.y - d.gry1) ** 2;
          if (dist2 >= best_dist2) return;
 
          let rect;
