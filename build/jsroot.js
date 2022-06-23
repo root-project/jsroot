@@ -65157,7 +65157,7 @@ class TH1Painter$2 extends THistPainter {
             if (show_text) {
                let cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
-               if (cont!==0) {
+               if (cont !== 0) {
                   let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, gStyle.fPaintTextFormat);
 
                   if (text_angle)
@@ -65225,7 +65225,7 @@ class TH1Painter$2 extends THistPainter {
             bestimin = bestimax = i;
             prevx = startx = currx = grx;
             prevy = curry_min = curry_max = curry = gry;
-            res = "M"+currx+","+curry;
+            res = `M${currx},${curry}`;
          } else if (use_minmax) {
             if ((grx === currx) && !lastbin) {
                if (gry < curry_min) bestimax = i; else
@@ -65268,7 +65268,7 @@ class TH1Painter$2 extends THistPainter {
                }
 
                if (lastbin && (prevx !== grx))
-                  res += "h"+(grx-prevx);
+                  res += "h" + (grx-prevx);
 
                bestimin = bestimax = i;
                curry_min = curry_max = curry = gry;
@@ -65467,7 +65467,7 @@ class TH1Painter$2 extends THistPainter {
 
          gapx = 0;
 
-         gry1 = Math.round(funcs.gry(((this.options.BaseLine!==false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
+         gry1 = Math.round(funcs.gry(((this.options.BaseLine !== false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
          if (gry1 > gry2) { let d = gry1; gry1 = gry2; gry2 = d; }
 
@@ -65575,7 +65575,7 @@ class TH1Painter$2 extends THistPainter {
 
          res.menu = res.exact; // one could show context menu when histogram is selected
          // distance to middle point, use to decide which menu to activate
-         res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
+         res.menu_dist = Math.sqrt((midx-pnt_x)**2 + (midy-pnt_y)**2);
 
       } else {
          let radius = this.lineatt.width + 3;
@@ -65591,7 +65591,7 @@ class TH1Painter$2 extends THistPainter {
          res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
 
          res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
-         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
+         res.menu_dist = Math.sqrt((midx-pnt.x)**2 + (midy-pnt.y)**2);
 
          res.changed = ttrect.property("current_bin") !== findbin;
 
@@ -90976,7 +90976,7 @@ class TF1Painter extends ObjectPainter {
 
       res.changed = gbin.property("current_bin") !== best;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.gry-pnt.y));
+      res.menu_dist = Math.sqrt((bin.grx-pnt.x)**2 + (bin.gry-pnt.y)**2);
 
       if (res.changed)
          gbin.attr("cx", bin.grx)
@@ -92303,7 +92303,7 @@ class TSplinePainter extends ObjectPainter {
 
       res.changed = gbin.property("current_xx") !== xx;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((res.x-pnt.x)*(res.x-pnt.x) + (res.y-pnt.y)*(res.y-pnt.y));
+      res.menu_dist = Math.sqrt((res.x-pnt.x)**2 + (res.y-pnt.y)**2);
 
       if (res.changed)
          gbin.attr("cx", Math.round(res.x))
@@ -104404,7 +104404,7 @@ class RH1Painter$2 extends RHistPainter {
 
          res.menu = res.exact; // one could show context menu
          // distance to middle point, use to decide which menu to activate
-         res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
+         res.menu_dist = Math.sqrt((midx-pnt_x)**2 + (midy-pnt_y)**2);
 
       } else {
          let radius = this.lineatt.width + 3;
@@ -104420,7 +104420,7 @@ class RH1Painter$2 extends RHistPainter {
          res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
 
          res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
-         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
+         res.menu_dist = Math.sqrt((midx-pnt.x)**2 + (midy-pnt.y)**2);
 
          res.changed = ttrect.property("current_bin") !== findbin;
 

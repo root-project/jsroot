@@ -251,7 +251,7 @@ class TF1Painter extends ObjectPainter {
 
       res.changed = gbin.property("current_bin") !== best;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.gry-pnt.y));
+      res.menu_dist = Math.sqrt((bin.grx-pnt.x)**2 + (bin.gry-pnt.y)**2);
 
       if (res.changed)
          gbin.attr("cx", bin.grx)

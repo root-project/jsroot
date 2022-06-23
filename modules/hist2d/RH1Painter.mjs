@@ -832,7 +832,7 @@ class RH1Painter extends RHistPainter {
 
          res.menu = res.exact; // one could show context menu
          // distance to middle point, use to decide which menu to activate
-         res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
+         res.menu_dist = Math.sqrt((midx-pnt_x)**2 + (midy-pnt_y)**2);
 
       } else {
          let radius = this.lineatt.width + 3;
@@ -848,7 +848,7 @@ class RH1Painter extends RHistPainter {
          res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
 
          res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
-         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
+         res.menu_dist = Math.sqrt((midx-pnt.x)**2 + (midy-pnt.y)**2);
 
          res.changed = ttrect.property("current_bin") !== findbin;
 

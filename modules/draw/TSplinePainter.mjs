@@ -160,7 +160,7 @@ class TSplinePainter extends ObjectPainter {
 
       res.changed = gbin.property("current_xx") !== xx;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((res.x-pnt.x)*(res.x-pnt.x) + (res.y-pnt.y)*(res.y-pnt.y));
+      res.menu_dist = Math.sqrt((res.x-pnt.x)**2 + (res.y-pnt.y)**2);
 
       if (res.changed)
          gbin.attr("cx", Math.round(res.x))
