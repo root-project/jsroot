@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "22/06/2022";
+let version_date = "23/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -92696,11 +92696,11 @@ class TASImagePainter extends ObjectPainter {
          } else if ((obj._blob.length == 3) && obj._blob[0]) {
             obj.fPngBuf = obj._blob[2];
             if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
-               console.error('TASImage with png buffer _blob error', obj._blob[1], '!=', (obj.fPngBuf ? obj.fPngBuf.length : -1));
+               console.error(`TASImage with png buffer _blob error ${obj._blob[1]} != ${obj.fPngBuf?.length}`);
                delete obj.fPngBuf;
             }
          } else {
-            console.error('TASImage _blob len', obj._blob.length, 'not recognized');
+            console.error(`TASImage _blob len ${obj._blob.length} not recognized`);
          }
 
          delete obj._blob;
