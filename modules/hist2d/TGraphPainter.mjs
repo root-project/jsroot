@@ -1021,7 +1021,7 @@ class TGraphPainter extends ObjectPainter {
       if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
 
       if (bestbin)
-         bestdist = Math.sqrt(Math.pow(pnt.x-funcs.grx(bestbin.x),2) + Math.pow(pnt.y-funcs.gry(bestbin.y),2));
+         bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
 
       if (!islines && (bestdist > radius)) bestbin = null;
 
@@ -1131,7 +1131,7 @@ class TGraphPainter extends ObjectPainter {
             ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
 
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
+         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2))**2);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
