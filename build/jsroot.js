@@ -54130,7 +54130,7 @@ const TooltipHandler = {
 
          if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
 
-         let dist2 = (pnt.x - hints[k].x) * (pnt.x - hints[k].x) + (pnt.y - hints[k].y) * (pnt.y - hints[k].y);
+         let dist2 = (pnt.x - hints[k].x) ** 2 + (pnt.y - hints[k].y) ** 2;
          if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
       }
 
@@ -89126,7 +89126,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       for (let n = 0; n < graph.fNpoints; ++n) {
          let pos = main.translate(graph.fX[n], graph.fY[n]),
-             dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
+             dist2 = (pos.x-pnt.x)**2 + (pos.y-pnt.y)**2;
          if (dist2 < best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
       }
 
@@ -90112,8 +90112,8 @@ class TGraphPainter$1 extends ObjectPainter {
       this.draw_g.selectAll('.grpoint').each(function() {
          let d = select(this).datum();
          if (d === undefined) return;
-         let dist2 = Math.pow(pnt.x - d.grx1, 2);
-         if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
+         let dist2 = (pnt.x - d.grx1) ** 2;
+         if (pnt.nproc === 1) dist2 += (pnt.y - d.gry1) ** 2;
          if (dist2 >= best_dist2) return;
 
          let rect;
@@ -90239,7 +90239,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
 
       if (bestbin)
-         bestdist = Math.sqrt(Math.pow(pnt.x-funcs.grx(bestbin.x),2) + Math.pow(pnt.y-funcs.gry(bestbin.y),2));
+         bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
 
       if (!islines && (bestdist > radius)) bestbin = null;
 
@@ -90349,7 +90349,7 @@ class TGraphPainter$1 extends ObjectPainter {
             ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
 
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
+         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2))**2);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
@@ -92219,7 +92219,7 @@ class TSplinePainter extends ObjectPainter {
       let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
           spline = this.getObject();
 
-      if (spline && spline.fPoly) {
+      if (spline?.fPoly) {
 
          xmin = xmax = spline.fPoly[0].fX;
          ymin = ymax = spline.fPoly[0].fY;
@@ -92319,7 +92319,7 @@ class TSplinePainter extends ObjectPainter {
          res.lines.push("B = " + floatToString(knot.fB, gStyle.fStatFormat));
          res.lines.push("C = " + floatToString(knot.fC, gStyle.fStatFormat));
          res.lines.push("D = " + floatToString(knot.fD, gStyle.fStatFormat));
-         if ((knot.fE!==undefined) && (knot.fF!==undefined)) {
+         if ((knot.fE !== undefined) && (knot.fF !== undefined)) {
             res.lines.push("E = " + floatToString(knot.fE, gStyle.fStatFormat));
             res.lines.push("F = " + floatToString(knot.fF, gStyle.fStatFormat));
          }
@@ -92369,7 +92369,7 @@ class TSplinePainter extends ObjectPainter {
          }
 
          let h0 = h;  // use maximal frame height for filling
-         if ((pmain.hmin!==undefined) && (pmain.hmin >= 0)) {
+         if ((pmain.hmin !== undefined) && (pmain.hmin >= 0)) {
             h0 = Math.round(funcs.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
@@ -92523,10 +92523,15 @@ class TArrowPainter extends ObjectPainter {
    }
 
    moveStart(x,y) {
-      let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
-          sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
-          sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
-      if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
+      let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
+          sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
+          sz2 = Math.sqrt((x-this.x2)**2 + (y-this.y2)**2)/fullsize;
+      if (sz1 > 0.9)
+         this.side = 1;
+      else if (sz2 > 0.9)
+         this.side = -1;
+      else
+         this.side = 0;
    }
 
    moveDrag(dx,dy) {
