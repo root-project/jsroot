@@ -58,7 +58,9 @@ function isNodeJs() { return nodejs; }
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-
+(async function() {
+   
+})();
 ///_end_exclude_in_qt5web_
 
 let browser$1 = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
@@ -391,7 +393,7 @@ function injectCode(code) {
          }).then(_fs => {
             fs = _fs;
             fs.writeFileSync(name, code);
-            return import("file://" + name);
+            return import(name);
          }).finally(() => fs.unlinkSync(name));
       } else {
          return Promise.resolve(true); // dummy for webpack
@@ -45194,7 +45196,9 @@ function assign3DHandler(painter) {
 let node_canvas$1, node_gl;
 
 ///_begin_exclude_in_qt5web_
-
+(async function() {
+   
+})();
 ///_end_exclude_in_qt5web_
 
 
@@ -92618,7 +92622,9 @@ TArrowPainter: TArrowPainter
 let node_canvas, btoa_func = globalThis?.btoa;
 
 ///_begin_exclude_in_qt5web_
-
+(async function() {
+   
+})();
 ///_end_exclude_in_qt5web_
 
 
