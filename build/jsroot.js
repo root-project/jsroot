@@ -32,8 +32,7 @@ let internals = {
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
 
-const src = (typeof document === 'undefined' && typeof location === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));
-if (src && (typeof src == "string")) {
+const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && (typeof src == "string")) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
       exports.source_dir = src.slice(0, pos);
@@ -894,7 +893,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
       if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
          // special handling of gzipped JSON objects in Node.js
-         return import('zlib').then(handle => {
+         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
              let res = handle.unzipSync(Buffer.from(this.response)),
                  obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
             return this.http_callback(parse(obj));
@@ -6171,6 +6170,7 @@ defaultLocale({
 function defaultLocale(definition) {
   locale = formatLocale(definition);
   timeFormat = locale.format;
+  locale.parse;
   utcFormat = locale.utcFormat;
   utcParse = locale.utcParse;
   return locale;
