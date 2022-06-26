@@ -6,7 +6,9 @@ import { terser } from "rollup-plugin-terser";
 import ignore from "rollup-plugin-ignore";
 import * as meta from "../package.json";
 
-const ignore_modules = ['fs'];
+const ignore_modules = ['fs', 'zlib'];
+
+const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
 
 for(let key in meta.dependencies)
    ignore_modules.push(key);
@@ -24,8 +26,9 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\bif\(isNodeJs\(\).+cutNodeJs\b/,
-      replace: ''
+      find: /\/\* exclude_from_build \*\/.*/,
+      replace: '',
+      'import.meta?.url': importMetaUrlPolyfill
      }),
     ignore(ignore_modules),
     nodeResolve(),
