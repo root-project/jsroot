@@ -6,9 +6,20 @@
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
+  "type": "module",
+  "main": "./build/jsroot.js",
   "module": "./modules/main.mjs",
-  "main": "./modules/main.mjs",
-  "browser": "./build/jsroot.js",
+  "exports": {
+    ".": "./modules/main.mjs",
+    "./core": "./modules/core.mjs",
+    "./draw": "./modules/draw.mjs",
+    "./io": "./modules/io.mjs",
+    "./tree": "./modules/tree.mjs",
+    "./colors": "./modules/base/colors.mjs",
+    "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
+    "./latex": "./modules/base/latex.mjs",
+    "./geom": "./modules/geom/TGeoPainter.mjs"
+  },
   "contributors": [
     {
       "name": "Bertrand Bellenot",

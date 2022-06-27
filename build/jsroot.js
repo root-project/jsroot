@@ -32,7 +32,8 @@ let internals = {
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
 
-const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && (typeof src == "string")) {
+const src = (typeof document === 'undefined' && typeof location === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));
+if (src && (typeof src == "string")) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
       exports.source_dir = src.slice(0, pos);
@@ -53,12 +54,6 @@ function setBatchMode(on) { batch_mode = !!on; }
 
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
-
-/** @summary Dynamically import module */
-async function dynamicImport(moduleName) {
-   
-   return Promise.resolve(undefined);
-}
 
 let node_atob, node_xhr2;
 
@@ -388,15 +383,19 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-      let name, fs;
-      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(tmp => {
-         name = tmp.tmpNameSync() + ".js";
-         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
-      }).then(_fs => {
-         fs = _fs;
-         fs.writeFileSync(name, code);
-         return dynamicImport();
-      }).finally(() => fs.unlinkSync(name));
+      if (process.env?.APP_ENV !== 'browser') {
+         let name, fs;
+         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(tmp => {
+            name = tmp.tmpNameSync() + ".js";
+            return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
+         }).then(_fs => {
+            fs = _fs;
+            fs.writeFileSync(name, code);
+            return import("file://" + name);
+         }).finally(() => fs.unlinkSync(name));
+      } else {
+         return Promise.resolve(true); // dummy for webpack
+      }
    }
    if (typeof document !== 'undefined') {
 
@@ -450,12 +449,16 @@ function loadScript(url) {
    let element, isstyle = url.indexOf(".css") > 0;
 
    if (nodejs) {
-      if (isstyle)
-         return Promise.resolve(null);
-      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-         return httpRequest(url, "text").then(code => injectCode(code));
+      if (process.env.APP_ENV !== 'browser') {
+         if (isstyle)
+            return Promise.resolve(null);
+         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+            return httpRequest(url, "text").then(code => injectCode(code));
 
-      return dynamicImport();
+         return import(url);
+      } else {
+         return Promise.resolve(null);
+      }
    }
 
    const match_url = src => {
@@ -891,7 +894,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
       if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
          // special handling of gzipped JSON objects in Node.js
-         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
+         return import('zlib').then(handle => {
              let res = handle.unzipSync(Buffer.from(this.response)),
                  obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
             return this.http_callback(parse(obj));
@@ -1678,7 +1681,6 @@ version_date: version_date,
 version: version,
 get source_dir () { return exports.source_dir; },
 isNodeJs: isNodeJs,
-dynamicImport: dynamicImport,
 isBatchMode: isBatchMode,
 setBatchMode: setBatchMode,
 browser: browser$1,
@@ -6169,7 +6171,6 @@ defaultLocale({
 function defaultLocale(definition) {
   locale = formatLocale(definition);
   timeFormat = locale.format;
-  locale.parse;
   utcFormat = locale.utcFormat;
   utcParse = locale.utcParse;
   return locale;
@@ -109770,7 +109771,6 @@ exports.decodeUrl = decodeUrl;
 exports.draw = draw;
 exports.drawRawText = drawRawText;
 exports.drawingJSON = drawingJSON;
-exports.dynamicImport = dynamicImport;
 exports.findFunction = findFunction;
 exports.floatToString = floatToString;
 exports.gStyle = gStyle;

@@ -26,7 +26,7 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\/\* exclude_from_build \*\/.*/,
+      find: /\/\/\/_begin_exclude_in_build_(.|\n)*?\/\/\/_end_exclude_in_build_/,
       replace: '',
       'import.meta?.url': importMetaUrlPolyfill
      }),

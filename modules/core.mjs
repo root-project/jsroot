@@ -51,14 +51,18 @@ function isNodeJs() { return nodejs; }
 
 /** @summary Dynamically import module */
 async function dynamicImport(moduleName) {
-   /* exclude_from_build */ if (isNodeJs()) { return await import(moduleName); }
+   ///_begin_exclude_in_build_
+   if (isNodeJs()) { return import(moduleName); }
+   ///_end_exclude_in_build_
    return Promise.resolve(undefined);
 }
 
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-/* exclude_from_build */ if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
+///_begin_exclude_in_build_
+if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
+///_end_exclude_in_build_
 ///_end_exclude_in_qt5web_
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };

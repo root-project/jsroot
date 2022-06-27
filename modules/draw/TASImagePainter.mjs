@@ -8,7 +8,9 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 let node_canvas, btoa_func = globalThis?.btoa;
 
 ///_begin_exclude_in_qt5web_
-/* exclude_from_build */ if(isNodeJs()) { node_canvas = await import('canvas').then(h => h.default); btoa_func = await import("btoa").then(h => h.default); }
+///_begin_exclude_in_build_
+if(isNodeJs()) { node_canvas = await import('canvas').then(h => h.default); btoa_func = await import("btoa").then(h => h.default); }
+///_end_exclude_in_build_
 ///_end_exclude_in_qt5web_
 
 
