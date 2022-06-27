@@ -49,10 +49,10 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-/** @summary Dynamically import module */
-async function dynamicImport(moduleName) {
+/** @summary Dynamically import module, only with node.js */
+function dynamicImport(moduleName) {
    ///_begin_exclude_in_build_
-   if (isNodeJs()) { return import(moduleName); }
+   return import(moduleName);
    ///_end_exclude_in_build_
    return Promise.resolve(undefined);
 }
@@ -397,8 +397,8 @@ function injectCode(code) {
          return dynamicImport("file://" + name);
       }).finally(() => fs.unlinkSync(name));
    }
-   if (typeof document !== 'undefined') {
 
+   if (typeof document !== 'undefined') {
       // check if code already loaded - to avoid duplication
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
@@ -1670,7 +1670,7 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-export { version_id, version_date, version, source_dir, isNodeJs, dynamicImport, isBatchMode, setBatchMode,
+export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
