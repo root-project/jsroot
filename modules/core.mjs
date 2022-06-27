@@ -49,10 +49,20 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
+/** @summary Dynamically import module */
+async function dynamicImport(moduleName) {
+   ///_begin_exclude_in_build_
+   if (isNodeJs()) { return import(moduleName); }
+   ///_end_exclude_in_build_
+   return Promise.resolve(undefined);
+}
+
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-if(isNodeJs() && process.env?.APP_ENV !== 'browser') { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); } /// cutNodeJs
+///_begin_exclude_in_build_
+if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
+///_end_exclude_in_build_
 ///_end_exclude_in_qt5web_
 
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
@@ -377,19 +387,15 @@ function getDocument() {
   * @private */
 function injectCode(code) {
    if (nodejs) {
-      if (process.env?.APP_ENV !== 'browser') {
-         let name, fs;
-         return import('tmp').then(tmp => {
-            name = tmp.tmpNameSync() + ".js";
-            return import('fs');
-         }).then(_fs => {
-            fs = _fs;
-            fs.writeFileSync(name, code);
-            return import("file://" + name);
-         }).finally(() => fs.unlinkSync(name));
-      } else {
-         return Promise.resolve(true); // dummy for webpack
-      }
+      let name, fs;
+      return import('tmp').then(tmp => {
+         name = tmp.tmpNameSync() + ".js";
+         return import('fs');
+      }).then(_fs => {
+         fs = _fs;
+         fs.writeFileSync(name, code);
+         return dynamicImport("file://" + name);
+      }).finally(() => fs.unlinkSync(name));
    }
    if (typeof document !== 'undefined') {
 
@@ -443,16 +449,12 @@ function loadScript(url) {
    let element, isstyle = url.indexOf(".css") > 0;
 
    if (nodejs) {
-      if (process.env.APP_ENV !== 'browser') {
-         if (isstyle)
-            return Promise.resolve(null);
-         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-            return httpRequest(url, "text").then(code => injectCode(code));
-
-         return import(url);
-      } else {
+      if (isstyle)
          return Promise.resolve(null);
-      }
+      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+         return httpRequest(url, "text").then(code => injectCode(code));
+
+      return dynamicImport(url);
    }
 
    const match_url = src => {
@@ -1668,7 +1670,7 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
+export { version_id, version_date, version, source_dir, isNodeJs, dynamicImport, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,

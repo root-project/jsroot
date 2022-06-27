@@ -3,13 +3,15 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import modify from 'rollup-plugin-modify';
 import ascii from "rollup-plugin-ascii";
 import { terser } from "rollup-plugin-terser";
-import * as meta from "../package.json";
 import ignore from "rollup-plugin-ignore";
+import * as meta from "../package.json";
 
-const ingnore_modules = ['fs'];
+const ignore_modules = ['fs', 'zlib'];
+
+const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
 
 for(let key in meta.dependencies)
-   ingnore_modules.push(key);
+   ignore_modules.push(key);
 
 const config = {
   input: "modules/main.mjs",
@@ -24,10 +26,11 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\bif\(isNodeJs\(\).+cutNodeJs\b/,
-      replace: ''
+      find: /\/\/\/_begin_exclude_in_build_(.|\n)*?\/\/\/_end_exclude_in_build_/,
+      replace: '',
+      'import.meta?.url': importMetaUrlPolyfill
      }),
-    ignore(ingnore_modules),
+    ignore(ignore_modules),
     nodeResolve(),
     json(),
     ascii()
