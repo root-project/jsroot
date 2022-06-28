@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "23/06/2022";
+let version_date = "28/06/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -54,17 +54,9 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-/** @summary Dynamically import module */
-async function dynamicImport(moduleName) {
-   
-   return Promise.resolve(undefined);
-}
-
 let node_atob, node_xhr2;
 
-///_begin_exclude_in_qt5web_
 
-///_end_exclude_in_qt5web_
 
 let browser$1 = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -395,11 +387,11 @@ function injectCode(code) {
       }).then(_fs => {
          fs = _fs;
          fs.writeFileSync(name, code);
-         return dynamicImport();
+         return import(/* webpackIgnore: true */ "file://" + name);
       }).finally(() => fs.unlinkSync(name));
    }
-   if (typeof document !== 'undefined') {
 
+   if (typeof document !== 'undefined') {
       // check if code already loaded - to avoid duplication
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
@@ -455,7 +447,7 @@ function loadScript(url) {
       if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
          return httpRequest(url, "text").then(code => injectCode(code));
 
-      return dynamicImport();
+      return import(/* webpackIgnore: true */ url);
    }
 
    const match_url = src => {
@@ -1678,7 +1670,6 @@ version_date: version_date,
 version: version,
 get source_dir () { return exports.source_dir; },
 isNodeJs: isNodeJs,
-dynamicImport: dynamicImport,
 isBatchMode: isBatchMode,
 setBatchMode: setBatchMode,
 browser: browser$1,
@@ -45190,9 +45181,7 @@ function assign3DHandler(painter) {
 
 let node_canvas$1, node_gl;
 
-///_begin_exclude_in_qt5web_
 
-///_end_exclude_in_qt5web_
 
 
 /** @summary Creates renderer for the 3D drawings
@@ -92614,9 +92603,7 @@ TArrowPainter: TArrowPainter
 
 let node_canvas, btoa_func = globalThis?.btoa;
 
-///_begin_exclude_in_qt5web_
 
-///_end_exclude_in_qt5web_
 
 
 /**
@@ -109769,7 +109756,6 @@ exports.decodeUrl = decodeUrl;
 exports.draw = draw;
 exports.drawRawText = drawRawText;
 exports.drawingJSON = drawingJSON;
-exports.dynamicImport = dynamicImport;
 exports.findFunction = findFunction;
 exports.floatToString = floatToString;
 exports.gStyle = gStyle;
