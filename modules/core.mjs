@@ -49,19 +49,11 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-/** @summary Dynamically import module, only with node.js */
-function dynamicImport(moduleName) {
-   ///_begin_exclude_in_build_
-   return import(moduleName);
-   ///_end_exclude_in_build_
-   return Promise.resolve(undefined);
-}
-
 let node_atob, node_xhr2;
 
 ///_begin_exclude_in_qt5web_
 ///_begin_exclude_in_build_
-if(isNodeJs()) { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
+if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
 ///_end_exclude_in_build_
 ///_end_exclude_in_qt5web_
 
@@ -394,7 +386,7 @@ function injectCode(code) {
       }).then(_fs => {
          fs = _fs;
          fs.writeFileSync(name, code);
-         return dynamicImport("file://" + name);
+         return import(/* webpackIgnore: true */ "file://" + name);
       }).finally(() => fs.unlinkSync(name));
    }
 
@@ -454,7 +446,7 @@ function loadScript(url) {
       if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
          return httpRequest(url, "text").then(code => injectCode(code));
 
-      return dynamicImport(url);
+      return import(/* webpackIgnore: true */ url);
    }
 
    const match_url = src => {
