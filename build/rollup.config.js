@@ -26,7 +26,7 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\/\/\/_begin_exclude_in_build_(.|\n)*?\/\/\/_end_exclude_in_build_/,
+      find: /\/\/\/_begin_exclude_in_qt5web_(.|\n)*?\/\/\/_end_exclude_in_qt5web_/,
       replace: '',
       'import.meta?.url': importMetaUrlPolyfill
      }),
