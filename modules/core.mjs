@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "28/06/2022";
+let version_date = "1/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -55,13 +55,12 @@ let node_atob, node_xhr2;
 if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
 ///_end_exclude_in_qt5web_
 
-let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
+let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-   browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
    browser.isFirefox = typeof InstallTrigger !== 'undefined';
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   browser.isChrome = !!window.chrome && !browser.isOpera;
+   browser.isChrome = !!window.chrome;
    browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
    browser.isWin = navigator.platform.indexOf('Win') >= 0;
