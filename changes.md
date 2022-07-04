@@ -3,6 +3,7 @@
 ## Changes in 7.1.x
 1. Fix - let modify node visibility bits via context menu
 2. Fix - menu position adjusting
+3. Fix - tree_draw.js example, export treeDraw function from main.mjs
 
 
 ## Changes in 7.1.0
