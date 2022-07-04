@@ -89,6 +89,7 @@ class FileProxyPromise extends FileProxy {
 
       return this.fd.read(view, 0, sz, pos).then(res => {
          // console.log(`Read ${pos} size ${res.bytesRead}`);
+         // console.trace();
 
          return res.bytesRead > 0 ? res.buffer : null;
       });
@@ -102,21 +103,30 @@ if (process.argv && process.argv[3] && typeof process.argv[3] == "string")
    fname = process.argv[3];
 
 if (process.argv && process.argv[2] == "sync") {
-   console.log('Using FileProxySync');
+   console.log('Using FileProxySync and sync API');
    proxy = new FileProxySync(fname);
+
+   let file = await openFile(proxy);
+   if (!file) {
+      console.error('Fail to open file');
+   }
+
+   // now read ntuple, perform Draw operation, create SVG file and sve to the disk
+   let ntuple = await file.readObject("ntuple");
+   let hist = await treeDraw(ntuple, "px:py::pz>5");
+   let svg = await makeSVG({ object: hist, width: 1200, height: 800 });
+   writeFileSync("draw_proxy.svg", svg);
+   console.log(`Create draw_proxy.svg size ${svg.length}`);
 } else {
-   console.log('Using FileProxyPromise');
+   console.log('Using FileProxyPromise and promise API');
    proxy = new FileProxyPromise(fname);
+
+   openFile(proxy).then(file => file.readObject("ntuple"))
+                  .then(ntuple => treeDraw(ntuple, "px:py::pz>5"))
+                  .then(hist => makeSVG({ object: hist, width: 1200, height: 800 }))
+                  .then(svg => {
+                     writeFileSync("draw_proxy.svg", svg);
+                     console.log(`Create draw_proxy.svg size ${svg.length}`);
+                  });
 }
 
-let file = await openFile(proxy);
-if (!file) {
-   console.error('Fail to open file');
-}
-
-// now read ntuple, perform Draw operation, create SVG file and sve to the disk
-let ntuple = await file.readObject("ntuple");
-let hist = await treeDraw(ntuple, "px:py::pz>5");
-let svg = await makeSVG({ object: hist, width: 1200, height: 800 });
-writeFileSync("draw_proxy.svg", svg);
-console.log(`Create draw_proxy.svg size ${svg.length}`);
