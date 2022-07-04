@@ -19,7 +19,7 @@ export { loadOpenui5, registerForResize } from './gui/utils.mjs';
 
 export { draw, redraw, makeSVG, addDrawFunc, setDefaultDrawOpt } from './draw.mjs';
 
-export { openFile } from './io.mjs';
+export { openFile, FileProxy } from './io.mjs';
 
 export * from './gui/display.mjs';
 
