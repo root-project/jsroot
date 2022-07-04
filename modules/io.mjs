@@ -3727,6 +3727,79 @@ class TNodejsFile extends TFile {
 
 } // class TNodejsFile
 
+/**
+  * @summary Proxy to read file contenxt
+  *
+  * @desc Should implement followinf methods
+  *        openFile() - return Promise with true when file can be open normally
+  *        getFileName() - returns string with file name
+  *        getFileSize() - returns size of file
+  *        readBuffer(pos, len) - return promise with DataView for requested position and length
+  * @private
+  */
+
+class FileProxy {
+
+   openFile() { return Promise.resolve(false); }
+
+   getFileName() { return ""; }
+
+   getFileSize() { return 0; }
+
+   readBuffer(/*pos, sz*/) { return Promise.resolve(null); }
+
+} // class FileProxy
+
+/**
+  * @summary File to use file context via FileProxy
+  *
+  * @hideconstructor
+  * @desc Use {@link openFile} to create instance of the class, providing FileProxy as argument
+  * @private
+  */
+
+class TProxyFile extends TFile {
+
+   constructor(proxy) {
+      super(null);
+      this.fUseStampPar = false;
+      this.proxy = proxy;
+   }
+
+   /** @summary Open file
+     * @returns {Promise} after file keys are read */
+   _open() {
+      return this.proxy.openFile().then(res => {
+         if (!res) return false;
+         this.fEND = this.proxy.getFileSize();
+         this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
+         return this.readKeys();
+      });
+   }
+
+   /** @summary Read buffer from FileProxy
+     * @returns {Promise} with requested blocks */
+   readBuffer(place, filename /*, progress_callback */) {
+      if (filename)
+         return Promise.reject(Error(`Cannot access other file ${filename}`));
+
+      if (!this.proxy)
+         return Promise.reject(Error(`File is not opened ${this.fFileName}`));
+
+      console.log('Read file buffer from ' + JSON.stringify(place));
+
+      if (place.length == 2)
+         return this.proxy.readBuffer(place[0], place[1]);
+
+      let arr = [];
+      for (let k = 0; k < place.length; k+=2)
+         arr.push(this.proxy.readBuffer(place[k], place[k+1]));
+      return Promise.all(arr);
+   }
+
+} // class TProxyFile
+
+
 /** @summary Open ROOT file for reading
   * @desc Generic method to open ROOT file for reading
   * Following kind of arguments can be provided:
@@ -3750,6 +3823,9 @@ function openFile(arg) {
       else if (arg.indexOf("http") !== 0)
          file = new TNodejsFile(arg);
    }
+
+   if (!file && (typeof arg === 'object') && (arg instanceof FileProxy))
+      file = new TProxyFile(arg);
 
    if (!file && (typeof arg === 'object') && (arg instanceof ArrayBuffer)) {
       file = new TFile("localfile.root");
@@ -3777,6 +3853,6 @@ export {
    kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
-   openFile, reconstructObject,
+   openFile, reconstructObject, FileProxy,
    TBuffer /*, TDirectory, TFile, TLocalFile, TNodejsFile */
 };
