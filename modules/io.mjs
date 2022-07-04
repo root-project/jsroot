@@ -3786,8 +3786,6 @@ class TProxyFile extends TFile {
       if (!this.proxy)
          return Promise.reject(Error(`File is not opened ${this.fFileName}`));
 
-      console.log('Read file buffer from ' + JSON.stringify(place));
-
       if (place.length == 2)
          return this.proxy.readBuffer(place[0], place[1]);
 
