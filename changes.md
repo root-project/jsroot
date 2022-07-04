@@ -4,6 +4,7 @@
 1. Use TAxis attributes in lego plots - ticks/labels/title colors, sizes, offsets
 2. Correctly resize stats box when number of lines changes
 3. Support JSROOT usage with yarn and webpack
+4. Provide `FileProxy` class to let read ROOT files from arbitrary place
 
 
 ## Changes in 7.1.0
