@@ -6,9 +6,11 @@ import { version, FileProxy, openFile, makeSVG, treeDraw } from "jsroot";
 
 import { writeFileSync, openSync, readSync, statSync } from "fs";
 
+import { open, stat } from "node:fs/promises";
+
 console.log('JSROOT version', version);
 
-class LocalFileProxy extends FileProxy {
+class FileProxySync extends FileProxy {
 
    constructor(filename) {
       super();
@@ -39,17 +41,73 @@ class LocalFileProxy extends FileProxy {
 
       let bytesRead = readSync(this.fd, view, 0, sz, pos);
 
-      // console.log(`Reading ${pos} size ${sz}`);
+      // console.log(`Read at ${pos} size ${bytesRead}`);
 
       if (bytesRead == sz)
           return Promise.resolve(view);
 
        return Promise.resolve(null);
    }
-};
+
+} // class FileProxySync
 
 
-let proxy = new LocalFileProxy("../../../files/large.root");
+class FileProxyPromise extends FileProxy {
+
+   constructor(filename) {
+      super();
+      this.filename = filename;
+      this.size = 0;
+   }
+
+   openFile() {
+
+      return open(this.filename).then(fd => {
+         if (!fd) return false;
+         this.fd = fd;
+
+         return stat(this.filename);
+      }).then(stats => {
+         this.size = stats.size;
+
+         return this.size > 0;
+      });
+   }
+
+   getFileName() { return this.filename; }
+
+   getFileSize() { return this.size; }
+
+   readBuffer(pos, sz)
+   {
+      if (!this.fd)
+         return Promise.resolve(null);
+
+      let buffer = new ArrayBuffer(sz);
+
+      let view = new DataView(buffer, 0, sz);
+
+      return this.fd.read(view, 0, sz, pos).then(res => {
+         // console.log(`Read ${pos} size ${res.bytesRead}`);
+
+         return res.bytesRead > 0 ? res.buffer : null;
+      });
+   }
+
+} // class FileProxyPromise
+
+let proxy = null, fname = "../../../files/hsimple.root";
+
+if (process.argv && process.argv[3] && typeof process.argv[3] == "string")
+   fname = process.argv[3];
+
+if (process.argv && process.argv[2] == "sync") {
+   console.log('Using FileProxySync');
+   proxy = new FileProxySync(fname);
+} else {
+   console.log('Using FileProxyPromise');
+   proxy = new FileProxyPromise(fname);
+}
 
 let file = await openFile(proxy);
 if (!file) {
