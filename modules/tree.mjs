@@ -1237,8 +1237,10 @@ class TDrawSelector extends TSelector {
    ProcessArraysFunc(/*entry*/) {
 
       if (this.arr_limit || this.graph) {
-         let var0 = this.vars[0], len = this.tgtarr.br0.length,
-            var1 = this.vars[1], var2 = this.vars[2];
+         let var0 = this.vars[0],
+             var1 = this.vars[1],
+             var2 = this.vars[2],
+             len = this.tgtarr.br0.length;
          if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
             // special use case - first array large enough to create histogram directly base on it
             var0.buf = this.tgtarr.br0;
@@ -2191,7 +2193,7 @@ function treeProcess(tree, selector, args) {
             places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
          }
 
-         return places.length > 0 ? { places: places, filename: filename } : null;
+         return places.length > 0 ? { places, filename } : null;
       }
 
       function ReadProgress(value) {
@@ -2378,7 +2380,8 @@ function treeProcess(tree, selector, args) {
 
       handle.progress_showtm = new Date().getTime();
 
-      if (totalsz > 0) return ReadBaskets(bitems).then(ProcessBaskets);
+      if (totalsz > 0)
+         return ReadBaskets(bitems).then(ProcessBaskets);
 
       if (is_direct) return ProcessBaskets([]); // directly process baskets
 
@@ -2666,17 +2669,17 @@ function treeHierarchy(node, obj) {
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
       let subitem = {
-            _name : ClearName(branch.fName),
-            _kind : "ROOT." + branch._typename,
-            _title : branch.fTitle,
-            _obj : branch
+            _name: ClearName(branch.fName),
+            _kind: "ROOT." + branch._typename,
+            _title: branch.fTitle,
+            _obj: branch
       };
 
       if (!node._childs) node._childs = [];
 
       node._childs.push(subitem);
 
-      if (branch._typename==='TBranchElement')
+      if (branch._typename === 'TBranchElement')
          subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
 
       if (nb_branches > 0) {
@@ -2696,7 +2699,7 @@ function treeHierarchy(node, obj) {
                     _kind: "ROOT.TLeafElement",
                     _icon: "img_leaf",
                     _obj: bobj.fLeaves.arr[0],
-                    _more : false
+                    _more: false
                  });
               }
 
@@ -2716,7 +2719,7 @@ function treeHierarchy(node, obj) {
                         _title: "function " + key + " of class " + object_class,
                         _kind: "ROOT.TBranchFunc", // fictional class, only for drawing
                         _obj: { _typename: "TBranchFunc", branch: bobj, func: key },
-                        _more : false
+                        _more: false
                      });
 
                }
