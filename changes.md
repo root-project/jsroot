@@ -5,6 +5,7 @@
 2. Correctly resize stats box when number of lines changes
 3. Support JSROOT usage with yarn and webpack
 4. Provide `FileProxy` class to let read ROOT files from arbitrary place
+5. Let 'hook' save file functionality to use alternative method to store image files
 
 
 ## Changes in 7.1.0

@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/07/2022";
+let version_date = "5/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -57,6 +57,10 @@ function isNodeJs() { return nodejs; }
 let node_atob, node_xhr2;
 
 
+
+
+/** @summary atob function in all environments */
+const atob_func = isNodeJs() ? node_atob : window.atob;
 
 let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -626,8 +630,6 @@ function parse(json) {
          if (value.b !== undefined) {
             // base64 coding
 
-            let atob_func = nodejs ? node_atob : window.atob;
-
             let buf = atob_func(value.b);
 
             if (arr.buffer) {
@@ -855,7 +857,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
             this.abort();
-            this.error_callback(Error('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation'), 598);
+            this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
          }
       }.bind(xhr));
 
@@ -868,7 +870,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
             this.did_abort = true;
             this.abort();
-            return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'), 599);
+            return this.error_callback(Error(`Server response size ${len} larger than expected ${this.expected_size}. Abort I/O operation`), 599);
          }
       }
 
@@ -877,7 +879,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
           // in these special cases browsers not always set status
           !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
-            return this.error_callback(Error('Fail to load url ' + url), this.status);
+            return this.error_callback(Error(`Fail to load url ${url}`), this.status);
       }
 
       if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
@@ -1676,6 +1678,7 @@ internals: internals,
 constants: constants$1,
 settings: settings,
 gStyle: gStyle,
+atob_func: atob_func,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -52127,6 +52130,61 @@ function readStyle(only_check = false, name = "jsroot_style") {
    return true;
 }
 
+let _saveFileFunc = null;
+
+
+/** @summary Returns image file content as it should be stored on the disc
+  * @desc Replaces all kind of base64 coding
+  * @private */
+
+function getBinFileContent(content) {
+   const svg_prefix = "data:image/svg+xml;charset=utf-8,";
+
+   if (content.indexOf(svg_prefix) == 0)
+      return decodeURIComponent(content.slice(svg_prefix.length));
+
+   if (content.indexOf('data:image/') == 0) {
+      let p = content.indexOf('base64,');
+      if (p > 0) {
+         let base64 = content.slice(p + 7);
+         return atob_func(base64);
+      }
+   }
+
+   return content;
+}
+
+/** @summary Function store content as file with filename
+  * @private */
+function saveFile(filename, content) {
+
+   if (typeof _saveFileFunc == 'function') {
+      return _saveFileFunc(filename, getBinFileContent(content));
+   } else if (isNodeJs()) {
+      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
+         fs.writeFileSync(filename, getBinFileContent(content));
+         return true;
+      });
+   } else if (typeof document == 'object') {
+      let a = document.createElement('a');
+      a.download = filename;
+      a.href = content;
+      document.body.appendChild(a);
+
+      return new Promise(resolve => {
+         a.addEventListener("click", () => { a.parentNode.removeChild(a); resolve(true); });
+         a.click();
+      });
+   }
+   return Promise.resolve(false);
+}
+
+/** @summary Function store content as file with filename
+  * @private */
+function setSaveFile(func) {
+   _saveFileFunc = func;
+}
+
 /** @summary Produce exec string for WebCanas to set color value
   * @desc Color can be id or string, but should belong to list of known colors
   * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
@@ -59942,16 +60000,12 @@ class TPadPainter extends ObjectPainter {
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
+
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         let a = document.createElement('a');
-         a.download = filename;
-         a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
-         document.body.appendChild(a);
-         a.addEventListener("click", () => a.parentNode.removeChild(a));
-         a.click();
+         saveFile(filename, (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
       });
    }
 
@@ -72750,12 +72804,10 @@ class TDirectory {
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
          return Promise.resolve(this);
 
-      let file = this.fFile;
-
-      return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+      return this.fFile.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          // Read keys of the top directory
 
-         const buf = new TBuffer(blob, 0, file);
+         const buf = new TBuffer(blob, 0, this.fFile);
 
          buf.readTKey();
          const nkeys = buf.ntoi4();
@@ -72763,7 +72815,7 @@ class TDirectory {
          for (let i = 0; i < nkeys; ++i)
             this.fKeys.push(buf.readTKey());
 
-         file.fDirectories.push(this);
+         this.fFile.fDirectories.push(this);
 
          return this;
       });
@@ -72887,7 +72939,8 @@ class TFile {
             ranges += (n > first ? "," : "=") + (place[n] + "-" + (place[n] + place[n + 1] - 1));
             totalsz += place[n + 1]; // accumulated total size
          }
-         if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
+         if (last - first > 2)
+            totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
          let xhr = createHttpRequest(fullurl, "buf", read_callback);
 
@@ -73850,6 +73903,7 @@ class TProxyFile extends TFile {
   *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
   *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
+  *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
   * @returns {object} - Promise with {@link TFile} instance when file is opened
   * @example
@@ -79015,8 +79069,10 @@ class TDrawSelector extends TSelector {
    ProcessArraysFunc(/*entry*/) {
 
       if (this.arr_limit || this.graph) {
-         let var0 = this.vars[0], len = this.tgtarr.br0.length,
-            var1 = this.vars[1], var2 = this.vars[2];
+         let var0 = this.vars[0],
+             var1 = this.vars[1],
+             var2 = this.vars[2],
+             len = this.tgtarr.br0.length;
          if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
             // special use case - first array large enough to create histogram directly base on it
             var0.buf = this.tgtarr.br0;
@@ -79969,7 +80025,7 @@ function treeProcess(tree, selector, args) {
             places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
          }
 
-         return places.length > 0 ? { places: places, filename: filename } : null;
+         return places.length > 0 ? { places, filename } : null;
       }
 
       function ReadProgress(value) {
@@ -80156,7 +80212,8 @@ function treeProcess(tree, selector, args) {
 
       handle.progress_showtm = new Date().getTime();
 
-      if (totalsz > 0) return ReadBaskets(bitems).then(ProcessBaskets);
+      if (totalsz > 0)
+         return ReadBaskets(bitems).then(ProcessBaskets);
 
       if (is_direct) return ProcessBaskets([]); // directly process baskets
 
@@ -80444,17 +80501,17 @@ function treeHierarchy(node, obj) {
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
       let subitem = {
-            _name : ClearName(branch.fName),
-            _kind : "ROOT." + branch._typename,
-            _title : branch.fTitle,
-            _obj : branch
+            _name: ClearName(branch.fName),
+            _kind: "ROOT." + branch._typename,
+            _title: branch.fTitle,
+            _obj: branch
       };
 
       if (!node._childs) node._childs = [];
 
       node._childs.push(subitem);
 
-      if (branch._typename==='TBranchElement')
+      if (branch._typename === 'TBranchElement')
          subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
 
       if (nb_branches > 0) {
@@ -80474,7 +80531,7 @@ function treeHierarchy(node, obj) {
                     _kind: "ROOT.TLeafElement",
                     _icon: "img_leaf",
                     _obj: bobj.fLeaves.arr[0],
-                    _more : false
+                    _more: false
                  });
               }
 
@@ -80494,7 +80551,7 @@ function treeHierarchy(node, obj) {
                         _title: "function " + key + " of class " + object_class,
                         _kind: "ROOT.TBranchFunc", // fictional class, only for drawing
                         _obj: { _typename: "TBranchFunc", branch: bobj, func: key },
-                        _more : false
+                        _more: false
                      });
 
                }
@@ -100022,18 +100079,12 @@ class RPadPainter extends RObjectPainter {
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
-      console.log('saveAs', kind, full_canvas, filename);
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         let a = document.createElement('a');
-         a.download = filename;
-         a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
-         document.body.appendChild(a);
-         a.addEventListener("click", () => a.parentNode.removeChild(a));
-         a.click();
+         saveFile(filename, (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
       });
    }
 
@@ -109812,6 +109863,7 @@ exports._ensureJSROOT = _ensureJSROOT;
 exports._loadJSDOM = _loadJSDOM;
 exports.addDrawFunc = addDrawFunc;
 exports.addMethods = addMethods;
+exports.atob_func = atob_func;
 exports.browser = browser$1;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
@@ -109865,6 +109917,7 @@ exports.selectActivePad = selectActivePad;
 exports.setBatchMode = setBatchMode;
 exports.setDefaultDrawOpt = setDefaultDrawOpt;
 exports.setHPainter = setHPainter;
+exports.setSaveFile = setSaveFile;
 exports.settings = settings;
 exports.toJSON = toJSON;
 exports.treeDraw = treeDraw;
