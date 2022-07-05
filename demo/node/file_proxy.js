@@ -102,9 +102,19 @@ let proxy = null, fname = "../../../files/hsimple.root";
 if (process.argv && process.argv[3] && typeof process.argv[3] == "string")
    fname = process.argv[3];
 
-if (process.argv && process.argv[2] == "sync") {
-   console.log('Using FileProxySync and sync API');
+if (fname.indexOf("http") == 0) {
+   console.log('Using normal file API');
+   proxy = fname;
+} else if (process.argv && process.argv[2] == "sync") {
+   console.log('Using FileProxySync');
    proxy = new FileProxySync(fname);
+} else {
+   console.log('Using FileProxyPromise');
+   proxy = new FileProxyPromise(fname);
+}
+
+if (process.argv && process.argv[2] == "sync") {
+   console.log('Using sync API');
 
    let file = await openFile(proxy);
    if (!file) {
@@ -118,8 +128,7 @@ if (process.argv && process.argv[2] == "sync") {
    writeFileSync("draw_proxy.svg", svg);
    console.log(`Create draw_proxy.svg size ${svg.length}`);
 } else {
-   console.log('Using FileProxyPromise and promise API');
-   proxy = new FileProxyPromise(fname);
+   console.log('Using promise API');
 
    openFile(proxy).then(file => file.readObject("ntuple"))
                   .then(ntuple => treeDraw(ntuple, "px:py::pz>5"))
