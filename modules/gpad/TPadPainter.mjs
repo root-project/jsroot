@@ -1721,6 +1721,7 @@ class TPadPainter extends ObjectPainter {
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
+
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);

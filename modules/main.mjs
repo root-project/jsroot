@@ -15,7 +15,7 @@ export * from './hist/TH2Painter.mjs';
 
 export * from './hist/TH3Painter.mjs';
 
-export { loadOpenui5, registerForResize, saveFile } from './gui/utils.mjs';
+export { loadOpenui5, registerForResize, setSaveFile } from './gui/utils.mjs';
 
 export { draw, redraw, makeSVG, addDrawFunc, setDefaultDrawOpt } from './draw.mjs';
 

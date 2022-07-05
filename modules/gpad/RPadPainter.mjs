@@ -1200,7 +1200,6 @@ class RPadPainter extends RObjectPainter {
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
-      console.log('saveAs', kind, full_canvas, filename);
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
