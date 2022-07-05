@@ -2661,12 +2661,10 @@ class TDirectory {
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
          return Promise.resolve(this);
 
-      let file = this.fFile;
-
-      return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+      return this.fFile.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          // Read keys of the top directory
 
-         const buf = new TBuffer(blob, 0, file);
+         const buf = new TBuffer(blob, 0, this.fFile);
 
          buf.readTKey();
          const nkeys = buf.ntoi4();
@@ -2674,7 +2672,7 @@ class TDirectory {
          for (let i = 0; i < nkeys; ++i)
             this.fKeys.push(buf.readTKey());
 
-         file.fDirectories.push(this);
+         this.fFile.fDirectories.push(this);
 
          return this;
       });
@@ -2798,7 +2796,8 @@ class TFile {
             ranges += (n > first ? "," : "=") + (place[n] + "-" + (place[n] + place[n + 1] - 1));
             totalsz += place[n + 1]; // accumulated total size
          }
-         if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
+         if (last - first > 2)
+            totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
          let xhr = createHttpRequest(fullurl, "buf", read_callback);
 
@@ -3804,6 +3803,7 @@ class TProxyFile extends TFile {
   *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
   *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
+  *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
   * @returns {object} - Promise with {@link TFile} instance when file is opened
   * @example
