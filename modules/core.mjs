@@ -1659,31 +1659,9 @@ function _ensureJSROOT() {
    }).then(() => globalThis.JSROOT);
 }
 
-/** @summary Function store content as file with filename
-  * @private */
-function saveFile(filename, content) {
-   if (isNodeJs()) {
-      return import('fs').then(fs => {
-         fs.writeFileSync(filename, content);
-         return true;
-      });
-   } else if (typeof document == 'object') {
-      let a = document.createElement('a');
-      a.download = filename;
-      a.href = content;
-      document.body.appendChild(a);
-
-      return new Promise(resolve => {
-         a.addEventListener("click", () => { a.parentNode.removeChild(a); resolve(true); });
-         a.click();
-      });
-   }
-   return Promise.resolve(false);
-}
-
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isPromise, _ensureJSROOT, saveFile };
+         getMethods, registerMethods, isRootCollection, isPromise, _ensureJSROOT };

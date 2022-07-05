@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, source_dir } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isNodeJs, source_dir } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -451,7 +451,28 @@ function readStyle(only_check = false, name = "jsroot_style") {
    return true;
 }
 
+/** @summary Function store content as file with filename
+  * @private */
+function saveFile(filename, content) {
+   if (isNodeJs()) {
+      return import('fs').then(fs => {
+         fs.writeFileSync(filename, content);
+         return true;
+      });
+   } else if (typeof document == 'object') {
+      let a = document.createElement('a');
+      a.download = filename;
+      a.href = content;
+      document.body.appendChild(a);
+
+      return new Promise(resolve => {
+         a.addEventListener("click", () => { a.parentNode.removeChild(a); resolve(true); });
+         a.click();
+      });
+   }
+   return Promise.resolve(false);
+}
 
 export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize,
          detectRightButton, addMoveHandler, injectStyle,
-         selectgStyle, saveSettings, readSettings, saveStyle, readStyle };
+         selectgStyle, saveSettings, readSettings, saveStyle, readStyle, saveFile };
