@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isNodeJs, source_dir } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isNodeJs, source_dir, atob_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -451,12 +451,39 @@ function readStyle(only_check = false, name = "jsroot_style") {
    return true;
 }
 
+let _saveFileFunc = null;
+
+
+/** @summary Returns image file content as it should be stored on the disc
+  * @desc Replaces all kind of base64 coding
+  * @private */
+
+function getBinFileContent(content) {
+   const svg_prefix = "data:image/svg+xml;charset=utf-8,";
+
+   if (content.indexOf(svg_prefix) == 0)
+      return decodeURIComponent(content.slice(svg_prefix.length));
+
+   if (content.indexOf('data:image/') == 0) {
+      let p = content.indexOf('base64,');
+      if (p > 0) {
+         let base64 = content.slice(p + 7);
+         return atob_func(base64);
+      }
+   }
+
+   return content;
+}
+
 /** @summary Function store content as file with filename
   * @private */
 function saveFile(filename, content) {
-   if (isNodeJs()) {
+
+   if (typeof _saveFileFunc == 'function') {
+      return _saveFileFunc(filename, getBinFileContent(content));
+   } else if (isNodeJs()) {
       return import('fs').then(fs => {
-         fs.writeFileSync(filename, content);
+         fs.writeFileSync(filename, getBinFileContent(content));
          return true;
       });
    } else if (typeof document == 'object') {
@@ -473,6 +500,13 @@ function saveFile(filename, content) {
    return Promise.resolve(false);
 }
 
+/** @summary Function store content as file with filename
+  * @private */
+function setSaveFile(func) {
+   _saveFileFunc = func;
+}
+
 export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize,
          detectRightButton, addMoveHandler, injectStyle,
-         selectgStyle, saveSettings, readSettings, saveStyle, readStyle, saveFile };
+         selectgStyle, saveSettings, readSettings, saveStyle, readStyle,
+         saveFile, setSaveFile, getBinFileContent };

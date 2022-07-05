@@ -55,6 +55,10 @@ let node_atob, node_xhr2;
 if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
 ///_end_exclude_in_qt5web_
 
+
+/** @summary atob function in all environments */
+const atob_func = isNodeJs() ? node_atob : window.atob;
+
 let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
@@ -622,8 +626,6 @@ function parse(json) {
 
          if (value.b !== undefined) {
             // base64 coding
-
-            let atob_func = nodejs ? node_atob : window.atob;
 
             let buf = atob_func(value.b);
 
@@ -1660,7 +1662,7 @@ function _ensureJSROOT() {
 }
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
-         browser, internals, constants, settings, gStyle,
+         browser, internals, constants, settings, gStyle, atob_func,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
