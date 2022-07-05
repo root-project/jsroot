@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/07/2022";
+let version_date = "5/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1657,6 +1657,17 @@ function _ensureJSROOT() {
       if (globalThis.JSROOT?._complete_loading)
          return globalThis.JSROOT._complete_loading();
    }).then(() => globalThis.JSROOT);
+}
+
+/** @summary Function store content as file with filename
+  * @private */
+function saveFile(filename, content) {
+   let a = document.createElement('a');
+   a.download = filename;
+   a.href = content;
+   document.body.appendChild(a);
+   a.addEventListener("click", () => a.parentNode.removeChild(a));
+   a.click();
 }
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,

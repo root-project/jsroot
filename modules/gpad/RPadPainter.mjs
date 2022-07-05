@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode } from '../core.mjs';
+import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode, saveFile } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -1206,12 +1206,7 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         let a = document.createElement('a');
-         a.download = filename;
-         a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
-         document.body.appendChild(a);
-         a.addEventListener("click", () => a.parentNode.removeChild(a));
-         a.click();
+         saveFile(filename, (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
       });
    }
 

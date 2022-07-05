@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, saveFile } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -1725,12 +1725,7 @@ class TPadPainter extends ObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         let a = document.createElement('a');
-         a.download = filename;
-         a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
-         document.body.appendChild(a);
-         a.addEventListener("click", () => a.parentNode.removeChild(a));
-         a.click();
+         saveFile(filename, (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
       });
    }
 
