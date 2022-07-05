@@ -852,7 +852,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
             this.abort();
-            this.error_callback(Error('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation'), 598);
+            this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
          }
       }.bind(xhr));
 
@@ -865,7 +865,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
             this.did_abort = true;
             this.abort();
-            return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'), 599);
+            return this.error_callback(Error(`Server response size ${len} larger than expected ${this.expected_size}. Abort I/O operation`), 599);
          }
       }
 
@@ -874,7 +874,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
           // in these special cases browsers not always set status
           !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
-            return this.error_callback(Error('Fail to load url ' + url), this.status);
+            return this.error_callback(Error(`Fail to load url ${url}`), this.status);
       }
 
       if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
