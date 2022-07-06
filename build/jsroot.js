@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "5/07/2022";
+let version_date = "6/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -56700,7 +56700,7 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary Activate frame */
-   activateFrame(frame) { this.active_frame_title = select(frame).attr('frame_title'); }
+   activateFrame(frame) { this.active_frame_title = frame ? select(frame).attr('frame_title') : ""; }
 
    /** @summary Return active frame */
    getActiveFrame() { return this.findFrame(this.active_frame_title); }
@@ -57139,7 +57139,155 @@ class GridDisplay extends MDIDisplay {
 
 } // class GridDisplay
 
+
+
 // ================================================
+
+/**
+ * @summary Tabs-based display
+ *
+ * @private
+ */
+
+class TabsDisplay extends MDIDisplay {
+
+   constructor(frameid) {
+      super(frameid);
+      this.cnt = 0; // use to count newly created frames
+      this.selectDom().style('overflow', 'hidden');
+   }
+
+   /** @summary Cleanup all drawings */
+   cleanup() {
+      this.selectDom().style('overflow', null);
+      this.cnt = 0;
+      super.cleanup();
+   }
+
+   /** @summary call function for each frame */
+   forEachFrame(userfunc,  only_visible) {
+      if (typeof userfunc != 'function') return;
+
+      if (only_visible) {
+         let active = this.getActiveFrame();
+         if (active) userfunc(active);
+         return;
+      }
+
+      let main = this.selectDom().select('.jsroot_tabs_main');
+
+      main.selectAll(".jsroot_tabs_draw").each(function() {
+         userfunc(this);
+      });
+   }
+
+   /** @summary modify tab state by id */
+   modifyTabsFrame(frame_id, action) {
+      let top = this.selectDom().select(".jsroot_tabs"),
+          labels = top.select(".jsroot_tabs_labels"),
+          main = top.select(".jsroot_tabs_main");
+
+      labels.selectAll(".jsroot_tabs_label").each(function() {
+         let id = select(this).property('frame_id'),
+             is_same = (id == frame_id);
+         if (action == "activate")
+            select(this).style("background", is_same ? "white" : null);
+         else if ((action == "close") && is_same)
+            this.parentNode.remove();
+      });
+
+      let selected_frame, other_frame;
+
+      main.selectAll(".jsroot_tabs_draw").each(function() {
+         if (select(this).property('frame_id') === frame_id)
+            selected_frame = this;
+         else
+            other_frame = this;
+      });
+
+      if (!selected_frame) return;
+
+      if (action == "activate") {
+         selected_frame.parentNode.appendChild(selected_frame);
+         // super.activateFrame(selected_frame);
+      } else if (action == "close") {
+         let was_active = (selected_frame === this.getActiveFrame());
+         cleanup(selected_frame);
+         selected_frame.remove();
+
+         if (was_active)
+            this.activateFrame(other_frame);
+      }
+   }
+
+   /** @summary actiavte frame */
+   activateFrame(frame) {
+      if (frame)
+         this.modifyTabsFrame(select(frame).property('frame_id'), "activate");
+      super.activateFrame(frame);
+   }
+
+   /** @summary create new frame */
+   createFrame(title) {
+
+      this.beforeCreateFrame(title);
+
+      let dom = this.selectDom(),
+          top = dom.select(".jsroot_tabs"), labels, main;
+
+      if (top.empty()) {
+         top = dom.append("div").classed("jsroot_tabs", true);
+         labels = top.append("div").classed("jsroot_tabs_labels", true);
+         main = top.append("div").classed("jsroot_tabs_main", true);
+      } else {
+         labels = top.select(".jsroot_tabs_labels");
+         main = top.select(".jsroot_tabs_main");
+      }
+
+injectStyle(`
+.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
+.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
+.jsroot_tabs_labels .jsroot_tabs_label {
+   background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
+   margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
+}
+.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
+.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
+
+`, dom.node());
+
+      let frame_id = this.cnt++, mdi = this;
+
+      let head_frame = labels.append('span').attr('tabindex', 0);
+      head_frame.append("label")
+                .attr('class', "jsroot_tabs_label")
+                .style("background", "white")
+                .property('frame_id', frame_id)
+                .text(title)
+                .on("click", function(evnt) {
+                    evnt.preventDefault(); // prevent handling in close button
+                    mdi.modifyTabsFrame(select(this).property('frame_id'), "activate");
+                 }).append("button")
+                .attr("title", "close")
+                .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
+                .html('&#x2715;')
+                .on("click", function() {
+                   mdi.modifyTabsFrame(select(this.parentNode).property('frame_id'), "close");
+                });
+
+      let draw_frame = main.append('div')
+                           .attr('frame_title', title)
+                           .attr('class', 'jsroot_tabs_draw')
+                           .property('frame_id', frame_id)
+                           .node();
+
+      this.modifyTabsFrame(frame_id, "activate");
+
+      return this.afterCreateFrame(draw_frame);
+   }
+
+} // class TabsDisplay
+
 
 /**
  * @summary Generic flexible MDI display
@@ -57341,59 +57489,14 @@ class FlexibleDisplay extends MDIDisplay {
           top = dom.select(".jsroot_flex_top");
 
       if (this.cnt == 0) injectStyle(`
-.jsroot_flex_top {
-   overflow: auto;
-   position: relative;
-   height: 100%;
-   width: 100%;
-}
-
-.jsroot_flex_btn {
-   float: right;
-   padding: 0;
-   width: 1.4em;
-   text-align: center;
-   font-size: 10px;
-   margin-top: 2px;
-   margin-right: 4px;
-}
-
-.jsroot_flex_header {
-   height: 23px;
-   overflow: hidden;
-   background-color: lightblue;
-}
-
-.jsroot_flex_header p {
-   margin: 1px;
-   float: left;
-   font-size: 14px;
-   padding-left: 5px;
-}
-
-.jsroot_flex_draw {
-   overflow: hidden;
-   width: 100%;
-   height: calc(100% - 24px);
-}
-
-.jsroot_flex_frame {
-   border: 1px solid black;
-   box-shadow: 1px 1px 2px 2px #aaa;
-   background: white;
-}
-
-.jsroot_flex_resize {
-   position: absolute;
-   right: 2px;
-   bottom: 2px;
-   overflow: hidden;
-   cursor: nwse-resize;
-}
-
-.jsroot_flex_resizable_helper {
-   border: 2px dotted #00F;
-}`, dom.node());
+.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
+.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }
+.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }
+.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }
+.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }
+.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }
+.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }
+.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node());
 
       if (top.empty())
          top = dom.append("div").classed("jsroot_flex_top", true);
@@ -76987,8 +77090,10 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return Promise.resolve(null);
 
-      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
+      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind.indexOf("coll") == 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
+      else if (this.disp_kind == "tabs")
+         this.disp = new TabsDisplay(this.disp_frameid);
       else
          this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
 
@@ -77479,7 +77584,7 @@ class HierarchyPainter extends BasePainter {
 
       let layout = main.select(".gui_layout");
       if (!layout.empty()) {
-         ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+         ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex', 'tabs',
           'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append("option").attr("value", kind).html(kind));
 
          layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + "_drawing"));
@@ -109859,6 +109964,7 @@ exports.TH2Painter = TH2Painter;
 exports.TH3Painter = TH3Painter;
 exports.TRandom = TRandom;
 exports.TSelector = TSelector;
+exports.TabsDisplay = TabsDisplay;
 exports._ensureJSROOT = _ensureJSROOT;
 exports._loadJSDOM = _loadJSDOM;
 exports.addDrawFunc = addDrawFunc;

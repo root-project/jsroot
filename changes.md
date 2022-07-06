@@ -6,6 +6,7 @@
 3. Support JSROOT usage with yarn and webpack
 4. Provide `FileProxy` class to let read ROOT files from arbitrary place
 5. Let 'hook' save file functionality to use alternative method to store image files
+6. Implement 'tabs' layout for objects display (#238)
 
 
 ## Changes in 7.1.0
