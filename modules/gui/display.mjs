@@ -94,7 +94,7 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary Activate frame */
-   activateFrame(frame) { this.active_frame_title = d3_select(frame).attr('frame_title'); }
+   activateFrame(frame) { this.active_frame_title = frame ? d3_select(frame).attr('frame_title') : ""; }
 
    /** @summary Return active frame */
    getActiveFrame() { return this.findFrame(this.active_frame_title); }
@@ -575,45 +575,49 @@ class TabsDisplay extends MDIDisplay {
       });
    }
 
-   /** @summary return active frame */
-   getActiveFrame() {
-      return super.getActiveFrame();
-   }
-
-   /** @summary actiavte tabs frame by id */
+   /** @summary modify tab state by id */
    modifyTabsFrame(frame_id, action) {
       let top = this.selectDom().select(".jsroot_tabs"),
           labels = top.select(".jsroot_tabs_labels"),
           main = top.select(".jsroot_tabs_main");
 
       labels.selectAll(".jsroot_tabs_label").each(function() {
-         let is_same = d3_select(this).property('frame_id') == frame_id;
+         let id = d3_select(this).property('frame_id'),
+             is_same = (id == frame_id);
          if (action == "activate")
             d3_select(this).style("background", is_same ? "white" : null);
          else if ((action == "close") && is_same)
             this.parentNode.remove();
       });
 
-      let selected_frame;
+      let selected_frame, other_frame;
 
       main.selectAll(".jsroot_tabs_draw").each(function() {
          if (d3_select(this).property('frame_id') === frame_id)
             selected_frame = this;
+         else
+            other_frame = this;
       });
 
       if (!selected_frame) return;
 
       if (action == "activate") {
-         selected_frame.parentNode.insertBefore(selected_frame, selected_frame.parentNode.firstChild);
+         selected_frame.parentNode.appendChild(selected_frame);
+         // super.activateFrame(selected_frame);
       } else if (action == "close") {
+         let was_active = (selected_frame === this.getActiveFrame());
          cleanup(selected_frame);
          selected_frame.remove();
+
+         if (was_active)
+            this.activateFrame(other_frame);
       }
    }
 
    /** @summary actiavte frame */
    activateFrame(frame) {
-      this.modifyTabsFrame(d3_select(frame).property('frame_id'), "activate");
+      if (frame)
+         this.modifyTabsFrame(d3_select(frame).property('frame_id'), "activate");
       super.activateFrame(frame);
    }
 
@@ -636,13 +640,13 @@ class TabsDisplay extends MDIDisplay {
 
 injectStyle(`
 .jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
-.jsroot_tabs_labels { overflow-y: auto; white-space: nowrap; position: relative; }
+.jsroot_tabs_labels { white-space: nowrap; position: relative; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
    margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
 }
 .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
-.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; position: relative; width: 100%; height: 100%; }
+.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
 
 `, dom.node());
 
@@ -654,10 +658,14 @@ injectStyle(`
                 .style("background", "white")
                 .property('frame_id', frame_id)
                 .text(title)
-                .on("click", function() { mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate"); })
-                .append("button").attr("title", "close").style('margin-left','.5em').html('&#x2715;')
                 .on("click", function(evnt) {
-                   evnt.stopPropagation();
+                    evnt.preventDefault(); // prevent handling in close button
+                    mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
+                 }).append("button")
+                .attr("title", "close")
+                .style('margin-left','.5em')
+                .html('&#x2715;')
+                .on("click", function(evnt) {
                    mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
                 });
 
