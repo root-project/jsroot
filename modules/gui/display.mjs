@@ -580,8 +580,33 @@ class TabsDisplay extends MDIDisplay {
       return super.getActiveFrame();
    }
 
+   /** @summary actiavte tabs frame by id */
+   activateTabsFrame(frame_id) {
+      let top = this.selectDom().select(".jsroot_tabs"),
+          labels = top.select(".jsroot_tabs_labels"),
+          main = top.select(".jsroot_tabs_main");
+
+      labels.selectAll(".jsroot_tabs_label").each(function() {
+         let id  = d3_select(this).property('frame_id');
+         d3_select(this).style("background", (id === frame_id) ? "white" :null);
+      });
+
+      let active_frame;
+
+      main.selectAll(".jsroot_tabs_draw").each(function() {
+         if (d3_select(this).property('frame_id') === frame_id)
+            active_frame = this;
+      });
+
+      if (active_frame)
+         active_frame.parentNode.insertBefore(active_frame, active_frame.parentNode.firstChild);
+
+   }
+
    /** @summary actiavte frame */
    activateFrame(frame) {
+      this.activateTabsFrame(d3_select(frame).property('frame_id'));
+      super.activateFrame(frame);
    }
 
    /** @summary create new frame */
@@ -597,30 +622,39 @@ class TabsDisplay extends MDIDisplay {
          labels = top.append("div").classed("jsroot_tabs_labels", true);
          main = top.append("div").classed("jsroot_tabs_main", true);
       } else {
-         labels = top.select(".jsroot_tabs_labels"),
+         labels = top.select(".jsroot_tabs_labels");
          main = top.select(".jsroot_tabs_main");
       }
 
 injectStyle(`
 .jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
-.jsroot_tabs_labels { overflow-y: auto; white-space: nowrap; }
+.jsroot_tabs_labels { overflow-y: auto; white-space: nowrap; position: relative; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
    margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
 }
-.jsroot_tabs_main { margin: 0; flex: 1 1 0%; }
+.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
 .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; position: relative; width: 100%; height: 100%; }
 
 `, dom.node());
 
+      let frame_id = this.cnt++, mdi = this;
+
       let head_frame = labels.append('span').attr('tabindex', 0);
-      head_frame.append("label").attr('class', "jsroot_tabs_label").text(title);
+      head_frame.append("label")
+                .attr('class', "jsroot_tabs_label")
+                .style("background", "white")
+                .property('frame_id', frame_id)
+                .text(title)
+                .on("click", function() { mdi.activateTabsFrame(d3_select(this).property('frame_id')); });
 
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .property('frame_cnt', this.cnt++)
+                           .property('frame_id', frame_id)
                            .node();
+
+      this.activateTabsFrame(frame_id);
 
       return this.afterCreateFrame(draw_frame);
    }
