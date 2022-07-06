@@ -663,9 +663,9 @@ injectStyle(`
                     mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
                  }).append("button")
                 .attr("title", "close")
-                .style('margin-left','.5em')
+                .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
                 .html('&#x2715;')
-                .on("click", function(evnt) {
+                .on("click", function() {
                    mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
                 });
 
@@ -883,59 +883,14 @@ class FlexibleDisplay extends MDIDisplay {
           top = dom.select(".jsroot_flex_top");
 
       if (this.cnt == 0) injectStyle(`
-.jsroot_flex_top {
-   overflow: auto;
-   position: relative;
-   height: 100%;
-   width: 100%;
-}
-
-.jsroot_flex_btn {
-   float: right;
-   padding: 0;
-   width: 1.4em;
-   text-align: center;
-   font-size: 10px;
-   margin-top: 2px;
-   margin-right: 4px;
-}
-
-.jsroot_flex_header {
-   height: 23px;
-   overflow: hidden;
-   background-color: lightblue;
-}
-
-.jsroot_flex_header p {
-   margin: 1px;
-   float: left;
-   font-size: 14px;
-   padding-left: 5px;
-}
-
-.jsroot_flex_draw {
-   overflow: hidden;
-   width: 100%;
-   height: calc(100% - 24px);
-}
-
-.jsroot_flex_frame {
-   border: 1px solid black;
-   box-shadow: 1px 1px 2px 2px #aaa;
-   background: white;
-}
-
-.jsroot_flex_resize {
-   position: absolute;
-   right: 2px;
-   bottom: 2px;
-   overflow: hidden;
-   cursor: nwse-resize;
-}
-
-.jsroot_flex_resizable_helper {
-   border: 2px dotted #00F;
-}`, dom.node());
+.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
+.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }
+.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }
+.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }
+.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }
+.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }
+.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }
+.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node());
 
       if (top.empty())
          top = dom.append("div").classed("jsroot_flex_top", true);
