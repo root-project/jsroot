@@ -640,7 +640,7 @@ class TabsDisplay extends MDIDisplay {
 
 injectStyle(`
 .jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
-.jsroot_tabs_labels { white-space: nowrap; position: relative; }
+.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
    margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
