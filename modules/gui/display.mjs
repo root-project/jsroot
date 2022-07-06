@@ -533,7 +533,100 @@ class GridDisplay extends MDIDisplay {
 
 } // class GridDisplay
 
+
+
 // ================================================
+
+/**
+ * @summary Tabs-based display
+ *
+ * @private
+ */
+
+class TabsDisplay extends MDIDisplay {
+
+   constructor(frameid) {
+      super(frameid);
+      this.cnt = 0; // use to count newly created frames
+      this.selectDom().style('overflow', 'hidden');
+   }
+
+   /** @summary Cleanup all drawings */
+   cleanup() {
+      this.selectDom().style('overflow', null);
+      this.cnt = 0;
+      super.cleanup();
+   }
+
+   /** @summary call function for each frame */
+   forEachFrame(userfunc,  only_visible) {
+      if (typeof userfunc != 'function') return;
+
+      if (only_visible) {
+         let active = this.getActiveFrame();
+         if (active) userfunc(active);
+         return;
+      }
+
+      let main = this.selectDom().select('.jsroot_tabs_main');
+
+      main.selectAll(".jsroot_tabs_draw").each(function() {
+         userfunc(this);
+      });
+   }
+
+   /** @summary return active frame */
+   getActiveFrame() {
+      return super.getActiveFrame();
+   }
+
+   /** @summary actiavte frame */
+   activateFrame(frame) {
+   }
+
+   /** @summary create new frame */
+   createFrame(title) {
+
+      this.beforeCreateFrame(title);
+
+      let dom = this.selectDom(),
+          top = dom.select(".jsroot_tabs"), labels, main;
+
+      if (top.empty()) {
+         top = dom.append("div").classed("jsroot_tabs", true);
+         labels = top.append("div").classed("jsroot_tabs_labels", true);
+         main = top.append("div").classed("jsroot_tabs_main", true);
+      } else {
+         labels = top.select(".jsroot_tabs_labels"),
+         main = top.select(".jsroot_tabs_main");
+      }
+
+injectStyle(`
+.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
+.jsroot_tabs_labels { overflow-y: auto; white-space: nowrap; }
+.jsroot_tabs_labels .jsroot_tabs_label {
+   background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
+   margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
+}
+.jsroot_tabs_main { margin: 0; flex: 1 1 0%; }
+.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; position: relative; width: 100%; height: 100%; }
+
+`, dom.node());
+
+      let head_frame = labels.append('span').attr('tabindex', 0);
+      head_frame.append("label").attr('class', "jsroot_tabs_label").text(title);
+
+      let draw_frame = main.append('div')
+                           .attr('frame_title', title)
+                           .attr('class', 'jsroot_tabs_draw')
+                           .property('frame_cnt', this.cnt++)
+                           .node();
+
+      return this.afterCreateFrame(draw_frame);
+   }
+
+} // class TabsDisplay
+
 
 /**
  * @summary Generic flexible MDI display
@@ -1683,5 +1776,5 @@ class BrowserLayout {
 
 } // class BrowserLayout
 
-export { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout,
+export { MDIDisplay, CustomDisplay, BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout,
          getHPainter, setHPainter };

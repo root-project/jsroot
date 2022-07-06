@@ -9,7 +9,7 @@ import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } 
 import { createMenu } from './menu.mjs';
 import { produceLegend } from '../hist/TPavePainter.mjs';
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
-import { BatchDisplay, GridDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
+import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
 import { showProgress, ToolbarIcons, registerForResize, injectStyle } from './utils.mjs';
 
 function injectHStyle(node) {
@@ -3059,8 +3059,10 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return Promise.resolve(null);
 
-      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
+      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind.indexOf("coll") == 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
+      else if (this.disp_kind == "tabs")
+         this.disp = new TabsDisplay(this.disp_frameid);
       else
          this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
 
@@ -3551,7 +3553,7 @@ class HierarchyPainter extends BasePainter {
 
       let layout = main.select(".gui_layout");
       if (!layout.empty()) {
-         ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+         ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex', 'tabs',
           'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append("option").attr("value", kind).html(kind));
 
          layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + "_drawing"));
