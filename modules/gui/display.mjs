@@ -581,31 +581,39 @@ class TabsDisplay extends MDIDisplay {
    }
 
    /** @summary actiavte tabs frame by id */
-   activateTabsFrame(frame_id) {
+   modifyTabsFrame(frame_id, action) {
       let top = this.selectDom().select(".jsroot_tabs"),
           labels = top.select(".jsroot_tabs_labels"),
           main = top.select(".jsroot_tabs_main");
 
       labels.selectAll(".jsroot_tabs_label").each(function() {
-         let id  = d3_select(this).property('frame_id');
-         d3_select(this).style("background", (id === frame_id) ? "white" :null);
+         let is_same = d3_select(this).property('frame_id') == frame_id;
+         if (action == "activate")
+            d3_select(this).style("background", is_same ? "white" : null);
+         else if ((action == "close") && is_same)
+            this.parentNode.remove();
       });
 
-      let active_frame;
+      let selected_frame;
 
       main.selectAll(".jsroot_tabs_draw").each(function() {
          if (d3_select(this).property('frame_id') === frame_id)
-            active_frame = this;
+            selected_frame = this;
       });
 
-      if (active_frame)
-         active_frame.parentNode.insertBefore(active_frame, active_frame.parentNode.firstChild);
+      if (!selected_frame) return;
 
+      if (action == "activate") {
+         selected_frame.parentNode.insertBefore(selected_frame, selected_frame.parentNode.firstChild);
+      } else if (action == "close") {
+         cleanup(selected_frame);
+         selected_frame.remove();
+      }
    }
 
    /** @summary actiavte frame */
    activateFrame(frame) {
-      this.activateTabsFrame(d3_select(frame).property('frame_id'));
+      this.modifyTabsFrame(d3_select(frame).property('frame_id'), "activate");
       super.activateFrame(frame);
    }
 
@@ -646,7 +654,12 @@ injectStyle(`
                 .style("background", "white")
                 .property('frame_id', frame_id)
                 .text(title)
-                .on("click", function() { mdi.activateTabsFrame(d3_select(this).property('frame_id')); });
+                .on("click", function() { mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate"); })
+                .append("button").attr("title", "close").style('margin-left','.5em').html('&#x2715;')
+                .on("click", function(evnt) {
+                   evnt.stopPropagation();
+                   mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
+                });
 
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
@@ -654,7 +667,7 @@ injectStyle(`
                            .property('frame_id', frame_id)
                            .node();
 
-      this.activateTabsFrame(frame_id);
+      this.modifyTabsFrame(frame_id, "activate");
 
       return this.afterCreateFrame(draw_frame);
    }
