@@ -643,41 +643,53 @@ injectStyle(`
 .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
-   margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
+   margin-left: 3px; padding: 5px; position: relative; vertical-align: bottom;
 }
 .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
 .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
 
 `, dom.node());
 
-      let frame_id = this.cnt++, mdi = this;
+      let frame_id = this.cnt++, mdi = this, lbl = title;
 
-      let head_frame = labels.append('span').attr('tabindex', 0);
-      head_frame.append("label")
-                .attr('class', "jsroot_tabs_label")
-                .style("background", "white")
-                .property('frame_id', frame_id)
-                .text(title)
-                .on("click", function(evnt) {
-                    evnt.preventDefault(); // prevent handling in close button
-                    mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
-                 }).append("button")
-                .attr("title", "close")
-                .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
-                .html('&#x2715;')
-                .on("click", function() {
-                   mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
-                });
+      if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
+
+      if (lbl.length > 10) {
+         let p = lbl.lastIndexOf("/");
+         if (p == lbl.length-1) p = lbl.lastIndexOf("/", p-1);
+         if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
+            lbl = lbl.slice(p+1);
+         else
+            lbl = "..." + lbl.slice(lbl.length-17);
+      }
+
+      labels.append('span')
+         .attr('tabindex', 0)
+         .append("label")
+         .attr('class', "jsroot_tabs_label")
+         .style("background", "white")
+         .property('frame_id', frame_id)
+         .text(lbl)
+         .attr("title", title)
+         .on("click", function(evnt) {
+            evnt.preventDefault(); // prevent handling in close button
+            mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
+         }).append("button")
+         .attr("title", "close")
+         .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
+         .html('&#x2715;')
+         .on("click", function() {
+            mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
+         });
 
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .property('frame_id', frame_id)
-                           .node();
+                           .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, "activate");
 
-      return this.afterCreateFrame(draw_frame);
+      return this.afterCreateFrame(draw_frame.node());
    }
 
 } // class TabsDisplay
