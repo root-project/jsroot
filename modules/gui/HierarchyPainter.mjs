@@ -2563,15 +2563,17 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Open ROOT file
-     * @param {string} filepath - URL to ROOT file
+     * @param {string} filepath - URL to ROOT file, argument for openFile
      * @returns {Promise} when file is opened */
    openRootFile(filepath) {
 
       let isfileopened = false;
-      this.forEachRootFile(item => { if (item._fullurl===filepath) isfileopened = true; });
+      this.forEachRootFile(item => { if (item._fullurl === filepath) isfileopened = true; });
       if (isfileopened) return Promise.resolve();
 
-      showProgress("Opening " + filepath + " ...");
+      let msg = typeof filepath == 'string' ? filepath : "file";
+
+      showProgress(`Opening ${msg} ...`);
 
       return openFile(filepath).then(file => {
 
@@ -2591,7 +2593,7 @@ class HierarchyPainter extends BasePainter {
       }).catch(() => {
          // make CORS warning
          if (isBatchMode())
-            console.error(`Fail to open ${filepath} - check CORS headers`);
+            console.error(`Fail to open ${msg} - check CORS headers`);
          else if (!d3_select("#gui_fileCORS").style("background","red").empty())
             setTimeout(() => d3_select("#gui_fileCORS").style("background",''), 5000);
          return false;
