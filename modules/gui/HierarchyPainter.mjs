@@ -1991,7 +1991,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             let frame = mdi.findFrame(frame_name, true);
-            d3_select(frame).html("");
+            cleanup(frame);
             mdi.activateFrame(frame);
 
             return draw(frame, obj, drawopt)
