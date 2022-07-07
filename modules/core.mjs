@@ -238,11 +238,15 @@ let settings = {
      * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
      * @default false */
    HandleWrongHttpResponse: false,
-   /** @summary Let tweak browser caching
+   /** @summary Tweak browser caching with stamp URL parameter
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
      * @default true */
    UseStamp: true,
+   /** @summary Maximal number of bytes ranges in http "Range" header
+     * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
+     * @default 200 */
+   MaxRanges: 200,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */

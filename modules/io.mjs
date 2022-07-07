@@ -2699,7 +2699,7 @@ class TFile {
       this.fUseStampPar = settings.UseStamp ? "stamp=" + (new Date).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
-      this.fMaxRanges = 200; // maximal number of file ranges requested at once
+      this.fMaxRanges = settings.MaxRanges || 200; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
