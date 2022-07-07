@@ -643,7 +643,7 @@ injectStyle(`
 .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
-   margin-left: 3px; padding: 5px; position: relative; vertical-align: bottom;
+   margin-left: 3px; padding: 5px 5px 1px 5px; position: relative; vertical-align: bottom;
 }
 .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
 .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
@@ -654,7 +654,7 @@ injectStyle(`
 
       if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
 
-      if (lbl.length > 10) {
+      if (lbl.length > 15) {
          let p = lbl.lastIndexOf("/");
          if (p == lbl.length-1) p = lbl.lastIndexOf("/", p-1);
          if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
