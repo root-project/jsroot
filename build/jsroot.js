@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "6/07/2022";
+let version_date = "7/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65,7 +65,7 @@ const atob_func = isNodeJs() ? node_atob : window.atob;
 let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-   browser$1.isFirefox = typeof InstallTrigger !== 'undefined';
+   browser$1.isFirefox = (navigator.userAgent.indexOf("Firefox") >= 0) || (typeof InstallTrigger !== 'undefined');
    browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser$1.isChrome = !!window.chrome;
    browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
@@ -241,11 +241,15 @@ let settings = {
      * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
      * @default false */
    HandleWrongHttpResponse: false,
-   /** @summary Let tweak browser caching
+   /** @summary Tweak browser caching with stamp URL parameter
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
      * @default true */
    UseStamp: true,
+   /** @summary Maximal number of bytes ranges in http "Range" header
+     * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
+     * @default 200 */
+   MaxRanges: 200,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
@@ -52292,7 +52296,7 @@ class JSRootMenu {
       }
 
       if (opts.length === 1) {
-         if (opts[0]==='inspect') top_name = top_name.replace("Draw", "Inspect");
+         if (opts[0] === 'inspect') top_name = top_name.replace("Draw", "Inspect");
          this.add(top_name, opts[0], call_back);
          return;
       }
@@ -52300,8 +52304,7 @@ class JSRootMenu {
       if (!without_sub) this.add("sub:" + top_name, opts[0], call_back);
 
       for (let i = 0; i < opts.length; ++i) {
-         let name = opts[i];
-         if (name=="") name = this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;';
+         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;');
 
          let group = i+1;
          if ((opts.length > 5) && (name.length > 0)) {
@@ -52369,21 +52372,29 @@ class JSRootMenu {
    /** @summary Add size selection menu entries
      * @protected */
    addSizeMenu(name, min, max, step, size_value, set_func, title) {
+
       if (size_value === undefined) return;
 
-      this.add("sub:" + name, () => {
-         let entry = size_value.toFixed(4);
-         if (step >= 0.1) entry = size_value.toFixed(2);
-         if (step >= 1) entry = size_value.toFixed(0);
-         this.input("Enter value of " + name, entry, (step >= 1) ? "int" : "float").then(set_func);
-      }, title);
-      for (let sz = min; sz <= max; sz += step) {
-         let entry = sz.toFixed(2);
-         if (step >= 0.1) entry = sz.toFixed(1);
-         if (step >= 1) entry = sz.toFixed(0);
-         this.addchk((Math.abs(size_value - sz) < step / 2), entry,
-                     sz, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res)));
+      let values = [];
+      if (typeof step == 'object') {
+         values = step; step = 1;
+      } else for (let sz = min; sz <= max; sz += step)
+         values.push(sz);
+
+      const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
+            conv = (v, more) => {
+              if (step >= 1) return v.toFixed(0);
+              if (step >= 0.1) return v.toFixed(more ? 2 : 1);
+              return v.toFixed(more ? 4 : 2);
+           };
+
+      if (values.findIndex(match) < 0) {
+         values.push(size_value);
+         values = values.sort((a,b) => a > b);
       }
+
+      this.add("sub:" + name, () => this.input("Enter value of " + name, conv(size_value, true), (step >= 1) ? "int" : "float").then(set_func), title);
+      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res))));
       this.add("endsub:");
    }
 
@@ -52823,6 +52834,7 @@ class JSRootMenu {
       }
 
       this.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+      this.addSizeMenu("Max ranges", 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, "Maximal number of ranges in single http request");
 
       this.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
 
@@ -57249,41 +57261,53 @@ injectStyle(`
 .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
 .jsroot_tabs_labels .jsroot_tabs_label {
    background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
-   margin-left: -1px; padding: 5px; position: relative; vertical-align: bottom;
+   margin-left: 3px; padding: 5px 5px 1px 5px; position: relative; vertical-align: bottom;
 }
 .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
 .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
 
 `, dom.node());
 
-      let frame_id = this.cnt++, mdi = this;
+      let frame_id = this.cnt++, mdi = this, lbl = title;
 
-      let head_frame = labels.append('span').attr('tabindex', 0);
-      head_frame.append("label")
-                .attr('class', "jsroot_tabs_label")
-                .style("background", "white")
-                .property('frame_id', frame_id)
-                .text(title)
-                .on("click", function(evnt) {
-                    evnt.preventDefault(); // prevent handling in close button
-                    mdi.modifyTabsFrame(select(this).property('frame_id'), "activate");
-                 }).append("button")
-                .attr("title", "close")
-                .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
-                .html('&#x2715;')
-                .on("click", function() {
-                   mdi.modifyTabsFrame(select(this.parentNode).property('frame_id'), "close");
-                });
+      if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
+
+      if (lbl.length > 15) {
+         let p = lbl.lastIndexOf("/");
+         if (p == lbl.length-1) p = lbl.lastIndexOf("/", p-1);
+         if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
+            lbl = lbl.slice(p+1);
+         else
+            lbl = "..." + lbl.slice(lbl.length-17);
+      }
+
+      labels.append('span')
+         .attr('tabindex', 0)
+         .append("label")
+         .attr('class', "jsroot_tabs_label")
+         .style("background", "white")
+         .property('frame_id', frame_id)
+         .text(lbl)
+         .attr("title", title)
+         .on("click", function(evnt) {
+            evnt.preventDefault(); // prevent handling in close button
+            mdi.modifyTabsFrame(select(this).property('frame_id'), "activate");
+         }).append("button")
+         .attr("title", "close")
+         .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
+         .html('&#x2715;')
+         .on("click", function() {
+            mdi.modifyTabsFrame(select(this.parentNode).property('frame_id'), "close");
+         });
 
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .property('frame_id', frame_id)
-                           .node();
+                           .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, "activate");
 
-      return this.afterCreateFrame(draw_frame);
+      return this.afterCreateFrame(draw_frame.node());
    }
 
 } // class TabsDisplay
@@ -62810,8 +62834,8 @@ class THistDrawOptions {
 
       if (d.check('PIE')) this.Pie = true; // not used
 
-      if (d.check('CANDLE', true)) this.Candle = d.part;
-      if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
+      if (d.check('CANDLE', true)) this.Candle = d.part || "1";
+      if (d.check('VIOLIN', true)) { this.Violin = d.part || "1"; delete this.Candle; }
       if (d.check('NOSCALED')) this.Scaled = false;
       if (d.check('SCALED')) this.Scaled = true;
 
@@ -72945,7 +72969,7 @@ class TFile {
       this.fUseStampPar = settings.UseStamp ? "stamp=" + (new Date).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
-      this.fMaxRanges = 200; // maximal number of file ranges requested at once
+      this.fMaxRanges = settings.MaxRanges || 200; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
@@ -75570,7 +75594,7 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (!place || (place=="")) place = "item";
+      if (!place) place = "item";
       let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : "",
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
@@ -75586,7 +75610,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place=="item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
+      if ((place == "item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
 
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
@@ -75636,18 +75660,18 @@ class HierarchyPainter extends BasePainter {
             if (dflt_expand || (handle?.dflt === 'expand') || this.isItemDisplayed(itemname)) can_draw = false;
          }
 
-         if (can_draw && !drawopt && handle?.dflt && (handle?.dflt !== 'expand'))
-            drawopt = handle.dflt;
+         if (can_draw && !drawopt)
+            drawopt = "__default_draw_option__";
 
          if (can_draw)
-            return this.display(itemname, drawopt);
+            return this.display(itemname, drawopt, true);
 
          if (can_expand || dflt_expand)
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
          if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, "inspect");
+            return this.display(itemname, "inspect", true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -75906,8 +75930,9 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
+     * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @returns {Promise} with created painter object */
-   display(itemname, drawopt) {
+   display(itemname, drawopt, interactive) {
       let painter = null,
           updating = false,
           item = null,
@@ -75994,13 +76019,22 @@ class HierarchyPainter extends BasePainter {
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
+            let did_actiavte = false;
+
             mdi.forEachPainter((p, frame) => {
                if (p.getItemName() != display_itemname) return;
-               // verify that object was drawn with same option as specified now (if any)
-               if (!updating && drawopt && (p.getItemDrawOpt() != drawopt)) return;
 
-               // do not actiavte frame when doing update
-               // mdi.activateFrame(frame);
+               let itemopt = p.getItemDrawOpt();
+               if (use_dflt_opt && interactive) drawopt = itemopt;
+
+               // verify that object was drawn with same option as specified now (if any)
+               if (!updating && drawopt && (itemopt != drawopt)) return;
+
+               if (interactive && !did_actiavte) {
+                  did_actiavte = true;
+                  mdi.activateFrame(frame);
+
+               }
 
                if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
             });
@@ -76584,15 +76618,17 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Open ROOT file
-     * @param {string} filepath - URL to ROOT file
+     * @param {string} filepath - URL to ROOT file, argument for openFile
      * @returns {Promise} when file is opened */
    openRootFile(filepath) {
 
       let isfileopened = false;
-      this.forEachRootFile(item => { if (item._fullurl===filepath) isfileopened = true; });
+      this.forEachRootFile(item => { if (item._fullurl === filepath) isfileopened = true; });
       if (isfileopened) return Promise.resolve();
 
-      showProgress("Opening " + filepath + " ...");
+      let msg = typeof filepath == 'string' ? filepath : "file";
+
+      showProgress(`Opening ${msg} ...`);
 
       return openFile(filepath).then(file => {
 
@@ -76612,7 +76648,7 @@ class HierarchyPainter extends BasePainter {
       }).catch(() => {
          // make CORS warning
          if (isBatchMode())
-            console.error(`Fail to open ${filepath} - check CORS headers`);
+            console.error(`Fail to open ${msg} - check CORS headers`);
          else if (!select("#gui_fileCORS").style("background","red").empty())
             setTimeout(() => select("#gui_fileCORS").style("background",''), 5000);
          return false;
@@ -77802,6 +77838,12 @@ function readStyleFromURL(url) {
    get_bool("lastcycle", "OnlyLastCycle");
    get_bool("usestamp", "UseStamp");
    get_bool("dark", "DarkMode");
+
+   let mr = d.get("maxranges");
+   if (mr) {
+      mr = parseInt(mr);
+      if (Number.isInteger(mr)) settings.MaxRanges = mr;
+   }
 
    if (d.has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true;
