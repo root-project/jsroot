@@ -74000,6 +74000,11 @@ class TProxyFile extends TFile {
          if (!res) return false;
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
+         if (typeof this.fFileName == 'string') {
+            let p = this.fFileName.lastIndexOf("/");
+            if ((p > 0) && (p < this.fFileName.length - 4))
+               this.fFileName = this.fFileName.slice(p+1);
+         }
          return this.readKeys();
       });
    }
