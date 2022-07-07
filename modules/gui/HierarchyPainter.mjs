@@ -1538,7 +1538,7 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (!place || (place=="")) place = "item";
+      if (!place) place = "item";
       let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : "",
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
@@ -1554,7 +1554,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place=="item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
+      if ((place == "item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
 
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
@@ -1604,18 +1604,18 @@ class HierarchyPainter extends BasePainter {
             if (dflt_expand || (handle?.dflt === 'expand') || this.isItemDisplayed(itemname)) can_draw = false;
          }
 
-         if (can_draw && !drawopt && handle?.dflt && (handle?.dflt !== 'expand'))
-            drawopt = handle.dflt;
+         if (can_draw && !drawopt)
+            drawopt = "__default_draw_option__";
 
          if (can_draw)
-            return this.display(itemname, drawopt);
+            return this.display(itemname, drawopt, true);
 
          if (can_expand || dflt_expand)
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
          if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, "inspect");
+            return this.display(itemname, "inspect", true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -1874,8 +1874,9 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
+     * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @returns {Promise} with created painter object */
-   display(itemname, drawopt) {
+   display(itemname, drawopt, interactive) {
       let painter = null,
           updating = false,
           item = null,
@@ -1962,13 +1963,22 @@ class HierarchyPainter extends BasePainter {
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
+            let did_actiavte = false;
+
             mdi.forEachPainter((p, frame) => {
                if (p.getItemName() != display_itemname) return;
-               // verify that object was drawn with same option as specified now (if any)
-               if (!updating && drawopt && (p.getItemDrawOpt() != drawopt)) return;
 
-               // do not actiavte frame when doing update
-               // mdi.activateFrame(frame);
+               let itemopt = p.getItemDrawOpt();
+               if (use_dflt_opt && interactive) drawopt = itemopt;
+
+               // verify that object was drawn with same option as specified now (if any)
+               if (!updating && drawopt && (itemopt != drawopt)) return;
+
+               if (interactive && !did_actiavte) {
+                  did_actiavte = true;
+                  mdi.activateFrame(frame);
+
+               }
 
                if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
             });
