@@ -334,8 +334,8 @@ class THistDrawOptions {
 
       if (d.check('PIE')) this.Pie = true; // not used
 
-      if (d.check('CANDLE', true)) this.Candle = d.part;
-      if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
+      if (d.check('CANDLE', true)) this.Candle = d.part || "1";
+      if (d.check('VIOLIN', true)) { this.Violin = d.part || "1"; delete this.Candle; }
       if (d.check('NOSCALED')) this.Scaled = false;
       if (d.check('SCALED')) this.Scaled = true;
 
