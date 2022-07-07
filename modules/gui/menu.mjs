@@ -114,7 +114,7 @@ class JSRootMenu {
       }
 
       if (opts.length === 1) {
-         if (opts[0]==='inspect') top_name = top_name.replace("Draw", "Inspect");
+         if (opts[0] === 'inspect') top_name = top_name.replace("Draw", "Inspect");
          this.add(top_name, opts[0], call_back);
          return;
       }
@@ -122,8 +122,7 @@ class JSRootMenu {
       if (!without_sub) this.add("sub:" + top_name, opts[0], call_back);
 
       for (let i = 0; i < opts.length; ++i) {
-         let name = opts[i];
-         if (name=="") name = this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;';
+         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;');
 
          let group = i+1;
          if ((opts.length > 5) && (name.length > 0)) {
