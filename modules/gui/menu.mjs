@@ -191,21 +191,29 @@ class JSRootMenu {
    /** @summary Add size selection menu entries
      * @protected */
    addSizeMenu(name, min, max, step, size_value, set_func, title) {
+
       if (size_value === undefined) return;
 
-      this.add("sub:" + name, () => {
-         let entry = size_value.toFixed(4);
-         if (step >= 0.1) entry = size_value.toFixed(2);
-         if (step >= 1) entry = size_value.toFixed(0);
-         this.input("Enter value of " + name, entry, (step >= 1) ? "int" : "float").then(set_func);
-      }, title);
-      for (let sz = min; sz <= max; sz += step) {
-         let entry = sz.toFixed(2);
-         if (step >= 0.1) entry = sz.toFixed(1);
-         if (step >= 1) entry = sz.toFixed(0);
-         this.addchk((Math.abs(size_value - sz) < step / 2), entry,
-                     sz, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res)));
+      let values = [];
+      if (typeof step == 'object') {
+         values = step; step = 1;
+      } else for (let sz = min; sz <= max; sz += step)
+         values.push(sz);
+
+      const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
+            conv = (v, more) => {
+              if (step >= 1) return v.toFixed(0);
+              if (step >= 0.1) return v.toFixed(more ? 2 : 1);
+              return v.toFixed(more ? 4 : 2);
+           };
+
+      if (values.findIndex(match) < 0) {
+         values.push(size_value);
+         values = values.sort((a,b) => a > b);
       }
+
+      this.add("sub:" + name, () => this.input("Enter value of " + name, conv(size_value, true), (step >= 1) ? "int" : "float").then(set_func), title);
+      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res))));
       this.add("endsub:");
    }
 
@@ -645,6 +653,7 @@ class JSRootMenu {
       }
 
       this.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
+      this.addSizeMenu("Max ranges", 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, "Maximal number of ranges in single http request");
 
       this.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
 
