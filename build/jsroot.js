@@ -62951,6 +62951,7 @@ class THistDrawOptions {
 
       if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
       if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
+      if (d.check('PROJ')) this.Project = "Y1";
 
       if (check3dbox) {
          if (check3dbox.indexOf('FB') >= 0) this.FrontBox = false;
@@ -76047,7 +76048,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             let frame = mdi.findFrame(frame_name, true);
-            select(frame).html("");
+            cleanup(frame);
             mdi.activateFrame(frame);
 
             return draw(frame, obj, drawopt)
