@@ -3669,7 +3669,7 @@ ObjectPainter.prototype.showInspector = function(obj) {
 /** @summary Display streamer info
   * @private */
 function drawStreamerInfo(dom, lst) {
-   let painter = new HierarchyPainter('sinfo', dom, 'white');
+   let painter = new HierarchyPainter('sinfo', dom, settings.DarkMode ? 'black' : 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
@@ -3695,7 +3695,7 @@ function drawStreamerInfo(dom, lst) {
 function drawInspector(dom, obj) {
 
    cleanup(dom);
-   let painter = new HierarchyPainter('inspector', dom, 'white');
+   let painter = new HierarchyPainter('inspector', dom, settings.DarkMode ? 'black' : 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
