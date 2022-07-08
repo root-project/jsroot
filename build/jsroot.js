@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "7/07/2022";
+let version_date = "9/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -54,13 +54,15 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_atob, node_xhr2;
-
+let node_xhr2;
 
 
 
 /** @summary atob function in all environments */
-const atob_func = isNodeJs() ? node_atob : window.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
+
+/** @summary btoa function in all environments */
+const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
 let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -1683,6 +1685,7 @@ constants: constants$1,
 settings: settings,
 gStyle: gStyle,
 atob_func: atob_func,
+btoa_func: btoa_func,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -52070,7 +52073,7 @@ function selectgStyle(name) {
 }
 
 function saveCookie(obj, expires, name) {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
+   let arg = (expires <= 0) ? "" : btoa_func(JSON.stringify(obj)),
        d = new Date();
    d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
@@ -52086,7 +52089,7 @@ function readCookie(name) {
       while (c.charAt(0) == ' ')
         c = c.substring(1);
       if (c.indexOf(name) == 0) {
-         let s = JSON.parse(atob(c.substring(name.length, c.length)));
+         let s = JSON.parse(atob_func(c.substring(name.length, c.length)));
 
          return (s && typeof s == 'object') ? s : null;
       }
@@ -56906,30 +56909,10 @@ class GridDisplay extends MDIDisplay {
       if (sizes && (sizes.length!==num)) sizes = undefined;
 
       if (!this.simple_layout) {
-         injectStyle(`
-.jsroot_vline:after {
-    content:"";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    border-left: 1px dotted #ff0000;
-}
-.jsroot_hline:after {
-    content:"";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    border-top: 1px dotted #ff0000;
-}
-.jsroot_separator {
-   pointer-events: all;
-   border: 0;
-   margin: 0;
-   padding: 0;
-}
-`, dom.node());
+         injectStyle(
+            `.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }
+             .jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }
+             .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`, dom.node(), 'grid_style');
          this.createGroup(this, dom, num, arr, sizes);
       }
    }
@@ -57203,7 +57186,7 @@ class TabsDisplay extends MDIDisplay {
          let id = select(this).property('frame_id'),
              is_same = (id == frame_id);
          if (action == "activate")
-            select(this).style("background", is_same ? "white" : null);
+            select(this).style("background", is_same ? (settings.DarkMode ? "black" : "white") : null);
          else if ((action == "close") && is_same)
             this.parentNode.remove();
       });
@@ -57256,17 +57239,21 @@ class TabsDisplay extends MDIDisplay {
          main = top.select(".jsroot_tabs_main");
       }
 
-injectStyle(`
-.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
-.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
-.jsroot_tabs_labels .jsroot_tabs_label {
-   background: #eee; border: 1px solid #ccc; display: inline-block; font-size: 1rem; left: 1px;
-   margin-left: 3px; padding: 5px 5px 1px 5px; position: relative; vertical-align: bottom;
-}
-.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
-.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: white; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }
+      let bkgr_color = settings.DarkMode ? 'black' : 'white',
+          lbl_color = settings.DarkMode ? '#111': '#eee',
+          lbl_border = settings.DarkMode ? '#333' : "#ccc",
+          text_color = settings.DarkMode ? '#ddd' : "inherit";
 
-`, dom.node());
+      injectStyle(
+         `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
+          .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
+          .jsroot_tabs_labels .jsroot_tabs_label {
+             color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;
+             margin-left: 3px; padding: 5px 5px 1px 5px; position: relative; vertical-align: bottom;
+           }
+           .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
+           .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
+           dom.node(), 'tabs_style');
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
@@ -57512,15 +57499,15 @@ class FlexibleDisplay extends MDIDisplay {
           dom = this.selectDom(),
           top = dom.select(".jsroot_flex_top");
 
-      if (this.cnt == 0) injectStyle(`
-.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
-.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }
-.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }
-.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }
-.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }
-.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }
-.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }
-.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node());
+      injectStyle(
+         `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
+          .jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }
+          .jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }
+          .jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }
+          .jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }
+          .jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }
+          .jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }
+          .jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
 
       if (top.empty())
          top = dom.append("div").classed("jsroot_flex_top", true);
@@ -57528,7 +57515,6 @@ class FlexibleDisplay extends MDIDisplay {
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
-
 
       main.html(`<div class="jsroot_flex_header"><p>${title}</p></div>
                  <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
@@ -57844,98 +57830,24 @@ class BrowserLayout {
           text_color = settings.DarkMode ? '#ddd' : "inherit",
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : "";
 
-      injectStyle(`
-.jsroot_browser {
-   pointer-events: none;
-   position: absolute;
-   left: 0;
-   top: 0;
-   bottom: 0;
-   right:0;
-   margin: 0;
-   border: 0;
-   overflow: hidden;
-}
-.jsroot_draw_area {
-   background-color: ${bkgr_color};
-   overflow: hidden;
-   margin: 0;
-   border: 0;
-}
-.jsroot_browser_area {
-   color: ${text_color};
-   background-color: ${bkgr_color};
-   font-size: 12px;
-   font-family: Verdana;
-   pointer-events: all;
-   box-sizing: initial;
-}
-.jsroot_browser_area input { ${input_style} }
-.jsroot_browser_area select { ${input_style} }
-.jsroot_browser_title {
-   font-family: Verdana;
-   font-size: 20px;
-   color: ${title_color};
-}
-.jsroot_browser_btns {
-   pointer-events: all;
-   opacity: 0;
-   display:flex;
-   flex-direction: column;
-}
-.jsroot_browser_btns:hover {
-   opacity: 0.3;
-}
-.jsroot_browser_area p {
-   margin-top: 5px;
-   margin-bottom: 5px;
-   white-space: nowrap;
-}
-.jsroot_browser_hierarchy {
-   flex: 1;
-   margin-top: 2px;
-}
-.jsroot_status_area {
-   background-color: ${bkgr_color};
-   overflow: hidden;
-   font-size: 12px;
-   font-family: Verdana;
-   pointer-events: all;
-}
-.jsroot_float_browser {
-   border: solid 3px white;
-}
-.jsroot_browser_resize {
-   position: absolute;
-   right: 3px;
-   bottom: 3px;
-   margin-bottom: 0px;
-   margin-right: 0px;
-   opacity: 0.5;
-   cursor: se-resize;
-}
-.jsroot_separator {
-   pointer-events: all;
-   border: 0;
-   margin: 0;
-   padding: 0;
-}
-.jsroot_h_separator {
-   cursor: ns-resize;
-   background-color: azure;
-}
-.jsroot_v_separator {
-   cursor: ew-resize;
-   background-color: azure;
-}
-.jsroot_status_label {
-   margin: 3px;
-   margin-left: 5px;
-   font-size: 14px;
-   vertical-align: middle;
-   white-space: nowrap;
-}
-`, this.main().node(), "browser_layout_style");
+      injectStyle(
+         `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }
+          .jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0; border: 0; }
+          .jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }
+          .jsroot_browser_area input { ${input_style} }
+          .jsroot_browser_area select { ${input_style} }
+          .jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }
+          .jsroot_browser_btns { pointer-events: all; opacity: 0; display:flex; flex-direction: column; }
+          .jsroot_browser_btns:hover { opacity: 0.3; }
+          .jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }
+          .jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }
+          .jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }
+          .jsroot_float_browser { border: solid 3px white; }
+          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; }
+          .jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }
+          .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }
+          .jsroot_h_separator { cursor: ns-resize; background-color: azure; }
+          .jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), "browser_layout_style");
    }
 
    /** @summary method used to create basic elements
@@ -59971,7 +59883,7 @@ class TPadPainter extends ObjectPainter {
    createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa("dummy PDF file"));
+         return Promise.resolve(btoa_func("dummy PDF file"));
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
@@ -60277,7 +60189,7 @@ class TPadPainter extends ObjectPainter {
             resolveFunc(null);
          };
 
-         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
       });
    }
 
@@ -86131,18 +86043,17 @@ class Toolbar {
 
       this.element = container.append("div").attr('class','geo_toolbar_group');
 
-      injectStyle(`
-.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }
-.geo_toolbar_group:first-child { margin-left: 2px; }
-.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }
-.geo_toolbar_group a svg { position: relative; top: 2px; }
-.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }
-.geo_toolbar_btn path .active,
-.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }
-.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }
-.geo_toolbar_btn_bright path .active,
-.geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }`, this.element.node());
-
+      injectStyle(
+         `.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }
+          .geo_toolbar_group:first-child { margin-left: 2px; }
+          .geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }
+          .geo_toolbar_group a svg { position: relative; top: 2px; }
+          .geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }
+          .geo_toolbar_btn path .active,
+          .geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }
+          .geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }
+          .geo_toolbar_btn_bright path .active,
+          .geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }`, this.element.node());
    }
 
    /** @summary add buttons */
@@ -95622,8 +95533,7 @@ __proto__: null,
 TArrowPainter: TArrowPainter
 });
 
-let node_canvas, btoa_func = globalThis?.btoa;
-
+let node_canvas;
 
 
 
@@ -100179,7 +100089,7 @@ class RPadPainter extends RObjectPainter {
    createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa("dummy PDF file"));
+         return Promise.resolve(btoa_func("dummy PDF file"));
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
@@ -100374,7 +100284,7 @@ class RPadPainter extends RObjectPainter {
             resolveFunc(null);
          };
 
-         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
       });
    }
 
@@ -100655,7 +100565,7 @@ class LongPollSocket {
       if (data) {
          if (this.raw) {
             // special workaround to avoid POST request, use base64 coding
-            url += "&post=" + btoa(data);
+            url += "&post=" + btoa_func(data);
          } else {
             // send data with post request - most efficient way
             reqmode = "postbuf";
@@ -110019,6 +109929,7 @@ exports.addDrawFunc = addDrawFunc;
 exports.addMethods = addMethods;
 exports.atob_func = atob_func;
 exports.browser = browser$1;
+exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.cleanup = cleanup;
