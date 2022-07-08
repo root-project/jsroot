@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, internals,
+import { gStyle, settings, constants, internals, btoa_func,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
@@ -1565,7 +1565,7 @@ class TPadPainter extends ObjectPainter {
    createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa("dummy PDF file"));
+         return Promise.resolve(btoa_func("dummy PDF file"));
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
@@ -1871,7 +1871,7 @@ class TPadPainter extends ObjectPainter {
             resolveFunc(null);
          }
 
-         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
       });
    }
 

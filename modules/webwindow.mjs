@@ -1,6 +1,6 @@
 /// Connections handling to RWebWindow
 
-import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode } from './core.mjs';
+import { httpRequest, createHttpRequest, loadScript, decodeUrl, browser, setBatchMode, isBatchMode, btoa_func } from './core.mjs';
 
 import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';
 
@@ -46,7 +46,7 @@ class LongPollSocket {
       if (data) {
          if (this.raw) {
             // special workaround to avoid POST request, use base64 coding
-            url += "&post=" + btoa(data);
+            url += "&post=" + btoa_func(data);
          } else {
             // send data with post request - most efficient way
             reqmode = "postbuf";

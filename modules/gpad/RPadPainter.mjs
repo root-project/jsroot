@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode } from '../core.mjs';
+import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode, btoa_func } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -1147,7 +1147,7 @@ class RPadPainter extends RObjectPainter {
    createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa("dummy PDF file"));
+         return Promise.resolve(btoa_func("dummy PDF file"));
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
@@ -1342,7 +1342,7 @@ class RPadPainter extends RObjectPainter {
             resolveFunc(null);
          }
 
-         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
       });
    }
 

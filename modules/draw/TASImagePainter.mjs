@@ -1,16 +1,15 @@
-import { create, isNodeJs } from '../core.mjs';
+import { create, isNodeJs, btoa_func } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
-let node_canvas, btoa_func = globalThis?.btoa;
+let node_canvas;
 
 ///_begin_exclude_in_qt5web_
-if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_canvas = await import('canvas').then(h => h.default); btoa_func = await import("btoa").then(h => h.default); }
+if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_canvas = await import('canvas').then(h => h.default); }
 ///_end_exclude_in_qt5web_
-
 
 /**
  * @summary Painter for TASImage object.

@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isNodeJs, source_dir, atob_func } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isNodeJs, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -387,7 +387,7 @@ function selectgStyle(name) {
 }
 
 function saveCookie(obj, expires, name) {
-   let arg = (expires <= 0) ? "" : btoa(JSON.stringify(obj)),
+   let arg = (expires <= 0) ? "" : btoa_func(JSON.stringify(obj)),
        d = new Date();
    d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
@@ -403,7 +403,7 @@ function readCookie(name) {
       while (c.charAt(0) == ' ')
         c = c.substring(1);
       if (c.indexOf(name) == 0) {
-         let s = JSON.parse(atob(c.substring(name.length, c.length)));
+         let s = JSON.parse(atob_func(c.substring(name.length, c.length)));
 
          return (s && typeof s == 'object') ? s : null;
       }

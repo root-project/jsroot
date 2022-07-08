@@ -49,15 +49,17 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_atob, node_xhr2;
+let node_xhr2;
 
 ///_begin_exclude_in_qt5web_
-if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_atob = await import('atob').then(h => h.default); node_xhr2 = await import('xhr2').then(h => h.default); }
+if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_xhr2 = await import('xhr2').then(h => h.default); }
 ///_end_exclude_in_qt5web_
 
-
 /** @summary atob function in all environments */
-const atob_func = isNodeJs() ? node_atob : window.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
+
+/** @summary btoa function in all environments */
+const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
 let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
@@ -1666,7 +1668,7 @@ function _ensureJSROOT() {
 }
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
-         browser, internals, constants, settings, gStyle, atob_func,
+         browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
