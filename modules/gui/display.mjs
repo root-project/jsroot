@@ -628,11 +628,11 @@ class TabsDisplay extends MDIDisplay {
           .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
           .jsroot_tabs_labels .jsroot_tabs_label {
              color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;
-             margin-left: 3px; padding: 5px 5px 1px 5px; position: relative; vertical-align: bottom;
-           }
-           .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
-           .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
-           dom.node(), 'tabs_style');
+             margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;
+          }
+          .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
+          .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
+          dom.node(), 'tabs_style');
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
@@ -660,7 +660,7 @@ class TabsDisplay extends MDIDisplay {
             mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
          }).append("button")
          .attr("title", "close")
-         .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em')
+         .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em; width: 1.8em; height: 1.8em; vertical-align: center;')
          .html('&#x2715;')
          .on("click", function() {
             mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
