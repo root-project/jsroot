@@ -74729,7 +74729,13 @@ class HierarchyPainter extends BasePainter {
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
-      this.background = backgr;
+
+      if (backgr == '__as_dark_mode__') {
+         this.background = settings.DarkMode ? 'black' : 'white';
+         this.textcolor = settings.DarkMode ? '#eee' : '#111';
+      } else {
+         this.background = backgr;
+      }
       this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
 
@@ -75389,6 +75395,8 @@ class HierarchyPainter extends BasePainter {
       if (this.background) // case of object inspector and streamer infos display
          maindiv.style("background-color", this.background)
                 .style('margin', '2px').style('padding', '2px');
+      if (this.textcolor)
+         maindiv.style("color", this.textcolor);
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
@@ -77642,7 +77650,7 @@ ObjectPainter.prototype.showInspector = function(obj) {
 /** @summary Display streamer info
   * @private */
 function drawStreamerInfo(dom, lst) {
-   let painter = new HierarchyPainter('sinfo', dom, settings.DarkMode ? 'black' : 'white');
+   let painter = new HierarchyPainter('sinfo', dom, '__as_dark_mode__');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
@@ -77668,7 +77676,7 @@ function drawStreamerInfo(dom, lst) {
 function drawInspector(dom, obj) {
 
    cleanup(dom);
-   let painter = new HierarchyPainter('inspector', dom, settings.DarkMode ? 'black' : 'white');
+   let painter = new HierarchyPainter('inspector', dom, '__as_dark_mode__');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
