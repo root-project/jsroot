@@ -2746,7 +2746,7 @@ class HierarchyPainter extends BasePainter {
 
       return new Promise(resolveFunc => {
 
-         let itemreq = createHttpRequest(url, req_kind, obj => {
+         createHttpRequest(url, req_kind, obj => {
 
             let handleAfterRequest = func => {
                if (typeof func == 'function') {
@@ -2764,9 +2764,7 @@ class HierarchyPainter extends BasePainter {
             } else {
                handleAfterRequest(draw_handle?.after_request)
             }
-         });
-
-         itemreq.send(null);
+         }, undefined, true).then(xhr => xhr.send(null));
       });
    }
 
