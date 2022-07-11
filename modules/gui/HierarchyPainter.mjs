@@ -1514,6 +1514,7 @@ class HierarchyPainter extends BasePainter {
       let d3cont = d3_select(node.parentNode.parentNode),
           itemname = d3cont.attr('item'),
           hitem = itemname ? this.findItem(itemname) : null;
+
       if (!hitem) return;
 
       if (hitem._break_point) {
@@ -1595,9 +1596,9 @@ class HierarchyPainter extends BasePainter {
          if (handle && handle.ctrl && evnt.ctrlKey)
             drawopt = handle.ctrl;
 
-         if (!drawopt) {
+         if (!drawopt && !handle?.always_draw) {
             for (let pitem = hitem._parent; !!pitem; pitem = pitem._parent) {
-               if (pitem._painter) { can_draw = false; if (can_expand===undefined) can_expand = false; break; }
+               if (pitem._painter) { can_draw = false; if (can_expand === undefined) can_expand = false; break; }
             }
          }
 
