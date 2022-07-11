@@ -592,11 +592,12 @@ class TH3Painter extends THistPainter {
 
       } else {
          assignFrame3DMethods(main);
-         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
-         pr = this.draw3DBins().then(() => {
+         pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
+            return this.draw3DBins();
+         }).then(() => {
             main.render3D();
             this.updateStatWebCanvas();
             main.addKeysHandler();
