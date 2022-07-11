@@ -54,10 +54,6 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_xhr2;
-
-
-
 /** @summary atob function in all environments */
 const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
 
@@ -836,11 +832,10 @@ function findFunction(name) {
    return (typeof elem == 'function') ? elem : null;
 }
 
-/** @summary Method to create http request
-  * @private */
-function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
-   let xhr = nodejs ? new node_xhr2() : new XMLHttpRequest();
 
+/** @summary Assign methods to request
+  * @private */
+function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback) {
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
@@ -934,6 +929,24 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    return xhr;
 }
 
+/** @summary Method to create http request, without promise can be used only in browser environment
+  * @private */
+function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
+   if (isNodeJs()) {
+      if (!use_promise)
+         throw Error("Not allowed to create http requests in node without promise");
+      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => {
+         let xhr = new h.default();
+         setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
+         return xhr;
+      });
+   }
+
+   let xhr = new XMLHttpRequest();
+   setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
+   return use_promise ? Promise.resolve(xhr) : xhr;
+}
+
 /** @summary Submit asynchronoues http request
   * @desc Following requests kind can be specified:
   *    - "bin" - abstract binary data, result as string
@@ -955,8 +968,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
    return new Promise((accept, reject) => {
-      let xhr = createHttpRequest(url, kind, accept, reject);
-      xhr.send(post_data || null);
+      createHttpRequest(url, kind, accept, reject, true).then(xhr => xhr.send(post_data || null));
    });
 }
 
@@ -45188,94 +45200,93 @@ function assign3DHandler(painter) {
    Object.assign(painter, Handling3DDrawings);
 }
 
-let node_canvas$1, node_gl;
-
-
-
 
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
   * @param {value} render3d - render type, see {@link constants.Render3D}
   * @param {object} args - different arguments for creating 3D renderer
+  * @returns {Promise} with renderer object
   * @private */
 
 function createRender3D(width, height, render3d, args) {
 
-   let rc = constants$1.Render3D;
+   let rc = constants$1.Render3D, promise, need_workaround = false, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
 
-   let need_workaround = false, renderer,
-       doc = getDocument();
-
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
-      renderer = new WebGLRenderer(args);
+      promise = Promise.resolve(new WebGLRenderer(args));
 
    } else if (render3d == rc.SVG) {
       // SVG rendering
-      renderer = createSVGRenderer(false, 0, doc);
+      let r = createSVGRenderer(false, 0, doc);
 
       if (isBatchMode()) {
          need_workaround = true;
       } else {
-         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-         // d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+         // d3_select(r.jsroot_dom).attr("width", width).attr("height", height);
       }
+      promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      args.canvas = node_canvas$1.createCanvas(width, height);
-      args.canvas.addEventListener = function() { }; // dummy
-      args.canvas.removeEventListener = function() { }; // dummy
-      args.canvas.style = {};
-
-      let gl = node_gl(width, height, { preserveDrawingBuffer: true });
-      if (!gl) throw(Error("Fail to create headless-gl"));
-      args.context = gl;
-      gl.canvas = args.canvas;
-
-      renderer = new WebGLRenderer(args);
-
-      renderer.jsroot_output = new WebGLRenderTarget(width, height);
-
-      renderer.setRenderTarget(renderer.jsroot_output);
-
-      need_workaround = true;
+      promise = Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(node_canvas => {
+         args.canvas = node_canvas.default.createCanvas(width, height);
+         args.canvas.addEventListener = function() { }; // dummy
+         args.canvas.removeEventListener = function() { }; // dummy
+         args.canvas.style = {};
+         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
+      }).then(node_gl => {
+         let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
+         if (!gl) throw(Error("Fail to create headless-gl"));
+         args.context = gl;
+         gl.canvas = args.canvas;
+         let r = new WebGLRenderer(args);
+         r.jsroot_output = new WebGLRenderTarget(width, height);
+         r.setRenderTarget(r.jsroot_output);
+         need_workaround = true;
+         return r;
+      });
 
    } else {
       // rendering with WebGL directly into svg image
-      renderer = new WebGLRenderer(args);
-      renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+      let r = new WebGLRenderer(args);
+      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+      select(r.jsroot_dom).attr("width", width).attr("height", height);
+      promise = Promise.resolve(r);
    }
 
-   if (need_workaround) {
-      if (!internals.svg_3ds) internals.svg_3ds = [];
-      renderer.workaround_id = internals.svg_3ds.length;
-      internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
+   return promise.then(renderer => {
 
-      // replace DOM element in renderer
-      renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-      renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
-   } else if (!renderer.jsroot_dom) {
-      renderer.jsroot_dom = renderer.domElement;
-   }
+      if (need_workaround) {
+          if (!internals.svg_3ds) internals.svg_3ds = [];
+         renderer.workaround_id = internals.svg_3ds.length;
+         internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
 
-   // res.renderer.setClearColor("#000000", 1);
-   // res.renderer.setClearColor(0x0, 0);
-   renderer.setSize(width, height);
-   renderer.jsroot_render3d = render3d;
+         // replace DOM element in renderer
+         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+         renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
+      } else if (!renderer.jsroot_dom) {
+         renderer.jsroot_dom = renderer.domElement;
+      }
 
-   // apply size to dom element
-   renderer.setJSROOTSize = function(width, height) {
-      if ((this.jsroot_render3d === constants$1.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
-         return select(this.jsroot_dom).attr("width", width).attr("height", height);
-   };
+      // res.renderer.setClearColor("#000000", 1);
+      // res.renderer.setClearColor(0x0, 0);
+      renderer.setSize(width, height);
+      renderer.jsroot_render3d = render3d;
 
-   return renderer;
+      // apply size to dom element
+      renderer.setJSROOTSize = function(width, height) {
+         if ((this.jsroot_render3d === constants$1.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
+            return select(this.jsroot_dom).attr("width", width).attr("height", height);
+      };
+
+      return renderer;
+   });
 }
 
 
@@ -46357,6 +46368,7 @@ function setCameraPosition(fp, first_time) {
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
+  * @returns {Promise} when render3d !== -1
   * @private */
 function create3DScene(render3d, x3dscale, y3dscale) {
 
@@ -46453,81 +46465,86 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
+   return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
 
-   this.webgl = (render3d === constants$1.Render3D.WebGL);
-   this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
+      this.renderer = r;
 
-   this.first_render_tm = 0;
-   this.enable_highlight = false;
+      this.webgl = (render3d === constants$1.Render3D.WebGL);
+      this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
 
-   if (isBatchMode() || !this.webgl) return;
+      this.first_render_tm = 0;
+      this.enable_highlight = false;
 
-   this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
+      if (isBatchMode() || !this.webgl)
+         return this;
 
-   let frame_painter = this, obj_painter = this.getMainPainter();
+      this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
-   this.control.processMouseMove = function(intersects) {
+      let frame_painter = this, obj_painter = this.getMainPainter();
 
-      let tip = null, mesh = null, zoom_mesh = null;
+      this.control.processMouseMove = function(intersects) {
 
-      for (let i = 0; i < intersects.length; ++i) {
-         if (intersects[i].object.tooltip) {
-            tip = intersects[i].object.tooltip(intersects[i]);
-            if (tip) { mesh = intersects[i].object; break; }
-         } else if (intersects[i].object.zoom && !zoom_mesh) {
-            zoom_mesh = intersects[i].object;
-         }
-      }
+         let tip = null, mesh = null, zoom_mesh = null;
 
-      if (tip && !tip.use_itself) {
-         let delta_x = 1e-4*frame_painter.size_x3d,
-             delta_y = 1e-4*frame_painter.size_y3d,
-             delta_z = 1e-4*frame_painter.size_z3d;
-         if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
-         tip.x1 -= delta_x; tip.x2 += delta_x;
-         tip.y1 -= delta_y; tip.y2 += delta_y;
-         tip.z1 -= delta_z; tip.z2 += delta_z;
-      }
-
-      frame_painter.highlightBin3D(tip, mesh);
-
-      if (!tip && zoom_mesh && frame_painter.get3dZoomCoord) {
-         let pnt = zoom_mesh.globalIntersect(this.raycaster),
-             axis_name = zoom_mesh.zoom,
-             axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
-
-         if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
-
-         return { name: axis_name,
-                  title: "axis object",
-                  line: axis_name + " : " + frame_painter.axisAsText(axis_name, axis_value),
-                  only_status: true };
-      }
-
-      return (tip && tip.lines) ? tip : "";
-   };
-
-   this.control.processMouseLeave = function() {
-      frame_painter.highlightBin3D(null);
-   };
-
-   this.control.contextMenu = function(pos, intersects) {
-      let kind = "painter", p = obj_painter;
-      if (intersects)
-         for (let n = 0; n < intersects.length; ++n) {
-            let mesh = intersects[n].object;
-            if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-            if (mesh.painter && typeof mesh.painter.fillContextMenu === 'function') {
-               p = mesh.painter; break;
+         for (let i = 0; i < intersects.length; ++i) {
+            if (intersects[i].object.tooltip) {
+               tip = intersects[i].object.tooltip(intersects[i]);
+               if (tip) { mesh = intersects[i].object; break; }
+            } else if (intersects[i].object.zoom && !zoom_mesh) {
+               zoom_mesh = intersects[i].object;
             }
          }
 
-      let fp = obj_painter.getFramePainter();
-      if (fp && fp.showContextMenu)
-         fp.showContextMenu(kind, pos, p);
-   };
+         if (tip && !tip.use_itself) {
+            let delta_x = 1e-4*frame_painter.size_x3d,
+                delta_y = 1e-4*frame_painter.size_y3d,
+                delta_z = 1e-4*frame_painter.size_z3d;
+            if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
+            tip.x1 -= delta_x; tip.x2 += delta_x;
+            tip.y1 -= delta_y; tip.y2 += delta_y;
+            tip.z1 -= delta_z; tip.z2 += delta_z;
+         }
 
+         frame_painter.highlightBin3D(tip, mesh);
+
+         if (!tip && zoom_mesh && frame_painter.get3dZoomCoord) {
+            let pnt = zoom_mesh.globalIntersect(this.raycaster),
+                axis_name = zoom_mesh.zoom,
+                axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
+
+            if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
+
+            return { name: axis_name,
+                     title: "axis object",
+                     line: axis_name + " : " + frame_painter.axisAsText(axis_name, axis_value),
+                     only_status: true };
+         }
+
+         return tip?.lines ? tip : "";
+      };
+
+      this.control.processMouseLeave = function() {
+         frame_painter.highlightBin3D(null);
+      };
+
+      this.control.contextMenu = function(pos, intersects) {
+         let kind = "painter", p = obj_painter;
+         if (intersects)
+            for (let n = 0; n < intersects.length; ++n) {
+               let mesh = intersects[n].object;
+               if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+               if (mesh.painter && typeof mesh.painter.fillContextMenu === 'function') {
+                  p = mesh.painter; break;
+               }
+            }
+
+         let fp = obj_painter.getFramePainter();
+         if (fp && fp.showContextMenu)
+            fp.showContextMenu(kind, pos, p);
+      };
+
+      return this;
+   });
 }
 
 /** @summary call 3D rendering of the frame
@@ -65794,23 +65811,25 @@ class TH1Painter extends TH1Painter$2 {
 
          if (is_main) {
             assignFrame3DMethods(main);
-            main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-            main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
+            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+               main.set3DOptions(this.options);
+               main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
+            });
          }
 
-         if (main.mode3d) {
-            drawBinsLego(this);
-            main.render3D();
-            this.updateStatWebCanvas();
-            main.addKeysHandler();
-         }
+         if (main.mode3d)
+            pr = pr.then(() => {
+               drawBinsLego(this);
+               main.render3D();
+               this.updateStatWebCanvas();
+               main.addKeysHandler();
+            });
       }
 
       if (is_main)
-         pr = this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)))
-                  .then(() => this.drawHistTitle());
+         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14))))
+                .then(() => this.drawHistTitle());
 
       return pr.then(() => this);
    }
@@ -68740,35 +68759,37 @@ class TH2Painter extends TH2Painter$2 {
 
          if (is_main) {
             assignFrame3DMethods(main);
-            main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-            main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+               main.set3DOptions(this.options);
+               main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+            });
          }
 
-         if (main.mode3d) {
-            if (this.draw_content) {
-               if (this.isTH2Poly())
-                  drawTH2PolyLego(this);
-               else if (this.options.Contour)
-                  drawBinsContour3D(this, true);
-               else if (this.options.Surf)
-                  drawBinsSurf3D(this);
-               else if (this.options.Error)
-                  drawBinsError3D(this);
-               else
-                  drawBinsLego(this);
-            }
-            main.render3D();
-            this.updateStatWebCanvas();
-            main.addKeysHandler();
-         }
+         if (main.mode3d)
+            pr = pr.then(() => {
+               if (this.draw_content) {
+                  if (this.isTH2Poly())
+                     drawTH2PolyLego(this);
+                  else if (this.options.Contour)
+                     drawBinsContour3D(this, true);
+                  else if (this.options.Surf)
+                     drawBinsSurf3D(this);
+                  else if (this.options.Error)
+                     drawBinsError3D(this);
+                  else
+                     drawBinsLego(this);
+               }
+               main.render3D();
+               this.updateStatWebCanvas();
+               main.addKeysHandler();
+            });
       }
 
       //  (re)draw palette by resize while canvas may change dimension
       if (is_main)
-         pr = this.drawColorPalette(this.options.Zscale && ((this.options.Lego == 12) || (this.options.Lego == 14) ||
-                                     (this.options.Surf == 11) || (this.options.Surf == 12))).then(() => this.drawHistTitle());
+         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego == 12) || (this.options.Lego == 14) ||
+                                     (this.options.Surf == 11) || (this.options.Surf == 12)))).then(() => this.drawHistTitle());
 
       return pr.then(() => this);
    }
@@ -69366,11 +69387,12 @@ class TH3Painter extends THistPainter {
 
       } else {
          assignFrame3DMethods(main);
-         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
-         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
-         pr = this.draw3DBins().then(() => {
+         pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
+            return this.draw3DBins();
+         }).then(() => {
             main.render3D();
             this.updateStatWebCanvas();
             main.addKeysHandler();
@@ -72901,30 +72923,31 @@ class TFile {
          if (last - first > 2)
             totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
-         let xhr = createHttpRequest(fullurl, "buf", read_callback);
+         return createHttpRequest(fullurl, "buf", read_callback, undefined, true).then(xhr => {
 
-         if (file.fAcceptRanges) {
-            xhr.setRequestHeader("Range", ranges);
-            xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
-         }
-
-         if (progress_callback && (typeof xhr.addEventListener === 'function')) {
-            let sum1 = 0, sum2 = 0, sum_total = 0;
-            for (let n = 1; n < place.length; n += 2) {
-               sum_total += place[n];
-               if (n < first) sum1 += place[n];
-               if (n < last) sum2 += place[n];
+            if (file.fAcceptRanges) {
+               xhr.setRequestHeader("Range", ranges);
+               xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
-            if (!sum_total) sum_total = 1;
 
-            let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
-            xhr.addEventListener("progress", function(oEvent) {
-               if (oEvent.lengthComputable)
-                  progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
-            });
-         }
+            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+               let sum1 = 0, sum2 = 0, sum_total = 0;
+               for (let n = 1; n < place.length; n += 2) {
+                  sum_total += place[n];
+                  if (n < first) sum1 += place[n];
+                  if (n < last) sum2 += place[n];
+               }
+               if (!sum_total) sum_total = 1;
 
-         xhr.send(null);
+               let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+               xhr.addEventListener("progress", function(oEvent) {
+                  if (oEvent.lengthComputable)
+                     progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
+               });
+            }
+
+            xhr.send(null);
+         });
       }
 
       read_callback = function(res) {
@@ -73086,9 +73109,7 @@ class TFile {
          send_new_request(true);
       };
 
-      send_new_request(true);
-
-      return promise;
+      return send_new_request(true).then(() => promise);
    }
 
    /** @summary Returns file name */
@@ -88097,46 +88118,49 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
-      this._renderer = createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(r => {
 
-      this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
+         this._renderer = r;
 
-      if (this._renderer.setPixelRatio && !isNodeJs())
-         this._renderer.setPixelRatio(window.devicePixelRatio);
-      this._renderer.setSize(w, h, !this._fit_main_area);
-      this._renderer.localClippingEnabled = true;
+         this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
 
-      this._renderer.setClearColor(this.ctrl.background, 1);
+         if (this._renderer.setPixelRatio && !isNodeJs())
+            this._renderer.setPixelRatio(window.devicePixelRatio);
+         this._renderer.setSize(w, h, !this._fit_main_area);
+         this._renderer.localClippingEnabled = true;
 
-      if (this._fit_main_area && this._webgl) {
-         this._renderer.domElement.style.width = "100%";
-         this._renderer.domElement.style.height = "100%";
-         let main = this.selectDom();
-         if (main.style('position')=='static') main.style('position','relative');
-      }
+         this._renderer.setClearColor(this.ctrl.background, 1);
 
-      this._animating = false;
+         if (this._fit_main_area && this._webgl) {
+            this._renderer.domElement.style.width = "100%";
+            this._renderer.domElement.style.height = "100%";
+            let main = this.selectDom();
+            if (main.style('position')=='static') main.style('position','relative');
+         }
 
-      // Clipping Planes
+         this._animating = false;
 
-      this.ctrl.bothSides = false; // which material kind should be used
-      this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
-                           new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                           new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+         // Clipping Planes
 
-      this.createSpecialEffects();
+         this.ctrl.bothSides = false; // which material kind should be used
+         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
+                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
-      if (this._fit_main_area && !this._webgl) {
-         // create top-most SVG for geomtery drawings
-         let doc = getDocument(),
-             svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-         svg.setAttribute("width", w);
-         svg.setAttribute("height", h);
-         svg.appendChild(this._renderer.jsroot_dom);
-         return svg;
-      }
+         this.createSpecialEffects();
 
-      return this._renderer.jsroot_dom;
+         if (this._fit_main_area && !this._webgl) {
+            // create top-most SVG for geomtery drawings
+            let doc = getDocument(),
+                svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", w);
+            svg.setAttribute("height", h);
+            svg.appendChild(this._renderer.jsroot_dom);
+            return svg;
+         }
+
+         return this._renderer.jsroot_dom;
+      });
    }
 
    /** @summary Start geometry drawing */
@@ -89226,9 +89250,9 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               let dom = this.createScene(size.width, size.height);
-               fp.add3dCanvas(size, dom, render3d === constants$1.Render3D.WebGL);
-             });
+               return this.createScene(size.width, size.height)
+                          .then(dom => fp.add3dCanvas(size, dom, render3d === constants$1.Render3D.WebGL));
+            });
 
          } else {
             // activate worker
@@ -89240,8 +89264,8 @@ class TGeoPainter extends ObjectPainter {
 
             this._fit_main_area = (size.can3d === -1);
 
-            let dom = this.createScene(size.width, size.height);
-            this.add3dCanvas(size, dom, this._webgl);
+            promise = this.createScene(size.width, size.height)
+                          .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
 
@@ -95461,10 +95485,6 @@ __proto__: null,
 TArrowPainter: TArrowPainter
 });
 
-let node_canvas;
-
-
-
 /**
  * @summary Painter for TASImage object.
  *
@@ -95504,10 +95524,101 @@ class TASImagePainter extends ObjectPainter {
       return rgba;
    }
 
+   /** @summary Create url using image buffer
+     * @private */
+   makeUrlFromImageBuf(obj, fp) {
+
+      let nlevels = 1000;
+      this.rgba = this.createRGBA(nlevels); // precaclucated colors
+
+      let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
+      for (let k = 1; k < obj.fImgBuf.length; ++k) {
+         let v = obj.fImgBuf[k];
+         min = Math.min(v, min);
+         max = Math.max(v, max);
+      }
+
+      // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
+      // min = Math.min.apply(null, obj.fImgBuf),
+      // max = Math.max.apply(null, obj.fImgBuf);
+
+      // create countor like in hist painter to allow palette drawing
+      this.fContour = {
+         arr: new Array(200),
+         rgba: this.rgba,
+         getLevels: function() { return this.arr; },
+         getPaletteColor: function(pal, zval) {
+            if (!this.arr || !this.rgba) return "white";
+            let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
+            return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
+         }
+      };
+      for (let k = 0; k < 200; k++)
+         this.fContour.arr[k] = min + (max-min)/(200-1)*k;
+
+      if (min >= max) max = min + 1;
+
+      let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
+
+      if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
+         xmin = Math.round(fp.zoom_xmin * obj.fWidth);
+         xmax = Math.round(fp.zoom_xmax * obj.fWidth);
+      }
+
+      if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
+         ymin = Math.round(fp.zoom_ymin * obj.fHeight);
+         ymax = Math.round(fp.zoom_ymax * obj.fHeight);
+      }
+
+      let pr = isNodeJs() ?
+                 Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => h.default.createCanvas(xmax - xmin, ymax - ymin)) :
+                 new Promise(resolveFunc => {
+                    let c = document.createElement('canvas');
+                    c.width = xmax - xmin;
+                    c.height = ymax - ymin;
+                    resolveFunc(c);
+                 });
+
+      return pr.then(canvas => {
+
+         let context = canvas.getContext('2d'),
+             imageData = context.getImageData(0, 0, canvas.width, canvas.height),
+             arr = imageData.data;
+
+         for(let i = ymin; i < ymax; ++i) {
+            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
+                row = i * obj.fWidth;
+            for(let j = xmin; j < xmax; ++j) {
+               let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
+               // copy rgba value for specified point
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+            }
+         }
+
+         context.putImageData(imageData, 0, 0);
+
+         return { url: canvas.toDataURL(), constRatio: obj.fConstRatio, is_buf: true };
+      });
+   }
+
+   makeUrlFromPngBuf(obj) {
+      let buf = obj.fPngBuf, pngbuf = "";
+
+      if (typeof buf == "string")
+         pngbuf = buf;
+      else
+         for (let k = 0; k < buf.length; ++k)
+            pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
+
+      return Promise.resolve({ url: "data:image/png;base64," + btoa_func(pngbuf), constRatio: true });
+   }
+
    /** @summary Draw image */
    drawImage() {
       let obj = this.getObject(),
-          is_buf = false,
           fp = this.getFramePainter(),
           rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
 
@@ -95555,118 +95666,34 @@ class TASImagePainter extends ObjectPainter {
          delete obj._blob;
       }
 
-      let url, constRatio = true;
+      let promise;
 
       if (obj.fImgBuf && obj.fPalette) {
-
-         is_buf = true;
-
-         let nlevels = 1000;
-         this.rgba = this.createRGBA(nlevels); // precaclucated colors
-
-         let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
-         for (let k = 1; k < obj.fImgBuf.length; ++k) {
-            let v = obj.fImgBuf[k];
-            min = Math.min(v, min);
-            max = Math.max(v, max);
-         }
-
-         // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
-         // min = Math.min.apply(null, obj.fImgBuf),
-         // max = Math.max.apply(null, obj.fImgBuf);
-
-         // create countor like in hist painter to allow palette drawing
-         this.fContour = {
-            arr: new Array(200),
-            rgba: this.rgba,
-            getLevels: function() { return this.arr; },
-            getPaletteColor: function(pal, zval) {
-               if (!this.arr || !this.rgba) return "white";
-               let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-               return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
-            }
-         };
-         for (let k = 0; k < 200; k++)
-            this.fContour.arr[k] = min + (max-min)/(200-1)*k;
-
-         if (min >= max) max = min + 1;
-
-         let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
-
-         if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
-            xmin = Math.round(fp.zoom_xmin * obj.fWidth);
-            xmax = Math.round(fp.zoom_xmax * obj.fWidth);
-         }
-
-         if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
-            ymin = Math.round(fp.zoom_ymin * obj.fHeight);
-            ymax = Math.round(fp.zoom_ymax * obj.fHeight);
-         }
-
-         let canvas;
-
-         if (isNodeJs()) {
-            canvas = node_canvas.createCanvas(xmax - xmin, ymax - ymin);
-         } else {
-            canvas = document.createElement('canvas');
-            canvas.width = xmax - xmin;
-            canvas.height = ymax - ymin;
-         }
-
-         if (!canvas)
-            return null;
-
-         let context = canvas.getContext('2d'),
-             imageData = context.getImageData(0, 0, canvas.width, canvas.height),
-             arr = imageData.data;
-
-         for(let i = ymin; i < ymax; ++i) {
-            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
-                row = i * obj.fWidth;
-            for(let j = xmin; j < xmax; ++j) {
-               let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
-               // copy rgba value for specified point
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
-            }
-         }
-
-         context.putImageData(imageData, 0, 0);
-
-         url = canvas.toDataURL(); // create data url to insert into image
-
-         constRatio = obj.fConstRatio;
-
+         promise = this.makeUrlFromImageBuf(obj, fp);
       } else if (obj.fPngBuf) {
-         let pngbuf = "";
-
-         if (typeof obj.fPngBuf == "string") {
-            pngbuf = obj.fPngBuf;
-         } else {
-            for (let k = 0; k < obj.fPngBuf.length; ++k)
-               pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
-         }
-
-         url = "data:image/png;base64," + btoa_func(pngbuf);
+         promise = this.makeUrlFromPngBuf(obj);
+      } else {
+         promise = Promise.resolve({});
       }
 
-      if (url)
-         this.createG(fp ? true : false)
-             .append("image")
-             .attr("href", url)
-             .attr("width", rect.width)
-             .attr("height", rect.height)
-             .attr("preserveAspectRatio", constRatio ? null : "none");
+      return promise.then(res => {
 
-      if (!url || !this.isMainPainter() || !is_buf || !fp)
-         return this;
+         if (res.url)
+            this.createG(fp ? true : false)
+                .append("image")
+                .attr("href", res.url)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+                .attr("preserveAspectRatio", res.constRatio ? null : "none");
 
-      return this.drawColorPalette(this.options.Zscale, true).then(() => {
-         fp.setAxesRanges(create$1("TAxis"), 0, 1, create$1("TAxis"), 0, 1, null, 0, 0);
-         fp.createXY({ ndim: 2, check_pad_range: false });
-         return fp.addInteractivity();
+         if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
+            return this;
+
+         return this.drawColorPalette(this.options.Zscale, true).then(() => {
+            fp.setAxesRanges(create$1("TAxis"), 0, 1, create$1("TAxis"), 0, 1, null, 0, 0);
+            fp.createXY({ ndim: 2, check_pad_range: false });
+            return fp.addInteractivity();
+         })
       });
    }
 
@@ -104687,11 +104714,12 @@ class RH1Painter extends RH1Painter$2 {
 
       let main = this.getFramePainter(), // who makes axis drawing
           is_main = this.isMainPainter(), // is main histogram
-          zmult = 1 + 2*gStyle.fHistTopMargin;
+          zmult = 1 + 2*gStyle.fHistTopMargin,
+          pr = Promise.resolve(this);
 
       if (reason == "resize")  {
          if (is_main && main.resize3D()) main.render3D();
-         return Promise.resolve(this);
+         return pr;
       }
 
       this.deleteAttr();
@@ -104700,16 +104728,17 @@ class RH1Painter extends RH1Painter$2 {
 
       if (is_main) {
          assignFrame3DMethods(main);
-         main.create3DScene(this.options.Render3D);
-         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
+         pr = main.create3DScene(this.options.Render3D).then(() => {
+            main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
+         });
       }
 
       if (!main.mode3d)
-         return Promise.resolve(this);
+         return pr;
 
-      return this.drawingBins(reason).then(() => {
+      return pr.then(() => this.drawingBins(reason)).then(() => {
 
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
@@ -106471,12 +106500,13 @@ class RH2Painter extends RH2Painter$2 {
       this.mode3d = true;
 
       let main = this.getFramePainter(), // who makes axis drawing
-          is_main = this.isMainPainter(); // is main histogram
+          is_main = this.isMainPainter(), // is main histogram
+          pr = Promise.resolve(this);
 
       if (reason == "resize") {
          if (is_main && main.resize3D()) main.render3D();
 
-         return Promise.resolve(this);
+         return pr;
       }
 
       let zmult = 1 + 2*gStyle.fHistTopMargin;
@@ -106491,16 +106521,17 @@ class RH2Painter extends RH2Painter$2 {
 
       if (is_main) {
          assignFrame3DMethods(main);
-         main.create3DScene(this.options.Render3D);
-         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
+         pr = main.create3DScene(this.options.Render3D).then(() => {
+            main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
+         });
       }
 
       if (!main.mode3d)
-         return Promise.resolve(this);
+         return pr;
 
-      return this.drawingBins(reason).then(() => {
+      return pr.then(() => this.drawingBins(reason)).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
@@ -107138,14 +107169,12 @@ class RH3Painter extends RHistPainter {
       }
 
       assignFrame3DMethods(main);
-      main.create3DScene(this.options.Render3D);
-      main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
-      main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
-
-      return this.drawingBins(reason)
-            .then(() => this.draw3D()) // called when bins received from server, must be reentrant
-            .then(() => {
+      return main.create3DScene(this.options.Render3D).then(() => {
+         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
+         main.set3DOptions(this.options);
+         main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
+         return this.drawingBins(reason);
+      }).then(() => this.draw3D()).then(() => {
          main.render3D();
          main.addKeysHandler();
          return this;
