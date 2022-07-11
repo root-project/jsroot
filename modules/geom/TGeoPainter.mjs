@@ -2431,46 +2431,49 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
-      this._renderer = createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(r => {
 
-      this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
+         this._renderer = r;
 
-      if (this._renderer.setPixelRatio && !isNodeJs())
-         this._renderer.setPixelRatio(window.devicePixelRatio);
-      this._renderer.setSize(w, h, !this._fit_main_area);
-      this._renderer.localClippingEnabled = true;
+         this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
 
-      this._renderer.setClearColor(this.ctrl.background, 1);
+         if (this._renderer.setPixelRatio && !isNodeJs())
+            this._renderer.setPixelRatio(window.devicePixelRatio);
+         this._renderer.setSize(w, h, !this._fit_main_area);
+         this._renderer.localClippingEnabled = true;
 
-      if (this._fit_main_area && this._webgl) {
-         this._renderer.domElement.style.width = "100%";
-         this._renderer.domElement.style.height = "100%";
-         let main = this.selectDom();
-         if (main.style('position')=='static') main.style('position','relative');
-      }
+         this._renderer.setClearColor(this.ctrl.background, 1);
 
-      this._animating = false;
+         if (this._fit_main_area && this._webgl) {
+            this._renderer.domElement.style.width = "100%";
+            this._renderer.domElement.style.height = "100%";
+            let main = this.selectDom();
+            if (main.style('position')=='static') main.style('position','relative');
+         }
 
-      // Clipping Planes
+         this._animating = false;
 
-      this.ctrl.bothSides = false; // which material kind should be used
-      this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
-                           new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                           new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+         // Clipping Planes
 
-      this.createSpecialEffects();
+         this.ctrl.bothSides = false; // which material kind should be used
+         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
+                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
-      if (this._fit_main_area && !this._webgl) {
-         // create top-most SVG for geomtery drawings
-         let doc = getDocument(),
-             svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-         svg.setAttribute("width", w);
-         svg.setAttribute("height", h);
-         svg.appendChild(this._renderer.jsroot_dom);
-         return svg;
-      }
+         this.createSpecialEffects();
 
-      return this._renderer.jsroot_dom;
+         if (this._fit_main_area && !this._webgl) {
+            // create top-most SVG for geomtery drawings
+            let doc = getDocument(),
+                svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", w);
+            svg.setAttribute("height", h);
+            svg.appendChild(this._renderer.jsroot_dom);
+            return svg;
+         }
+
+         return this._renderer.jsroot_dom;
+      });
    }
 
    /** @summary Start geometry drawing */
@@ -3560,9 +3563,9 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               let dom = this.createScene(size.width, size.height);
-               fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL)
-             });
+               return this.createScene(size.width, size.height)
+                          .then(dom => fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL));
+            });
 
          } else {
             // activate worker
@@ -3574,8 +3577,8 @@ class TGeoPainter extends ObjectPainter {
 
             this._fit_main_area = (size.can3d === -1);
 
-            let dom = this.createScene(size.width, size.height);
-            this.add3dCanvas(size, dom, this._webgl);
+            promise = this.createScene(size.width, size.height)
+                          .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
 
