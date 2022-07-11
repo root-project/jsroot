@@ -381,96 +381,93 @@ function assign3DHandler(painter) {
    Object.assign(painter, Handling3DDrawings);
 }
 
-let node_canvas, node_gl;
-
-///_begin_exclude_in_qt5web_
-if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_canvas = await import('canvas').then(h => h.default); node_gl = await import('gl').then(h => h.default); }
-///_end_exclude_in_qt5web_
-
 
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
   * @param {value} render3d - render type, see {@link constants.Render3D}
   * @param {object} args - different arguments for creating 3D renderer
+  * @returns {Promise} with renderer object
   * @private */
 
 function createRender3D(width, height, render3d, args) {
 
-   let rc = constants.Render3D;
+   let rc = constants.Render3D, promise, need_workaround = false, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
 
-   let need_workaround = false, renderer,
-       doc = getDocument();
-
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
-      renderer = new WebGLRenderer(args);
+      promise = Promise.resolve(new WebGLRenderer(args));
 
    } else if (render3d == rc.SVG) {
       // SVG rendering
-      renderer = createSVGRenderer(false, 0, doc);
+      let r = createSVGRenderer(false, 0, doc);
 
       if (isBatchMode()) {
          need_workaround = true;
       } else {
-         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-         // d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+         // d3_select(r.jsroot_dom).attr("width", width).attr("height", height);
       }
+      promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      args.canvas = node_canvas.createCanvas(width, height);
-      args.canvas.addEventListener = function() { }; // dummy
-      args.canvas.removeEventListener = function() { }; // dummy
-      args.canvas.style = {};
-
-      let gl = node_gl(width, height, { preserveDrawingBuffer: true });
-      if (!gl) throw(Error("Fail to create headless-gl"));
-      args.context = gl;
-      gl.canvas = args.canvas;
-
-      renderer = new WebGLRenderer(args);
-
-      renderer.jsroot_output = new WebGLRenderTarget(width, height);
-
-      renderer.setRenderTarget(renderer.jsroot_output);
-
-      need_workaround = true;
+      promise = import('canvas').then(node_canvas => {
+         args.canvas = node_canvas.default.createCanvas(width, height);
+         args.canvas.addEventListener = function() { }; // dummy
+         args.canvas.removeEventListener = function() { }; // dummy
+         args.canvas.style = {};
+         return import('gl');
+      }).then(node_gl => {
+         let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
+         if (!gl) throw(Error("Fail to create headless-gl"));
+         args.context = gl;
+         gl.canvas = args.canvas;
+         let r = new WebGLRenderer(args);
+         r.jsroot_output = new WebGLRenderTarget(width, height);
+         r.setRenderTarget(r.jsroot_output);
+         need_workaround = true;
+         return r;
+      });
 
    } else {
       // rendering with WebGL directly into svg image
-      renderer = new WebGLRenderer(args);
-      renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      d3_select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+      let r = new WebGLRenderer(args);
+      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+      d3_select(r.jsroot_dom).attr("width", width).attr("height", height);
+      promise = Promise.resolve(r);
    }
 
-   if (need_workaround) {
-      if (!internals.svg_3ds) internals.svg_3ds = [];
-      renderer.workaround_id = internals.svg_3ds.length;
-      internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
+   return promise.then(renderer => {
 
-      // replace DOM element in renderer
-      renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-      renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
-   } else if (!renderer.jsroot_dom) {
-      renderer.jsroot_dom = renderer.domElement;
-   }
+      if (need_workaround) {
+          if (!internals.svg_3ds) internals.svg_3ds = [];
+         renderer.workaround_id = internals.svg_3ds.length;
+         internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
 
-   // res.renderer.setClearColor("#000000", 1);
-   // res.renderer.setClearColor(0x0, 0);
-   renderer.setSize(width, height);
-   renderer.jsroot_render3d = render3d;
+         // replace DOM element in renderer
+         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+         renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
+      } else if (!renderer.jsroot_dom) {
+         renderer.jsroot_dom = renderer.domElement;
+      }
 
-   // apply size to dom element
-   renderer.setJSROOTSize = function(width, height) {
-      if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
-         return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
-   };
+      // res.renderer.setClearColor("#000000", 1);
+      // res.renderer.setClearColor(0x0, 0);
+      renderer.setSize(width, height);
+      renderer.jsroot_render3d = render3d;
 
-   return renderer;
+      // apply size to dom element
+      renderer.setJSROOTSize = function(width, height) {
+         if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
+            return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
+      };
+
+      return renderer;
+   });
 }
 
 
