@@ -1555,7 +1555,7 @@ class HierarchyPainter extends BasePainter {
          let func = null;
          if (typeof hitem._icon_click == 'function')
             func = hitem._icon_click;
-         else if (handle && typeof handle.icon_click == 'function')
+         else if (typeof handle?.icon_click == 'function')
             func = handle.icon_click;
          if (func && func(hitem,this))
             this.updateTreeNode(hitem, d3cont);
@@ -1590,10 +1590,10 @@ class HierarchyPainter extends BasePainter {
              drawopt = "";
 
          if (evnt.shiftKey) {
-            drawopt = (handle && handle.shift) ? handle.shift : "inspect";
-            if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
+            drawopt = handle?.shift || "inspect";
+            if ((drawopt == "inspect") && handle?.noinspect) drawopt = "";
          }
-         if (handle && handle.ctrl && evnt.ctrlKey)
+         if (evnt.ctrlKey && handle?.ctrl)
             drawopt = handle.ctrl;
 
          if (!drawopt && !handle?.always_draw) {
@@ -1958,13 +1958,13 @@ class HierarchyPainter extends BasePainter {
 
             let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
 
-            if (handle && handle.draw_field && obj[handle.draw_field]) {
+            if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || "";
                handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
             }
 
-            if (use_dflt_opt && handle && handle.dflt && !drawopt && (handle.dflt != 'expand'))
+            if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
                drawopt = handle.dflt;
 
             if (divid.length > 0) {
@@ -2110,7 +2110,7 @@ class HierarchyPainter extends BasePainter {
             if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
             if (!('_always_monitor' in item)) {
                let forced = false, handle = getDrawHandle(item._kind);
-               if (handle && ('monitor' in handle)) {
+               if (handle?.monitor !== undefined) {
                   if ((handle.monitor === false) || (handle.monitor == 'never')) return;
                   if (handle.monitor == 'always') forced = true;
                }
@@ -2418,12 +2418,12 @@ class HierarchyPainter extends BasePainter {
          if (typeof _item._expand !== 'function') {
             let handle = getDrawHandle(_item._kind, "::expand");
 
-            if (handle && handle.expand_item) {
+            if (handle?.expand_item) {
                _obj = _obj[handle.expand_item];
               handle = (_obj && _obj._typename) ? getDrawHandle("ROOT."+_obj._typename, "::expand") : null;
             }
 
-            if (handle && (handle.expand || handle.get_expand)) {
+            if (handle?.expand || handle?.get_expand) {
                if (typeof handle.expand == 'function')
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
@@ -2709,7 +2709,7 @@ class HierarchyPainter extends BasePainter {
             } else {
                func = findFunction(item._make_request);
             }
-         } else if (draw_handle && draw_handle.make_request) {
+         } else if (draw_handle?.make_request) {
             func = draw_handle.make_request;
          }
 
@@ -2879,7 +2879,7 @@ class HierarchyPainter extends BasePainter {
       if (!node._childs && (node._more !== false) && (node._more || root_type || sett.expand || sett.get_expand))
          menu.add("Expand", () => this.expandItem(itemname));
 
-      if (handle && ('execute' in handle))
+      if (handle?.execute)
          menu.add("Execute", () => this.executeCommand(itemname, menu.tree_node));
 
       if (sett.opts && (node._can_draw !== false))
@@ -3125,10 +3125,10 @@ class HierarchyPainter extends BasePainter {
       if (!mdi) return false;
 
       let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
-      if (handle && handle.draw_field && obj[handle.draw_field])
-         obj = obj[handle.draw_field];
+      if (handle?.draw_field && obj[handle?.draw_field])
+         obj = obj[handle?.draw_field];
 
-      mdi.forEachPainter((p, frame) => {
+      mdi.forEachPainter((p /*, frame*/) => {
          if ((p === painter) || (p.getItemName() != painter.getItemName())) return;
 
          // do not actiavte frame when doing update
