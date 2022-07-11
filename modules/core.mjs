@@ -49,12 +49,6 @@ function setBatchMode(on) { batch_mode = !!on; }
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-let node_xhr2;
-
-///_begin_exclude_in_qt5web_
-if(isNodeJs() && process.env?.NODE_ENV !== 'production') { node_xhr2 = await import('xhr2').then(h => h.default); }
-///_end_exclude_in_qt5web_
-
 /** @summary atob function in all environments */
 const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
 
@@ -833,11 +827,10 @@ function findFunction(name) {
    return (typeof elem == 'function') ? elem : null;
 }
 
-/** @summary Method to create http request
-  * @private */
-function createHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
-   let xhr = nodejs ? new node_xhr2() : new XMLHttpRequest();
 
+/** @summary Assign methods to request
+  * @private */
+function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback) {
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
@@ -931,6 +924,24 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    return xhr;
 }
 
+/** @summary Method to create http request, without promise can be used only in browser environment
+  * @private */
+function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
+   if (isNodeJs()) {
+      if (!use_promise)
+         throw Error("Not allowed to create http requests in node without promise");
+      return import('xhr2').then(h => {
+         let xhr = new h.default();
+         setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
+         return xhr;
+      });
+   }
+
+   let xhr = new XMLHttpRequest();
+   setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
+   return use_promise ? Promise.resolve(xhr) : xhr;
+}
+
 /** @summary Submit asynchronoues http request
   * @desc Following requests kind can be specified:
   *    - "bin" - abstract binary data, result as string
@@ -952,8 +963,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .catch(err => console.error(err.message)); */
 function httpRequest(url, kind, post_data) {
    return new Promise((accept, reject) => {
-      let xhr = createHttpRequest(url, kind, accept, reject);
-      xhr.send(post_data || null);
+      createHttpRequest(url, kind, accept, reject, true).then(xhr => xhr.send(post_data || null));
    });
 }
 
