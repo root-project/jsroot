@@ -623,14 +623,12 @@ class RH3Painter extends RHistPainter {
       }
 
       assignFrame3DMethods(main);
-      main.create3DScene(this.options.Render3D);
-      main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
-      main.set3DOptions(this.options);
-      main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
-
-      return this.drawingBins(reason)
-            .then(() => this.draw3D()) // called when bins received from server, must be reentrant
-            .then(() => {
+      return main.create3DScene(this.options.Render3D).then(() => {
+         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
+         main.set3DOptions(this.options);
+         main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
+         return this.drawingBins(reason);
+      }).then(() => this.draw3D()).then(() => {
          main.render3D();
          main.addKeysHandler();
          return this;
