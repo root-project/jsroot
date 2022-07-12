@@ -1651,7 +1651,7 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (painter && typeof painter.mouseOverHierarchy === 'function')
+      if (typeof painter?.mouseOverHierarchy === 'function')
          painter.mouseOverHierarchy(on, itemname, hitem);
    }
 
@@ -1904,7 +1904,7 @@ class HierarchyPainter extends BasePainter {
 
          if (updating && item) delete item._doing_update;
          if (!updating) showProgress();
-         if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
+         if (typeof respainter?.setItemName === 'function') {
             respainter.setItemName(display_itemname, updating ? null : drawopt, this); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
@@ -2055,7 +2055,7 @@ class HierarchyPainter extends BasePainter {
       if (opt===undefined) opt = "";
 
       let drop_complete = (drop_painter, is_main_painter) => {
-         if (drop_painter && !is_main_painter && (typeof drop_painter === 'object') && (typeof drop_painter.setItemName == 'function'))
+         if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
             drop_painter.setItemName(itemname, null, this);
          return drop_painter;
       }
@@ -2069,10 +2069,10 @@ class HierarchyPainter extends BasePainter {
 
          let main_painter = getElementMainPainter(divid);
 
-         if (main_painter && (typeof main_painter.performDrop === 'function'))
+         if (typeof main_painter?.performDrop === 'function')
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
-         if (main_painter && main_painter.accept_drops)
+         if (main_painter?.accept_drops)
             return draw(divid, res.obj, "same " + opt).then(p => drop_complete(p, main_painter === p));
 
          this.cleanupFrame(divid);

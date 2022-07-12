@@ -217,7 +217,7 @@ function expandGeoObject(parent, obj) {
   * @private */
 function findItemWithPainter(hitem, funcname) {
    while (hitem) {
-      if (hitem._painter && hitem._painter._camera) {
+      if (hitem._painter?._camera) {
          if (funcname && typeof hitem._painter[funcname] == 'function')
             hitem._painter[funcname]();
          return hitem;
@@ -4844,7 +4844,7 @@ function provideMenu(menu, item, hpainter) {
 
         let fullname = hpainter.itemFullName(item, drawitem);
 
-        if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
+        if (typeof drawitem._painter?.focusOnItem == 'function')
            drawitem._painter.focusOnItem(fullname);
       });
 

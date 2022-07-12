@@ -409,7 +409,7 @@ class RCanvasPainter extends RPadPainter {
       delete this._submreq[reply.reqid];
 
       // remove blocking reference for that kind
-      if (req._painter && req._kind && req._painter._requests)
+      if (req._kind && req._painter?._requests)
          if (req._painter._requests[req._kind] === req)
             delete req._painter._requests[req._kind];
 
@@ -454,7 +454,7 @@ class RCanvasPainter extends RPadPainter {
             console.log('TPave is moved inside RCanvas - that to do?');
             break;
          default:
-            if ((kind.slice(0,5) == "exec:") && painter && painter.snapid) {
+            if ((kind.slice(0,5) == "exec:") && painter?.snapid) {
                this.submitExec(painter, kind.slice(5), subelem);
             } else {
                console.log("UNPROCESSED CHANGES", kind);

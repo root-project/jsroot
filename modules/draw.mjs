@@ -325,7 +325,7 @@ function draw(dom, obj, opt) {
 
          let main_painter = getElementMainPainter(dom);
 
-         if (main_painter && (typeof main_painter.performDrop === 'function'))
+         if (typeof main_painter?.performDrop === 'function')
             return main_painter.performDrop(obj, "", null, opt);
       }
 

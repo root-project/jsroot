@@ -571,7 +571,7 @@ class TCanvasPainter extends TPadPainter {
             }
             break;
          default:
-            if ((kind.slice(0,5) == "exec:") && painter && painter.snapid) {
+            if ((kind.slice(0,5) == "exec:") && painter?.snapid) {
                console.log('Call exec', painter.snapid);
 
                msg = "PRIMIT6:" + toJSON({
@@ -606,7 +606,7 @@ class TCanvasPainter extends TPadPainter {
          this.forEachPainterInPad(pp => pp.drawActiveBorder(null, pp === pad_painter), "pads");
       }
 
-      if (obj_painter && (obj_painter.snapid!==undefined) && arg) {
+      if ((obj_painter?.snapid !== undefined) && arg) {
          ischanged = true;
          arg.objid = obj_painter.snapid.toString();
       }

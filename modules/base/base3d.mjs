@@ -1100,7 +1100,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       this.cursor_changed = false;
-      if (tip && this.painter && this.painter.isTooltipAllowed()) {
+      if (tip && this.painter?.isTooltipAllowed()) {
          this.tooltip.checkParent(this.painter.selectDom().node());
 
          this.tooltip.show(tip, mouse);
@@ -1174,7 +1174,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       let kind = 0, fp = this.painter?.getFramePainter();
       if (typeof fp?._click_handler == 'function')
          kind = 1; // user click handler
-      else if (this.processSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
+      else if (this.processSingleClick && this.painter?.options?.mouse_click)
          kind = 2;  // eve7 click handler
 
       // if normal event, set longer timeout waiting if double click not detected

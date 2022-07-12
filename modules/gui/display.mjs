@@ -1195,9 +1195,9 @@ class BrowserLayout {
 
    /** @summary Check resize action */
    checkResize() {
-      if (this.hpainter && (typeof this.hpainter.checkResize == 'function'))
+      if (typeof this.hpainter?.checkResize == 'function')
          this.hpainter.checkResize();
-      else if (this.objpainter && (typeof this.objpainter.checkResize == 'function')) {
+      else if (typeof this.objpainter?.checkResize == 'function') {
          this.objpainter.checkResize(true);
       }
    }

@@ -1250,7 +1250,7 @@ const FrameInteractive = {
       if (pad_painter?.painters)
          for (let k = 0; k < pad_painter.painters.length; ++k) {
             let subpainter = pad_painter.painters[k];
-            if (subpainter && (subpainter.wheel_zoomy !== undefined))
+            if (subpainter?.wheel_zoomy !== undefined)
                return subpainter.wheel_zoomy;
          }
 
