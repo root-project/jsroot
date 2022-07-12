@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "11/07/2022";
+let version_date = "12/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1571,7 +1571,7 @@ function getMethods(typename, obj) {
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
             return 1.0/Math.sqrt(sum);
          // compute variance in y (eprim2) and standard deviation in y (eprim)
-         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
+         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
             if (eprim != 0) return eprim/Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
@@ -1620,15 +1620,11 @@ function getMethods(typename, obj) {
       m.Py = m.Y = function() { return this.fY; }
       m.Pz = m.Z = function() { return this.fZ; }
       m.E = m.T = function() { return this.fT; }
-      m.P2 = function() { return this.fX*this.fX + this.fY*this.fY + this.fZ*this.fZ; }
+      m.P2 = function() { return this.fX**2 + this.fY**2 + this.fZ**2; }
       m.R = m.P = function() { return Math.sqrt(this.P2()); }
-      m.Mag2 = m.M2 = function() { return this.fT*this.fT - this.fX*this.fX - this.fY*this.fY - this.fZ*this.fZ; }
-      m.Mag = m.M = function() {
-         let mm = this.M2();
-         if (mm >= 0) return Math.sqrt(mm);
-         return -Math.sqrt(-mm);
-      }
-      m.Perp2 = m.Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;}
+      m.Mag2 = m.M2 = function() { return this.fT**2 - this.fX**2 - this.fY**2 - this.fZ**2; }
+      m.Mag = m.M = function() { return (this.M2() >= 0) ? Math.sqrt(this.M2()) : -Math.sqrt(-this.M2()); }
+      m.Perp2 = m.Pt2 = function() { return this.fX**2 + this.fY**2; }
       m.Pt = m.pt = function() { return Math.sqrt(this.P2()); }
       m.Phi = m.phi = function() { return Math.atan2(this.fY, this.fX); }
       m.Eta = m.eta = function() { return Math.atanh(this.Pz/this.P()); }
