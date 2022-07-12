@@ -5,7 +5,7 @@ let version_id = "7.1.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/07/2022";
+let version_date = "12/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -60,7 +60,7 @@ let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: fals
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
    browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-   browser.isFirefox = typeof InstallTrigger !== 'undefined';
+   browser.isFirefox = (navigator.userAgent.indexOf("Firefox") >= 0) || (typeof InstallTrigger !== 'undefined');
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser.isChrome = !!window.chrome && !browser.isOpera;
    browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
