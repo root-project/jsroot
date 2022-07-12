@@ -748,7 +748,7 @@ class TH1Painter extends THistPainter {
           cont = histo.getBinContent(bin+1),
           xlbl = this.getAxisBinTip("x", histo.fXaxis, bin);
 
-      if (name.length > 0) tips.push(name);
+      if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
