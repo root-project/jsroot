@@ -1721,7 +1721,7 @@ isPromise: isPromise,
 _ensureJSROOT: _ensureJSROOT
 });
 
-// https://d3js.org v7.3.0 Copyright 2010-2021 Mike Bostock
+// https://d3js.org v7.6.1 Copyright 2010-2021 Mike Bostock
 
 function define(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;
@@ -1740,15 +1740,15 @@ var darker = 0.7;
 var brighter = 1 / darker;
 
 var reI = "\\s*([+-]?\\d+)\\s*",
-    reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
-    reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reN = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
     reHex = /^#([0-9a-f]{3,8})$/,
-    reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
-    reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
-    reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
-    reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
-    reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
-    reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+    reRgbInteger = new RegExp(`^rgb\\(${reI},${reI},${reI}\\)$`),
+    reRgbPercent = new RegExp(`^rgb\\(${reP},${reP},${reP}\\)$`),
+    reRgbaInteger = new RegExp(`^rgba\\(${reI},${reI},${reI},${reN}\\)$`),
+    reRgbaPercent = new RegExp(`^rgba\\(${reP},${reP},${reP},${reN}\\)$`),
+    reHslPercent = new RegExp(`^hsl\\(${reN},${reP},${reP}\\)$`),
+    reHslaPercent = new RegExp(`^hsla\\(${reN},${reP},${reP},${reN}\\)$`);
 
 var named = {
   aliceblue: 0xf0f8ff,
@@ -1902,14 +1902,15 @@ var named = {
 };
 
 define(Color$2, color$1, {
-  copy: function(channels) {
+  copy(channels) {
     return Object.assign(new this.constructor, this, channels);
   },
-  displayable: function() {
+  displayable() {
     return this.rgb().displayable();
   },
   hex: color_formatHex, // Deprecated! Use color.formatHex.
   formatHex: color_formatHex,
+  formatHex8: color_formatHex8,
   formatHsl: color_formatHsl,
   formatRgb: color_formatRgb,
   toString: color_formatRgb
@@ -1917,6 +1918,10 @@ define(Color$2, color$1, {
 
 function color_formatHex() {
   return this.rgb().formatHex();
+}
+
+function color_formatHex8() {
+  return this.rgb().formatHex8();
 }
 
 function color_formatHsl() {
@@ -1974,18 +1979,21 @@ function Rgb(r, g, b, opacity) {
 }
 
 define(Rgb, rgb, extend(Color$2, {
-  brighter: function(k) {
+  brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     k = k == null ? darker : Math.pow(darker, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     return this;
   },
-  displayable: function() {
+  clamp() {
+    return new Rgb(clampi(this.r), clampi(this.g), clampi(this.b), clampa(this.opacity));
+  },
+  displayable() {
     return (-0.5 <= this.r && this.r < 255.5)
         && (-0.5 <= this.g && this.g < 255.5)
         && (-0.5 <= this.b && this.b < 255.5)
@@ -1993,25 +2001,34 @@ define(Rgb, rgb, extend(Color$2, {
   },
   hex: rgb_formatHex, // Deprecated! Use color.formatHex.
   formatHex: rgb_formatHex,
+  formatHex8: rgb_formatHex8,
   formatRgb: rgb_formatRgb,
   toString: rgb_formatRgb
 }));
 
 function rgb_formatHex() {
-  return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}`;
+}
+
+function rgb_formatHex8() {
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex((isNaN(this.opacity) ? 1 : this.opacity) * 255)}`;
 }
 
 function rgb_formatRgb() {
-  var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-  return (a === 1 ? "rgb(" : "rgba(")
-      + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", "
-      + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", "
-      + Math.max(0, Math.min(255, Math.round(this.b) || 0))
-      + (a === 1 ? ")" : ", " + a + ")");
+  const a = clampa(this.opacity);
+  return `${a === 1 ? "rgb(" : "rgba("}${clampi(this.r)}, ${clampi(this.g)}, ${clampi(this.b)}${a === 1 ? ")" : `, ${a})`}`;
+}
+
+function clampa(opacity) {
+  return isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity));
+}
+
+function clampi(value) {
+  return Math.max(0, Math.min(255, Math.round(value) || 0));
 }
 
 function hex(value) {
-  value = Math.max(0, Math.min(255, Math.round(value) || 0));
+  value = clampi(value);
   return (value < 16 ? "0" : "") + value.toString(16);
 }
 
@@ -2060,15 +2077,15 @@ function Hsl(h, s, l, opacity) {
 }
 
 define(Hsl, hsl, extend(Color$2, {
-  brighter: function(k) {
+  brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     k = k == null ? darker : Math.pow(darker, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     var h = this.h % 360 + (this.h < 0) * 360,
         s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
         l = this.l,
@@ -2081,20 +2098,28 @@ define(Hsl, hsl, extend(Color$2, {
       this.opacity
     );
   },
-  displayable: function() {
+  clamp() {
+    return new Hsl(clamph(this.h), clampt(this.s), clampt(this.l), clampa(this.opacity));
+  },
+  displayable() {
     return (0 <= this.s && this.s <= 1 || isNaN(this.s))
         && (0 <= this.l && this.l <= 1)
         && (0 <= this.opacity && this.opacity <= 1);
   },
-  formatHsl: function() {
-    var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-    return (a === 1 ? "hsl(" : "hsla(")
-        + (this.h || 0) + ", "
-        + (this.s || 0) * 100 + "%, "
-        + (this.l || 0) * 100 + "%"
-        + (a === 1 ? ")" : ", " + a + ")");
+  formatHsl() {
+    const a = clampa(this.opacity);
+    return `${a === 1 ? "hsl(" : "hsla("}${clamph(this.h)}, ${clampt(this.s) * 100}%, ${clampt(this.l) * 100}%${a === 1 ? ")" : `, ${a})`}`;
   }
 }));
+
+function clamph(value) {
+  value = (value || 0) % 360;
+  return value < 0 ? value + 360 : value;
+}
+
+function clampt(value) {
+  return Math.max(0, Math.min(1, value || 0));
+}
 
 /* From FvD 13.37, CSS Color Module Level 3 */
 function hsl2rgb(h, m1, m2) {
@@ -2144,13 +2169,13 @@ function Lab(l, a, b, opacity) {
 }
 
 define(Lab, lab, extend(Color$2, {
-  brighter: function(k) {
+  brighter(k) {
     return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     return new Lab(this.l - K * (k == null ? 1 : k), this.a, this.b, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     var y = (this.l + 16) / 116,
         x = isNaN(this.a) ? y : y + this.a / 500,
         z = isNaN(this.b) ? y : y - this.b / 200;
@@ -2208,13 +2233,13 @@ function hcl2lab(o) {
 }
 
 define(Hcl, hcl, extend(Color$2, {
-  brighter: function(k) {
+  brighter(k) {
     return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     return new Hcl(this.h, this.c, this.l - K * (k == null ? 1 : k), this.opacity);
   },
-  rgb: function() {
+  rgb() {
     return hcl2lab(this).rgb();
   }
 }));
@@ -2254,15 +2279,15 @@ function Cubehelix(h, s, l, opacity) {
 }
 
 define(Cubehelix, cubehelix, extend(Color$2, {
-  brighter: function(k) {
+  brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     k = k == null ? darker : Math.pow(darker, k);
     return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     var h = isNaN(this.h) ? 0 : (this.h + 120) * radians,
         l = +this.l,
         a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
@@ -3986,15 +4011,30 @@ function ascending(a, b) {
   return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-function bisector(f) {
-  let delta = f;
-  let compare1 = f;
-  let compare2 = f;
+function descending(a, b) {
+  return a == null || b == null ? NaN
+    : b < a ? -1
+    : b > a ? 1
+    : b >= a ? 0
+    : NaN;
+}
 
+function bisector(f) {
+  let compare1, compare2, delta;
+
+  // If an accessor is specified, promote it to a comparator. In this case we
+  // can test whether the search value is (self-) comparable. We can’t do this
+  // for a comparator (except for specific, known comparators) because we can’t
+  // tell if the comparator is symmetric, and an asymmetric comparator can’t be
+  // used to test whether a single value is comparable.
   if (f.length !== 2) {
-    delta = (d, x) => f(d) - x;
     compare1 = ascending;
     compare2 = (d, x) => ascending(f(d), x);
+    delta = (d, x) => f(d) - x;
+  } else {
+    compare1 = f === ascending || f === descending ? f : zero$1;
+    compare2 = f;
+    delta = f;
   }
 
   function left(a, x, lo = 0, hi = a.length) {
@@ -4027,6 +4067,10 @@ function bisector(f) {
   }
 
   return {left, center, right};
+}
+
+function zero$1() {
+  return 0;
 }
 
 function number$2(x) {
@@ -5233,6 +5277,7 @@ millisecond.every = function(k) {
 };
 
 var millisecond$1 = millisecond;
+millisecond.range;
 
 const durationSecond = 1000;
 const durationMinute = durationSecond * 60;
@@ -5253,6 +5298,7 @@ var second = newInterval(function(date) {
 });
 
 var utcSecond = second;
+second.range;
 
 var minute = newInterval(function(date) {
   date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5265,6 +5311,7 @@ var minute = newInterval(function(date) {
 });
 
 var timeMinute = minute;
+minute.range;
 
 var hour = newInterval(function(date) {
   date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5277,6 +5324,7 @@ var hour = newInterval(function(date) {
 });
 
 var timeHour = hour;
+hour.range;
 
 var day = newInterval(
   date => date.setHours(0, 0, 0, 0),
@@ -5286,6 +5334,7 @@ var day = newInterval(
 );
 
 var timeDay = day;
+day.range;
 
 function weekday(i) {
   return newInterval(function(date) {
@@ -5300,11 +5349,19 @@ function weekday(i) {
 
 var sunday = weekday(0);
 var monday = weekday(1);
-weekday(2);
-weekday(3);
+var tuesday = weekday(2);
+var wednesday = weekday(3);
 var thursday = weekday(4);
-weekday(5);
-weekday(6);
+var friday = weekday(5);
+var saturday = weekday(6);
+
+sunday.range;
+monday.range;
+tuesday.range;
+wednesday.range;
+thursday.range;
+friday.range;
+saturday.range;
 
 var month = newInterval(function(date) {
   date.setDate(1);
@@ -5318,6 +5375,7 @@ var month = newInterval(function(date) {
 });
 
 var timeMonth = month;
+month.range;
 
 var year = newInterval(function(date) {
   date.setMonth(0, 1);
@@ -5342,8 +5400,9 @@ year.every = function(k) {
 };
 
 var timeYear = year;
+year.range;
 
-newInterval(function(date) {
+var utcMinute = newInterval(function(date) {
   date.setUTCSeconds(0, 0);
 }, function(date, step) {
   date.setTime(+date + step * durationMinute);
@@ -5352,8 +5411,9 @@ newInterval(function(date) {
 }, function(date) {
   return date.getUTCMinutes();
 });
+utcMinute.range;
 
-newInterval(function(date) {
+var utcHour = newInterval(function(date) {
   date.setUTCMinutes(0, 0, 0);
 }, function(date, step) {
   date.setTime(+date + step * durationHour);
@@ -5362,6 +5422,7 @@ newInterval(function(date) {
 }, function(date) {
   return date.getUTCHours();
 });
+utcHour.range;
 
 var utcDay = newInterval(function(date) {
   date.setUTCHours(0, 0, 0, 0);
@@ -5374,6 +5435,7 @@ var utcDay = newInterval(function(date) {
 });
 
 var utcDay$1 = utcDay;
+utcDay.range;
 
 function utcWeekday(i) {
   return newInterval(function(date) {
@@ -5388,13 +5450,21 @@ function utcWeekday(i) {
 
 var utcSunday = utcWeekday(0);
 var utcMonday = utcWeekday(1);
-utcWeekday(2);
-utcWeekday(3);
+var utcTuesday = utcWeekday(2);
+var utcWednesday = utcWeekday(3);
 var utcThursday = utcWeekday(4);
-utcWeekday(5);
-utcWeekday(6);
+var utcFriday = utcWeekday(5);
+var utcSaturday = utcWeekday(6);
 
-newInterval(function(date) {
+utcSunday.range;
+utcMonday.range;
+utcTuesday.range;
+utcWednesday.range;
+utcThursday.range;
+utcFriday.range;
+utcSaturday.range;
+
+var utcMonth = newInterval(function(date) {
   date.setUTCDate(1);
   date.setUTCHours(0, 0, 0, 0);
 }, function(date, step) {
@@ -5404,6 +5474,7 @@ newInterval(function(date) {
 }, function(date) {
   return date.getUTCMonth();
 });
+utcMonth.range;
 
 var utcYear = newInterval(function(date) {
   date.setUTCMonth(0, 1);
@@ -5428,6 +5499,7 @@ utcYear.every = function(k) {
 };
 
 var utcYear$1 = utcYear;
+utcYear.range;
 
 function ticker(year, month, week, day, hour, minute) {
 
