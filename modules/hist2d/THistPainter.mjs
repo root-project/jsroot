@@ -1258,7 +1258,7 @@ class THistPainter extends ObjectPainter {
           pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      if (!pt && pp && typeof pp.findInPrimitives == "function")
+      if (!pt && typeof pp?.findInPrimitives == "function")
          pt = pp.findInPrimitives("title", "TPaveText");
 
       if (pt) {

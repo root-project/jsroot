@@ -561,9 +561,9 @@ class TPavePainter extends ObjectPainter {
 
          // Draw fill pattern (in a box)
          if (draw_fill) {
-            let lineatt, fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
+            let lineatt, fillatt = painter?.fillatt || this.createAttFill(o_fill);
             if ((lopt.indexOf('l') < 0 && lopt.indexOf('e') < 0) && (lopt.indexOf('p') < 0)) {
-               lineatt = (painter && painter.lineatt) ? painter.lineatt : new TAttLineHandler(o_line);
+               lineatt = painter?.lineatt || new TAttLineHandler(o_line);
                if (lineatt.empty()) lineatt = null;
             }
 
@@ -581,7 +581,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw line and error (when specified)
          if (draw_line || draw_error) {
-            let lineatt = (painter && painter.lineatt) ? painter.lineatt : new TAttLineHandler(o_line);
+            let lineatt = painter?.lineatt || new TAttLineHandler(o_line);
             if (!lineatt.empty()) {
                isany = true;
                this.draw_g.append("svg:path")
@@ -596,7 +596,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw Polymarker
          if (draw_marker) {
-            let marker = (painter && painter.markeratt) ? painter.markeratt : new TAttMarkerHandler(o_marker);
+            let marker = painter?.markeratt || new TAttMarkerHandler(o_marker);
             if (!marker.empty()) {
                isany = true;
                this.draw_g
@@ -607,7 +607,7 @@ class TPavePainter extends ObjectPainter {
          }
 
          // special case - nothing draw, try to show rect with line attributes
-         if (!isany && painter && painter.lineatt && !painter.lineatt.empty())
+         if (!isany && painter?.lineatt && !painter.lineatt.empty())
             this.draw_g.append("svg:path")
                        .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
                        .style("fill", "none")
