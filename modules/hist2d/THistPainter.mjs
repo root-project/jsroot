@@ -472,7 +472,7 @@ class THistDrawOptions {
 
       if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
       if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
-      let check_axis_bit = (opt, axis, bit) => {
+      const check_axis_bit = (opt, axis, bit) => {
          let flag = d.check(opt);
          if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
          if (flag && histo)
@@ -750,12 +750,11 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns histogram axis */
    getAxis(name) {
       let histo = this.getObject();
-      if (histo)
-         switch(name) {
-            case "x": return histo.fXaxis;
-            case "y": return histo.fYaxis;
-            case "z": return histo.fZaxis;
-         }
+      switch(name) {
+         case "x": return histo?.fXaxis;
+         case "y": return histo?.fYaxis;
+         case "z": return histo?.fZaxis;
+      }
       return null;
    }
 
@@ -777,7 +776,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.create3DScene === 'function')
+      if (typeof fp?.create3DScene === 'function')
          fp.create3DScene(-1);
       this.mode3d = false;
    }

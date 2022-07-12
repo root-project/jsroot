@@ -184,7 +184,7 @@ let Handling3DDrawings = {
 
       let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
 
-      if (fp && fp.mode3d && (can3d > 0)) {
+      if (fp?.mode3d && (can3d > 0)) {
          size = fp.getFrameRect();
       } else {
          let elem = (can3d > 0) ? pad : this.getCanvSvg();
@@ -962,7 +962,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // then check if double-click handler assigned
       let fp = this.painter ? this.painter.getFramePainter() : null;
-      if (fp && typeof fp._dblclick_handler == 'function') {
+      if (typeof fp?._dblclick_handler == 'function') {
          let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
             fp._dblclick_handler(info);
@@ -1146,7 +1146,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (kind == 1) {
          let fp = this.painter ? this.painter.getFramePainter() : null;
-         if (fp && (typeof fp._click_handler == 'function')) {
+         if (typeof fp?._click_handler == 'function') {
             let info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
                fp._click_handler(info);
@@ -1171,8 +1171,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          delete this.single_click_tm;
       }
 
-      let kind = 0, fp = this.painter ? this.painter.getFramePainter() : null;
-      if (fp && typeof fp._click_handler == 'function')
+      let kind = 0, fp = this.painter?.getFramePainter();
+      if (typeof fp?._click_handler == 'function')
          kind = 1; // user click handler
       else if (this.processSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
          kind = 2;  // eve7 click handler
