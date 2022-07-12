@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "11/07/2022";
+let version_date = "12/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1576,7 +1576,7 @@ function getMethods(typename, obj) {
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
             return 1.0/Math.sqrt(sum);
          // compute variance in y (eprim2) and standard deviation in y (eprim)
-         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
+         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
             if (eprim != 0) return eprim/Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
@@ -1625,15 +1625,11 @@ function getMethods(typename, obj) {
       m.Py = m.Y = function() { return this.fY; };
       m.Pz = m.Z = function() { return this.fZ; };
       m.E = m.T = function() { return this.fT; };
-      m.P2 = function() { return this.fX*this.fX + this.fY*this.fY + this.fZ*this.fZ; };
+      m.P2 = function() { return this.fX**2 + this.fY**2 + this.fZ**2; };
       m.R = m.P = function() { return Math.sqrt(this.P2()); };
-      m.Mag2 = m.M2 = function() { return this.fT*this.fT - this.fX*this.fX - this.fY*this.fY - this.fZ*this.fZ; };
-      m.Mag = m.M = function() {
-         let mm = this.M2();
-         if (mm >= 0) return Math.sqrt(mm);
-         return -Math.sqrt(-mm);
-      };
-      m.Perp2 = m.Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;};
+      m.Mag2 = m.M2 = function() { return this.fT**2 - this.fX**2 - this.fY**2 - this.fZ**2; };
+      m.Mag = m.M = function() { return (this.M2() >= 0) ? Math.sqrt(this.M2()) : -Math.sqrt(-this.M2()); };
+      m.Perp2 = m.Pt2 = function() { return this.fX**2 + this.fY**2; };
       m.Pt = m.pt = function() { return Math.sqrt(this.P2()); };
       m.Phi = m.phi = function() { return Math.atan2(this.fY, this.fX); };
       m.Eta = m.eta = function() { return Math.atanh(this.Pz/this.P()); };
@@ -48464,10 +48460,10 @@ const AxisPainterMethods = {
          for (let k = 1; k < arr.length; ++k) {
             let diff = (arr[k] - arr[k-1]);
             sum1 += diff;
-            sum2 += diff*diff;
+            sum2 += diff**2;
          }
          let mean = sum1/(arr.length-1),
-             dev = sum2/(arr.length-1) - mean*mean;
+             dev = sum2/(arr.length-1) - mean**2;
 
          if (dev <= 0) return true;
          if (Math.abs(mean) < 1e-100) return false;
@@ -52316,7 +52312,8 @@ class JSRootMenu {
       }
 
       if (opts.length === 1) {
-         if (opts[0] === 'inspect') top_name = top_name.replace("Draw", "Inspect");
+         if (opts[0] === 'inspect')
+            top_name = top_name.replace("Draw", "Inspect");
          this.add(top_name, opts[0], call_back);
          return;
       }
@@ -52329,7 +52326,7 @@ class JSRootMenu {
          let group = i+1;
          if ((opts.length > 5) && (name.length > 0)) {
             // check if there are similar options, which can be grouped once again
-            while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
+            while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }
 
          if (without_sub) name = top_name + " " + name;
@@ -52395,7 +52392,7 @@ class JSRootMenu {
 
       if (size_value === undefined) return;
 
-      let values = [];
+      let values = [], miss_current = false;
       if (typeof step == 'object') {
          values = step; step = 1;
       } else for (let sz = min; sz <= max; sz += step)
@@ -52403,12 +52400,14 @@ class JSRootMenu {
 
       const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
             conv = (v, more) => {
-              if (step >= 1) return v.toFixed(0);
-              if (step >= 0.1) return v.toFixed(more ? 2 : 1);
-              return v.toFixed(more ? 4 : 2);
+               if ((v === size_value) && miss_current) more = true;
+               if (step >= 1) return v.toFixed(0);
+               if (step >= 0.1) return v.toFixed(more ? 2 : 1);
+               return v.toFixed(more ? 4 : 2);
            };
 
       if (values.findIndex(match) < 0) {
+         miss_current = true;
          values.push(size_value);
          values = values.sort((a,b) => a > b);
       }
@@ -52528,12 +52527,9 @@ class JSRootMenu {
    /** @summary Add rebin menu entries
      * @protected */
    addRebinMenu(rebin_func) {
-     this.add("sub:Rebin", () => {
-         this.input("Enter rebin value", 2, "int", 2).then(rebin_func);
-      });
-      for (let sz = 2; sz <= 7; sz++) {
+      this.add("sub:Rebin", () => this.input("Enter rebin value", 2, "int", 2).then(rebin_func));
+      for (let sz = 2; sz <= 7; sz++)
          this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
-      }
       this.add("endsub:");
    }
 
@@ -52711,7 +52707,7 @@ class JSRootMenu {
 
       if (!preffix) preffix = "";
 
-      if (painter.lineatt && painter.lineatt.used) {
+      if (painter.lineatt?.used) {
          this.add("sub:" + preffix + "Line att");
          this.addSizeMenu("width", 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
@@ -52723,7 +52719,7 @@ class JSRootMenu {
          });
          this.add("endsub:");
 
-         if (('excl_side' in painter.lineatt) && (painter.lineatt.excl_side !== 0)) {
+         if (painter.lineatt?.excl_side) {
             this.add("sub:Exclusion");
             this.add("sub:side");
             for (let side = -1; side <= 1; ++side)
@@ -52740,7 +52736,7 @@ class JSRootMenu {
          }
       }
 
-      if (painter.fillatt && painter.fillatt.used) {
+      if (painter.fillatt?.used) {
          this.add("sub:" + preffix + "Fill att");
          this.addColorMenu("color", painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
@@ -52753,7 +52749,7 @@ class JSRootMenu {
          this.add("endsub:");
       }
 
-      if (painter.markeratt && painter.markeratt.used) {
+      if (painter.markeratt?.used) {
          this.add("sub:" + preffix + "Marker att");
          this.addColorMenu("color", painter.markeratt.color,
             arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
@@ -53120,11 +53116,11 @@ class JSRootMenu {
                let arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
                if (value === "") value = arg.fDefault;
-               if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+               if ((arg.fTitle == "Option_t*") || (arg.fTitle == "const char*")) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters
                   if (!value) value = '""';
-                  if (value[0]!='"') value = '"' + value;
+                  if (value[0] != '"') value = '"' + value;
                   if (value[value.length-1] != '"') value += '"';
                }
 
@@ -64800,7 +64796,7 @@ class TH1Painter$2 extends THistPainter {
 
          stat_sumw += w;
          stat_sumwx += w * xx;
-         stat_sumwx2 += w * xx * xx;
+         stat_sumwx2 += w * xx**2;
       }
 
       // when no range selection done, use original statistic from histogram
@@ -64815,11 +64811,11 @@ class TH1Painter$2 extends THistPainter {
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany**2));
       }
 
-      if (xmax!==null) {
+      if (xmax !== null) {
          res.xmax = xmax;
          res.wmax = wmax;
       }
@@ -66261,8 +66257,8 @@ class TH2Painter$2 extends THistPainter {
                stat_sum0 += zz;
                stat_sumx1 += xx * zz;
                stat_sumy1 += yy * zz;
-               stat_sumx2 += xx * xx * zz;
-               stat_sumy2 += yy * yy * zz;
+               stat_sumx2 += xx**2 * zz;
+               stat_sumy2 += yy**2 * zz;
                // stat_sumxy += xx * yy * zz;
             }
          }
@@ -66280,8 +66276,8 @@ class TH2Painter$2 extends THistPainter {
       if (stat_sum0 > 0) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
       if (res.wmax===null) res.wmax = 0;
@@ -66843,7 +66839,7 @@ class TH2Painter$2 extends THistPainter {
          bin._sumx = bin._sumy = bin._suml = 0;
 
       const addPoint = (x1,y1,x2,y2) => {
-         const len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+         const len = Math.sqrt((x1-x2)**2 + (y1-y2)**2);
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
          bin._suml += len;
@@ -67112,7 +67108,7 @@ class TH2Painter$2 extends THistPainter {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        anr = Math.sqrt(9/(dx*dx + dy*dy));
+                        anr = Math.sqrt(9/(dx**2 + dy**2));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
                         if (si || co)
@@ -68875,9 +68871,9 @@ class TH3Painter extends THistPainter {
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
-                  stat_sumx2 += xx * xx * cont;
-                  stat_sumy2 += yy * yy * cont;
-                  stat_sumz2 += zz * zz * cont;
+                  stat_sumx2 += xx**2 * cont;
+                  stat_sumy2 += yy**2 * cont;
+                  stat_sumz2 += zz**2 * cont;
                }
             }
          }
@@ -76659,7 +76655,7 @@ class HierarchyPainter extends BasePainter {
 
       return new Promise(resolveFunc => {
 
-         let itemreq = createHttpRequest(url, req_kind, obj => {
+         createHttpRequest(url, req_kind, obj => {
 
             let handleAfterRequest = func => {
                if (typeof func == 'function') {
@@ -76677,9 +76673,7 @@ class HierarchyPainter extends BasePainter {
             } else {
                handleAfterRequest(draw_handle?.after_request);
             }
-         });
-
-         itemreq.send(null);
+         }, undefined, true).then(xhr => xhr.send(null));
       });
    }
 
@@ -81457,7 +81451,7 @@ class Vertex {
    }
 
    normalize() {
-      let length = Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z );
+      let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
 
       this.x /= length;
       this.y /= length;
@@ -81474,9 +81468,9 @@ class Vertex {
       let dx = (this.x - vertex.x),
           dy = (this.y - vertex.y),
           dz = (this.z - vertex.z),
-          len2 = this.x*this.x + this.y*this.y + this.z*this.z;
+          len2 = this.x**2 + this.y**2 + this.z**2;
 
-      return (dx*dx + dy*dy + dz*dz) / (len2>0 ? len2 : 1e-10);
+      return (dx**2 + dy**2 + dz**2) / (len2>0 ? len2 : 1e-10);
    }
 
 /*
@@ -81502,9 +81496,9 @@ class Vertex {
 */
 
    interpolate( a, t ) {
-      let t1 = 1-t;
+      let t1 = 1 - t;
       return new Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
-                                 this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
+                        this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
    }
 
    applyMatrix4(m) {
@@ -81896,7 +81890,7 @@ class Geometry {
          for (let i=0;i<polygons.length;++i) {
             let polygon = polygons[i];
             if (transfer_matrix) {
-               for (let n=0;n<polygon.vertices.length;++n)
+               for (let n = 0; n < polygon.vertices.length; ++n)
                   polygon.vertices[n].applyMatrix4(transfer_matrix);
             }
 
@@ -83220,7 +83214,7 @@ function createEltuBuffer( shape , faces_limit ) {
       nx1 = nx2; ny1 = ny2;
       nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
       ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
-      let dist = Math.sqrt(nx2*nx2 + ny2*ny2);
+      let dist = Math.sqrt(nx2**2 + ny2**2);
       nx2 = nx2 / dist; ny2 = ny2/dist;
 
       creator.setNormal_12_34(nx1,ny1,0,nx2,ny2,0);
@@ -83623,8 +83617,8 @@ function createParaboloidBuffer( shape, faces_limit ) {
          case heightSegments: layerz = zmax; radius = rmax; break;
          case heightSegments + 1: layerz = zmax; radius = 0; break;
          default: {
-            let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
-            let delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+            let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
+                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
             if (radius < 1e-6) radius = 0;
             layerz = radius*tt;
@@ -83700,8 +83694,8 @@ function createHypeBuffer( shape, faces_limit ) {
       for (let layer = 0; layer < heightSegments; ++layer) {
          let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
              z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
-             r1 = Math.sqrt(r0*r0+tsq*z1*z1),
-             r2 = Math.sqrt(r0*r0+tsq*z2*z2);
+             r1 = Math.sqrt(r0**2 + tsq*z1**2),
+             r2 = Math.sqrt(r0**2 + tsq*z2**2);
 
          for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
@@ -83716,8 +83710,8 @@ function createHypeBuffer( shape, faces_limit ) {
    // add caps
    for (let layer = 0; layer < 2; ++layer) {
       let z = (layer === 0) ? shape.fDz : -shape.fDz,
-          r1 = Math.sqrt(shape.fRmax*shape.fRmax + shape.fToutsq*z*z),
-          r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin*shape.fRmin + shape.fTinsq*z*z) : 0,
+          r1 = Math.sqrt(shape.fRmax**2 + shape.fToutsq*z**2),
+          r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin**2 + shape.fTinsq*z**2) : 0,
           skip = (shape.fRmin > 0) ? 0 : 1,
           d1 = 1 - layer, d2 = 1 - d1;
       for (let seg = 0; seg < radiusSegments; ++seg) {
@@ -92528,14 +92522,14 @@ class TGraphPainter$1 extends ObjectPainter {
       let extrabins = [];
       for (let n = drawbins.length-1; n >= 0; --n) {
          let bin = drawbins[n],
-             dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
-         // shift point, using
+             dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
+         // shift point
          bin.grx += excl_width*bin.dgry/dlen;
          bin.gry -= excl_width*bin.dgrx/dlen;
          extrabins.push(bin);
       }
 
-      let path2 = buildSvgPath("L" + (is_curve ? "bezier" : "line"), extrabins);
+      let path2 = buildSvgPath(is_curve ? "Lbezier" : "Lline", extrabins);
 
       this.draw_g.append("svg:path")
                  .attr("d", path.path + path2.path + "Z")
@@ -92549,7 +92543,7 @@ class TGraphPainter$1 extends ObjectPainter {
       let graph = this.getObject(),
           excl_width = 0, drawbins = null;
 
-      if (main_block && (lineatt.excl_side != 0)) {
+      if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width;
          if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
       }
@@ -93220,7 +93214,7 @@ class TGraphPainter$1 extends ObjectPainter {
             ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
 
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2))**2);
+         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
@@ -100528,7 +100522,7 @@ class LongPollSocket {
          }
       }
 
-      let req = createHttpRequest(url, reqmode, function(res) {
+      createHttpRequest(url, reqmode, function(res) {
          // this set to the request itself, res is response
 
          if (this.handle.req === this)
@@ -100552,7 +100546,8 @@ class LongPollSocket {
             while (i < 4) str += String.fromCharCode(u8Arr[i++]);
             if (str != "txt:") {
                str = "";
-               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
+               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':'))
+                  str += String.fromCharCode(u8Arr[i++]);
                ++i;
                offset = i + parseInt(str.trim());
             }
@@ -100589,12 +100584,12 @@ class LongPollSocket {
       }, function(/*err,status*/) {
          // console.log(`Get request error ${err} status ${status}`);
          this.handle.processRequest(null, "error");
+      }, true).then(req => {
+         req.handle = this;
+         if (!this.req)
+            this.req = req; // any request can be used for response, do not submit dummy until req is there
+         req.send(post);
       });
-
-      req.handle = this;
-      if (!this.req) this.req = req; // any request can be used for response, do not submit dummy until req is there
-      // if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
-      req.send(post);
    }
 
    /** @summary Process request */
@@ -103821,7 +103816,7 @@ class RH1Painter$2 extends RHistPainter {
 
          stat_sumw += w;
          stat_sumwx += w * xx;
-         stat_sumwx2 += w * xx * xx;
+         stat_sumwx2 += w * xx**2;
       }
 
       // when no range selection done, use original statistic from histogram
@@ -103836,8 +103831,8 @@ class RH1Painter$2 extends RHistPainter {
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany**2));
       }
 
       if (xmax !== null) {
@@ -105032,16 +105027,16 @@ class RH2Painter$2 extends RHistPainter {
             stat_sum0 += zz;
             stat_sumx1 += xx * zz;
             stat_sumy1 += yy * zz;
-            stat_sumx2 += xx * xx * zz;
-            stat_sumy2 += yy * yy * zz;
+            stat_sumx2 += xx**2 * zz;
+            stat_sumy2 += yy**2 * zz;
          }
       }
 
       if (stat_sum0 > 0) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
       if (res.wmax === null) res.wmax = 0;
@@ -105082,7 +105077,7 @@ class RH2Painter$2 extends RHistPainter {
       }
 
       if (print_integral > 0)
-         stat.addText("Integral = " + stat.format(data.matrix[4],"entries"));
+         stat.addText("Integral = " + stat.format(data.matrix[4], "entries"));
 
       if (print_skew > 0) {
          stat.addText("Skewness x = <undef>");
@@ -105489,7 +105484,7 @@ class RH2Painter$2 extends RHistPainter {
          bin._sumx = bin._sumy = bin._suml = 0;
 
       function addPoint(x1,y1,x2,y2) {
-         let len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+         let len = Math.sqrt((x1-x2)**2 + (y1-y2)**2);
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
          bin._suml += len;
@@ -105646,7 +105641,7 @@ class RH2Painter$2 extends RHistPainter {
                   if ((dx!==0) || (dy!==0)) {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        anr = Math.sqrt(2/(dx*dx + dy*dy));
+                        anr = Math.sqrt(2/(dx**2 + dy**2));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
                         if (si || co)
@@ -106640,9 +106635,9 @@ class RH3Painter extends RHistPainter {
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
-                  stat_sumx2 += xx * xx * cont;
-                  stat_sumy2 += yy * yy * cont;
-                  stat_sumz2 += zz * zz * cont;
+                  stat_sumx2 += xx**2 * cont;
+                  stat_sumy2 += yy**2 * cont;
+                  stat_sumz2 += zz**2 * cont;
                }
             }
          }
@@ -106662,9 +106657,9 @@ class RH3Painter extends RHistPainter {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
-         res.rmsz = Math.sqrt(Math.abs(stat_sumz2 / stat_sum0 - res.meanz * res.meanz));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
+         res.rmsz = Math.sqrt(Math.abs(stat_sumz2 / stat_sum0 - res.meanz**2));
       }
 
       res.integral = stat_sum0;
