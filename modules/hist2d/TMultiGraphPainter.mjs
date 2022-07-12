@@ -233,7 +233,7 @@ class TMultiGraphPainter extends ObjectPainter {
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
          let mp = this.getMainPainter();
-         if (mp && mp.createAutoColor) {
+         if (typeof mp?.createAutoColor == 'function') {
             let icolor = mp.createAutoColor(graphs.arr.length);
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;

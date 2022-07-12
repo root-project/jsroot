@@ -792,7 +792,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       evnt.stopPropagation();
       evnt.stopImmediatePropagation();
 
-      if (control.painter && (typeof control.painter.analyzeMouseWheelEvent == 'function')) {
+      if (typeof control.painter?.analyzeMouseWheelEvent == 'function') {
          let kind = intersect.object.zoom,
              position = intersect.point[kind],
              item = { name: kind, ignore: false };

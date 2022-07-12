@@ -892,7 +892,7 @@ class THistPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (mp && mp.createAutoColor) {
+         if (typeof mp?.createAutoColor == 'function') {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
@@ -1825,7 +1825,7 @@ class THistPainter extends ObjectPainter {
       let main = this.getMainPainter(),
           fp = this.getFramePainter();
 
-      if (main && (main !== this) && main.fContour) {
+      if (main?.fContour && (main !== this)) {
          this.fContour = main.fContour;
          return this.fContour;
       }

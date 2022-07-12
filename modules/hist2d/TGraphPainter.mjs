@@ -40,7 +40,7 @@ class TGraphPainter extends ObjectPainter {
       if (this.$redraw_hist) {
          delete this.$redraw_hist;
          let hist_painter = this.getMainPainter();
-         if (hist_painter && hist_painter.$secondary && this.axes_draw)
+         if (hist_painter?.$secondary && this.axes_draw)
             promise = hist_painter.redraw();
       }
 
@@ -328,8 +328,7 @@ class TGraphPainter extends ObjectPainter {
       if (!dox && !doy) return false;
 
       this.createHistogram(null, dox, doy);
-      let hpainter = this.getMainPainter();
-      if (hpainter) hpainter.extractAxesProperties(1); // just to enforce ranges extraction
+      this.getMainPainter()?.extractAxesProperties(1); // just to enforce ranges extraction
 
       return true;
    }
@@ -832,7 +831,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (mp && mp.createAutoColor) {
+         if (typeof mp?.createAutoColor == 'function') {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
@@ -1333,7 +1332,7 @@ class TGraphPainter extends ObjectPainter {
          histo.fTitle = graph.fTitle; // copy title
 
          let hist_painter = this.getMainPainter();
-         if (hist_painter && hist_painter.$secondary) {
+         if (hist_painter?.$secondary) {
             hist_painter.updateObject(histo, this.options.Axis);
             this.$redraw_hist = true;
          }
