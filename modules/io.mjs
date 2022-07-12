@@ -58,22 +58,22 @@ const CustomStreamers = {
    },
 
    TNamed: [ {
-      basename: clTObject, base: 1, func: (buf, obj) => {
+      basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTNamed;
          buf.classStreamer(obj, clTObject);
       }
      },
-     { name: 'fName', func: (buf, obj) => { obj.fName = buf.readTString(); } },
-     { name: 'fTitle', func: (buf, obj) => { obj.fTitle = buf.readTString(); } }
+     { name: 'fName', func(buf, obj) { obj.fName = buf.readTString(); } },
+     { name: 'fTitle', func(buf, obj) { obj.fTitle = buf.readTString(); } }
    ],
 
    TObjString: [ {
-      basename: clTObject, base: 1, func: (buf, obj) => {
+      basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTObjString;
          buf.classStreamer(obj, clTObject);
       }
      },
-     { name: 'fString', func: (buf, obj) => { obj.fString = buf.readTString(); } }
+     { name: 'fString', func(buf, obj) { obj.fString = buf.readTString(); } }
    ],
 
    TClonesArray(buf, list) {
@@ -312,7 +312,7 @@ const CustomStreamers = {
          buf.classStreamer(elem, "TStreamerSTL");
    },
 
-   TList: function(buf, obj) {
+   TList(buf, obj) {
       // stream all objects in the list from the I/O buffer
       if (!obj._typename) obj._typename = this.typename;
       obj.$kind = clTList; // all derived classes will be marked as well
@@ -363,7 +363,7 @@ const CustomStreamers = {
 
    TTree: {
       name: '$file',
-      func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; }
+      func(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; }
    },
 
    RooRealVar(buf, obj) {
@@ -409,24 +409,24 @@ const CustomStreamers = {
 
    TImagePalette: [
       {
-         basename: clTObject, base: 1, func: (buf, obj) => {
+         basename: clTObject, base: 1, func(buf, obj) {
             if (!obj._typename) obj._typename = 'TImagePalette';
             buf.classStreamer(obj, clTObject);
          }
       },
-      { name: 'fNumPoints', func: (buf, obj) => { obj.fNumPoints = buf.ntou4(); } },
-      { name: 'fPoints', func: (buf, obj) => { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
-      { name: 'fColorRed', func: (buf, obj) => { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorGreen', func: (buf, obj) => { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorBlue', func: (buf, obj) => { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorAlpha', func: (buf, obj) => { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
+      { name: 'fNumPoints', func(buf, obj) { obj.fNumPoints = buf.ntou4(); } },
+      { name: 'fPoints', func(buf, obj) { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
+      { name: 'fColorRed', func(buf, obj) { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorGreen', func(buf, obj) { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorBlue', func(buf, obj) { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorAlpha', func(buf, obj) { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
    ],
 
    TAttImage: [
-      { name: 'fImageQuality', func: (buf, obj) => { obj.fImageQuality = buf.ntoi4(); } },
-      { name: 'fImageCompression', func: (buf, obj) => { obj.fImageCompression = buf.ntou4(); } },
-      { name: 'fConstRatio', func: (buf, obj) => { obj.fConstRatio = (buf.ntou1() != 0); } },
-      { name: 'fPalette', func: (buf, obj) => { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
+      { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
+      { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
+      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
+      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
    ],
 
    TASImage(buf, obj) {
@@ -1301,7 +1301,7 @@ function addClassMethods(clname, streamer) {
             streamer.push({
                name: key,
                method: methods[key],
-               func: function(buf, obj) { obj[this.name] = this.method; }
+               func(buf, obj) { obj[this.name] = this.method; }
             });
 
    return streamer;
@@ -2571,9 +2571,8 @@ class TBuffer {
          return obj;
       }
 
-      const ver = this.readVersion();
-
-      const streamer = this.fFile.getStreamer(classname, ver);
+      const ver = this.readVersion(),
+            streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
 
@@ -3413,7 +3412,7 @@ class TFile {
 
          if (elem.basename == clTObject) {
             tgt.push({
-               func: function(buf, obj) {
+               func(buf, obj) {
                   buf.ntoi2(); // read version, why it here??
                   obj.fUniqueID = buf.ntou4();
                   obj.fBits = buf.ntou4();
