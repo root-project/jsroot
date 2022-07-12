@@ -779,10 +779,10 @@ class TH1Painter extends THistPainter {
       }
 
       const pmain = this.getFramePainter(),
-           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-           histo = this.getHisto(),
-           left = this.getSelectIndex("x", "left", -1),
-           right = this.getSelectIndex("x", "right", 2);
+            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            histo = this.getHisto(),
+            left = this.getSelectIndex("x", "left", -1),
+            right = this.getSelectIndex("x", "right", 2);
       let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           findbin = null, show_rect,

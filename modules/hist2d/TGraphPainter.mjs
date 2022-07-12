@@ -370,7 +370,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Returns tooltip for specified bin */
    getTooltips(d) {
       let pmain = this.getFramePainter(), lines = [],
-          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
           gme = this.get_gme();
 
       lines.push(this.getObjectHint());
@@ -627,7 +627,7 @@ class TGraphPainter extends ObjectPainter {
 
          if (main_block) {
             let fp = this.getFramePainter(),
-                fpcol = fp && fp.fillatt && !fp.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
+                fpcol = fp?.fillatt && !fp?.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
             if (fpcol === fillatt.getFillColor())
                usefill = new TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
          }
@@ -1211,7 +1211,7 @@ class TGraphPainter extends ObjectPainter {
          this.move_binindx = hint.binindx;
          this.move_bin = hint.bin;
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          this.move_x0 = funcs ? funcs.grx(this.move_bin.x) : x;
          this.move_y0 = funcs ? funcs.gry(this.move_bin.y) : y;
       } else {
@@ -1228,7 +1228,7 @@ class TGraphPainter extends ObjectPainter {
          this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
       } else {
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          if (funcs && this.move_bin) {
             this.move_bin.x = funcs.revertAxis("x", this.move_x0 + this.pos_dx);
             this.move_bin.y = funcs.revertAxis("y", this.move_y0 + this.pos_dy);
@@ -1245,7 +1245,7 @@ class TGraphPainter extends ObjectPainter {
          this.draw_g.attr("transform", null);
 
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          if (funcs && this.bins && !not_changed) {
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
@@ -1286,16 +1286,16 @@ class TGraphPainter extends ObjectPainter {
       let canp = this.getCanvPainter(), pmain = this.getFramePainter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
-         let pnt = pmain ? pmain.getLastEventPos() : null;
+         let pnt = pmain?.getLastEventPos();
 
          if (!canp || canp._readonly || !pnt) return true; // ignore function
 
          let hint = this.extractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            let funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
-                userx = funcs ? funcs.revertAxis("x", pnt.x) : 0,
-                usery = funcs ? funcs.revertAxis("y", pnt.y) : 0;
+            let funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
+                userx = funcs?.revertAxis("x", pnt.x) ?? 0,
+                usery = funcs?.revertAxis("y", pnt.y) ?? 0;
             canp.showMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
             this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);

@@ -294,7 +294,8 @@ class TH3Painter extends THistPainter {
           box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
-      if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
+      if (!box_option && this.options.Lego)
+         box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
 
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
 

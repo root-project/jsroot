@@ -221,7 +221,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.create3DScene === 'function')
+      if (typeof fp?.create3DScene === 'function')
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -605,8 +605,8 @@ class RHistPainter extends RObjectPainter {
    changeValuesRange(menu, arg) {
       let pmain = this.getFramePainter();
       if (!pmain) return;
-      let prefix = pmain.isAxisZoomed(arg) ? "zoom_" + arg : arg;
-      let curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
+      let prefix = pmain.isAxisZoomed(arg) ? "zoom_" + arg : arg,
+          curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       menu.input("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr).then(res => {
          res = res ? JSON.parse(res) : [];
          if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
@@ -684,10 +684,8 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Update palette drawing */
    updatePaletteDraw() {
-      if (this.isMainPainter()) {
-         let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-         if (pp) pp.drawPalette();
-      }
+      if (this.isMainPainter())
+         this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable")?.drawPalette();
    }
 
    /** @summary Fill menu entries for palette */

@@ -267,13 +267,13 @@ function create3DScene(render3d, x3dscale, y3dscale) {
             for (let n = 0; n < intersects.length; ++n) {
                let mesh = intersects[n].object;
                if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (mesh.painter && typeof mesh.painter.fillContextMenu === 'function') {
+               if (typeof mesh.painter?.fillContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
 
          let fp = obj_painter.getFramePainter();
-         if (fp && fp.showContextMenu)
+         if (typeof fp?.showContextMenu == 'function')
             fp.showContextMenu(kind, pos, p);
       };
 

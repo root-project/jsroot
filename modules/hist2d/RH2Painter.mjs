@@ -1428,7 +1428,7 @@ class RH2Painter extends RHistPainter {
          const realx = pmain.revertAxis("x", pnt.x),
                realy = pmain.revertAxis("y", pnt.y);
 
-         if ((realx!==undefined) && (realy!==undefined)) {
+         if ((realx !== undefined) && (realy !== undefined)) {
             const len = histo.fBins.arr.length;
 
             for (let i = 0; (i < len) && (foundindx < 0); ++ i) {

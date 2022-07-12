@@ -940,7 +940,7 @@ class THistPainter extends ObjectPainter {
          // The only that could be done is update of content
 
          // check only stats bit, later other settings can be monitored
-         let statpainter = pp ? pp.findPainterFor(this.findStat()) : null;
+         let statpainter = pp?.findPainterFor(this.findStat());
          if (histo.TestBit(TH1StatusBits.kNoStats) != obj.TestBit(TH1StatusBits.kNoStats)) {
             histo.fBits = obj.fBits;
             if (statpainter) statpainter.Enabled = !histo.TestBit(TH1StatusBits.kNoStats);
@@ -1680,7 +1680,7 @@ class THistPainter extends ObjectPainter {
             if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
-         if (fp && fp.render3D) {
+         if (typeof fp?.render3D == 'function') {
             menu.addchk(main.options.FrontBox, 'Front box', function() {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -1697,13 +1697,13 @@ class THistPainter extends ObjectPainter {
                this.interactiveRedraw("pad");
             });
 
-            if ((this.options.Lego==12) || (this.options.Lego==14)) {
+            if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
                menu.addchk(this.options.Zscale, "Z scale", () => this.toggleColz());
                if (this.fillPaletteMenu) this.fillPaletteMenu(menu);
             }
          }
 
-         if (main.control && typeof main.control.reset === 'function')
+         if (typeof main.control?.reset === 'function')
             menu.add('Reset camera', function() {
                main.control.reset();
             });
