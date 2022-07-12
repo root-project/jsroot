@@ -11,7 +11,7 @@ let version_id = "7.1.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/07/2022";
+let version_date = "12/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -66,7 +66,7 @@ let browser$1 = { isOpera: false, isFirefox: true, isSafari: false, isChrome: fa
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
    browser$1.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-   browser$1.isFirefox = typeof InstallTrigger !== 'undefined';
+   browser$1.isFirefox = (navigator.userAgent.indexOf("Firefox") >= 0) || (typeof InstallTrigger !== 'undefined');
    browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser$1.isChrome = !!window.chrome && !browser$1.isOpera;
    browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
@@ -62612,8 +62612,8 @@ class THistDrawOptions {
 
       if (d.check('PIE')) this.Pie = true; // not used
 
-      if (d.check('CANDLE', true)) this.Candle = d.part;
-      if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
+      if (d.check('CANDLE', true)) this.Candle = d.part || "1";
+      if (d.check('VIOLIN', true)) { this.Violin = d.part || "1"; delete this.Candle; }
       if (d.check('NOSCALED')) this.Scaled = false;
       if (d.check('SCALED')) this.Scaled = true;
 
@@ -69002,8 +69002,14 @@ class TH3Painter extends THistPainter {
       if (!this.draw_content)
          return Promise.resolve(false);
 
-      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
-          return this.draw3DScatter();
+      let box_option = this.options.Box ? this.options.BoxStyle : 0;
+
+      if (!box_option && !this.options.GLBox && !this.options.GLColor && !this.options.Lego) {
+          let promise = this.draw3DScatter();
+          if (promise !== false)
+             return promise;
+          box_option = 12;
+      }
 
       let histo = this.getHisto(),
           fillcolor = this.getColor(histo.fFillColor),
@@ -69011,7 +69017,6 @@ class TH3Painter extends THistPainter {
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-          box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
