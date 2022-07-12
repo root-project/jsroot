@@ -18,34 +18,16 @@ function injectHStyle(node) {
       return `.jsroot .img_${name} { display: inline-block; height: ${sz}px; width: ${sz}px; background-image: url("data:image/${fmt};base64,${code}"); }`;
    }
 
+   let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
+       border_color = settings.DarkMode ? 'green' : 'black',
+       shadow_color = settings.DarkMode ? '#555' : '#aaa';
+
    injectStyle(`
 .jsroot .h_tree { display: block; white-space: nowrap; }
-.jsroot .h_tree * {
-    padding: 0;
-    margin: 0;
-    font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
-    box-sizing: content-box;
-    line-height: 14px
-}
+.jsroot .h_tree * { padding: 0; margin: 0; font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; box-sizing: content-box; line-height: 14px }
 .jsroot .h_tree img { border: 0px; vertical-align: middle; }
-.jsroot .h_tree a {
-    text-decoration: none;
-    vertical-align: top;
-    white-space: nowrap;
-    padding: 1px 2px 0px 2px;
-    display: inline-block;
-    margin: 0;
-}
-.jsroot .h_tree p {
-    font-weight: bold;
-    white-space: nowrap;
-    text-decoration: none;
-    vertical-align: top;
-    white-space: nowrap;
-    padding: 1px 2px 0px 2px;
-    display: inline-block;
-    margin: 0;
-}
+.jsroot .h_tree a { text-decoration: none; vertical-align: top; white-space: nowrap; padding: 1px 2px 0px 2px; display: inline-block; margin: 0; }
+.jsroot .h_tree p { font-weight: bold; white-space: nowrap; text-decoration: none; vertical-align: top; white-space: nowrap; padding: 1px 2px 0px 2px; display: inline-block; margin: 0; }
 .jsroot .h_value_str { color: green; }
 .jsroot .h_value_num { color: blue; }
 .jsroot .h_line { height: 18px; display: block; }
@@ -53,23 +35,9 @@ function injectHStyle(node) {
 .jsroot .h_item { cursor: pointer; }
 .jsroot .h_item:hover { text-decoration: underline; }
 .jsroot .h_childs { overflow: hidden; display: block; }
-.jsroot_fastcmd_btn {
-   height: 32px;
-   width: 32px;
-   display: inline-block;
-   margin: 2px;
-   padding: 2px;
-   background-position: left 2px top 2px;
-   background-repeat: no-repeat;
-   background-size: 24px 24px;
-   border-color: inherit;
-}
-.jsroot_inspector {
-    border: 1px solid black;
-    box-shadow: 1px 1px 2px 2px #aaa;
-    opacity: 0.95;
-    background-color: white;
-}
+.jsroot_fastcmd_btn { height: 32px; width: 32px; display: inline-block; margin: 2px; padding: 2px; background-position: left 2px top 2px;
+                      background-repeat: no-repeat; background-size: 24px 24px; border-color: inherit; }
+.jsroot_inspector { border: 1px solid ${border_color}; box-shadow: 1px 1px 2px 2px ${shadow_color}; opacity: 0.95; background-color: ${bkgr_color}; }
 .jsroot_drag_area { background-color: #007fff; }
 ${img("minus",18,"gif","R0lGODlhEgASAJEDAIKCgoCAgAAAAP///yH5BAEAAAMALAAAAAASABIAAAInnD+By+2rnpyhWvsizE0zf4CIIpRlgiqaiDosa7zZdU22A9y6u98FADs=")}
 ${img("minusbottom",18,"gif","R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAImlC+Ay+2rnpygWvsizE0zf4CIEpRlgiqaiDosa7zZdU32jed6XgAAOw==")}
