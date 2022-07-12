@@ -13,7 +13,7 @@ function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
    let fp = painter.getFramePainter();
-   if (fp && typeof fp.setTooltipEnabled == 'function') {
+   if (typeof fp?.setTooltipEnabled == 'function') {
       fp.setTooltipEnabled(on);
       fp.processFrameTooltipEvent(null);
    }

@@ -4370,7 +4370,7 @@ class TGeoPainter extends ObjectPainter {
          let can3d = 0;
          if (this._on_pad) {
             let fp = this.getFramePainter();
-            if (fp && fp.mode3d) {
+            if (fp?.mode3d) {
                fp.clear3dCanvas();
                fp.mode3d = false;
             }

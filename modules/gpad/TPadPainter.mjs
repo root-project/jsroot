@@ -1063,8 +1063,7 @@ class TPadPainter extends ObjectPainter {
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
 
-         let fp = this.getFramePainter();
-         if (fp) fp.setLastEventPos();
+         this.getFramePainter()?.setLastEventPos();
       }
 
       createMenu(evnt, this).then(menu => {
@@ -1629,7 +1628,7 @@ class TPadPainter extends ObjectPainter {
       let main = this.getFramePainter(),
           p = this.svg_this_pad();
 
-      r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
+      r.ranges = main?.ranges_set ? true : false; // indicate that ranges are assigned
 
       r.ux1 = r.px1 = r.ranges ? main.scale_xmin : 0; // need to initialize for JSON reader
       r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
@@ -1708,7 +1707,7 @@ class TPadPainter extends ObjectPainter {
           }
        }
 
-       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
+       if (typeof selp?.fillContextMenu !== 'function') return;
 
        createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -1765,7 +1764,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          let main = pp.getFramePainter();
-         if (!main || (typeof main.render3D !== 'function') || (typeof main.access3dKind !== 'function')) return;
+         if ((typeof main?.render3D !== 'function') || (typeof main?.access3dKind !== 'function')) return;
 
          let can3d = main.access3dKind();
 

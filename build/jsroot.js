@@ -11034,7 +11034,7 @@ class ObjectPainter extends BasePainter {
       } else if (!use_frame) {
          let pp = this.getPadPainter();
          if (!isndc && pp) func.pad = pp.getRootPad(true); // need for NDC conversion
-         func.padw = pp ? pp.getPadWidth() : 10;
+         func.padw = pp?.getPadWidth() ?? 10;
          func.x = function(value) {
             if (this.pad) {
                if (this.pad.fLogx)
@@ -11044,7 +11044,7 @@ class ObjectPainter extends BasePainter {
             value *= this.padw;
             return this.nornd ? value : Math.round(value);
          };
-         func.padh = pp ? pp.getPadHeight() : 10;
+         func.padh = pp?.getPadHeight() ?? 10;
          func.y = function(value) {
             if (this.pad) {
                if (this.pad.fLogy)
@@ -11088,11 +11088,11 @@ class ObjectPainter extends BasePainter {
 
       if (use_frame) {
          let main = this.getFramePainter();
-         return main ? main.revertAxis(axis, coord) : 0;
+         return main?.revertAxis(axis, coord) ?? 0;
       }
 
       let pp = this.getPadPainter(),
-          value = (axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth(),
+          value = !pp ? 0 : ((axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth()),
           pad = (ndc || !pp) ? null : pp.getRootPad(true);
 
       if (pad) {
@@ -11126,8 +11126,7 @@ class ObjectPainter extends BasePainter {
      * @desc Pad has direct reference on frame if any
      * @protected */
    getFramePainter() {
-      let pp = this.getPadPainter();
-      return pp ? pp.getFramePainter() : null;
+      return this.getPadPainter()?.getFramePainter();
    }
 
    /** @summary Returns painter for main object on the pad.
@@ -11144,7 +11143,8 @@ class ObjectPainter extends BasePainter {
          else
             res = pp.getMainPainter();
          if (!res) res = null;
-         if (!not_store) this._main_painter = res;
+         if (!not_store)
+            this._main_painter = res;
       }
       return res;
    }
@@ -11983,7 +11983,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.configureUserClickHandler == "function")
+      if (typeof fp?.configureUserClickHandler == "function")
          fp.configureUserClickHandler(handler);
    }
 
@@ -11994,7 +11994,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.configureUserDblclickHandler == "function")
+      if (typeof fp?.configureUserDblclickHandler == "function")
          fp.configureUserDblclickHandler(handler);
    }
 
@@ -44999,7 +44999,7 @@ let Handling3DDrawings = {
 
       let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
 
-      if (fp && fp.mode3d && (can3d > 0)) {
+      if (fp?.mode3d && (can3d > 0)) {
          size = fp.getFrameRect();
       } else {
          let elem = (can3d > 0) ? pad : this.getCanvSvg();
@@ -45777,7 +45777,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // then check if double-click handler assigned
       let fp = this.painter ? this.painter.getFramePainter() : null;
-      if (fp && typeof fp._dblclick_handler == 'function') {
+      if (typeof fp?._dblclick_handler == 'function') {
          let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
             fp._dblclick_handler(info);
@@ -45961,7 +45961,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (kind == 1) {
          let fp = this.painter ? this.painter.getFramePainter() : null;
-         if (fp && (typeof fp._click_handler == 'function')) {
+         if (typeof fp?._click_handler == 'function') {
             let info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
                fp._click_handler(info);
@@ -45986,8 +45986,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          delete this.single_click_tm;
       }
 
-      let kind = 0, fp = this.painter ? this.painter.getFramePainter() : null;
-      if (fp && typeof fp._click_handler == 'function')
+      let kind = 0, fp = this.painter?.getFramePainter();
+      if (typeof fp?._click_handler == 'function')
          kind = 1; // user click handler
       else if (this.processSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
          kind = 2;  // eve7 click handler
@@ -46529,13 +46529,13 @@ function create3DScene(render3d, x3dscale, y3dscale) {
             for (let n = 0; n < intersects.length; ++n) {
                let mesh = intersects[n].object;
                if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (mesh.painter && typeof mesh.painter.fillContextMenu === 'function') {
+               if (typeof mesh.painter?.fillContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
 
          let fp = obj_painter.getFramePainter();
-         if (fp && fp.showContextMenu)
+         if (typeof fp?.showContextMenu == 'function')
             fp.showContextMenu(kind, pos, p);
       };
 
@@ -53772,7 +53772,7 @@ function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
    let fp = painter.getFramePainter();
-   if (fp && typeof fp.setTooltipEnabled == 'function') {
+   if (typeof fp?.setTooltipEnabled == 'function') {
       fp.setTooltipEnabled(on);
       fp.processFrameTooltipEvent(null);
    }
@@ -59313,8 +59313,7 @@ class TPadPainter extends ObjectPainter {
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
 
-         let fp = this.getFramePainter();
-         if (fp) fp.setLastEventPos();
+         this.getFramePainter()?.setLastEventPos();
       }
 
       createMenu$1(evnt, this).then(menu => {
@@ -59879,7 +59878,7 @@ class TPadPainter extends ObjectPainter {
       let main = this.getFramePainter(),
           p = this.svg_this_pad();
 
-      r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
+      r.ranges = main?.ranges_set ? true : false; // indicate that ranges are assigned
 
       r.ux1 = r.px1 = r.ranges ? main.scale_xmin : 0; // need to initialize for JSON reader
       r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
@@ -59958,7 +59957,7 @@ class TPadPainter extends ObjectPainter {
           }
        }
 
-       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
+       if (typeof selp?.fillContextMenu !== 'function') return;
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -60015,7 +60014,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          let main = pp.getFramePainter();
-         if (!main || (typeof main.render3D !== 'function') || (typeof main.access3dKind !== 'function')) return;
+         if ((typeof main?.render3D !== 'function') || (typeof main?.access3dKind !== 'function')) return;
 
          let can3d = main.access3dKind();
 
@@ -62066,7 +62065,7 @@ class TPavePainter extends ObjectPainter {
    paveContextMenu(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
-         if (fp && fp.showContextMenu)
+         if (typeof fp?.showContextMenu == 'function')
              fp.showContextMenu("z", evnt);
          return;
       }
@@ -62816,7 +62815,7 @@ class THistDrawOptions {
 
       if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
       if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
-      let check_axis_bit = (opt, axis, bit) => {
+      const check_axis_bit = (opt, axis, bit) => {
          let flag = d.check(opt);
          if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
          if (flag && histo)
@@ -63094,12 +63093,11 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns histogram axis */
    getAxis(name) {
       let histo = this.getObject();
-      if (histo)
-         switch(name) {
-            case "x": return histo.fXaxis;
-            case "y": return histo.fYaxis;
-            case "z": return histo.fZaxis;
-         }
+      switch(name) {
+         case "x": return histo?.fXaxis;
+         case "y": return histo?.fYaxis;
+         case "z": return histo?.fZaxis;
+      }
       return null;
    }
 
@@ -63121,7 +63119,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.create3DScene === 'function')
+      if (typeof fp?.create3DScene === 'function')
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -63285,7 +63283,7 @@ class THistPainter extends ObjectPainter {
          // The only that could be done is update of content
 
          // check only stats bit, later other settings can be monitored
-         let statpainter = pp ? pp.findPainterFor(this.findStat()) : null;
+         let statpainter = pp?.findPainterFor(this.findStat());
          if (histo.TestBit(TH1StatusBits.kNoStats) != obj.TestBit(TH1StatusBits.kNoStats)) {
             histo.fBits = obj.fBits;
             if (statpainter) statpainter.Enabled = !histo.TestBit(TH1StatusBits.kNoStats);
@@ -64025,7 +64023,7 @@ class THistPainter extends ObjectPainter {
             if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
-         if (fp && fp.render3D) {
+         if (typeof fp?.render3D == 'function') {
             menu.addchk(main.options.FrontBox, 'Front box', function() {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -64042,13 +64040,13 @@ class THistPainter extends ObjectPainter {
                this.interactiveRedraw("pad");
             });
 
-            if ((this.options.Lego==12) || (this.options.Lego==14)) {
+            if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
                menu.addchk(this.options.Zscale, "Z scale", () => this.toggleColz());
                if (this.fillPaletteMenu) this.fillPaletteMenu(menu);
             }
          }
 
-         if (main.control && typeof main.control.reset === 'function')
+         if (typeof main.control?.reset === 'function')
             menu.add('Reset camera', function() {
                main.control.reset();
             });
@@ -65398,10 +65396,10 @@ class TH1Painter$2 extends THistPainter {
       }
 
       const pmain = this.getFramePainter(),
-           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-           histo = this.getHisto(),
-           left = this.getSelectIndex("x", "left", -1),
-           right = this.getSelectIndex("x", "right", 2);
+            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            histo = this.getHisto(),
+            left = this.getSelectIndex("x", "left", -1),
+            right = this.getSelectIndex("x", "right", 2);
       let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           findbin = null, show_rect,
@@ -68984,7 +68982,7 @@ class TH3Painter extends THistPainter {
           k2 = this.getSelectIndex("z", "right", 0),
           i, j, k, bin_content;
 
-      if ((i2<=i1) || (j2<=j1) || (k2<=k1))
+      if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return Promise.resolve(true);
 
       // scale down factor if too large values
@@ -69004,7 +69002,7 @@ class TH3Painter extends THistPainter {
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000))
-         return false;
+         return Promise.resolve(false);
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
@@ -69085,7 +69083,8 @@ class TH3Painter extends THistPainter {
           box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
-      if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
+      if (!box_option && this.options.Lego)
+         box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
 
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
 
@@ -90051,7 +90050,7 @@ class TGeoPainter extends ObjectPainter {
          let can3d = 0;
          if (this._on_pad) {
             let fp = this.getFramePainter();
-            if (fp && fp.mode3d) {
+            if (fp?.mode3d) {
                fp.clear3dCanvas();
                fp.mode3d = false;
             }
@@ -92453,7 +92452,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Returns tooltip for specified bin */
    getTooltips(d) {
       let pmain = this.getFramePainter(), lines = [],
-          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
           gme = this.get_gme();
 
       lines.push(this.getObjectHint());
@@ -92710,7 +92709,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
          if (main_block) {
             let fp = this.getFramePainter(),
-                fpcol = fp && fp.fillatt && !fp.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
+                fpcol = fp?.fillatt && !fp?.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
             if (fpcol === fillatt.getFillColor())
                usefill = new TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
          }
@@ -93294,7 +93293,7 @@ class TGraphPainter$1 extends ObjectPainter {
          this.move_binindx = hint.binindx;
          this.move_bin = hint.bin;
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          this.move_x0 = funcs ? funcs.grx(this.move_bin.x) : x;
          this.move_y0 = funcs ? funcs.gry(this.move_bin.y) : y;
       } else {
@@ -93311,7 +93310,7 @@ class TGraphPainter$1 extends ObjectPainter {
          this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
       } else {
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          if (funcs && this.move_bin) {
             this.move_bin.x = funcs.revertAxis("x", this.move_x0 + this.pos_dx);
             this.move_bin.y = funcs.revertAxis("y", this.move_y0 + this.pos_dy);
@@ -93328,7 +93327,7 @@ class TGraphPainter$1 extends ObjectPainter {
          this.draw_g.attr("transform", null);
 
          let pmain = this.getFramePainter(),
-             funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+             funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          if (funcs && this.bins && !not_changed) {
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
@@ -93369,16 +93368,16 @@ class TGraphPainter$1 extends ObjectPainter {
       let canp = this.getCanvPainter(), pmain = this.getFramePainter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
-         let pnt = pmain ? pmain.getLastEventPos() : null;
+         let pnt = pmain?.getLastEventPos();
 
          if (!canp || canp._readonly || !pnt) return true; // ignore function
 
          let hint = this.extractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            let funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
-                userx = funcs ? funcs.revertAxis("x", pnt.x) : 0,
-                usery = funcs ? funcs.revertAxis("y", pnt.y) : 0;
+            let funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
+                userx = funcs?.revertAxis("x", pnt.x) ?? 0,
+                usery = funcs?.revertAxis("y", pnt.y) ?? 0;
             canp.showMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
             this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
@@ -93852,7 +93851,7 @@ class TF1Painter extends ObjectPainter {
       if (name.length > 0) res.lines.push(name);
 
       let pmain = this.getFramePainter(),
-          funcs = pmain ? pmain.getGrFuncs(this.second_x, this.second_y) : null;
+          funcs = pmain?.getGrFuncs(this.second_x, this.second_y);
       if (funcs)
          res.lines.push("x = " + funcs.axisAsText("x",bin.x) + " y = " + funcs.axisAsText("y",bin.y));
 
@@ -95120,7 +95119,7 @@ class TSplinePainter extends ObjectPainter {
       let cleanup = false,
           spline = this.getObject(),
           main = this.getFramePainter(),
-          funcs = main ? main.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = main?.getGrFuncs(this.options.second_x, this.options.second_y),
           xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !funcs) {
@@ -95199,7 +95198,7 @@ class TSplinePainter extends ObjectPainter {
 
       let spline = this.getObject(),
           pmain = this.getFramePainter(),
-          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
 
@@ -99568,8 +99567,7 @@ class RPadPainter extends RObjectPainter {
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
 
-         let fp = this.getFramePainter();
-         if (fp) fp.setLastEventPos();
+         this.getFramePainter()?.setLastEventPos();
       }
 
       createMenu$1(evnt, this).then(menu => {
@@ -100003,7 +100001,7 @@ class RPadPainter extends RObjectPainter {
       if (!isanyfound) {
          let fp = this.getFramePainter();
          // cannot preserve ROOT6 frame - it must be recreated
-         if (fp && fp.is_root6()) fp = null;
+         if (fp?.is_root6()) fp = null;
          for (let k = 0; k < this.painters.length; ++k)
              if (fp !== this.painters[k])
                this.painters[k].cleanup();
@@ -100078,7 +100076,7 @@ class RPadPainter extends RObjectPainter {
           }
        }
 
-       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
+       if (typeof selp?.fillContextMenu !== 'function') return;
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -103055,7 +103053,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.create3DScene === 'function')
+      if (typeof fp?.create3DScene === 'function')
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -103439,8 +103437,8 @@ class RHistPainter extends RObjectPainter {
    changeValuesRange(menu, arg) {
       let pmain = this.getFramePainter();
       if (!pmain) return;
-      let prefix = pmain.isAxisZoomed(arg) ? "zoom_" + arg : arg;
-      let curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
+      let prefix = pmain.isAxisZoomed(arg) ? "zoom_" + arg : arg,
+          curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       menu.input("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr).then(res => {
          res = res ? JSON.parse(res) : [];
          if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
@@ -103518,10 +103516,8 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Update palette drawing */
    updatePaletteDraw() {
-      if (this.isMainPainter()) {
-         let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-         if (pp) pp.drawPalette();
-      }
+      if (this.isMainPainter())
+         this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable")?.drawPalette();
    }
 
    /** @summary Fill menu entries for palette */
@@ -103803,7 +103799,7 @@ class RH1Painter$2 extends RHistPainter {
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
-          res = { name: "histo", meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
+          res = { name: "histo", meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i+0.5);
@@ -106173,7 +106169,7 @@ class RH2Painter$2 extends RHistPainter {
          const realx = pmain.revertAxis("x", pnt.x),
                realy = pmain.revertAxis("y", pnt.y);
 
-         if ((realx!==undefined) && (realy!==undefined)) {
+         if ((realx !== undefined) && (realy !== undefined)) {
             const len = histo.fBins.arr.length;
 
             for (let i = 0; (i < len) && (foundindx < 0); ++ i) {

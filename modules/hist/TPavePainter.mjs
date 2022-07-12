@@ -972,7 +972,7 @@ class TPavePainter extends ObjectPainter {
    paveContextMenu(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
-         if (fp && fp.showContextMenu)
+         if (typeof fp?.showContextMenu == 'function')
              fp.showContextMenu("z", evnt);
          return;
       }

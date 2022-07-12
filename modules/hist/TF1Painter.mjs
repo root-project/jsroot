@@ -262,7 +262,7 @@ class TF1Painter extends ObjectPainter {
       if (name.length > 0) res.lines.push(name);
 
       let pmain = this.getFramePainter(),
-          funcs = pmain ? pmain.getGrFuncs(this.second_x, this.second_y) : null;
+          funcs = pmain?.getGrFuncs(this.second_x, this.second_y);
       if (funcs)
          res.lines.push("x = " + funcs.axisAsText("x",bin.x) + " y = " + funcs.axisAsText("y",bin.y));
 

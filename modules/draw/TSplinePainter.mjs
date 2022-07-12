@@ -112,7 +112,7 @@ class TSplinePainter extends ObjectPainter {
       let cleanup = false,
           spline = this.getObject(),
           main = this.getFramePainter(),
-          funcs = main ? main.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = main?.getGrFuncs(this.options.second_x, this.options.second_y),
           xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !funcs) {
@@ -191,7 +191,7 @@ class TSplinePainter extends ObjectPainter {
 
       let spline = this.getObject(),
           pmain = this.getFramePainter(),
-          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
 

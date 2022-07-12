@@ -430,7 +430,7 @@ class ObjectPainter extends BasePainter {
       } else if (!use_frame) {
          let pp = this.getPadPainter();
          if (!isndc && pp) func.pad = pp.getRootPad(true); // need for NDC conversion
-         func.padw = pp ? pp.getPadWidth() : 10;
+         func.padw = pp?.getPadWidth() ?? 10;
          func.x = function(value) {
             if (this.pad) {
                if (this.pad.fLogx)
@@ -440,7 +440,7 @@ class ObjectPainter extends BasePainter {
             value *= this.padw;
             return this.nornd ? value : Math.round(value);
          }
-         func.padh = pp ? pp.getPadHeight() : 10;
+         func.padh = pp?.getPadHeight() ?? 10;
          func.y = function(value) {
             if (this.pad) {
                if (this.pad.fLogy)
@@ -484,11 +484,11 @@ class ObjectPainter extends BasePainter {
 
       if (use_frame) {
          let main = this.getFramePainter();
-         return main ? main.revertAxis(axis, coord) : 0;
+         return main?.revertAxis(axis, coord) ?? 0;
       }
 
       let pp = this.getPadPainter(),
-          value = (axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth(),
+          value = !pp ? 0 : ((axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth()),
           pad = (ndc || !pp) ? null : pp.getRootPad(true);
 
       if (pad) {
@@ -522,8 +522,7 @@ class ObjectPainter extends BasePainter {
      * @desc Pad has direct reference on frame if any
      * @protected */
    getFramePainter() {
-      let pp = this.getPadPainter();
-      return pp ? pp.getFramePainter() : null;
+      return this.getPadPainter()?.getFramePainter();
    }
 
    /** @summary Returns painter for main object on the pad.
@@ -540,7 +539,8 @@ class ObjectPainter extends BasePainter {
          else
             res = pp.getMainPainter();
          if (!res) res = null;
-         if (!not_store) this._main_painter = res;
+         if (!not_store)
+            this._main_painter = res;
       }
       return res;
    }
@@ -1379,7 +1379,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.configureUserClickHandler == "function")
+      if (typeof fp?.configureUserClickHandler == "function")
          fp.configureUserClickHandler(handler);
    }
 
@@ -1390,7 +1390,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (fp && typeof fp.configureUserDblclickHandler == "function")
+      if (typeof fp?.configureUserDblclickHandler == "function")
          fp.configureUserDblclickHandler(handler);
    }
 

@@ -677,8 +677,7 @@ class RPadPainter extends RObjectPainter {
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
 
-         let fp = this.getFramePainter();
-         if (fp) fp.setLastEventPos();
+         this.getFramePainter()?.setLastEventPos();
       }
 
       createMenu(evnt, this).then(menu => {
@@ -1112,7 +1111,7 @@ class RPadPainter extends RObjectPainter {
       if (!isanyfound) {
          let fp = this.getFramePainter();
          // cannot preserve ROOT6 frame - it must be recreated
-         if (fp && fp.is_root6()) fp = null;
+         if (fp?.is_root6()) fp = null;
          for (let k = 0; k < this.painters.length; ++k)
              if (fp !== this.painters[k])
                this.painters[k].cleanup();
@@ -1187,7 +1186,7 @@ class RPadPainter extends RObjectPainter {
           }
        }
 
-       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
+       if (typeof selp?.fillContextMenu !== 'function') return;
 
        createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
