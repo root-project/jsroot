@@ -202,7 +202,7 @@ let Handling3DDrawings = {
       size.clname = clname;
       size.can3d = can3d;
 
-      let rect = pp ?  pp.getPadRect() : null;
+      let rect = pp?.getPadRect();
       if (rect) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
          let dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);

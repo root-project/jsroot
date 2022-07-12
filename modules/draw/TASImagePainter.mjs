@@ -330,7 +330,7 @@ class TASImagePainter extends ObjectPainter {
    /** @summary Fill pad toolbar for TASImage */
    fillToolbar() {
       let pp = this.getPadPainter(), obj = this.getObject();
-      if (pp && obj && obj.fPalette) {
+      if (pp && obj?.fPalette) {
          pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
          pp.showPadButtons();
       }

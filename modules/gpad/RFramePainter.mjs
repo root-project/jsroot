@@ -425,7 +425,7 @@ class RFramePainter extends RObjectPainter {
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
           pp = this.getPadPainter(), pr;
 
-      if (pp && pp._fast_drawing) {
+      if (pp?._fast_drawing) {
          pr = Promise.resolve(true); // do nothing
       } else if (this.v6axes) {
 
@@ -667,7 +667,7 @@ class RFramePainter extends RObjectPainter {
       delete this._dblclick_handler;
 
       let pp = this.getPadPainter();
-      if (pp && (pp.frame_painter_ref === this))
+      if (pp?.frame_painter_ref === this)
          delete pp.frame_painter_ref;
 
       super.cleanup();

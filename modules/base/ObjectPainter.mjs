@@ -68,7 +68,8 @@ class ObjectPainter extends BasePainter {
 
       if (this.isMainPainter()) {
          let pp = this.getPadPainter();
-         if (!pp || pp.normal_canvas === false) keep_origin = false;
+         if (!pp || (pp.normal_canvas === false))
+            keep_origin = false;
       }
 
       // cleanup all existing references
@@ -141,7 +142,7 @@ class ObjectPainter extends BasePainter {
 
       if (typeof this.options.asString == "function") {
          let changed = false, pp = this.getPadPainter();
-         if (!this.options_store || (pp && pp._interactively_changed)) {
+         if (!this.options_store || pp?._interactively_changed) {
             changed  = true;
          } else {
             for (let k in this.options)
@@ -149,7 +150,7 @@ class ObjectPainter extends BasePainter {
                   changed = true;
          }
          if (changed)
-            return this.options.asString(this.isMainPainter(), pp ? pp.getRootPad() : null);
+            return this.options.asString(this.isMainPainter(), pp?.getRootPad());
       }
 
       return this.options.original || ""; // nothing better, return original draw option
@@ -534,10 +535,7 @@ class ObjectPainter extends BasePainter {
       let res = this._main_painter;
       if (!res) {
          let pp = this.getPadPainter();
-         if (!pp)
-            res = this.getTopPainter();
-         else
-            res = pp.getMainPainter();
+         res = pp ? pp.getMainPainter() : this.getTopPainter();
          if (!res) res = null;
          if (!not_store)
             this._main_painter = res;
@@ -850,7 +848,7 @@ class ObjectPainter extends BasePainter {
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size)
-            .property("_fast_drawing", pp ? pp._fast_drawing : false);
+            .property("_fast_drawing", pp?._fast_drawing || false);
 
       if (draw_g.property("_fast_drawing"))
          draw_g.property("_font_too_small", (max_font_size && (max_font_size < 5)) || (font.size < 4));

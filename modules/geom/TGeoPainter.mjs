@@ -5043,7 +5043,7 @@ function drawDummy3DGeom(painter) {
 
    let opt = "", pp = painter.getPadPainter();
 
-   if (pp && pp.pad && pp.pad.fFillColor && pp.pad.fFillStyle > 1000)
+   if (pp?.pad?.fFillColor && pp?.pad?.fFillStyle > 1000)
       opt = "bkgr_" +  pp.pad.fFillColor;
 
    return TGeoPainter.draw(painter.getDom(), obj, opt)
