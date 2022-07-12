@@ -193,7 +193,7 @@ class TH3Painter extends THistPainter {
           k2 = this.getSelectIndex("z", "right", 0),
           i, j, k, bin_content;
 
-      if ((i2<=i1) || (j2<=j1) || (k2<=k1))
+      if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return Promise.resolve(true);
 
       // scale down factor if too large values
@@ -213,7 +213,7 @@ class TH3Painter extends THistPainter {
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000))
-         return false;
+         return Promise.resolve(false);
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
