@@ -439,14 +439,14 @@ class TGraphPainter extends ObjectPainter {
       let extrabins = [];
       for (let n = drawbins.length-1; n >= 0; --n) {
          let bin = drawbins[n],
-             dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
-         // shift point, using
+             dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
+         // shift point
          bin.grx += excl_width*bin.dgry/dlen;
          bin.gry -= excl_width*bin.dgrx/dlen;
          extrabins.push(bin);
       }
 
-      let path2 = buildSvgPath("L" + (is_curve ? "bezier" : "line"), extrabins);
+      let path2 = buildSvgPath(is_curve ? "Lbezier" : "Lline", extrabins);
 
       this.draw_g.append("svg:path")
                  .attr("d", path.path + path2.path + "Z")
@@ -460,7 +460,7 @@ class TGraphPainter extends ObjectPainter {
       let graph = this.getObject(),
           excl_width = 0, drawbins = null;
 
-      if (main_block && (lineatt.excl_side != 0)) {
+      if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width;
          if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
       }

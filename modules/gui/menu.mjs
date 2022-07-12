@@ -511,7 +511,7 @@ class JSRootMenu {
 
       if (!preffix) preffix = "";
 
-      if (painter.lineatt && painter.lineatt.used) {
+      if (painter.lineatt?.used) {
          this.add("sub:" + preffix + "Line att");
          this.addSizeMenu("width", 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
@@ -523,7 +523,7 @@ class JSRootMenu {
          });
          this.add("endsub:");
 
-         if (('excl_side' in painter.lineatt) && (painter.lineatt.excl_side !== 0)) {
+         if (painter.lineatt?.excl_side) {
             this.add("sub:Exclusion");
             this.add("sub:side");
             for (let side = -1; side <= 1; ++side)
