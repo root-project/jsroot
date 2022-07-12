@@ -1031,7 +1031,7 @@ function createEltuBuffer( shape , faces_limit ) {
       nx1 = nx2; ny1 = ny2;
       nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
       ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
-      let dist = Math.sqrt(nx2*nx2 + ny2*ny2);
+      let dist = Math.sqrt(nx2**2 + ny2**2);
       nx2 = nx2 / dist; ny2 = ny2/dist;
 
       creator.setNormal_12_34(nx1,ny1,0,nx2,ny2,0);
@@ -1434,8 +1434,8 @@ function createParaboloidBuffer( shape, faces_limit ) {
          case heightSegments: layerz = zmax; radius = rmax; break;
          case heightSegments + 1: layerz = zmax; radius = 0; break;
          default: {
-            let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
-            let delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+            let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
+                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
             if (radius < 1e-6) radius = 0;
             layerz = radius*tt;
@@ -1511,8 +1511,8 @@ function createHypeBuffer( shape, faces_limit ) {
       for (let layer = 0; layer < heightSegments; ++layer) {
          let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
              z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
-             r1 = Math.sqrt(r0*r0+tsq*z1*z1),
-             r2 = Math.sqrt(r0*r0+tsq*z2*z2);
+             r1 = Math.sqrt(r0**2 + tsq*z1**2),
+             r2 = Math.sqrt(r0**2 + tsq*z2**2);
 
          for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
@@ -1527,8 +1527,8 @@ function createHypeBuffer( shape, faces_limit ) {
    // add caps
    for (let layer = 0; layer < 2; ++layer) {
       let z = (layer === 0) ? shape.fDz : -shape.fDz,
-          r1 = Math.sqrt(shape.fRmax*shape.fRmax + shape.fToutsq*z*z),
-          r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin*shape.fRmin + shape.fTinsq*z*z) : 0,
+          r1 = Math.sqrt(shape.fRmax**2 + shape.fToutsq*z**2),
+          r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin**2 + shape.fTinsq*z**2) : 0,
           skip = (shape.fRmin > 0) ? 0 : 1,
           d1 = 1 - layer, d2 = 1 - d1;
       for (let seg = 0; seg < radiusSegments; ++seg) {
