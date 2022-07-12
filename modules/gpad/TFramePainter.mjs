@@ -1342,7 +1342,7 @@ const FrameInteractive = {
          } else if ((kind == "x") || (kind == "y") || (kind == "z")) {
             exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
 
-            if (this.v7_frame && exec_painter && typeof exec_painter.v7EvalAttr === 'function')
+            if (this.v7_frame && typeof exec_painter?.v7EvalAttr === 'function')
                exec_painter = null;
          }
       } else if (kind == 'painter' && obj) {
@@ -2430,14 +2430,13 @@ class TFramePainter extends ObjectPainter {
          menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), "No exponent",
                () => { faxis.InvertBit(EAxisBits.kNoExponent); this.redrawPad(); });
 
-         if ((kind === "z") && main && main.options && main.options.Zscale)
-            if (typeof main.fillPaletteMenu == 'function')
-               main.fillPaletteMenu(menu);
+         if ((kind === "z") && main?.options?.Zscale && (typeof main?.fillPaletteMenu == 'function'))
+            main.fillPaletteMenu(menu);
 
          if (faxis) {
             let handle = this[kind+"_handle"];
 
-            if (handle && (handle.kind == "labels") && (faxis.fNbins > 20))
+            if ((handle?.kind == "labels") && (faxis.fNbins > 20))
                menu.add("Find label", () => menu.input("Label id").then(id => {
                   if (!id) return;
                   for (let bin = 0; bin < faxis.fNbins; ++bin) {

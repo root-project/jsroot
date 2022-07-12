@@ -187,8 +187,7 @@ class TCanvasPainter extends TPadPainter {
 
          promise.then(painter => { this.proj_painter = painter; });
       } else {
-         let hp = this.proj_painter.getMainPainter();
-         if (hp) hp.updateObject(hist, hopt);
+         this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
          this.proj_painter.redrawPad();
       }
    }

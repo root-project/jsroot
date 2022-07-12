@@ -5055,7 +5055,7 @@ function drawDummy3DGeom(painter) {
 function drawAxis3D() {
    let main = this.getMainPainter();
 
-   if (main && (typeof main.setAxesDraw == 'function'))
+   if (typeof main?.setAxesDraw == 'function')
       return main.setAxesDraw(true);
 
    console.error('no geometry painter found to toggle TAxis3D drawing');

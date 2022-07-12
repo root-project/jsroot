@@ -454,7 +454,7 @@ function highlightBin3D(tip, selfmesh) {
    if (changed && tip.$painter && (typeof tip.$painter.redrawProjection == 'function'))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
-   if (changed && mainp && mainp.getObject())
+   if (changed && mainp?.getObject())
       mainp.provideUserTooltip({ obj: mainp.getObject(),  name: mainp.getObject().fName,
                                  bin: tip.bin, cont: tip.value,
                                  binx: tip.ix, biny: tip.iy, binz: tip.iz,

@@ -648,7 +648,7 @@ class RHistPainter extends RObjectPainter {
             if (!fp.enable_highlight && main.highlightBin3D && main.mode3d) main.highlightBin3D(null);
          });
 
-         if (fp && fp.render3D) {
+         if (typeof fp?.render3D == 'function') {
             menu.addchk(main.options.FrontBox, 'Front box', () => {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -665,12 +665,13 @@ class RHistPainter extends RObjectPainter {
                this.redrawPad();
             });
 
-            if ((this.options.Lego==12) || (this.options.Lego==14)) {
-               if (this.fillPaletteMenu) this.fillPaletteMenu(menu);
+            if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
+               if (this.fillPaletteMenu)
+                  this.fillPaletteMenu(menu);
             }
          }
 
-         if (main.control && typeof main.control.reset === 'function')
+         if (typeof main.control?.reset === 'function')
             menu.add('Reset camera', () => main.control.reset());
       }
 

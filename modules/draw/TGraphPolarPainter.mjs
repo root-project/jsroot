@@ -348,7 +348,7 @@ class TGraphPolarPainter extends ObjectPainter {
       let graph = this.getObject(),
           main = this.getMainPainter();
 
-      if (!graph || !main || !main.$polargram) return;
+      if (!graph || !main?.$polargram) return;
 
       if (this.options.mark) this.createAttMarker({ attr: graph });
       if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });

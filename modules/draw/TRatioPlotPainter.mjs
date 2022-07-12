@@ -39,11 +39,11 @@ class TRatioPlotPainter extends ObjectPainter {
       if (top_p) top_p.disablePadDrawing();
 
       let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
-          up_main = up_p ? up_p.getMainPainter() : null,
-          up_fp = up_p ? up_p.getFramePainter() : null,
+          up_main = up_p?.getMainPainter(),
+          up_fp = up_p?.getFramePainter(),
           low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
-          low_main = low_p ? low_p.getMainPainter() : null,
-          low_fp = low_p ? low_p.getFramePainter() : null,
+          low_main = low_p?.getMainPainter(),
+          low_fp = low_p?.getFramePainter(),
           lbl_size = 20, promise_up = Promise.resolve(true);
 
       if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
@@ -99,7 +99,7 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p.getRootPad().fTicky = 1;
 
          low_p.forEachPainterInPad(objp => {
-            if (typeof objp.testEditable == 'function')
+            if (typeof objp?.testEditable == 'function')
                objp.testEditable(false);
          });
 

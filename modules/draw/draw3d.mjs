@@ -16,7 +16,7 @@ function before3DDraw(painter, obj) {
    let geop = painter.getMainPainter();
    if(!geop)
       return drawDummy3DGeom(painter);
-   else if (typeof geop.drawExtras == 'function')
+   if (typeof geop.drawExtras == 'function')
       return geop.drawExtras(obj);
 
    return null;
