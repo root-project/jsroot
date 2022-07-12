@@ -193,7 +193,7 @@ class JSRootMenu {
 
       if (size_value === undefined) return;
 
-      let values = [];
+      let values = [], miss_current = false;
       if (typeof step == 'object') {
          values = step; step = 1;
       } else for (let sz = min; sz <= max; sz += step)
@@ -201,12 +201,14 @@ class JSRootMenu {
 
       const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
             conv = (v, more) => {
-              if (step >= 1) return v.toFixed(0);
-              if (step >= 0.1) return v.toFixed(more ? 2 : 1);
-              return v.toFixed(more ? 4 : 2);
+               if ((v === size_value) && miss_current) more = true;
+               if (step >= 1) return v.toFixed(0);
+               if (step >= 0.1) return v.toFixed(more ? 2 : 1);
+               return v.toFixed(more ? 4 : 2);
            };
 
       if (values.findIndex(match) < 0) {
+         miss_current = true;
          values.push(size_value);
          values = values.sort((a,b) => a > b);
       }
