@@ -60685,29 +60685,24 @@ class TCanvasPainter extends TPadPainter {
          return false;
       if (this.brlayout)
          return this.brlayout.hasStatus();
-      let hp = getHPainter();
-      if (hp)
-         return hp.hasStatusLine();
-      return false;
+      return getHPainter()?.hasStatusLine() ?? false;
    }
 
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
       if (this.testUI5()) return;
-      if (this.brlayout) {
+      if (this.brlayout)
          this.brlayout.createStatusLine(23, state);
-      } else {
-         let hp = getHPainter();
-         if (hp) hp.createStatusLine(23, state);
-      }
+      else
+         getHPainter()?.createStatusLine(23, state);
       this.processChanges("sbits", this);
    }
 
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.hasContent() : false;
+      return this.brlayout?.hasContent() ?? false;
    }
 
    /** @summary Function used to de-activate GED
@@ -60722,8 +60717,7 @@ class TCanvasPainter extends TPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      if (this.brlayout)
-         this.brlayout.deleteContent();
+      this.brlayout?.deleteContent();
 
       this.processChanges("sbits", this);
    }
@@ -65344,7 +65338,7 @@ class TH1Painter$2 extends THistPainter {
           cont = histo.getBinContent(bin+1),
           xlbl = this.getAxisBinTip("x", histo.fXaxis, bin);
 
-      if (name.length > 0) tips.push(name);
+      if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
@@ -65886,7 +65880,7 @@ class TH2Painter$2 extends THistPainter {
 
       if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
-         let exec = "EXECANDSEND:D" + this.is_projection + "PROJ:" + this.snapid + ":";
+         let exec = `EXECANDSEND:D${this.is_projection}PROJ:${this.snapid}:`;
          if (this.is_projection == "X")
             exec += `ProjectionX("_projx",${jj1+1},${jj2},"")`;
          else
@@ -65914,7 +65908,8 @@ class TH2Painter$2 extends THistPainter {
       if (this.is_projection == "X") {
          for (let i = 0; i < this.nbinsx; ++i) {
             let sum = 0;
-            for (let j = jj1; j < jj2; ++j) sum += histo.getBinContent(i+1,j+1);
+            for (let j = jj1; j < jj2; ++j)
+               sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(i+1, sum);
          }
          this.proj_hist.fTitle = "X projection " + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
@@ -65923,7 +65918,8 @@ class TH2Painter$2 extends THistPainter {
       } else {
          for (let j = 0; j < this.nbinsy; ++j) {
             let sum = 0;
-            for (let i = ii1; i < ii2; ++i) sum += histo.getBinContent(i+1,j+1);
+            for (let i = ii1; i < ii2; ++i)
+               sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(j+1, sum);
          }
          this.proj_hist.fTitle = "Y projection " + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
@@ -66196,7 +66192,7 @@ class TH2Painter$2 extends THistPainter {
 
             if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax===null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
             stat_sum0 += zz;
             stat_sumx1 += xx * zz;
@@ -66229,7 +66225,7 @@ class TH2Painter$2 extends THistPainter {
 
                if (cond && !cond(xx,yy)) continue;
 
-               if ((res.wmax===null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+               if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
                stat_sum0 += zz;
                stat_sumx1 += xx * zz;
@@ -67131,8 +67127,9 @@ class TH2Painter$2 extends THistPainter {
       if (pad && pad.fLogz && (absmax > 0)) {
          uselogz = true;
          let logmax = Math.log(absmax);
-         if (absmin>0) logmin = Math.log(absmin); else
-         if ((main.minposbin>=1) && (main.minposbin<100))
+         if (absmin > 0)
+            logmin = Math.log(absmin);
+         else if ((main.minposbin>=1) && (main.minposbin<100))
             logmin = Math.log(0.7);
          else
             logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
@@ -67620,26 +67617,26 @@ class TH2Painter$2 extends THistPainter {
              .style("stroke", this.getColor(histo.fFillColor));
 
       let hline_color = (isOption(kHistoZeroIndicator) && (histo.fFillStyle != 0)) ? this.fillatt.color : this.lineatt.color;
-      if ((hists.length > 0) && (!this.fillatt.empty() || (hline_color != 'none')))
+      if (hists && (!this.fillatt.empty() || (hline_color != 'none')))
          this.draw_g.append("svg:path")
              .attr("d", hists)
              .style("stroke", (hline_color != 'none') ? hline_color : null)
-             .style("pointer-events",isBatchMode() ? null : "visibleFill")
+             .style("pointer-events", isBatchMode() ? null : "visibleFill")
              .call(this.fillatt.func);
 
-      if (bars.length > 0)
+      if (bars)
          this.draw_g.append("svg:path")
              .attr("d", bars)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
 
-      if (lines.length > 0)
+      if (lines)
          this.draw_g.append("svg:path")
              .attr("d", lines)
              .call(this.lineatt.func)
              .style('fill','none');
 
-      if (dashed_lines.length > 0) {
+      if (dashed_lines) {
          let dashed = new TAttLineHandler({ attr: histo, style: 2 });
          this.draw_g.append("svg:path")
              .attr("d", dashed_lines)
@@ -67647,12 +67644,12 @@ class TH2Painter$2 extends THistPainter {
              .style('fill','none');
       }
 
-      if (cmarkers.length > 0)
+      if (cmarkers)
          this.draw_g.append("svg:path")
              .attr("d", cmarkers)
              .call(attrcmarkers.func);
 
-      if (markers.length > 0)
+      if (markers)
          this.draw_g.append("svg:path")
              .attr("d", markers)
              .call(this.markeratt.func);
@@ -67876,15 +67873,15 @@ class TH2Painter$2 extends THistPainter {
       let pnts = [];
 
       for (let n = 0; n < nbins; n++) {
-         let angle = (0.5 - n/nbins)*Math.PI*2,
-             cx = Math.round((0.9*rect.width/2 - 2*circle_size) * Math.cos(angle)),
-             cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(angle)),
-             x = Math.round(0.9*rect.width/2 * Math.cos(angle)),
-             y = Math.round(0.9*rect.height/2 * Math.sin(angle)),
-             rotate = Math.round(angle/Math.PI*180), align = 12,
+         let a = (0.5 - n/nbins)*Math.PI*2,
+             cx = Math.round((0.9*rect.width/2 - 2*circle_size) * Math.cos(a)),
+             cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(a)),
+             x = Math.round(0.9*rect.width/2 * Math.cos(a)),
+             y = Math.round(0.9*rect.height/2 * Math.sin(a)),
+             rotate = Math.round(a/Math.PI*180), align = 12,
              color = palette ? palette.calcColor(n, nbins) : 'black';
 
-         pnts.push({x: cx, y: cy, a: angle, color: color }); // remember points coordinates
+         pnts.push({ x: cx, y: cy, a, color }); // remember points coordinates
 
          if ((rotate < -90) || (rotate > 90)) { rotate += 180; align = 32; }
 
@@ -67895,7 +67892,7 @@ class TH2Painter$2 extends THistPainter {
                     .style('stroke', color)
                     .style('fill','none');
 
-         this.drawText({ align, rotate, text: getBinLabel(n), x, y });
+         this.drawText({ align, rotate, x, y, text: getBinLabel(n)});
       }
 
       let max_width = circle_size/2, max_value = 0, min_value = 0;
@@ -68138,10 +68135,10 @@ class TH2Painter$2 extends THistPainter {
          let gr = bin.fPoly, numgraphs = 1;
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
-         for (let ngr=0;ngr<numgraphs;++ngr) {
-            if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         for (let ngr = 0; ngr < numgraphs; ++ngr) {
+            if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
-            for (let n=0;n<gr.fNpoints;++n) {
+            for (let n = 0; n < gr.fNpoints; ++n) {
                ++numpoints;
                realx += gr.fX[n];
                realy += gr.fY[n];
@@ -68187,7 +68184,7 @@ class TH2Painter$2 extends THistPainter {
          const realx = funcs.revertAxis("x", pnt.x),
                realy = funcs.revertAxis("y", pnt.y);
 
-         if ((realx!==undefined) && (realy!==undefined)) {
+         if ((realx !== undefined) && (realy !== undefined)) {
             const len = histo.fBins.arr.length;
 
             for (let i = 0; (i < len) && (foundindx < 0); ++i) {
@@ -68203,8 +68200,8 @@ class TH2Painter$2 extends THistPainter {
                let gr = bin.fPoly, numgraphs = 1;
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
-               for (let ngr=0;ngr<numgraphs;++ngr) {
-                  if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+               for (let ngr = 0; ngr < numgraphs; ++ngr) {
+                  if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
                   if (gr.IsInside(realx,realy)) {
                      foundindx = i;
                      break;
@@ -73913,34 +73910,16 @@ function injectHStyle(node) {
       return `.jsroot .img_${name} { display: inline-block; height: ${sz}px; width: ${sz}px; background-image: url("data:image/${fmt};base64,${code}"); }`;
    }
 
+   let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
+       border_color = settings.DarkMode ? 'green' : 'black',
+       shadow_color = settings.DarkMode ? '#555' : '#aaa';
+
    injectStyle(`
 .jsroot .h_tree { display: block; white-space: nowrap; }
-.jsroot .h_tree * {
-    padding: 0;
-    margin: 0;
-    font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
-    box-sizing: content-box;
-    line-height: 14px
-}
+.jsroot .h_tree * { padding: 0; margin: 0; font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; box-sizing: content-box; line-height: 14px }
 .jsroot .h_tree img { border: 0px; vertical-align: middle; }
-.jsroot .h_tree a {
-    text-decoration: none;
-    vertical-align: top;
-    white-space: nowrap;
-    padding: 1px 2px 0px 2px;
-    display: inline-block;
-    margin: 0;
-}
-.jsroot .h_tree p {
-    font-weight: bold;
-    white-space: nowrap;
-    text-decoration: none;
-    vertical-align: top;
-    white-space: nowrap;
-    padding: 1px 2px 0px 2px;
-    display: inline-block;
-    margin: 0;
-}
+.jsroot .h_tree a { text-decoration: none; vertical-align: top; white-space: nowrap; padding: 1px 2px 0px 2px; display: inline-block; margin: 0; }
+.jsroot .h_tree p { font-weight: bold; white-space: nowrap; text-decoration: none; vertical-align: top; white-space: nowrap; padding: 1px 2px 0px 2px; display: inline-block; margin: 0; }
 .jsroot .h_value_str { color: green; }
 .jsroot .h_value_num { color: blue; }
 .jsroot .h_line { height: 18px; display: block; }
@@ -73948,23 +73927,9 @@ function injectHStyle(node) {
 .jsroot .h_item { cursor: pointer; }
 .jsroot .h_item:hover { text-decoration: underline; }
 .jsroot .h_childs { overflow: hidden; display: block; }
-.jsroot_fastcmd_btn {
-   height: 32px;
-   width: 32px;
-   display: inline-block;
-   margin: 2px;
-   padding: 2px;
-   background-position: left 2px top 2px;
-   background-repeat: no-repeat;
-   background-size: 24px 24px;
-   border-color: inherit;
-}
-.jsroot_inspector {
-    border: 1px solid black;
-    box-shadow: 1px 1px 2px 2px #aaa;
-    opacity: 0.95;
-    background-color: white;
-}
+.jsroot_fastcmd_btn { height: 32px; width: 32px; display: inline-block; margin: 2px; padding: 2px; background-position: left 2px top 2px;
+                      background-repeat: no-repeat; background-size: 24px 24px; border-color: inherit; }
+.jsroot_inspector { border: 1px solid ${border_color}; box-shadow: 1px 1px 2px 2px ${shadow_color}; opacity: 0.95; background-color: ${bkgr_color}; }
 .jsroot_drag_area { background-color: #007fff; }
 ${img("minus",18,"gif","R0lGODlhEgASAJEDAIKCgoCAgAAAAP///yH5BAEAAAMALAAAAAASABIAAAInnD+By+2rnpyhWvsizE0zf4CIIpRlgiqaiDosa7zZdU22A9y6u98FADs=")}
 ${img("minusbottom",18,"gif","R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAImlC+Ay+2rnpygWvsizE0zf4CIEpRlgiqaiDosa7zZdU32jed6XgAAOw==")}
@@ -74021,7 +73986,7 @@ function drawList(dom, lst, opt) {
      opt: opt,
      indx: -1,
      painter: null,
-     draw_next: function() {
+     draw_next() {
         while (++this.indx < this.lst.arr.length) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
@@ -74068,20 +74033,23 @@ function taskHierarchy(item, obj) {
    // function can be used for different derived classes
    // we show not only child tasks, but all complex data members
 
-   if (!obj || !('fTasks' in obj) || (obj.fTasks === null)) return false;
+   if (!obj?.fTasks) return false;
 
-   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
+   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] });
 
-   if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
+   if ((obj.fTasks.arr.length === 0) && (item._childs.length == 0)) {
+      item._more = false;
+      return true;
+   }
 
    // item._childs = [];
 
    for ( let i = 0; i < obj.fTasks.arr.length; ++i) {
       let chld = obj.fTasks.arr[i];
       item._childs.push({
-         _name : chld.fName,
-         _kind : "ROOT." + chld._typename,
-         _obj : chld
+         _name: chld.fName,
+         _kind: "ROOT." + chld._typename,
+         _obj: chld
       });
    }
    return true;
@@ -74257,7 +74225,7 @@ function objectHierarchy(top, obj, args = undefined) {
          }
 
          let val = obj.getUint8(k).toString(16);
-         while (val.length<2) val = "0"+val;
+         while (val.length < 2) val = "0"+val;
          if (item._value.length>0)
             item._value += (k%4===0) ? " | " : " ";
 
@@ -74551,21 +74519,22 @@ function createInspectorContent(obj) {
 
 
 /** @summary Parse string value as array.
- * @desc It could be just simple string:  "value" or
- * array with or without string quotes:  [element], ['elem1',elem2]
- * @private */
-let parseAsArray = val => {
+  * @desc It could be just simple string:  "value" or
+  * array with or without string quotes:  [element], ['elem1',elem2]
+  * @private */
+function parseAsArray(val) {
 
    let res = [];
 
    if (typeof val != 'string') return res;
 
    val = val.trim();
-   if (val=="") return res;
+   if (!val) return res;
 
    // return as array with single element
    if ((val.length < 2) || (val[0] != '[') || (val[val.length-1] != ']')) {
-      res.push(val); return res;
+      res.push(val);
+      return res;
    }
 
    // try to split ourself, checking quotes and brackets
@@ -74601,7 +74570,7 @@ let parseAsArray = val => {
       res.push(val.slice(1, val.length-1).trim());
 
    return res;
-};
+}
 
 
 /** @summary central function for expand of all online items
@@ -74774,7 +74743,7 @@ class HierarchyPainter extends BasePainter {
 
       function find_in_hierarchy(top, fullname) {
 
-         if (!fullname || (fullname.length == 0) || !top) return top;
+         if (!fullname || !top) return top;
 
          let pos = fullname.length;
 
@@ -74810,7 +74779,7 @@ class HierarchyPainter extends BasePainter {
                      return process_child(top._childs[i]);
 
                // if first child online, check its elements
-               if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined))
+               if ((top._kind === 'TopFolder') && (top._childs[0]._online !== undefined))
                   for (let i = 0; i < top._childs[0]._childs.length; ++i)
                      if (top._childs[0]._childs[i]._name == localname)
                         return process_child(top._childs[0]._childs[i], true);
@@ -74820,7 +74789,8 @@ class HierarchyPainter extends BasePainter {
                   let newest = null;
                   for (let i = 0; i < top._childs.length; ++i) {
                     if (top._childs[i]._keyname === localname) {
-                       if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i];
+                       if (!newest || (newest._cycle < top._childs[i]._cycle))
+                          newest = top._childs[i];
                     }
                   }
                   if (newest) return process_child(newest);
@@ -74962,7 +74932,7 @@ class HierarchyPainter extends BasePainter {
 
       let itemname, item, result = { item: null, obj: null };
 
-      if (arg===null) return Promise.resolve(result);
+      if (arg === null) return Promise.resolve(result);
 
       if (typeof arg === 'string') {
          itemname = arg;
@@ -75023,7 +74993,7 @@ class HierarchyPainter extends BasePainter {
       return Promise.resolve(result);
    }
 
-      /** @summary returns true if item is last in parent childs list
+   /** @summary returns true if item is last in parent childs list
      * @private */
    isLastSibling(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
@@ -75339,15 +75309,15 @@ class HierarchyPainter extends BasePainter {
          d3cont = select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
-            d3cont = this.selectDom().select("[item='" + name + "']");
+            d3cont = this.selectDom().select(`[item='${name}']`);
          if (d3cont.empty() && ('_cycle' in hitem))
-            d3cont = this.selectDom().select("[item='" + name + ";" + hitem._cycle + "']");
+            d3cont = this.selectDom().select(`[item='${name};${hitem._cycle}']`);
          if (d3cont.empty()) return;
       }
 
       this.addItemHtml(hitem, d3cont, "update");
 
-      if (this.brlayout) this.brlayout.adjustBrowserSize(true);
+      this.brlayout?.adjustBrowserSize(true);
    }
 
    /** @summary Update item background
@@ -75574,8 +75544,7 @@ class HierarchyPainter extends BasePainter {
             this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
             this.refreshHtml();
          } else if (arg == "dark") {
-            if (this.brlayout)
-               this.brlayout.createStyle();
+            this.brlayout?.createStyle();
             if (this.disp)
                this.disp.forEachFrame(frame => {
                   let canvp = getElementCanvPainter(frame);
@@ -77347,13 +77316,13 @@ class HierarchyPainter extends BasePainter {
       if (!this.gui_div || this.exclude_browser || !this.brlayout)
          return Promise.resolve(false);
 
-      let main = select("#" + this.gui_div + " .jsroot_browser");
+      let main = select(`#${this.gui_div} .jsroot_browser`);
 
       // one requires top-level container
       if (main.empty())
          return Promise.resolve(false);
 
-      if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
+      if ((browser_kind == "float") && this.float_browser_disabled) browser_kind = "fix";
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -77483,10 +77452,10 @@ class HierarchyPainter extends BasePainter {
    /** @summary Initialize browser elements */
    initializeBrowser() {
 
-      let main = select("#" + this.gui_div + " .jsroot_browser");
+      let main = select(`#${this.gui_div} .jsroot_browser`);
       if (main.empty() || !this.brlayout) return;
 
-      if (this.brlayout) this.brlayout.adjustBrowserSize();
+      this.brlayout.adjustBrowserSize();
 
       let selects = main.select(".gui_layout").node();
 
@@ -77509,7 +77478,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (this.is_online) {
-         if (this.h && this.h._toptitle)
+         if (this.h?._toptitle)
             this.brlayout.setBrowserTitle(this.h._toptitle);
          main.select(".gui_monitoring")
            .property('checked', this.isMonitoring())
@@ -77528,7 +77497,7 @@ class HierarchyPainter extends BasePainter {
    enableMonitoring(on) {
       this.setMonitoring(undefined, on);
 
-      let chkbox = select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      let chkbox = select(`#${this.gui_div} .jsroot_browser .gui_monitoring`);
       if (!chkbox.empty() && (chkbox.property('checked') !== on))
          chkbox.property('checked', on);
    }
@@ -101535,28 +101504,25 @@ class RCanvasPainter extends RPadPainter {
       if (this.brlayout)
          return this.brlayout.hasStatus();
       let hp = getHPainter();
-      if (hp)
-         return hp.hasStatusLine();
-      return false;
+      return hp ? hp.hasStatusLine() : false;
    }
 
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
       if (this.testUI5()) return;
-      if (this.brlayout) {
+      if (this.brlayout)
          this.brlayout.createStatusLine(23, state);
-      } else {
-         let hp = getHPainter();
-         if (hp) hp.createStatusLine(23, state);
-      }
+      else
+         getHPainter()?.createStatusLine(23, state);
+
       this.processChanges("sbits", this);
    }
 
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.hasContent() : false;
+      return this.brlayout?.hasContent() ?? false;
    }
 
    /** @summary Function used to de-activate GED
@@ -101571,8 +101537,7 @@ class RCanvasPainter extends RPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      if (this.brlayout)
-         this.brlayout.deleteContent();
+      this.brlayout?.deleteContent();
 
       this.processChanges("sbits", this);
    }
