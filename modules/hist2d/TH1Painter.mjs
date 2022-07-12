@@ -177,7 +177,7 @@ class TH1Painter extends THistPainter {
 
          stat_sumw += w;
          stat_sumwx += w * xx;
-         stat_sumwx2 += w * xx * xx;
+         stat_sumwx2 += w * xx**2;
       }
 
       // when no range selection done, use original statistic from histogram
@@ -192,11 +192,11 @@ class TH1Painter extends THistPainter {
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany**2));
       }
 
-      if (xmax!==null) {
+      if (xmax !== null) {
          res.xmax = xmax;
          res.wmax = wmax;
       }

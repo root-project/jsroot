@@ -421,8 +421,8 @@ class TH2Painter extends THistPainter {
                stat_sum0 += zz;
                stat_sumx1 += xx * zz;
                stat_sumy1 += yy * zz;
-               stat_sumx2 += xx * xx * zz;
-               stat_sumy2 += yy * yy * zz;
+               stat_sumx2 += xx**2 * zz;
+               stat_sumy2 += yy**2 * zz;
                // stat_sumxy += xx * yy * zz;
             }
          }
@@ -440,8 +440,8 @@ class TH2Painter extends THistPainter {
       if (stat_sum0 > 0) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
       if (res.wmax===null) res.wmax = 0;
@@ -1006,7 +1006,7 @@ class TH2Painter extends THistPainter {
          bin._sumx = bin._sumy = bin._suml = 0;
 
       const addPoint = (x1,y1,x2,y2) => {
-         const len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+         const len = Math.sqrt((x1-x2)**2 + (y1-y2)**2);
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
          bin._suml += len;
@@ -1275,7 +1275,7 @@ class TH2Painter extends THistPainter {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        anr = Math.sqrt(9/(dx*dx + dy*dy));
+                        anr = Math.sqrt(9/(dx**2 + dy**2));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
                         if (si || co)

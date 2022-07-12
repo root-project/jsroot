@@ -94,9 +94,9 @@ class RH3Painter extends RHistPainter {
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
-                  stat_sumx2 += xx * xx * cont;
-                  stat_sumy2 += yy * yy * cont;
-                  stat_sumz2 += zz * zz * cont;
+                  stat_sumx2 += xx**2 * cont;
+                  stat_sumy2 += yy**2 * cont;
+                  stat_sumz2 += zz**2 * cont;
                }
             }
          }
@@ -116,9 +116,9 @@ class RH3Painter extends RHistPainter {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany * res.meany));
-         res.rmsz = Math.sqrt(Math.abs(stat_sumz2 / stat_sum0 - res.meanz * res.meanz));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
+         res.rmsz = Math.sqrt(Math.abs(stat_sumz2 / stat_sum0 - res.meanz**2));
       }
 
       res.integral = stat_sum0;

@@ -80,9 +80,9 @@ class TH3Painter extends THistPainter {
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
-                  stat_sumx2 += xx * xx * cont;
-                  stat_sumy2 += yy * yy * cont;
-                  stat_sumz2 += zz * zz * cont;
+                  stat_sumx2 += xx**2 * cont;
+                  stat_sumy2 += yy**2 * cont;
+                  stat_sumz2 += zz**2 * cont;
                }
             }
          }

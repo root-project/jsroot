@@ -1131,7 +1131,7 @@ class TGraphPainter extends ObjectPainter {
             ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
 
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2))**2);
+         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
