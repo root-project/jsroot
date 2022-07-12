@@ -114,7 +114,8 @@ class JSRootMenu {
       }
 
       if (opts.length === 1) {
-         if (opts[0] === 'inspect') top_name = top_name.replace("Draw", "Inspect");
+         if (opts[0] === 'inspect')
+            top_name = top_name.replace("Draw", "Inspect");
          this.add(top_name, opts[0], call_back);
          return;
       }
@@ -127,7 +128,7 @@ class JSRootMenu {
          let group = i+1;
          if ((opts.length > 5) && (name.length > 0)) {
             // check if there are similar options, which can be grouped once again
-            while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
+            while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }
 
          if (without_sub) name = top_name + " " + name;
@@ -328,12 +329,9 @@ class JSRootMenu {
    /** @summary Add rebin menu entries
      * @protected */
    addRebinMenu(rebin_func) {
-     this.add("sub:Rebin", () => {
-         this.input("Enter rebin value", 2, "int", 2).then(rebin_func);
-      });
-      for (let sz = 2; sz <= 7; sz++) {
+      this.add("sub:Rebin", () => this.input("Enter rebin value", 2, "int", 2).then(rebin_func));
+      for (let sz = 2; sz <= 7; sz++)
          this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
-      }
       this.add("endsub:");
    }
 
@@ -540,7 +538,7 @@ class JSRootMenu {
          }
       }
 
-      if (painter.fillatt && painter.fillatt.used) {
+      if (painter.fillatt?.used) {
          this.add("sub:" + preffix + "Fill att");
          this.addColorMenu("color", painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
@@ -553,7 +551,7 @@ class JSRootMenu {
          this.add("endsub:");
       }
 
-      if (painter.markeratt && painter.markeratt.used) {
+      if (painter.markeratt?.used) {
          this.add("sub:" + preffix + "Marker att");
          this.addColorMenu("color", painter.markeratt.color,
             arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
@@ -920,11 +918,11 @@ class JSRootMenu {
                let arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
                if (value === "") value = arg.fDefault;
-               if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+               if ((arg.fTitle == "Option_t*") || (arg.fTitle == "const char*")) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters
                   if (!value) value = '""';
-                  if (value[0]!='"') value = '"' + value;
+                  if (value[0] != '"') value = '"' + value;
                   if (value[value.length-1] != '"') value += '"';
                }
 
