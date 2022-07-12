@@ -7,6 +7,7 @@
 4. Provide `FileProxy` class to let read ROOT files from arbitrary place
 5. Let 'hook' save file functionality to use alternative method to store image files
 6. Implement 'tabs' layout for objects display (#238)
+7. Upgrade d3.js to version 7.6.1
 
 
 ## Changes in 7.1.0
