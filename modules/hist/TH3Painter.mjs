@@ -213,7 +213,7 @@ class TH3Painter extends THistPainter {
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000))
-         return Promise.resolve(false);
+         return false;
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
@@ -254,7 +254,7 @@ class TH3Painter extends THistPainter {
             }
 
             let indx = Math.floor(intersect.index / this.nvertex);
-            if ((indx<0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             let p = this.painter, histo = p.getHisto(),
                 main = p.getFramePainter(),
@@ -282,8 +282,13 @@ class TH3Painter extends THistPainter {
       if (!this.draw_content)
          return Promise.resolve(false);
 
-      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
-          return this.draw3DScatter();
+      let box_option = this.options.Box ? this.options.BoxStyle : 0;
+
+      if (!box_option && !this.options.GLBox && !this.options.GLColor && !this.options.Lego) {
+         let promise = this.draw3DScatter();
+         if (promise !== false) return promise;
+         box_option = 12; // fall back to box2 draw option
+      }
 
       let histo = this.getHisto(),
           fillcolor = this.getColor(histo.fFillColor),
@@ -291,7 +296,7 @@ class TH3Painter extends THistPainter {
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-          box_option = this.options.Box ? this.options.BoxStyle : 0,
+
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego)
@@ -335,7 +340,7 @@ class TH3Painter extends THistPainter {
          single_bin_verts = new Float32Array(buffer_size);
          single_bin_norms = new Float32Array(buffer_size);
 
-         for (let k=0,nn=-3;k<indicies.length;++k) {
+         for (let k = 0, nn = -3; k < indicies.length; ++k) {
             let vert = vertices[indicies[k]];
             single_bin_verts[k*3]   = vert.x-0.5;
             single_bin_verts[k*3+1] = vert.y-0.5;
