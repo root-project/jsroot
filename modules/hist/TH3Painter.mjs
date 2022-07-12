@@ -282,8 +282,14 @@ class TH3Painter extends THistPainter {
       if (!this.draw_content)
          return Promise.resolve(false);
 
-      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
-          return this.draw3DScatter();
+      let box_option = this.options.Box ? this.options.BoxStyle : 0;
+
+      if (!box_option && !this.options.GLBox && !this.options.GLColor && !this.options.Lego) {
+          let promise = this.draw3DScatter();
+          if (promise !== false)
+             return promise;
+          box_option = 12;
+      }
 
       let histo = this.getHisto(),
           fillcolor = this.getColor(histo.fFillColor),
@@ -291,7 +297,6 @@ class TH3Painter extends THistPainter {
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-          box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
