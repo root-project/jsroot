@@ -94,7 +94,7 @@ function drawList(dom, lst, opt) {
      opt: opt,
      indx: -1,
      painter: null,
-     draw_next: function() {
+     draw_next() {
         while (++this.indx < this.lst.arr.length) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
@@ -141,20 +141,23 @@ function taskHierarchy(item, obj) {
    // function can be used for different derived classes
    // we show not only child tasks, but all complex data members
 
-   if (!obj || !('fTasks' in obj) || (obj.fTasks === null)) return false;
+   if (!obj?.fTasks) return false;
 
-   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
+   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] });
 
-   if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
+   if ((obj.fTasks.arr.length === 0) && (item._childs.length == 0)) {
+      item._more = false;
+      return true;
+   }
 
    // item._childs = [];
 
    for ( let i = 0; i < obj.fTasks.arr.length; ++i) {
       let chld = obj.fTasks.arr[i];
       item._childs.push({
-         _name : chld.fName,
-         _kind : "ROOT." + chld._typename,
-         _obj : chld
+         _name: chld.fName,
+         _kind: "ROOT." + chld._typename,
+         _obj: chld
       });
    }
    return true;
@@ -330,7 +333,7 @@ function objectHierarchy(top, obj, args = undefined) {
          }
 
          let val = obj.getUint8(k).toString(16);
-         while (val.length<2) val = "0"+val;
+         while (val.length < 2) val = "0"+val;
          if (item._value.length>0)
             item._value += (k%4===0) ? " | " : " ";
 
@@ -624,21 +627,22 @@ function createInspectorContent(obj) {
 
 
 /** @summary Parse string value as array.
- * @desc It could be just simple string:  "value" or
- * array with or without string quotes:  [element], ['elem1',elem2]
- * @private */
-let parseAsArray = val => {
+  * @desc It could be just simple string:  "value" or
+  * array with or without string quotes:  [element], ['elem1',elem2]
+  * @private */
+function parseAsArray(val) {
 
    let res = [];
 
    if (typeof val != 'string') return res;
 
    val = val.trim();
-   if (val=="") return res;
+   if (!val) return res;
 
    // return as array with single element
    if ((val.length < 2) || (val[0] != '[') || (val[val.length-1] != ']')) {
-      res.push(val); return res;
+      res.push(val);
+      return res;
    }
 
    // try to split ourself, checking quotes and brackets
