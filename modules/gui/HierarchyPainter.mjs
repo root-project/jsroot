@@ -851,7 +851,7 @@ class HierarchyPainter extends BasePainter {
 
       function find_in_hierarchy(top, fullname) {
 
-         if (!fullname || (fullname.length == 0) || !top) return top;
+         if (!fullname || !top) return top;
 
          let pos = fullname.length;
 
@@ -887,7 +887,7 @@ class HierarchyPainter extends BasePainter {
                      return process_child(top._childs[i]);
 
                // if first child online, check its elements
-               if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined))
+               if ((top._kind === 'TopFolder') && (top._childs[0]._online !== undefined))
                   for (let i = 0; i < top._childs[0]._childs.length; ++i)
                      if (top._childs[0]._childs[i]._name == localname)
                         return process_child(top._childs[0]._childs[i], true);
@@ -897,7 +897,8 @@ class HierarchyPainter extends BasePainter {
                   let newest = null;
                   for (let i = 0; i < top._childs.length; ++i) {
                     if (top._childs[i]._keyname === localname) {
-                       if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i];
+                       if (!newest || (newest._cycle < top._childs[i]._cycle))
+                          newest = top._childs[i];
                     }
                   }
                   if (newest) return process_child(newest);
@@ -1039,7 +1040,7 @@ class HierarchyPainter extends BasePainter {
 
       let itemname, item, result = { item: null, obj: null };
 
-      if (arg===null) return Promise.resolve(result);
+      if (arg === null) return Promise.resolve(result);
 
       if (typeof arg === 'string') {
          itemname = arg;
@@ -1100,7 +1101,7 @@ class HierarchyPainter extends BasePainter {
       return Promise.resolve(result);
    }
 
-      /** @summary returns true if item is last in parent childs list
+   /** @summary returns true if item is last in parent childs list
      * @private */
    isLastSibling(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
@@ -1418,15 +1419,15 @@ class HierarchyPainter extends BasePainter {
          d3cont = d3_select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
-            d3cont = this.selectDom().select("[item='" + name + "']");
+            d3cont = this.selectDom().select(`[item='${name}']`);
          if (d3cont.empty() && ('_cycle' in hitem))
-            d3cont = this.selectDom().select("[item='" + name + ";" + hitem._cycle + "']");
+            d3cont = this.selectDom().select(`[item='${name};${hitem._cycle}']`);
          if (d3cont.empty()) return;
       }
 
       this.addItemHtml(hitem, d3cont, "update");
 
-      if (this.brlayout) this.brlayout.adjustBrowserSize(true);
+      this.brlayout?.adjustBrowserSize(true);
    }
 
    /** @summary Update item background
@@ -1653,8 +1654,7 @@ class HierarchyPainter extends BasePainter {
             this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
             this.refreshHtml();
          } else if (arg == "dark") {
-            if (this.brlayout)
-               this.brlayout.createStyle();
+            this.brlayout?.createStyle();
             if (this.disp)
                this.disp.forEachFrame(frame => {
                   let canvp = getElementCanvPainter(frame);
@@ -3427,13 +3427,13 @@ class HierarchyPainter extends BasePainter {
       if (!this.gui_div || this.exclude_browser || !this.brlayout)
          return Promise.resolve(false);
 
-      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select(`#${this.gui_div} .jsroot_browser`);
 
       // one requires top-level container
       if (main.empty())
          return Promise.resolve(false);
 
-      if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
+      if ((browser_kind == "float") && this.float_browser_disabled) browser_kind = "fix";
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -3563,10 +3563,10 @@ class HierarchyPainter extends BasePainter {
    /** @summary Initialize browser elements */
    initializeBrowser() {
 
-      let main = d3_select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3_select(`#${this.gui_div} .jsroot_browser`);
       if (main.empty() || !this.brlayout) return;
 
-      if (this.brlayout) this.brlayout.adjustBrowserSize();
+      this.brlayout.adjustBrowserSize();
 
       let selects = main.select(".gui_layout").node();
 
@@ -3589,7 +3589,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (this.is_online) {
-         if (this.h && this.h._toptitle)
+         if (this.h?._toptitle)
             this.brlayout.setBrowserTitle(this.h._toptitle);
          main.select(".gui_monitoring")
            .property('checked', this.isMonitoring())
@@ -3608,7 +3608,7 @@ class HierarchyPainter extends BasePainter {
    enableMonitoring(on) {
       this.setMonitoring(undefined, on);
 
-      let chkbox = d3_select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      let chkbox = d3_select(`#${this.gui_div} .jsroot_browser .gui_monitoring`);
       if (!chkbox.empty() && (chkbox.property('checked') !== on))
          chkbox.property('checked', on);
    }
