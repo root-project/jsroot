@@ -421,12 +421,10 @@ class TCanvasPainter extends TPadPainter {
          return Promise.resolve(false);
 
       if (this.brlayout.hasContent()) {
-         if ((mode === "toggle") || (mode === false)) {
+         if ((mode === "toggle") || (mode === false))
             this.removeGed();
-         } else {
-            let pp = objpainter ? objpainter.getPadPainter() : null;
-            if (pp) pp.selectObjectPainter(objpainter);
-         }
+         else
+            objpainter?.getPadPainter()?.selectObjectPainter(objpainter);
 
          return Promise.resolve(true);
       }
@@ -473,8 +471,7 @@ class TCanvasPainter extends TPadPainter {
                   // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
                   this.registerForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
 
-                  let pp = objpainter ? objpainter.getPadPainter() : null;
-                  if (pp) pp.selectObjectPainter(objpainter);
+                  objpainter?.getPadPainter()?.selectObjectPainter(objpainter);
 
                   this.processChanges("sbits", this);
 

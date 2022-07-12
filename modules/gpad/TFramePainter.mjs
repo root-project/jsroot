@@ -28,7 +28,7 @@ function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 
    let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
-   if (pp && pp._fast_drawing) return;
+   if (pp?._fast_drawing) return;
 
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
@@ -172,8 +172,7 @@ function addDragHandler(_painter, arg) {
                let rrr = resize_se.node().getBoundingClientRect();
                painter.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
             } else if (arg.canselect && (spent <= 600)) {
-               let pp = painter.getPadPainter();
-               if (pp) pp.selectObjectPainter(painter);
+               painter.getPadPainter()?.selectObjectPainter(painter);
             }
          }
       });
@@ -615,7 +614,7 @@ const FrameInteractive = {
               .property('handlers_set', 0);
 
       let pp = this.getPadPainter(),
-          handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
+          handlers_set = pp?._fast_drawing ? 0 : 1;
 
       if (main_svg.property('handlers_set') != handlers_set) {
          let close_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, null) : null,
@@ -652,7 +651,7 @@ const FrameInteractive = {
 
       let pp = this.getPadPainter(),
           svg = this.getFrameSvg();
-      if ((pp && pp._fast_drawing) || svg.empty())
+      if (pp?._fast_drawing || svg.empty())
          return Promise.resolve(this);
 
       if (for_second_axes) {
@@ -995,13 +994,11 @@ const FrameInteractive = {
             this.processFrameClick(pnt);
             break;
          case 2: {
-            let pp = this.getPadPainter();
-            if (pp) pp.selectObjectPainter(this, null, "xaxis");
+            this.getPadPainter()?.selectObjectPainter(this, null, "xaxis");
             break;
          }
          case 3: {
-            let pp = this.getPadPainter();
-            if (pp) pp.selectObjectPainter(this, null, "yaxis");
+            this.getPadPainter()?.selectObjectPainter(this, null, "yaxis");
             break;
          }
       }
@@ -1250,7 +1247,7 @@ const FrameInteractive = {
       if (this.self_drawaxes) return true;
 
       let pad_painter = this.getPadPainter();
-      if (pad_painter && pad_painter.painters)
+      if (pad_painter?.painters)
          for (let k = 0; k < pad_painter.painters.length; ++k) {
             let subpainter = pad_painter.painters[k];
             if (subpainter && (subpainter.wheel_zoomy !== undefined))
@@ -1327,7 +1324,7 @@ const FrameInteractive = {
             else if (ms.length === 2)
                pnt = { x: ms[0], y: ms[1], touch: false };
 
-            if ((pnt !== null) && (pp !== null)) {
+            if (pnt && pp) {
                pnt.painters = true; // assign painter for every tooltip
                let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
                for (let n = 0; n < hints.length; ++n)
@@ -1927,13 +1924,13 @@ class TFramePainter extends ObjectPainter {
       layer.selectAll(".ygrid").remove();
 
       let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null,
+          pad = pp?.getRootPad(true),
           h = this.getFrameHeight(),
           w = this.getFrameWidth(),
           grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
-      if (pad && pad.fGridx && this.x_handle) {
+      if (pad?.fGridx && this.x_handle) {
          let gridx = "";
          for (let n = 0; n < this.x_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -1944,7 +1941,7 @@ class TFramePainter extends ObjectPainter {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis("x") ? this.getAxis("x").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
-         if (gridx.length > 0)
+         if (gridx)
            layer.append("svg:path")
                 .attr("class", "xgrid")
                 .attr("d", gridx)
@@ -1954,7 +1951,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       // add a grid on y axis, if the option is set
-      if (pad && pad.fGridy && this.y_handle) {
+      if (pad?.fGridy && this.y_handle) {
          let gridy = "";
          for (let n = 0; n < this.y_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -1965,7 +1962,7 @@ class TFramePainter extends ObjectPainter {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis("y") ? this.getAxis("y").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
-         if (gridy.length > 0)
+         if (gridy)
            layer.append("svg:path")
                 .attr("class", "ygrid")
                 .attr("d", gridy)
@@ -2019,10 +2016,8 @@ class TFramePainter extends ObjectPainter {
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
-      if (!disable_x_draw || !disable_y_draw) {
-         let pp = this.getPadPainter();
-         if (pp && pp._fast_drawing) disable_x_draw = disable_y_draw = true;
-      }
+      if ((!disable_x_draw || !disable_y_draw) && pp._fast_drawing)
+         disable_x_draw = disable_y_draw = true;
 
       let pr = Promise.resolve(true);
 
@@ -2031,14 +2026,14 @@ class TFramePainter extends ObjectPainter {
          let can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame;
 
          let pr1 = draw_horiz.drawAxis(layer, w, h,
-                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                   pad && pad.fTickx ? -h : 0, disable_x_draw,
-                                   undefined, false);
+                                       draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                       pad?.fTickx ? -h : 0, disable_x_draw,
+                                       undefined, false);
 
          let pr2 = draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
-                                      pad && pad.fTicky ? w : 0, disable_y_draw,
-                                      draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+                                          draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                          pad?.fTicky ? w : 0, disable_y_draw,
+                                          draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1,pr2]).then(() => {
 
@@ -2093,23 +2088,21 @@ class TFramePainter extends ObjectPainter {
       let draw_horiz = this.swap_xy ? this.y2_handle : this.x2_handle,
           draw_vertical = this.swap_xy ? this.x2_handle : this.y2_handle;
 
-      if (draw_horiz || draw_vertical) {
-         let pp = this.getPadPainter();
-         if (pp && pp._fast_drawing) draw_horiz = draw_vertical = null;
-      }
+      if ((draw_horiz || draw_vertical) && pp._fast_drawing)
+         draw_horiz = draw_vertical = null;
 
       let pr1, pr2;
 
       if (draw_horiz)
          pr1 = draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                   pad && pad.fTickx ? -h : 0, false,
+                                   pad?.fTickx ? -h : 0, false,
                                    undefined, false);
 
       if (draw_vertical)
          pr2 = draw_vertical.drawAxis(layer, w, h,
                                       draw_vertical.invert_side ? `translate(${w})` : undefined,
-                                      pad && pad.fTicky ? w : 0, false,
+                                      pad?.fTicky ? w : 0, false,
                                       draw_vertical.invert_side ? 0 : this._frame_x, false);
 
        return Promise.all([pr1, pr2]);
@@ -2120,7 +2113,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    updateAttributes(force) {
       let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null,
+          pad = pp?.getRootPad(true),
           tframe = this.getObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
@@ -2147,7 +2140,7 @@ class TFramePainter extends ObjectPainter {
             this.createAttFill({ pattern: 1001, color: 0 });
 
          // force white color for the canvas frame
-         if (!tframe && this.fillatt.empty() && pp && pp.iscan)
+         if (!tframe && this.fillatt.empty() && pp?.iscan)
             this.fillatt.setSolidColor('white');
       }
 
@@ -2162,8 +2155,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    sizeChanged() {
 
-      let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null;
+      let pad = this.getPadPainter()?.getRootPad(true);
 
       if (pad) {
          pad.fLeftMargin = this.fX1NDC;
@@ -2288,7 +2280,7 @@ class TFramePainter extends ObjectPainter {
       delete this.enabledKeys;
 
       let pp = this.getPadPainter();
-      if (pp && (pp.frame_painter_ref === this))
+      if (pp?.frame_painter_ref === this)
          delete pp.frame_painter_ref;
 
       super.cleanup();
@@ -2386,7 +2378,7 @@ class TFramePainter extends ObjectPainter {
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
    changeAxisLog(axis, value) {
       let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null;
+          pad = pp?.getRootPad(true);
       if (!pad) return;
 
       pp._interactively_changed = true;
@@ -2420,7 +2412,7 @@ class TFramePainter extends ObjectPainter {
    fillContextMenu(menu, kind, obj) {
       let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null;
+          pad = pp?.getRootPad(true);
 
       if ((kind == "x") || (kind == "y") || (kind == "z") || (kind == "x2") || (kind == "y2")) {
          let faxis = obj || this[kind+'axis'];
@@ -2644,15 +2636,12 @@ class TFramePainter extends ObjectPainter {
          }
 
          // than try to unzoom all overlapped objects
-         if (!changed) {
-            let pp = this.getPadPainter();
-            if (pp && pp.painters)
-               pp.painters.forEach(painter => {
-                  if (painter && (typeof painter.unzoomUserRange == 'function'))
-                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
-                        changed = true;
+         if (!changed)
+            this.getPadPainter()?.painters?.forEach(painter => {
+               if (typeof painter?.unzoomUserRange == 'function')
+                  if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
+                     changed = true;
             });
-         }
       }
 
       return changed ? this.interactiveRedraw("pad", "zoom").then(() => true) : Promise.resolve(false);
