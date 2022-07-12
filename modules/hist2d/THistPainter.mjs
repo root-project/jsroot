@@ -809,7 +809,7 @@ class THistPainter extends ObjectPainter {
       let histo = this.getHisto(),
           hdim = this.getDimension(),
           pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null;
+          pad = pp?.getRootPad(true);
 
       if (!this.options)
          this.options = new THistDrawOptions;
@@ -1254,8 +1254,8 @@ class THistPainter extends ObjectPainter {
 
       let histo = this.getHisto(), st = gStyle,
           pp = this.getPadPainter(),
-          tpainter = pp ? pp.findPainterFor(null, "title") : null,
-          pt = tpainter ? tpainter.getObject() : null,
+          tpainter = pp?.findPainterFor(null, "title"),
+          pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       if (!pt && pp && typeof pp.findInPrimitives == "function")
@@ -1285,11 +1285,11 @@ class THistPainter extends ObjectPainter {
 
       let histo = this.getHisto(),
           pp = this.getPadPainter(),
-          tpainter = pp ? pp.findPainterFor(null, "title") : null;
+          tpainter = pp?.findPainterFor(null, "title");
 
       if (!histo || !tpainter) return null;
 
-      if (arg==="check")
+      if (arg === "check")
          return (!this.isMainPainter() || this.options.Same) ? null : histo;
 
       tpainter.clearPave();
@@ -1305,8 +1305,7 @@ class THistPainter extends ObjectPainter {
       if (!this.snapid) return;
 
       let stat = this.findStat(),
-          pp = this.getPadPainter(),
-          statpainter = pp ? pp.findPainterFor(stat) : null;
+          statpainter = this.getPadPainter()?.findPainterFor(stat);
 
       if (statpainter && !statpainter.snapid) statpainter.redraw();
    }
@@ -1314,11 +1313,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Find stats box
      * @desc either in list of functions or as object of correspondent painter */
    findStat() {
-      if (this.options.PadStats) {
-         let pp = this.getPadPainter(),
-             p = pp ? pp.findPainterFor(null, "stats", "TPaveStats") : null;
-         return p ? p.getObject() : null;
-      }
+      if (this.options.PadStats)
+         return this.getPadPainter()?.findPainterFor(null, "stats", "TPaveStats")?.getObject();
 
       return this.findFunction('TPaveStats', 'stats');
    }
@@ -1327,7 +1323,7 @@ class THistPainter extends ObjectPainter {
      * @private */
    toggleStat(arg) {
 
-      let stat = this.findStat(), pp = this.getPadPainter(), statpainter = null;
+      let stat = this.findStat(), pp = this.getPadPainter(), statpainter;
 
       if (!arg) arg = "";
 
@@ -1336,17 +1332,19 @@ class THistPainter extends ObjectPainter {
          // when statbox created first time, one need to draw it
          stat = this.createStat(true);
       } else {
-         statpainter = pp ? pp.findPainterFor(stat) : null;
+         statpainter = pp?.findPainterFor(stat);
       }
 
-      if (arg=='only-check') return statpainter ? statpainter.Enabled : false;
+      if (arg == 'only-check')
+         return statpainter?.Enabled || false;
 
-      if (arg=='fitpar-check') return stat ? stat.fOptFit : false;
+      if (arg == 'fitpar-check')
+         return stat?.fOptFit || false;
 
-      if (arg=='fitpar-toggle') {
+      if (arg == 'fitpar-toggle') {
          if (!stat) return false;
          stat.fOptFit = stat.fOptFit ? 0 : 1111; // for websocket command should be send to server
-         if (statpainter) statpainter.redraw();
+         statpainter?.redraw();
          return true;
       }
 
@@ -1474,7 +1472,7 @@ class THistPainter extends ObjectPainter {
           opt = histo.fFunctions.opt[indx],
           pp = this.getPadPainter(),
           do_draw = false,
-          func_painter = pp ? pp.findPainterFor(func) : null;
+          func_painter = pp?.findPainterFor(func);
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
@@ -1490,9 +1488,8 @@ class THistPainter extends ObjectPainter {
                                                : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (painter && (typeof painter == "object")) {
+         if (painter && (typeof painter == "object"))
             painter.child_painter_id = this.hist_painter_id;
-         }
 
          return this.drawNextFunction(indx+1);
       });
@@ -1886,7 +1883,7 @@ class THistPainter extends ObjectPainter {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
          let pp = this.getPadPainter();
-         if (pp && pp.getCustomPalette)
+         if (typeof pp?.getCustomPalette == 'function')
             this.fPalette = pp.getCustomPalette();
       }
       if (!this.fPalette)
@@ -1915,12 +1912,12 @@ class THistPainter extends ObjectPainter {
 
       let pal = this.findFunction('TPaletteAxis'),
           pp = this.getPadPainter(),
-          pal_painter = pp ? pp.findPainterFor(pal) : null;
+          pal_painter = pp?.findPainterFor(pal);
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
       if (!pal_painter && !pal) {
-         pal_painter = pp ? pp.findPainterFor(undefined, undefined, "TPaletteAxis") : null;
+         pal_painter = pp?.findPainterFor(undefined, undefined, "TPaletteAxis");
          if (pal_painter) {
             pal = pal_painter.getObject();
             // add to list of functions
@@ -1962,7 +1959,7 @@ class THistPainter extends ObjectPainter {
          this.addFunction(pal, true);
 
          can_move = true;
-      } else if (pp && (pp._palette_vertical !== undefined)) {
+      } else if (pp?._palette_vertical !== undefined) {
          this.options.Zvert = pp._palette_vertical;
       }
 
@@ -2005,8 +2002,8 @@ class THistPainter extends ObjectPainter {
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          let prev = this.selectCurrentPad(this.getPadName());
-         pr = TPavePainter.draw(this.getDom(), pal, arg).then(pp => {
-            pal_painter = pp;
+         pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
+            pal_painter = _palp;
             this.selectCurrentPad(prev);
          });
       } else {

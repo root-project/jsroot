@@ -365,7 +365,7 @@ class TPavePainter extends ObjectPainter {
 
       if (!text_g) text_g = this.draw_g;
 
-      let fast = (nlines == 1) && pp && pp._fast_drawing, num_default = 0;
+      let fast = (nlines == 1) && pp?._fast_drawing, num_default = 0;
 
       for(let nline = 0; nline < nlines; ++nline) {
          let entry = arr[nline], texty = nline*stepy;
@@ -635,9 +635,10 @@ class TPavePainter extends ObjectPainter {
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
           cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
-          width = this.getPadPainter().getPadWidth(),
-          height = this.getPadPainter().getPadHeight(),
-          pad = this.getPadPainter().getRootPad(true),
+          pp = this.getPadPainter(),
+          width = pp.getPadWidth(),
+          height = pp.getPadHeight(),
+          pad = pp.getRootPad(true),
           main = palette.$main_painter || this.getMainPainter(),
           framep = this.getFramePainter(),
           zmin = 0, zmax = 100, gzmin, gzmax,
@@ -1211,7 +1212,7 @@ class TPavePainter extends ObjectPainter {
 function produceLegend(dom, opt) {
    let main_painter = getElementMainPainter(dom),
        pp = main_painter ? main_painter.getPadPainter() : null,
-       pad = pp ? pp.getRootPad(true) : null;
+       pad = pp?.getRootPad(true);
    if (!pad) return Promise.resolve(null);
 
    let leg = create("TLegend");

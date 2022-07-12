@@ -304,7 +304,7 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary fill statistic */
    fillStatistic() {
       let pp = this.getPadPainter();
-      if (pp && pp._fast_drawing) return false;
+      if (pp?._fast_drawing) return false;
 
       let obj = this.getObject();
       if (obj.fLines !== undefined) {
@@ -315,7 +315,7 @@ class RHistStatsPainter extends RPavePainter {
 
       if (this.v7OfflineMode()) {
          let main = this.getMainPainter();
-         if (!main || (typeof main.fillStatistic !== 'function')) return false;
+         if (typeof main?.fillStatistic !== 'function') return false;
          // we take statistic from main painter
          return main.fillStatistic(this, gStyle.fOptStat, gStyle.fOptFit);
       }

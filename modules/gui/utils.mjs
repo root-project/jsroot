@@ -328,8 +328,7 @@ function addMoveHandler(painter, enabled) {
          evnt.sourceEvent.stopPropagation();
          if (this.moveEnd)
             this.moveEnd(not_changed);
-         let pp = this.getPadPainter();
-         if (pp) pp.selectObjectPainter(this);
+         this.getPadPainter()?.selectObjectPainter(this);
       }.bind(painter));
 
    painter.draw_g

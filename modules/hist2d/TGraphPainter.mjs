@@ -181,8 +181,8 @@ class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          let pp = this.getPadPainter(),
-             pad = pp ? pp.getRootPad(true) : null;
-         if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
+             pad = pp?.getRootPad(true);
+         if (!pad || (pad?.fPrimitives?.arr[0] === graph)) res.Axis = "AXIS";
       } else if (res.Axis.indexOf("A") < 0) {
          res.Axis = "AXIS," + res.Axis;
       }
@@ -405,11 +405,11 @@ class TGraphPainter extends ObjectPainter {
 
       // FIXME: check if needed, can be removed easily
       let pp = this.getPadPainter(),
-          rect = pp ? pp.getPadRect() : { width: 800, height: 600 };
+          rect = pp?.getPadRect() || { width: 800, height: 600 };
 
       pmain = {
           pad_layer: true,
-          pad: pp.getRootPad(true),
+          pad: pp?.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
           getFrameWidth: function() { return this.pw; },

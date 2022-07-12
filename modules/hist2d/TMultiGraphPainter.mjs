@@ -56,8 +56,7 @@ class TMultiGraphPainter extends ObjectPainter {
          for (let i = 0; i < obj.fFunctions.arr.length; ++i) {
             let func = obj.fFunctions.arr[i];
             if (!func || !func._typename || !func.fName) continue;
-            let funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
-            if (funcpainter) funcpainter.updateObject(func);
+            pp?.findPainterFor(null, func.fName, func._typename)?.updateObject(func);
          }
 
       return isany;
@@ -271,7 +270,7 @@ class TMultiGraphPainter extends ObjectPainter {
       if (d.check("A") || !painter.getMainPainter()) {
           let mgraph = painter.getObject(),
               pp = painter.getPadPainter(),
-              histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
+              histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp?.getRootPad(true));
 
          promise = painter.drawAxisHist(histo, hopt).then(fp => {
             painter.firstpainter = fp;
