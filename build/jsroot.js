@@ -10838,7 +10838,7 @@ class ObjectPainter extends BasePainter {
       let pp = this.getPadPainter(),
           obj = this.getObject();
 
-      if (!pp || !obj || !obj._typename || !pp.getObjectDrawSettings)
+      if (!obj?._typename || !pp?.getObjectDrawSettings)
          return [];
 
       let sett = pp.getObjectDrawSettings('ROOT.' + obj._typename, 'nosame');
@@ -52671,7 +52671,7 @@ class JSRootMenu {
       // for the moment, text attributes accessed directly from objects
 
       let obj = painter.getObject();
-      if (!obj || !('fTextColor' in obj)) return;
+      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign == undefined)) return;
 
       this.add("sub:" + (prefix ? prefix : "Text"));
       this.addColorMenu("color", obj.fTextColor,
@@ -55972,7 +55972,7 @@ class TFramePainter extends ObjectPainter {
             this.fillatt.setSolidColor('white');
       }
 
-      if (!tframe && pad && (pad.fFrameLineColor !== undefined))
+      if (!tframe && (pad?.fFrameLineColor !== undefined))
          this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
       else
          this.createAttLine({ attr: tframe, color: 'black' });
@@ -58480,7 +58480,7 @@ class TPadPainter extends ObjectPainter {
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
-      if (!this.iscan && (pad !== null) && ('fName' in pad)) {
+      if (!this.iscan && pad?.fName) {
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
          let regexp = new RegExp("^[A-Za-z][A-Za-z0-9_]*$");
          if (!regexp.test(this.this_pad_name)) this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
@@ -69861,6 +69861,7 @@ function setDefaultDrawOpt(classname, opt) {
   * let obj = await file.readObject("hpxpy;1");
   * await draw("drawing", obj, "colz;logx;gridx;gridy"); */
 function draw(dom, obj, opt) {
+
    if (!obj || (typeof obj !== 'object'))
       return Promise.reject(Error('not an object in draw call'));
 
@@ -74081,18 +74082,18 @@ function drawList(dom, lst, opt) {
   * @private */
 function folderHierarchy(item, obj) {
 
-   if (!obj || !('fFolders' in obj) || (obj.fFolders === null)) return false;
+   if (!obj?.fFolders) return false;
 
-   if (obj.fFolders.arr.length===0) { item._more = false; return true; }
+   if (obj.fFolders.arr.length === 0) { item._more = false; return true; }
 
    item._childs = [];
 
-   for ( let i = 0; i < obj.fFolders.arr.length; ++i) {
+   for (let i = 0; i < obj.fFolders.arr.length; ++i) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
-         _name : chld.fName,
-         _kind : "ROOT." + chld._typename,
-         _obj : chld
+         _name: chld.fName,
+         _kind: "ROOT." + chld._typename,
+         _obj: chld
       });
    }
    return true;
@@ -74162,7 +74163,7 @@ function listHierarchy(folder, lst) {
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj || !obj._typename ?
+          item = !obj?._typename ?
            {
             _name: i.toString(),
             _kind: "ROOT.NULL",
@@ -77598,7 +77599,7 @@ ObjectPainter.prototype.showInspector = function(obj) {
       .style('left', w)
       .style('right', w);
 
-   if (!obj || (typeof obj !== 'object') || !obj._typename)
+   if (!obj?._typename)
       obj = this.getObject();
 
    return drawInspector(id, obj);
@@ -80419,13 +80420,13 @@ function treeIOTest(tree, args) {
    let branches = [], names = [], nchilds = [];
 
    function collectBranches(obj, prntname = "") {
-      if (!obj || !obj.fBranches) return 0;
+      if (!obj?.fBranches) return 0;
 
       let cnt = 0;
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
          let br = obj.fBranches.arr[n],
-            name = (prntname ? prntname + "/" : "") + br.fName;
+             name = (prntname ? prntname + "/" : "") + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
@@ -82039,7 +82040,7 @@ class Geometry {
 
             for (i1 = 0; i1<len-1; ++i1) {
                p1 = parts[i1];
-               if (!p1 || !p1.parent) continue;
+               if (!p1?.parent) continue;
                for (i2 = i1+1; i2 < len; ++i2) {
                   p2 = parts[i2];
                   if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {
@@ -82313,8 +82314,7 @@ function countNumShapes(shape) {
   * @desc Can appens some special suffixes
   * @private */
 function getObjectName(obj) {
-   if (!obj || !obj.fName) return "";
-   return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
+   return !obj?.fName ? "" : (obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : ""));
 }
 
 /** @summary Check duplicates
@@ -82328,7 +82328,7 @@ function checkDuplicates(parent, chlds) {
    let names = [], cnts = [];
    for (let k = 0; k < chlds.length; ++k) {
       let chld = chlds[k];
-      if (!chld || !chld.fName) continue;
+      if (!chld?.fName) continue;
       if (!chld.$geo_suffix) {
          let indx = names.indexOf(chld.fName);
          if (indx>=0) {
@@ -83936,7 +83936,7 @@ function geomBoundingBox(geom) {
   * @desc Just big-enough triangle to make BSP calculations
   * @private */
 function createHalfSpace(shape, geom) {
-   if (!shape || !shape.fN || !shape.fP) return null;
+   if (!shape?.fN || !shape?.fP) return null;
 
    let vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
        normal = new Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
@@ -85494,7 +85494,7 @@ function getBoundingBox(node, box3, local_coordinates) {
    let v1 = new Vector3(),
        geometry = node.geometry;
 
-   if ( geometry.isGeometry ) {
+   if (geometry.isGeometry) {
       let vertices = geometry.vertices;
       for (let i = 0, l = vertices.length; i < l; i ++ ) {
          v1.copy( vertices[ i ] );
@@ -87322,7 +87322,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
      * @desc Handler should have highlightMesh function with same arguments as TGeoPainter  */
    addHighlightHandler(handler) {
-      if (!handler || typeof handler.highlightMesh != 'function') return;
+      if (typeof handler?.highlightMesh != 'function') return;
       if (!this._highlight_handlers) this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
@@ -87914,7 +87914,7 @@ class TGeoPainter extends ObjectPainter {
       for (let k = 0; k < nodes.length; ++k) {
          let entry = nodes[k],
              shape = entry.server_shape;
-         if (!shape || !shape.ready) continue;
+         if (!shape?.ready) continue;
 
          entry.done = true;
          shape.used = true; // indicate that shape was used in building
@@ -87997,7 +87997,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (!geom2) return;
 
-         let mesh2 = new Mesh( geom2, mesh.material.clone() );
+         let mesh2 = new Mesh(geom2, mesh.material.clone());
 
          this._toplevel.add(mesh2);
 
@@ -88759,7 +88759,7 @@ class TGeoPainter extends ObjectPainter {
      * @returns {Promise} for ready */
    drawExtras(obj, itemname, add_objects) {
       // if object was hidden via menu, do not redraw it with next draw call
-      if (!obj || !obj._typename || (!add_objects && obj.$hidden_via_menu))
+      if (!obj?._typename || (!add_objects && obj.$hidden_via_menu))
          return Promise.resolve(false);
 
       let do_render = false;
@@ -90269,7 +90269,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Update object in geo painter */
    updateObject(obj) {
       if (obj === "same") return true;
-      if (!obj || !obj._typename) return false;
+      if (!obj?._typename) return false;
       if (obj === this.getObject()) return true;
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {
@@ -93393,9 +93393,9 @@ class TGraphPainter$1 extends ObjectPainter {
             let funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
                 userx = funcs?.revertAxis("x", pnt.x) ?? 0,
                 usery = funcs?.revertAxis("y", pnt.y) ?? 0;
-            canp.showMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
-         } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
-            this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
+            this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, this.args_menu_id);
+         } else if (this.args_menu_id && (hint?.binindx !== undefined)) {
+            this.submitCanvExec(`RemovePoint(${hint.binindx})`, this.args_menu_id);
          }
 
          return true; // call is processed
@@ -94209,14 +94209,12 @@ class TRatioPlotPainter extends ObjectPainter {
 
    /** @summary Set grids range */
    setGridsRange(xmin, xmax) {
-      let ratio = this.getObject(),
-          pp = this.getPadPainter();
+      let ratio = this.getObject();
       if (xmin === xmax) {
-         let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
-             low_fp = low_p ? low_p.getFramePainter() : null;
-         if (!low_fp || !low_fp.x_handle) return;
-         xmin = low_fp.x_handle.full_min;
-         xmax = low_fp.x_handle.full_max;
+         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad")?.getFramePainter()?.x_handle;
+         if (!x_handle) return;
+         xmin = x_handle.full_min;
+         xmax = x_handle.full_max;
       }
 
       ratio.fGridlines.forEach(line => {
@@ -94736,7 +94734,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
 
-      if (!obj || !obj.fOper || !func) return;
+      if (!obj?.fOper || !func) return;
 
       let indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
           oper, npoints, n, arr = obj.fOper.split(";");
@@ -95508,7 +95506,7 @@ class TASImagePainter extends ObjectPainter {
    createRGBA(nlevels) {
       let obj = this.getObject();
 
-      if (!obj || !obj.fPalette) return null;
+      if (!obj?.fPalette) return null;
 
       let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
 
@@ -95659,7 +95657,7 @@ class TASImagePainter extends ObjectPainter {
 
          } else if ((obj._blob.length == 3) && obj._blob[0]) {
             obj.fPngBuf = obj._blob[2];
-            if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
+            if (obj.fPngBuf?.length != obj._blob[1]) {
                console.error(`TASImage with png buffer _blob error ${obj._blob[1]} != ${obj.fPngBuf?.length}`);
                delete obj.fPngBuf;
             }
@@ -95705,7 +95703,7 @@ class TASImagePainter extends ObjectPainter {
    canZoomInside(axis,min,max) {
       let obj = this.getObject();
 
-      if (!obj || !obj.fImgBuf)
+      if (!obj?.fImgBuf)
          return false;
 
       if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;
@@ -96583,7 +96581,7 @@ class RObjectPainter extends ObjectPainter {
     * @param method is method of painter object which will be called when getting reply */
    v7SubmitRequest(kind, req, method) {
       let canp = this.getCanvPainter();
-      if (!canp || !canp.submitDrawableRequest) return null;
+      if (typeof canp?.submitDrawableRequest != 'function') return null;
 
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
@@ -98027,8 +98025,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (!xaxis || xaxis._typename != "TAxis") xaxis = create$1("TAxis");
-      if (!yaxis || yaxis._typename != "TAxis") yaxis = create$1("TAxis");
+      if (xaxis?._typename != "TAxis") xaxis = create$1("TAxis");
+      if (yaxis?._typename != "TAxis") yaxis = create$1("TAxis");
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -98679,7 +98677,7 @@ class RFramePainter extends RObjectPainter {
           };
 
       let checkZooming = (painter, force) => {
-         if (!force && (typeof painter.canZoomInside != 'function')) return;
+         if (!force && (typeof painter?.canZoomInside != 'function')) return;
 
          is_any_check = true;
 
@@ -98702,8 +98700,8 @@ class RFramePainter extends RObjectPainter {
          checkZooming(null, true);
 
       if (unzoom_v) {
-         if (this["zoom_" + name + "min"] !== this["zoom_" + name + "max"]) changed = true;
-         this["zoom_" + name + "min"] = this["zoom_" + name + "max"] = 0;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
          req.values[indx*2] = req.values[indx*2+1] = -1;
       }
 
@@ -103446,7 +103444,7 @@ class RHistPainter extends RObjectPainter {
           curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       menu.input("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr).then(res => {
          res = res ? JSON.parse(res) : [];
-         if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
+         if (!res || (typeof res != "object") || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
             pmain.unzoom(arg);
          else
             pmain.zoom(arg, res[0], res[1]);
