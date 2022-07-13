@@ -3063,7 +3063,7 @@ class TGeoPainter extends ObjectPainter {
      * @returns {Promise} for ready */
    drawExtras(obj, itemname, add_objects) {
       // if object was hidden via menu, do not redraw it with next draw call
-      if (!obj || !obj._typename || (!add_objects && obj.$hidden_via_menu))
+      if (!obj?._typename || (!add_objects && obj.$hidden_via_menu))
          return Promise.resolve(false);
 
       let do_render = false;
@@ -4573,7 +4573,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Update object in geo painter */
    updateObject(obj) {
       if (obj === "same") return true;
-      if (!obj || !obj._typename) return false;
+      if (!obj?._typename) return false;
       if (obj === this.getObject()) return true;
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {

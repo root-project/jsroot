@@ -23,7 +23,7 @@ class TASImagePainter extends ObjectPainter {
    createRGBA(nlevels) {
       let obj = this.getObject();
 
-      if (!obj || !obj.fPalette) return null;
+      if (!obj?.fPalette) return null;
 
       let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
 
@@ -220,7 +220,7 @@ class TASImagePainter extends ObjectPainter {
    canZoomInside(axis,min,max) {
       let obj = this.getObject();
 
-      if (!obj || !obj.fImgBuf)
+      if (!obj?.fImgBuf)
          return false;
 
       if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;

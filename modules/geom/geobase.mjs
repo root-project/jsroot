@@ -114,8 +114,7 @@ function countNumShapes(shape) {
   * @desc Can appens some special suffixes
   * @private */
 function getObjectName(obj) {
-   if (!obj || !obj.fName) return "";
-   return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
+   return !obj?.fName ? "" : (obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : ""));
 }
 
 /** @summary Check duplicates

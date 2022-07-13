@@ -162,7 +162,7 @@ class ObjectPainter extends BasePainter {
       let pp = this.getPadPainter(),
           obj = this.getObject();
 
-      if (!pp || !obj || !obj._typename || !pp.getObjectDrawSettings)
+      if (!obj?._typename || !pp?.getObjectDrawSettings)
          return [];
 
       let sett = pp.getObjectDrawSettings('ROOT.' + obj._typename, 'nosame');

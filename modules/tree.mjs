@@ -383,7 +383,7 @@ function findBranch(tree, name) {
   * @private */
 function getNumBranches(tree) {
    function count(obj) {
-      if (!obj || !obj.fBranches) return 0;
+      if (!obj?.fBranches) return 0;
       let nchld = 0;
       obj.fBranches.arr.forEach(sub => nchld += count(sub));
       return obj.fBranches.arr.length + nchld;
