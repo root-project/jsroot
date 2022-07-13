@@ -1626,7 +1626,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
      * @desc Handler should have highlightMesh function with same arguments as TGeoPainter  */
    addHighlightHandler(handler) {
-      if (!handler || typeof handler.highlightMesh != 'function') return;
+      if (typeof handler?.highlightMesh != 'function') return;
       if (!this._highlight_handlers) this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
@@ -2218,7 +2218,7 @@ class TGeoPainter extends ObjectPainter {
       for (let k = 0; k < nodes.length; ++k) {
          let entry = nodes[k],
              shape = entry.server_shape;
-         if (!shape || !shape.ready) continue;
+         if (!shape?.ready) continue;
 
          entry.done = true;
          shape.used = true; // indicate that shape was used in building
@@ -2301,7 +2301,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (!geom2) return;
 
-         let mesh2 = new Mesh( geom2, mesh.material.clone() );
+         let mesh2 = new Mesh(geom2, mesh.material.clone());
 
          this._toplevel.add(mesh2);
 

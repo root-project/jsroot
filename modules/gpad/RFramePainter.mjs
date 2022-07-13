@@ -313,8 +313,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (!xaxis || xaxis._typename != "TAxis") xaxis = create("TAxis");
-      if (!yaxis || yaxis._typename != "TAxis") yaxis = create("TAxis");
+      if (xaxis?._typename != "TAxis") xaxis = create("TAxis");
+      if (yaxis?._typename != "TAxis") yaxis = create("TAxis");
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -965,7 +965,7 @@ class RFramePainter extends RObjectPainter {
           };
 
       let checkZooming = (painter, force) => {
-         if (!force && (typeof painter.canZoomInside != 'function')) return;
+         if (!force && (typeof painter?.canZoomInside != 'function')) return;
 
          is_any_check = true;
 
@@ -988,8 +988,8 @@ class RFramePainter extends RObjectPainter {
          checkZooming(null, true);
 
       if (unzoom_v) {
-         if (this["zoom_" + name + "min"] !== this["zoom_" + name + "max"]) changed = true;
-         this["zoom_" + name + "min"] = this["zoom_" + name + "max"] = 0;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
          req.values[indx*2] = req.values[indx*2+1] = -1;
       }
 

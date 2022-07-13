@@ -2144,7 +2144,7 @@ class TFramePainter extends ObjectPainter {
             this.fillatt.setSolidColor('white');
       }
 
-      if (!tframe && pad && (pad.fFrameLineColor !== undefined))
+      if (!tframe && (pad?.fFrameLineColor !== undefined))
          this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
       else
          this.createAttLine({ attr: tframe, color: 'black' });

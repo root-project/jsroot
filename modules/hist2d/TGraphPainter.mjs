@@ -1297,7 +1297,7 @@ class TGraphPainter extends ObjectPainter {
                 usery = funcs?.revertAxis("y", pnt.y) ?? 0;
             canp.showMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
-            this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
+            this.submitCanvExec(`RemovePoint(${hint.binindx})`, this.args_menu_id);
          }
 
          return true; // call is processed

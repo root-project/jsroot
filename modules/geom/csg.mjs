@@ -636,7 +636,7 @@ class Geometry {
 
             for (i1 = 0; i1<len-1; ++i1) {
                p1 = parts[i1];
-               if (!p1 || !p1.parent) continue;
+               if (!p1?.parent) continue;
                for (i2 = i1+1; i2 < len; ++i2) {
                   p2 = parts[i2];
                   if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {

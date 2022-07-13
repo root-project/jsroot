@@ -128,7 +128,7 @@ function checkDuplicates(parent, chlds) {
    let names = [], cnts = [];
    for (let k = 0; k < chlds.length; ++k) {
       let chld = chlds[k];
-      if (!chld || !chld.fName) continue;
+      if (!chld?.fName) continue;
       if (!chld.$geo_suffix) {
          let indx = names.indexOf(chld.fName);
          if (indx>=0) {
@@ -1778,7 +1778,7 @@ function geomBoundingBox(geom) {
   * @desc Just big-enough triangle to make BSP calculations
   * @private */
 function createHalfSpace(shape, geom) {
-   if (!shape || !shape.fN || !shape.fP) return null;
+   if (!shape?.fN || !shape?.fP) return null;
 
    let vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
        normal = new Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
@@ -3348,7 +3348,7 @@ function getBoundingBox(node, box3, local_coordinates) {
    let v1 = new Vector3(),
        geometry = node.geometry;
 
-   if ( geometry.isGeometry ) {
+   if (geometry.isGeometry) {
       let vertices = geometry.vertices;
       for (let i = 0, l = vertices.length; i < l; i ++ ) {
          v1.copy( vertices[ i ] );

@@ -174,7 +174,7 @@ class TASImagePainter extends ObjectPainter {
 
          } else if ((obj._blob.length == 3) && obj._blob[0]) {
             obj.fPngBuf = obj._blob[2];
-            if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
+            if (obj.fPngBuf?.length != obj._blob[1]) {
                console.error(`TASImage with png buffer _blob error ${obj._blob[1]} != ${obj.fPngBuf?.length}`);
                delete obj.fPngBuf;
             }

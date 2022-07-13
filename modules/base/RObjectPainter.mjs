@@ -289,7 +289,7 @@ class RObjectPainter extends ObjectPainter {
     * @param method is method of painter object which will be called when getting reply */
    v7SubmitRequest(kind, req, method) {
       let canp = this.getCanvPainter();
-      if (!canp || !canp.submitDrawableRequest) return null;
+      if (typeof canp?.submitDrawableRequest != 'function') return null;
 
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
