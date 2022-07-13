@@ -443,7 +443,7 @@ class RHistStatsPainter extends RPavePainter {
                   align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
                   width: width-2*margin_x, height: stepy, text: parts[n], draw_g: text_g,
                   _expected_width: width-2*margin_x, _args: args,
-                  post_process: function(painter) {
+                  post_process(painter) {
                     if (this._args[0].ready && this._args[1].ready)
                        painter.scaleTextDrawing(1.05*(this._args[0].result_width && this._args[1].result_width)/this.__expected_width, this.draw_g);
                   }

@@ -545,12 +545,12 @@ class RFramePainter extends RObjectPainter {
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          swap_xy: this.swap_xy,
          fp: this,
-         revertAxis: function(name, v) {
+         revertAxis(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.revertAxis(name, v);
          },
-         axisAsText: function(name, v) {
+         axisAsText(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.axisAsText(name, v);

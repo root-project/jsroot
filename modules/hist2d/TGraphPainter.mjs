@@ -411,23 +411,23 @@ class TGraphPainter extends ObjectPainter {
           pad: pp?.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
-          getFrameWidth: function() { return this.pw; },
-          getFrameHeight: function() { return this.ph; },
-          grx: function(value) {
+          getFrameWidth() { return this.pw; },
+          getFrameHeight() { return this.ph; },
+          grx(value) {
              if (this.pad.fLogx)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
              else
                 value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
              return value*this.pw;
           },
-          gry: function(value) {
+          gry(value) {
              if (this.pad.fLogy)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
              return (1-value)*this.ph;
           },
-          getGrFuncs: function() { return this; }
+          getGrFuncs() { return this; }
       }
 
       return pmain.pad ? pmain : null;

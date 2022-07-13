@@ -65,8 +65,8 @@ class TASImagePainter extends ObjectPainter {
       this.fContour = {
          arr: new Array(200),
          rgba: this.rgba,
-         getLevels: function() { return this.arr; },
-         getPaletteColor: function(pal, zval) {
+         getLevels() { return this.arr; },
+         getPaletteColor(pal, zval) {
             if (!this.arr || !this.rgba) return "white";
             let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
             return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);

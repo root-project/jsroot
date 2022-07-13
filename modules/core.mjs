@@ -5,7 +5,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "12/07/2022";
+let version_date = "13/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -92,7 +92,7 @@ let constants = {
       WebGLImage: 2,
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
-      fromString: function(s) {
+      fromString(s) {
          if ((s === "webgl") || (s == "gl")) return this.WebGL;
          if (s === "img") return this.WebGLImage;
          if (s === "svg") return this.SVG;
@@ -113,7 +113,7 @@ let constants = {
       /** @summary Embeding, but when SVG rendering or SVG image converion is used */
       EmbedSVG: 3,
       /** @summary Convert string values into number  */
-      fromString: function(s) {
+      fromString(s) {
          if (s === "embed") return this.Embed;
          if (s === "overlay") return this.Overlay;
          return this.Default;
@@ -133,7 +133,7 @@ let constants = {
       /** @summary always use MathJax for text rendering */
       AlwaysMathJax: 4,
       /** @summary Convert string values into number */
-      fromString: function(s) {
+      fromString(s) {
          if (!s || (typeof s !== 'string'))
             return this.Normal;
          switch(s){

@@ -30,11 +30,11 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_style: {},
      path_attr: {},
      accPath: "",
-     createElementNS: function(ns,kind) {
+     createElementNS(ns,kind) {
         if (kind == 'path')
            return {
               _wrapper: this,
-              setAttribute: function(name, value) {
+              setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
                  if ((name=="style") && value) {
                     let pos1 = value.indexOf(excl_style1);
@@ -57,14 +57,14 @@ function createSVGRenderer(as_is, precision, doc) {
            _wrapper: this,
            childNodes: [], // may be accessed - make dummy
            style: this.svg_style, // for background color
-           setAttribute: function(name, value) {
+           setAttribute(name, value) {
               this._wrapper.svg_attr[name] = value;
            },
-           appendChild: function(node) {
+           appendChild(node) {
               this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
               this._wrapper.path_attr = {};
            },
-           removeChild: function(node) {
+           removeChild(node) {
               this.childNodes = [];
            }
         };

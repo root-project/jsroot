@@ -765,7 +765,7 @@ class HierarchyPainter extends BasePainter {
          _localfile: file.fLocalFile,
          _had_direct_read: false,
          // this is central get method, item or itemname can be used, returns promise
-         _get: function(item, itemname) {
+         _get(item, itemname) {
 
             if (item && item._readobj)
                return Promise.resolve(item._readobj);
@@ -795,7 +795,7 @@ class HierarchyPainter extends BasePainter {
                         // reconstruct full file hierarchy
                         keysHierarchy(this, file.fKeys, file, "");
                      }
-                     item = painter.findItem({name: itemname, top: this});
+                     item = painter.findItem({ name: itemname, top: this });
                   }
 
                   if (item) {

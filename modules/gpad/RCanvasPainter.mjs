@@ -263,21 +263,21 @@ class RCanvasPainter extends RPadPainter {
                conn.setReceiver({
                   cpainter: this,
 
-                  onWebsocketOpened: function() {
+                  onWebsocketOpened() {
                   },
 
-                  onWebsocketMsg: function(panel_handle, msg) {
+                  onWebsocketMsg(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.slice(10) : "";
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
 
-                  onWebsocketClosed: function() {
+                  onWebsocketClosed() {
                      // if connection failed,
                      handle.send(reply + "false");
                   },
 
-                  onWebsocketError: function() {
+                  onWebsocketError() {
                      // if connection failed,
                      handle.send(reply + "false");
                   }

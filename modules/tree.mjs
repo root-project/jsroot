@@ -1461,7 +1461,7 @@ function makeMethodsList(typename) {
    let res = {
       names: [],
       values: [],
-      Create: function() {
+      Create() {
          let obj = {};
          for (let n = 0; n < this.names.length; ++n)
             obj[this.names[n]] = this.values[n];
@@ -1469,7 +1469,8 @@ function makeMethodsList(typename) {
       }
    }
 
-   res.names.push("_typename"); res.values.push(typename);
+   res.names.push("_typename");
+   res.values.push(typename);
    for (let key in methods) {
       res.names.push(key);
       res.values.push(methods[key]);
@@ -1590,14 +1591,14 @@ function treeProcess(tree, selector, args) {
          staged_prev: 0, // entry limit of previous I/O request
          staged_now: 0, // entry limit of current I/O request
          progress_showtm: 0, // last time when progress was showed
-         GetBasketEntry: function(k) {
+         GetBasketEntry(k) {
             if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
             let res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
             if (res) return res;
             let bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
-         GetTarget: function(tgtobj) {
+         GetTarget(tgtobj) {
             // returns target object which should be used for the branch reading
             if (!this.tgt) return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
@@ -1607,7 +1608,7 @@ function treeProcess(tree, selector, args) {
             }
             return tgtobj;
          },
-         GetEntry: function(entry) {
+         GetEntry(entry) {
             // This should be equivalent to TBranch::GetEntry() method
             let shift = entry - this.first_entry, off;
             if (!this.branch.TestBit(kDoNotUseBufferMap))
@@ -1739,7 +1740,7 @@ function treeProcess(tree, selector, args) {
             name: target_name,
             typename: branch.fClassName,
             virtual: leaf.fVirtual,
-            func: function(buf, obj) {
+            func(buf, obj) {
                let clname = this.typename;
                if (this.virtual) clname = buf.readFastString(buf.ntou1() + 1);
                obj[this.name] = buf.classStreamer({}, clname);
@@ -1758,7 +1759,7 @@ function treeProcess(tree, selector, args) {
                   name: target_name,
                   conttype: branch.fClonesName || "TObject",
                   reallocate: args.reallocate_objects,
-                  func: function(buf, obj) {
+                  func(buf, obj) {
                      let size = buf.ntoi4(), n = 0, arr = obj[this.name];
                      if (!arr || this.reallocate) {
                         arr = obj[this.name] = new Array(size);
@@ -1815,7 +1816,7 @@ function treeProcess(tree, selector, args) {
                         name: target_name,
                         typename: branch.fClassName,
                         streamer: streamer,
-                        func: function(buf, obj) {
+                        func(buf, obj) {
                            let res = { _typename: this.typename };
                            for (let n = 0; n < this.streamer.length; ++n)
                               this.streamer[n].func(buf, res);
@@ -1854,7 +1855,7 @@ function treeProcess(tree, selector, args) {
                   member = {
                      name: target_name,
                      leaves: arr,
-                     func: function(buf, obj) {
+                     func(buf, obj) {
                         let tgt = obj[this.name], l = 0;
                         if (!tgt) obj[this.name] = tgt = {};
                         while (l < this.leaves.length)
@@ -1985,7 +1986,7 @@ function treeProcess(tree, selector, args) {
                      name: target_name,
                      stl_size: item_cnt.name,
                      type: elem.fType,
-                     func: function(buf, obj) {
+                     func(buf, obj) {
                         obj[this.name] = buf.readFastArray(obj[this.stl_size], this.type);
                      }
                   };
@@ -2045,7 +2046,7 @@ function treeProcess(tree, selector, args) {
                               stl_size: item_cnt.name,
                               loop_size: loop_size_name,
                               member0: member,
-                              func: function(buf, obj) {
+                              func(buf, obj) {
                                  let cnt = obj[this.stl_size], arr = new Array(cnt);
                                  for (let n = 0; n < cnt; ++n) {
                                     if (this.loop_size) obj.$loop_size = obj[this.loop_size][n];

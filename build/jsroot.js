@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "12/07/2022";
+let version_date = "13/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -97,7 +97,7 @@ let constants$1 = {
       WebGLImage: 2,
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
-      fromString: function(s) {
+      fromString(s) {
          if ((s === "webgl") || (s == "gl")) return this.WebGL;
          if (s === "img") return this.WebGLImage;
          if (s === "svg") return this.SVG;
@@ -118,7 +118,7 @@ let constants$1 = {
       /** @summary Embeding, but when SVG rendering or SVG image converion is used */
       EmbedSVG: 3,
       /** @summary Convert string values into number  */
-      fromString: function(s) {
+      fromString(s) {
          if (s === "embed") return this.Embed;
          if (s === "overlay") return this.Overlay;
          return this.Default;
@@ -138,7 +138,7 @@ let constants$1 = {
       /** @summary always use MathJax for text rendering */
       AlwaysMathJax: 4,
       /** @summary Convert string values into number */
-      fromString: function(s) {
+      fromString(s) {
          if (!s || (typeof s !== 'string'))
             return this.Normal;
          switch(s){
@@ -9305,7 +9305,7 @@ function loadMathjax() {
          },
          svg: svg_config,
          startup: {
-            ready: function() {
+            ready() {
                MathJax.startup.defaultReady();
                let arr = _mj_loading;
                _mj_loading = undefined;
@@ -9337,15 +9337,15 @@ function loadMathjax() {
           },
           startup: {
              typeset: false,
-             ready: function() {
-                   MathJax.startup.registerConstructor('jsdomAdaptor', () => {
-                      return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
-                   });
-                   MathJax.startup.useAdaptor('jsdomAdaptor', true);
-                   MathJax.startup.defaultReady();
-                   let arr = _mj_loading;
-                   _mj_loading = undefined;
-                   arr.forEach(func => func(MathJax));
+             ready() {
+                MathJax.startup.registerConstructor('jsdomAdaptor', () => {
+                   return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
+                });
+                MathJax.startup.useAdaptor('jsdomAdaptor', true);
+                MathJax.startup.defaultReady();
+                let arr = _mj_loading;
+                _mj_loading = undefined;
+                arr.forEach(func => func(MathJax));
              }
           }
       });
@@ -44915,11 +44915,11 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_style: {},
      path_attr: {},
      accPath: "",
-     createElementNS: function(ns,kind) {
+     createElementNS(ns,kind) {
         if (kind == 'path')
            return {
               _wrapper: this,
-              setAttribute: function(name, value) {
+              setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
                  if ((name=="style") && value) {
                     let pos1 = value.indexOf(excl_style1);
@@ -44942,14 +44942,14 @@ function createSVGRenderer(as_is, precision, doc) {
            _wrapper: this,
            childNodes: [], // may be accessed - make dummy
            style: this.svg_style, // for background color
-           setAttribute: function(name, value) {
+           setAttribute(name, value) {
               this._wrapper.svg_attr[name] = value;
            },
-           appendChild: function(node) {
+           appendChild(node) {
               this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
               this._wrapper.path_attr = {};
            },
-           removeChild: function(node) {
+           removeChild(node) {
               this.childNodes = [];
            }
         };
@@ -55695,12 +55695,12 @@ class TFramePainter extends ObjectPainter {
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          swap_xy: this.swap_xy,
          fp: this,
-         revertAxis: function(name, v) {
+         revertAxis(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.revertAxis(name, v);
          },
-         axisAsText: function(name, v) {
+         axisAsText(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.axisAsText(name, v);
@@ -61451,7 +61451,7 @@ class TPavePainter extends ObjectPainter {
                   align: (n == 0) ? "start" : "end", x: margin_x, y,
                   width: width-2*margin_x, height: stepy, text: parts[n], color,
                   _expected_width: width-2*margin_x, _args: args,
-                  post_process: function(painter) {
+                  post_process(painter) {
                     if (this._args[0].ready && this._args[1].ready)
                        painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
                   }
@@ -70237,22 +70237,22 @@ const CustomStreamers = {
    },
 
    TNamed: [ {
-      basename: clTObject, base: 1, func: (buf, obj) => {
+      basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTNamed;
          buf.classStreamer(obj, clTObject);
       }
      },
-     { name: 'fName', func: (buf, obj) => { obj.fName = buf.readTString(); } },
-     { name: 'fTitle', func: (buf, obj) => { obj.fTitle = buf.readTString(); } }
+     { name: 'fName', func(buf, obj) { obj.fName = buf.readTString(); } },
+     { name: 'fTitle', func(buf, obj) { obj.fTitle = buf.readTString(); } }
    ],
 
    TObjString: [ {
-      basename: clTObject, base: 1, func: (buf, obj) => {
+      basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTObjString;
          buf.classStreamer(obj, clTObject);
       }
      },
-     { name: 'fString', func: (buf, obj) => { obj.fString = buf.readTString(); } }
+     { name: 'fString', func(buf, obj) { obj.fString = buf.readTString(); } }
    ],
 
    TClonesArray(buf, list) {
@@ -70491,7 +70491,7 @@ const CustomStreamers = {
          buf.classStreamer(elem, "TStreamerSTL");
    },
 
-   TList: function(buf, obj) {
+   TList(buf, obj) {
       // stream all objects in the list from the I/O buffer
       if (!obj._typename) obj._typename = this.typename;
       obj.$kind = clTList; // all derived classes will be marked as well
@@ -70542,7 +70542,7 @@ const CustomStreamers = {
 
    TTree: {
       name: '$file',
-      func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; }
+      func(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; }
    },
 
    RooRealVar(buf, obj) {
@@ -70588,24 +70588,24 @@ const CustomStreamers = {
 
    TImagePalette: [
       {
-         basename: clTObject, base: 1, func: (buf, obj) => {
+         basename: clTObject, base: 1, func(buf, obj) {
             if (!obj._typename) obj._typename = 'TImagePalette';
             buf.classStreamer(obj, clTObject);
          }
       },
-      { name: 'fNumPoints', func: (buf, obj) => { obj.fNumPoints = buf.ntou4(); } },
-      { name: 'fPoints', func: (buf, obj) => { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
-      { name: 'fColorRed', func: (buf, obj) => { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorGreen', func: (buf, obj) => { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorBlue', func: (buf, obj) => { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
-      { name: 'fColorAlpha', func: (buf, obj) => { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
+      { name: 'fNumPoints', func(buf, obj) { obj.fNumPoints = buf.ntou4(); } },
+      { name: 'fPoints', func(buf, obj) { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
+      { name: 'fColorRed', func(buf, obj) { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorGreen', func(buf, obj) { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorBlue', func(buf, obj) { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
+      { name: 'fColorAlpha', func(buf, obj) { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
    ],
 
    TAttImage: [
-      { name: 'fImageQuality', func: (buf, obj) => { obj.fImageQuality = buf.ntoi4(); } },
-      { name: 'fImageCompression', func: (buf, obj) => { obj.fImageCompression = buf.ntou4(); } },
-      { name: 'fConstRatio', func: (buf, obj) => { obj.fConstRatio = (buf.ntou1() != 0); } },
-      { name: 'fPalette', func: (buf, obj) => { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
+      { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
+      { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
+      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
+      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
    ],
 
    TASImage(buf, obj) {
@@ -71473,7 +71473,7 @@ function addClassMethods(clname, streamer) {
             streamer.push({
                name: key,
                method: methods[key],
-               func: function(buf, obj) { obj[this.name] = this.method; }
+               func(buf, obj) { obj[this.name] = this.method; }
             });
 
    return streamer;
@@ -72743,9 +72743,8 @@ class TBuffer {
          return obj;
       }
 
-      const ver = this.readVersion();
-
-      const streamer = this.fFile.getStreamer(classname, ver);
+      const ver = this.readVersion(),
+            streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
 
@@ -73585,7 +73584,7 @@ class TFile {
 
          if (elem.basename == clTObject) {
             tgt.push({
-               func: function(buf, obj) {
+               func(buf, obj) {
                   buf.ntoi2(); // read version, why it here??
                   obj.fUniqueID = buf.ntou4();
                   obj.fBits = buf.ntou4();
@@ -74729,7 +74728,7 @@ class HierarchyPainter extends BasePainter {
          _localfile: file.fLocalFile,
          _had_direct_read: false,
          // this is central get method, item or itemname can be used, returns promise
-         _get: function(item, itemname) {
+         _get(item, itemname) {
 
             if (item && item._readobj)
                return Promise.resolve(item._readobj);
@@ -74759,7 +74758,7 @@ class HierarchyPainter extends BasePainter {
                         // reconstruct full file hierarchy
                         keysHierarchy(this, file.fKeys, file, "");
                      }
-                     item = painter.findItem({name: itemname, top: this});
+                     item = painter.findItem({ name: itemname, top: this });
                   }
 
                   if (item) {
@@ -79325,7 +79324,7 @@ function makeMethodsList(typename) {
    let res = {
       names: [],
       values: [],
-      Create: function() {
+      Create() {
          let obj = {};
          for (let n = 0; n < this.names.length; ++n)
             obj[this.names[n]] = this.values[n];
@@ -79333,7 +79332,8 @@ function makeMethodsList(typename) {
       }
    };
 
-   res.names.push("_typename"); res.values.push(typename);
+   res.names.push("_typename");
+   res.values.push(typename);
    for (let key in methods) {
       res.names.push(key);
       res.values.push(methods[key]);
@@ -79454,14 +79454,14 @@ function treeProcess(tree, selector, args) {
          staged_prev: 0, // entry limit of previous I/O request
          staged_now: 0, // entry limit of current I/O request
          progress_showtm: 0, // last time when progress was showed
-         GetBasketEntry: function(k) {
+         GetBasketEntry(k) {
             if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
             let res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
             if (res) return res;
             let bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
-         GetTarget: function(tgtobj) {
+         GetTarget(tgtobj) {
             // returns target object which should be used for the branch reading
             if (!this.tgt) return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
@@ -79471,7 +79471,7 @@ function treeProcess(tree, selector, args) {
             }
             return tgtobj;
          },
-         GetEntry: function(entry) {
+         GetEntry(entry) {
             // This should be equivalent to TBranch::GetEntry() method
             let shift = entry - this.first_entry, off;
             if (!this.branch.TestBit(kDoNotUseBufferMap))
@@ -79603,7 +79603,7 @@ function treeProcess(tree, selector, args) {
             name: target_name,
             typename: branch.fClassName,
             virtual: leaf.fVirtual,
-            func: function(buf, obj) {
+            func(buf, obj) {
                let clname = this.typename;
                if (this.virtual) clname = buf.readFastString(buf.ntou1() + 1);
                obj[this.name] = buf.classStreamer({}, clname);
@@ -79622,7 +79622,7 @@ function treeProcess(tree, selector, args) {
                   name: target_name,
                   conttype: branch.fClonesName || "TObject",
                   reallocate: args.reallocate_objects,
-                  func: function(buf, obj) {
+                  func(buf, obj) {
                      let size = buf.ntoi4(), n = 0, arr = obj[this.name];
                      if (!arr || this.reallocate) {
                         arr = obj[this.name] = new Array(size);
@@ -79679,7 +79679,7 @@ function treeProcess(tree, selector, args) {
                         name: target_name,
                         typename: branch.fClassName,
                         streamer: streamer,
-                        func: function(buf, obj) {
+                        func(buf, obj) {
                            let res = { _typename: this.typename };
                            for (let n = 0; n < this.streamer.length; ++n)
                               this.streamer[n].func(buf, res);
@@ -79718,7 +79718,7 @@ function treeProcess(tree, selector, args) {
                   member = {
                      name: target_name,
                      leaves: arr,
-                     func: function(buf, obj) {
+                     func(buf, obj) {
                         let tgt = obj[this.name], l = 0;
                         if (!tgt) obj[this.name] = tgt = {};
                         while (l < this.leaves.length)
@@ -79849,7 +79849,7 @@ function treeProcess(tree, selector, args) {
                      name: target_name,
                      stl_size: item_cnt.name,
                      type: elem.fType,
-                     func: function(buf, obj) {
+                     func(buf, obj) {
                         obj[this.name] = buf.readFastArray(obj[this.stl_size], this.type);
                      }
                   };
@@ -79909,7 +79909,7 @@ function treeProcess(tree, selector, args) {
                               stl_size: item_cnt.name,
                               loop_size: loop_size_name,
                               member0: member,
-                              func: function(buf, obj) {
+                              func(buf, obj) {
                                  let cnt = obj[this.stl_size], arr = new Array(cnt);
                                  for (let n = 0; n < cnt; ++n) {
                                     if (this.loop_size) obj.$loop_size = obj[this.loop_size][n];
@@ -88594,7 +88594,7 @@ class TGeoPainter extends ObjectPainter {
       let nshapes = 0, arg = {
          clones: this._clones,
          cnt: [],
-         func: function(node) {
+         func(node) {
             if (this.cnt[this.last] === undefined)
                this.cnt[this.last] = 1;
             else
@@ -89097,20 +89097,20 @@ class TGeoPainter extends ObjectPainter {
                return {
                    found: currnode,
                    fVolume: currnode ? currnode.node.fVolume : null,
-                   InvisibleAll: function(flag) {
+                   InvisibleAll(flag) {
                       setInvisibleAll(this.fVolume, flag);
                    },
-                   Draw: function() {
+                   Draw() {
                       if (!this.found || !this.fVolume) return;
                       result.obj = this.found.node;
                       result.prefix = this.found.item;
                       console.log('Select volume for drawing', this.fVolume.fName, result.prefix);
                    },
-                   SetTransparency: function(lvl) {
+                   SetTransparency(lvl) {
                      if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
                         this.fVolume.fMedium.fMaterial.fFillStyle = 3000+lvl;
                    },
-                   SetLineColor: function(col) {
+                   SetLineColor(col) {
                       if (this.fVolume) this.fVolume.fLineColor = col;
                    }
                 };
@@ -90631,7 +90631,7 @@ function createItem(node, obj, name) {
       _title: obj.fTitle,
       _parent: node,
       _geoobj: obj,
-      _get: function(item /* ,itemname */) {
+      _get(item /* ,itemname */) {
           // mark object as belong to the hierarchy, require to
           if (item._geoobj) item._geoobj.$geoh = true;
           return Promise.resolve(item._geoobj);
@@ -92516,23 +92516,23 @@ class TGraphPainter$1 extends ObjectPainter {
           pad: pp?.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
-          getFrameWidth: function() { return this.pw; },
-          getFrameHeight: function() { return this.ph; },
-          grx: function(value) {
+          getFrameWidth() { return this.pw; },
+          getFrameHeight() { return this.ph; },
+          grx(value) {
              if (this.pad.fLogx)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
              else
                 value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
              return value*this.pw;
           },
-          gry: function(value) {
+          gry(value) {
              if (this.pad.fLogy)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
              return (1-value)*this.ph;
           },
-          getGrFuncs: function() { return this; }
+          getGrFuncs() { return this; }
       };
 
       return pmain.pad ? pmain : null;
@@ -95557,8 +95557,8 @@ class TASImagePainter extends ObjectPainter {
       this.fContour = {
          arr: new Array(200),
          rgba: this.rgba,
-         getLevels: function() { return this.arr; },
-         getPaletteColor: function(pal, zval) {
+         getLevels() { return this.arr; },
+         getPaletteColor(pal, zval) {
             if (!this.arr || !this.rgba) return "white";
             let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
             return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
@@ -98266,12 +98266,12 @@ class RFramePainter extends RObjectPainter {
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          swap_xy: this.swap_xy,
          fp: this,
-         revertAxis: function(name, v) {
+         revertAxis(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.revertAxis(name, v);
          },
-         axisAsText: function(name, v) {
+         axisAsText(name, v) {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.axisAsText(name, v);
@@ -101365,21 +101365,21 @@ class RCanvasPainter extends RPadPainter {
                conn.setReceiver({
                   cpainter: this,
 
-                  onWebsocketOpened: function() {
+                  onWebsocketOpened() {
                   },
 
-                  onWebsocketMsg: function(panel_handle, msg) {
+                  onWebsocketMsg(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.slice(10) : "";
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
 
-                  onWebsocketClosed: function() {
+                  onWebsocketClosed() {
                      // if connection failed,
                      handle.send(reply + "false");
                   },
 
-                  onWebsocketError: function() {
+                  onWebsocketError() {
                      // if connection failed,
                      handle.send(reply + "false");
                   }
@@ -102786,7 +102786,7 @@ class RHistStatsPainter extends RPavePainter {
                   align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
                   width: width-2*margin_x, height: stepy, text: parts[n], draw_g: text_g,
                   _expected_width: width-2*margin_x, _args: args,
-                  post_process: function(painter) {
+                  post_process(painter) {
                     if (this._args[0].ready && this._args[1].ready)
                        painter.scaleTextDrawing(1.05*(this._args[0].result_width && this._args[1].result_width)/this.__expected_width, this.draw_g);
                   }

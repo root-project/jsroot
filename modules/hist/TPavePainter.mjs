@@ -311,7 +311,7 @@ class TPavePainter extends ObjectPainter {
                   align: (n == 0) ? "start" : "end", x: margin_x, y,
                   width: width-2*margin_x, height: stepy, text: parts[n], color,
                   _expected_width: width-2*margin_x, _args: args,
-                  post_process: function(painter) {
+                  post_process(painter) {
                     if (this._args[0].ready && this._args[1].ready)
                        painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
                   }

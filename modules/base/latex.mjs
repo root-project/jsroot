@@ -895,7 +895,7 @@ function loadMathjax() {
          },
          svg: svg_config,
          startup: {
-            ready: function() {
+            ready() {
                MathJax.startup.defaultReady();
                let arr = _mj_loading;
                _mj_loading = undefined;
@@ -927,15 +927,15 @@ function loadMathjax() {
           },
           startup: {
              typeset: false,
-             ready: function() {
-                   MathJax.startup.registerConstructor('jsdomAdaptor', () => {
-                      return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
-                   });
-                   MathJax.startup.useAdaptor('jsdomAdaptor', true);
-                   MathJax.startup.defaultReady();
-                   let arr = _mj_loading;
-                   _mj_loading = undefined;
-                   arr.forEach(func => func(MathJax));
+             ready() {
+                MathJax.startup.registerConstructor('jsdomAdaptor', () => {
+                   return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
+                });
+                MathJax.startup.useAdaptor('jsdomAdaptor', true);
+                MathJax.startup.defaultReady();
+                let arr = _mj_loading;
+                _mj_loading = undefined;
+                arr.forEach(func => func(MathJax));
              }
           }
       });

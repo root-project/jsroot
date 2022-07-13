@@ -2891,7 +2891,7 @@ class TGeoPainter extends ObjectPainter {
       let nshapes = 0, arg = {
          clones: this._clones,
          cnt: [],
-         func: function(node) {
+         func(node) {
             if (this.cnt[this.last] === undefined)
                this.cnt[this.last] = 1;
             else
@@ -3394,20 +3394,20 @@ class TGeoPainter extends ObjectPainter {
                return {
                    found: currnode,
                    fVolume: currnode ? currnode.node.fVolume : null,
-                   InvisibleAll: function(flag) {
+                   InvisibleAll(flag) {
                       setInvisibleAll(this.fVolume, flag);
                    },
-                   Draw: function() {
+                   Draw() {
                       if (!this.found || !this.fVolume) return;
                       result.obj = this.found.node;
                       result.prefix = this.found.item;
                       console.log('Select volume for drawing', this.fVolume.fName, result.prefix);
                    },
-                   SetTransparency: function(lvl) {
+                   SetTransparency(lvl) {
                      if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
                         this.fVolume.fMedium.fMaterial.fFillStyle = 3000+lvl;
                    },
-                   SetLineColor: function(col) {
+                   SetLineColor(col) {
                       if (this.fVolume) this.fVolume.fLineColor = col;
                    }
                 };
@@ -4928,7 +4928,7 @@ function createItem(node, obj, name) {
       _title: obj.fTitle,
       _parent: node,
       _geoobj: obj,
-      _get: function(item /* ,itemname */) {
+      _get(item /* ,itemname */) {
           // mark object as belong to the hierarchy, require to
           if (item._geoobj) item._geoobj.$geoh = true;
           return Promise.resolve(item._geoobj);
