@@ -294,6 +294,7 @@ function setDefaultDrawOpt(classname, opt) {
   * let obj = await file.readObject("hpxpy;1");
   * await draw("drawing", obj, "colz;logx;gridx;gridy"); */
 function draw(dom, obj, opt) {
+
    if (!obj || (typeof obj !== 'object'))
       return Promise.reject(Error('not an object in draw call'));
 

@@ -404,7 +404,7 @@ class JSRootMenu {
       // for the moment, text attributes accessed directly from objects
 
       let obj = painter.getObject();
-      if (!obj || !('fTextColor' in obj)) return;
+      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign == undefined)) return;
 
       this.add("sub:" + (prefix ? prefix : "Text"));
       this.addColorMenu("color", obj.fTextColor,

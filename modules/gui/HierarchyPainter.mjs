@@ -118,18 +118,18 @@ function drawList(dom, lst, opt) {
   * @private */
 function folderHierarchy(item, obj) {
 
-   if (!obj || !('fFolders' in obj) || (obj.fFolders === null)) return false;
+   if (!obj?.fFolders) return false;
 
-   if (obj.fFolders.arr.length===0) { item._more = false; return true; }
+   if (obj.fFolders.arr.length === 0) { item._more = false; return true; }
 
    item._childs = [];
 
-   for ( let i = 0; i < obj.fFolders.arr.length; ++i) {
+   for (let i = 0; i < obj.fFolders.arr.length; ++i) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
-         _name : chld.fName,
-         _kind : "ROOT." + chld._typename,
-         _obj : chld
+         _name: chld.fName,
+         _kind: "ROOT." + chld._typename,
+         _obj: chld
       });
    }
    return true;
@@ -199,7 +199,7 @@ function listHierarchy(folder, lst) {
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj || !obj._typename ?
+          item = !obj?._typename ?
            {
             _name: i.toString(),
             _kind: "ROOT.NULL",
@@ -3638,7 +3638,7 @@ ObjectPainter.prototype.showInspector = function(obj) {
       .style('left', w)
       .style('right', w);
 
-   if (!obj || (typeof obj !== 'object') || !obj._typename)
+   if (!obj?._typename)
       obj = this.getObject();
 
    return drawInspector(id, obj);

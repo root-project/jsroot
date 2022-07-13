@@ -2556,13 +2556,13 @@ function treeIOTest(tree, args) {
    let branches = [], names = [], nchilds = [];
 
    function collectBranches(obj, prntname = "") {
-      if (!obj || !obj.fBranches) return 0;
+      if (!obj?.fBranches) return 0;
 
       let cnt = 0;
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
          let br = obj.fBranches.arr[n],
-            name = (prntname ? prntname + "/" : "") + br.fName;
+             name = (prntname ? prntname + "/" : "") + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
