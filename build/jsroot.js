@@ -85883,15 +85883,15 @@ function expandGeoObject(parent, obj) {
    let volume, subnodes, shape;
 
    if (iseve) {
-      subnodes = obj.fElements ? obj.fElements.arr : null;
+      subnodes = obj.fElements?.arr;
       shape = obj.fShape;
    } else {
-      volume = (isnode ? obj.fVolume : obj);
-      subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
-      shape = volume ? volume.fShape : null;
+      volume = isnode ? obj.fVolume : obj;
+      subnodes = volume?.fNodes?.arr;
+      shape = volume?.fShape;
    }
 
-   if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
+   if (!subnodes && (shape?._typename === "TGeoCompositeShape") && shape?.fNode) {
       if (!parent._childs) {
          createItem(parent, shape.fNode.fLeft, 'Left');
          createItem(parent, shape.fNode.fRight, 'Right');
@@ -86734,8 +86734,8 @@ class TGeoPainter extends ObjectPainter {
    changedGlobalTransparency(transparency, skip_render) {
       let func = (typeof transparency == 'function') ? transparency : null;
       if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
-      this._toplevel.traverse( function (node) {
-         if (node && node.material && (node.material.inherentOpacity !== undefined)) {
+      this._toplevel.traverse( node => {
+         if (node?.material?.inherentOpacity !== undefined) {
             let t = func ? func(node) : undefined;
             if (t !== undefined)
                node.material.opacity = 1 - t;
@@ -86744,7 +86744,8 @@ class TGeoPainter extends ObjectPainter {
             node.material.transparent = node.material.opacity < 1;
          }
       });
-      if (!skip_render) this.render3D(-1);
+      if (!skip_render)
+         this.render3D(-1);
    }
 
    /** @summary Reset transformation */
@@ -86822,7 +86823,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method should be called to change background color */
    changedBackground(val) {
-      if (val !== undefined) this.ctrl.background = val;
+      if (val !== undefined)
+         this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
       this.render3D(0);
 
@@ -86912,13 +86914,13 @@ class TGeoPainter extends ObjectPainter {
 
          this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
-             .onChange(this.startDrawGeometry.bind(this));
+             .onChange(() => this.startDrawGeometry());
 
       } else {
          // Clipping Options
 
          let clipFolder = this._datgui.addFolder('Clipping'),
-             clip_handler = this.changedClipping.bind(this, -1);
+             clip_handler = () => this.changedClipping(-1);
 
          for (let naxis = 0; naxis < 3; ++naxis) {
             let cc = this.ctrl.clip[naxis],
@@ -86944,24 +86946,24 @@ class TGeoPainter extends ObjectPainter {
       let appearance = this._datgui.addFolder('Appearance');
 
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
-                .listen().onChange(this.changedHighlight.bind(this));
+                .listen().onChange(() => this.changedHighlight());
 
       appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
-                     .listen().onChange(this.changedGlobalTransparency.bind(this));
+                     .listen().onChange(value => this.changedGlobalTransparency(value));
 
       appearance.addColor(this.ctrl, 'background').name('Background')
-                .onChange(this.changedBackground.bind(this));
+                .onChange(col => this.changedBackground(col));
 
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
-                     .listen().onChange(this.changedWireFrame.bind(this));
+                     .listen().onChange(() => this.changedWireFrame());
 
       this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { "none" : 0, "show": 1, "center": 2}).name('Axes')
-                    .onChange(this.changedAxes.bind(this));
+      appearance.add(this.ctrl, '_axis', { "none": 0, "show": 1, "center": 2 }).name('Axes')
+                    .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'rotate').name("Autorotate")
-                      .listen().onChange(this.changedAutoRotate.bind(this));
+                      .listen().onChange(() => this.changedAutoRotate());
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
@@ -86972,11 +86974,11 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
          advanced.add(this.ctrl, 'depthTest').name("Depth test")
-            .listen().onChange(this.changedDepthTest.bind(this));
+            .listen().onChange(() => this.changedDepthTest());
 
          advanced.add( this.ctrl, 'depthMethod', depthcfg)
              .name("Rendering order")
-             .onChange(this.changedDepthMethod.bind(this));
+             .onChange(method => this.changedDepthMethod(method));
 
          advanced.add(this.ctrl, 'ortho_camera').name("Orhographic camera")
                  .listen().onChange(() => this.changeCamera());
@@ -86989,10 +86991,10 @@ class TGeoPainter extends ObjectPainter {
          let transform = this._datgui.addFolder('Transform');
          transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
                      .name('Z axis')
-                     .listen().onChange(this.changedTransformation.bind(this));
+                     .listen().onChange(() => this.changedTransformation());
          transform.add(this.ctrl, 'trans_radial', 0., 3., 0.01)
                   .name('Radial')
-                  .listen().onChange(this.changedTransformation.bind(this));
+                  .listen().onChange(() => this.changedTransformation());
 
          transform.add(this, 'resetTransformation').name('Reset');
 
@@ -87003,7 +87005,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.outline) return;
 
       let ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
-          ssao_handler = this.changedSSAO.bind(this), ssaocfg = {};
+          ssao_handler = () => this.changedSSAO(), ssaocfg = {};
 
       this.ctrl.ssao.outputItems.forEach(i => { ssaocfg[i.name] = i.value; });
 
@@ -87023,13 +87025,13 @@ class TGeoPainter extends ObjectPainter {
                 .listen().onChange(ssao_handler);
 
       let blooming = this._datgui.addFolder('Unreal Bloom'),
-          bloom_handler = this.changedBloomSettings.bind(this);
+          bloom_handler = () => this.changedBloomSettings();
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-                .listen().onChange(bloom_handler);
+              .listen().onChange(bloom_handler);
 
       blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name("Strength")
-            .listen().onChange(bloom_handler);
+               .listen().onChange(bloom_handler);
    }
 
    /** @summary Method called when bloom configuration changed via GUI */
@@ -87443,8 +87445,6 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._controls || !this._webgl || isBatchMode()) return;
 
-      let painter = this;
-
       this.setTooltipAllowed(settings.Tooltip);
 
       this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
@@ -87455,10 +87455,10 @@ class TGeoPainter extends ObjectPainter {
 
       this._controls.contextMenu = this.orbitContext.bind(this);
 
-      this._controls.processMouseMove = function(intersects) {
+      this._controls.processMouseMove = intersects => {
 
          // painter already cleaned up, ignore any incoming events
-         if (!painter.ctrl || !painter._controls) return;
+         if (!this.ctrl || !this._controls) return;
 
          let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
 
@@ -87466,12 +87466,14 @@ class TGeoPainter extends ObjectPainter {
          for (let k = 0; k < intersects.length; ++k) {
             let obj = intersects[k].object, info = null;
             if (!obj) continue;
-            if (obj.geo_object) info = obj.geo_name; else
-            if (obj.stack) info = painter.getStackFullName(obj.stack);
+            if (obj.geo_object)
+               info = obj.geo_name;
+            else if (obj.stack)
+               info = this.getStackFullName(obj.stack);
             if (!info) continue;
 
             if (info.indexOf("<prnt>") == 0)
-               info = painter.getItemName() + info.slice(6);
+               info = this.getItemName() + info.slice(6);
 
             names.push(info);
 
@@ -87481,17 +87483,18 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == "string")) tooltip += " indx:" + JSON.stringify(geo_index);
+                  if ((geo_index !== undefined) && (typeof tooltip == "string"))
+                     tooltip += " indx:" + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack) resolve = painter.resolveStack(active_mesh.stack);
+               if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
             }
          }
 
-         painter.highlightMesh(active_mesh, undefined, geo_object, geo_index);
+         this.highlightMesh(active_mesh, undefined, geo_object, geo_index);
 
-         if (painter.ctrl.update_browser) {
-            if (painter.ctrl.highlight && tooltip) names = [ tooltip ];
-            painter.activateInBrowser(names);
+         if (this.ctrl.update_browser) {
+            if (this.ctrl.highlight && tooltip) names = [ tooltip ];
+            this.activateInBrowser(names);
          }
 
          if (!resolve || !resolve.obj) return tooltip;
@@ -87506,19 +87509,19 @@ class TGeoPainter extends ObjectPainter {
          this.processMouseMove([]); // to disable highlight and reset browser
       };
 
-      this._controls.processDblClick = function() {
+      this._controls.processDblClick = () => {
          // painter already cleaned up, ignore any incoming events
-         if (!painter.ctrl || !painter._controls) return;
+         if (!this.ctrl || !this._controls) return;
 
-         if (painter._last_manifest) {
-            painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
-            if (painter._last_hidden)
-               painter._last_hidden.forEach(obj => { obj.visible = true; });
-            delete painter._last_hidden;
-            delete painter._last_manifest;
-            painter.render3D();
+         if (this._last_manifest) {
+            this._last_manifest.wireframe = !this._last_manifest.wireframe;
+            if (this._last_hidden)
+               this._last_hidden.forEach(obj => { obj.visible = true; });
+            delete this._last_hidden;
+            delete this._last_manifest;
+            this.render3D();
          } else {
-            painter.adjustCameraPosition();
+            this.adjustCameraPosition();
          }
       };
    }
