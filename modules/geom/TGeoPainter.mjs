@@ -1127,7 +1127,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method should be called to change background color */
    changedBackground(val) {
-      if (val !== undefined) this.ctrl.background = val;
+      if (val !== undefined)
+         this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
       this.render3D(0);
 
@@ -1217,13 +1218,13 @@ class TGeoPainter extends ObjectPainter {
 
          this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
-             .onChange(this.startDrawGeometry.bind(this));
+             .onChange(() => this.startDrawGeometry());
 
       } else {
          // Clipping Options
 
          let clipFolder = this._datgui.addFolder('Clipping'),
-             clip_handler = this.changedClipping.bind(this, -1);
+             clip_handler = () => this.changedClipping(-1);
 
          for (let naxis = 0; naxis < 3; ++naxis) {
             let cc = this.ctrl.clip[naxis],
@@ -1249,24 +1250,24 @@ class TGeoPainter extends ObjectPainter {
       let appearance = this._datgui.addFolder('Appearance');
 
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
-                .listen().onChange(this.changedHighlight.bind(this));
+                .listen().onChange(() => this.changedHighlight());
 
       appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
-                     .listen().onChange(this.changedGlobalTransparency.bind(this));
+                     .listen().onChange(value => this.changedGlobalTransparency(value));
 
       appearance.addColor(this.ctrl, 'background').name('Background')
-                .onChange(this.changedBackground.bind(this));
+                .onChange(col => this.changedBackground(col));
 
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
-                     .listen().onChange(this.changedWireFrame.bind(this));
+                     .listen().onChange(() => this.changedWireFrame());
 
       this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { "none" : 0, "show": 1, "center": 2}).name('Axes')
-                    .onChange(this.changedAxes.bind(this));
+      appearance.add(this.ctrl, '_axis', { "none": 0, "show": 1, "center": 2 }).name('Axes')
+                    .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'rotate').name("Autorotate")
-                      .listen().onChange(this.changedAutoRotate.bind(this));
+                      .listen().onChange(() => this.changedAutoRotate());
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
@@ -1277,11 +1278,11 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
          advanced.add(this.ctrl, 'depthTest').name("Depth test")
-            .listen().onChange(this.changedDepthTest.bind(this));
+            .listen().onChange(() => this.changedDepthTest());
 
          advanced.add( this.ctrl, 'depthMethod', depthcfg)
              .name("Rendering order")
-             .onChange(this.changedDepthMethod.bind(this));
+             .onChange(method => this.changedDepthMethod(method));
 
          advanced.add(this.ctrl, 'ortho_camera').name("Orhographic camera")
                  .listen().onChange(() => this.changeCamera());
@@ -1294,10 +1295,10 @@ class TGeoPainter extends ObjectPainter {
          let transform = this._datgui.addFolder('Transform');
          transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
                      .name('Z axis')
-                     .listen().onChange(this.changedTransformation.bind(this));
+                     .listen().onChange(() => this.changedTransformation());
          transform.add(this.ctrl, 'trans_radial', 0., 3., 0.01)
                   .name('Radial')
-                  .listen().onChange(this.changedTransformation.bind(this));
+                  .listen().onChange(() => this.changedTransformation());
 
          transform.add(this, 'resetTransformation').name('Reset');
 
@@ -1308,7 +1309,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.outline) return;
 
       let ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
-          ssao_handler = this.changedSSAO.bind(this), ssaocfg = {};
+          ssao_handler = () => this.changedSSAO(), ssaocfg = {};
 
       this.ctrl.ssao.outputItems.forEach(i => { ssaocfg[i.name] = i.value; });
 
@@ -1328,13 +1329,13 @@ class TGeoPainter extends ObjectPainter {
                 .listen().onChange(ssao_handler);
 
       let blooming = this._datgui.addFolder('Unreal Bloom'),
-          bloom_handler = this.changedBloomSettings.bind(this);
+          bloom_handler = () => this.changedBloomSettings();
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-                .listen().onChange(bloom_handler);
+              .listen().onChange(bloom_handler);
 
       blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name("Strength")
-            .listen().onChange(bloom_handler);
+               .listen().onChange(bloom_handler);
    }
 
    /** @summary Method called when bloom configuration changed via GUI */
