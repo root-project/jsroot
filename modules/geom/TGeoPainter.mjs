@@ -154,6 +154,8 @@ function createList(parent, lst, name, title) {
 /** @summary Expand geo object
   * @private */
 function expandGeoObject(parent, obj) {
+   injectGeoStyle();
+
    if (!parent || !obj) return false;
 
    let isnode = (obj._typename.indexOf('TGeoNode') === 0),
@@ -4697,21 +4699,22 @@ class TGeoPainter extends ObjectPainter {
 
 let add_settings = false;
 
-/** @summary Create geo painter
+/** @summary Create geo-related css entries
   * @private */
-function createGeoPainter(dom, obj, opt) {
+function injectGeoStyle() {
 
-   if (!add_settings && (typeof internals.addDrawFunc == 'function')) {
-      // indication that draw and hierarchy is loaded, create css
+   if (!add_settings && typeof internals.addDrawFunc == 'function') {
       add_settings = true;
+      // indication that draw and hierarchy is loaded, create css
       internals.addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
       internals.addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
+   }
 
-      function img(name,code) {
-         return `.jsroot .img_${name} { display: inline-block; height: 16px; width: 16px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ${code}"); }`;
-      }
+   function img(name,code) {
+      return `.jsroot .img_${name} { display: inline-block; height: 16px; width: 16px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ${code}"); }`;
+   }
 
-      injectStyle(`
+   injectStyle(`
 ${img("geoarb8","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB1SURBVBjTdY6rEYAwEETTy6lzK8/Fo+Jj18dTAjUgaQGfGiggtRDE8RtY93Zu514If2nzk2ux9c5TZkwXbiWTUavzws69oBfpYBrMT4r0Jhsw+QfRgQSw+CaKRsKsnV+SaF8MN49RBSgPUxO85PMl5n4tfGUH2gghs2uPAeQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
 ${img("geocombi","CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAlUlEQVQoz5VQMQ4CMQyzEUNnBqT7Bo+4nZUH8gj+welWJsQDkHoCEYakTXMHSFiq2jqu4xRAEl2A7w4myWzpzCSZRZ658ldKu1hPnFsequBIc/hcLli3l52MAIANtpWrDsv8waGTW6BPuFtsdZArXyFuj33TQpazGEQF38phipnLgItxRcAoOeNpzv4PTXnC42fb//AGI5YqfQAU8dkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
 ${img("geocone","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACRSURBVBjTdY+xDcNACEVvEm/ggo6Olva37IB0C3iEzJABvAHFTXBDeJRwthMnUvylk44vPjxK+afeokX0flQhJO7L4pafSOMxzaxIKc/Tc7SIjNLyieyZSjBzc4DqMZI0HTMonWPBNlogOLeuewbg9c0hOiIqH7DKmTCuFykjHe4XOzQ58XVMGxzt575tKzd6AX9yMkcWyPlsAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
@@ -4746,7 +4749,14 @@ ${img("evetrack", "CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hST
 .jsroot .geovis_this { background-color: lightgreen; }
 .jsroot .geovis_daughters { background-color: lightblue; }
 .jsroot .geovis_all { background-color: yellow; }`);
-   }
+}
+
+
+/** @summary Create geo painter
+  * @private */
+function createGeoPainter(dom, obj, opt) {
+
+   injectGeoStyle();
 
    geoCfg("GradPerSegm", settings.GeoGradPerSegm);
    geoCfg("CompressComp", settings.GeoCompressComp);
