@@ -1289,16 +1289,16 @@ class StandaloneMenu extends JSRootMenu {
 
       return new Promise(resolveFunc => {
          element.on("keyup", evnt => {
-            if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
+            if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
-               resolveFunc(evnt.keyCode == 13 ? element.node() : null);
+               resolveFunc(evnt.code == 'Enter' ? element.node() : null);
                element.remove();
                block.remove();
             }
          });
          element.on("keydown", evnt => {
-            if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
+            if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
             }

@@ -3514,7 +3514,7 @@ class HierarchyPainter extends BasePainter {
          main.select(".gui_ResetUIBtn").on("click", () => this.clearHierarchy(true));
 
          main.select(".gui_urlToLoad").on("keyup", evnt => {
-            if (evnt.keyCode == 13) this.readSelectedFile();
+            if (evnt.code == 'Enter') this.readSelectedFile();
          });
 
          main.select(".gui_localFile").on('change', evnt => {
