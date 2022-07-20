@@ -715,9 +715,9 @@ class TGeoPainter extends ObjectPainter {
       });
       this._renderer.vr.enabled = true;
 
-      window.addEventListener( 'keydown', event => {
+      window.addEventListener( 'keydown', evnt => {
          // Esc Key turns VR mode off
-         if (event.keyCode === 27) this.exitVRMode();
+         if (evnt.code == 'Escape') this.exitVRMode();
       });
    }
 
@@ -1842,43 +1842,39 @@ class TGeoPainter extends ObjectPainter {
       //this._tcontrols.setSize( 1.1 );
 
       window.addEventListener( 'keydown', event => {
-         switch ( event.keyCode ) {
-         case 81: // Q
+         switch ( event.key ) {
+         case 'q':
             this._tcontrols.setSpace( this._tcontrols.space === "local" ? "world" : "local" );
             break;
-         case 17: // Ctrl
+         case 'Control':
             this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
             this._tcontrols.setRotationSnap( MathUtils.degToRad( 15 ) );
             break;
-         case 84: // T (Translate)
+         case 't': // Translate
             this._tcontrols.setMode( "translate" );
             break;
-         case 82: // R (Rotate)
+         case 'r': // Rotate
             this._tcontrols.setMode( "rotate" );
             break;
-         case 83: // S (Scale)
+         case 's': // Scale
             this._tcontrols.setMode( "scale" );
             break;
-         case 187:
-         case 107: // +, =, num+
-            this._tcontrols.setSize( this._tcontrols.size + 0.1 );
+         case '+':
+            this._tcontrols.setSize(this._tcontrols.size + 0.1);
             break;
-         case 189:
-         case 109: // -, _, num-
-            this._tcontrols.setSize( Math.max( this._tcontrols.size - 0.1, 0.1 ) );
+         case '-':
+            this._tcontrols.setSize(Math.max(this._tcontrols.size - 0.1, 0.1));
             break;
          }
       });
-      window.addEventListener( 'keyup', function ( event ) {
-         switch ( event.keyCode ) {
-         case 17: // Ctrl
-            this._tcontrols.setTranslationSnap( null );
-            this._tcontrols.setRotationSnap( null );
-            break;
+      window.addEventListener( 'keyup', event => {
+         if (event.key == 'Control') {
+            this._tcontrols.setTranslationSnap(null);
+            this._tcontrols.setRotationSnap(null);
          }
       });
 
-      this._tcontrols.addEventListener( 'change', () => this.render3D(0));
+      this._tcontrols.addEventListener('change', () => this.render3D(0));
    }
 
    /** @summary Main function in geometry creation loop
