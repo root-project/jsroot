@@ -3174,12 +3174,9 @@ class TGeoPainter extends ObjectPainter {
    drawGeoTrack(track, itemname) {
       if (!track || !track.fNpoints) return false;
 
-      let track_width = track.fLineWidth || 1,
-          track_color = getColor(track.fLineColor) || "#ff00ff";
-
-      if (browser.isWin) track_width = 1; // not supported on windows
-
-      let npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // linew width not supported on windows
+          color = getColor(track.fLineColor) || "#ff00ff",
+          npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === "x"),
@@ -3196,7 +3193,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
@@ -3216,12 +3213,9 @@ class TGeoPainter extends ObjectPainter {
    drawPolyLine(line, itemname) {
       if (!line) return false;
 
-      let track_width = line.fLineWidth || 1,
-          track_color = getColor(line.fLineColor) || "#ff00ff";
-
-      if (browser.isWin) track_width = 1; // not supported on windows
-
-      let npoints = line.fN,
+      let linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
+          color = getColor(line.fLineColor) || "#ff00ff",
+          npoints = line.fN,
           fP = line.fP,
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
@@ -3239,7 +3233,7 @@ class TGeoPainter extends ObjectPainter {
          pos += 6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line3d = createLineSegments(buf, lineMaterial);
 
       line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
@@ -3256,18 +3250,15 @@ class TGeoPainter extends ObjectPainter {
    drawEveTrack(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
-      let track_width = track.fLineWidth || 1,
-          track_color = getColor(track.fLineColor) || "#ff00ff";
-
-      if (browser.isWin) track_width = 1; // not supported on windows
-
-      let buf = new Float32Array((track.fN-1)*6), pos = 0,
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
+          color = getColor(track.fLineColor) || "#ff00ff",
+          buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z");
 
-      for (let k=0;k<track.fN-1;++k) {
+      for (let k = 0; k < track.fN-1; ++k) {
          buf[pos]   = projx ? projv : track.fP[k*3];
          buf[pos+1] = projy ? projv : track.fP[k*3+1];
          buf[pos+2] = projz ? projv : track.fP[k*3+2];
@@ -3277,7 +3268,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
