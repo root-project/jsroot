@@ -1987,11 +1987,11 @@ class TGeoPainter extends ObjectPainter {
                del = this._clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
 
             // remove should be fast, do it here
-            for (let n=0;n<del.length;++n)
+            for (let n = 0; n < del.length; ++n)
                this._clones.createObject3D(del[n].stack, this._toplevel, 'delete_mesh');
 
             if (del.length > 0)
-               this.drawing_log = "Delete " + del.length + " nodes";
+               this.drawing_log = `Delete ${del.length} nodes`;
          }
 
          this._draw_nodes = this._new_draw_nodes;
@@ -2058,7 +2058,7 @@ class TGeoPainter extends ObjectPainter {
                this.changeStage(stageBuildReady);
             } else {
                this.ctrl.info.num_shapes = res.shapes;
-               this.drawing_log = "Creating: " + res.shapes + " / " + this._build_shapes.length + " shapes,  "  + res.faces + " faces";
+               this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
                if (res.notusedshapes < 30) return true;
             }
          }
@@ -3351,13 +3351,13 @@ class TGeoPainter extends ObjectPainter {
       volumes.push(prnt.fVolume);
 
       if (prnt.fVolume.fNodes)
-         for (let n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
+         for (let n = 0, len = prnt.fVolume.fNodes.arr.length; n < len; ++n) {
             res = this.findNodeWithVolume(name, action, prnt.fVolume.fNodes.arr[n], itemname, volumes);
             if (res) break;
          }
 
       if (first_level)
-         for (let n=0, len=volumes.length; n<len; ++n)
+         for (let n = 0, len = volumes.length; n < len; ++n)
             delete volumes[n]._searched;
 
       return res;
@@ -3368,7 +3368,8 @@ class TGeoPainter extends ObjectPainter {
 
       let result = { obj: this.getGeometry(), prefix: "" };
 
-      if (this.geo_manager) result.prefix = result.obj.fName;
+      if (this.geo_manager)
+         result.prefix = result.obj.fName;
 
       if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
          return Promise.resolve(result);
@@ -3905,7 +3906,7 @@ class TGeoPainter extends ObjectPainter {
 
       let box = this.getGeomBoundingBox(this._toplevel),
           container = this.getExtrasContainer('create', 'axis'),
-          text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
+          text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
           center = [0,0,0],
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
@@ -3933,7 +3934,7 @@ class TGeoPainter extends ObjectPainter {
       for (let naxis = 0; naxis < numaxis; ++naxis) {
 
          let buf = new Float32Array(6),
-             axiscol = colors[naxis],
+             color = colors[naxis],
              name = names[naxis];
 
          const Convert = value => {
@@ -3959,17 +3960,17 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (this.ctrl._axis == 2)
-            for (let k=0;k<6;++k)
+            for (let k = 0; k < 6; ++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
-         let lineMaterial = new LineBasicMaterial({ color: axiscol }),
+         let lineMaterial = new LineBasicMaterial({ color }),
              mesh = createLineSegments(buf, lineMaterial);
 
          container.add(mesh);
 
-         let textMaterial = new MeshBasicMaterial({ color: axiscol, vertexColors: false });
+         let textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
 
-         if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
+         if ((center[naxis]===0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
            if ((this.ctrl._axis != 2) || (naxis===0)) {
                let geom = ortho ? new CircleBufferGeometry(text_size*0.25) :
                                   new SphereBufferGeometry(text_size*0.25);
