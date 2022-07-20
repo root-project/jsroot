@@ -3290,14 +3290,20 @@ class TGeoPainter extends ObjectPainter {
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z"),
-          pnts = new PointsCreator(nhits, this._webgl, hit_size);
+          style = hit.fMarkerStyle;
+
+      // FIXME: styles 2 and 4 does not work properly, see Misc/basic3d demo
+      // style 4 is very bad for hits representation
+      if ((style == 4) || (style == 2)) { style = 7; hit_size *= 1.5; }
+
+      let pnts = new PointsCreator(nhits, this._webgl, hit_size);
 
       for (let i = 0; i < nhits; i++)
          pnts.addPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit.fMarkerStyle }).then(mesh => {
+      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style }).then(mesh => {
          mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
@@ -5015,7 +5021,7 @@ function drawDummy3DGeom(painter) {
        min = [-1, -1, -1], max = [1, 1, 1];
 
    if (extra.fP && extra.fP.length)
-      for(let k = 0; k < extra.fP.length; k +=3)
+      for(let k = 0; k < extra.fP.length; k += 3)
          for (let i = 0; i < 3; ++i) {
             min[i] = Math.min(min[i], extra.fP[k+i]);
             max[i] = Math.max(max[i], extra.fP[k+i]);
@@ -5029,7 +5035,7 @@ function drawDummy3DGeom(painter) {
    shape.fDZ = max[2] - min[2];
    shape.fShapeId = 1;
    shape.fShapeBits = 0;
-   shape.fOrigin= [0,0,0];
+   shape.fOrigin = [0,0,0];
 
    let obj = create("TEveGeoShapeExtract");
 
@@ -5110,7 +5116,7 @@ function build(obj, opt) {
    if (!obj) return null;
 
    if (obj._typename.indexOf('TGeoVolume') === 0)
-      obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
    let clones = new ClonedNodes(obj);
    clones.setVisLevel(opt.vislevel);
