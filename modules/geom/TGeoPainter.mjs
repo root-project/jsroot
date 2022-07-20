@@ -3133,23 +3133,23 @@ class TGeoPainter extends ObjectPainter {
       for (let n = 0; n < this._toplevel.children.length; ++n) {
          let chld = this._toplevel.children[n];
          if (!chld._extras) continue;
-         if (action==='collect') { lst.push(chld); continue; }
+         if (action == 'collect') { lst.push(chld); continue; }
          if (chld._extras === name) { extras = chld; break; }
       }
 
-      if (action==='collect') {
+      if (action == 'collect') {
          for (let k = 0; k < lst.length; ++k)
             this._toplevel.remove(lst[k]);
          return lst;
       }
 
-      if (action==="delete") {
+      if (action == "delete") {
          if (extras) this._toplevel.remove(extras);
          disposeThreejsObject(extras);
          return null;
       }
 
-      if ((action!=="get") && !extras) {
+      if ((action !== "get") && !extras) {
          extras = new Object3D();
          extras._extras = name;
          this._toplevel.add(extras);
@@ -3297,26 +3297,20 @@ class TGeoPainter extends ObjectPainter {
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
-      let hit_size = hit.fMarkerSize * this.getOverallSize() * 0.005;
-      if (hit_size <= 0.2) hit_size = 0.2;
-
-      let hit_style = hit.fMarkerStyle;
-      // FIXME: marker style 2 does not work why?
-      if ((hit_style == 4) || (hit_style == 2)) { hit_style = 7; hit_size *= 1.5; } // style 4 is very bad for hits representation
-
-      let size = hit.fN,
+      let hit_size = Math.max(hit.fMarkerSize * this.getOverallSize() * 0.005, 0.2),
+          nhits = hit.fN,
           projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z"),
-          pnts = new PointsCreator(size, this._webgl, hit_size);
+          pnts = new PointsCreator(nhits, this._webgl, hit_size);
 
-      for (let i = 0; i < size; i++)
+      for (let i = 0; i < nhits; i++)
          pnts.addPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit_style }).then(mesh => {
+      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit.fMarkerStyle }).then(mesh => {
          mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
