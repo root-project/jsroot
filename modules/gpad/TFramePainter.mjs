@@ -730,24 +730,14 @@ const FrameInteractive = {
 
    /** @summary Handle key press */
    processKeyPress(evnt) {
-      let main = this.selectDom();
-      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false)) return;
+      const allowed = ["PageUp", "PageDown", "ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown", "PrintScreen", "*"];
 
-      let key = "";
-      switch (evnt.keyCode) {
-         case 33: key = "PageUp"; break;
-         case 34: key = "PageDown"; break;
-         case 37: key = "ArrowLeft"; break;
-         case 38: key = "ArrowUp"; break;
-         case 39: key = "ArrowRight"; break;
-         case 40: key = "ArrowDown"; break;
-         case 42: key = "PrintScreen"; break;
-         case 106: key = "*"; break;
-         default: return false;
-      }
+      let main = this.selectDom(),
+          key = evnt.key,
+          pp = this.getPadPainter();
 
-      let pp = this.getPadPainter();
-      if (getActivePad() !== pp) return;
+      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false) ||
+          (getActivePad() !== pp) || (allowed.indexOf(key) < 0)) return false;
 
       if (evnt.shiftKey) key = "Shift " + key;
       if (evnt.altKey) key = "Alt " + key;
@@ -769,14 +759,14 @@ const FrameInteractive = {
       if (zoom.dleft || zoom.dright) {
          if (!settings.Zooming) return false;
          // in 3dmode with orbit control ignore simple arrows
-         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
+         if (this.mode3d && (key.indexOf("Ctrl") !== 0)) return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
          this.zoom(zoom.name, zoom.min, zoom.max);
          if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
-         let func = pp && pp.findPadButton ? pp.findPadButton(key) : "";
+         let func = pp?.findPadButton(key);
          if (func) {
             pp.clickPadButton(func);
             evnt.stopPropagation();
@@ -799,7 +789,7 @@ const FrameInteractive = {
 
       // collect tooltips from pad painter - it has list of all drawn objects
       let hints = pp.processPadTooltipEvent(pnt), exact = null, res;
-      for (let k = 0; (k <hints.length) && !exact; ++k)
+      for (let k = 0; (k < hints.length) && !exact; ++k)
          if (hints[k] && hints[k].exact)
             exact = hints[k];
 

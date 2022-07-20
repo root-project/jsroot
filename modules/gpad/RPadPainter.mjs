@@ -1423,21 +1423,21 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Add button to the pad
      * @private */
-   addPadButton(_btn, _tooltip, _funcname, _keyname) {
+   addPadButton(btn, tooltip, funcname, keyname) {
       if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
 
-      for (let k=0;k<this._buttons.length;++k)
-         if (this._buttons[k].funcname == _funcname) return;
+      for (let k = 0; k < this._buttons.length; ++k)
+         if (this._buttons[k].funcname == funcname) return;
 
-      this._buttons.push({ btn: _btn, tooltip: _tooltip, funcname: _funcname, keyname: _keyname });
+      this._buttons.push({ btn, tooltip, funcname, keyname });
 
       let iscan = this.iscan || !this.has_canvas;
-      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "enlargePad")) {
+      if (!iscan && (funcname.indexOf("Pad") != 0) && (funcname !== "enlargePad")) {
          let cp = this.getCanvPainter();
-         if (cp && (cp!==this)) cp.addPadButton(_btn, _tooltip, _funcname);
+         if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }
    }
 
