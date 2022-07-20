@@ -187,15 +187,15 @@ function expandGeoObject(parent, obj) {
    let volume, subnodes, shape;
 
    if (iseve) {
-      subnodes = obj.fElements ? obj.fElements.arr : null;
+      subnodes = obj.fElements?.arr;
       shape = obj.fShape;
    } else {
-      volume = (isnode ? obj.fVolume : obj);
-      subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
-      shape = volume ? volume.fShape : null;
+      volume = isnode ? obj.fVolume : obj;
+      subnodes = volume?.fNodes?.arr;
+      shape = volume?.fShape;
    }
 
-   if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
+   if (!subnodes && (shape?._typename === "TGeoCompositeShape") && shape?.fNode) {
       if (!parent._childs) {
          createItem(parent, shape.fNode.fLeft, 'Left');
          createItem(parent, shape.fNode.fRight, 'Right');
@@ -1038,8 +1038,8 @@ class TGeoPainter extends ObjectPainter {
    changedGlobalTransparency(transparency, skip_render) {
       let func = (typeof transparency == 'function') ? transparency : null;
       if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
-      this._toplevel.traverse( function (node) {
-         if (node && node.material && (node.material.inherentOpacity !== undefined)) {
+      this._toplevel.traverse( node => {
+         if (node?.material?.inherentOpacity !== undefined) {
             let t = func ? func(node) : undefined;
             if (t !== undefined)
                node.material.opacity = 1 - t;
@@ -1048,7 +1048,8 @@ class TGeoPainter extends ObjectPainter {
             node.material.transparent = node.material.opacity < 1;
          }
       });
-      if (!skip_render) this.render3D(-1);
+      if (!skip_render)
+         this.render3D(-1);
    }
 
    /** @summary Reset transformation */
