@@ -53556,16 +53556,16 @@ class StandaloneMenu extends JSRootMenu {
 
       return new Promise(resolveFunc => {
          element.on("keyup", evnt => {
-            if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
+            if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
-               resolveFunc(evnt.keyCode == 13 ? element.node() : null);
+               resolveFunc(evnt.code == 'Enter' ? element.node() : null);
                element.remove();
                block.remove();
             }
          });
          element.on("keydown", evnt => {
-            if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
+            if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
             }
@@ -54558,24 +54558,14 @@ const FrameInteractive = {
 
    /** @summary Handle key press */
    processKeyPress(evnt) {
-      let main = this.selectDom();
-      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false)) return;
+      const allowed = ["PageUp", "PageDown", "ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown", "PrintScreen", "*"];
 
-      let key = "";
-      switch (evnt.keyCode) {
-         case 33: key = "PageUp"; break;
-         case 34: key = "PageDown"; break;
-         case 37: key = "ArrowLeft"; break;
-         case 38: key = "ArrowUp"; break;
-         case 39: key = "ArrowRight"; break;
-         case 40: key = "ArrowDown"; break;
-         case 42: key = "PrintScreen"; break;
-         case 106: key = "*"; break;
-         default: return false;
-      }
+      let main = this.selectDom(),
+          key = evnt.key,
+          pp = this.getPadPainter();
 
-      let pp = this.getPadPainter();
-      if (getActivePad() !== pp) return;
+      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false) ||
+          (getActivePad() !== pp) || (allowed.indexOf(key) < 0)) return false;
 
       if (evnt.shiftKey) key = "Shift " + key;
       if (evnt.altKey) key = "Alt " + key;
@@ -54597,14 +54587,14 @@ const FrameInteractive = {
       if (zoom.dleft || zoom.dright) {
          if (!settings.Zooming) return false;
          // in 3dmode with orbit control ignore simple arrows
-         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
+         if (this.mode3d && (key.indexOf("Ctrl") !== 0)) return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
          this.zoom(zoom.name, zoom.min, zoom.max);
          if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
-         let func = pp && pp.findPadButton ? pp.findPadButton(key) : "";
+         let func = pp?.findPadButton(key);
          if (func) {
             pp.clickPadButton(func);
             evnt.stopPropagation();
@@ -54627,7 +54617,7 @@ const FrameInteractive = {
 
       // collect tooltips from pad painter - it has list of all drawn objects
       let hints = pp.processPadTooltipEvent(pnt), exact = null, res;
-      for (let k = 0; (k <hints.length) && !exact; ++k)
+      for (let k = 0; (k < hints.length) && !exact; ++k)
          if (hints[k] && hints[k].exact)
             exact = hints[k];
 
@@ -58416,9 +58406,9 @@ let PadButtonsHandler = {
              .on("mouseleave", () => toggleButtonsVisibility(this, 'disable'));
 
          for (let k = 0; k < this._buttons.length; ++k) {
-            let item = this._buttons[k];
+            let item = this._buttons[k],
+                 btn = item.btn;
 
-            let btn = item.btn;
             if (typeof btn == 'string') btn = ToolbarIcons[btn];
             if (!btn) btn = ToolbarIcons.circle;
 
@@ -60257,21 +60247,21 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Add button to the pad
      * @private */
-   addPadButton(_btn, _tooltip, _funcname, _keyname) {
+   addPadButton(btn, tooltip, funcname, keyname) {
       if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
 
-      for (let k=0;k<this._buttons.length;++k)
-         if (this._buttons[k].funcname == _funcname) return;
+      for (let k = 0; k < this._buttons.length; ++k)
+         if (this._buttons[k].funcname == funcname) return;
 
-      this._buttons.push({ btn: _btn, tooltip: _tooltip, funcname: _funcname, keyname: _keyname });
+      this._buttons.push({ btn, tooltip, funcname, keyname });
 
       let iscan = this.iscan || !this.has_canvas;
-      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "enlargePad")) {
+      if (!iscan && (funcname.indexOf("Pad")!=0) && (funcname !== "enlargePad")) {
          let cp = this.getCanvPainter();
-         if (cp && (cp!==this)) cp.addPadButton(_btn, _tooltip, _funcname);
+         if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }
    }
 
@@ -77475,7 +77465,7 @@ class HierarchyPainter extends BasePainter {
          main.select(".gui_ResetUIBtn").on("click", () => this.clearHierarchy(true));
 
          main.select(".gui_urlToLoad").on("keyup", evnt => {
-            if (evnt.keyCode == 13) this.readSelectedFile();
+            if (evnt.code == 'Enter') this.readSelectedFile();
          });
 
          main.select(".gui_localFile").on('change', evnt => {
@@ -86411,9 +86401,9 @@ class TGeoPainter extends ObjectPainter {
       });
       this._renderer.vr.enabled = true;
 
-      window.addEventListener( 'keydown', event => {
+      window.addEventListener( 'keydown', evnt => {
          // Esc Key turns VR mode off
-         if (event.keyCode === 27) this.exitVRMode();
+         if (evnt.code == 'Escape') this.exitVRMode();
       });
    }
 
@@ -87538,43 +87528,39 @@ class TGeoPainter extends ObjectPainter {
       //this._tcontrols.setSize( 1.1 );
 
       window.addEventListener( 'keydown', event => {
-         switch ( event.keyCode ) {
-         case 81: // Q
+         switch ( event.key ) {
+         case 'q':
             this._tcontrols.setSpace( this._tcontrols.space === "local" ? "world" : "local" );
             break;
-         case 17: // Ctrl
+         case 'Control':
             this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
             this._tcontrols.setRotationSnap( MathUtils.degToRad( 15 ) );
             break;
-         case 84: // T (Translate)
+         case 't': // Translate
             this._tcontrols.setMode( "translate" );
             break;
-         case 82: // R (Rotate)
+         case 'r': // Rotate
             this._tcontrols.setMode( "rotate" );
             break;
-         case 83: // S (Scale)
+         case 's': // Scale
             this._tcontrols.setMode( "scale" );
             break;
-         case 187:
-         case 107: // +, =, num+
-            this._tcontrols.setSize( this._tcontrols.size + 0.1 );
+         case '+':
+            this._tcontrols.setSize(this._tcontrols.size + 0.1);
             break;
-         case 189:
-         case 109: // -, _, num-
-            this._tcontrols.setSize( Math.max( this._tcontrols.size - 0.1, 0.1 ) );
+         case '-':
+            this._tcontrols.setSize(Math.max(this._tcontrols.size - 0.1, 0.1));
             break;
          }
       });
-      window.addEventListener( 'keyup', function ( event ) {
-         switch ( event.keyCode ) {
-         case 17: // Ctrl
-            this._tcontrols.setTranslationSnap( null );
-            this._tcontrols.setRotationSnap( null );
-            break;
+      window.addEventListener( 'keyup', event => {
+         if (event.key == 'Control') {
+            this._tcontrols.setTranslationSnap(null);
+            this._tcontrols.setRotationSnap(null);
          }
       });
 
-      this._tcontrols.addEventListener( 'change', () => this.render3D(0));
+      this._tcontrols.addEventListener('change', () => this.render3D(0));
    }
 
    /** @summary Main function in geometry creation loop
@@ -87683,11 +87669,11 @@ class TGeoPainter extends ObjectPainter {
                del = this._clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
 
             // remove should be fast, do it here
-            for (let n=0;n<del.length;++n)
+            for (let n = 0; n < del.length; ++n)
                this._clones.createObject3D(del[n].stack, this._toplevel, 'delete_mesh');
 
             if (del.length > 0)
-               this.drawing_log = "Delete " + del.length + " nodes";
+               this.drawing_log = `Delete ${del.length} nodes`;
          }
 
          this._draw_nodes = this._new_draw_nodes;
@@ -87754,7 +87740,7 @@ class TGeoPainter extends ObjectPainter {
                this.changeStage(stageBuildReady);
             } else {
                this.ctrl.info.num_shapes = res.shapes;
-               this.drawing_log = "Creating: " + res.shapes + " / " + this._build_shapes.length + " shapes,  "  + res.faces + " faces";
+               this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
                if (res.notusedshapes < 30) return true;
             }
          }
@@ -88870,12 +88856,9 @@ class TGeoPainter extends ObjectPainter {
    drawGeoTrack(track, itemname) {
       if (!track || !track.fNpoints) return false;
 
-      let track_width = track.fLineWidth || 1,
-          track_color = getColor(track.fLineColor) || "#ff00ff";
-
-      if (browser$1.isWin) track_width = 1; // not supported on windows
-
-      let npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
+      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1), // linew width not supported on windows
+          color = getColor(track.fLineColor) || "#ff00ff",
+          npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === "x"),
@@ -88892,7 +88875,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
@@ -88912,12 +88895,9 @@ class TGeoPainter extends ObjectPainter {
    drawPolyLine(line, itemname) {
       if (!line) return false;
 
-      let track_width = line.fLineWidth || 1,
-          track_color = getColor(line.fLineColor) || "#ff00ff";
-
-      if (browser$1.isWin) track_width = 1; // not supported on windows
-
-      let npoints = line.fN,
+      let linewidth = browser$1.isWin ? 1 : (line.fLineWidth || 1),
+          color = getColor(line.fLineColor) || "#ff00ff",
+          npoints = line.fN,
           fP = line.fP,
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
@@ -88935,7 +88915,7 @@ class TGeoPainter extends ObjectPainter {
          pos += 6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line3d = createLineSegments(buf, lineMaterial);
 
       line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
@@ -88952,18 +88932,15 @@ class TGeoPainter extends ObjectPainter {
    drawEveTrack(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
-      let track_width = track.fLineWidth || 1,
-          track_color = getColor(track.fLineColor) || "#ff00ff";
-
-      if (browser$1.isWin) track_width = 1; // not supported on windows
-
-      let buf = new Float32Array((track.fN-1)*6), pos = 0,
+      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1),
+          color = getColor(track.fLineColor) || "#ff00ff",
+          buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z");
 
-      for (let k=0;k<track.fN-1;++k) {
+      for (let k = 0; k < track.fN-1; ++k) {
          buf[pos]   = projx ? projv : track.fP[k*3];
          buf[pos+1] = projy ? projv : track.fP[k*3+1];
          buf[pos+2] = projz ? projv : track.fP[k*3+2];
@@ -88973,7 +88950,7 @@ class TGeoPainter extends ObjectPainter {
          pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color: track_color, linewidth: track_width }),
+      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
@@ -88999,14 +88976,20 @@ class TGeoPainter extends ObjectPainter {
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z"),
-          pnts = new PointsCreator(nhits, this._webgl, hit_size);
+          style = hit.fMarkerStyle;
+
+      // FIXME: styles 2 and 4 does not work properly, see Misc/basic3d demo
+      // style 4 is very bad for hits representation
+      if ((style == 4) || (style == 2)) { style = 7; hit_size *= 1.5; }
+
+      let pnts = new PointsCreator(nhits, this._webgl, hit_size);
 
       for (let i = 0; i < nhits; i++)
          pnts.addPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit.fMarkerStyle }).then(mesh => {
+      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style }).then(mesh => {
          mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
@@ -89056,13 +89039,13 @@ class TGeoPainter extends ObjectPainter {
       volumes.push(prnt.fVolume);
 
       if (prnt.fVolume.fNodes)
-         for (let n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
+         for (let n = 0, len = prnt.fVolume.fNodes.arr.length; n < len; ++n) {
             res = this.findNodeWithVolume(name, action, prnt.fVolume.fNodes.arr[n], itemname, volumes);
             if (res) break;
          }
 
       if (first_level)
-         for (let n=0, len=volumes.length; n<len; ++n)
+         for (let n = 0, len = volumes.length; n < len; ++n)
             delete volumes[n]._searched;
 
       return res;
@@ -89073,7 +89056,8 @@ class TGeoPainter extends ObjectPainter {
 
       let result = { obj: this.getGeometry(), prefix: "" };
 
-      if (this.geo_manager) result.prefix = result.obj.fName;
+      if (this.geo_manager)
+         result.prefix = result.obj.fName;
 
       if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
          return Promise.resolve(result);
@@ -89610,7 +89594,7 @@ class TGeoPainter extends ObjectPainter {
 
       let box = this.getGeomBoundingBox(this._toplevel),
           container = this.getExtrasContainer('create', 'axis'),
-          text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
+          text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
           center = [0,0,0],
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
@@ -89638,7 +89622,7 @@ class TGeoPainter extends ObjectPainter {
       for (let naxis = 0; naxis < numaxis; ++naxis) {
 
          let buf = new Float32Array(6),
-             axiscol = colors[naxis],
+             color = colors[naxis],
              name = names[naxis];
 
          const Convert = value => {
@@ -89664,17 +89648,17 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (this.ctrl._axis == 2)
-            for (let k=0;k<6;++k)
+            for (let k = 0; k < 6; ++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
-         let lineMaterial = new LineBasicMaterial({ color: axiscol }),
+         let lineMaterial = new LineBasicMaterial({ color }),
              mesh = createLineSegments(buf, lineMaterial);
 
          container.add(mesh);
 
-         let textMaterial = new MeshBasicMaterial({ color: axiscol, vertexColors: false });
+         let textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
 
-         if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
+         if ((center[naxis]===0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
            if ((this.ctrl._axis != 2) || (naxis===0)) {
                let geom = ortho ? new CircleGeometry(text_size*0.25) :
                                   new SphereGeometry(text_size*0.25);
@@ -90723,7 +90707,7 @@ function drawDummy3DGeom(painter) {
        min = [-1, -1, -1], max = [1, 1, 1];
 
    if (extra.fP && extra.fP.length)
-      for(let k = 0; k < extra.fP.length; k +=3)
+      for(let k = 0; k < extra.fP.length; k += 3)
          for (let i = 0; i < 3; ++i) {
             min[i] = Math.min(min[i], extra.fP[k+i]);
             max[i] = Math.max(max[i], extra.fP[k+i]);
@@ -90737,7 +90721,7 @@ function drawDummy3DGeom(painter) {
    shape.fDZ = max[2] - min[2];
    shape.fShapeId = 1;
    shape.fShapeBits = 0;
-   shape.fOrigin= [0,0,0];
+   shape.fOrigin = [0,0,0];
 
    let obj = create$1("TEveGeoShapeExtract");
 
@@ -90818,7 +90802,7 @@ function build(obj, opt) {
    if (!obj) return null;
 
    if (obj._typename.indexOf('TGeoVolume') === 0)
-      obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
    let clones = new ClonedNodes(obj);
    clones.setVisLevel(opt.vislevel);
@@ -100331,21 +100315,21 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Add button to the pad
      * @private */
-   addPadButton(_btn, _tooltip, _funcname, _keyname) {
+   addPadButton(btn, tooltip, funcname, keyname) {
       if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
 
-      for (let k=0;k<this._buttons.length;++k)
-         if (this._buttons[k].funcname == _funcname) return;
+      for (let k = 0; k < this._buttons.length; ++k)
+         if (this._buttons[k].funcname == funcname) return;
 
-      this._buttons.push({ btn: _btn, tooltip: _tooltip, funcname: _funcname, keyname: _keyname });
+      this._buttons.push({ btn, tooltip, funcname, keyname });
 
       let iscan = this.iscan || !this.has_canvas;
-      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "enlargePad")) {
+      if (!iscan && (funcname.indexOf("Pad") != 0) && (funcname !== "enlargePad")) {
          let cp = this.getCanvPainter();
-         if (cp && (cp!==this)) cp.addPadButton(_btn, _tooltip, _funcname);
+         if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }
    }
 
