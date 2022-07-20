@@ -1749,8 +1749,6 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._controls || !this._webgl || isBatchMode()) return;
 
-      let painter = this;
-
       this.setTooltipAllowed(settings.Tooltip);
 
       this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
@@ -1761,10 +1759,10 @@ class TGeoPainter extends ObjectPainter {
 
       this._controls.contextMenu = this.orbitContext.bind(this);
 
-      this._controls.processMouseMove = function(intersects) {
+      this._controls.processMouseMove = intersects => {
 
          // painter already cleaned up, ignore any incoming events
-         if (!painter.ctrl || !painter._controls) return;
+         if (!this.ctrl || !this._controls) return;
 
          let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
 
@@ -1772,12 +1770,14 @@ class TGeoPainter extends ObjectPainter {
          for (let k = 0; k < intersects.length; ++k) {
             let obj = intersects[k].object, info = null;
             if (!obj) continue;
-            if (obj.geo_object) info = obj.geo_name; else
-            if (obj.stack) info = painter.getStackFullName(obj.stack);
+            if (obj.geo_object)
+               info = obj.geo_name;
+            else if (obj.stack)
+               info = this.getStackFullName(obj.stack);
             if (!info) continue;
 
             if (info.indexOf("<prnt>") == 0)
-               info = painter.getItemName() + info.slice(6);
+               info = this.getItemName() + info.slice(6);
 
             names.push(info);
 
@@ -1787,17 +1787,18 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == "string")) tooltip += " indx:" + JSON.stringify(geo_index);
+                  if ((geo_index !== undefined) && (typeof tooltip == "string"))
+                     tooltip += " indx:" + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack) resolve = painter.resolveStack(active_mesh.stack);
+               if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
             }
          }
 
-         painter.highlightMesh(active_mesh, undefined, geo_object, geo_index);
+         this.highlightMesh(active_mesh, undefined, geo_object, geo_index);
 
-         if (painter.ctrl.update_browser) {
-            if (painter.ctrl.highlight && tooltip) names = [ tooltip ];
-            painter.activateInBrowser(names);
+         if (this.ctrl.update_browser) {
+            if (this.ctrl.highlight && tooltip) names = [ tooltip ];
+            this.activateInBrowser(names);
          }
 
          if (!resolve || !resolve.obj) return tooltip;
@@ -1812,19 +1813,19 @@ class TGeoPainter extends ObjectPainter {
          this.processMouseMove([]); // to disable highlight and reset browser
       }
 
-      this._controls.processDblClick = function() {
+      this._controls.processDblClick = () => {
          // painter already cleaned up, ignore any incoming events
-         if (!painter.ctrl || !painter._controls) return;
+         if (!this.ctrl || !this._controls) return;
 
-         if (painter._last_manifest) {
-            painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
-            if (painter._last_hidden)
-               painter._last_hidden.forEach(obj => { obj.visible = true; });
-            delete painter._last_hidden;
-            delete painter._last_manifest;
-            painter.render3D();
+         if (this._last_manifest) {
+            this._last_manifest.wireframe = !this._last_manifest.wireframe;
+            if (this._last_hidden)
+               this._last_hidden.forEach(obj => { obj.visible = true; });
+            delete this._last_hidden;
+            delete this._last_manifest;
+            this.render3D();
          } else {
-            painter.adjustCameraPosition();
+            this.adjustCameraPosition();
          }
       }
    }
