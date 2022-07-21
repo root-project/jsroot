@@ -708,11 +708,11 @@ class ObjectPainter extends BasePainter {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 
-         if (canp && (typeof canp.producePadEvent == 'function'))
+         if (typeof canp?.producePadEvent == 'function')
             canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
 
          // inform server that drawopt changes
-         if (canp && (typeof canp.processChanges == 'function'))
+         if (typeof canp?.processChanges == 'function')
             canp.processChanges(info, this, subelem);
 
          return this;
@@ -749,7 +749,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (canp && (typeof canp.submitExec == "function"))
+      if (typeof canp?.submitExec == "function")
          canp.submitExec(this, exec, snapid);
    }
 
@@ -1248,12 +1248,12 @@ class ObjectPainter extends BasePainter {
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == "Show:Editor") {
-            if (cp && (typeof cp.activateGed == 'function'))
+            if (typeof cp?.activateGed == 'function')
                cp.activateGed(execp);
             return;
          }
 
-         if (cp && (typeof cp.executeObjectMethod == 'function'))
+         if (typeof cp?.executeObjectMethod == 'function')
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
          if (execp.executeMenuCommand(item)) return;
@@ -1436,10 +1436,10 @@ class ObjectPainter extends BasePainter {
      * @private */
    drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (!this._special_draw_area || !canp || typeof canp.drawProjection !== "function")
-         return Promise.resolve(false);
+      if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
+            return canp.drawProjection(this._special_draw_area, obj, opt);
 
-      return canp.drawProjection(this._special_draw_area, obj, opt);
+      return Promise.resolve(false);
    }
 
    /** @summary Get tooltip for painter and specified event position

@@ -309,11 +309,7 @@ class TPadPainter extends ObjectPainter {
   /** @summary returns custom palette associated with pad or top canvas
     * @private */
    getCustomPalette() {
-      if (this.custom_palette)
-         return this.custom_palette;
-
-      let cp = this.getCanvPainter();
-      return cp?.custom_palette;
+      return this.custom_palette || this.getCanvPainter()?.custom_palette;
    }
 
    /** @summary Returns number of painters
@@ -1103,10 +1099,8 @@ class TPadPainter extends ObjectPainter {
          return redrawNext(0);
       }).then(() => {
          this.confirmDraw();
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return true;
       });
    }
@@ -1549,10 +1543,8 @@ class TPadPainter extends ObjectPainter {
          return Promise.all(promises);
       }).then(() => {
          this.selectCurrentPad(prev_name);
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return this;
       });
    }

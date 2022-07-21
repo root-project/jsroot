@@ -1398,10 +1398,7 @@ class TGraphPainter extends ObjectPainter {
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      let pp = this.getCanvPainter();
-      if (pp && pp.normal_canvas) return null;
-
-      if (this.options.PadStats) return null;
+      if (this.getCanvPainter()?.normal_canvas || this.options.PadStats) return null;
 
       this.create_stats = true;
 

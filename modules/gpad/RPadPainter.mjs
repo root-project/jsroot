@@ -717,10 +717,8 @@ class RPadPainter extends RObjectPainter {
          }
          return redrawNext(0);
       }).then(() => {
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          this.confirmDraw();
          return true;
       });
@@ -1131,10 +1129,8 @@ class RPadPainter extends RObjectPainter {
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
 
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return this;
       });
    }
