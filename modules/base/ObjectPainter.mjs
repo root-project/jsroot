@@ -216,14 +216,10 @@ class ObjectPainter extends BasePainter {
      * @returns {string} with SVG color name or rgb()
      * @protected */
    getColor(indx) {
-      let jsarr = this.root_colors;
+      if (!this.root_colors)
+         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
 
-      if (!jsarr) {
-         let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : getRootColors();
-      }
-
-      return jsarr[indx];
+      return this.root_colors[indx];
    }
 
    /** @summary Add color to list of colors
@@ -231,15 +227,12 @@ class ObjectPainter extends BasePainter {
      * @returns {number} new color index
      * @protected */
    addColor(color) {
-      let jsarr = this.root_colors;
-      if (!jsarr) {
-         let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : getRootColors();
-      }
-      let indx = jsarr.indexOf(color);
+      if (!this.root_colors)
+         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
+      let indx = this.root_colors.indexOf(color);
       if (indx >= 0) return indx;
-      jsarr.push(color);
-      return jsarr.length - 1;
+      this.root_colors.push(color);
+      return this.root_colors.length - 1;
    }
 
    /** @summary returns tooltip allowed flag
