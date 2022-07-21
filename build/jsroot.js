@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "20/07/2022";
+let version_date = "21/07/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10796,7 +10796,7 @@ class ObjectPainter extends BasePainter {
       if (!can.empty()) can.select("title").text(name);
                    else this.selectDom().attr("title", name);
       let cp = this.getCanvPainter();
-      if (cp && (cp === this) || (this.isMainPainter() && (cp === this.getPadPainter())))
+      if (cp && ((cp === this) || (this.isMainPainter() && (cp === this.getPadPainter()))))
          cp.drawItemNameOnCanvas(name);
    }
 
@@ -10892,14 +10892,10 @@ class ObjectPainter extends BasePainter {
      * @returns {string} with SVG color name or rgb()
      * @protected */
    getColor(indx) {
-      let jsarr = this.root_colors;
+      if (!this.root_colors)
+         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
 
-      if (!jsarr) {
-         let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : getRootColors();
-      }
-
-      return jsarr[indx];
+      return this.root_colors[indx];
    }
 
    /** @summary Add color to list of colors
@@ -10907,15 +10903,12 @@ class ObjectPainter extends BasePainter {
      * @returns {number} new color index
      * @protected */
    addColor(color) {
-      let jsarr = this.root_colors;
-      if (!jsarr) {
-         let pp = this.getCanvPainter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : getRootColors();
-      }
-      let indx = jsarr.indexOf(color);
+      if (!this.root_colors)
+         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
+      let indx = this.root_colors.indexOf(color);
       if (indx >= 0) return indx;
-      jsarr.push(color);
-      return jsarr.length - 1;
+      this.root_colors.push(color);
+      return this.root_colors.length - 1;
    }
 
    /** @summary returns tooltip allowed flag
@@ -11391,11 +11384,11 @@ class ObjectPainter extends BasePainter {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 
-         if (canp && (typeof canp.producePadEvent == 'function'))
+         if (typeof canp?.producePadEvent == 'function')
             canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
 
          // inform server that drawopt changes
-         if (canp && (typeof canp.processChanges == 'function'))
+         if (typeof canp?.processChanges == 'function')
             canp.processChanges(info, this, subelem);
 
          return this;
@@ -11432,7 +11425,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (canp && (typeof canp.submitExec == "function"))
+      if (typeof canp?.submitExec == "function")
          canp.submitExec(this, exec, snapid);
    }
 
@@ -11931,12 +11924,12 @@ class ObjectPainter extends BasePainter {
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == "Show:Editor") {
-            if (cp && (typeof cp.activateGed == 'function'))
+            if (typeof cp?.activateGed == 'function')
                cp.activateGed(execp);
             return;
          }
 
-         if (cp && (typeof cp.executeObjectMethod == 'function'))
+         if (typeof cp?.executeObjectMethod == 'function')
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
          if (execp.executeMenuCommand(item)) return;
@@ -12119,10 +12112,10 @@ class ObjectPainter extends BasePainter {
      * @private */
    drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (!this._special_draw_area || !canp || typeof canp.drawProjection !== "function")
-         return Promise.resolve(false);
+      if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
+            return canp.drawProjection(this._special_draw_area, obj, opt);
 
-      return canp.drawProjection(this._special_draw_area, obj, opt);
+      return Promise.resolve(false);
    }
 
    /** @summary Get tooltip for painter and specified event position
@@ -48783,7 +48776,7 @@ class TAxisPainter extends ObjectPainter {
       else
          this.gr = this.func;
 
-      let is_gaxis = (axis && axis._typename === 'TGaxis');
+      let is_gaxis = (axis?._typename === 'TGaxis');
 
       delete this.format;// remove formatting func
 
@@ -58606,11 +58599,7 @@ class TPadPainter extends ObjectPainter {
   /** @summary returns custom palette associated with pad or top canvas
     * @private */
    getCustomPalette() {
-      if (this.custom_palette)
-         return this.custom_palette;
-
-      let cp = this.getCanvPainter();
-      return cp?.custom_palette;
+      return this.custom_palette || this.getCanvPainter()?.custom_palette;
    }
 
    /** @summary Returns number of painters
@@ -59400,10 +59389,8 @@ class TPadPainter extends ObjectPainter {
          return redrawNext(0);
       }).then(() => {
          this.confirmDraw();
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return true;
       });
    }
@@ -59846,10 +59833,8 @@ class TPadPainter extends ObjectPainter {
          return Promise.all(promises);
       }).then(() => {
          this.selectCurrentPad(prev_name);
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return this;
       });
    }
@@ -93487,10 +93472,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      let pp = this.getCanvPainter();
-      if (pp && pp.normal_canvas) return null;
-
-      if (this.options.PadStats) return null;
+      if (this.getCanvPainter()?.normal_canvas || this.options.PadStats) return null;
 
       this.create_stats = true;
 
@@ -99609,10 +99591,8 @@ class RPadPainter extends RObjectPainter {
          }
          return redrawNext(0);
       }).then(() => {
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          this.confirmDraw();
          return true;
       });
@@ -100023,10 +100003,8 @@ class RPadPainter extends RObjectPainter {
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
 
-         if (getActivePad() === this) {
-            let canp = this.getCanvPainter();
-            if (canp) canp.producePadEvent("padredraw", this);
-         }
+         if (getActivePad() === this)
+            this.getCanvPainter()?.producePadEvent("padredraw", this);
          return this;
       });
    }
