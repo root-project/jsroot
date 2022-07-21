@@ -466,7 +466,7 @@ class TAxisPainter extends ObjectPainter {
       else
          this.gr = this.func;
 
-      let is_gaxis = (axis && axis._typename === 'TGaxis');
+      let is_gaxis = (axis?._typename === 'TGaxis');
 
       delete this.format;// remove formatting func
 

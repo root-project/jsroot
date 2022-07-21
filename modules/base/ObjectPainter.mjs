@@ -120,7 +120,7 @@ class ObjectPainter extends BasePainter {
       if (!can.empty()) can.select("title").text(name);
                    else this.selectDom().attr("title", name);
       let cp = this.getCanvPainter();
-      if (cp && (cp === this) || (this.isMainPainter() && (cp === this.getPadPainter())))
+      if (cp && ((cp === this) || (this.isMainPainter() && (cp === this.getPadPainter()))))
          cp.drawItemNameOnCanvas(name);
    }
 
