@@ -2027,26 +2027,37 @@ class THistPainter extends ObjectPainter {
          // special code to adjust frame position to actual position of palette
          if (can_move && fp && !this.do_redraw_palette) {
 
+            let pad = pp?.getRootPad(true);
+
             if (this.options.Zvert) {
                if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
                   need_redraw = true;
                   fp.fX2NDC = pal.fX1NDC - 0.01;
-                  if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
+
+                  if (fp.fX1NDC > fp.fX2NDC - 0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC - 0.1);
                 } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
                   need_redraw = true;
                   fp.fX1NDC = pal.fX2NDC + 0.05;
                   if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
                 }
+                if (need_redraw && pad) {
+                   pad.fLeftMargin = fp.fX1NDC;
+                   pad.fRightMargin = 1 - fp.fX2NDC;
+                }
             } else {
                if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
                   need_redraw = true;
                   fp.fY2NDC = pal.fY1NDC - 0.01;
-                  if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
+                  if (fp.fY1NDC > fp.fY2NDC - 0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
                } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
                   need_redraw = true;
                   fp.fY1NDC = pal.fY2NDC + 0.05;
                   if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
 
+               }
+               if (need_redraw && pad) {
+                  pad.fTopMargin = fp.fY1NDC;
+                  pad.fBottomMargin = 1 - fp.fY2NDC;
                }
             }
          }
@@ -2055,7 +2066,9 @@ class THistPainter extends ObjectPainter {
             return pal_painter;
 
          this.do_redraw_palette = true;
+
          fp.redraw();
+
          let pr = !postpone_draw ? this.redraw() : Promise.resolve(true);
          return pr.then(() => {
              delete this.do_redraw_palette;
