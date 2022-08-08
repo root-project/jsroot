@@ -410,10 +410,10 @@ class ObjectPainter extends BasePainter {
      * @param {boolean} [noround] - if set, return coordinates will not be rounded
      * @protected */
    getAxisToSvgFunc(isndc, nornd) {
-      let func = { isndc: isndc, nornd: nornd },
+      let func = { isndc, nornd },
           use_frame = this.draw_g && this.draw_g.property('in_frame');
       if (use_frame) func.main = this.getFramePainter();
-      if (func.main && func.main.grx && func.main.gry) {
+      if (func.main?.grx && func.main?.gry) {
          if (nornd) {
             func.x = function(x) { return this.main.grx(x); }
             func.y = function(y) { return this.main.gry(y); }
@@ -423,7 +423,7 @@ class ObjectPainter extends BasePainter {
          }
       } else if (!use_frame) {
          let pp = this.getPadPainter();
-         if (!isndc && pp) func.pad = pp.getRootPad(true); // need for NDC conversion
+         if (!isndc) func.pad = pp?.getRootPad(true); // need for NDC conversion
          func.padw = pp?.getPadWidth() ?? 10;
          func.x = function(value) {
             if (this.pad) {
