@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "21/07/2022";
+let version_date = "8/08/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11086,10 +11086,10 @@ class ObjectPainter extends BasePainter {
      * @param {boolean} [noround] - if set, return coordinates will not be rounded
      * @protected */
    getAxisToSvgFunc(isndc, nornd) {
-      let func = { isndc: isndc, nornd: nornd },
+      let func = { isndc, nornd },
           use_frame = this.draw_g && this.draw_g.property('in_frame');
       if (use_frame) func.main = this.getFramePainter();
-      if (func.main && func.main.grx && func.main.gry) {
+      if (func.main?.grx && func.main?.gry) {
          if (nornd) {
             func.x = function(x) { return this.main.grx(x); };
             func.y = function(y) { return this.main.gry(y); };
@@ -11099,7 +11099,7 @@ class ObjectPainter extends BasePainter {
          }
       } else if (!use_frame) {
          let pp = this.getPadPainter();
-         if (!isndc && pp) func.pad = pp.getRootPad(true); // need for NDC conversion
+         if (!isndc) func.pad = pp?.getRootPad(true); // need for NDC conversion
          func.padw = pp?.getPadWidth() ?? 10;
          func.x = function(value) {
             if (this.pad) {
@@ -64393,26 +64393,37 @@ class THistPainter extends ObjectPainter {
          // special code to adjust frame position to actual position of palette
          if (can_move && fp && !this.do_redraw_palette) {
 
+            let pad = pp?.getRootPad(true);
+
             if (this.options.Zvert) {
                if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
                   need_redraw = true;
                   fp.fX2NDC = pal.fX1NDC - 0.01;
-                  if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
+
+                  if (fp.fX1NDC > fp.fX2NDC - 0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC - 0.1);
                 } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
                   need_redraw = true;
                   fp.fX1NDC = pal.fX2NDC + 0.05;
                   if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
                 }
+                if (need_redraw && pad) {
+                   pad.fLeftMargin = fp.fX1NDC;
+                   pad.fRightMargin = 1 - fp.fX2NDC;
+                }
             } else {
                if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
                   need_redraw = true;
                   fp.fY2NDC = pal.fY1NDC - 0.01;
-                  if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
+                  if (fp.fY1NDC > fp.fY2NDC - 0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
                } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
                   need_redraw = true;
                   fp.fY1NDC = pal.fY2NDC + 0.05;
                   if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
 
+               }
+               if (need_redraw && pad) {
+                  pad.fTopMargin = fp.fY1NDC;
+                  pad.fBottomMargin = 1 - fp.fY2NDC;
                }
             }
          }
@@ -64421,7 +64432,9 @@ class THistPainter extends ObjectPainter {
             return pal_painter;
 
          this.do_redraw_palette = true;
+
          fp.redraw();
+
          let pr = !postpone_draw ? this.redraw() : Promise.resolve(true);
          return pr.then(() => {
              delete this.do_redraw_palette;
@@ -91063,7 +91076,7 @@ class TGraphTimePainter extends ObjectPainter {
          this._doing_primitives = true;
       }
 
-      let lst = this.getObject().fSteps.arr[this.step];
+      let lst = this.getObject()?.fSteps.arr[this.step];
 
       if (!lst || (indx >= lst.arr.length)) {
          delete this._doing_primitives;

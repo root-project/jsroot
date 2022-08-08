@@ -9,6 +9,11 @@
 6. Implement 'tabs' layout for objects display (#238)
 7. Upgrade d3.js to version 7.6.1
 
+
+## Changes in 7.1.x
+1. Fix - adjust pad margins when moving palette and frame
+
+
 ## Changes in 7.1.1
 1. Fix - let modify node visibility bits via context menu
 2. Fix - menu position adjusting
