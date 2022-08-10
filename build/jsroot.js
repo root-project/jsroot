@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "8/08/2022";
+let version_date = "10/08/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -76667,6 +76667,8 @@ class HierarchyPainter extends BasePainter {
 
       return new Promise(resolveFunc => {
 
+         let itemreq = null;
+
          createHttpRequest(url, req_kind, obj => {
 
             let handleAfterRequest = func => {
@@ -76685,7 +76687,7 @@ class HierarchyPainter extends BasePainter {
             } else {
                handleAfterRequest(draw_handle?.after_request);
             }
-         }, undefined, true).then(xhr => xhr.send(null));
+         }, undefined, true).then(xhr => { itemreq = xhr; xhr.send(null); });
       });
    }
 
