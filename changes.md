@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.2.0
 1. Use TAxis attributes in lego plots - ticks/labels/title colors, sizes, offsets
 2. Correctly resize stats box when number of lines changes
 3. Support JSROOT usage with yarn and webpack
@@ -8,10 +8,7 @@
 5. Let 'hook' save file functionality to use alternative method to store image files
 6. Implement 'tabs' layout for objects display (#238)
 7. Upgrade d3.js to version 7.6.1
-
-
-## Changes in 7.1.x
-1. Fix - adjust pad margins when moving palette and frame
+8. Fix - adjust pad margins when moving palette and frame
 
 
 ## Changes in 7.1.1

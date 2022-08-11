@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.1.99
+// https://root.cern/js/ v7.2.0
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
-let version_id = "dev";
+let version_id = "7.2.0";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "10/08/2022";
+let version_date = "11/08/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9314,7 +9314,7 @@ function loadMathjax() {
          }
       };
 
-      return loadScript('../../mathjax/3.2.0/es5/tex-svg.js')
+      return loadScript(exports.source_dir + '../mathjax/3.2.0/es5/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
                .then(() => promise);
    }
@@ -61210,7 +61210,7 @@ class TPavePainter extends ObjectPainter {
       }
 
       // fill stats before drawing to have coordinates early
-      if (this.isStats() && !(pp && pp._fast_drawing)) {
+      if (this.isStats() && !this.NoFillStats && !(pp && pp._fast_drawing)) {
 
          let main = pt.$main_painter || this.getMainPainter();
 
@@ -62291,6 +62291,8 @@ class TPavePainter extends ObjectPainter {
 
             painter.UseContextMenu = true;
          }
+
+         painter.NoFillStats = (opt == "nofillstats");
 
          switch (pave._typename) {
             case "TPaveLabel":
