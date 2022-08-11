@@ -9254,7 +9254,7 @@ function parseLatex(node, arg, label, curr) {
   * @private */
 function produceLatex(painter, node, arg) {
 
-   let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter: painter };
+   let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter };
 
    return parseLatex(node, arg, arg.text, pos);
 }
@@ -9684,19 +9684,25 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    if (arg.valign === null) arg.valign = (font_size - mh) / 2;
 
    let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
-   if (arg.rotate == 180) { sign.x = sign.y = -1; } else
-      if ((arg.rotate == 270) || (arg.rotate == 90)) {
-         sign.x = (arg.rotate == 270) ? -1 : 1;
-         sign.y = -sign.x;
-         nx = "y"; ny = "x"; // replace names to which align applied
-      }
+   if (arg.rotate == 180) {
+      sign.x = sign.y = -1;
+   } else if ((arg.rotate == 270) || (arg.rotate == 90)) {
+      sign.x = (arg.rotate == 270) ? -1 : 1;
+      sign.y = -sign.x;
+      nx = "y"; ny = "x"; // replace names to which align applied
+   }
 
-   if (arg.align[0] == 'middle') arg[nx] += sign.x * (arg.width - mw) / 2; else
-      if (arg.align[0] == 'end') arg[nx] += sign.x * (arg.width - mw);
+   if (arg.align[0] == 'middle')
+      arg[nx] += sign.x * (arg.width - mw) / 2;
+   else if (arg.align[0] == 'end')
+      arg[nx] += sign.x * (arg.width - mw);
 
-   if (arg.align[1] == 'middle') arg[ny] += sign.y * (arg.height - mh) / 2; else
-      if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
-         if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
+   if (arg.align[1] == 'middle')
+      arg[ny] += sign.y * (arg.height - mh) / 2;
+   else if (arg.align[1] == 'bottom')
+      arg[ny] += sign.y * (arg.height - mh);
+   else if (arg.align[1] == 'bottom-base')
+      arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
    let trans = `translate(${arg.x},${arg.y})`;
    if (arg.rotate) trans += ` rotate(${arg.rotate})`;
@@ -9716,7 +9722,7 @@ function produceMathjax(painter, mj_node, arg) {
               // when adding element to new node, it will be removed from original parent
               let svg = elem.querySelector('svg');
 
-              mj_node.append(function() { return svg; });
+              mj_node.append(() => svg);
 
               repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
@@ -10030,8 +10036,8 @@ class TAttMarkerHandler {
 
       this.optimized = false;
 
-      let marker_kind = root_markers[this.style] ?? 104;
-      let shape = marker_kind % 100;
+      let marker_kind = root_markers[this.style] ?? 104,
+          shape = marker_kind % 100;
 
       this.fill = (marker_kind >= 100);
 
@@ -10312,7 +10318,8 @@ class TAttFillHandler {
          return true;
       }
 
-      if (this.pattern == 1000) this.pattern = 1001;
+      if (this.pattern == 1000)
+         this.pattern = 1001;
 
       if (this.pattern < 1001) {
          this.pattern_url = 'none';
@@ -10345,13 +10352,13 @@ class TAttFillHandler {
 
       if (!svg || svg.empty() || (this.pattern < 3000) || (this.color == "none")) return false;
 
-      let id = "pat_" + this.pattern + "_" + indx,
+      let id = `pat_${this.pattern}_${indx}`,
          defs = svg.select('.canvas_defs');
 
       if (defs.empty())
          defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
 
-      this.pattern_url = "url(#" + id + ")";
+      this.pattern_url = `url(#${id})`;
       this.antialias = false;
 
       if (!defs.select("." + id).empty())
@@ -10506,9 +10513,9 @@ class TAttFillHandler {
 
       const sample = new TAttFillHandler({ svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
-     svg.append("path")
-        .attr("d", `M0,0h${width}v${height}h${-width}z`)
-        .call(sample.func);
+      svg.append("path")
+         .attr("d", `M0,0h${width}v${height}h${-width}z`)
+         .call(sample.func);
    }
 
    /** @summary Save fill attributes to style
@@ -10521,8 +10528,6 @@ class TAttFillHandler {
       if (name_pattern)
          gStyle[name_pattern] = this.pattern;
    }
-
-
 
 } // class TAttFillHandler
 
@@ -10664,6 +10669,7 @@ class TAttLineHandler {
          .call(this.func);
    }
 
+   /** @summary Save attributes values to gStyle */
    saveToStyle(name_color, name_width, name_style) {
       if (name_color) {
          let indx = (this.color_index !== undefined) ? this.color_index : findColor(this.color);
@@ -10671,9 +10677,9 @@ class TAttLineHandler {
             gStyle[name_color] = indx;
       }
       if (name_width)
-        gStyle[name_width] = this.width;
+         gStyle[name_width] = this.width;
       if (name_style)
-        gStyle[name_style] = this.style;
+         gStyle[name_style] = this.style;
    }
 
 } // class TAttLineHandler
@@ -12122,7 +12128,7 @@ class ObjectPainter extends BasePainter {
      * @param {Object} evnt - object wiith clientX and clientY positions
      * @private */
    getToolTip(evnt) {
-      if (!evnt || (evnt.clientX === undefined) || (evnt.clientY === undefined)) return null;
+      if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined)) return null;
 
       let frame = this.getFrameSvg();
       if (frame.empty()) return null;
@@ -12139,7 +12145,7 @@ class ObjectPainter extends BasePainter {
 
       let res = (typeof this.processTooltipEvent == 'function') ? this.processTooltipEvent(pnt) : null;
 
-      return res && res.user_info ? res.user_info : res;
+      return res?.user_info || res;
    }
 
 } // class ObjectPainter
@@ -45355,8 +45361,8 @@ function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (isNodeJs()) {
-      let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null;
-      let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
+      let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null,
+          ext = ctxt?.getExtension('STACKGL_destroy_context');
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
@@ -45634,9 +45640,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (control.enable_select && control.mouse_select_pnt) {
 
-         let pnt = control.getMousePos(evnt, {});
-
-         let same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+         let pnt = control.getMousePos(evnt, {}),
+             same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
          delete control.mouse_select_pnt;
 
          if (same_pnt) {
@@ -45783,11 +45788,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      let sz = (this.renderer instanceof WebGLRenderer) ?
-                  this.renderer.getSize(new Vector2()) :
-                  this.renderer.domElement;
-
-      let pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+      let sz = (this.renderer instanceof WebGLRenderer) ? this.renderer.getSize(new Vector2()) : this.renderer.domElement,
+          pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
       this.camera.updateMatrixWorld();
@@ -45920,13 +45922,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (this.mouse_zoom_mesh) {
          // when working with zoom mesh, need special handling
 
-         let zoom2 = this.detectZoomMesh(evnt), pnt2 = null;
-
-         if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
-            pnt2 = zoom2.point;
-         } else {
-            pnt2 = this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
-         }
+         let zoom2 = this.detectZoomMesh(evnt),
+             pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
 
          if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
@@ -45966,7 +45963,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (tip) {
          let name = "", title = "", coord = "", info = "";
-         if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
+         if (mouse) coord = mouse.x.toFixed(0) + "," + mouse.y.toFixed(0);
          if (typeof tip == "string") {
             info = tip;
          } else {
@@ -45986,7 +45983,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       } else {
          this.tooltip.hide();
          if (intersects)
-            for (let n=0;n<intersects.length;++n)
+            for (let n = 0; n < intersects.length; ++n)
                if (intersects[n].object.zoom) this.cursor_changed = true;
       }
 
@@ -46138,12 +46135,12 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
 
       if (index) {
          distances = new Float32Array(index.length);
-         for (let n=0; n<index.length; n+=2) {
+         for (let n = 0; n < index.length; n += 2) {
             let i1 = index[n], i2 = index[n+1];
             v1.set(arr[i1],arr[i1+1],arr[i1+2]);
             v2.set(arr[i2],arr[i2+1],arr[i2+2]);
             distances[n] = d;
-            d += v2.distanceTo( v1 );
+            d += v2.distanceTo(v1);
             distances[n+1] = d;
          }
       } else {
@@ -46152,11 +46149,11 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
             v1.set(arr[n],arr[n+1],arr[n+2]);
             v2.set(arr[n+3],arr[n+4],arr[n+5]);
             distances[n/3] = d;
-            d += v2.distanceTo( v1 );
+            d += v2.distanceTo(v1);
             distances[n/3+1] = d;
          }
       }
-      geom.setAttribute( 'lineDistance', new BufferAttribute(distances, 1) );
+      geom.setAttribute('lineDistance', new BufferAttribute(distances, 1));
    }
 
    return only_geometry ? geom : new LineSegments(geom, material);
@@ -46281,14 +46278,12 @@ class PointsCreator {
           promise;
 
       if (isNodeJs()) {
-         promise = Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
-            return handle.default.loadImage(dataUrl).then(img => {
-               const canvas = handle.default.createCanvas(64, 64);
-               const ctx = canvas.getContext('2d');
+         promise = Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => handle.default.loadImage(dataUrl).then(img => {
+               const canvas = handle.default.createCanvas(64, 64),
+                     ctx = canvas.getContext('2d');
                ctx.drawImage(img, 0, 0, 64, 64);
                return new CanvasTexture(canvas);
-            });
-         });
+            }));
       } else if (this.noPromise) {
          // only for v6 support
          return makePoints(new TextureLoader().load(dataUrl));
@@ -90901,10 +90896,12 @@ drawDummy3DGeom: drawDummy3DGeom,
 produceRenderOrder: produceRenderOrder
 });
 
+/** @summary Prepare frame painter for 3D drawing
+  * @private */
 function before3DDraw(painter, obj) {
    let fp = painter.getFramePainter();
 
-   if (!fp || !fp.mode3d || !obj)
+   if (!fp?.mode3d || !obj)
       return null;
 
    if (fp.toplevel)
@@ -90930,12 +90927,12 @@ function drawPolyMarker3D() {
    if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
       return fp;
 
-   let step = 1, sizelimit = 50000, numselect = 0;
+   let step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
 
-   for (let i = 0; i < poly.fP.length; i += 3) {
-      if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||
-          (poly.fP[i+1] < fp.scale_ymin) || (poly.fP[i+1] > fp.scale_ymax) ||
-          (poly.fP[i+2] < fp.scale_zmin) || (poly.fP[i+2] > fp.scale_zmax)) continue;
+   for (let i = 0; i < fP.length; i += 3) {
+      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
+          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
+          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
       ++numselect;
    }
 
@@ -90949,11 +90946,11 @@ function drawPolyMarker3D() {
        index = new Int32Array(size),
        select = 0, icnt = 0;
 
-   for (let i = 0; i < poly.fP.length; i += 3) {
+   for (let i = 0; i < fP.length; i += 3) {
 
-      if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||
-          (poly.fP[i+1] < fp.scale_ymin) || (poly.fP[i+1] > fp.scale_ymax) ||
-          (poly.fP[i+2] < fp.scale_zmin) || (poly.fP[i+2] > fp.scale_zmax)) continue;
+      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
+          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
+          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
 
       if (step > 1) {
          select = (select+1) % step;
@@ -90962,7 +90959,7 @@ function drawPolyMarker3D() {
 
       index[icnt++] = i;
 
-      pnts.addPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
+      pnts.addPoint(fp.grx(fP[i]), fp.gry(fP[i+1]), fp.grz(fP[i+2]));
    }
 
    return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
@@ -94879,6 +94876,8 @@ __proto__: null,
 TWebPaintingPainter: TWebPaintingPainter
 });
 
+/** @summary Create histogram for TF2 drawing
+  * @private */
 function createTF2Histogram(func, hist = undefined) {
    let nsave = func.fSave.length, use_middle = true;
    if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
@@ -95346,6 +95345,7 @@ TSplinePainter: TSplinePainter
   * @private */
 class TArrowPainter extends ObjectPainter {
 
+   /** @summary Create line segment with rotation */
    rotate(angle, x0, y0) {
       let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
       if ((x0 !== undefined) && (y0 !== undefined)) {
@@ -95358,6 +95358,7 @@ class TArrowPainter extends ObjectPainter {
       return res;
    }
 
+   /** @summary Create SVG path for the arrow */
    createPath() {
       let angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1),
           dlen = this.wsize * Math.cos(this.angle2),
@@ -95385,6 +95386,7 @@ class TArrowPainter extends ObjectPainter {
               path;
    }
 
+   /** @summary Start interactive moving */
    moveStart(x,y) {
       let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
           sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
@@ -95397,12 +95399,14 @@ class TArrowPainter extends ObjectPainter {
          this.side = 0;
    }
 
+   /** @summary Continue interactive moving */
    moveDrag(dx,dy) {
       if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
       if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
       this.draw_g.select('path').attr("d", this.createPath());
    }
 
+   /** @summary Finish interactive moving */
    moveEnd(not_changed) {
       if (not_changed) return;
       let arrow = this.getObject(), exec = "";
@@ -95415,6 +95419,7 @@ class TArrowPainter extends ObjectPainter {
       this.submitCanvExec(exec + "Notify();;");
    }
 
+   /** @summary Redraw arrow */
    redraw() {
       let arrow = this.getObject(), kLineNDC = BIT(14),
           oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
@@ -95465,6 +95470,7 @@ class TArrowPainter extends ObjectPainter {
       return this;
    }
 
+   /** @summary Draw TArrow object */
    static draw(dom, obj, opt) {
       let painter = new TArrowPainter(dom, obj,opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
@@ -96576,7 +96582,7 @@ class RObjectPainter extends ObjectPainter {
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
       if (!this.snapid) {
-         this._pending_request = { _kind: kind, _req: req, _method: method };
+         this._pending_request = { kind, req, method };
          return req;
       }
 
@@ -96588,17 +96594,17 @@ class RObjectPainter extends ObjectPainter {
    assignSnapId(id) {
       this.snapid = id;
       if (this.snapid && this._pending_request) {
-         let req = this._pending_request;
-         this.v7SubmitRequest(req._kind, req._req, req._method);
+         let p = this._pending_request;
+         this.v7SubmitRequest(p.kind, p.req, p.method);
          delete this._pending_request;
       }
    }
 
    /** @summary Return communication mode with the server
-    * @desc
-    * kOffline means no server there,
-    * kLessTraffic advise not to send commands if offline functionality available
-    * kNormal is standard functionality with RCanvas on server side */
+     * @desc
+     * kOffline means no server there,
+     * kLessTraffic advise not to send commands if offline functionality available
+     * kNormal is standard functionality with RCanvas on server side */
    v7CommMode() {
       let canp = this.getCanvPainter();
       if (!canp || !canp.submitDrawableRequest || !canp._websocket)
