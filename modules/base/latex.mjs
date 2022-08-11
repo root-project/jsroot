@@ -1,4 +1,4 @@
-import { loadScript, settings, isNodeJs } from '../core.mjs';
+import { loadScript, settings, isNodeJs, source_dir } from '../core.mjs';
 import { getElementRect, _loadJSDOM } from './BasePainter.mjs';
 import { FontHandler } from './FontHandler.mjs';
 
@@ -904,7 +904,7 @@ function loadMathjax() {
          }
       };
 
-      return loadScript('../../mathjax/3.2.0/es5/tex-svg.js')
+      return loadScript(source_dir + '../mathjax/3.2.0/es5/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
                .then(() => promise);
    }
