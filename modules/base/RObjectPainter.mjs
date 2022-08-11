@@ -294,7 +294,7 @@ class RObjectPainter extends ObjectPainter {
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
       if (!this.snapid) {
-         this._pending_request = { _kind: kind, _req: req, _method: method };
+         this._pending_request = { kind, req, method };
          return req;
       }
 
@@ -306,17 +306,17 @@ class RObjectPainter extends ObjectPainter {
    assignSnapId(id) {
       this.snapid = id;
       if (this.snapid && this._pending_request) {
-         let req = this._pending_request;
-         this.v7SubmitRequest(req._kind, req._req, req._method);
+         let p = this._pending_request;
+         this.v7SubmitRequest(p.kind, p.req, p.method);
          delete this._pending_request;
       }
    }
 
    /** @summary Return communication mode with the server
-    * @desc
-    * kOffline means no server there,
-    * kLessTraffic advise not to send commands if offline functionality available
-    * kNormal is standard functionality with RCanvas on server side */
+     * @desc
+     * kOffline means no server there,
+     * kLessTraffic advise not to send commands if offline functionality available
+     * kNormal is standard functionality with RCanvas on server side */
    v7CommMode() {
       let canp = this.getCanvPainter();
       if (!canp || !canp.submitDrawableRequest || !canp._websocket)
