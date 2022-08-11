@@ -477,8 +477,8 @@ function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (isNodeJs()) {
-      let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null;
-      let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
+      let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null,
+          ext = ctxt?.getExtension('STACKGL_destroy_context');
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
@@ -756,9 +756,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (control.enable_select && control.mouse_select_pnt) {
 
-         let pnt = control.getMousePos(evnt, {});
-
-         let same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+         let pnt = control.getMousePos(evnt, {}),
+             same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
          delete control.mouse_select_pnt;
 
          if (same_pnt) {
@@ -905,11 +904,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      let sz = (this.renderer instanceof WebGLRenderer) ?
-                  this.renderer.getSize(new Vector2()) :
-                  this.renderer.domElement;
-
-      let pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+      let sz = (this.renderer instanceof WebGLRenderer) ? this.renderer.getSize(new Vector2()) : this.renderer.domElement,
+          pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
       this.camera.updateMatrixWorld();
@@ -1042,13 +1038,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (this.mouse_zoom_mesh) {
          // when working with zoom mesh, need special handling
 
-         let zoom2 = this.detectZoomMesh(evnt), pnt2 = null;
-
-         if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
-            pnt2 = zoom2.point;
-         } else {
-            pnt2 = this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
-         }
+         let zoom2 = this.detectZoomMesh(evnt),
+             pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
 
          if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
@@ -1088,7 +1079,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (tip) {
          let name = "", title = "", coord = "", info = "";
-         if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
+         if (mouse) coord = mouse.x.toFixed(0) + "," + mouse.y.toFixed(0);
          if (typeof tip == "string") {
             info = tip;
          } else {
@@ -1108,7 +1099,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       } else {
          this.tooltip.hide();
          if (intersects)
-            for (let n=0;n<intersects.length;++n)
+            for (let n = 0; n < intersects.length; ++n)
                if (intersects[n].object.zoom) this.cursor_changed = true;
       }
 
@@ -1260,12 +1251,12 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
 
       if (index) {
          distances = new Float32Array(index.length);
-         for (let n=0; n<index.length; n+=2) {
+         for (let n = 0; n < index.length; n += 2) {
             let i1 = index[n], i2 = index[n+1];
             v1.set(arr[i1],arr[i1+1],arr[i1+2]);
             v2.set(arr[i2],arr[i2+1],arr[i2+2]);
             distances[n] = d;
-            d += v2.distanceTo( v1 );
+            d += v2.distanceTo(v1);
             distances[n+1] = d;
          }
       } else {
@@ -1274,11 +1265,11 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
             v1.set(arr[n],arr[n+1],arr[n+2]);
             v2.set(arr[n+3],arr[n+4],arr[n+5]);
             distances[n/3] = d;
-            d += v2.distanceTo( v1 );
+            d += v2.distanceTo(v1);
             distances[n/3+1] = d;
          }
       }
-      geom.setAttribute( 'lineDistance', new BufferAttribute(distances, 1) );
+      geom.setAttribute('lineDistance', new BufferAttribute(distances, 1));
    }
 
    return only_geometry ? geom : new LineSegments(geom, material);
@@ -1393,7 +1384,7 @@ class PointsControl extends InteractiveControl {
       if (!m.js_special) {
          let geom = new BufferGeometry();
          geom.setAttribute( 'position', m.geometry.getAttribute("position"));
-         let material = new PointsMaterial({ size: m.material.size*2, color: color });
+         let material = new PointsMaterial({ size: m.material.size*2, color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
          m.js_special = new Points(geom, material);
@@ -1484,14 +1475,12 @@ class PointsCreator {
           promise;
 
       if (isNodeJs()) {
-         promise = import('canvas').then(handle => {
-            return handle.default.loadImage(dataUrl).then(img => {
-               const canvas = handle.default.createCanvas(64, 64);
-               const ctx = canvas.getContext('2d');
+         promise = import('canvas').then(handle => handle.default.loadImage(dataUrl).then(img => {
+               const canvas = handle.default.createCanvas(64, 64),
+                     ctx = canvas.getContext('2d');
                ctx.drawImage(img, 0, 0, 64, 64);
                return new CanvasTexture(canvas);
-            });
-         });
+            }));
       } else if (this.noPromise) {
          // only for v6 support
          return makePoints(new TextureLoader().load(dataUrl));
