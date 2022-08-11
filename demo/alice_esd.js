@@ -6,7 +6,7 @@
 async function extract_geo_tracks(tree, opt) {
    // as first argument, tree should be provided
 
-   console.log('CALL async extract_geo_tracks');
+   console.log('CALL async function extract_geo_tracks');
 
    let handle = await JSROOT.require('tree');
 
@@ -48,7 +48,11 @@ async function extract_geo_tracks(tree, opt) {
       console.log('Read done num entries', numentry, 'tracks', numtracks);
    }
 
-   return handle.treeProcess(tree, selector);
+   await handle.treeProcess(tree, selector);
+
+   console.log('FINISH extract_geo_tracks');
+
+   return lst;
 }
 
 console.log('LOAD alice_esd.js with JSROOT', JSROOT.version);
