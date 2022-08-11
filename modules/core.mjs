@@ -1,7 +1,7 @@
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
-let version_id = "7.2.0";
+let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
