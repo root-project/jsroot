@@ -844,7 +844,7 @@ function parseLatex(node, arg, label, curr) {
   * @private */
 function produceLatex(painter, node, arg) {
 
-   let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter: painter };
+   let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter };
 
    return parseLatex(node, arg, arg.text, pos);
 }
@@ -1274,19 +1274,25 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    if (arg.valign === null) arg.valign = (font_size - mh) / 2;
 
    let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
-   if (arg.rotate == 180) { sign.x = sign.y = -1; } else
-      if ((arg.rotate == 270) || (arg.rotate == 90)) {
-         sign.x = (arg.rotate == 270) ? -1 : 1;
-         sign.y = -sign.x;
-         nx = "y"; ny = "x"; // replace names to which align applied
-      }
+   if (arg.rotate == 180) {
+      sign.x = sign.y = -1;
+   } else if ((arg.rotate == 270) || (arg.rotate == 90)) {
+      sign.x = (arg.rotate == 270) ? -1 : 1;
+      sign.y = -sign.x;
+      nx = "y"; ny = "x"; // replace names to which align applied
+   }
 
-   if (arg.align[0] == 'middle') arg[nx] += sign.x * (arg.width - mw) / 2; else
-      if (arg.align[0] == 'end') arg[nx] += sign.x * (arg.width - mw);
+   if (arg.align[0] == 'middle')
+      arg[nx] += sign.x * (arg.width - mw) / 2;
+   else if (arg.align[0] == 'end')
+      arg[nx] += sign.x * (arg.width - mw);
 
-   if (arg.align[1] == 'middle') arg[ny] += sign.y * (arg.height - mh) / 2; else
-      if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
-         if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
+   if (arg.align[1] == 'middle')
+      arg[ny] += sign.y * (arg.height - mh) / 2;
+   else if (arg.align[1] == 'bottom')
+      arg[ny] += sign.y * (arg.height - mh);
+   else if (arg.align[1] == 'bottom-base')
+      arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
    let trans = `translate(${arg.x},${arg.y})`;
    if (arg.rotate) trans += ` rotate(${arg.rotate})`;
@@ -1306,7 +1312,7 @@ function produceMathjax(painter, mj_node, arg) {
               // when adding element to new node, it will be removed from original parent
               let svg = elem.querySelector('svg');
 
-              mj_node.append(function() { return svg; });
+              mj_node.append(() => svg);
 
               repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
