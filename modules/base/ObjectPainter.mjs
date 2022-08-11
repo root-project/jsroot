@@ -1446,7 +1446,7 @@ class ObjectPainter extends BasePainter {
      * @param {Object} evnt - object wiith clientX and clientY positions
      * @private */
    getToolTip(evnt) {
-      if (!evnt || (evnt.clientX === undefined) || (evnt.clientY === undefined)) return null;
+      if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined)) return null;
 
       let frame = this.getFrameSvg();
       if (frame.empty()) return null;
@@ -1463,7 +1463,7 @@ class ObjectPainter extends BasePainter {
 
       let res = (typeof this.processTooltipEvent == 'function') ? this.processTooltipEvent(pnt) : null;
 
-      return res && res.user_info ? res.user_info : res;
+      return res?.user_info || res;
    }
 
 } // class ObjectPainter
