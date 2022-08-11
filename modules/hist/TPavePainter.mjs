@@ -95,7 +95,7 @@ class TPavePainter extends ObjectPainter {
       }
 
       // fill stats before drawing to have coordinates early
-      if (this.isStats() && !(pp && pp._fast_drawing)) {
+      if (this.isStats() && !this.NoFillStats && !(pp && pp._fast_drawing)) {
 
          let main = pt.$main_painter || this.getMainPainter();
 
@@ -1176,6 +1176,8 @@ class TPavePainter extends ObjectPainter {
 
             painter.UseContextMenu = true;
          }
+
+         painter.NoFillStats = (opt == "nofillstats");
 
          switch (pave._typename) {
             case "TPaveLabel":
