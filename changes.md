@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Force MathJax rendering when `\` symbol is found (#243)
+
+
 ## Changes in 7.2.0
 1. Use TAxis attributes in lego plots - ticks/labels/title colors, sizes, offsets
 2. Correctly resize stats box when number of lines changes
