@@ -1145,7 +1145,8 @@ class ObjectPainter extends BasePainter {
 
       if (arg.latex === 1)
          use_mathjax = (settings.Latex == constants.Latex.AlwaysMathJax) ||
-                       ((settings.Latex == constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
+                       ((settings.Latex == constants.Latex.MathJax) && arg.text.match(/[#{\\]/g)) ||
+                       arg.text.match(/[\\]/g);
 
       if (!use_mathjax || arg.nomathjax) {
 
