@@ -577,7 +577,7 @@ class Geometry {
 
    union( other_tree ) {
       let a = this.tree.clone(),
-         b = other_tree.tree.clone();
+          b = other_tree.tree.clone();
 
       a.clipTo( b );
       b.clipTo( a );
@@ -592,7 +592,7 @@ class Geometry {
 
    intersect( other_tree ) {
       let a = this.tree.clone(),
-         b = other_tree.tree.clone();
+          b = other_tree.tree.clone();
 
       a.invert();
       b.clipTo( a );
@@ -623,7 +623,7 @@ class Geometry {
          arr[p.id].push(p);
       }
 
-      for(n=0; n<arr.length; ++n) {
+      for(n = 0; n < arr.length; ++n) {
          parts = arr[n];
          if (parts===undefined) continue;
 
@@ -658,7 +658,7 @@ class Geometry {
       if (nreduce>0) {
          polygons.splice(0, polygons.length);
 
-         for(n=0;n<arr.length;++n) {
+         for(n = 0; n < arr.length; ++n) {
             parts = arr[n];
             if (parts !== undefined)
                for (i1=0,len=parts.length; i1<len;++i1)

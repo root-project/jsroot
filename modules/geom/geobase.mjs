@@ -66,7 +66,7 @@ function toggleGeoBit(volume, f) {
 /** @summary Implementation of TGeoVolume::InvisibleAll
   * @private */
 function setInvisibleAll(volume, flag) {
-   if (flag===undefined) flag = true;
+   if (flag === undefined) flag = true;
 
    setGeoBit(volume, geoBITS.kVisThis, !flag);
    // setGeoBit(this, geoBITS.kVisDaughters, !flag);
@@ -97,7 +97,7 @@ function geoWarn(msg) {
  * @private */
 function getNodeKind(obj) {
    if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
-   return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
+   return ('fShape' in obj) && ('fTrans' in obj) ? kindEve : kindGeo;
 }
 
 /** @summary Returns number of shapes
@@ -358,11 +358,11 @@ class GeometryCreator {
    /** @summary Create geometry */
    create() {
       if (this.nfaces !== this.indx/9)
-         console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
+         console.error(`Mismatch with created ${this.nfaces} and filled ${this.indx/9} number of faces`);
 
       let geometry = new BufferGeometry();
-      geometry.setAttribute( 'position', new BufferAttribute( this.pos, 3 ) );
-      geometry.setAttribute( 'normal', new BufferAttribute( this.norm, 3 ) );
+      geometry.setAttribute('position', new BufferAttribute(this.pos, 3));
+      geometry.setAttribute('normal', new BufferAttribute(this.norm, 3));
       return geometry;
    }
 }
@@ -396,7 +396,7 @@ class PolygonsCreator{
 
    /** @summary Add face with 3 vertices */
    addFace3(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-      this.addFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
+      this.addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x3,y3,z3, 2);
    }
 
    /** @summary Add face with 4 vertices
@@ -591,17 +591,15 @@ function createParaBuffer( shape, faces_limit ) {
 
    if (faces_limit < 0) return 12;
 
-   let txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
-
-   let v = [
-       -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
-       -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
-       -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
-       -shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
-        shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ,
-        shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
-        shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
-        shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
+   let txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz, v = [
+       -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz, -shape.fZ,
+       -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz, -shape.fZ,
+       -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz, -shape.fZ,
+       -shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY-shape.fZ*tyz, -shape.fZ,
+        shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,  shape.fZ,
+        shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY+shape.fZ*tyz,  shape.fZ,
+        shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,  shape.fZ,
+        shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,  shape.fZ ];
 
    return create8edgesBuffer(v, faces_limit );
 }
@@ -620,15 +618,15 @@ function createTrapezoidBuffer( shape, faces_limit ) {
    }
 
    let v = [
-         -shape.fDx1,  y1, -shape.fDZ,
-          shape.fDx1,  y1, -shape.fDZ,
-          shape.fDx1, -y1, -shape.fDZ,
-         -shape.fDx1, -y1, -shape.fDZ,
-         -shape.fDx2,  y2,  shape.fDZ,
-          shape.fDx2,  y2,  shape.fDZ,
-          shape.fDx2, -y2,  shape.fDZ,
-         -shape.fDx2, -y2,  shape.fDZ
-      ];
+      -shape.fDx1,  y1, -shape.fDZ,
+       shape.fDx1,  y1, -shape.fDZ,
+       shape.fDx1, -y1, -shape.fDZ,
+      -shape.fDx1, -y1, -shape.fDZ,
+      -shape.fDx2,  y2,  shape.fDZ,
+       shape.fDx2,  y2,  shape.fDZ,
+       shape.fDx2, -y2,  shape.fDZ,
+      -shape.fDx2, -y2,  shape.fDZ
+   ];
 
    return create8edgesBuffer(v, faces_limit );
 }
@@ -641,15 +639,15 @@ function createArb8Buffer( shape, faces_limit ) {
    if (faces_limit < 0) return 12;
 
    let vertices = [
-         shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
-         shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
-         shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
-         shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
-         shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
-         shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
-         shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
-         shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
-      ];
+      shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
+      shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
+      shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
+      shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
+      shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
+      shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
+      shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
+      shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
+   ];
    const indicies = [
          4,7,6,   6,5,4,   3,7,4,   4,0,3,
          5,1,0,   0,4,5,   6,2,1,   1,5,6,
@@ -697,8 +695,11 @@ function createArb8Buffer( shape, faces_limit ) {
 
       if ((i1 >= 0) && (i4 >= 0) && faces_limit) {
          // try to identify two faces with same normal - very useful if one can create face4
-         if (n===0) norm = new Vector3(0,0,1); else
-         if (n===30) norm = new Vector3(0,0,-1); else {
+         if (n === 0)
+            norm = new Vector3(0,0,1);
+         else if (n === 30)
+            norm = new Vector3(0,0,-1);
+         else {
             let norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                       vertices[i2], vertices[i2+1], vertices[i2+2],
                                       vertices[i3], vertices[i3+1], vertices[i3+2]);
@@ -722,13 +723,13 @@ function createArb8Buffer( shape, faces_limit ) {
                           vertices[i5], vertices[i5+1], vertices[i5+2]);
          creator.setNormal(norm.x, norm.y, norm.z);
       }  else {
-         if (i1>=0) {
+         if (i1 >= 0) {
             creator.addFace3(vertices[i1], vertices[i1+1], vertices[i1+2],
                              vertices[i2], vertices[i2+1], vertices[i2+2],
                              vertices[i3], vertices[i3+1], vertices[i3+2]);
             creator.calcNormal();
          }
-         if (i4>=0) {
+         if (i4 >= 0) {
             creator.addFace3(vertices[i4], vertices[i4+1], vertices[i4+2],
                              vertices[i5], vertices[i5+1], vertices[i5+2],
                              vertices[i6], vertices[i6+1], vertices[i6+2]);
@@ -830,7 +831,7 @@ function createSphereBuffer( shape, faces_limit ) {
       if (Math.abs(_sint[side]) >= epsilon) {
          let ss = _sint[side], cc = _cost[side],
              d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
-         for (let n=0;n<widthSegments;++n) {
+         for (let n = 0; n < widthSegments; ++n) {
             creator.addFace4(
                   radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
                   radius[0] * ss * _cosp[n+d1], radius[0] * ss * _sinp[n+d1], radius[0] * cc,
@@ -952,7 +953,7 @@ function createTubeBuffer( shape, faces_limit) {
    }
 
    // create upper/bottom part
-   for (let side = 0; side<2; ++side) {
+   for (let side = 0; side < 2; ++side) {
       if (outerR[side] <= 0) continue;
 
       let d1 = side, d2 = 1- side,
@@ -1123,12 +1124,12 @@ function createTorusBuffer( shape, faces_limit ) {
    }
 
    if (shape.fDphi !== 360)
-      for (let t=0;t<=tubularSegments;t+=tubularSegments) {
+      for (let t = 0; t <= tubularSegments; t += tubularSegments) {
          let tube1 = shape.fRmax, tube2 = shape.fRmin,
              d1 = (t > 0) ? 0 : 1, d2 = 1 - d1,
              skip = (shape.fRmin) > 0 ?  0 : 1,
              nsign = (t > 0) ? 1 : -1;
-         for (let n=0;n<radialSegments;++n) {
+         for (let n = 0; n < radialSegments; ++n) {
             creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
@@ -1246,7 +1247,7 @@ function createPolygonBuffer( shape, faces_limit ) {
           z1 = shape.fZ[0], r1 = factor*shape[rside][0],
           d1 = 1 - side, d2 = side;
 
-      for (let layer=0; layer < shape.fNz; ++layer) {
+      for (let layer = 0; layer < shape.fNz; ++layer) {
 
          if (usage[layer*2+side] === 0) continue;
 
@@ -1274,7 +1275,7 @@ function createPolygonBuffer( shape, faces_limit ) {
    }
 
    // add top/bottom
-   for (let layer=0; layer < shape.fNz; layer += (shape.fNz-1)) {
+   for (let layer = 0; layer < shape.fNz; layer += (shape.fNz-1)) {
 
       let rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
 
@@ -1286,7 +1287,7 @@ function createPolygonBuffer( shape, faces_limit ) {
 
       if (!hasrmin && !cut_faces) creator.startPolygon(layer>0);
 
-      for (let seg=0;seg < radiusSegments;++seg) {
+      for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
                           rmax * _cos[seg+d1], rmax * _sin[seg+d1], layerz,
                           rmax * _cos[seg+d2], rmax * _sin[seg+d2], layerz,
@@ -1329,10 +1330,9 @@ function createXtruBuffer( shape, faces_limit ) {
    for (let vert = 0; vert < shape.fNvert; ++vert)
       pnts.push(new Vector2(shape.fX[vert], shape.fY[vert]));
 
-   // console.log('triangulate Xtru ' + shape.fShapeId);
    let faces = ShapeUtils.triangulateShape(pnts , []);
    if (faces.length < pnts.length-2) {
-      geoWarn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
+      geoWarn(`Problem with XTRU shape ${shape.fName} with ${pnts.length} vertices`);
       faces = [];
    } else {
       nfaces += faces.length * 2;
@@ -1801,13 +1801,13 @@ function createHalfSpace(shape, geom) {
                                       v0.x,v0.y,v0.z, v1.x,v1.y,v1.z, v3.x,v3.y,v3.z,
                                       v1.x,v1.y,v1.z, v2.x,v2.y,v2.z, v3.x,v3.y,v3.z,
                                       v2.x,v2.y,v2.z, v0.x,v0.y,v0.z, v3.x,v3.y,v3.z ]);
-   geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+   geometry.setAttribute('position', new BufferAttribute(positions, 3));
    geometry.computeVertexNormals();
 
    geometry.lookAt(normal);
    geometry.computeVertexNormals();
 
-   for(let k=0;k<positions.length;k+=3) {
+   for(let k = 0; k < positions.length; k += 3) {
       positions[k] = positions[k] + vertex.x;
       positions[k+1] = positions[k+1] + vertex.y;
       positions[k+2] = positions[k+2] + vertex.z;
@@ -3307,8 +3307,8 @@ function createFlippedMesh(shape, material) {
          }
 
          shape.geomZ = new BufferGeometry();
-         shape.geomZ.setAttribute( 'position', new BufferAttribute( newpos, 3 ) );
-         shape.geomZ.setAttribute( 'normal', new BufferAttribute( newnorm, 3 ) );
+         shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
+         shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
          // normals are calculated with normal geometry and correctly scaled
          // geom.computeVertexNormals();
 
