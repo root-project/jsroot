@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "12/08/2022";
+let version_date = "17/08/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -59594,7 +59594,7 @@ class TPadPainter extends ObjectPainter {
                ListOfColors[parseInt(name.slice(0,p))] = color$1("rgb(" + name.slice(p+1) + ")").formatHex();
             } else {
                p = name.indexOf("=");
-               ListOfColors[parseInt(name.slice(0,p))] = color$1("rgba(" + name.slice(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.slice(0,p))] = color$1("rgba(" + name.slice(p+1) + ")").formatHex8();
             }
          }
 
@@ -82216,18 +82216,18 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
 /** @summary TGeo-related bits
   * @private */
 const geoBITS = {
-   kVisOverride     : JSROOT_BIT(0),           // volume's vis. attributes are overwritten
-   kVisNone         : JSROOT_BIT(1),           // the volume/node is invisible, as well as daughters
-   kVisThis         : JSROOT_BIT(2),           // this volume/node is visible
-   kVisDaughters    : JSROOT_BIT(3),           // all leaves are visible
-   kVisOneLevel     : JSROOT_BIT(4),           // first level daughters are visible (not used)
-   kVisStreamed     : JSROOT_BIT(5),           // true if attributes have been streamed
-   kVisTouched      : JSROOT_BIT(6),           // true if attributes are changed after closing geom
-   kVisOnScreen     : JSROOT_BIT(7),           // true if volume is visible on screen
-   kVisContainers   : JSROOT_BIT(12),          // all containers visible
-   kVisOnly         : JSROOT_BIT(13),          // just this visible
-   kVisBranch       : JSROOT_BIT(14),          // only a given branch visible
-   kVisRaytrace     : JSROOT_BIT(15)           // raytracing flag
+   kVisOverride   : JSROOT_BIT(0),  // volume's vis. attributes are overwritten
+   kVisNone       : JSROOT_BIT(1),  // the volume/node is invisible, as well as daughters
+   kVisThis       : JSROOT_BIT(2),  // this volume/node is visible
+   kVisDaughters  : JSROOT_BIT(3),  // all leaves are visible
+   kVisOneLevel   : JSROOT_BIT(4),  // first level daughters are visible (not used)
+   kVisStreamed   : JSROOT_BIT(5),  // true if attributes have been streamed
+   kVisTouched    : JSROOT_BIT(6),  // true if attributes are changed after closing geom
+   kVisOnScreen   : JSROOT_BIT(7),  // true if volume is visible on screen
+   kVisContainers : JSROOT_BIT(12), // all containers visible
+   kVisOnly       : JSROOT_BIT(13), // just this visible
+   kVisBranch     : JSROOT_BIT(14), // only a given branch visible
+   kVisRaytrace   : JSROOT_BIT(15)  // raytracing flag
 };
 
 /** @summary Test fGeoAtt bits
@@ -82299,10 +82299,10 @@ function countNumShapes(shape) {
 
 
 /** @summary Returns geo object name
-  * @desc Can appens some special suffixes
+  * @desc Can appends some special suffixes
   * @private */
 function getObjectName(obj) {
-   return !obj?.fName ? "" : (obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : ""));
+   return obj?.fName ? (obj.fName + (obj.$geo_suffix || "")) : "";
 }
 
 /** @summary Check duplicates
@@ -82341,9 +82341,9 @@ function produceNormal(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
        cb = new Vector3(),
        ab = new Vector3();
 
-   cb.subVectors( pC, pB );
-   ab.subVectors( pA, pB );
-   cb.cross(ab );
+   cb.subVectors(pC, pB);
+   ab.subVectors(pA, pB);
+   cb.cross(ab);
 
    return cb;
 }
@@ -82482,13 +82482,13 @@ class GeometryCreator {
          this.ab = new Vector3();
       }
 
-      this.pA.fromArray( this.pos, this.indx - 9 );
-      this.pB.fromArray( this.pos, this.indx - 6 );
-      this.pC.fromArray( this.pos, this.indx - 3 );
+      this.pA.fromArray(this.pos, this.indx - 9);
+      this.pB.fromArray(this.pos, this.indx - 6);
+      this.pC.fromArray(this.pos, this.indx - 3);
 
-      this.cb.subVectors( this.pC, this.pB );
-      this.ab.subVectors( this.pA, this.pB );
-      this.cb.cross( this.ab );
+      this.cb.subVectors(this.pC, this.pB);
+      this.ab.subVectors(this.pA, this.pB);
+      this.cb.cross(this.ab);
 
       this.setNormal(this.cb.x, this.cb.y, this.cb.z);
    }
@@ -82512,7 +82512,7 @@ class GeometryCreator {
    /** @summary Set normal
      * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
    setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34, reduce) {
-      if (reduce===undefined) reduce = 0;
+      if (reduce === undefined) reduce = 0;
 
       let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
 
@@ -82594,10 +82594,10 @@ class PolygonsCreator{
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      this.v1 = new Vertex( x1, y1, z1, 0, 0, 0 );
-      this.v2 = (reduce===1) ? null : new Vertex( x2, y2, z2, 0, 0, 0 );
-      this.v3 = new Vertex( x3, y3, z3, 0, 0, 0 );
-      this.v4 = (reduce===2) ? null : new Vertex( x4, y4, z4, 0, 0, 0 );
+      this.v1 = new Vertex(x1,y1,z1, 0,0,0);
+      this.v2 = (reduce===1) ? null : new Vertex(x2,y2,z2, 0,0,0);
+      this.v3 = new Vertex(x3,y3,z3, 0,0,0);
+      this.v4 = (reduce===2) ? null : new Vertex(x4,y4,z4, 0,0,0);
 
       this.reduce = reduce;
 
@@ -82690,9 +82690,9 @@ class PolygonsCreator{
          this.pC.set( this.v4.x, this.v4.y, this.v4.z);
       }
 
-      this.cb.subVectors( this.pC, this.pB );
-      this.ab.subVectors( this.pA, this.pB );
-      this.cb.cross( this.ab );
+      this.cb.subVectors(this.pC, this.pB);
+      this.ab.subVectors(this.pA, this.pB);
+      this.cb.cross(this.ab);
 
       this.setNormal(this.cb.x, this.cb.y, this.cb.z);
    }
@@ -82728,9 +82728,8 @@ function createCubeBuffer(shape, faces_limit) {
 
    if (faces_limit < 0) return 12;
 
-   let dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
-
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(12);
+   let dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ,
+       creator = faces_limit ? new PolygonsCreator : new GeometryCreator(12);
 
    creator.addFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.setNormal(1,0,0);
 
@@ -82751,9 +82750,8 @@ function createCubeBuffer(shape, faces_limit) {
   * @private */
 function create8edgesBuffer( v, faces_limit ) {
 
-   let indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
-
-   let creator = (faces_limit > 0) ? new PolygonsCreator : new GeometryCreator(12);
+   let indicies = [4,7,6,5, 0,3,7,4, 4,5,1,0, 6,2,1,5, 7,3,2,6, 1,2,3,0],
+        creator = (faces_limit > 0) ? new PolygonsCreator : new GeometryCreator(12);
 
    for (let n = 0; n < indicies.length; n += 4) {
       let i1 = indicies[n]*3,
@@ -82837,12 +82835,12 @@ function createArb8Buffer( shape, faces_limit ) {
       shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
    ];
    const indicies = [
-         4,7,6,   6,5,4,   3,7,4,   4,0,3,
-         5,1,0,   0,4,5,   6,2,1,   1,5,6,
-         7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+         4,7,6,  6,5,4,  3,7,4,  4,0,3,
+         5,1,0,  0,4,5,  6,2,1,  1,5,6,
+         7,3,2,  2,6,7,  1,2,3,  3,0,1 ];
 
    // detect same vertices on both Z-layers
-   for (let side=0;side<vertices.length;side += vertices.length/2)
+   for (let side = 0; side < vertices.length; side += vertices.length/2)
       for (let n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
          for (let n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
             if ((vertices[n1] === vertices[n2]) &&
@@ -83603,9 +83601,8 @@ function createParaboloidBuffer( shape, faces_limit ) {
       _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
    }
 
-   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
-
-   let lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
+   let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces),
+       lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
    for (let layer = 0; layer <= heightSegments + 1; ++layer) {
 
@@ -84097,14 +84094,14 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 }
 
 /** @summary Creates geometry model for the provided shape
- * @desc
- *  - if limit === 0 (or undefined) returns BufferGeometry
- *  - if limit < 0 just returns estimated number of faces
- *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
- * @param {Object} shape - instance of TGeoShape object
- * @param {Number} limit - defines return value, see details
- * @private */
-function createGeometry( shape, limit ) {
+  * @param {Object} shape - instance of TGeoShape object
+  * @param {Number} limit - defines return value, see details
+  * @desc
+  *  - if limit === 0 (or undefined) returns BufferGeometry
+  *  - if limit < 0 just returns estimated number of faces
+  *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
+  * @private */
+function createGeometry(shape, limit) {
    if (limit === undefined) limit = 0;
 
    try {
@@ -84465,9 +84462,8 @@ class ClonedNodes {
 
       // than fill children lists
       for (let n = 0; n < this.origin.length; ++n) {
-         let obj = this.origin[n], clone = this.nodes[n];
-
-         let chlds = null, shape = null;
+         let obj = this.origin[n], clone = this.nodes[n],
+             chlds = null, shape = null;
 
          if (kind === kindEve) {
             shape = obj.fShape;

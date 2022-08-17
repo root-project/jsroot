@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Force MathJax rendering when `\` symbol is found (#243)
+2. Fix - use alfa channel for TColor when intended
 
 
 ## Changes in 7.2.0
