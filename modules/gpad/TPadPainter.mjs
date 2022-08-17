@@ -1308,7 +1308,7 @@ class TPadPainter extends ObjectPainter {
                ListOfColors[parseInt(name.slice(0,p))] = d3_color("rgb(" + name.slice(p+1) + ")").formatHex();
             } else {
                p = name.indexOf("=");
-               ListOfColors[parseInt(name.slice(0,p))] = d3_color("rgba(" + name.slice(p+1) + ")").formatHex();
+               ListOfColors[parseInt(name.slice(0,p))] = d3_color("rgba(" + name.slice(p+1) + ")").formatHex8();
             }
          }
 
