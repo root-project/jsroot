@@ -931,15 +931,15 @@ class TAxisPainter extends ObjectPainter {
 
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
 
-            let lbl = this.format(lbl_pos[nmajor], true);
-            if (lbl === null) continue;
+            let text = this.format(lbl_pos[nmajor], true);
+            if (text === null) continue;
 
             let mod = this.findLabelModifier(axis, nmajor, lbl_pos.length);
-            if (mod && (mod.fTextSize == 0)) continue;
+            if (mod?.fTextSize === 0) continue;
 
-            if (mod && mod.fLabText) lbl = mod.fLabText;
+            if (mod?.fLabText) text = mod.fLabText;
 
-            let arg = { text: lbl, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
+            let arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
                 pos = Math.round(this.func(lbl_pos[nmajor]));
 
             if (mod && mod.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
@@ -954,7 +954,7 @@ class TAxisPainter extends ObjectPainter {
                if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
             }
 
-            maxtextlen = Math.max(maxtextlen, lbl.length);
+            maxtextlen = Math.max(maxtextlen, text.length);
 
             if (this.vertical) {
                arg.x = fix_coord;
