@@ -10,15 +10,38 @@
   "main": "./build/jsroot.js",
   "module": "./modules/main.mjs",
   "exports": {
-    ".": "./modules/main.mjs",
-    "./core": "./modules/core.mjs",
-    "./draw": "./modules/draw.mjs",
-    "./io": "./modules/io.mjs",
-    "./tree": "./modules/tree.mjs",
-    "./colors": "./modules/base/colors.mjs",
-    "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
-    "./latex": "./modules/base/latex.mjs",
-    "./geom": "./modules/geom/TGeoPainter.mjs"
+    ".": {
+      "types": "./types/main.d.mts",
+      "import": "./modules/main.mjs"
+    },
+    "./draw": {
+      "types": "./types/draw.d.mts",
+      "import": "./modules/draw.mjs"
+    },
+    "./io": {
+      "types": "./types/io.d.mts",
+      "import": "./modules/io.mjs"
+    },
+    "./tree": {
+      "types": "./types/tree.d.mts",
+      "import": "./modules/tree.mjs"
+    },
+    "./colors": {
+      "types": "./types/base/colors.d.mts",
+      "import": "./modules/base/colors.mjs"
+    },
+    "./hierarchy": {
+      "types": "./types/gui/HierarchyPainter.d.mts",
+      "import": "./modules/gui/HierarchyPainter.mjs"
+    },
+    "./latex": {
+      "types": "./types/base/latex.d.mts",
+      "import": "./modules/base/latex.mjs"
+    },
+    "./geom": {
+      "types": "./types/geom/TGeoPainter.d.mts",
+      "import": "./modules/geom/TGeoPainter.mjs"
+    }
   },
   "contributors": [
     {

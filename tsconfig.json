@@ -1,10 +1,9 @@
 {
-  "include": ["modules/*"],
-  "exclude": ["modules/gui/dat.gui.mjs", "modules/three.mjs"],
+  "include": ["modules"],
   "compilerOptions": {
     "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "types",
+    "outDir": "types"
   }
 }
