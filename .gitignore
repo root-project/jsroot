@@ -18,5 +18,4 @@ package-lock.json
 httpcontrol.C
 httpserver.C
 Go4ExampleSimple
-!tsconfig.json
 

@@ -10,38 +10,15 @@
   "main": "./build/jsroot.js",
   "module": "./modules/main.mjs",
   "exports": {
-    ".": {
-      "types": "./types/main.d.mts",
-      "import": "./modules/main.mjs"
-    },
-    "./draw": {
-      "types": "./types/draw.d.mts",
-      "import": "./modules/draw.mjs"
-    },
-    "./io": {
-      "types": "./types/io.d.mts",
-      "import": "./modules/io.mjs"
-    },
-    "./tree": {
-      "types": "./types/tree.d.mts",
-      "import": "./modules/tree.mjs"
-    },
-    "./colors": {
-      "types": "./types/base/colors.d.mts",
-      "import": "./modules/base/colors.mjs"
-    },
-    "./hierarchy": {
-      "types": "./types/gui/HierarchyPainter.d.mts",
-      "import": "./modules/gui/HierarchyPainter.mjs"
-    },
-    "./latex": {
-      "types": "./types/base/latex.d.mts",
-      "import": "./modules/base/latex.mjs"
-    },
-    "./geom": {
-      "types": "./types/geom/TGeoPainter.d.mts",
-      "import": "./modules/geom/TGeoPainter.mjs"
-    }
+    ".": "./modules/main.mjs",
+    "./core": "./modules/core.mjs",
+    "./draw": "./modules/draw.mjs",
+    "./io": "./modules/io.mjs",
+    "./tree": "./modules/tree.mjs",
+    "./colors": "./modules/base/colors.mjs",
+    "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
+    "./latex": "./modules/base/latex.mjs",
+    "./geom": "./modules/geom/TGeoPainter.mjs"
   },
   "contributors": [
     {
@@ -88,13 +65,11 @@
     "rollup-plugin-ascii": "0.0",
     "rollup-plugin-ignore": "1.0.10",
     "rollup-plugin-modify": "^3.0.0",
-    "rollup-plugin-terser": "7",
-    "typescript": "^4.8.2"
+    "rollup-plugin-terser": "7"
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
-    "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md",
-    "types": "tsc"
+    "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md"
   },
   "keywords": [
     "ROOT",
