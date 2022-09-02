@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "17/08/2022";
+let version_date = "2/09/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -49237,15 +49237,15 @@ class TAxisPainter extends ObjectPainter {
 
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
 
-            let lbl = this.format(lbl_pos[nmajor], true);
-            if (lbl === null) continue;
+            let text = this.format(lbl_pos[nmajor], true);
+            if (text === null) continue;
 
             let mod = this.findLabelModifier(axis, nmajor, lbl_pos.length);
-            if (mod && (mod.fTextSize == 0)) continue;
+            if (mod?.fTextSize === 0) continue;
 
-            if (mod && mod.fLabText) lbl = mod.fLabText;
+            if (mod?.fLabText) text = mod.fLabText;
 
-            let arg = { text: lbl, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
+            let arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) },
                 pos = Math.round(this.func(lbl_pos[nmajor]));
 
             if (mod && mod.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
@@ -49260,7 +49260,7 @@ class TAxisPainter extends ObjectPainter {
                if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
             }
 
-            maxtextlen = Math.max(maxtextlen, lbl.length);
+            maxtextlen = Math.max(maxtextlen, text.length);
 
             if (this.vertical) {
                arg.x = fix_coord;
@@ -64936,7 +64936,7 @@ class TH1Painter$2 extends THistPainter {
           bars = "", barsl = "", barsr = "",
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
-      if (side>4) side = 4;
+      if (side > 4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
       if (Number.isFinite(this.options.BaseLine))
          if (this.options.BaseLine >= funcs.scale_ymin)
@@ -65042,8 +65042,8 @@ class TH1Painter$2 extends THistPainter {
          gry1 = Math.round(funcs.gry(y + yerr));
          gry2 = Math.round(funcs.gry(y - yerr));
 
-         bins1.push({ grx:grx, gry: gry1 });
-         bins2.unshift({ grx:grx, gry: gry2 });
+         bins1.push({ grx, gry: gry1 });
+         bins2.unshift({ grx, gry: gry2 });
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
@@ -66556,8 +66556,7 @@ class TH2Painter$2 extends THistPainter {
                lj=1;
                for (ix=1;ix<=4;ix++) {
                   m = n%4 + 1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
-                        zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
                   lj += 2*ljfill;
                   n = m;
                }
@@ -66570,8 +66569,7 @@ class TH2Painter$2 extends THistPainter {
                for (ix=1;ix<=4;ix++) {
                   if (n == 1) m = 4;
                   else        m = n-1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
-                        zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
                   lj += 2*ljfill;
                   n = m;
                }
@@ -66773,7 +66771,7 @@ class TH2Painter$2 extends THistPainter {
          const get_intersect = (i,di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
             for (let i = 0; i < 4; ++i) {
-               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
+               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
                if (res) {
                   res.indx = i + 0.5;
                   return res;
@@ -66832,7 +66830,7 @@ class TH2Painter$2 extends THistPainter {
 
          switch (this.options.Contour) {
             case 1: break;
-            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol } ); break;
+            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol }); break;
             case 12: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
             case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
          }
@@ -67839,7 +67837,7 @@ class TH2Painter$2 extends THistPainter {
            pattern.attr("width", cell_w[colindx])
                   .attr("height", cell_h[colindx])
                   .append("svg:path")
-                  .attr("d",path)
+                  .attr("d", path)
                   .call(this.markeratt.func);
 
            this.draw_g
@@ -68392,14 +68390,14 @@ class TH2Painter$2 extends THistPainter {
             y2 = Math.round(y1 + dy*h.ybar2);
             y1 = Math.round(y1 + dy*h.ybar1);
             if (pmain.reverse_x) {
-               if ((pnt.x>x1) || (pnt.x<=x2)) match = false;
+               if ((pnt.x > x1) || (pnt.x <= x2)) match = false;
             } else {
-               if ((pnt.x<x1) || (pnt.x>=x2)) match = false;
+               if ((pnt.x < x1) || (pnt.x >= x2)) match = false;
             }
             if (pmain.reverse_y) {
-               if ((pnt.y>y1) || (pnt.y<=y2)) match = false;
+               if ((pnt.y > y1) || (pnt.y <= y2)) match = false;
             } else {
-               if ((pnt.y<y1) || (pnt.y>=y2)) match = false;
+               if ((pnt.y < y1) || (pnt.y >= y2)) match = false;
             }
          }
 
@@ -68482,10 +68480,10 @@ class TH2Painter$2 extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
 
-      if (axis=="z") return true;
+      if (axis == "z") return true;
 
       let obj = this.getHisto();
-      if (obj) obj = (axis=="y") ? obj.fYaxis : obj.fXaxis;
+      if (obj) obj = (axis == "y") ? obj.fYaxis : obj.fXaxis;
 
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
@@ -92809,15 +92807,14 @@ class TGraphPainter$1 extends ObjectPainter {
 
       if (options.Mark) {
          // for tooltips use markers only if nodes were not created
-         let path = "", pnt, grx, gry;
-
          this.createAttMarker({ attr: graph, style: options.Mark - 100 });
 
          this.marker_size = this.markeratt.getFullSize();
 
          this.markeratt.resetPos();
 
-         let want_tooltip = !isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
+         let path = "", pnt, grx, gry,
+             want_tooltip = !isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
              hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
@@ -92847,9 +92844,9 @@ class TGraphPainter$1 extends ObjectPainter {
          }
          if (want_tooltip && hints_marker)
             draw_g.append("svg:path")
-                .attr("d", hints_marker)
-                .style("fill", "none")
-                .style("pointer-events", "visibleFill");
+                  .attr("d", hints_marker)
+                  .style("fill", "none")
+                  .style("pointer-events", "visibleFill");
       }
    }
 
@@ -93021,9 +93018,10 @@ class TGraphPainter$1 extends ObjectPainter {
                   lines: this.getTooltips(d),
                   rect: best, d3bin: findbin };
 
-       res.user_info = { obj: gr,  name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
+       res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.getFillColor();
+      if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
+         res.color2 = this.fillatt.getFillColor();
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
@@ -93088,7 +93086,7 @@ class TGraphPainter$1 extends ObjectPainter {
          grx = funcs.grx(bin.x);
          gry = funcs.gry(bin.y);
 
-         dist = (pnt.x-grx)*(pnt.x-grx) + (pnt.y-gry)*(pnt.y-gry);
+         dist = (pnt.x-grx)**2 + (pnt.y-gry)**2;
 
          if (dist < bestdist) {
             bestdist = dist;
@@ -93117,7 +93115,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
          bestdist = 1e10;
 
-         const IsInside = (x, x1, x2) => ((x1>=x) && (x>=x2)) || ((x1<=x) && (x<=x2));
+         const IsInside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
 
          let bin0 = this.bins[0], grx0 = funcs.grx(bin0.x), gry0, posy = 0;
          for (n = 1; n < this.bins.length; ++n) {
@@ -93700,18 +93698,18 @@ class TF1Painter extends ObjectPainter {
 
       if (!force_use_save)
          for (let n = 0; n < np; n++) {
-            let xx = xmin + n*dx, yy = 0;
-            if (logx) xx = Math.exp(xx);
+            let x = xmin + n*dx, y = 0;
+            if (logx) x = Math.exp(x);
             try {
-               yy = tf1.evalPar(xx);
+               y = tf1.evalPar(x);
             } catch(err) {
                iserror = true;
             }
 
             if (iserror) break;
 
-            if (Number.isFinite(yy))
-               res.push({ x: xx, y: yy });
+            if (Number.isFinite(y))
+               res.push({ x, y });
          }
 
       // in the case there were points have saved and we cannot calculate function
@@ -93733,12 +93731,12 @@ class TF1Painter extends ObjectPainter {
          }
 
          for (let n = 0; n < np; ++n) {
-            let xx = use_histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
+            let x = use_histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
             // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
-            if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
-            let yy = tf1.fSave[n];
+            if ((gxmin !== gxmax) && ((x + 2*dx < gxmin) || (x - 2*dx > gxmax))) continue;
+            let y = tf1.fSave[n];
 
-            if (Number.isFinite(yy)) res.push({ x : xx, y : yy });
+            if (Number.isFinite(y)) res.push({ x, y });
          }
       }
 
@@ -93751,7 +93749,7 @@ class TF1Painter extends ObjectPainter {
       let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
           bins = this.createBins(true);
 
-      if (bins && (bins.length > 0)) {
+      if (bins?.length) {
 
          xmin = xmax = bins[0].x;
          ymin = ymax = bins[0].y;
@@ -93839,7 +93837,7 @@ class TF1Painter extends ObjectPainter {
 
       res.changed = gbin.property("current_bin") !== best;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx-pnt.x)**2 + (bin.gry-pnt.y)**2);
+      res.menu_dist = Math.sqrt((bin.grx - pnt.x)**2 + (bin.gry - pnt.y)**2);
 
       if (res.changed)
          gbin.attr("cx", bin.grx)
@@ -93847,12 +93845,12 @@ class TF1Painter extends ObjectPainter {
              .property("current_bin", best);
 
       let name = this.getObjectHint();
-      if (name.length > 0) res.lines.push(name);
+      if (name) res.lines.push(name);
 
       let pmain = this.getFramePainter(),
           funcs = pmain?.getGrFuncs(this.second_x, this.second_y);
       if (funcs)
-         res.lines.push("x = " + funcs.axisAsText("x",bin.x) + " y = " + funcs.axisAsText("y",bin.y));
+         res.lines.push(`x = ${funcs.axisAsText("x",bin.x)} y = ${funcs.axisAsText("y",bin.y)}`);
 
       return res;
    }
@@ -93897,22 +93895,22 @@ class TF1Painter extends ObjectPainter {
 
          if (!this.lineatt.empty())
             this.draw_g.append("svg:path")
-               .attr("class", "line")
-               .attr("d", path.path)
-               .style("fill", "none")
-               .call(this.lineatt.func);
+                .attr("class", "line")
+                .attr("d", path.path)
+                .style("fill", "none")
+                .call(this.lineatt.func);
 
          if (!this.fillatt.empty())
             this.draw_g.append("svg:path")
-               .attr("class", "area")
-               .attr("d", path.path + path.close)
-               .call(this.fillatt.func);
+                .attr("class", "area")
+                .attr("d", path.path + path.close)
+                .call(this.fillatt.func);
       }
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      if (axis!=="x") return false;
+      if (axis !== "x") return false;
 
       let tf1 = this.getObject();
 
