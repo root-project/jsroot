@@ -691,8 +691,7 @@ class TH2Painter extends THistPainter {
                lj=1;
                for (ix=1;ix<=4;ix++) {
                   m = n%4 + 1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
-                        zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
                   lj += 2*ljfill;
                   n = m;
                }
@@ -705,8 +704,7 @@ class TH2Painter extends THistPainter {
                for (ix=1;ix<=4;ix++) {
                   if (n == 1) m = 4;
                   else        m = n-1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
-                        zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
                   lj += 2*ljfill;
                   n = m;
                }
@@ -910,7 +908,7 @@ class TH2Painter extends THistPainter {
          const get_intersect = (i,di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
             for (let i = 0; i < 4; ++i) {
-               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
+               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
                if (res) {
                   res.indx = i + 0.5;
                   return res;
@@ -969,7 +967,7 @@ class TH2Painter extends THistPainter {
 
          switch (this.options.Contour) {
             case 1: break;
-            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol } ); break;
+            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol }); break;
             case 12: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
             case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
             case 14: break;
@@ -1977,7 +1975,7 @@ class TH2Painter extends THistPainter {
            pattern.attr("width", cell_w[colindx])
                   .attr("height", cell_h[colindx])
                   .append("svg:path")
-                  .attr("d",path)
+                  .attr("d", path)
                   .call(this.markeratt.func);
 
            this.draw_g
@@ -2530,14 +2528,14 @@ class TH2Painter extends THistPainter {
             y2 = Math.round(y1 + dy*h.ybar2);
             y1 = Math.round(y1 + dy*h.ybar1);
             if (pmain.reverse_x) {
-               if ((pnt.x>x1) || (pnt.x<=x2)) match = false;
+               if ((pnt.x > x1) || (pnt.x <= x2)) match = false;
             } else {
-               if ((pnt.x<x1) || (pnt.x>=x2)) match = false;
+               if ((pnt.x < x1) || (pnt.x >= x2)) match = false;
             }
             if (pmain.reverse_y) {
-               if ((pnt.y>y1) || (pnt.y<=y2)) match = false;
+               if ((pnt.y > y1) || (pnt.y <= y2)) match = false;
             } else {
-               if ((pnt.y<y1) || (pnt.y>=y2)) match = false;
+               if ((pnt.y < y1) || (pnt.y >= y2)) match = false;
             }
          }
 
@@ -2620,10 +2618,10 @@ class TH2Painter extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
 
-      if (axis=="z") return true;
+      if (axis == "z") return true;
 
       let obj = this.getHisto();
-      if (obj) obj = (axis=="y") ? obj.fYaxis : obj.fXaxis;
+      if (obj) obj = (axis == "y") ? obj.fYaxis : obj.fXaxis;
 
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }

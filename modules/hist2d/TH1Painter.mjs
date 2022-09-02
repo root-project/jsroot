@@ -288,7 +288,7 @@ class TH1Painter extends THistPainter {
           bars = "", barsl = "", barsr = "",
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
-      if (side>4) side = 4;
+      if (side > 4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
       if (Number.isFinite(this.options.BaseLine))
          if (this.options.BaseLine >= funcs.scale_ymin)
@@ -394,8 +394,8 @@ class TH1Painter extends THistPainter {
          gry1 = Math.round(funcs.gry(y + yerr));
          gry2 = Math.round(funcs.gry(y - yerr));
 
-         bins1.push({ grx:grx, gry: gry1 });
-         bins2.unshift({ grx:grx, gry: gry2 });
+         bins1.push({ grx, gry: gry1 });
+         bins2.unshift({ grx, gry: gry2 });
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
