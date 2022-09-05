@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.2.x
+1. Fix - prevent glitch when enabling projection via context menu
+
+
 ## Changes in 7.2.0
 1. Use TAxis attributes in lego plots - ticks/labels/title colors, sizes, offsets
 2. Correctly resize stats box when number of lines changes
