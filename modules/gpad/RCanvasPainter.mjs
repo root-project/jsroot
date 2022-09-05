@@ -137,6 +137,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    drawProjection( /*kind,hist*/) {
       // dummy for the moment
+      return Promise.resolve(false);
    }
 
    /** @summary Draw in side panel

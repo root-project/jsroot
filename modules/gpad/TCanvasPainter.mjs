@@ -153,7 +153,8 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    drawProjection(kind, hist, hopt) {
 
-      if (!this.proj_painter) return; // ignore drawing if projection not configured
+      if (!this.proj_painter)
+         return Promise.resolve(false); // ignore drawing if projection not configured
 
       if (hopt === undefined) hopt = "hist";
 
@@ -185,11 +186,11 @@ class TCanvasPainter extends TPadPainter {
                        ? this.drawInUI5ProjectionArea(canv, drawopt)
                        : this.drawInSidePanel(canv, drawopt);
 
-         promise.then(painter => { this.proj_painter = painter; });
-      } else {
-         this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
-         this.proj_painter.redrawPad();
-      }
+         return promise.then(painter => { this.proj_painter = painter; return painter; });
+      } else
+
+      this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
+      return this.proj_painter.redrawPad();
    }
 
    /** @summary Checks if canvas shown inside ui5 widget

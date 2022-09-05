@@ -61,7 +61,10 @@ class TH2Painter extends THistPainter {
 
    /** @summary Redraw projection */
    redrawProjection(ii1, ii2, jj1, jj2) {
-      if (!this.is_projection) return;
+      if (!this.is_projection || this.doing_projection)
+         return Promise.resolve(false);
+
+      this.doing_projection = true;
 
       if (jj2 === undefined) {
          if (!this.tt_handle) return;
@@ -132,7 +135,7 @@ class TH2Painter extends THistPainter {
       this.proj_hist.fEntries = 0;
       this.proj_hist.fTsumw = 0;
 
-      return this.drawInSpecialArea(this.proj_hist);
+      return this.drawInSpecialArea(this.proj_hist).then(res => { delete this.doing_projection; return res; });
    }
 
    /** @summary Execute TH2 menu command

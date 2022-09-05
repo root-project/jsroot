@@ -1437,7 +1437,7 @@ class ObjectPainter extends BasePainter {
    drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
       if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
-            return canp.drawProjection(this._special_draw_area, obj, opt);
+         return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return Promise.resolve(false);
    }
