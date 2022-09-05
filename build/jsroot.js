@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "2/09/2022";
+let version_date = "5/09/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12120,7 +12120,7 @@ class ObjectPainter extends BasePainter {
    drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
       if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
-            return canp.drawProjection(this._special_draw_area, obj, opt);
+         return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return Promise.resolve(false);
    }
@@ -60512,7 +60512,8 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    drawProjection(kind, hist, hopt) {
 
-      if (!this.proj_painter) return; // ignore drawing if projection not configured
+      if (!this.proj_painter)
+         return Promise.resolve(false); // ignore drawing if projection not configured
 
       if (hopt === undefined) hopt = "hist";
 
@@ -60544,11 +60545,11 @@ class TCanvasPainter extends TPadPainter {
                        ? this.drawInUI5ProjectionArea(canv, drawopt)
                        : this.drawInSidePanel(canv, drawopt);
 
-         promise.then(painter => { this.proj_painter = painter; });
-      } else {
-         this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
-         this.proj_painter.redrawPad();
-      }
+         return promise.then(painter => { this.proj_painter = painter; return painter; });
+      } else
+
+      this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
+      return this.proj_painter.redrawPad();
    }
 
    /** @summary Checks if canvas shown inside ui5 widget
@@ -65926,7 +65927,10 @@ class TH2Painter$2 extends THistPainter {
 
    /** @summary Redraw projection */
    redrawProjection(ii1, ii2, jj1, jj2) {
-      if (!this.is_projection) return;
+      if (!this.is_projection || this.doing_projection)
+         return Promise.resolve(false);
+
+      this.doing_projection = true;
 
       if (jj2 === undefined) {
          if (!this.tt_handle) return;
@@ -65997,7 +66001,7 @@ class TH2Painter$2 extends THistPainter {
       this.proj_hist.fEntries = 0;
       this.proj_hist.fTsumw = 0;
 
-      return this.drawInSpecialArea(this.proj_hist);
+      return this.drawInSpecialArea(this.proj_hist).then(res => { delete this.doing_projection; return res; });
    }
 
    /** @summary Execute TH2 menu command
@@ -101217,6 +101221,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    drawProjection( /*kind,hist*/) {
       // dummy for the moment
+      return Promise.resolve(false);
    }
 
    /** @summary Draw in side panel
