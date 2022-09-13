@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "5/09/2022";
+let version_date = "13/09/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65407,7 +65407,7 @@ class TH1Painter$2 extends THistPainter {
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push("bin = " + (bin+1));
+         tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          if (cont === Math.round(cont))
@@ -68136,16 +68136,16 @@ class TH2Painter$2 extends THistPainter {
    getBinTooltips(i, j) {
       let lines = [],
           histo = this.getHisto(),
-          binz = histo.getBinContent(i+1,j+1);
+          binz = histo.getBinContent(i+1, j+1);
 
       lines.push(this.getObjectHint());
 
       lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, i));
       lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, j));
 
-      lines.push(`bin = ${i}, ${j}`);
+      lines.push(`bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`);
 
-      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
+      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1, j+1);
 
       lines.push("entries = " + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
 
@@ -68991,9 +68991,9 @@ class TH3Painter extends THistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
-      lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
-      lines.push("z = " + this.getAxisBinTip("z", histo.fZaxis, iz) + "  zbin=" + (iz+1));
+      lines.push(`x = ${this.getAxisBinTip("x", histo.fXaxis, ix)}  xbin=${ix+1}`);
+      lines.push(`y = ${this.getAxisBinTip("y", histo.fYaxis, iy)}  ybin=${iy+1}`);
+      lines.push(`z = ${this.getAxisBinTip("z", histo.fZaxis, iz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
@@ -104296,7 +104296,7 @@ class RH1Painter$2 extends RHistPainter {
           cont = histo.getBinContent(bin+1),
           xlbl = this.getAxisBinTip("x", bin, di);
 
-      if (name.length>0) tips.push(name);
+      if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
@@ -104306,7 +104306,7 @@ class RH1Painter$2 extends RHistPainter {
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push("bin = " + bin);
+         tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          let lbl = "entries = " + (di > 1 ? "~" : "");
@@ -106072,11 +106072,11 @@ class RH2Painter$2 extends RHistPainter {
       lines.push("x = " + this.getAxisBinTip("x", i, di));
       lines.push("y = " + this.getAxisBinTip("y", j, dj));
 
-      lines.push("bin = " + i + ", " + j);
+      lines.push(`bin = ${i+1}, ${j+1}`);
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      let lbl = "entries = " + ((di>1) || (dj>1) ? "~" : "");
+      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : "");
 
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
@@ -106715,12 +106715,12 @@ class RH3Painter extends RHistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.getAxisBinTip("x", ix, dx) + "  xbin=" + ix);
-      lines.push("y = " + this.getAxisBinTip("y", iy, dy) + "  ybin=" + iy);
-      lines.push("z = " + this.getAxisBinTip("z", iz, dz) + "  zbin=" + iz);
+      lines.push(`x = ${this.getAxisBinTip("x", ix, dx)}  xbin=${ix+1}`);
+      lines.push(`y = ${this.getAxisBinTip("y", iy, dy)}  ybin=${iy+1}`);
+      lines.push(`z = ${this.getAxisBinTip("z", iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
-          lbl = "entries = "+ ((dx>1) || (dy>1) || (dz>1) ? "~" : "");
+          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : "");
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
