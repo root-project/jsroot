@@ -2280,7 +2280,7 @@ class TH2Painter extends THistPainter {
       lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, i));
       lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, j));
 
-      lines.push(`bin = ${i+1}, ${j+1}`);
+      lines.push(`bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`);
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1, j+1);
 
