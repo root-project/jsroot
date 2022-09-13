@@ -166,9 +166,9 @@ class TH3Painter extends THistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
-      lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
-      lines.push("z = " + this.getAxisBinTip("z", histo.fZaxis, iz) + "  zbin=" + (iz+1));
+      lines.push(`x = ${this.getAxisBinTip("x", histo.fXaxis, ix)}  xbin=${ix+1}`);
+      lines.push(`y = ${this.getAxisBinTip("y", histo.fYaxis, iy)}  ybin=${iy+1}`);
+      lines.push(`z = ${this.getAxisBinTip("z", histo.fZaxis, iz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))

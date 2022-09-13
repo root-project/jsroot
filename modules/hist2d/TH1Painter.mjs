@@ -758,7 +758,7 @@ class TH1Painter extends THistPainter {
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push("bin = " + (bin+1));
+         tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          if (cont === Math.round(cont))

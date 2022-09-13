@@ -610,7 +610,7 @@ class RH1Painter extends RHistPainter {
           cont = histo.getBinContent(bin+1),
           xlbl = this.getAxisBinTip("x", bin, di);
 
-      if (name.length>0) tips.push(name);
+      if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
@@ -620,7 +620,7 @@ class RH1Painter extends RHistPainter {
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push("bin = " + bin);
+         tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          let lbl = "entries = " + (di > 1 ? "~" : "");

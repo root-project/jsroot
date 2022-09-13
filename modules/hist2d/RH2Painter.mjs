@@ -1335,11 +1335,11 @@ class RH2Painter extends RHistPainter {
       lines.push("x = " + this.getAxisBinTip("x", i, di));
       lines.push("y = " + this.getAxisBinTip("y", j, dj));
 
-      lines.push("bin = " + i + ", " + j);
+      lines.push(`bin = ${i+1}, ${j+1}`);
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      let lbl = "entries = " + ((di>1) || (dj>1) ? "~" : "");
+      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : "");
 
       if (binz === Math.round(binz))
          lines.push(lbl + binz);

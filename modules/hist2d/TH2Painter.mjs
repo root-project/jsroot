@@ -2273,16 +2273,16 @@ class TH2Painter extends THistPainter {
    getBinTooltips(i, j) {
       let lines = [],
           histo = this.getHisto(),
-          binz = histo.getBinContent(i+1,j+1);
+          binz = histo.getBinContent(i+1, j+1);
 
       lines.push(this.getObjectHint());
 
       lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, i));
       lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, j));
 
-      lines.push(`bin = ${i}, ${j}`);
+      lines.push(`bin = ${i+1}, ${j+1}`);
 
-      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
+      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1, j+1);
 
       lines.push("entries = " + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
 
