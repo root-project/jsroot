@@ -2877,7 +2877,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Drawing with "count" option
      * @desc Scans hieararchy and check for unique nodes
      * @returns {Promise} with object drawing ready */
-   drawCount(unqievis, clonetm) {
+   async drawCount(unqievis, clonetm) {
 
       const makeTime = tm => (isBatchMode() ? "anytime" : tm.toString()) + " ms";
 

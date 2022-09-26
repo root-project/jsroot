@@ -690,7 +690,7 @@ class ObjectPainter extends BasePainter {
      * @desc Use to catch such action by GED and by server-side
      * @returns {Promise} when completed
      * @private */
-   interactiveRedraw(arg, info, subelem) {
+   async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
       if ((typeof info == "string") && (info.indexOf("exec:") != 0))
@@ -723,9 +723,9 @@ class ObjectPainter extends BasePainter {
      * @param {string} [reason] - like 'resize' or 'zoom'
      * @returns {Promise} when pad redraw completed
      * @protected */
-   redrawPad(reason) {
+   async redrawPad(reason) {
       let pp = this.getPadPainter();
-      return pp ? pp.redrawPad(reason) : Promise.resolve(false);
+      return pp ? pp.redrawPad(reason) : false;
    }
 
    /** @summary execute selected menu command, either locally or remotely

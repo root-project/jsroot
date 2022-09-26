@@ -2688,7 +2688,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Unzoom speicified axes
      * @returns {Promise} with boolean flag if zooming changed */
-   unzoom(dox, doy, doz) {
+   async unzoom(dox, doy, doz) {
       if (dox == "all")
          return this.unzoom("x2").then(() => this.unzoom("y2")).then(() => this.unzoom("xyz"));
 

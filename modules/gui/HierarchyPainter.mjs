@@ -981,7 +981,7 @@ class HierarchyPainter extends BasePainter {
       * @param [arg1] - first optional argument
       * @param [arg2] - second optional argument and so on
       * @returns {Promise} with command result */
-   executeCommand(itemname, elem) {
+   async executeCommand(itemname, elem) {
 
       let hitem = this.findItem(itemname),
           url = this.getOnlineItemUrl(hitem) + "/cmd.json",
@@ -1858,7 +1858,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} [drawopt] - draw option for the item
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @returns {Promise} with created painter object */
-   display(itemname, drawopt, interactive) {
+   async display(itemname, drawopt, interactive) {
       let painter = null,
           updating = false,
           item = null,
@@ -2022,7 +2022,7 @@ class HierarchyPainter extends BasePainter {
   /** @summary Drop item on specified element for drawing
     * @returns {Promise} when completed
     * @private */
-   dropItem(itemname, divid, opt) {
+   async dropItem(itemname, divid, opt) {
 
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
@@ -3072,7 +3072,7 @@ class HierarchyPainter extends BasePainter {
      * @param custom_kind - display kind
      * @returns {Promise} with mdi object created
      * @private */
-   createCustomDisplay(itemname, custom_kind) {
+   async createCustomDisplay(itemname, custom_kind) {
 
       if (this.disp_kind != "simple")
          return this.createDisplay();

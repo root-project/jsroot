@@ -514,7 +514,7 @@ function addStreamerInfosForPainter(lst) {
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
   * @returns {Promise} with svg code */
-function makeSVG(args) {
+async function makeSVG(args) {
 
    if (!args) args = {};
    if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));

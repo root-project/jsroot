@@ -829,7 +829,7 @@ class JSRootMenu {
    /** @summary Run modal dialog
      * @returns {Promise} with html element inside dialg
      * @private */
-   runModal() {
+   async runModal() {
       throw Error('runModal() must be reimplemented');
    }
 
@@ -846,7 +846,7 @@ class JSRootMenu {
      * @param {String} message - message
      * @returns {Promise} with true when "Ok" pressed or false when "Cancel" pressed
      * @protected */
-   confirm(title, message) {
+   async confirm(title, message) {
       return this.runModal(title, message, { btns: true, height: 120, width: 400 }).then(elem => { return !!elem; });
    }
 
@@ -856,7 +856,7 @@ class JSRootMenu {
      * @param value - initial value
      * @param {string} [kind] - use "text" (default), "number", "float" or "int"
      * @protected */
-   input(title, value, kind, min, max) {
+   async input(title, value, kind, min, max) {
 
       if (!kind) kind = "text";
       let inp_type = (kind == "int") ? "number" : "text", ranges = "";
@@ -894,7 +894,7 @@ class JSRootMenu {
 
    /** @summary Let input arguments from the method
      * @returns {Promise} with method argument */
-   showMethodArgsDialog(method) {
+   async showMethodArgsDialog(method) {
       let dlg_id = this.menuname + "_dialog",
           main_content = '<form> <fieldset style="padding:0; border:0">';
 
@@ -936,7 +936,7 @@ class JSRootMenu {
 
    /** @summary Let input arguments from the Command
      * @returns {Promise} with command argument */
-   showCommandArgsDialog(cmdname, args) {
+   async showCommandArgsDialog(cmdname, args) {
       let dlg_id = this.menuname + "_dialog",
           main_content = '<form> <fieldset style="padding:0; border:0">';
 

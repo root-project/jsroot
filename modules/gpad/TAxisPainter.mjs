@@ -885,7 +885,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Draw axis labels
      * @returns {Promise} with array label size and max width */
-   drawLabels(axis_g, axis, w, h, handle, side, labelsFont, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
+   async drawLabels(axis_g, axis, w, h, handle, side, labelsFont, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
@@ -1086,7 +1086,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary function draws TAxis or TGaxis object
      * @returns {Promise} for drawing ready */
-   drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
+   async drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(),
           is_gaxis = axis?._typename === 'TGaxis',

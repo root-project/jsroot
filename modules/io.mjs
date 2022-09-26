@@ -2750,7 +2750,7 @@ class TFile {
    /** @summary Open file
      * @returns {Promise} after file keys are read
      * @private */
-   _open() {
+   async _open() {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
          return this.readKeys();
 
@@ -3077,7 +3077,7 @@ class TFile {
      * let f = await openFile("https://root.cern/js/files/hsimple.root");
      * let obj = await f.readObject("hpxpy;1");
      * console.log(`Read object of type ${obj._typename}`); */
-   readObject(obj_name, cycle, only_dir) {
+   async readObject(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
       if (pos > 0) {
@@ -3300,7 +3300,7 @@ class TFile {
      * @param {string} dir_name - directory name
      * @param {number} [cycle] - directory cycle
      * @returns {Promise} - promise with read directory */
-   readDirectory(dir_name, cycle) {
+   async readDirectory(dir_name, cycle) {
       return this.readObject(dir_name, cycle, true);
    }
 
@@ -3625,7 +3625,7 @@ class TLocalFile extends TFile {
 
    /** @summary Open local file
      * @returns {Promise} after file keys are read */
-   _open() { return this.readKeys(); }
+   async _open() { return this.readKeys(); }
 
    /** @summary read buffer from local file */
    readBuffer(place, filename /*, progress_callback */) {
@@ -3673,7 +3673,7 @@ class TNodejsFile extends TFile {
 
    /** @summary Open file in node.js
      * @returns {Promise} after file keys are read */
-   _open() {
+   async _open() {
       return import('fs').then(fs => {
 
          this.fs = fs;
@@ -3699,7 +3699,7 @@ class TNodejsFile extends TFile {
 
    /** @summary Read buffer from node.js file
      * @returns {Promise} with requested blocks */
-   readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /*, progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
@@ -3767,7 +3767,7 @@ class TProxyFile extends TFile {
 
    /** @summary Open file
      * @returns {Promise} after file keys are read */
-   _open() {
+   async _open() {
       return this.proxy.openFile().then(res => {
          if (!res) return false;
          this.fEND = this.proxy.getFileSize();
@@ -3783,7 +3783,7 @@ class TProxyFile extends TFile {
 
    /** @summary Read buffer from FileProxy
      * @returns {Promise} with requested blocks */
-   readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /*, progress_callback */) {
       if (filename)
          return Promise.reject(Error(`Cannot access other file ${filename}`));
 

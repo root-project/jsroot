@@ -961,7 +961,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
-function httpRequest(url, kind, post_data) {
+async function httpRequest(url, kind, post_data) {
    return new Promise((accept, reject) => {
       createHttpRequest(url, kind, accept, reject, true).then(xhr => xhr.send(post_data || null));
    });

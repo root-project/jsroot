@@ -390,7 +390,7 @@ function assign3DHandler(painter) {
   * @returns {Promise} with renderer object
   * @private */
 
-function createRender3D(width, height, render3d, args) {
+async function createRender3D(width, height, render3d, args) {
 
    let rc = constants.Render3D, promise, need_workaround = false, doc = getDocument();
 

@@ -146,7 +146,7 @@ function readStyleFromURL(url) {
   * @example
   * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
   * buildGUI("guiDiv"); */
-function buildGUI(gui_element, gui_kind = "") {
+async function buildGUI(gui_element, gui_kind = "") {
    let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));

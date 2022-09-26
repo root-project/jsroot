@@ -652,7 +652,7 @@ class BasePainter {
 /** @summary Load and initialize JSDOM from nodes
   * @returns {Promise} with d3 selection for d3_body
    * @private */
-function _loadJSDOM() {
+async function _loadJSDOM() {
    return import("jsdom").then(handle => {
 
       if (!internals.nodejs_window) {

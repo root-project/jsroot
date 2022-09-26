@@ -1571,11 +1571,11 @@ class THistPainter extends ObjectPainter {
      * @desc only first (main) painter in list allowed to add interactive functionality
      * Most of interactivity now handled by frame
      * @returns {Promise} for ready */
-   addInteractivity() {
+   async addInteractivity() {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
           fp = ismain || second_axis ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity(!ismain && second_axis) : Promise.resolve(false);
+      return fp ? fp.addInteractivity(!ismain && second_axis) : false;
    }
 
    /** @summary Invoke dialog to enter and modify user range */
