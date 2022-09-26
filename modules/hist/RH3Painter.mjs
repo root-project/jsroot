@@ -527,8 +527,8 @@ class RH3Painter extends RHistPainter {
          let all_bins_buffgeom = new BufferGeometry();
 
          // Create mesh from bin buffergeometry
-         all_bins_buffgeom.setAttribute('position', new BufferAttribute( bin_verts[nseq], 3 ) );
-         all_bins_buffgeom.setAttribute('normal', new BufferAttribute( bin_norms[nseq], 3 ) );
+         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
 
          if (use_colors) fillcolor = palette.getColor(ncol);
 
