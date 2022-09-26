@@ -293,7 +293,7 @@ function setDefaultDrawOpt(classname, opt) {
   * let file = await openFile("https://root.cern/js/files/hsimple.root");
   * let obj = await file.readObject("hpxpy;1");
   * await draw("drawing", obj, "colz;logx;gridx;gridy"); */
-function draw(dom, obj, opt) {
+async function draw(dom, obj, opt) {
 
    if (!obj || (typeof obj !== 'object'))
       return Promise.reject(Error('not an object in draw call'));
@@ -316,7 +316,7 @@ function draw(dom, obj, opt) {
       return Promise.reject(Error(`Object of ${type_info} cannot be shown with draw`));
 
    if (handle.dummy)
-      return Promise.resolve(null);
+      return null;
 
    if (handle.draw_field && obj[handle.draw_field])
       return draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
@@ -410,7 +410,7 @@ function draw(dom, obj, opt) {
   * @desc If drawing was not done before, it will be performed with {@link draw}.
   * Otherwise drawing content will be updated
   * @public */
-function redraw(dom, obj, opt) {
+async function redraw(dom, obj, opt) {
 
    if (!obj || (typeof obj !== 'object'))
       return Promise.reject(Error('not an object in redraw'));

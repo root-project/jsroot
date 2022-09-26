@@ -2032,7 +2032,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
 /** @summary Reads header envelope, determines zipped size and unzip content
   * @returns {Promise} with unzipped content
   * @private */
-function R__unzip(arr, tgtsize, noalert, src_shift) {
+async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
    const HDRSIZE = 9, totallen = arr.byteLength,
         getChar = o => String.fromCharCode(arr.getUint8(o)),
@@ -2604,6 +2604,7 @@ class TBuffer {
   */
 
 class TDirectory {
+
    /** @summary constructor */
    constructor(file, dirname, cycle) {
       this.fFile = file;
@@ -2652,13 +2653,14 @@ class TDirectory {
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
 
-   /** @summary Read list of keys in directory  */
-   readKeys(objbuf) {
+   /** @summary Read list of keys in directory
+     * @returns {Promise} with TDirectory object */
+   async readKeys(objbuf) {
 
       objbuf.classStreamer(this, 'TDirectory');
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
-         return Promise.resolve(this);
+         return this;
 
       return this.fFile.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          // Read keys of the top directory
@@ -2765,10 +2767,10 @@ class TFile {
    /** @summary read buffer(s) from the file
     * @returns {Promise} with read buffers
     * @private */
-   readBuffer(place, filename, progress_callback) {
+   async readBuffer(place, filename, progress_callback) {
 
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
-         return Promise.resolve(this.fFileContent.extract(place));
+         return this.fFileContent.extract(place);
 
       let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
@@ -3737,13 +3739,13 @@ class TNodejsFile extends TFile {
 
 class FileProxy {
 
-   openFile() { return Promise.resolve(false); }
+   async openFile() { return false; }
 
    getFileName() { return ""; }
 
    getFileSize() { return 0; }
 
-   readBuffer(/*pos, sz*/) { return Promise.resolve(null); }
+   async readBuffer(/*pos, sz*/) { return null; }
 
 } // class FileProxy
 

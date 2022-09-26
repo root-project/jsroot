@@ -1496,7 +1496,7 @@ function detectBranchMemberClass(brlst, prefix, start) {
   * @param {number} [args.firstentry] - first entry to process, 0 when not specified
   * @param {number} [args.numentries] - number of entries to process, all when not specified
   * @returns {Promise} with TSelector instance */
-function treeProcess(tree, selector, args) {
+async function treeProcess(tree, selector, args) {
    if (!args) args = {};
 
    if (!selector || !tree.$file || !selector.numBranches()) {
@@ -2526,7 +2526,7 @@ function treeProcess(tree, selector, args) {
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with argument { obj: draw_object, opt: draw_options }
   * @returns {Promise} with object like { obj: draw_object, opt: draw_options } */
-function treeDraw(tree, args) {
+async function treeDraw(tree, args) {
 
    if (typeof args === 'string') args = { expr: args };
 

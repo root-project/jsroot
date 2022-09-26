@@ -378,7 +378,7 @@ function getDocument() {
   * @desc Replacement for eval
   * @returns {Promise} when code is injected
   * @private */
-function injectCode(code) {
+async function injectCode(code) {
    if (nodejs) {
       let name, fs;
       return import('tmp').then(tmp => {
@@ -396,7 +396,7 @@ function injectCode(code) {
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (scripts[n].innerHTML == code)
-            return Promise.resolve(true);
+            return true;
 
       let promise = code.indexOf("JSROOT.require") >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
@@ -411,15 +411,15 @@ function injectCode(code) {
       });
    }
 
-   return Promise.resolve(false);
+   return false;
 }
 
 /** @summary Load script or CSS file into the browser
   * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
   * @returns {Promise} */
-function loadScript(url) {
+async function loadScript(url) {
    if (!url)
-      return Promise.resolve(true);
+      return true;
 
    if ((typeof url == 'string') && (url.indexOf(";") >= 0))
       url = url.split(";");
@@ -443,7 +443,7 @@ function loadScript(url) {
 
    if (nodejs) {
       if (isstyle)
-         return Promise.resolve(null);
+         return null;
       if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
          return httpRequest(url, "text").then(code => injectCode(code));
 
@@ -461,14 +461,14 @@ function loadScript(url) {
       for (let n = 0; n < styles.length; ++n) {
          if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
          if (match_url(styles[n].href))
-            return Promise.resolve(true);
+            return true;
       }
 
    } else {
       let scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (match_url(scripts[n].src))
-            return Promise.resolve(true);
+            return true;
    }
 
    if (isstyle) {
@@ -482,9 +482,9 @@ function loadScript(url) {
       element.setAttribute("src", url);
    }
 
-   return new Promise((resolve, reject) => {
-      element.onload = () => resolve(true);
-      element.onerror = () => { element.remove(); reject(Error(`Fail to load ${url}`)); };
+   return new Promise((resolveFunc, rejectFunc) => {
+      element.onload = () => resolveFunc(true);
+      element.onerror = () => { element.remove(); rejectFunc(Error(`Fail to load ${url}`)); };
       document.head.appendChild(element);
    });
 }
