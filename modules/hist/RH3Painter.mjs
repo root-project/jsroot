@@ -198,7 +198,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Try to draw 3D histogram as scatter plot
      * @desc If there are too many points, returns promise with false */
-   draw3DScatter(handle) {
+   async draw3DScatter(handle) {
 
       let histo = this.getHisto(),
           main = this.getFramePainter(),
@@ -208,7 +208,7 @@ class RH3Painter extends RHistPainter {
           i, j, k, bin_content;
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
-         return Promise.resolve(true);
+         return true;
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -227,7 +227,7 @@ class RH3Painter extends RHistPainter {
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000))
-         return Promise.resolve(false);
+         return false;
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,

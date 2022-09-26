@@ -161,7 +161,7 @@ class TGraph2DPainter extends ObjectPainter {
           step = 1;
 
       if (!graph || !main || !fp || !fp.mode3d)
-         return Promise.resolve(this);
+         return this;
 
       let countSelected = (zmin, zmax) => {
          let cnt = 0;

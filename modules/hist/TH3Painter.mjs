@@ -181,7 +181,7 @@ class TH3Painter extends THistPainter {
 
    /** @summary draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed */
-   draw3DScatter() {
+   async draw3DScatter() {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
@@ -194,7 +194,7 @@ class TH3Painter extends THistPainter {
           i, j, k, bin_content;
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
-         return Promise.resolve(true);
+         return true;
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -277,10 +277,10 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary Drawing of 3D histogram */
-   draw3DBins() {
+   async draw3DBins() {
 
       if (!this.draw_content)
-         return Promise.resolve(false);
+         return false;
 
       let box_option = this.options.Box ? this.options.BoxStyle : 0;
 
@@ -369,13 +369,12 @@ class TH3Painter extends THistPainter {
           k2 = this.getSelectIndex("z", "right", 0);
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
-         return Promise.resolve(false);
+         return false;
 
       let scalex = (main.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - main.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
           scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
-          scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
-
-      let nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [],
+          scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1),
+          nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [],
           cntr = use_colors ? this.getContour() : null,
           palette = use_colors ? this.getHistPalette() : null;
 
@@ -582,11 +581,11 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      return Promise.resolve(true);
+      return true;
    }
 
    /** @summary Redraw TH3 histogram */
-   redraw(reason) {
+   async redraw(reason) {
 
       let main = this.getFramePainter(), // who makes axis and 3D drawing
           histo = this.getHisto(),

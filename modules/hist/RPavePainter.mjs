@@ -17,7 +17,7 @@ class RPavePainter extends RObjectPainter {
 
    /** @summary Draw pave content
      * @desc assigned depending on pave class */
-   drawContent() { return Promise.resolve(this); }
+   async drawContent() { return this; }
 
    /** @summary Draw pave */
    async drawPave() {
@@ -39,7 +39,7 @@ class RPavePainter extends RObjectPainter {
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
       if (!visible)
-         return Promise.resolve(this);
+         return this;
 
       this.createv7AttLine("border_");
 
@@ -161,7 +161,7 @@ class RPavePainter extends RObjectPainter {
 class RLegendPainter extends RPavePainter {
 
    /** @summary draw RLegend content */
-   drawContent() {
+   async drawContent() {
       let legend     = this.getObject(),
           textFont   = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
           width      = this.pave_width,
@@ -171,12 +171,12 @@ class RLegendPainter extends RPavePainter {
 
       if (legend.fTitle) nlines++;
 
-      if (!nlines || !pp) return Promise.resolve(this);
+      if (!nlines || !pp) return this;
 
       let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
       textFont.setSize(height/(nlines * 1.2));
-      this.startTextDrawing(textFont, 'font' );
+      this.startTextDrawing(textFont, 'font');
 
       if (legend.fTitle) {
          this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: legend.fTitle });
@@ -344,11 +344,11 @@ class RHistStatsPainter extends RPavePainter {
    }
 
    /** @summary Draw content */
-   drawContent() {
+   async drawContent() {
       if (this.fillStatistic())
          return this.drawStatistic(this.stats_lines);
 
-      return Promise.resolve(this);
+      return this;
    }
 
    /** @summary Change mask */
@@ -382,14 +382,14 @@ class RHistStatsPainter extends RPavePainter {
    }
 
    /** @summary Draw statistic */
-   drawStatistic(lines) {
+   async drawStatistic(lines) {
 
       let textFont = this.v7EvalFont("stats_text", { size: 12, color: "black", align: 22 }),
           first_stat = 0, num_cols = 0, maxlen = 0,
           width = this.pave_width,
           height = this.pave_height;
 
-      if (!lines) return Promise.resolve(this);
+      if (!lines) return this;
 
       let nlines = lines.length;
       // adjust font size
@@ -474,7 +474,7 @@ class RHistStatsPainter extends RPavePainter {
    }
 
    /** @summary Redraw stats box */
-   redraw(reason) {
+   async redraw(reason) {
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) && this.v7NormalMode()) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
