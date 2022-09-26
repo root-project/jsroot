@@ -1202,7 +1202,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
      * @returns {Promise} when text drawing completed
      * @protected */
-   finishTextDrawing(draw_g, try_optimize) {
+   async finishTextDrawing(draw_g, try_optimize) {
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty())
          return Promise.resolve(false);
@@ -1230,7 +1230,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Fill object menu in web canvas
      * @private */
-   fillObjectExecMenu(menu, kind) {
+   async fillObjectExecMenu(menu, kind) {
 
       if (this._userContextMenuFunc)
          return this._userContextMenuFunc(menu, kind);
@@ -1422,7 +1422,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Provide projection areas
      * @param kind - "X", "Y" or ""
      * @private */
-   provideSpecialDrawArea(kind) {
+   async provideSpecialDrawArea(kind) {
       if (kind == this._special_draw_area)
          return Promise.resolve(true);
 
@@ -1435,7 +1435,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Provide projection areas
      * @param kind - "X", "Y" or ""
      * @private */
-   drawInSpecialArea(obj, opt) {
+   async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
       if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
          return canp.drawProjection(this._special_draw_area, obj, opt);
@@ -1483,7 +1483,7 @@ function drawRawText(dom, txt /*, opt*/) {
       return true;
    }
 
-   painter.drawText = function() {
+   painter.drawText = async function() {
       let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = "<undefined>";
 

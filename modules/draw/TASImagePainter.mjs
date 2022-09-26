@@ -45,7 +45,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Create url using image buffer
      * @private */
-   makeUrlFromImageBuf(obj, fp) {
+   async makeUrlFromImageBuf(obj, fp) {
 
       let nlevels = 1000;
       this.rgba = this.createRGBA(nlevels); // precaclucated colors
@@ -123,7 +123,8 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
-   makeUrlFromPngBuf(obj) {
+   /** @summary Produce data url from png data */
+   async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = "";
 
       if (typeof buf == "string")
@@ -136,7 +137,7 @@ class TASImagePainter extends ObjectPainter {
    }
 
    /** @summary Draw image */
-   drawImage() {
+   async drawImage() {
       let obj = this.getObject(),
           fp = this.getFramePainter(),
           rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
@@ -232,7 +233,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Draw color palette
      * @private */
-   drawColorPalette(enabled, can_move) {
+   async drawColorPalette(enabled, can_move) {
 
       if (!this.isMainPainter())
          return Promise.resolve(null);

@@ -854,7 +854,7 @@ let _mj_loading;
 /** @summary Load MathJax functionality,
   * @desc one need not only to load script but wait for initialization
   * @private */
-function loadMathjax() {
+async function loadMathjax() {
    let loading = (_mj_loading !== undefined);
 
    if (!loading && (typeof globalThis.MathJax != "undefined"))

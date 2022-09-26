@@ -7,13 +7,15 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 
 class TWebPaintingPainter extends ObjectPainter {
 
+   /** @summary Update TWebPainting object */
    updateObject(obj) {
       if (!this.matchObjectType(obj)) return false;
       this.assignObject(obj);
       return true;
    }
 
-   redraw() {
+   /** @summary draw TWebPainting object */
+   async redraw() {
 
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
 

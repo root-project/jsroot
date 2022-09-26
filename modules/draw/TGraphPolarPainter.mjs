@@ -293,7 +293,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphPolargram */
-   static draw(dom, polargram /*, opt*/) {
+   static async draw(dom, polargram /*, opt*/) {
 
       let main = getElementMainPainter(dom);
       if (main) {
