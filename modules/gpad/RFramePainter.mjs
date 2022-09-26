@@ -355,7 +355,7 @@ class RFramePainter extends RObjectPainter {
    async drawAxes() {
 
       if (this.axes_drawn || (this.xmin == this.xmax) || (this.ymin == this.ymax))
-         return Promise.resolve(this.axes_drawn);
+         return this.axes_drawn;
 
       let ticksx = this.v7EvalAttr("ticksX", 1),
           ticksy = this.v7EvalAttr("ticksY", 1),
@@ -825,7 +825,7 @@ class RFramePainter extends RObjectPainter {
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
-      if (this.projection) return Promise.resolve(false);
+      if (this.projection) return false;
 
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
@@ -928,7 +928,7 @@ class RFramePainter extends RObjectPainter {
          }
       }
 
-      if (!changed) return Promise.resolve(false);
+      if (!changed) return false;
 
       if (this.v7NormalMode())
          this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });
@@ -944,7 +944,7 @@ class RFramePainter extends RObjectPainter {
 
       // disable zooming when axis conversion is enabled
       if (this.projection || !this[name+"_handle"] || (indx < 0))
-         return Promise.resolve(false);
+         return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;
 
@@ -993,7 +993,7 @@ class RFramePainter extends RObjectPainter {
          req.values[indx*2] = req.values[indx*2+1] = -1;
       }
 
-      if (!changed) return Promise.resolve(false);
+      if (!changed) return false;
 
       if (this.v7NormalMode())
          this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });

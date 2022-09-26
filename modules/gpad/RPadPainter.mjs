@@ -559,12 +559,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Draw single primitive */
    async drawObject(/*dom, obj, opt*/) {
       console.log('Not possible to draw object without loading of draw.mjs');
-      return Promise.resolve(null);
+      return null;
    }
 
    /** @summary Draw pad primitives
      * @private */
-   drawPrimitives(indx) {
+   async drawPrimitives(indx) {
 
       if (indx === undefined) {
          if (this.iscan)
@@ -586,7 +586,7 @@ class RPadPainter extends RObjectPainter {
             delete this._start_tm;
          }
 
-         return Promise.resolve();
+         return;
       }
 
       // handle used to invoke callback only when necessary
@@ -693,7 +693,7 @@ class RPadPainter extends RObjectPainter {
       let sync_promise = this.syncDraw(reason);
       if (sync_promise === false) {
          console.log('Prevent RPad redrawing');
-         return Promise.resolve(false);
+         return false;
       }
 
       let showsubitems = true;
@@ -706,7 +706,7 @@ class RPadPainter extends RObjectPainter {
             if (isPromise(res))
                return res.then(() => redrawNext(indx));
          }
-         return Promise.resolve(true);
+         return true;
       };
 
       return sync_promise.then(() => {
@@ -882,7 +882,7 @@ class RPadPainter extends RObjectPainter {
       if (!lst || indx >= lst.length) {
          delete this._snaps_map;
          delete this._auto_color_cnt;
-         return Promise.resolve(this);
+         return this;
       }
 
       let snap = lst[indx],
@@ -1033,7 +1033,7 @@ class RPadPainter extends RObjectPainter {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
       if (!snap || !snap.fPrimitives)
-         return Promise.resolve(this);
+         return this;
 
       // for the moment only window size attributes are provided
       // let padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
@@ -1142,7 +1142,7 @@ class RPadPainter extends RObjectPainter {
    async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa_func("dummy PDF file"));
+         return btoa_func("dummy PDF file");
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
@@ -1151,7 +1151,7 @@ class RPadPainter extends RObjectPainter {
             return (separ > 0) ? res.slice(separ+7) : "";
          });
 
-      return Promise.resolve("");
+      return "";
    }
 
    /** @summary Show context menu for specified item
@@ -1214,7 +1214,7 @@ class RPadPainter extends RObjectPainter {
           items = []; // keep list of replaced elements, which should be moved back at the end
 
       if (elem.empty())
-         return Promise.resolve("");
+         return "";
 
       if (!use_frame) // do not make transformations for the frame
       painter.forEachPainterInPad(pp => {
@@ -1312,7 +1312,7 @@ class RPadPainter extends RObjectPainter {
 
       if (file_format == "svg") {
          reconstruct();
-         return Promise.resolve(svg); // return SVG file as is
+         return svg; // return SVG file as is
       }
 
       let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',

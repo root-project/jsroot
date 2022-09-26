@@ -752,7 +752,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Draw axis title */
    async drawTitle(axis_g, side, lgaps) {
       if (!this.fTitle)
-         return Promise.resolve(this);
+         return this;
 
       let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;

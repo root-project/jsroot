@@ -77,7 +77,7 @@ class TCanvasPainter extends TPadPainter {
    async changeLayout(layout_kind, mainid) {
       let current = this.getLayoutKind();
       if (current == layout_kind)
-         return Promise.resolve(true);
+         return true;
 
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
@@ -121,7 +121,7 @@ class TCanvasPainter extends TPadPainter {
 
       // resize main drawing and let draw extras
       resize(main.node());
-      return Promise.resolve(true);
+      return true;
    }
 
    /** @summary Toggle projection
@@ -154,7 +154,7 @@ class TCanvasPainter extends TPadPainter {
    async drawProjection(kind, hist, hopt) {
 
       if (!this.proj_painter)
-         return Promise.resolve(false); // ignore drawing if projection not configured
+         return false; // ignore drawing if projection not configured
 
       if (hopt === undefined) hopt = "hist";
 

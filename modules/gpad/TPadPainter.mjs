@@ -845,7 +845,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Draw single primitive */
    async drawObject(/* dom, obj, opt */) {
       console.log('Not possible to draw object without loading of draw.mjs');
-      return Promise.resolve(null);
+      return null;
    }
 
    /** @summary Draw pad primitives
