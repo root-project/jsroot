@@ -85,7 +85,7 @@ async function treeDrawProgress(obj, final) {
       if (isBatchMode()) {
          let painter = new BasePainter(this.drawid);
          painter.selectDom().property("_json_object_", obj);
-         return Promise.resolve(painter);
+         return painter;
       }
       if (typeof internals.drawInspector == 'function')
          return internals.drawInspector(this.drawid, obj);
@@ -454,7 +454,7 @@ async function drawTree(dom, obj, opt) {
    } else if (args.expr || args.branch) {
       pr = treeDraw(tree, args);
    } else
-      return Promise.resolve(painter);
+      return painter;
 
    return pr.then(res => args.progress(res, true));
 }

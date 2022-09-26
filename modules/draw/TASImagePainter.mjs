@@ -133,7 +133,7 @@ class TASImagePainter extends ObjectPainter {
          for (let k = 0; k < buf.length; ++k)
             pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
 
-      return Promise.resolve({ url: "data:image/png;base64," + btoa_func(pngbuf), constRatio: true });
+      return { url: "data:image/png;base64," + btoa_func(pngbuf), constRatio: true };
    }
 
    /** @summary Draw image */
@@ -236,7 +236,7 @@ class TASImagePainter extends ObjectPainter {
    async drawColorPalette(enabled, can_move) {
 
       if (!this.isMainPainter())
-         return Promise.resolve(null);
+         return null;
 
       if (!this.draw_palette) {
          let pal = create('TPave');
@@ -257,7 +257,7 @@ class TASImagePainter extends ObjectPainter {
             pal_painter.Enabled = false;
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
-         return Promise.resolve(null);
+         return null;
       }
 
       let frame_painter = this.getFramePainter();

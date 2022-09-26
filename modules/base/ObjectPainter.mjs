@@ -1205,7 +1205,7 @@ class ObjectPainter extends BasePainter {
    async finishTextDrawing(draw_g, try_optimize) {
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty())
-         return Promise.resolve(false);
+         return false;
 
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
 
@@ -1238,7 +1238,7 @@ class ObjectPainter extends BasePainter {
       let canvp = this.getCanvPainter();
 
       if (!this.snapid || !canvp || canvp?._readonly || !canvp?._websocket)
-         return Promise.resolve(menu);
+         return menu;
 
       function DoExecMenu(arg) {
          let execp = this.exec_painter || this,
@@ -1424,7 +1424,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind == this._special_draw_area)
-         return Promise.resolve(true);
+         return true;
 
       return this.getCanvPainter().toggleProjection(kind).then(() => {
          this._special_draw_area = kind;
@@ -1440,7 +1440,7 @@ class ObjectPainter extends BasePainter {
       if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
          return canp.drawProjection(this._special_draw_area, obj, opt);
 
-      return Promise.resolve(false);
+      return false;
    }
 
    /** @summary Get tooltip for painter and specified event position
@@ -1507,7 +1507,7 @@ function drawRawText(dom, txt /*, opt*/) {
       if (mathjax)
          typesetMathjax(frame.node());
 
-      return Promise.resolve(this);
+      return this;
    }
 
    return painter.drawText();

@@ -3064,7 +3064,7 @@ class TGeoPainter extends ObjectPainter {
    async drawExtras(obj, itemname, add_objects) {
       // if object was hidden via menu, do not redraw it with next draw call
       if (!obj?._typename || (!add_objects && obj.$hidden_via_menu))
-         return Promise.resolve(false);
+         return false;
 
       let do_render = false;
       if (add_objects === undefined) {
@@ -3279,7 +3279,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Drawing different hits types like TPolyMarker3D */
    async drawHit(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0))
-         return Promise.resolve(false);
+         return false;
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
@@ -3373,7 +3373,7 @@ class TGeoPainter extends ObjectPainter {
          result.prefix = result.obj.fName;
 
       if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
-         return Promise.resolve(result);
+         return result;
 
       let mgr = {
             GetVolume: name => {
@@ -3469,7 +3469,7 @@ class TGeoPainter extends ObjectPainter {
 
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
-         return Promise.resolve(null);
+         return null;
 
       if (name_prefix == "__geom_viewer_append__") {
          this._new_append_nodes = draw_obj;
@@ -4220,7 +4220,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!this.ctrl) {
          console.warn('ctrl object does not exist in completeDraw - something went wrong');
-         return Promise.resolve(this);
+         return this;
       }
 
       let promise = Promise.resolve(true);
