@@ -9,6 +9,7 @@
   "type": "module",
   "main": "./build/jsroot.js",
   "module": "./modules/main.mjs",
+  "types": "./types.d.ts",
   "exports": {
     ".": "./modules/main.mjs",
     "./core": "./modules/core.mjs",
