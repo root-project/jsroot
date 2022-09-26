@@ -113,41 +113,40 @@ function buildCompositeVolume(comp, maxlvl, side) {
   * @private */
 function createList(parent, lst, name, title) {
 
-   if (!lst || !('arr' in lst) || (lst.arr.length==0)) return;
+   if (!lst?.arr?.length) return;
 
-   let item = {
+   let list_item = {
        _name: name,
        _kind: "ROOT.TList",
        _title: title,
        _more: true,
        _geoobj: lst,
        _parent: parent,
+       _get(item /*, itemname */) {
+          return Promise.resolve(item._geoobj || null);
+       },
+       _expand(node, lst) {
+          // only childs
+
+          if ('fVolume' in lst)
+             lst = lst.fVolume.fNodes;
+
+          if (!('arr' in lst)) return false;
+
+          node._childs = [];
+
+          checkDuplicates(null, lst.arr);
+
+          for (let n in lst.arr)
+             createItem(node, lst.arr[n]);
+
+          return true;
+       }
    };
 
-   item._get = async function(item /*, itemname */) {
-      return Promise.resolve(item._geoobj || null);
-   };
-
-   item._expand = function(node, lst) {
-      // only childs
-
-      if ('fVolume' in lst)
-         lst = lst.fVolume.fNodes;
-
-      if (!('arr' in lst)) return false;
-
-      node._childs = [];
-
-      checkDuplicates(null, lst.arr);
-
-      for (let n in lst.arr)
-         createItem(node, lst.arr[n]);
-
-      return true;
-   };
-
-   if (!parent._childs) parent._childs = [];
-   parent._childs.push(item);
+   if (!parent._childs)
+      parent._childs = [];
+   parent._childs.push(list_item);
 }
 
 
