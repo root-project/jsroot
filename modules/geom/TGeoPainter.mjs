@@ -124,7 +124,7 @@ function createList(parent, lst, name, title) {
        _parent: parent,
    };
 
-   item._get = function(item /*, itemname */) {
+   item._get = async function(item /*, itemname */) {
       return Promise.resolve(item._geoobj || null);
    };
 
@@ -2946,7 +2946,7 @@ class TGeoPainter extends ObjectPainter {
      * Function has to return Promise with objects to draw on geometry
      * By default function with name "extract_geo_tracks" is checked
      * @returns {Promise} handling of drop operation */
-   performDrop(obj, itemname, hitem, opt) {
+   async performDrop(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
          // drop tree means function call which must extract tracks from provided tree
@@ -3062,7 +3062,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw extra object like tracks
      * @returns {Promise} for ready */
-   drawExtras(obj, itemname, add_objects) {
+   async drawExtras(obj, itemname, add_objects) {
       // if object was hidden via menu, do not redraw it with next draw call
       if (!obj?._typename || (!add_objects && obj.$hidden_via_menu))
          return Promise.resolve(false);
@@ -3278,7 +3278,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Drawing different hits types like TPolyMarker3D */
-   drawHit(hit, itemname) {
+   async drawHit(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0))
          return Promise.resolve(false);
 
@@ -3366,7 +3366,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Process script option - load and execute some gGeoManager-related calls */
-   loadMacro(script_name) {
+   async loadMacro(script_name) {
 
       let result = { obj: this.getGeometry(), prefix: "" };
 
@@ -3466,7 +3466,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Prepare drawings
      * @desc Return value used as promise for painter */
-   prepareObjectDraw(draw_obj, name_prefix) {
+   async prepareObjectDraw(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
@@ -4215,7 +4215,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Completes drawing procedure
      * @returns {Promise} for ready */
-   completeDraw(close_progress) {
+   async completeDraw(close_progress) {
 
       let first_time = false, full_redraw = false, check_extras = true;
 

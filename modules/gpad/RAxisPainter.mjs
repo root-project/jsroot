@@ -750,7 +750,7 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Draw axis title */
-   drawTitle(axis_g, side, lgaps) {
+   async drawTitle(axis_g, side, lgaps) {
       if (!this.fTitle)
          return Promise.resolve(this);
 

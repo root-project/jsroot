@@ -59,7 +59,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Changes layout
      * @returns {Promise} indicating when finished */
-   changeLayout(layout_kind, mainid) {
+   async changeLayout(layout_kind, mainid) {
       let current = this.getLayoutKind();
       if (current == layout_kind)
          return Promise.resolve(true);
@@ -135,14 +135,14 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Draw projection for specified histogram
      * @private */
-   drawProjection( /*kind,hist*/) {
+   async drawProjection( /*kind,hist*/) {
       // dummy for the moment
       return Promise.resolve(false);
    }
 
    /** @summary Draw in side panel
      * @private */
-   drawInSidePanel(canv, opt) {
+   async drawInSidePanel(canv, opt) {
       let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
       return this.drawObject(side.node(), canv, opt);
@@ -423,7 +423,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary Show specified section in canvas */
-   showSection(that, on) {
+   async showSection(that, on) {
       switch(that) {
          case "Menu": break;
          case "StatusBar": break;
@@ -522,7 +522,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Function used to activate GED
      * @returns {Promise} when GED is there
      * @private */
-   activateGed(objpainter, kind, mode) {
+   async activateGed(objpainter, kind, mode) {
       if (this.testUI5() || !this.brlayout)
          return Promise.resolve(false);
 
@@ -635,7 +635,7 @@ function drawRPadSnapshot(dom, snap /*, opt*/) {
   * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
   * @returns {Promise} for ready */
-function ensureRCanvas(painter, frame_kind) {
+async function ensureRCanvas(painter, frame_kind) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 

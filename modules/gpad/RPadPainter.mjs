@@ -557,7 +557,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Draw single primitive */
-   drawObject(dom, obj, opt) {
+   async drawObject(/*dom, obj, opt*/) {
       console.log('Not possible to draw object without loading of draw.mjs');
       return Promise.resolve(null);
    }
@@ -688,7 +688,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Redraw pad means redraw ourself
      * @returns {Promise} when redrawing ready */
-   redrawPad(reason) {
+   async redrawPad(reason) {
 
       let sync_promise = this.syncDraw(reason);
       if (sync_promise === false) {
@@ -865,7 +865,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Function called when drawing next snapshot from the list
      * @returns {Promise} with pad painter when ready
      * @private */
-   drawNextSnap(lst, indx) {
+   async drawNextSnap(lst, indx) {
 
       if (indx === undefined) {
          indx = -1;
@@ -1029,7 +1029,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * @returns {Promise} with pad painter*/
-   redrawPadSnap(snap) {
+   async redrawPadSnap(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
       if (!snap || !snap.fPrimitives)
@@ -1139,7 +1139,7 @@ class RPadPainter extends RObjectPainter {
      * @desc Used with web-based canvas to create images for server side
      * @returns {Promise} with image data, coded with btoa() function
      * @private */
-   createImage(format) {
+   async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
          return Promise.resolve(btoa_func("dummy PDF file"));
@@ -1206,7 +1206,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Prodce image for the pad
      * @returns {Promise} with created image */
-   produceImage(full_canvas, file_format) {
+   async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),

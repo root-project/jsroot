@@ -843,7 +843,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Draw single primitive */
-   drawObject(/* dom, obj, opt */) {
+   async drawObject(/* dom, obj, opt */) {
       console.log('Not possible to draw object without loading of draw.mjs');
       return Promise.resolve(null);
    }
@@ -851,7 +851,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Draw pad primitives
      * @returns {Promise} when drawing completed
      * @private */
-   drawPrimitives(indx) {
+   async drawPrimitives(indx) {
 
       if (indx === undefined) {
          if (this.iscan)
@@ -872,7 +872,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          this.confirmDraw();
-         return Promise.resolve();
+         return;
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
@@ -887,15 +887,15 @@ class TPadPainter extends ObjectPainter {
    /** @summary Divide pad on subpads
      * @returns {Promise} when finished
      * @private */
-   divide(nx, ny) {
+   async divide(nx, ny) {
       if (!ny) {
          let ndiv = nx;
-         if (ndiv < 2) return Promise.resolve(this);
+         if (ndiv < 2) return this;
          nx = ny = Math.round(Math.sqrt(ndiv));
          if (nx*ny < ndiv) nx += 1;
       }
 
-      if (nx*ny < 2) return Promise.resolve(this);
+      if (nx*ny < 2) return this;
 
       let xmargin = 0.01, ymargin = 0.01,
           dy = 1/ny, dx = 1/nx, n = 0, subpads = [];
@@ -930,7 +930,7 @@ class TPadPainter extends ObjectPainter {
 
       const drawNext = () => {
          if (subpads.length == 0)
-            return Promise.resolve(this);
+            return this;
          return this.drawObject(this.getDom(), subpads.shift()).then(drawNext);
       };
 
@@ -1070,12 +1070,12 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Redraw pad means redraw ourself
      * @returns {Promise} when redrawing ready */
-   redrawPad(reason) {
+   async redrawPad(reason) {
 
       let sync_promise = this.syncDraw(reason);
       if (sync_promise === false) {
-         console.log('Prevent redrawing', this.pad.fName);
-         return Promise.resolve(false);
+         console.log(`Prevent redrawing of ${this.pad.fName}`);
+         return false;
       }
 
       let showsubitems = true;
@@ -1088,7 +1088,7 @@ class TPadPainter extends ObjectPainter {
             if (isPromise(res))
                return res.then(() => redrawNext(indx));
          }
-         return Promise.resolve(true);
+         return true;
       };
 
       return sync_promise.then(() => {
@@ -1242,7 +1242,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Function called when drawing next snapshot from the list
      * @returns {Promise} for drawing of the snap
      * @private */
-   drawNextSnap(lst, indx) {
+   async drawNextSnap(lst, indx) {
 
       if (indx === undefined) {
          indx = -1;
@@ -1254,7 +1254,7 @@ class TPadPainter extends ObjectPainter {
 
       if (!lst || (indx >= lst.length)) {
          delete this._snaps_map;
-         return Promise.resolve(this);
+         return this;
       }
 
       let snap = lst[indx],
@@ -1370,9 +1370,11 @@ class TPadPainter extends ObjectPainter {
      * @private */
    findSnap(snapid) {
 
-      if (this.snapid === snapid) return this;
+      if (this.snapid === snapid)
+         return this;
 
-      if (!this.painters) return null;
+      if (!this.painters)
+         return null;
 
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
@@ -1395,9 +1397,9 @@ class TPadPainter extends ObjectPainter {
      * in ROOT6 it also includes primitives, but we ignore them
      * @returns {Promise} with pad painter when drawing completed
      * @private */
-   redrawPadSnap(snap) {
+   async redrawPadSnap(snap) {
       if (!snap || !snap.fPrimitives)
-         return Promise.resolve(this);
+         return this;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
       this._readonly = (snap.fReadOnly === undefined) ? true : snap.fReadOnly; // readonly flag
@@ -1553,19 +1555,19 @@ class TPadPainter extends ObjectPainter {
      * @desc Used with web-based canvas to create images for server side
      * @returns {Promise} with image data, coded with btoa() function
      * @private */
-   createImage(format) {
+   async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
       if (format == "pdf")
-         return Promise.resolve(btoa_func("dummy PDF file"));
+         return btoa_func("dummy PDF file");
 
       if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
-            if (!res || (format=="svg")) return res;
+            if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ>0) ? res.slice(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : "";
          });
 
-      return Promise.resolve("");
+      return "";
    }
 
    /** @summary Collects pad information for TWebCanvas
@@ -1723,7 +1725,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Prodce image for the pad
      * @returns {Promise} with created image */
-   produceImage(full_canvas, file_format) {
+   async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -1732,7 +1734,7 @@ class TPadPainter extends ObjectPainter {
           active_pp = null;
 
       if (elem.empty())
-         return Promise.resolve("");
+         return "";
 
       painter.forEachPainterInPad(pp => {
 
@@ -1838,7 +1840,7 @@ class TPadPainter extends ObjectPainter {
 
       if (file_format == "svg") {
          reconstruct();
-         return Promise.resolve(svg); // return SVG file as is
+         return svg; // return SVG file as is
       }
 
       let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
