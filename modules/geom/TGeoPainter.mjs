@@ -4628,7 +4628,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
   /** @summary draw TGeo object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       if (!obj) return null;
 
       let shape = null, extras = null, extras_path = "", is_eve = false;

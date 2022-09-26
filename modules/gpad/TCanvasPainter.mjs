@@ -658,7 +658,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary draw TCanvas */
-   static draw(dom, can, opt) {
+   static async draw(dom, can, opt) {
       let nocanvas = !can;
       if (nocanvas) can = create("TCanvas");
 

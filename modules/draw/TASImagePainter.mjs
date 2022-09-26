@@ -337,7 +337,7 @@ class TASImagePainter extends ObjectPainter {
    }
 
    /** @summary Draw TASImage object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       let painter = new TASImagePainter(dom, obj, opt);
       painter.decodeOptions(opt);
       return ensureTCanvas(painter, false)

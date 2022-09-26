@@ -20,7 +20,7 @@ class RPavePainter extends RObjectPainter {
    drawContent() { return Promise.resolve(this); }
 
    /** @summary Draw pave */
-   drawPave() {
+   async drawPave() {
 
       let rect = this.getPadPainter().getPadRect(),
           fp = this.getFramePainter();
@@ -140,12 +140,12 @@ class RPavePainter extends RObjectPainter {
    }
 
    /** @summary Redraw RPave object */
-   redraw(/*reason*/) {
+   async redraw(/*reason*/) {
       return this.drawPave();
    }
 
    /** @summary draw RPave object */
-   static draw(dom, pave, opt) {
+   static async draw(dom, pave, opt) {
       let painter = new RPavePainter(dom, pave, opt, "pave");
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
@@ -227,7 +227,7 @@ class RLegendPainter extends RPavePainter {
    }
 
    /** @summary draw RLegend object */
-   static draw(dom, legend, opt) {
+   static async draw(dom, legend, opt) {
       let painter = new RLegendPainter(dom, legend, opt, "legend");
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
@@ -270,7 +270,7 @@ class RPaveTextPainter extends RPavePainter {
    }
 
    /** @summary draw RPaveText object */
-   static draw(dom, pave, opt) {
+   static async draw(dom, pave, opt) {
       let painter = new RPaveTextPainter(dom, pave, opt, "pavetext");
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
@@ -488,7 +488,7 @@ class RHistStatsPainter extends RPavePainter {
    }
 
    /** @summary draw RHistStats object */
-   static draw(dom, stats, opt) {
+   static async draw(dom, stats, opt) {
       let painter = new RHistStatsPainter(dom, stats, opt, stats);
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }

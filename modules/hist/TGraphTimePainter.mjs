@@ -122,7 +122,7 @@ class TGraphTimePainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphTime object */
-   static draw(dom, gr, opt) {
+   static async draw(dom, gr, opt) {
       if (!gr.fFrame) {
         console.error('Frame histogram not exists');
         return null;

@@ -28,8 +28,9 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
-   /** @summary Draw pave and content */
-   drawPave(arg) {
+   /** @summary Draw pave and content
+     * @return {Promise} */
+   async drawPave(arg) {
 
       this.UseTextColor = false;
 
@@ -1113,7 +1114,7 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary redraw pave object */
-   redraw() {
+   async redraw() {
       return this.drawPave();
    }
 
@@ -1135,7 +1136,7 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Draw TPave */
-   static draw(dom, pave, opt) {
+   static async draw(dom, pave, opt) {
       let painter = new TPavePainter(dom, pave);
 
       return ensureTCanvas(painter, false).then(() => {

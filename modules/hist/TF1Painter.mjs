@@ -343,7 +343,7 @@ class TF1Painter extends ObjectPainter {
    }
 
    /** @summary draw TF1 object */
-   static draw(dom, tf1, opt) {
+   static async draw(dom, tf1, opt) {
       let painter = new TF1Painter(dom, tf1, opt),
           d = new DrawOptions(opt),
           has_main = !!painter.getMainPainter(),

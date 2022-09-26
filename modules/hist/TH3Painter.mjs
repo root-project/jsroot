@@ -710,7 +710,7 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary draw TH3 object */
-   static draw(dom, histo, opt) {
+   static async draw(dom, histo, opt) {
 
       let painter = new TH3Painter(dom, histo);
       painter.mode3d = true;

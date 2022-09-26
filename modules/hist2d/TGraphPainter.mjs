@@ -1446,7 +1446,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary method draws next function from the functions list
      * @returns {Promise} */
-   drawNextFunction(indx) {
+   async drawNextFunction(indx) {
 
       let graph = this.getObject();
 
@@ -1466,14 +1466,14 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Draw axis histogram
      * @private */
-   drawAxisHisto() {
+   async drawAxisHisto() {
       let histo = this.createHistogram();
       return TH1Painter.draw(this.getDom(), histo, this.options.Axis)
    }
 
    /** @summary Draw TGraph
      * @private */
-   static _drawGraph(painter, opt) {
+   static async _drawGraph(painter, opt) {
       painter.decodeOptions(opt, true);
       painter.createBins();
       painter.createStat();
@@ -1497,7 +1497,7 @@ class TGraphPainter extends ObjectPainter {
       }).then(() => painter.drawNextFunction(0));
    }
 
-   static draw(dom, graph, opt) {
+   static async draw(dom, graph, opt) {
       return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }
 

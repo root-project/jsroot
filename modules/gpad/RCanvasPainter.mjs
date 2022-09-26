@@ -596,7 +596,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary draw RCanvas object */
-   static draw(dom, can /*, opt */) {
+   static async draw(dom, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
          can = create("ROOT::Experimental::TCanvas");

@@ -153,7 +153,7 @@ class TGraph2DPainter extends ObjectPainter {
 
    /** @summary Actual drawing of TGraph2D object
      * @returns {Promise} for drawing ready */
-   redraw() {
+   async redraw() {
 
       let main = this.getMainPainter(),
           fp = this.getFramePainter(),
@@ -345,7 +345,7 @@ class TGraph2DPainter extends ObjectPainter {
    }
 
    /** @summary draw TGraph2D object */
-   static draw(dom, gr, opt) {
+   static async draw(dom, gr, opt) {
       let painter = new TGraph2DPainter(dom, gr);
       painter.decodeOptions(opt, gr);
 

@@ -160,7 +160,7 @@ class TWebPaintingPainter extends ObjectPainter {
       return process(-1).then(() => { check_attributes(); return this; });
    }
 
-   static draw(dom, obj) {
+   static async draw(dom, obj) {
       let painter = new TWebPaintingPainter(dom, obj);
       painter.addToPadPrimitives();
       return painter.redraw();

@@ -1539,7 +1539,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary draw RPad object */
-   static draw(dom, pad, opt) {
+   static async draw(dom, pad, opt) {
       let painter = new RPadPainter(dom, pad, false);
       painter.decodeOptions(opt);
 

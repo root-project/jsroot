@@ -732,7 +732,7 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary draw RH3 object */
-  static draw(dom, histo /*, opt*/) {
+  static async draw(dom, histo /*, opt*/) {
       let painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 

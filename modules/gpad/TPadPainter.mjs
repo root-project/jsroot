@@ -2039,7 +2039,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary draw TPad object */
-   static draw(dom, pad, opt) {
+   static async draw(dom, pad, opt) {
       let painter = new TPadPainter(dom, pad, false);
       painter.decodeOptions(opt);
 

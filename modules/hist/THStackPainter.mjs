@@ -348,7 +348,7 @@ class THStackPainter extends ObjectPainter {
    }
 
    /** @summary draw THStack object */
-   static draw(dom, stack, opt) {
+   static async draw(dom, stack, opt) {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed
 

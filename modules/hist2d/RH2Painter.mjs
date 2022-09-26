@@ -1676,7 +1676,9 @@ class RH2Painter extends RHistPainter {
       return this.callDrawFunc(reason);
    }
 
-   static _draw(painter, opt) {
+   /** @summary Draw histogram using painter instance
+     * @private */
+   static async _draw(painter /*, opt*/) {
       return ensureRCanvas(painter).then(() => {
 
          painter.setAsMainPainter();
@@ -1718,7 +1720,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary draw RH2 object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       // create painter and add it to canvas
       return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }

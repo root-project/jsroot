@@ -516,7 +516,7 @@ class TGraphPolarPainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphPolar */
-   static draw(dom, graph, opt) {
+   static async draw(dom, graph, opt) {
       let painter = new TGraphPolarPainter(dom, graph);
       painter.decodeOptions(opt);
 
