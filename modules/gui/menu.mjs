@@ -56,7 +56,7 @@ class JSRootMenu {
 
    native() { return false; }
 
-   load() { return Promise.resolve(this); }
+   async load() { return this; }
 
    /** @summary Returns object with mouse event position when context menu was actiavted
      * @desc Return object will have members "clientX" and "clientY" */
@@ -983,7 +983,7 @@ class StandaloneMenu extends JSRootMenu {
    native() { return true; }
 
    /** @summary Load required modules, noop for that menu class */
-   load() { return Promise.resolve(this); }
+   async load() { return this; }
 
    /** @summary Add menu item
      * @param {string} name - item name
@@ -1237,7 +1237,7 @@ class StandaloneMenu extends JSRootMenu {
    }
 
    /** @summary Show standalone menu */
-   show(event) {
+   async show(event) {
       this.remove();
 
       if (!event && this.show_evnt) event = this.show_evnt;
@@ -1251,7 +1251,7 @@ class StandaloneMenu extends JSRootMenu {
 
       this.element.setAttribute('id', this.menuname);
 
-      return Promise.resolve(this);
+      return this;
    }
 
    /** @summary Run modal elements with standalone code */
