@@ -1246,7 +1246,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Draw histogram title
      * @returns {Promise} with painter */
-   drawHistTitle() {
+   async drawHistTitle() {
 
       // case when histogram drawn over other histogram (same option)
       if (!this.isMainPainter() || this.options.Same)
@@ -1463,7 +1463,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Method draws next function from the functions list
      * @returns {Promise} fulfilled when drawing is ready */
-   drawNextFunction(indx) {
+   async drawNextFunction(indx) {
       let histo = this.getHisto();
       if (!this.options.Func || !histo.fFunctions || (indx >= histo.fFunctions.arr.length))
           return Promise.resolve(true);
@@ -1902,7 +1902,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary draw color palette
      * @returns {Promise} when done */
-   drawColorPalette(enabled, postpone_draw, can_move) {
+   async drawColorPalette(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();
       if (mp !== this) {
@@ -2251,7 +2251,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary generic draw function for histograms
      * @private */
-   static _drawHist(painter, opt) {
+   static async _drawHist(painter, opt) {
 
       return ensureTCanvas(painter).then(() => {
 
