@@ -597,7 +597,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Create main SVG element for pad
-     * @returns true when pad is displayed and all its items should be redrawn */
+     * @return true when pad is displayed and all its items should be redrawn */
    createPadSvg(only_resize) {
 
       if (!this.has_canvas) {
@@ -704,7 +704,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Check if it is special object, which should be handled separately
      * @desc It can be TStyle or list of colors or palette object
-     * @returns {boolean} tru if any */
+     * @return {boolean} tru if any */
    checkSpecial(obj) {
 
       if (!obj) return false;
@@ -782,7 +782,7 @@ class TPadPainter extends ObjectPainter {
      * @param {object} selobj - object to which painter should be search, set null to ignore parameter
      * @param {string} [selname] - object name, set to null to ignore
      * @param {string} [seltype] - object type, set to null to ignore
-     * @returns {object} - painter for specified object (if any)
+     * @return {object} - painter for specified object (if any)
      * @private */
    findPainterFor(selobj, selname, seltype) {
       return this.painters.find(p => {
@@ -805,7 +805,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary sync drawing/redrawing/resize of the pad
      * @param {string} kind - kind of draw operation, if true - always queued
-     * @returns {Promise} when pad is ready for draw operation or false if operation already queued
+     * @return {Promise} when pad is ready for draw operation or false if operation already queued
      * @private */
    syncDraw(kind) {
       let entry = { kind : kind || "redraw" };
@@ -849,7 +849,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Draw pad primitives
-     * @returns {Promise} when drawing completed
+     * @return {Promise} when drawing completed
      * @private */
    async drawPrimitives(indx) {
 
@@ -885,7 +885,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Divide pad on subpads
-     * @returns {Promise} when finished
+     * @return {Promise} when finished
      * @private */
    async divide(nx, ny) {
       if (!ny) {
@@ -1069,7 +1069,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Redraw pad means redraw ourself
-     * @returns {Promise} when redrawing ready */
+     * @return {Promise} when redrawing ready */
    async redrawPad(reason) {
 
       let sync_promise = this.syncDraw(reason);
@@ -1124,7 +1124,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Check resize of canvas
-     * @returns {Promise} with result */
+     * @return {Promise} with result */
    checkCanvasResize(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
@@ -1240,7 +1240,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Function called when drawing next snapshot from the list
-     * @returns {Promise} for drawing of the snap
+     * @return {Promise} for drawing of the snap
      * @private */
    async drawNextSnap(lst, indx) {
 
@@ -1395,7 +1395,7 @@ class TPadPainter extends ObjectPainter {
      * for the canvas snapshot contains list of objects
      * as first entry, graphical properties of canvas itself is provided
      * in ROOT6 it also includes primitives, but we ignore them
-     * @returns {Promise} with pad painter when drawing completed
+     * @return {Promise} with pad painter when drawing completed
      * @private */
    async redrawPadSnap(snap) {
       if (!snap || !snap.fPrimitives)
@@ -1553,7 +1553,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Create image for the pad
      * @desc Used with web-based canvas to create images for server side
-     * @returns {Promise} with image data, coded with btoa() function
+     * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
@@ -1724,7 +1724,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Prodce image for the pad
-     * @returns {Promise} with created image */
+     * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),

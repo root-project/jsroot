@@ -73,7 +73,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary Changes layout
-     * @returns {Promise} indicating when finished */
+     * @return {Promise} indicating when finished */
    async changeLayout(layout_kind, mainid) {
       let current = this.getLayoutKind();
       if (current == layout_kind)
@@ -125,7 +125,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary Toggle projection
-     * @returns {Promise} indicating when ready
+     * @return {Promise} indicating when ready
      * @private */
    async toggleProjection(kind) {
       delete this.proj_painter;
@@ -407,7 +407,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary Function used to activate GED
-     * @returns {Promise} when GED is there
+     * @return {Promise} when GED is there
      * @private */
    async activateGed(objpainter, kind, mode) {
       if (this.testUI5() || !this.brlayout)

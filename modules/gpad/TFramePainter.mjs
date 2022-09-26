@@ -260,13 +260,13 @@ function addDragHandler(_painter, arg) {
 const TooltipHandler = {
 
    /** @desc only canvas info_layer can be used while other pads can overlay
-     * @returns layer where frame tooltips are shown */
+     * @return layer where frame tooltips are shown */
    hints_layer() {
       let pp = this.getCanvPainter();
       return pp ? pp.getLayerSvg("info_layer") : d3_select(null);
    },
 
-   /** @returns true if tooltip is shown, use to prevent some other action */
+   /** @return true if tooltip is shown, use to prevent some other action */
    isTooltipShown() {
       if (!this.tooltip_enabled || !this.isTooltipAllowed()) return false;
       let hintsg = this.hints_layer().select(".objects_hints");
@@ -1979,7 +1979,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary draw axes,
-     * @returns {Promise} which ready when drawing is completed  */
+     * @return {Promise} which ready when drawing is completed  */
    async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
                   AxisPos, has_x_obstacle, has_y_obstacle) {
 
@@ -2544,7 +2544,7 @@ class TFramePainter extends ObjectPainter {
       * @param {number} [ymax]
       * @param {number} [zmin]
       * @param {number} [zmax]
-      * @returns {Promise} with boolean flag if zoom operation was performed */
+      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
@@ -2687,7 +2687,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Unzoom speicified axes
-     * @returns {Promise} with boolean flag if zooming changed */
+     * @return {Promise} with boolean flag if zooming changed */
    async unzoom(dox, doy, doz) {
       if (dox == "all")
          return this.unzoom("x2").then(() => this.unzoom("y2")).then(() => this.unzoom("xyz"));

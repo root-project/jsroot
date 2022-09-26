@@ -60,7 +60,7 @@ class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary Scan graphs range
-     * @returns {object} histogram for axes drawing */
+     * @return {object} histogram for axes drawing */
    scanGraphsRange(graphs, histo, pad) {
       let mgraph = this.getObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
@@ -196,7 +196,7 @@ class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary draw speical histogram for axis
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
       return TH1Painter.draw(this.getDom(), histo, "AXIS" + hopt);
    }

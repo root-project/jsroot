@@ -821,7 +821,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
-     * @returns {Promise} with boolean flag if zoom operation was performed */
+     * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
@@ -1007,7 +1007,7 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Unzoom specified axes
-     * @returns {Promise} with boolean flag if zoom is changed */
+     * @return {Promise} with boolean flag if zoom is changed */
    async unzoom(dox, doy, doz) {
       if (dox == "all")
          return this.unzoom("x2").then(() => this.unzoom("y2")).then(() => this.unzoom("xyz"));

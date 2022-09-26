@@ -952,7 +952,7 @@ class HierarchyPainter extends BasePainter {
      * @param {Object} node - item element
      * @param {Object} [uptoparent] - up to which parent to continue
      * @param {boolean} [compact] - if specified, top parent is not included
-     * @returns {string} produced name
+     * @return {string} produced name
      * @private */
    itemFullName(node, uptoparent, compact) {
 
@@ -980,7 +980,7 @@ class HierarchyPainter extends BasePainter {
       * @param {Object} [elem] - HTML element for command execution
       * @param [arg1] - first optional argument
       * @param [arg2] - second optional argument and so on
-      * @returns {Promise} with command result */
+      * @return {Promise} with command result */
    async executeCommand(itemname, elem) {
 
       let hitem = this.findItem(itemname),
@@ -1034,7 +1034,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} arg.name - item name
      * @param {Object} arg.item - or item itself
      * @param {string} options - supposed draw options
-     * @returns {Promise} with object like { item, obj, itemname }
+     * @return {Promise} with object like { item, obj, itemname }
      * @private */
    async getObject(arg, options) {
 
@@ -1280,7 +1280,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Toggle open state of the item
      * @desc Used with "open all" / "close all" buttons in normal GUI
      * @param {boolean} isopen - if items should be expand or closed
-     * @returns {boolean} true when any item was changed */
+     * @return {boolean} true when any item was changed */
    toggleOpenState(isopen, h) {
       let hitem = h || this.h;
 
@@ -1319,7 +1319,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Refresh HTML code of hierarchy painter
-     * @returns {Promise} when done */
+     * @return {Promise} when done */
    async refreshHtml() {
 
       let d3elem = this.selectDom();
@@ -1451,7 +1451,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Focus on hierarchy item
      * @param {Object|string} hitem - item to open or its name
      * @desc all parents to the otem will be opened first
-     * @returns {Promise} when done
+     * @return {Promise} when done
      * @private */
    async focusOnItem(hitem) {
       if (typeof hitem == "string")
@@ -1810,7 +1810,7 @@ class HierarchyPainter extends BasePainter {
      * @desc Same as "Player" context menu
      * @param {string} itemname - item name for which player should be started
      * @param {string} [option] - extra options for the player
-     * @returns {Promise} when ready*/
+     * @return {Promise} when ready*/
    async player(itemname, option) {
       let item = this.findItem(itemname);
 
@@ -1857,7 +1857,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
-     * @returns {Promise} with created painter object */
+     * @return {Promise} with created painter object */
    async display(itemname, drawopt, interactive) {
       let painter = null,
           updating = false,
@@ -2020,7 +2020,7 @@ class HierarchyPainter extends BasePainter {
    }
 
   /** @summary Drop item on specified element for drawing
-    * @returns {Promise} when completed
+    * @return {Promise} when completed
     * @private */
    async dropItem(itemname, divid, opt) {
 
@@ -2056,7 +2056,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Update specified items
      * @desc Method can be used to fetch new objects and update all existing drawings
      * @param {string|array|boolean} arg - either item name or array of items names to update or true if only automatic items will be updated
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async updateItems(arg) {
 
       if (!this.disp)
@@ -2108,7 +2108,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Display all provided elements
-     * @returns {Promise} when drawing finished
+     * @return {Promise} when drawing finished
      * @private */
    async displayItems(items, options) {
 
@@ -2274,7 +2274,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Reload hierarchy and refresh html code
-     * @returns {Promise} when completed */
+     * @return {Promise} when completed */
    async reload() {
       if ('_online' in this.h)
          return this.openOnline(this.h._online).then(() => this.refreshHtml());
@@ -2376,7 +2376,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary expand specified item
      * @param {String} itemname - item name
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async expandItem(itemname, d3cont, silent) {
       let hitem = this.findItem(itemname), hpainter = this;
 
@@ -2501,7 +2501,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Open JSON file
      * @param {string} filepath - URL to JSON file
-     * @returns {Promise} when object ready */
+     * @return {Promise} when object ready */
    async openJsonFile(filepath) {
       let isfileopened = false;
       this.forEachJsonFile(item => { if (item._jsonfile==filepath) isfileopened = true; });
@@ -2546,7 +2546,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Open ROOT file
      * @param {string} filepath - URL to ROOT file, argument for openFile
-     * @returns {Promise} when file is opened */
+     * @return {Promise} when file is opened */
    async openRootFile(filepath) {
 
       let isfileopened = false;
@@ -2628,7 +2628,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Provides URL for online item
      * @desc Such URL can be used  to request data from the server
-     * @returns string or null if item is not online
+     * @return string or null if item is not online
      * @private */
    getOnlineItemUrl(item) {
       if (typeof item == "string") item = this.findItem(item);
@@ -2644,7 +2644,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Dynamic module import, supports special shorcuts from core or draw_tree
-     * @returns {Promise} with module
+     * @return {Promise} with module
      * @private */
    async importModule(module) {
       switch(module) {
@@ -2656,7 +2656,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary method used to request object from the http server
-     * @returns {Promise} with requested object
+     * @return {Promise} with requested object
      * @private */
    async getOnlineItem(item, itemname, option) {
 
@@ -2745,7 +2745,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Access THttpServer with provided address
      * @param {string} server_address - URL to server like "http://localhost:8090/"
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async openOnline(server_address) {
       let AdoptHierarchy = result => {
          this.h = result;
@@ -3030,7 +3030,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Creates configured MDIDisplay object
-     * @returns {Promise} when ready
+     * @return {Promise} when ready
      * @private */
    async createDisplay() {
 
@@ -3070,7 +3070,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary If possible, creates custom MDIDisplay for given item
      * @param itemname - name of item, for which drawing is created
      * @param custom_kind - display kind
-     * @returns {Promise} with mdi object created
+     * @return {Promise} with mdi object created
      * @private */
    async createCustomDisplay(itemname, custom_kind) {
 
@@ -3134,7 +3134,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Start GUI
-     * @returns {Promise} when ready
+     * @return {Promise} when ready
      * @private */
    async startGUI(gui_div, url) {
 
@@ -3404,7 +3404,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Create status line
      * @param {number} [height] - size of the status line
      * @param [mode] - false / true / "toggle"
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
          return "";
@@ -3424,7 +3424,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Create browser elements
-     * @returns {Promise} when completed */
+     * @return {Promise} when completed */
    async createBrowser(browser_kind, update_html) {
 
       if (!this.gui_div || this.exclude_browser || !this.brlayout)

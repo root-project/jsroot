@@ -33,7 +33,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Redraw graph
      * @desc may redraw histogram which was used to draw axes
-     * @returns {Promise} for ready */
+     * @return {Promise} for ready */
    async redraw() {
       let promise = Promise.resolve(true);
 
@@ -1445,7 +1445,7 @@ class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary method draws next function from the functions list
-     * @returns {Promise} */
+     * @return {Promise} */
    async drawNextFunction(indx) {
 
       let graph = this.getObject();

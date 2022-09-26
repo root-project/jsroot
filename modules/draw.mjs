@@ -286,7 +286,7 @@ function setDefaultDrawOpt(classname, opt) {
   * @param {string|object} dom - id of div element to draw or directly DOMElement
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options separated by space, comma or semicolon
-  * @returns {Promise} with painter object
+  * @return {Promise} with painter object
   * @public
   * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
@@ -406,7 +406,7 @@ async function draw(dom, obj, opt) {
   * @param {string|object} dom - id of div element to draw or directly DOMElement
   * @param {object} obj - object to draw, object type should be registered before with {@link addDrawFunc}
   * @param {string} opt - draw options
-  * @returns {Promise} with painter object
+  * @return {Promise} with painter object
   * @desc If drawing was not done before, it will be performed with {@link draw}.
   * Otherwise drawing content will be updated
   * @public */
@@ -513,7 +513,7 @@ function addStreamerInfosForPainter(lst) {
   * @param {string} [args.option] - draw options
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
-  * @returns {Promise} with svg code */
+  * @return {Promise} with svg code */
 async function makeSVG(args) {
 
    if (!args) args = {};

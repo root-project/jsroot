@@ -2876,7 +2876,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Drawing with "count" option
      * @desc Scans hieararchy and check for unique nodes
-     * @returns {Promise} with object drawing ready */
+     * @return {Promise} with object drawing ready */
    async drawCount(unqievis, clonetm) {
 
       const makeTime = tm => (isBatchMode() ? "anytime" : tm.toString()) + " ms";
@@ -2944,7 +2944,7 @@ class TGeoPainter extends ObjectPainter {
      * Such function should be possible to find via {@link findFunction}
      * Function has to return Promise with objects to draw on geometry
      * By default function with name "extract_geo_tracks" is checked
-     * @returns {Promise} handling of drop operation */
+     * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
@@ -3060,7 +3060,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Draw extra object like tracks
-     * @returns {Promise} for ready */
+     * @return {Promise} for ready */
    async drawExtras(obj, itemname, add_objects) {
       // if object was hidden via menu, do not redraw it with next draw call
       if (!obj?._typename || (!add_objects && obj.$hidden_via_menu))
@@ -3697,7 +3697,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Call 3D rendering of the geometry
      * @param tmout - specifies delay, after which actual rendering will be invoked
      * @param [measure] - when true, for the first time printout rendering time
-     * @returns {Promise} when tmout bigger than 0 is specified
+     * @return {Promise} when tmout bigger than 0 is specified
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmeout<=0, rendering performed immediately
      * Several special values are used:
@@ -3898,7 +3898,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Draw axes if configured, otherwise just remove completely
-     * @returns {Promise} when norender not specified */
+     * @return {Promise} when norender not specified */
    drawSimpleAxis(norender) {
       this.getExtrasContainer('delete', 'axis');
 
@@ -4213,7 +4213,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Completes drawing procedure
-     * @returns {Promise} for ready */
+     * @return {Promise} for ready */
    async completeDraw(close_progress) {
 
       let first_time = false, full_redraw = false, check_extras = true;
@@ -4537,7 +4537,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary either change mesh wireframe or return current value
-     * @returns undefined when wireframe cannot be accessed
+     * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
       if (!obj.hasOwnProperty("material") || (obj instanceof GridHelper)) return;
@@ -5070,7 +5070,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
-  * @returns {object} Object3D with created model
+  * @return {object} Object3D with created model
   * @example
   * import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
   * let obj3d = build(obj);

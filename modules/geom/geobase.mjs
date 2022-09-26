@@ -93,7 +93,7 @@ function geoWarn(msg) {
  *  @desc  0 - TGeoNode
  *         1 - TEveGeoNode
  *        -1 - unsupported
- * @returns detected node kind
+ * @return detected node kind
  * @private */
 function getNodeKind(obj) {
    if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
@@ -2165,7 +2165,7 @@ function createFrustum(source) {
 }
 
 /** @summary Compares two stacks.
-  * @returns {Number} length where stacks are the same
+  * @return {Number} length where stacks are the same
   * @private */
 function compareStacks(stack1, stack2) {
    if (!stack1 || !stack2) return 0;

@@ -412,7 +412,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Create SVG element for the pad
-     * @returns true when pad is displayed and all its items should be redrawn */
+     * @return true when pad is displayed and all its items should be redrawn */
    createPadSvg(only_resize) {
 
       if (!this.has_canvas) {
@@ -525,7 +525,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary sync drawing/redrawing/resize of the pad
      * @param {string} kind - kind of draw operation, if true - always queued
-     * @returns {Promise} when pad is ready for draw operation or false if operation already queued
+     * @return {Promise} when pad is ready for draw operation or false if operation already queued
      * @private */
    syncDraw(kind) {
       let entry = { kind : kind || "redraw" };
@@ -687,7 +687,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Redraw pad means redraw ourself
-     * @returns {Promise} when redrawing ready */
+     * @return {Promise} when redrawing ready */
    async redrawPad(reason) {
 
       let sync_promise = this.syncDraw(reason);
@@ -863,7 +863,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Function called when drawing next snapshot from the list
-     * @returns {Promise} with pad painter when ready
+     * @return {Promise} with pad painter when ready
      * @private */
    async drawNextSnap(lst, indx) {
 
@@ -1028,7 +1028,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
-     * @returns {Promise} with pad painter*/
+     * @return {Promise} with pad painter*/
    async redrawPadSnap(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
@@ -1137,7 +1137,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Create image for the pad
      * @desc Used with web-based canvas to create images for server side
-     * @returns {Promise} with image data, coded with btoa() function
+     * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
@@ -1205,7 +1205,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Prodce image for the pad
-     * @returns {Promise} with created image */
+     * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame"),

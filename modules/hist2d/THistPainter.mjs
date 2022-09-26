@@ -923,7 +923,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
-     * @returns {Boolean} - true if histogram was successfully updated */
+     * @return {Boolean} - true if histogram was successfully updated */
    updateObject(obj, opt) {
 
       let histo = this.getHisto(),
@@ -1246,7 +1246,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Draw histogram title
-     * @returns {Promise} with painter */
+     * @return {Promise} with painter */
    async drawHistTitle() {
 
       // case when histogram drawn over other histogram (same option)
@@ -1463,7 +1463,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Method draws next function from the functions list
-     * @returns {Promise} fulfilled when drawing is ready */
+     * @return {Promise} fulfilled when drawing is ready */
    async drawNextFunction(indx) {
       let histo = this.getHisto();
       if (!this.options.Func || !histo.fFunctions || (indx >= histo.fFunctions.arr.length))
@@ -1570,7 +1570,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Add different interactive handlers
      * @desc only first (main) painter in list allowed to add interactive functionality
      * Most of interactivity now handled by frame
-     * @returns {Promise} for ready */
+     * @return {Promise} for ready */
    async addInteractivity() {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
@@ -1902,7 +1902,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary draw color palette
-     * @returns {Promise} when done */
+     * @return {Promise} when done */
    async drawColorPalette(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();

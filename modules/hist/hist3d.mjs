@@ -102,7 +102,7 @@ function setCameraPosition(fp, first_time) {
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
-  * @returns {Promise} when render3d !== -1
+  * @return {Promise} when render3d !== -1
   * @private */
 function create3DScene(render3d, x3dscale, y3dscale) {
 

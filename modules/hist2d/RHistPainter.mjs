@@ -428,7 +428,7 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Special method to request bins from server if existing data insufficient
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async drawingBins(reason) {
 
       let is_axes_zoomed = false;

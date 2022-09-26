@@ -408,7 +408,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Draw TH1 bins in SVG element
-     * @returns Promise or scalar value */
+     * @return Promise or scalar value */
    draw1DBins() {
 
       this.createHistDrawAttributes();
@@ -1124,7 +1124,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Performs 2D drawing of histogram
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async draw2D(/* reason */) {
       this.clear3DScene();
 
@@ -1143,7 +1143,7 @@ class TH1Painter extends THistPainter {
 
    /** @summary Should performs 3D drawing of histogram
      * @desc Disable in 2D case, just draw with default options
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async draw3D(reason) {
       console.log('3D drawing is disabled, load ./hist/TH1Painter.mjs');
       return this.draw2D(reason);

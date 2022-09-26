@@ -1268,7 +1268,7 @@ function createMemberStreamer(element, file) {
 
 
 /** @summary Analyze and returns arrays kind
-  * @returns 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
+  * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
   * @private */
 function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === "string") ||
@@ -1978,7 +1978,7 @@ function ZIP_inflate(arr, tgt) {
  *
  * @param input {Buffer} input data
  * @param output {Buffer} output data
- * @returns {Number} number of decoded bytes
+ * @return {Number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
@@ -2030,7 +2030,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
 }
 
 /** @summary Reads header envelope, determines zipped size and unzip content
-  * @returns {Promise} with unzipped content
+  * @return {Promise} with unzipped content
   * @private */
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
@@ -2648,13 +2648,13 @@ class TDirectory {
    /** @summary Read object from the directory
      * @param {string} name - object name
      * @param {number} [cycle] - cycle number
-     * @returns {Promise} with read object */
+     * @return {Promise} with read object */
    readObject(obj_name, cycle) {
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
 
    /** @summary Read list of keys in directory
-     * @returns {Promise} with TDirectory object */
+     * @return {Promise} with TDirectory object */
    async readKeys(objbuf) {
 
       objbuf.classStreamer(this, 'TDirectory');
@@ -2748,7 +2748,7 @@ class TFile {
    }
 
    /** @summary Open file
-     * @returns {Promise} after file keys are read
+     * @return {Promise} after file keys are read
      * @private */
    async _open() {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
@@ -2765,7 +2765,7 @@ class TFile {
    }
 
    /** @summary read buffer(s) from the file
-    * @returns {Promise} with read buffers
+    * @return {Promise} with read buffers
     * @private */
    async readBuffer(place, filename, progress_callback) {
 
@@ -3072,7 +3072,7 @@ class TFile {
      * @desc One could specify cycle number in the object name or as separate argument
      * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
      * @param {number} [cycle] - cycle number, also can be included in obj_name
-     * @returns {Promise} promise with object read
+     * @return {Promise} promise with object read
      * @example
      * let f = await openFile("https://root.cern/js/files/hsimple.root");
      * let obj = await f.readObject("hpxpy;1");
@@ -3299,7 +3299,7 @@ class TFile {
      * Same functionality as {@link TFile#readObject}
      * @param {string} dir_name - directory name
      * @param {number} [cycle] - directory cycle
-     * @returns {Promise} - promise with read directory */
+     * @return {Promise} - promise with read directory */
    async readDirectory(dir_name, cycle) {
       return this.readObject(dir_name, cycle, true);
    }
@@ -3465,7 +3465,7 @@ class TFile {
   * @param {string} class_name - Class name of the object
   * @param {binary} obj_rawdata - data of object root.bin request
   * @param {binary} sinfo_rawdata - data of streamer info root.bin request
-  * @returns {object} - created JavaScript object
+  * @return {object} - created JavaScript object
   * @example
   *
   * import { httpRequest } from 'http://localhost:8080/jsrootsys/modules/core.mjs';
@@ -3624,7 +3624,7 @@ class TLocalFile extends TFile {
    }
 
    /** @summary Open local file
-     * @returns {Promise} after file keys are read */
+     * @return {Promise} after file keys are read */
    async _open() { return this.readKeys(); }
 
    /** @summary read buffer from local file */
@@ -3672,7 +3672,7 @@ class TNodejsFile extends TFile {
    }
 
    /** @summary Open file in node.js
-     * @returns {Promise} after file keys are read */
+     * @return {Promise} after file keys are read */
    async _open() {
       return import('fs').then(fs => {
 
@@ -3698,7 +3698,7 @@ class TNodejsFile extends TFile {
    }
 
    /** @summary Read buffer from node.js file
-     * @returns {Promise} with requested blocks */
+     * @return {Promise} with requested blocks */
    async readBuffer(place, filename /*, progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
@@ -3766,7 +3766,7 @@ class TProxyFile extends TFile {
    }
 
    /** @summary Open file
-     * @returns {Promise} after file keys are read */
+     * @return {Promise} after file keys are read */
    async _open() {
       return this.proxy.openFile().then(res => {
          if (!res) return false;
@@ -3782,7 +3782,7 @@ class TProxyFile extends TFile {
    }
 
    /** @summary Read buffer from FileProxy
-     * @returns {Promise} with requested blocks */
+     * @return {Promise} with requested blocks */
    async readBuffer(place, filename /*, progress_callback */) {
       if (filename)
          return Promise.reject(Error(`Cannot access other file ${filename}`));
@@ -3810,7 +3810,7 @@ class TProxyFile extends TFile {
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
-  * @returns {object} - Promise with {@link TFile} instance when file is opened
+  * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *
   * import { openFile } from '/path_to_jsroot/modules/io.mjs';

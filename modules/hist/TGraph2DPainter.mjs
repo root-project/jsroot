@@ -152,7 +152,7 @@ class TGraph2DPainter extends ObjectPainter {
    }
 
    /** @summary Actual drawing of TGraph2D object
-     * @returns {Promise} for drawing ready */
+     * @return {Promise} for drawing ready */
    async redraw() {
 
       let main = this.getMainPainter(),

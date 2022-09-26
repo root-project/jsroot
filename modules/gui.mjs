@@ -142,7 +142,7 @@ function readStyleFromURL(url) {
   * @desc Used in many HTML files to create JSROOT GUI elements
   * @param {String} gui_element - id of the `<div>` element
   * @param {String} gui_kind - either "online", "nobrowser", "draw"
-  * @returns {Promise} with {@link HierarchyPainter} instance
+  * @return {Promise} with {@link HierarchyPainter} instance
   * @example
   * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
   * buildGUI("guiDiv"); */

@@ -559,7 +559,7 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Draw axis ticks
-     * @returns {Object} with gaps on left and right side
+     * @return {Object} with gaps on left and right side
      * @private */
    drawTicks(axis_g, side, main_draw) {
       if (main_draw) this.ticks = [];
@@ -613,7 +613,7 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Performs labels drawing
-     * @returns {Promise} with gaps in both direction */
+     * @return {Promise} with gaps in both direction */
    async drawLabels(axis_g, side, gaps) {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = this.labelsFont.angle != 0,
@@ -838,7 +838,7 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Performs axis drawing
-     * @returns {Promise} which resolved when drawing is completed */
+     * @return {Promise} which resolved when drawing is completed */
    async drawAxis(layer, transform, side) {
       let axis_g = layer;
 

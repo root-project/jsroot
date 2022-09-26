@@ -1210,7 +1210,7 @@ class TPavePainter extends ObjectPainter {
 /** @summary Produce and draw TLegend object for the specified dom
   * @desc Should be called when all other objects are painted
   * Invoked when item "$legend" specified in url string
-  * @returns {Promise} with TLegend painter
+  * @return {Promise} with TLegend painter
   * @private */
 async function produceLegend(dom, opt) {
    let main_painter = getElementMainPainter(dom),

@@ -7,7 +7,7 @@ import { TGraphPainter } from './TGraphPainter.mjs';
 class TMultiGraphPainter extends TMultiGraphPainter2D {
 
    /** @summary draw speical histogram for axis
-     * @returns {Promise} when ready */
+     * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
       return this._3d ? TH2Painter.draw(this.getDom(), histo, "AXIS3D" + hopt)
                       : TH1Painter.draw(this.getDom(), histo, "AXIS" + hopt);

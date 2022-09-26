@@ -58,7 +58,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary Changes layout
-     * @returns {Promise} indicating when finished */
+     * @return {Promise} indicating when finished */
    async changeLayout(layout_kind, mainid) {
       let current = this.getLayoutKind();
       if (current == layout_kind)
@@ -110,7 +110,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary Toggle projection
-     * @returns {Promise} indicating when ready
+     * @return {Promise} indicating when ready
      * @private */
    async toggleProjection(kind) {
       delete this.proj_painter;
@@ -520,7 +520,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary Function used to activate GED
-     * @returns {Promise} when GED is there
+     * @return {Promise} when GED is there
      * @private */
    async activateGed(objpainter, kind, mode) {
       if (this.testUI5() || !this.brlayout)
@@ -634,7 +634,7 @@ function drawRPadSnapshot(dom, snap /*, opt*/) {
   * @param {Object} painter  - painter object to process
   * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
-  * @returns {Promise} for ready */
+  * @return {Promise} for ready */
 async function ensureRCanvas(painter, frame_kind) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
