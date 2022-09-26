@@ -53,6 +53,7 @@
     "modules/*",
     "scripts/*",
     "build/*",
+    "types.d.ts",
     "LICENSE"
   ],
   "devDependencies": {
