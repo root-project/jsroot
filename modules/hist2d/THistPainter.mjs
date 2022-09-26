@@ -1158,9 +1158,9 @@ class THistPainter extends ObjectPainter {
 
     /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
-   drawAxes() {
+   async drawAxes() {
       let fp = this.getFramePainter();
-      if (!fp) return Promise.resolve(false);
+      if (!fp) return false;
 
       let histo = this.getHisto();
 
@@ -1174,7 +1174,7 @@ class THistPainter extends ObjectPainter {
          };
 
          if ((!opts.second_x && !opts.second_y) || fp.hasDrawnAxes(opts.second_x, opts.second_y))
-            return Promise.resolve(false);
+            return false;
 
          fp.setAxes2Ranges(opts.second_x, histo.fXaxis, this.xmin, this.xmax, opts.second_y, histo.fYaxis, this.ymin, this.ymax);
 
@@ -1227,7 +1227,8 @@ class THistPainter extends ObjectPainter {
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
       delete this.check_pad_range;
 
-      if (this.options.Same) return Promise.resolve(false);
+      if (this.options.Same)
+         return false;
 
       return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
@@ -1250,7 +1251,7 @@ class THistPainter extends ObjectPainter {
 
       // case when histogram drawn over other histogram (same option)
       if (!this.isMainPainter() || this.options.Same)
-         return Promise.resolve(this);
+         return this;
 
       let histo = this.getHisto(), st = gStyle,
           pp = this.getPadPainter(),
@@ -1276,7 +1277,7 @@ class THistPainter extends ObjectPainter {
          });
       }
 
-      return Promise.resolve(this);
+      return this;
    }
 
    /** @summary Live change and update of title drawing
@@ -1466,7 +1467,7 @@ class THistPainter extends ObjectPainter {
    async drawNextFunction(indx) {
       let histo = this.getHisto();
       if (!this.options.Func || !histo.fFunctions || (indx >= histo.fFunctions.arr.length))
-          return Promise.resolve(true);
+          return true;
 
       let func = histo.fFunctions.arr[indx],
           opt = histo.fFunctions.opt[indx],
@@ -1907,7 +1908,7 @@ class THistPainter extends ObjectPainter {
       let mp = this.getMainPainter();
       if (mp !== this) {
          if (mp && (mp.draw_content !== false))
-            return Promise.resolve(null);
+            return null;
       }
 
       let pal = this.findFunction('TPaletteAxis'),
@@ -1932,13 +1933,13 @@ class THistPainter extends ObjectPainter {
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
 
-         return Promise.resolve(null);
+         return null;
       }
 
       if (!pal) {
 
          if (this.options.PadPalette)
-            return Promise.resolve(null);
+            return null;
 
          pal = create('TPave');
 
@@ -2009,7 +2010,7 @@ class THistPainter extends ObjectPainter {
       } else {
          pal_painter.Enabled = true;
          // real drawing will be perform at the end
-         if (postpone_draw) return Promise.resolve(pal_painter);
+         if (postpone_draw) return pal_painter;
          pr = pal_painter.drawPave(arg);
       }
 

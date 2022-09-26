@@ -1451,7 +1451,7 @@ class TGraphPainter extends ObjectPainter {
       let graph = this.getObject();
 
       if (indx >= (graph?.fFunctions?.arr?.length || 0))
-         return Promise.resolve(this);
+         return this;
 
       let pp = this.getPadPainter(),
           func = graph.fFunctions.arr[indx],

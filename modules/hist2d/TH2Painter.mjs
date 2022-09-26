@@ -60,9 +60,9 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Redraw projection */
-   redrawProjection(ii1, ii2, jj1, jj2) {
+   async redrawProjection(ii1, ii2, jj1, jj2) {
       if (!this.is_projection || this.doing_projection)
-         return Promise.resolve(false);
+         return false;
 
       this.doing_projection = true;
 
@@ -98,7 +98,6 @@ class TH2Painter extends THistPainter {
             this.proj_hist.fTitle = "Y projection";
          }
       }
-
 
       let first = 0, last = -1;
       if (this.is_projection == "X") {
@@ -2133,7 +2132,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Draw histogram bins as chord diagram */
-   drawBinsChord() {
+   async drawBinsChord() {
 
       this.getFrameSvg().style('display', 'none');
       this._hide_frame = true;
@@ -2155,7 +2154,7 @@ class TH2Painter extends THistPainter {
       }
 
       // do not show less than 2 elements
-      if (used.length < 2) return Promise.resolve(true);
+      if (used.length < 2) return true;
 
       let rect = this.getPadPainter().getFrameRect(),
           palette = this.getHistPalette(),
@@ -2265,7 +2264,7 @@ class TH2Painter extends THistPainter {
          .append("title")
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
-      return Promise.resolve(true);
+      return true;
 
    }
 

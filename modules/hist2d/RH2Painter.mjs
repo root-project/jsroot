@@ -1274,11 +1274,11 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Draw RH2 bins in 2D mode */
-   draw2DBins() {
+   async draw2DBins() {
 
       if (!this.draw_content) {
          this.removeG();
-         return Promise.resolve(false);
+         return false;
       }
 
       this.createHistDrawAttributes();

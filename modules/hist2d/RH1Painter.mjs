@@ -197,7 +197,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw histogram as bars */
-   drawBars(handle, funcs, width, height) {
+   async drawBars(handle, funcs, width, height) {
 
       this.createG(true);
 
@@ -266,11 +266,11 @@ class RH1Painter extends RHistPainter {
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
-       return Promise.resolve(true);
+       return true;
    }
 
    /** @summary Draw histogram as filled errors */
-   drawFilledErrors(handle, funcs /*, width, height*/) {
+   async drawFilledErrors(handle, funcs /*, width, height*/) {
       this.createG(true);
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
@@ -304,18 +304,18 @@ class RH1Painter extends RHistPainter {
                  .attr("d", path1.path + path2.path + "Z")
                  .call(this.fillatt.func);
 
-      return Promise.resolve(true);
+      return true;
    }
 
    /** @summary Draw 1D histogram as SVG */
-   draw1DBins() {
+   async draw1DBins() {
 
       let pmain = this.getFramePainter(),
           rect = pmain.getFrameRect();
 
       if (!this.draw_content || (rect.width <= 0) || (rect.height <= 0)) {
          this.removeG()
-         return Promise.resolve(false);
+         return false;
       }
 
       this.createHistDrawAttributes();
@@ -333,7 +333,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw histogram bins */
-   drawHistBins(handle, funcs, width, height) {
+   async drawHistBins(handle, funcs, width, height) {
       this.createG(true);
 
       let options = this.options,
@@ -594,7 +594,7 @@ class RH1Painter extends RHistPainter {
                     .call(this.fillatt.func);
       }
 
-      return show_text ? this.finishTextDrawing() : Promise.resolve(true);
+      return show_text ? this.finishTextDrawing() : true;
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */

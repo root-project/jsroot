@@ -207,7 +207,7 @@ class TMultiGraphPainter extends ObjectPainter {
       let mgraph = this.getObject();
 
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
-         return Promise.resolve(this);
+         return this;
 
       let pp = this.getPadPainter()
 
