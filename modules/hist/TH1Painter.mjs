@@ -1,6 +1,7 @@
 import { settings, gStyle } from '../core.mjs';
 import { assignFrame3DMethods, drawBinsLego } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH1Painter as TH1Painter2D } from '../hist2d/TH1Painter.mjs';
 
 
@@ -56,8 +57,8 @@ class TH1Painter extends TH1Painter2D {
    }
 
    /** @summary draw TH1 object */
-   static draw(dom, histo, opt) {
-      return TH1Painter._drawHist(new TH1Painter(dom, histo), opt);
+   static async draw(dom, histo, opt) {
+      return THistPainter._drawHist(new TH1Painter(dom, histo), opt);
    }
 
 } // class TH1Painter

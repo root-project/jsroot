@@ -1155,7 +1155,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary draw TH1 object */
-   static draw(dom, histo, opt) {
+   static async draw(dom, histo, opt) {
       return THistPainter._drawHist(new TH1Painter(dom, histo), opt);
    }
 
