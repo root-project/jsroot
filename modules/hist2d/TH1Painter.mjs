@@ -1112,7 +1112,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Call drawing function depending from 3D mode */
-   callDrawFunc(reason) {
+   async callDrawFunc(reason) {
 
       let main = this.getMainPainter(),
           fp = this.getFramePainter();
@@ -1125,7 +1125,7 @@ class TH1Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   draw2D(/* reason */) {
+   async draw2D(/* reason */) {
       this.clear3DScene();
 
       this.scanContent(true);
@@ -1144,7 +1144,7 @@ class TH1Painter extends THistPainter {
    /** @summary Should performs 3D drawing of histogram
      * @desc Disable in 2D case, just draw with default options
      * @returns {Promise} when ready */
-   draw3D(reason) {
+   async draw3D(reason) {
       console.log('3D drawing is disabled, load ./hist/TH1Painter.mjs');
       return this.draw2D(reason);
    }
@@ -1156,7 +1156,7 @@ class TH1Painter extends THistPainter {
 
    /** @summary draw TH1 object */
    static draw(dom, histo, opt) {
-      return TH1Painter._drawHist(new TH1Painter(dom, histo), opt);
+      return THistPainter._drawHist(new TH1Painter(dom, histo), opt);
    }
 
 } // class TH1Painter

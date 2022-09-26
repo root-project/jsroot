@@ -925,7 +925,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Call appropriate draw function */
-   callDrawFunc(reason) {
+   async callDrawFunc(reason) {
       let main = this.getFramePainter();
 
       if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
@@ -935,7 +935,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw in 2d */
-   draw2D(reason) {
+   async draw2D(reason) {
       this.clear3DScene();
 
       return this.drawFrameAxes().then(res => {
@@ -947,17 +947,17 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw in 3d */
-   draw3D(reason) {
+   async draw3D(reason) {
       console.log('3D drawing is disabled, load ./hist/RH1Painter.mjs');
       return this.draw2D(reason);
    }
 
    /** @summary Readraw histogram */
-   redraw(reason) {
+   async redraw(reason) {
       return this.callDrawFunc(reason);
    }
 
-   static _draw(painter, opt) {
+   static async _draw(painter, opt) {
       return ensureRCanvas(painter).then(() => {
 
          painter.setAsMainPainter();

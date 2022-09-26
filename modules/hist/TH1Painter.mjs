@@ -1,7 +1,7 @@
 import { settings, gStyle } from '../core.mjs';
 import { assignFrame3DMethods, drawBinsLego } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
-import { TH1Painter as TH1Painter2D  } from '../hist2d/TH1Painter.mjs';
+import { TH1Painter as TH1Painter2D } from '../hist2d/TH1Painter.mjs';
 
 
 /** @summary Draw 1-D histogram in 3D
@@ -9,6 +9,7 @@ import { TH1Painter as TH1Painter2D  } from '../hist2d/TH1Painter.mjs';
 
 class TH1Painter extends TH1Painter2D {
 
+   /** @summary draw TH1 object in 3D mode */
    draw3D(reason) {
 
       this.mode3d = true;

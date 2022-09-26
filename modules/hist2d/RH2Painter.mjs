@@ -1637,14 +1637,14 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      if (axis=="z") return true;
+      if (axis == "z") return true;
       let obj = this.getAxis(axis);
-      return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
+      return obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1;
    }
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   draw2D(reason) {
+   async draw2D(reason) {
       this.clear3DScene();
 
       return this.drawFrameAxes().then(res => {
@@ -1656,13 +1656,13 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Performs 3D drawing of histogram
      * @returns {Promise} when ready */
-   draw3D(reason) {
+   async draw3D(reason) {
       console.log('3D drawing is disabled, load ./hist/RH1Painter.mjs');
       return this.draw2D(reason);
    }
 
    /** @summary Call drawing function depending from 3D mode */
-   callDrawFunc(reason) {
+   async callDrawFunc(reason) {
       let main = this.getFramePainter();
 
       if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
@@ -1672,7 +1672,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Redraw histogram */
-   redraw(reason) {
+   async redraw(reason) {
       return this.callDrawFunc(reason);
    }
 
