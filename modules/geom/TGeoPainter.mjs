@@ -5087,66 +5087,103 @@ function build(obj, opt) {
 
    opt.res_mesh = opt.res_faces = 0;
 
-   let shape = null, hide_top = false;
+   let clones = null, visibles = null;
 
-   if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-      shape = obj; obj = null;
-   } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-      shape = obj.fShape;
-   } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-      shape = obj.fShape;
-   } else if (obj._typename === 'TGeoManager') {
-      obj = obj.fMasterVolume;
-      hide_top = !opt.showtop;
-      shape = obj.fShape;
-   } else if (obj.fVolume) {
-      shape = obj.fVolume.fShape;
+   if (obj.visibles && obj.nodes && obj.numnodes) {
+
+      let nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
+
+      for (let cnt = 0; cnt < obj.nodes.length; ++cnt) {
+         let node = obj.nodes[cnt];
+         formatNodeElement(node);
+         nodes[node.id] = node;
+      }
+
+      clones = new ClonedNodes(null, nodes);
+      clones.name_prefix = clones.getNodeName(0);
+      // normally only need when making selection, not used in geo viewer
+      // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
+      // this.geo_clones.setVisLevel(draw_msg.vislevel);
+      // parameter need for visualization with transparency
+      // TODO: provide from server
+      clones.maxdepth = 20;
+
+      let nsegm = obj.cfg?.nsegm || 30;
+
+      for (let cnt = 0; cnt < obj.visibles.length; ++cnt) {
+         let item = obj.visibles[cnt], rd = item.ri;
+
+         // entry may be provided without shape - it is ok
+         if (rd)
+            item.server_shape = rd.server_shape = createServerShape(rd, nsegm);
+      }
+
+      visibles = obj.visibles;
+
    } else {
-      obj = null;
+      let shape = null, hide_top = false;
+
+      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+         shape = obj; obj = null;
+      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+         shape = obj.fShape;
+      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+         shape = obj.fShape;
+      } else if (obj._typename === 'TGeoManager') {
+         obj = obj.fMasterVolume;
+         hide_top = !opt.showtop;
+         shape = obj.fShape;
+      } else if (obj.fVolume) {
+         shape = obj.fVolume.fShape;
+      } else {
+         obj = null;
+      }
+
+      if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
+         obj = buildCompositeVolume(shape);
+
+      if (!obj && shape)
+         obj = Object.assign(create("TEveGeoShapeExtract"),
+                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+      if (!obj) return null;
+
+      if (obj._typename.indexOf('TGeoVolume') === 0)
+         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+      clones = new ClonedNodes(obj);
+      clones.setVisLevel(opt.vislevel);
+      clones.setMaxVisNodes(opt.numnodes);
+
+      if (opt.dflt_colors)
+         clones.setDefaultColors(true);
+
+      let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
+      if (uniquevis <= 0)
+         clones.markVisibles(false, false, hide_top);
+      else
+         clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
+
+      clones.produceIdShifts();
+
+      // collect visible nodes
+      let res = clones.collectVisibles(opt.numfaces, opt.frustum);
+
+      visibles = res.lst;
    }
 
-   if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
-      obj = buildCompositeVolume(shape);
-
-   if (!obj && shape)
-      obj = Object.assign(create("TEveGeoShapeExtract"),
-                { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-
-   if (!obj) return null;
-
-   if (obj._typename.indexOf('TGeoVolume') === 0)
-      obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
-
-   let clones = new ClonedNodes(obj);
-   clones.setVisLevel(opt.vislevel);
-   clones.setMaxVisNodes(opt.numnodes);
-
-   if (opt.dflt_colors)
-      clones.setDefaultColors(true);
-
-   let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
-   if (uniquevis <= 0)
-      clones.markVisibles(false, false, hide_top);
-   else
-      clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
-
-   clones.produceIdShifts();
-
-   // collect visible nodes
-   let res = clones.collectVisibles(opt.numfaces, opt.frustum);
-
    // collect shapes
-   let shapes = clones.collectShapes(res.lst);
+   let shapes = clones.collectShapes(visibles);
 
    clones.buildShapes(shapes, opt.numfaces);
 
    let toplevel = new Object3D();
 
-   for (let n = 0; n < res.lst.length; ++n) {
-      let entry = res.lst[n];
+   for (let n = 0; n < visibles.length; ++n) {
+      let entry = visibles[n];
       if (entry.done) continue;
 
-      let shape = shapes[entry.shapeid];
+      let shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
          console.warn('shape marked as not ready when should');
          break;
@@ -5209,8 +5246,8 @@ function makeEveGeometry(rnr_data /*, force */) {
    if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
 
    let body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute( rnr_data.vtxBuff, 3 ));
-   body.setIndex(new BufferAttribute( rnr_data.idxBuff, 1 ));
+   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
+   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
    body.setDrawRange(2, nVert);
    // this does not work correctly - draw range ignored when calculating normals
    // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
@@ -5307,109 +5344,5 @@ function formatNodeElement(elem) {
    }
 }
 
-
-/** @summary Build three.js model for data produced by REveGeomData class
-  * @param {Object} msg - full message by REveGeomData
-  */
-function buildViewer(msg) {
-
-   let opt = {};
-   if (!opt) opt = {};
-   if (!opt.numfaces) opt.numfaces = 100000;
-   if (!opt.numnodes) opt.numnodes = 1000;
-   if (!opt.frustum) opt.frustum = null;
-
-   let nodes = msg.numnodes > 1e6 ? { length: msg.numnodes } : new Array(msg.numnodes);
-
-   for (let cnt = 0; cnt < msg.nodes.length; ++cnt) {
-      let node = msg.nodes[cnt];
-      formatNodeElement(node);
-      nodes[node.id] = node;
-   }
-
-   let clones = new ClonedNodes(null, nodes);
-   clones.name_prefix = clones.getNodeName(0);
-   // normally only need when making selection, not used in geo viewer
-   // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
-   // this.geo_clones.setVisLevel(draw_msg.vislevel);
-   // parameter need for visualization with transparency
-   // TODO: provide from server
-   clones.maxdepth = 20;
-
-   let nsegm = msg.cfg?.nsegm || 30;
-
-   for (let cnt = 0; cnt < msg.visibles.length; ++cnt) {
-      let item = msg.visibles[cnt], rd = item.ri;
-
-      // entry may be provided without shape - it is ok
-      if (rd)
-         item.server_shape = rd.server_shape = createServerShape(rd, nsegm);
-   }
-
-   // collect shapes
-   let shapes = clones.collectShapes(msg.visibles);
-
-   clones.buildShapes(shapes, opt.numfaces);
-
-   let toplevel = new Object3D();
-
-   for (let n = 0; n < msg.visibles.length; ++n) {
-      let entry = msg.visibles[n];
-      if (entry.done) continue;
-
-      let shape = entry.server_shape || shapes[entry.shapeid];
-      if (!shape.ready) {
-         console.warn('shape marked as not ready when should');
-         break;
-      }
-      entry.done = true;
-      shape.used = true; // indicate that shape was used in building
-
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         continue;
-      }
-
-      let prop = clones.getDrawEntryProperties(entry, getRootColors());
-
-      opt.res_mesh++;
-      opt.res_faces += shape.nfaces;
-
-      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
-
-      prop.material.wireframe = opt.wireframe;
-
-      prop.material.side = opt.doubleside ? DoubleSide : FrontSide;
-
-      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      mesh.name = clones.getNodeName(entry.nodeid);
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-         mesh.updateMatrixWorld();
-      }
-
-      // specify rendering order, required for transparency handling
-      //if (obj3d.$jsroot_depth !== undefined)
-      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
-      //else
-      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
-   }
-
-   return toplevel;
-}
-
-
-export { ClonedNodes, build, buildViewer, TGeoPainter, GeoDrawingControl,
+export { ClonedNodes, build, TGeoPainter, GeoDrawingControl,
          expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };
