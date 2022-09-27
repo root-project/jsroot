@@ -636,7 +636,7 @@ class WebWindowHandle {
   * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
   * @param {string} [arg.first_recv] - required prefix in the first message from RWebWindow, remain part of message will be returned in handle.first_msg
   * @param {string} [arg.href] - URL to RWebWindow, using window.location.href by default
-  * @return {Promise} ready-to-use {@link WebWindowHandle} instance  */
+  * @return {Promise} for ready-to-use {@link WebWindowHandle} instance  */
 async function connectWebWindow(arg) {
 
    if (typeof arg == 'function')

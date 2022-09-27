@@ -3537,7 +3537,7 @@ class HierarchyPainter extends BasePainter {
             });
          });
 
-         this.selectLocalFile = function() {
+         this.selectLocalFile = async function() {
             return new Promise(resolveFunc => {
                localfile_read_callback = resolveFunc;
                main.select(".gui_localFile").node().click();

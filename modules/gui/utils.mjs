@@ -477,7 +477,6 @@ function getBinFileContent(content) {
 /** @summary Function store content as file with filename
   * @private */
 async function saveFile(filename, content) {
-
    if (typeof _saveFileFunc == 'function') {
       return _saveFileFunc(filename, getBinFileContent(content));
    } else if (isNodeJs()) {

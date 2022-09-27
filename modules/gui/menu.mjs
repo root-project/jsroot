@@ -1255,7 +1255,7 @@ class StandaloneMenu extends JSRootMenu {
    }
 
    /** @summary Run modal elements with standalone code */
-   runModal(title, main_content, args) {
+   async runModal(title, main_content, args) {
       if (!args) args = {};
       let dlg_id = this.menuname + "_dialog";
       d3_select("#" + dlg_id).remove();
@@ -1407,7 +1407,7 @@ class BootstrapMenu extends JSRootMenu {
    }
 
    /** @summary Show menu */
-   show(event) {
+   async show(event) {
       this.remove();
 
       if (!event && this.show_evnt) event = this.show_evnt;
@@ -1491,7 +1491,7 @@ class BootstrapMenu extends JSRootMenu {
    }
 
    /** @summary Run modal elements with bootstrap code */
-   runModal(title, main_content, args) {
+   async runModal(title, main_content, args) {
       if (!args) args = {};
 
       let dlg_id = this.menuname + "_dialog",

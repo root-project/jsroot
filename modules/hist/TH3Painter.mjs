@@ -482,17 +482,17 @@ class TH3Painter extends THistPainter {
                   bin_n[vvv+2] = single_bin_norms[vi+2];
                }
 
-               if (helper_kind[nseq]===1) {
+               if (helper_kind[nseq] === 1) {
                   // reuse vertices created for the mesh
                   let helper_segments = Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
-                  let shift = Math.round(nbins * buffer_size/3),
-                      helper_i = helper_indexes[nseq];
-                  for (let n=0;n<helper_segments.length;++n)
-                     helper_i[vvv+n] = shift + helper_segments[n];
+                  let shift = Math.round(nbins * buffer_size / 3),
+                     helper_i = helper_indexes[nseq];
+                  for (let n = 0; n < helper_segments.length; ++n)
+                     helper_i[vvv + n] = shift + helper_segments[n];
                }
 
-               if (helper_kind[nseq]===2) {
+               if (helper_kind[nseq] === 2) {
                   let helper_segments = Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;

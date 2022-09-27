@@ -365,7 +365,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Submit menu request
      * @private */
-   submitMenuRequest(painter, menukind, reqid) {
+   async submitMenuRequest(painter, menukind, reqid) {
       return new Promise(resolveFunc => {
          this.submitDrawableRequest("", {
             _typename: "ROOT::Experimental::RDrawableMenuRequest",

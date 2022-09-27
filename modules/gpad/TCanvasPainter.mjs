@@ -233,7 +233,7 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Submit menu request
      * @private */
-   submitMenuRequest(painter, kind, reqid) {
+   async submitMenuRequest(painter, kind, reqid) {
       // only single request can be handled, no limit better in RCanvas
       return new Promise(resolveFunc => {
          this._getmenu_callback = resolveFunc;

@@ -3627,8 +3627,9 @@ class TLocalFile extends TFile {
      * @return {Promise} after file keys are read */
    async _open() { return this.readKeys(); }
 
-   /** @summary read buffer from local file */
-   readBuffer(place, filename /*, progress_callback */) {
+   /** @summary read buffer from local file
+     * @return {Promise} with read data */
+   async readBuffer(place, filename /*, progress_callback */) {
       let file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
