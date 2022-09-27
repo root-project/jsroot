@@ -1104,7 +1104,7 @@ class TGraphPainter extends ObjectPainter {
                   lines: this.getTooltips(best.bin),
                   usepath: true };
 
-      res.user_info = { obj: gr,  name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
+      res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
 
       res.ismark = ismark;
       res.islines = islines;
