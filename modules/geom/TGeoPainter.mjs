@@ -22,7 +22,7 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve, geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
+         countNumShapes, getNodeKind, produceRenderOrder, createGeometry, numGeometryFaces, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
@@ -5199,5 +5199,217 @@ function build(obj, opt) {
    return toplevel;
 }
 
-export { ClonedNodes, build, TGeoPainter, GeoDrawingControl,
+function makeEveGeometry(rnr_data /*, force */) {
+   const GL_TRIANGLES = 4; // same as in EVE7
+
+   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
+
+   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
+
+   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
+
+   let body = new BufferGeometry();
+   body.setAttribute('position', new BufferAttribute( rnr_data.vtxBuff, 3 ));
+   body.setIndex(new BufferAttribute( rnr_data.idxBuff, 1 ));
+   body.setDrawRange(2, nVert);
+   // this does not work correctly - draw range ignored when calculating normals
+   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
+   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
+   if (body.computeVertexNormalsIdxRange)
+      body.computeVertexNormalsIdxRange(2, nVert);
+
+   return body;
+}
+
+
+/** @summary Create single shape from provided raw data. If nsegm changed, shape will be recreated
+  * @private */
+function createServerShape(rd, nsegm) {
+
+   if (rd.server_shape && ((rd.nsegm===nsegm) || !rd.shape))
+      return rd.server_shape;
+
+   rd.nsegm = nsegm;
+
+   let g = null, off = 0;
+
+   if (rd.shape) {
+      // case when TGeoShape provided as is
+      g = createGeometry(rd.shape);
+   } else {
+
+      if (!rd.raw || (rd.raw.length==0)) {
+         console.error('No raw data at all');
+         return null;
+      }
+
+      if (!rd.raw.buffer) {
+         console.error('No raw buffer');
+         return null;
+      }
+
+      if (rd.sz[0]) {
+         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
+         off += rd.sz[0]*4;
+      }
+
+      if (rd.sz[1]) {
+         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
+         off += rd.sz[1]*4;
+      }
+
+      if (rd.sz[2]) {
+         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
+         off += rd.sz[2]*4;
+      }
+
+      g = makeEveGeometry(rd);
+   }
+
+   // shape handle is similar to created in JSROOT.GeoPainter
+   return {
+      _typename: "$$Shape$$", // indicate that shape can be used as is
+      ready: true,
+      geom: g,
+      nfaces: numGeometryFaces(g)
+   }
+}
+
+/** @summary Format REveGeomNode data to be able use it in list of clones */
+function formatNodeElement(elem) {
+   elem.kind = 2; // special element for geom viewer, used in TGeoPainter
+   elem.vis = 2; // visibility is alwys on
+   let m = elem.matr;
+   delete elem.matr;
+   if (!m || !m.length) return;
+
+   if (m.length == 16) {
+      elem.matrix = m;
+   } else {
+      let nm = elem.matrix = new Array(16);
+      for (let k = 0; k < 16; ++k) nm[k] = 0;
+      nm[0] = nm[5] = nm[10] = nm[15] = 1;
+
+      if (m.length == 3) {
+         // translation martix
+         nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
+      } else if (m.length == 4) {
+         // scale matrix
+         nm[0] = m[0]; nm[5] = m[1]; nm[10] = m[2]; nm[15] = m[3];
+      } else if (m.length == 9) {
+         // rotation matrix
+         nm[0] = m[0]; nm[4] = m[1]; nm[8]  = m[2];
+         nm[1] = m[3]; nm[5] = m[4]; nm[9]  = m[5];
+         nm[2] = m[6]; nm[6] = m[7]; nm[10] = m[8];
+      } else {
+         console.error('wrong number of elements in the matrix ' + m.length);
+      }
+   }
+}
+
+
+/** @summary Build three.js model for data produced by REveGeomData class
+  * @param {Object} msg - full message by REveGeomData
+  */
+function buildViewer(msg) {
+
+   let opt = {};
+   if (!opt) opt = {};
+   if (!opt.numfaces) opt.numfaces = 100000;
+   if (!opt.numnodes) opt.numnodes = 1000;
+   if (!opt.frustum) opt.frustum = null;
+
+   let nodes = msg.numnodes > 1e6 ? { length: msg.numnodes } : new Array(msg.numnodes);
+
+   for (let cnt = 0; cnt < msg.nodes.length; ++cnt) {
+      let node = msg.nodes[cnt];
+      formatNodeElement(node);
+      nodes[node.id] = node;
+   }
+
+   let clones = new ClonedNodes(null, nodes);
+   clones.name_prefix = clones.getNodeName(0);
+   // normally only need when making selection, not used in geo viewer
+   // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
+   // this.geo_clones.setVisLevel(draw_msg.vislevel);
+   // parameter need for visualization with transparency
+   // TODO: provide from server
+   clones.maxdepth = 20;
+
+   let nsegm = msg.cfg?.nsegm || 30;
+
+   for (let cnt = 0; cnt < msg.visibles.length; ++cnt) {
+      let item = msg.visibles[cnt], rd = item.ri;
+
+      // entry may be provided without shape - it is ok
+      if (rd)
+         item.server_shape = rd.server_shape = createServerShape(rd, nsegm);
+   }
+
+   // collect shapes
+   let shapes = clones.collectShapes(msg.visibles);
+
+   clones.buildShapes(shapes, opt.numfaces);
+
+   let toplevel = new Object3D();
+
+   for (let n = 0; n < msg.visibles.length; ++n) {
+      let entry = msg.visibles[n];
+      if (entry.done) continue;
+
+      let shape = entry.server_shape || shapes[entry.shapeid];
+      if (!shape.ready) {
+         console.warn('shape marked as not ready when should');
+         break;
+      }
+      entry.done = true;
+      shape.used = true; // indicate that shape was used in building
+
+      if (!shape.geom || (shape.nfaces === 0)) {
+         // node is visible, but shape does not created
+         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
+         continue;
+      }
+
+      let prop = clones.getDrawEntryProperties(entry, getRootColors());
+
+      opt.res_mesh++;
+      opt.res_faces += shape.nfaces;
+
+      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
+
+      prop.material.wireframe = opt.wireframe;
+
+      prop.material.side = opt.doubleside ? DoubleSide : FrontSide;
+
+      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
+
+      if (matrix.determinant() > -0.9) {
+         mesh = new Mesh(shape.geom, prop.material);
+      } else {
+         mesh = createFlippedMesh(shape, prop.material);
+      }
+
+      mesh.name = clones.getNodeName(entry.nodeid);
+
+      obj3d.add(mesh);
+
+      if (obj3d.absMatrix) {
+         mesh.matrix.copy(obj3d.absMatrix);
+         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+         mesh.updateMatrixWorld();
+      }
+
+      // specify rendering order, required for transparency handling
+      //if (obj3d.$jsroot_depth !== undefined)
+      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
+      //else
+      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
+   }
+
+   return toplevel;
+}
+
+
+export { ClonedNodes, build, buildViewer, TGeoPainter, GeoDrawingControl,
          expandGeoObject, createGeoPainter, drawAxis3D, drawDummy3DGeom, produceRenderOrder };
