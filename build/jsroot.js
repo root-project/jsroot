@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "27/09/2022";
+let version_date = "28/09/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -83514,6 +83514,27 @@ function getNodeMatrix(kind, node) {
    return matrix;
 }
 
+/** @summary Returns number of faces for provided geometry
+  * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
+  * @private */
+function numGeometryFaces(geom) {
+   if (!geom) return 0;
+
+   if (geom instanceof Geometry)
+      return geom.tree.numPolygons();
+
+   if (geom.type == 'BufferGeometry') {
+      let attr = geom.getAttribute('position');
+      return attr && attr.count ? Math.round(attr.count / 3) : 0;
+   }
+
+   // special array of polygons
+   if (geom.polygons)
+      return geom.polygons.length;
+
+   return geom.faces.length;
+}
+
 /** @summary Returns geometry bounding box
   * @private */
 function geomBoundingBox(geom) {
@@ -83777,15 +83798,95 @@ function createGeometry(shape, limit) {
    return limit < 0 ? 0 : null;
 }
 
+
+function makeEveGeometry(rnr_data /*, force */) {
+   const GL_TRIANGLES = 4; // same as in EVE7
+
+   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
+
+   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
+
+   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
+
+   let body = new BufferGeometry();
+   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
+   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
+   body.setDrawRange(2, nVert);
+   // this does not work correctly - draw range ignored when calculating normals
+   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
+   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
+   if (typeof body.computeVertexNormalsIdxRange == 'function')
+      body.computeVertexNormalsIdxRange(2, nVert);
+
+   return body;
+}
+
+/** @summary Create single shape from provided raw data from web viewer.
+  * @desc If nsegm changed, shape will be recreated
+  * @private */
+function createServerGeometry(rd, nsegm) {
+
+   if (rd.server_shape && ((rd.nsegm === nsegm) || !rd.shape))
+      return rd.server_shape;
+
+   rd.nsegm = nsegm;
+
+   let g = null, off = 0;
+
+   if (rd.shape) {
+      // case when TGeoShape provided as is
+      g = createGeometry(rd.shape);
+   } else {
+
+      if (!rd.raw || (rd.raw.length==0)) {
+         console.error('No raw data at all');
+         return null;
+      }
+
+      if (!rd.raw.buffer) {
+         console.error('No raw buffer');
+         return null;
+      }
+
+      if (rd.sz[0]) {
+         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
+         off += rd.sz[0]*4;
+      }
+
+      if (rd.sz[1]) {
+         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
+         off += rd.sz[1]*4;
+      }
+
+      if (rd.sz[2]) {
+         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
+         off += rd.sz[2]*4;
+      }
+
+      g = makeEveGeometry(rd);
+   }
+
+   // shape handle is similar to created in JSROOT.GeoPainter
+   return {
+      _typename: "$$Shape$$", // indicate that shape can be used as is
+      ready: true,
+      geom: g,
+      nfaces: numGeometryFaces(g)
+   }
+}
+
 /** @summary Provides info about geo object, used for tooltip info
   * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
   * @private */
 function provideObjectInfo(obj) {
    let info = [], shape = null;
 
-   if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
-   if (obj.fShape !== undefined) shape = obj.fShape; else
-   if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) shape = obj;
+   if (obj.fVolume !== undefined)
+      shape = obj.fVolume.fShape;
+   else if (obj.fShape !== undefined)
+      shape = obj.fShape;
+   else if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined))
+      shape = obj;
 
    if (!shape) {
       info.push(obj._typename);
@@ -84999,6 +85100,40 @@ class ClonedNodes {
       res.done = true;
 
       return res;
+   }
+
+   /** @summary Format REveGeomNode data to be able use it in list of clones
+     * @private */
+   static formatServerElement(elem) {
+      elem.kind = 2; // special element for geom viewer, used in TGeoPainter
+      elem.vis = 2; // visibility is alwys on
+      let m = elem.matr;
+      delete elem.matr;
+      if (!m?.length) return elem;
+
+      if (m.length == 16) {
+         elem.matrix = m;
+      } else {
+         let nm = elem.matrix = new Array(16);
+         for (let k = 0; k < 16; ++k) nm[k] = 0;
+         nm[0] = nm[5] = nm[10] = nm[15] = 1;
+
+         if (m.length == 3) {
+            // translation martix
+            nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
+         } else if (m.length == 4) {
+            // scale matrix
+            nm[0] = m[0]; nm[5] = m[1]; nm[10] = m[2]; nm[15] = m[3];
+         } else if (m.length == 9) {
+            // rotation matrix
+            nm[0] = m[0]; nm[4] = m[1]; nm[8] = m[2];
+            nm[1] = m[3]; nm[5] = m[4]; nm[9] = m[5];
+            nm[2] = m[6]; nm[6] = m[7]; nm[10] = m[8];
+         } else {
+            console.error(`wrong number of elements ${m.length} in the matrix`);
+         }
+      }
+      return elem;
    }
 }
 
@@ -90391,66 +90526,102 @@ function build(obj, opt) {
 
    opt.res_mesh = opt.res_faces = 0;
 
-   let shape = null, hide_top = false;
+   let clones = null, visibles = null;
 
-   if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-      shape = obj; obj = null;
-   } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-      shape = obj.fShape;
-   } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-      shape = obj.fShape;
-   } else if (obj._typename === 'TGeoManager') {
-      obj = obj.fMasterVolume;
-      hide_top = !opt.showtop;
-      shape = obj.fShape;
-   } else if (obj.fVolume) {
-      shape = obj.fVolume.fShape;
+   if (obj.visibles && obj.nodes && obj.numnodes) {
+      // case of draw message from geometry viewer
+
+      let nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
+
+      obj.nodes.forEach(node => {
+         nodes[node.id] = ClonedNodes.formatServerElement(node);
+      });
+
+      clones = new ClonedNodes(null, nodes);
+      clones.name_prefix = clones.getNodeName(0);
+      // normally only need when making selection, not used in geo viewer
+      // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
+      // this.geo_clones.setVisLevel(draw_msg.vislevel);
+      // parameter need for visualization with transparency
+      // TODO: provide from server
+      clones.maxdepth = 20;
+
+      let nsegm = obj.cfg?.nsegm || 30;
+
+      for (let cnt = 0; cnt < obj.visibles.length; ++cnt) {
+         let item = obj.visibles[cnt], rd = item.ri;
+
+         // entry may be provided without shape - it is ok
+         if (rd)
+            item.server_shape = rd.server_shape = createServerGeometry(rd, nsegm);
+      }
+
+      visibles = obj.visibles;
+
    } else {
-      obj = null;
+      let shape = null, hide_top = false;
+
+      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+         shape = obj; obj = null;
+      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+         shape = obj.fShape;
+      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+         shape = obj.fShape;
+      } else if (obj._typename === 'TGeoManager') {
+         obj = obj.fMasterVolume;
+         hide_top = !opt.showtop;
+         shape = obj.fShape;
+      } else if (obj.fVolume) {
+         shape = obj.fVolume.fShape;
+      } else {
+         obj = null;
+      }
+
+      if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
+         obj = buildCompositeVolume(shape);
+
+      if (!obj && shape)
+         obj = Object.assign(create$1("TEveGeoShapeExtract"),
+                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+      if (!obj) return null;
+
+      if (obj._typename.indexOf('TGeoVolume') === 0)
+         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+      clones = new ClonedNodes(obj);
+      clones.setVisLevel(opt.vislevel);
+      clones.setMaxVisNodes(opt.numnodes);
+
+      if (opt.dflt_colors)
+         clones.setDefaultColors(true);
+
+      let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
+      if (uniquevis <= 0)
+         clones.markVisibles(false, false, hide_top);
+      else
+         clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
+
+      clones.produceIdShifts();
+
+      // collect visible nodes
+      let res = clones.collectVisibles(opt.numfaces, opt.frustum);
+
+      visibles = res.lst;
    }
 
-   if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
-      obj = buildCompositeVolume(shape);
-
-   if (!obj && shape)
-      obj = Object.assign(create$1("TEveGeoShapeExtract"),
-                { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-
-   if (!obj) return null;
-
-   if (obj._typename.indexOf('TGeoVolume') === 0)
-      obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
-
-   let clones = new ClonedNodes(obj);
-   clones.setVisLevel(opt.vislevel);
-   clones.setMaxVisNodes(opt.numnodes);
-
-   if (opt.dflt_colors)
-      clones.setDefaultColors(true);
-
-   let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
-   if (uniquevis <= 0)
-      clones.markVisibles(false, false, hide_top);
-   else
-      clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
-
-   clones.produceIdShifts();
-
-   // collect visible nodes
-   let res = clones.collectVisibles(opt.numfaces, opt.frustum);
-
    // collect shapes
-   let shapes = clones.collectShapes(res.lst);
+   let shapes = clones.collectShapes(visibles);
 
    clones.buildShapes(shapes, opt.numfaces);
 
    let toplevel = new Object3D();
 
-   for (let n = 0; n < res.lst.length; ++n) {
-      let entry = res.lst[n];
+   for (let n = 0; n < visibles.length; ++n) {
+      let entry = visibles[n];
       if (entry.done) continue;
 
-      let shape = shapes[entry.shapeid];
+      let shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
          console.warn('shape marked as not ready when should');
          break;
