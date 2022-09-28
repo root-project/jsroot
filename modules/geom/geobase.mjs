@@ -2007,15 +2007,95 @@ function createGeometry(shape, limit) {
    return limit < 0 ? 0 : null;
 }
 
+
+function makeEveGeometry(rnr_data /*, force */) {
+   const GL_TRIANGLES = 4; // same as in EVE7
+
+   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
+
+   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
+
+   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
+
+   let body = new BufferGeometry();
+   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
+   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
+   body.setDrawRange(2, nVert);
+   // this does not work correctly - draw range ignored when calculating normals
+   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
+   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
+   if (typeof body.computeVertexNormalsIdxRange == 'function')
+      body.computeVertexNormalsIdxRange(2, nVert);
+
+   return body;
+}
+
+/** @summary Create single shape from provided raw data from web viewer.
+  * @desc If nsegm changed, shape will be recreated
+  * @private */
+function createServerGeometry(rd, nsegm) {
+
+   if (rd.server_shape && ((rd.nsegm === nsegm) || !rd.shape))
+      return rd.server_shape;
+
+   rd.nsegm = nsegm;
+
+   let g = null, off = 0;
+
+   if (rd.shape) {
+      // case when TGeoShape provided as is
+      g = createGeometry(rd.shape);
+   } else {
+
+      if (!rd.raw || (rd.raw.length==0)) {
+         console.error('No raw data at all');
+         return null;
+      }
+
+      if (!rd.raw.buffer) {
+         console.error('No raw buffer');
+         return null;
+      }
+
+      if (rd.sz[0]) {
+         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
+         off += rd.sz[0]*4;
+      }
+
+      if (rd.sz[1]) {
+         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
+         off += rd.sz[1]*4;
+      }
+
+      if (rd.sz[2]) {
+         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
+         off += rd.sz[2]*4;
+      }
+
+      g = makeEveGeometry(rd);
+   }
+
+   // shape handle is similar to created in JSROOT.GeoPainter
+   return {
+      _typename: "$$Shape$$", // indicate that shape can be used as is
+      ready: true,
+      geom: g,
+      nfaces: numGeometryFaces(g)
+   }
+}
+
 /** @summary Provides info about geo object, used for tooltip info
   * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
   * @private */
 function provideObjectInfo(obj) {
    let info = [], shape = null;
 
-   if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
-   if (obj.fShape !== undefined) shape = obj.fShape; else
-   if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) shape = obj;
+   if (obj.fVolume !== undefined)
+      shape = obj.fVolume.fShape;
+   else if (obj.fShape !== undefined)
+      shape = obj.fShape;
+   else if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined))
+      shape = obj;
 
    if (!shape) {
       info.push(obj._typename);
@@ -3245,7 +3325,7 @@ class ClonedNodes {
 
    /** @summary Format REveGeomNode data to be able use it in list of clones
      * @private */
-   static formatNodeElement(elem) {
+   static formatServerElement(elem) {
       elem.kind = 2; // special element for geom viewer, used in TGeoPainter
       elem.vis = 2; // visibility is alwys on
       let m = elem.matr;
@@ -3610,5 +3690,5 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 export { kindGeo, kindEve, kindShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
-         createGeometry, numGeometryFaces, numGeometryVertices,
+         createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };

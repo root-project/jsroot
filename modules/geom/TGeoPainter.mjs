@@ -22,7 +22,7 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve, geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind, produceRenderOrder, createGeometry, numGeometryFaces, createFlippedMesh,
+         countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
@@ -5094,7 +5094,7 @@ function build(obj, opt) {
       let nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
 
       obj.nodes.forEach(node => {
-         nodes[node.id] = ClonedNodes.formatNodeElement(node);
+         nodes[node.id] = ClonedNodes.formatServerElement(node);
       })
 
       clones = new ClonedNodes(null, nodes);
@@ -5113,7 +5113,7 @@ function build(obj, opt) {
 
          // entry may be provided without shape - it is ok
          if (rd)
-            item.server_shape = rd.server_shape = createServerShape(rd, nsegm);
+            item.server_shape = rd.server_shape = createServerGeometry(rd, nsegm);
       }
 
       visibles = obj.visibles;
@@ -5232,82 +5232,6 @@ function build(obj, opt) {
    }
 
    return toplevel;
-}
-
-function makeEveGeometry(rnr_data /*, force */) {
-   const GL_TRIANGLES = 4; // same as in EVE7
-
-   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
-
-   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
-
-   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
-
-   let body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
-   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
-   body.setDrawRange(2, nVert);
-   // this does not work correctly - draw range ignored when calculating normals
-   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
-   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
-   if (body.computeVertexNormalsIdxRange)
-      body.computeVertexNormalsIdxRange(2, nVert);
-
-   return body;
-}
-
-
-/** @summary Create single shape from provided raw data. If nsegm changed, shape will be recreated
-  * @private */
-function createServerShape(rd, nsegm) {
-
-   if (rd.server_shape && ((rd.nsegm===nsegm) || !rd.shape))
-      return rd.server_shape;
-
-   rd.nsegm = nsegm;
-
-   let g = null, off = 0;
-
-   if (rd.shape) {
-      // case when TGeoShape provided as is
-      g = createGeometry(rd.shape);
-   } else {
-
-      if (!rd.raw || (rd.raw.length==0)) {
-         console.error('No raw data at all');
-         return null;
-      }
-
-      if (!rd.raw.buffer) {
-         console.error('No raw buffer');
-         return null;
-      }
-
-      if (rd.sz[0]) {
-         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
-         off += rd.sz[0]*4;
-      }
-
-      if (rd.sz[1]) {
-         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
-         off += rd.sz[1]*4;
-      }
-
-      if (rd.sz[2]) {
-         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
-         off += rd.sz[2]*4;
-      }
-
-      g = makeEveGeometry(rd);
-   }
-
-   // shape handle is similar to created in JSROOT.GeoPainter
-   return {
-      _typename: "$$Shape$$", // indicate that shape can be used as is
-      ready: true,
-      geom: g,
-      nfaces: numGeometryFaces(g)
-   }
 }
 
 export { ClonedNodes, build, TGeoPainter, GeoDrawingControl,
