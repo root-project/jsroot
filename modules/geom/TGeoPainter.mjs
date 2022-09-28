@@ -128,10 +128,10 @@ function createList(parent, lst, name, title) {
        _expand(node, lst) {
           // only childs
 
-          if ('fVolume' in lst)
+          if (lst.fVolume)
              lst = lst.fVolume.fNodes;
 
-          if (!('arr' in lst)) return false;
+          if (!lst.arr) return false;
 
           node._childs = [];
 
@@ -326,7 +326,7 @@ class Toolbar {
       buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
-            throw new Error(`must provide button ${name} in button config`);
+            throw new Error("must provide button name in button config");
          if (this.buttonsNames.indexOf(buttonName) !== -1)
             throw new Error(`button name ${buttonName} is taken`);
 
@@ -449,13 +449,13 @@ class TGeoPainter extends ObjectPainter {
    constructor(dom, obj) {
 
       let gm;
-      if (obj && (obj._typename === "TGeoManager")) {
+      if (obj?._typename === "TGeoManager") {
          gm = obj;
          obj = obj.fMasterVolume;
       }
 
-      if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      if (obj?._typename && (obj._typename.indexOf('TGeoVolume') === 0))
+         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       super(dom, obj);
 
@@ -746,7 +746,7 @@ class TGeoPainter extends ObjectPainter {
    modifyVisisbility(name, sign) {
       if (getNodeKind(this.getGeometry()) !== 0) return;
 
-      if (name == "")
+      if (!name)
          return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
@@ -926,7 +926,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
-      // if (this.getItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
@@ -995,7 +994,7 @@ class TGeoPainter extends ObjectPainter {
       console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
    }
 
-   /** @summary Fills context menu */
+   /** @summary Fill context menu */
    fillContextMenu(menu) {
       menu.add("header: Draw options");
 
@@ -1510,7 +1509,7 @@ class TGeoPainter extends ObjectPainter {
 
                      this._last_hidden = [];
 
-                     for (let i=0;i<indx;++i)
+                     for (let i = 0; i < indx; ++i)
                         this._last_hidden.push(intersects[i].object);
 
                      this._last_hidden.forEach(obj => { obj.visible = false; });
@@ -1623,7 +1622,7 @@ class TGeoPainter extends ObjectPainter {
       let mainitemname = this.getItemName(),
           sub = this.resolveStack(stack);
       if (!sub || !sub.name) return mainitemname;
-      return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
+      return mainitemname ? mainitemname + "/" + sub.name : sub.name;
    }
 
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
@@ -2412,7 +2411,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   createScene(w, h) {
+   async createScene(w, h) {
       // three.js 3D drawing
       this._scene = new Scene();
       this._scene.fog = new Fog(0xffffff, 1, 10000);
@@ -5011,10 +5010,9 @@ function createItem(node, obj, name) {
    return sub;
 }
 
-
 /** @summary Draw dummy geometry
   * @private */
-function drawDummy3DGeom(painter) {
+async function drawDummy3DGeom(painter) {
 
    let extra = painter.getObject(),
        min = [-1, -1, -1], max = [1, 1, 1];
