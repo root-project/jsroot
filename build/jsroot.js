@@ -9712,7 +9712,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 
 /** @summary Produce text with MathJax
   * @private */
-function produceMathjax(painter, mj_node, arg) {
+async function produceMathjax(painter, mj_node, arg) {
    let mtext = translateMath(arg.text, arg.latex, arg.color, painter),
        options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
@@ -9733,7 +9733,7 @@ function produceMathjax(painter, mj_node, arg) {
 
 /** @summary Just typeset HTML node with MathJax
   * @private */
-function typesetMathjax(node) {
+async function typesetMathjax(node) {
    return loadMathjax().then(() => MathJax.typesetPromise(node ? [node] : undefined));
 }
 
@@ -46213,7 +46213,7 @@ class PointsCreator {
 
    /** @summary constructor
      * @param {number} size - number of points
-     * @param {booleand} [iswebgl=true] - if WebGL is used
+     * @param {boolean} [iswebgl=true] - if WebGL is used
      * @param {number} [scale=1] - scale factor */
    constructor(size, iswebgl, scale) {
       this.webgl = (iswebgl === undefined) ? true : iswebgl;
@@ -69010,8 +69010,9 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary draw 3D histogram as scatter plot
-     * @desc If there are too many points, box will be displayed */
-   async draw3DScatter() {
+     * @desc If there are too many points, box will be displayed
+     * @return {Promise|false} either Promise or just false that drawing cannot be performed */
+   draw3DScatter() {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
@@ -69024,7 +69025,7 @@ class TH3Painter extends THistPainter {
           i, j, k, bin_content;
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
-         return true;
+         return Promise.resolve(true);
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -70008,7 +70009,7 @@ async function redraw(dom, obj, opt) {
       let top = new BasePainter(dom).getTopPainter();
       // base painter do not have this method, if it there use it
       // it can be object painter here or can be specially introduce method to handling redraw!
-      if (top && typeof top.redrawObject == 'function') {
+      if (typeof top?.redrawObject == 'function') {
          redraw_res = top.redrawObject(obj, opt);
          if (redraw_res) res_painter = top;
       }
@@ -70778,8 +70779,6 @@ const DirectStreamers = {
             obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
    }
 };
-
-
 
 
 /** @summary Returns type id by its name
@@ -73303,7 +73302,7 @@ class TFile {
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
      * @private */
-   _readFormulas(tf1) {
+   async _readFormulas(tf1) {
 
       let arr = [];
 
@@ -73375,7 +73374,7 @@ class TFile {
 
    /** @summary Read file keys
      * @private */
-   readKeys() {
+   async readKeys() {
 
       // with the first readbuffer we read bigger amount to create header cache
       return this.readBuffer([0, 1024]).then(blob => {
@@ -80641,7 +80640,7 @@ __proto__: null,
 
 /** @summary Draw TText
   * @private */
-function drawText$1() {
+async function drawText$1() {
    let text = this.getObject(),
        pp = this.getPadPainter(),
        w = pp.getPadWidth(),
@@ -80715,7 +80714,7 @@ function drawText$1() {
 
 /** @summary Draw TLine
   * @private */
-function drawTLine(dom, obj) {
+async function drawTLine(dom, obj) {
 
    let painter = new ObjectPainter(dom, obj);
 
@@ -85115,7 +85114,7 @@ class ClonedNodes {
          elem.matrix = m;
       } else {
          let nm = elem.matrix = new Array(16);
-         for (let k = 0; k < 16; ++k) nm[k] = 0;
+         nm.fill(0);
          nm[0] = nm[5] = nm[10] = nm[15] = 1;
 
          if (m.length == 3) {
@@ -85567,10 +85566,10 @@ function createList(parent, lst, name, title) {
        _expand(node, lst) {
           // only childs
 
-          if ('fVolume' in lst)
+          if (lst.fVolume)
              lst = lst.fVolume.fNodes;
 
-          if (!('arr' in lst)) return false;
+          if (!lst.arr) return false;
 
           node._childs = [];
 
@@ -85765,7 +85764,7 @@ class Toolbar {
       buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
-            throw new Error(`must provide button ${name} in button config`);
+            throw new Error("must provide button name in button config");
          if (this.buttonsNames.indexOf(buttonName) !== -1)
             throw new Error(`button name ${buttonName} is taken`);
 
@@ -85888,13 +85887,13 @@ class TGeoPainter extends ObjectPainter {
    constructor(dom, obj) {
 
       let gm;
-      if (obj && (obj._typename === "TGeoManager")) {
+      if (obj?._typename === "TGeoManager") {
          gm = obj;
          obj = obj.fMasterVolume;
       }
 
-      if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      if (obj?._typename && (obj._typename.indexOf('TGeoVolume') === 0))
+         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       super(dom, obj);
 
@@ -86185,7 +86184,7 @@ class TGeoPainter extends ObjectPainter {
    modifyVisisbility(name, sign) {
       if (getNodeKind(this.getGeometry()) !== 0) return;
 
-      if (name == "")
+      if (!name)
          return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
@@ -86365,7 +86364,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
-      // if (this.getItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
@@ -86434,7 +86432,7 @@ class TGeoPainter extends ObjectPainter {
       console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
    }
 
-   /** @summary Fills context menu */
+   /** @summary Fill context menu */
    fillContextMenu(menu) {
       menu.add("header: Draw options");
 
@@ -86949,7 +86947,7 @@ class TGeoPainter extends ObjectPainter {
 
                      this._last_hidden = [];
 
-                     for (let i=0;i<indx;++i)
+                     for (let i = 0; i < indx; ++i)
                         this._last_hidden.push(intersects[i].object);
 
                      this._last_hidden.forEach(obj => { obj.visible = false; });
@@ -87062,7 +87060,7 @@ class TGeoPainter extends ObjectPainter {
       let mainitemname = this.getItemName(),
           sub = this.resolveStack(stack);
       if (!sub || !sub.name) return mainitemname;
-      return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
+      return mainitemname ? mainitemname + "/" + sub.name : sub.name;
    }
 
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
@@ -87851,7 +87849,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   createScene(w, h) {
+   async createScene(w, h) {
       // three.js 3D drawing
       this._scene = new Scene();
       this._scene.fog = new Fog(0xffffff, 1, 10000);
@@ -90450,10 +90448,9 @@ function createItem(node, obj, name) {
    return sub;
 }
 
-
 /** @summary Draw dummy geometry
   * @private */
-function drawDummy3DGeom(painter) {
+async function drawDummy3DGeom(painter) {
 
    let extra = painter.getObject(),
        min = [-1, -1, -1], max = [1, 1, 1];
