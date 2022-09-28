@@ -3336,7 +3336,7 @@ class ClonedNodes {
          elem.matrix = m;
       } else {
          let nm = elem.matrix = new Array(16);
-         for (let k = 0; k < 16; ++k) nm[k] = 0;
+         nm.fill(0);
          nm[0] = nm[5] = nm[10] = nm[15] = 1;
 
          if (m.length == 3) {

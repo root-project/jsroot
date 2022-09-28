@@ -1409,7 +1409,7 @@ class PointsCreator {
 
    /** @summary constructor
      * @param {number} size - number of points
-     * @param {booleand} [iswebgl=true] - if WebGL is used
+     * @param {boolean} [iswebgl=true] - if WebGL is used
      * @param {number} [scale=1] - scale factor */
    constructor(size, iswebgl, scale) {
       this.webgl = (iswebgl === undefined) ? true : iswebgl;
