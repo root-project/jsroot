@@ -5090,6 +5090,7 @@ function build(obj, opt) {
    let clones = null, visibles = null;
 
    if (obj.visibles && obj.nodes && obj.numnodes) {
+      // case of draw message from geometry viewer
 
       let nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
 
