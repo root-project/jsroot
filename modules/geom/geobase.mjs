@@ -3242,6 +3242,40 @@ class ClonedNodes {
 
       return res;
    }
+
+   /** @summary Format REveGeomNode data to be able use it in list of clones
+     * @private */
+   static formatNodeElement(elem) {
+      elem.kind = 2; // special element for geom viewer, used in TGeoPainter
+      elem.vis = 2; // visibility is alwys on
+      let m = elem.matr;
+      delete elem.matr;
+      if (!m?.length) return elem;
+
+      if (m.length == 16) {
+         elem.matrix = m;
+      } else {
+         let nm = elem.matrix = new Array(16);
+         for (let k = 0; k < 16; ++k) nm[k] = 0;
+         nm[0] = nm[5] = nm[10] = nm[15] = 1;
+
+         if (m.length == 3) {
+            // translation martix
+            nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
+         } else if (m.length == 4) {
+            // scale matrix
+            nm[0] = m[0]; nm[5] = m[1]; nm[10] = m[2]; nm[15] = m[3];
+         } else if (m.length == 9) {
+            // rotation matrix
+            nm[0] = m[0]; nm[4] = m[1]; nm[8] = m[2];
+            nm[1] = m[3]; nm[5] = m[4]; nm[9] = m[5];
+            nm[2] = m[6]; nm[6] = m[7]; nm[10] = m[8];
+         } else {
+            console.error(`wrong number of elements ${m.length} in the matrix`);
+         }
+      }
+      return elem;
+   }
 }
 
 /** @summary Create flipped mesh for the shape
