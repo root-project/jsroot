@@ -155,8 +155,8 @@ class Polygon {
       return this;
    }
 
-   calculateProperties() {
-      if (this.normal) return;
+   calculateProperties(force) {
+      if (this.normal && !force) return;
 
       let a = this.vertices[0],
           b = this.vertices[1],
@@ -505,8 +505,7 @@ class Geometry {
                for (let n = 0; n < polygon.vertices.length; ++n)
                   polygon.vertices[n].applyMatrix4(transfer_matrix);
             }
-
-            polygon.calculateProperties();
+            polygon.calculateProperties(transfer_matrix);
          }
 
          this.tree = new Node( polygons, nodeid );
@@ -733,8 +732,7 @@ class Geometry {
             v.y *= y;
             v.z *= z;
          }
-         delete polygon.normal;
-         polygon.calculateProperties();
+         polygon.calculateProperties(true);
       }
    }
 
@@ -795,7 +793,6 @@ function createNormal(axis_name, pos, size) {
    }
 
    let polygon = new Polygon(vert);
-   polygon.calculateProperties();
 
    let node = new Node([polygon]);
 
