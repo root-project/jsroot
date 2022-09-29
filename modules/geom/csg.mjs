@@ -137,10 +137,12 @@ class Vertex {
 
 class Polygon {
 
-   constructor(vertices) {
+   constructor(vertices, parent, more) {
       this.vertices = vertices || [];
       this.nsign = 1;
-      if ( this.vertices.length > 0 )
+      if (parent)
+         this.copyProperties(parent, more);
+      else if (this.vertices.length > 0)
          this.calculateProperties();
    }
 
@@ -272,8 +274,8 @@ class Polygon {
 
          //if ( f.length >= 3 ) front.push( new Polygon( f ).calculateProperties() );
          //if ( b.length >= 3 ) back.push( new Polygon( b ).calculateProperties() );
-         if ( f.length >= 3 ) front.push( new Polygon( f ).copyProperties(polygon, true) );
-         if ( b.length >= 3 ) back.push( new Polygon( b ).copyProperties(polygon, true) );
+         if ( f.length >= 3 ) front.push( new Polygon( f, polygon, true ) );
+         if ( b.length >= 3 ) back.push( new Polygon( b, polygon, true ) );
       }
    }
 
