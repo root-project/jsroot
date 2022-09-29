@@ -43,12 +43,12 @@ class Vertex {
       return this;
    }
 
-   multiplyScalar( scalar ) {
-      this.x *= scalar;
-      this.y *= scalar;
-      this.z *= scalar;
-      return this;
-   }
+   // multiplyScalar( scalar ) {
+   //   this.x *= scalar;
+   //   this.y *= scalar;
+   //   this.z *= scalar;
+   //   return this;
+   // }
 
    cross( vertex ) {
       let x = this.x,
@@ -488,7 +488,7 @@ class Geometry {
             if (flippedMesh) polygon.vertices.push( vert1, vert3, vert2 );
                         else polygon.vertices.push( vert1, vert2, vert3 );
 
-            polygon.calculateProperties();
+            polygon.calculateProperties(true);
             polygons.push( polygon );
          }
 
@@ -549,7 +549,7 @@ class Geometry {
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
-         polygon.calculateProperties();
+         polygon.calculateProperties(true);
          polygons.push( polygon );
       }
 
@@ -772,29 +772,27 @@ class Geometry {
 function createNormal(axis_name, pos, size) {
    if (!size || (size < 10000)) size = 10000;
 
-   let vert;
+   let vertices;
 
    switch(axis_name) {
       case "x":
-         vert = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
-                  new Vertex(pos,    size, -3*size, 1, 0, 0),
-                  new Vertex(pos,    size,    size, 1, 0, 0) ];
+         vertices = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
+                      new Vertex(pos,    size, -3*size, 1, 0, 0),
+                      new Vertex(pos,    size,    size, 1, 0, 0) ];
          break;
       case "y":
-         vert = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
-                  new Vertex(   size,  pos,    size, 0, 1, 0),
-                  new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
+         vertices = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
+                      new Vertex(   size,  pos,    size, 0, 1, 0),
+                      new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
          break;
       // case "z":
       default:
-         vert = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
-                  new Vertex(   size, -3*size, pos, 0, 0, 1),
-                  new Vertex(   size,    size, pos, 0, 0, 1) ];
+         vertices = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
+                      new Vertex(   size, -3*size, pos, 0, 0, 1),
+                      new Vertex(   size,    size, pos, 0, 0, 1) ];
    }
 
-   let polygon = new Polygon(vert);
-
-   let node = new Node([polygon]);
+   let node = new Node([ new Polygon(vertices) ]);
 
    return new Geometry(node);
 }
