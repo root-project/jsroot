@@ -499,12 +499,17 @@ class Geometry {
       } else if (geometry.polygons && (geometry.polygons[0] instanceof Polygon)) {
          let polygons = geometry.polygons;
 
-         for (let i=0;i<polygons.length;++i) {
+         for (let i = 0; i < polygons.length; ++i) {
             let polygon = polygons[i];
             if (transfer_matrix) {
+               let new_vertices = [];
+
                for (let n = 0; n < polygon.vertices.length; ++n)
-                  polygon.vertices[n].applyMatrix4(transfer_matrix);
+                  new_vertices.push(polygon.vertices[n].clone().applyMatrix4(transfer_matrix));
+
+               polygon.vertices = new_vertices;
             }
+
             polygon.calculateProperties(transfer_matrix);
          }
 
