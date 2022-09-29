@@ -365,9 +365,9 @@ class Node {
       let node = new Node();
 
       node.divider = this.divider.clone();
-      node.polygons = this.polygons.map( function( polygon ) { return polygon.clone(); } );
-      node.front = this.front && this.front.clone();
-      node.back = this.back && this.back.clone();
+      node.polygons = this.polygons.map( polygon => polygon.clone() );
+      node.front = this.front ? this.front.clone() : undefined;
+      node.back = this.back ? this.back.clone() : undefined;
 
       return node;
    }
