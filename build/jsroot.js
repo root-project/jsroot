@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "28/09/2022";
+let version_date = "29/09/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -81170,8 +81170,8 @@ class Polygon {
       return this;
    }
 
-   calculateProperties() {
-      if (this.normal) return;
+   calculateProperties(force) {
+      if (this.normal && !force) return;
 
       let a = this.vertices[0],
           b = this.vertices[1],
@@ -81380,9 +81380,9 @@ class Node {
       let node = new Node();
 
       node.divider = this.divider.clone();
-      node.polygons = this.polygons.map( function( polygon ) { return polygon.clone(); } );
-      node.front = this.front && this.front.clone();
-      node.back = this.back && this.back.clone();
+      node.polygons = this.polygons.map( polygon => polygon.clone() );
+      node.front = this.front ? this.front.clone() : undefined;
+      node.back = this.back ? this.back.clone() : undefined;
 
       return node;
    }
@@ -81520,8 +81520,7 @@ class Geometry {
                for (let n = 0; n < polygon.vertices.length; ++n)
                   polygon.vertices[n].applyMatrix4(transfer_matrix);
             }
-
-            polygon.calculateProperties();
+            polygon.calculateProperties(transfer_matrix);
          }
 
          this.tree = new Node( polygons, nodeid );
@@ -81748,8 +81747,7 @@ class Geometry {
             v.y *= y;
             v.z *= z;
          }
-         delete polygon.normal;
-         polygon.calculateProperties();
+         polygon.calculateProperties(true);
       }
    }
 
@@ -81810,7 +81808,6 @@ function createNormal(axis_name, pos, size) {
    }
 
    let polygon = new Polygon(vert);
-   polygon.calculateProperties();
 
    let node = new Node([polygon]);
 
