@@ -430,7 +430,7 @@ class RFramePainter extends RObjectPainter {
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
-         // In v7 ticksx==0 means no ticks, ticksx==1 equivalent to ==0 in v6
+         // In v7 ticksx == 0 means no ticks, ticksx==1 equivalent to == 0 in v6
 
          let can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
 
@@ -820,7 +820,7 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary function can be used for zooming into specified range
-     * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+     * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
@@ -1090,7 +1090,7 @@ class RFramePainter extends RObjectPainter {
          return handle.fillAxisContextMenu(menu, kind);
       }
 
-      let alone = menu.size()==0;
+      let alone = menu.size() == 0;
 
       if (alone)
          menu.add("header:Frame");

@@ -1033,12 +1033,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], linex_material, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
+      line.position.set(0, grminy, n == 0 ? grminz : grmaxz);
       line.xyboxid = 2; line.bottom = (n == 0);
       top.add(line);
 
       line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
+      line.position.set(0, grmaxy, n == 0 ? grminz : grmaxz);
       line.xyboxid = 4; line.bottom = (n == 0);
       top.add(line);
    }
@@ -1047,12 +1047,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], liney_material, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
+      line.position.set(grminx, 0, n == 0 ? grminz : grmaxz);
       line.xyboxid = 3; line.bottom = (n == 0);
       top.add(line);
 
       line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
+      line.position.set(grmaxx, 0, n == 0 ? grminz : grmaxz);
       line.xyboxid = 1; line.bottom = (n == 0);
       top.add(line);
    }
@@ -1455,50 +1455,50 @@ function drawBinsError3D(painter, is_v7 = false) {
     // loop over the points - first loop counts points, second fill arrays
    for (let loop = 0; loop < 2; ++loop) {
 
-       for (i=handle.i1;i<handle.i2;++i) {
-          x1 = handle.grx[i];
-          x2 = handle.grx[i+1];
-          for (j=handle.j1;j<handle.j2;++j) {
-             binz = histo.getBinContent(i+1, j+1);
-             if ((binz < zmin) || (binz > zmax)) continue;
-             if ((binz===zmin) && check_skip_min()) continue;
+      for (i = handle.i1; i < handle.i2; ++i) {
+         x1 = handle.grx[i];
+         x2 = handle.grx[i + 1];
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz < zmin) || (binz > zmax)) continue;
+            if ((binz === zmin) && check_skip_min()) continue;
 
-             // just count number of segments
-             if (loop===0) { nsegments+=3; continue; }
+            // just count number of segments
+            if (loop === 0) { nsegments += 3; continue; }
 
-             bin = histo.getBin(i+1,j+1);
-             binerr = histo.getBinError(bin);
-             binindx[lindx/18] = bin;
+            bin = histo.getBin(i + 1, j + 1);
+            binerr = histo.getBinError(bin);
+            binindx[lindx / 18] = bin;
 
-             y1 = handle.gry[j];
-             y2 = handle.gry[j+1];
+            y1 = handle.gry[j];
+            y2 = handle.gry[j + 1];
 
-             z1 = main.grz((binz - binerr < zmin) ? zmin : binz-binerr);
-             z2 = main.grz((binz + binerr > zmax) ? zmax : binz+binerr);
+            z1 = main.grz((binz - binerr < zmin) ? zmin : binz - binerr);
+            z2 = main.grz((binz + binerr > zmax) ? zmax : binz + binerr);
 
-             lpos[lindx] = x1; lpos[lindx+3] = x2;
-             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
-             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
-             lindx+=6;
+            lpos[lindx] = x1; lpos[lindx + 3] = x2;
+            lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
+            lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
+            lindx += 6;
 
-             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
-             lpos[lindx+1] = y1; lpos[lindx+4] = y2;
-             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
-             lindx+=6;
+            lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
+            lpos[lindx + 1] = y1; lpos[lindx + 4] = y2;
+            lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
+            lindx += 6;
 
-             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
-             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
-             lpos[lindx+2] = z1; lpos[lindx+5] = z2;
-             lindx+=6;
-          }
-       }
+            lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
+            lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
+            lpos[lindx + 2] = z1; lpos[lindx + 5] = z2;
+            lindx += 6;
+         }
+      }
 
-       if (loop===0) {
-          if (nsegments===0) return;
-          lpos = new Float32Array(nsegments*6);
-          binindx = new Int32Array(nsegments/3);
-       }
-    }
+      if (loop === 0) {
+         if (nsegments === 0) return;
+         lpos = new Float32Array(nsegments * 6);
+         binindx = new Int32Array(nsegments / 3);
+      }
+   }
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
@@ -1647,18 +1647,18 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (!dolines) return;
       let side1 = CheckSide(z1,0,2*main.size_z3d),
           side2 = CheckSide(z2,0,2*main.size_z3d);
-      if ((side1===side2) && (side1!==0)) return;
+      if ((side1 === side2) && (side1 !== 0)) return;
       if (!loop) return ++nsegments;
 
-      if (side1!==0) {
-         let diff = z2-z1;
-         z1 = (side1<0) ? 0 : 2*main.size_z3d;
+      if (side1 !== 0) {
+         let diff = z2 - z1;
+         z1 = (side1 < 0) ? 0 : 2*main.size_z3d;
          x1 = x2 - (x2-x1)/diff*(z2-z1);
          y1 = y2 - (y2-y1)/diff*(z2-z1);
       }
-      if (side2!==0) {
-         let diff = z1-z2;
-         z2 = (side2<0) ? 0 : 2*main.size_z3d;
+      if (side2 !== 0) {
+         let diff = z1 - z2;
+         z2 = (side2 < 0) ? 0 : 2*main.size_z3d;
          x2 = x1 - (x1-x2)/diff*(z1-z2);
          y2 = y1 - (y1-y2)/diff*(z1-z2);
       }
@@ -1674,7 +1674,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (k>=pntbuf.length) console.log('more than 6 points???');
 
       let part = (crossz - zz1) / (zz2 - zz1), shift = 3;
-      if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
+      if ((lastpart !== 0) && (Math.abs(part) < Math.abs(lastpart))) {
          // while second crossing point closer than first to original, move it in memory
          pntbuf[k] = pntbuf[k-3];
          pntbuf[k+1] = pntbuf[k-2];
@@ -1773,35 +1773,35 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          gridcnt = 0;
 
          k = 0;
-         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
+         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k += 3; }
 
          if (side1!==side2) {
             // order is important, should move from 1->2 point, checked via lastpart
             lastpart = 0;
-            if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
-            if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
+            if ((side1 < 0) || (side2 < 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+            if ((side1 > 0) || (side2 > 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
          }
 
-         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
+         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k += 3; }
 
          if (side2!==side3) {
             // order is important, should move from 2->3 point, checked via lastpart
             lastpart = 0;
-            if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
-            if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
+            if ((side2 < 0) || (side3 < 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+            if ((side2 > 0) || (side3 > 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
          }
 
          if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
 
-         if (side3!==side1) {
+         if (side3 !== side1) {
             // order is important, should move from 3->1 point, checked via lastpart
             lastpart = 0;
             if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
             if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
          }
 
-         if (k===0) continue;
-         if (k<9) { console.log('found less than 3 points', k/3); continue; }
+         if (k === 0) continue;
+         if (k < 9) { console.log('found less than 3 points', k/3); continue; }
 
          if (grid && (gridcnt === 6)) {
             for (let jj = 0; jj < 6; ++jj)

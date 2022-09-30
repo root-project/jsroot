@@ -347,16 +347,25 @@ class TH3Painter extends THistPainter {
             single_bin_verts[k*3+1] = vert.y-0.5;
             single_bin_verts[k*3+2] = vert.z-0.5;
 
-            if (k%6===0) nn+=3;
+            if (k%6 === 0) nn+=3;
             single_bin_norms[k*3]   = normals[nn];
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];
          }
          use_helper = true;
 
-         if (box_option===12) { use_colors = true; } else
-         if (box_option===13) { use_colors = true; use_helper = false; }  else
-         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; use_scale = false; use_helper = false; use_lambert = true; }
+         if (box_option === 12) {
+            use_colors = true;
+         } else if (box_option === 13) {
+            use_colors = true;
+            use_helper = false;
+         }  else if (this.options.GLColor) {
+            use_colors = true;
+            use_opacity = 0.5;
+            use_scale = false;
+            use_helper = false;
+            use_lambert = true;
+         }
       }
 
       if (use_scale)
@@ -383,7 +392,7 @@ class TH3Painter extends THistPainter {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.GLColor && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
@@ -451,7 +460,7 @@ class TH3Painter extends THistPainter {
             biny = histo.fYaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.GLColor && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not show very small bins

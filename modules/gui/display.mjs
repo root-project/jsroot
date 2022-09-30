@@ -265,7 +265,7 @@ class GridDisplay extends MDIDisplay {
             while (arg>0) {
                sizes.unshift(Math.max(arg % 10, 1));
                arg = Math.round((arg-sizes[0])/10);
-               if (sizes[0]===0) sizes[0]=1;
+               if (sizes[0] === 0) sizes[0] = 1;
             }
          }
       }
@@ -279,7 +279,7 @@ class GridDisplay extends MDIDisplay {
             while (kind>0) {
                arr.unshift(kind % 10);
                kind = Math.round((kind-arr[0])/10);
-               if (arr[0]==0) arr[0]=1;
+               if (arr[0] === 0) arr[0] = 1;
             }
             num = arr.length;
          }

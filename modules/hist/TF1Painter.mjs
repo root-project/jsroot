@@ -12,7 +12,7 @@ function proivdeEvalPar(obj) {
    let _func = obj.fTitle, isformula = false, pprefix = "[";
    if (_func === "gaus") _func = "gaus(0)";
    if (obj.fFormula && typeof obj.fFormula.fFormula == "string") {
-     if (obj.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
+     if (obj.fFormula.fFormula.indexOf("[](double*x,double*p)") == 0) {
         isformula = true; pprefix = "p[";
         _func = obj.fFormula.fFormula.slice(21);
      } else {

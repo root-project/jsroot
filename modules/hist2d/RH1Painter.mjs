@@ -790,7 +790,7 @@ class RH1Painter extends RHistPainter {
          // if bars option used check that bar is not match
          if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
          // exclude empty bin if empty bins suppressed
-         if (!this.options.Zero && (histo.getBinContent(findbin+1)===0)) findbin = null;
+         if (!this.options.Zero && (histo.getBinContent(findbin+1) === 0)) findbin = null;
       }
 
       let ttrect = this.draw_g.select(".tooltip_bin");

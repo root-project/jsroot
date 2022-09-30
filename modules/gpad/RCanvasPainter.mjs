@@ -268,7 +268,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg(panel_handle, msg) {
-                     let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.slice(10) : "";
+                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : "";
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
@@ -286,7 +286,7 @@ class RCanvasPainter extends RPadPainter {
                });
 
                let addr = handle.href;
-               if (relative_path.indexOf("../")==0) {
+               if (relative_path.indexOf("../") == 0) {
                   let ddd = addr.lastIndexOf("/",addr.length-2);
                   addr = addr.slice(0,ddd) + relative_path.slice(2);
                } else {

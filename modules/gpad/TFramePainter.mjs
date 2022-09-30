@@ -2537,7 +2537,7 @@ class TFramePainter extends ObjectPainter {
    }
 
     /** @summary Function can be used for zooming into specified range
-      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+      * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
       * @param {number} xmin
       * @param {number} xmax
       * @param {number} [ymin]

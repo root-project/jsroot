@@ -231,7 +231,7 @@ class TGraph2DPainter extends ObjectPainter {
 
             if (step > 1) {
                select = (select+1) % step;
-               if (select!==0) continue;
+               if (select !== 0) continue;
             }
 
             index[icnt++] = i; // remember point index for tooltip

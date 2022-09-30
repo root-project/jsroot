@@ -2212,7 +2212,7 @@ class THistPainter extends ObjectPainter {
                binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
-               if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
+               if ((binz > 0) && ((binz<res.min) || (res.min === 0))) res.min = binz;
                binz = binz/binarea;
             }
             if (this.maxbin === null) {

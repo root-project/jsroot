@@ -432,7 +432,7 @@ async function loadScript(url) {
       return loadNext();
    }
 
-   if (url.indexOf("$$$")===0) {
+   if (url.indexOf("$$$") === 0) {
       url = url.slice(3);
       if ((url.indexOf("style/") == 0) && (url.indexOf('.css') < 0))
          url += ".css";
@@ -789,7 +789,7 @@ function decodeUrl(url) {
 
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
-      while ((pos < url.length) && ((nq!==0) || ((url[pos]!=="&") && (url[pos]!=="#")))) {
+      while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== "&") && (url[pos] !== "#")))) {
          switch (url[pos]) {
             case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
             case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
@@ -874,7 +874,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
       if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
           // in these special cases browsers not always set status
-          !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
+          !((this.status == 0) && ((url.indexOf("file://") == 0) || (url.indexOf("blob:") == 0)))) {
             return this.error_callback(Error(`Fail to load url ${url}`), this.status);
       }
 

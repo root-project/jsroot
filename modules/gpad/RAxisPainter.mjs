@@ -315,7 +315,7 @@ class RAxisPainter extends RObjectPainter {
             let lbls = [], indx = 0, totallen = 0;
             while (indx<handle.major.length) {
                let lbl = this.format(handle.major[indx], true);
-               if (lbls.indexOf(lbl)<0) {
+               if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
                   totallen += lbl.length;
                   indx++;
@@ -325,8 +325,9 @@ class RAxisPainter extends RObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order==0 we should virually remove "0." and extra label on top
-            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+            // for order == 0 we should virually remove "0." and extra label on top
+            if (!order && (this.ndig < 4))
+               totallen -= (handle.major.length * 2 + 3);
 
             if (totallen < bestlen) {
                bestlen = totallen;

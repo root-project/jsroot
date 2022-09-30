@@ -94,15 +94,15 @@ function drawTH2PolyLego(painter) {
 
       let pos = new Float32Array(nfaces*9), indx = 0;
 
-      for (let ngr=0;ngr<all_pnts.length;++ngr) {
+      for (let ngr = 0; ngr < all_pnts.length; ++ngr) {
          let pnts = all_pnts[ngr], faces = all_faces[ngr];
 
-         for (let layer=0;layer<2;++layer) {
+         for (let layer = 0; layer < 2; ++layer) {
             for (let n=0;n<faces.length;++n) {
                let face = faces[n],
                    pnt1 = pnts[face[0]],
-                   pnt2 = pnts[face[(layer===0) ? 2 : 1]],
-                   pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+                   pnt2 = pnts[face[layer === 0 ? 2 : 1]],
+                   pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;
@@ -122,9 +122,9 @@ function drawTH2PolyLego(painter) {
          }
 
          if (z1>z0) {
-            for (let n=0;n<pnts.length;++n) {
+            for (let n = 0; n < pnts.length; ++n) {
                let pnt1 = pnts[n],
-                   pnt2 = pnts[(n>0) ? n-1 : pnts.length-1];
+                   pnt2 = pnts[n > 0 ? n-1 : pnts.length-1];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;

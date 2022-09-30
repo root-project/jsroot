@@ -91,7 +91,7 @@ class THStackPainter extends ObjectPainter {
             i2 = hist.fXaxis.fLast;
          }
 
-         if (hist._typename.indexOf("TH2")===0) {
+         if (hist._typename.indexOf("TH2") === 0) {
             j2 = hist.fYaxis.fNbins;
             if (hist.fYaxis.TestBit(EAxisBits.kAxisRange)) {
                j1 = hist.fYaxis.fFirst;
@@ -208,12 +208,12 @@ class THStackPainter extends ObjectPainter {
 
       const hasErrors = hist => {
          if (hist.fSumw2 && (hist.fSumw2.length > 0))
-            for (let n = 0;n < hist.fSumw2.length; ++n)
+            for (let n = 0; n < hist.fSumw2.length; ++n)
                if (hist.fSumw2[n] > 0) return true;
          return false;
       };
 
-      if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
+      if (hist && (hist._typename.indexOf("TH2") == 0)) this.options.ndim = 2;
 
       if ((this.options.ndim == 2) && !opt) opt = "lego1";
 

@@ -340,13 +340,13 @@ class RH3Painter extends RHistPainter {
          single_bin_verts = new Float32Array(buffer_size);
          single_bin_norms = new Float32Array(buffer_size);
 
-         for (let k=0,nn=-3;k<indicies.length;++k) {
+         for (let k = 0, nn = -3; k < indicies.length; ++k) {
             let vert = vertices[indicies[k]];
             single_bin_verts[k*3]   = vert.x-0.5;
             single_bin_verts[k*3+1] = vert.y-0.5;
             single_bin_verts[k*3+2] = vert.z-0.5;
 
-            if (k%6===0) nn+=3;
+            if (k%6 === 0) nn+=3;
             single_bin_norms[k*3]   = normals[nn];
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];
@@ -386,7 +386,7 @@ class RH3Painter extends RHistPainter {
          for (j = j1; j < j2; j += dj) {
             for (k = k1; k < k2; k += dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.Color && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.Color && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
@@ -459,7 +459,7 @@ class RH3Painter extends RHistPainter {
             biny = yaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; k +=dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.Color && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.Color && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not show very small bins

@@ -108,7 +108,7 @@ class JSRootMenu {
          return;
 
       let without_sub = false;
-      if (top_name.indexOf("nosub:")==0) {
+      if (top_name.indexOf("nosub:") == 0) {
          without_sub = true;
          top_name = top_name.slice(6);
       }
@@ -1012,14 +1012,14 @@ class StandaloneMenu extends JSRootMenu {
          return;
       }
 
-      if (name.indexOf("sub:")==0) {
+      if (name.indexOf("sub:") == 0) {
          name = name.slice(4);
          elem.sub = [];
          this.stack.push(elem.sub);
       }
 
-      if (name.indexOf("chk:")==0) { elem.checked = true; name = name.slice(4); } else
-      if (name.indexOf("unk:")==0) { elem.checked = false; name = name.slice(4); }
+      if (name.indexOf("chk:") == 0) { elem.checked = true; name = name.slice(4); } else
+      if (name.indexOf("unk:") == 0) { elem.checked = false; name = name.slice(4); }
 
       elem.text = name;
       elem.title = title;
@@ -1361,7 +1361,7 @@ class BootstrapMenu extends JSRootMenu {
       if ((name=="column:") || (name == "endcolumn:"))
          return;
 
-      if (name.indexOf("header:")==0) {
+      if (name.indexOf("header:") == 0) {
          this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
          return;
       }
@@ -1374,14 +1374,14 @@ class BootstrapMenu extends JSRootMenu {
          this.code += "</ul>";
          return;
       }
-      if (name.indexOf("sub:")==0) { name = name.slice(4); newlevel = true; }
+      if (name.indexOf("sub:") == 0) { name = name.slice(4); newlevel = true; }
 
       if (typeof arg == 'function') { func = arg; arg = name; }
 
-      if (name.indexOf("chk:")==0) {
+      if (name.indexOf("chk:") == 0) {
          checked = '\u2713';
          name  = name.slice(4);
-      } else if (name.indexOf("unk:")==0) {
+      } else if (name.indexOf("unk:") == 0) {
          name = name.slice(4);
       }
 
