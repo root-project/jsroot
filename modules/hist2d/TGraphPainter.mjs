@@ -214,7 +214,7 @@ class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
+      if ((gr._typename === "TCutG") && (npoints > 3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphMultiErrors') kind = 2; else
@@ -1092,8 +1092,8 @@ class TGraphPainter extends ObjectPainter {
 
       if (!best || (!best.bin && !best.closeline)) return null;
 
-      let islines = (this.draw_kind=="lines"),
-          ismark = (this.draw_kind=="mark"),
+      let islines = (this.draw_kind == "lines"),
+          ismark = (this.draw_kind == "mark"),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           gr = this.getObject(),

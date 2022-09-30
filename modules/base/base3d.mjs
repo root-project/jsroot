@@ -36,7 +36,7 @@ function createSVGRenderer(as_is, precision, doc) {
               _wrapper: this,
               setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
-                 if ((name=="style") && value) {
+                 if ((name == "style") && value) {
                     let pos1 = value.indexOf(excl_style1);
                     if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
                        value = value.slice(0, value.length - excl_style1.length);
@@ -660,7 +660,7 @@ class TooltipFor3D {
 
    /** @summary Show tooltip */
    show(v /*, mouse_pos, status_func*/) {
-      if (!v || (v==="")) return this.hide();
+      if (!v) return this.hide();
 
       if ((typeof v == 'object') && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
@@ -815,7 +815,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
          control.painter.analyzeMouseWheelEvent(evnt, item, position, false);
 
-         if ((kind==="z") && intersect.object.use_y_for_z) kind = "y";
+         if ((kind === "z") && intersect.object.use_y_for_z) kind = "y";
 
          control.painter.zoom(kind, item.min, item.max);
       }

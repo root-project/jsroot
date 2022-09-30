@@ -549,7 +549,7 @@ async function makeSVG(args) {
 
          function clear_element() {
             const elem = d3_select(this);
-            if (elem.style('display')=="none") elem.remove();
+            if (elem.style('display') == "none") elem.remove();
          };
 
          // remove containers with display: none

@@ -622,7 +622,7 @@ function parse(json) {
             default: arr = new Array(value.len);
          }
 
-         arr.fill((value.$arr==="Bool") ? false : 0);
+         arr.fill((value.$arr === "Bool") ? false : 0);
 
          if (value.b !== undefined) {
             // base64 coding
@@ -1368,7 +1368,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename=="TObject") || (typename=="TNamed") || (obj && (obj.fBits!==undefined)))
+   if ((typename == "TObject") || (typename == "TNamed") || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };

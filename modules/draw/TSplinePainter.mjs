@@ -271,7 +271,7 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis/*,min,max*/) {
-      if (axis!=="x") return false;
+      if (axis !== "x") return false;
 
       let spline = this.getObject();
       if (!spline) return false;

@@ -1023,7 +1023,7 @@ class FlexibleDisplay extends MDIDisplay {
       let arr = [];
       this.forEachFrame(frame => {
          let state = this.getFrameState(frame);
-         if (state=="min") return;
+         if (state == "min") return;
          if (state == "max") this.changeFrameState(frame, "normal", true);
          arr.push(frame);
       });

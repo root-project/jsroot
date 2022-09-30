@@ -246,7 +246,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
                 axis_name = zoom_mesh.zoom,
                 axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
-            if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
+            if ((axis_name === "z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
             return { name: axis_name,
                      title: "axis object",
@@ -680,7 +680,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          if (!pnt) return undefined;
 
          let min = -this.size_3d, max = this.size_3d;
-         if (this.zoom==="z") { min = 0; max = 2*this.size_3d; }
+         if (this.zoom === "z") { min = 0; max = 2*this.size_3d; }
 
          if (pnt[this.zoom] < min)
             pnt[this.zoom] = min;

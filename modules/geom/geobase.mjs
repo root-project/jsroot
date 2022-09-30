@@ -3570,7 +3570,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          resort[i] = arr[i];
       }
 
-      if (method==="ray")
+      if (method === "ray")
          for (let i=arr.length - 1; i >= 0; --i) {
             let mesh = arr[i], intersects,
                 box3 = mesh.$jsroot_box3,

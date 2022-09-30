@@ -33,7 +33,7 @@ class RH2Painter extends RHistPainter {
    /** @summary Toggle projection */
    toggleProjection(kind, width) {
 
-      if (kind=="Projections") kind = "";
+      if (kind == "Projections") kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
           width = parseInt(kind.slice(1));

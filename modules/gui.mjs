@@ -157,7 +157,7 @@ async function buildGUI(gui_element, gui_kind = "") {
 
    if (gui_kind == "draw") {
       online = drawing = nobrowser = true;
-   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false")) {
+   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser") !== "false")) {
       nobrowser = true;
    }
 

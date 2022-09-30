@@ -353,7 +353,7 @@ function objectHierarchy(top, obj, args = undefined) {
    let isarray = (isArrayProto(proto) > 0) && obj.length,
        compress = isarray && (obj.length > settings.HierarchyLimit),  arrcompress = false;
 
-   if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
+   if (isarray && (top._name === "Object") && !top._parent) top._name = "Array";
 
    if (compress) {
       arrcompress = true;
@@ -3229,7 +3229,7 @@ class HierarchyPainter extends BasePainter {
 
       let load = GetOption("load");
 
-      if (expanditems.length == 0 && (GetOption("expand")==="")) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption("expand") === "")) expanditems.push("");
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
@@ -3336,8 +3336,8 @@ class HierarchyPainter extends BasePainter {
             // check if server enables monitoring
             if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
                browser_kind = this.h._browser;
-               if (browser_kind==="no") browser_kind = ""; else
-               if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+               if (browser_kind === "no") browser_kind = ""; else
+               if (browser_kind === "off") { browser_kind = ""; status = null; this.exclude_browser = true; }
             }
 
             if (('_monitoring' in this.h) && !monitor)
@@ -3480,7 +3480,7 @@ class HierarchyPainter extends BasePainter {
          guiCode += '<div style="display:flex;flex-direction:row">';
       }
 
-      if (this.is_online || !this.no_select || this.no_select=="file")
+      if (this.is_online || !this.no_select || this.no_select == "file")
          guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>' +
                     '</div>';
 

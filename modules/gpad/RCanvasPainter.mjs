@@ -241,7 +241,7 @@ class RCanvasPainter extends RPadPainter {
          let obj = parse(msg.slice(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
-      } else if (msg.slice(0,9)=="REPL_REQ:") {
+      } else if (msg.slice(0,9) == "REPL_REQ:") {
          this.processDrawableReply(msg.slice(9));
       } else if (msg.slice(0,4) == 'CMD:') {
          msg = msg.slice(4);

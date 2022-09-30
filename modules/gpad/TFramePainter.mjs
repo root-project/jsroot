@@ -1351,7 +1351,7 @@ const FrameInteractive = {
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
+         if (fp && (!domenu || (frame_corner && (kind !== "frame"))))
             domenu = fp.fillContextMenu(menu);
 
          if (domenu)
@@ -1371,7 +1371,7 @@ const FrameInteractive = {
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
-      if (!kind || (kind=="")) kind = "main";
+      if (!kind) kind = "main";
       let fld = "touch_" + kind;
 
       evnt.sourceEvent.preventDefault();
@@ -1636,7 +1636,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       let aname = name;
-      if (this.swap_xy) aname = (name=="x") ? "y" : "x";
+      if (this.swap_xy) aname = (name == "x") ? "y" : "x";
       let smin = 'scale_' + aname + 'min',
           smax = 'scale_' + aname + 'max';
 
@@ -2378,8 +2378,8 @@ class TFramePainter extends ObjectPainter {
 
       // do not allow log scale for labels
       if (!pad[name]) {
-         if (this.swap_xy && axis==="x") axis = "y"; else
-         if (this.swap_xy && axis==="y") axis = "x";
+         if (this.swap_xy && axis === "x") axis = "y"; else
+         if (this.swap_xy && axis === "y") axis = "x";
          let handle = this[axis + "_handle"];
          if (handle && (handle.kind === "labels")) return;
       }
@@ -2550,9 +2550,9 @@ class TFramePainter extends ObjectPainter {
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
 
-      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+      if (xmin === "x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin === "y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin === "z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -2750,14 +2750,14 @@ class TFramePainter extends ObjectPainter {
     * @private */
    showAxisStatus(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name == "x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0] + "," + m[1]);
    }
 
    /** @summary Add interactive keys handlers
