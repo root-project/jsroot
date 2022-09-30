@@ -628,7 +628,7 @@ class HistContour {
          if (this.colzmax <= 0)
             this.colzmax = 1.;
          if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
+            if ((zminpositive === undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;
             else
                this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
@@ -2215,14 +2215,14 @@ class THistPainter extends ObjectPainter {
                if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
                binz = binz/binarea;
             }
-            if (this.maxbin===null) {
+            if (this.maxbin === null) {
                this.maxbin = this.minbin = binz;
             } else {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin===null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz<this.minposbin)) this.minposbin = binz;
          }
       }
 

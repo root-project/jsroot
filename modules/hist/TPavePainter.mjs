@@ -1020,17 +1020,17 @@ class TPavePainter extends ObjectPainter {
          for(let n = 0; n < f1.GetNumPars(); ++n) {
             let parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
 
-            parvalue = (parvalue===undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
+            parvalue = (parvalue === undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
             if (parerr !== undefined) {
                parerr = this.format(parerr,"last");
-               if ((Number(parerr)===0) && (f1.GetParError(n) != 0))
+               if ((Number(parerr) === 0) && (f1.GetParError(n) != 0))
                   parerr = this.format(f1.GetParError(n),"4.2g");
             }
 
             if ((print_ferrors > 0) && parerr)
-               this.addText(parname + " = " + parvalue + " #pm " + parerr);
+               this.addText(`${parname} = ${parvalue} #pm ${parerr}`);
             else
-               this.addText(parname + " = " + parvalue);
+               this.addText(`${parname} = ${parvalue}`);
          }
 
       return true;

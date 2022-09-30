@@ -2093,7 +2093,7 @@ function provideObjectInfo(obj) {
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
        useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
-          if (v===undefined) return "???";
+          if (v === undefined) return "???";
           if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
@@ -3486,7 +3486,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
    function traverse(obj, lvl, arr) {
       // traverse hierarchy and extract all children of given level
-      // if (obj.$jsroot_depth===undefined) return;
+      // if (obj.$jsroot_depth === undefined) return;
 
       if (!obj.children) return;
 
@@ -3501,7 +3501,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                   setdefaults(chld);
                }
             }
-         } else if ((obj.$jsroot_depth===undefined) || (obj.$jsroot_depth < lvl)) {
+         } else if ((obj.$jsroot_depth === undefined) || (obj.$jsroot_depth < lvl)) {
             traverse(chld, lvl, arr);
          }
       }

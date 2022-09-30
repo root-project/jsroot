@@ -573,7 +573,7 @@ function parse(json) {
        map = [], newfmt = undefined;
 
    const unref_value = value => {
-      if ((value===null) || (value===undefined)) return;
+      if ((value === null) || (value === undefined)) return;
 
       if (typeof value === 'string') {
          if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
@@ -591,7 +591,7 @@ function parse(json) {
       if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
              let res = unref_value(value[i]);
-             if (res!==undefined) value[i] = res;
+             if (res !== undefined) value[i] = res;
           }
           return;
       }
@@ -718,7 +718,7 @@ function toJSON(obj, spacing) {
    const copy_value = value => {
       if (typeof value === "function") return undefined;
 
-      if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
+      if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
@@ -1485,7 +1485,7 @@ function getMethods(typename, obj) {
              bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
          if (bin < 0) bin = 0; else
          if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
-         this.fArray[bin] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       }
    }
@@ -1501,7 +1501,7 @@ function getMethods(typename, obj) {
          if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
          if (bin2 < 0) bin2 = 0; else
          if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       }
    }
@@ -1520,7 +1520,7 @@ function getMethods(typename, obj) {
          if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
          if (bin3 < 0) bin3 = 0; else
          if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       }
    }

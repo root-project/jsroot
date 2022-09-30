@@ -71,7 +71,7 @@ class JSRootMenu {
 
    /** @summary Close and remove menu */
    remove() {
-      if (this.element!==null) {
+      if (this.element !== null) {
          this.element.remove();
          if (this.resolveFunc) {
             this.resolveFunc();
@@ -1481,8 +1481,8 @@ class BootstrapMenu extends JSRootMenu {
          if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
          if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
 
-         if (newx!==null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
-         if (newy!==null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
+         if (newx !== null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
+         if (newy !== null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
 
          return new Promise(resolve => {
             this.resolveFunc = resolve;

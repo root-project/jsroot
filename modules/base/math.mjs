@@ -721,8 +721,7 @@ function igami(a, y0) {
   * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
   *  same algorithm is used in GSL
   * @memberof Math */
-function landau_pdf(x, xi, x0) {
-   if (x0===undefined) x0 = 0;
+function landau_pdf(x, xi, x0 = 0) {
    if (xi <= 0) return 0;
    const v = (x - x0)/xi;
    let u, ue, us, denlan;
@@ -830,8 +829,7 @@ function beta(x,y) {
 
 /** @summary chisquared_cdf_c
   * @memberof Math */
-function chisquared_cdf_c(x,r,x0) {
-   if (x0===undefined) x0 = 0;
+function chisquared_cdf_c(x,r,x0 = 0) {
    return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
 }
 
@@ -1541,8 +1539,7 @@ function exponential_cdf(x, lambda, x0 = 0) {
 
 /** @summary chisquared_pdf
   * @memberof Math */
-function chisquared_pdf(x,r,x0) {
-   if (x0===undefined) x0 = 0;
+function chisquared_pdf(x, r, x0 = 0) {
    if ((x-x0) < 0) return 0.0;
    const a = r/2 -1.;
    // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan

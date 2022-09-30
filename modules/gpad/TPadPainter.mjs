@@ -1495,7 +1495,7 @@ class TPadPainter extends ObjectPainter {
       // find and remove painters which no longer exists in the list
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if ((sub.snapid===undefined) || sub.$secondary) continue; // look only for painters with snapid
+         if ((sub.snapid === undefined) || sub.$secondary) continue; // look only for painters with snapid
 
          for (let i = 0; i < snap.fPrimitives.length; ++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
@@ -1537,7 +1537,7 @@ class TPadPainter extends ObjectPainter {
          // redraw secondaries like stat box
          let promises = [];
          this.painters.forEach(sub => {
-            if ((sub.snapid===undefined) || sub.$secondary) {
+            if ((sub.snapid === undefined) || sub.$secondary) {
                let res = sub.redraw();
                if (isPromise(res)) promises.push(res);
             }

@@ -1752,14 +1752,14 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
          if (!loop) {
             let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
-            if (side1===0) ++npnts;
-            if (side2===0) ++npnts;
-            if (side3===0) ++npnts;
+            if (side1 === 0) ++npnts;
+            if (side2 === 0) ++npnts;
+            if (side3 === 0) ++npnts;
 
-            if ((npnts===1) || (npnts===2)) console.error('FOND npnts', npnts);
+            if ((npnts === 1) || (npnts === 2)) console.error('FOND npnts', npnts);
 
-            if (npnts>2) {
-               if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+            if (npnts > 2) {
+               if (nfaces[lvl] === undefined) nfaces[lvl] = 0;
                nfaces[lvl] += npnts-2;
             }
 

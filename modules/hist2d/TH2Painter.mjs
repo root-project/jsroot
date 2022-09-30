@@ -299,7 +299,7 @@ class TH2Painter extends THistPainter {
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
 
             if (bin_content > 0)
-               if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+               if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
          }
       } else {
          // global min/max, used at the moment in 3D drawing
@@ -313,7 +313,7 @@ class TH2Painter extends THistPainter {
                else if (bin_content > this.gmaxbin)
                   this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+                  if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
          }
       }
@@ -448,7 +448,7 @@ class TH2Painter extends THistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
-      if (res.wmax===null) res.wmax = 0;
+      if (res.wmax === null) res.wmax = 0;
       res.integral = stat_sum0;
 
       if (histo.fEntries > 1) res.entries = histo.fEntries;
@@ -2326,7 +2326,7 @@ class TH2Painter extends THistPainter {
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
-      if ((realx===undefined) && (realy===undefined)) {
+      if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }

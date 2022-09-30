@@ -640,7 +640,7 @@ class Geometry {
 
       for(n = 0; n < arr.length; ++n) {
          parts = arr[n];
-         if (parts===undefined) continue;
+         if (parts === undefined) continue;
 
          len = parts.length;
 

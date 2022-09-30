@@ -838,17 +838,17 @@ class RHistPainter extends RObjectPainter {
                binarea = (res.grx[i+res.stepi]-res.grx[i])*(res.gry[j]-res.gry[j+res.stepj]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
-               if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
+               if ((binz > 0) && ((binz < res.min) || (res.min === 0))) res.min = binz;
                binz = binz/binarea;
             }
-            if (this.maxbin===null) {
+            if (this.maxbin === null) {
                this.maxbin = this.minbin = binz;
             } else {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin===null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz < this.minposbin)) this.minposbin = binz;
          }
       }
 

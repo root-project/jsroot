@@ -578,7 +578,7 @@ function parse(json) {
        map = [], newfmt = undefined;
 
    const unref_value = value => {
-      if ((value===null) || (value===undefined)) return;
+      if ((value === null) || (value === undefined)) return;
 
       if (typeof value === 'string') {
          if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
@@ -596,7 +596,7 @@ function parse(json) {
       if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
              let res = unref_value(value[i]);
-             if (res!==undefined) value[i] = res;
+             if (res !== undefined) value[i] = res;
           }
           return;
       }
@@ -723,7 +723,7 @@ function toJSON(obj, spacing) {
    const copy_value = value => {
       if (typeof value === "function") return undefined;
 
-      if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
+      if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
@@ -1490,7 +1490,7 @@ function getMethods(typename, obj) {
              bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
          if (bin < 0) bin = 0; else
          if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
-         this.fArray[bin] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       };
    }
@@ -1506,7 +1506,7 @@ function getMethods(typename, obj) {
          if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
          if (bin2 < 0) bin2 = 0; else
          if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       };
    }
@@ -1525,7 +1525,7 @@ function getMethods(typename, obj) {
          if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
          if (bin3 < 0) bin3 = 0; else
          if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += ((weight===undefined) ? 1 : weight);
+         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += (weight === undefined) ? 1 : weight;
          this.fEntries++;
       };
    }
@@ -46339,14 +46339,14 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
          if (!loop) {
             let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
-            if (side1===0) ++npnts;
-            if (side2===0) ++npnts;
-            if (side3===0) ++npnts;
+            if (side1 === 0) ++npnts;
+            if (side2 === 0) ++npnts;
+            if (side3 === 0) ++npnts;
 
-            if ((npnts===1) || (npnts===2)) console.error('FOND npnts', npnts);
+            if ((npnts === 1) || (npnts === 2)) console.error('FOND npnts', npnts);
 
-            if (npnts>2) {
-               if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+            if (npnts > 2) {
+               if (nfaces[lvl] === undefined) nfaces[lvl] = 0;
                nfaces[lvl] += npnts-2;
             }
 
@@ -48622,8 +48622,7 @@ function igami(a, y0) {
   * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
   *  same algorithm is used in GSL
   * @memberof Math */
-function landau_pdf(x, xi, x0) {
-   if (x0===undefined) x0 = 0;
+function landau_pdf(x, xi, x0 = 0) {
    if (xi <= 0) return 0;
    const v = (x - x0)/xi;
    let u, ue, us, denlan;
@@ -48731,8 +48730,7 @@ function beta(x,y) {
 
 /** @summary chisquared_cdf_c
   * @memberof Math */
-function chisquared_cdf_c(x,r,x0) {
-   if (x0===undefined) x0 = 0;
+function chisquared_cdf_c(x,r,x0 = 0) {
    return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
 }
 
@@ -49441,8 +49439,7 @@ function exponential_cdf(x, lambda, x0 = 0) {
 
 /** @summary chisquared_pdf
   * @memberof Math */
-function chisquared_pdf(x,r,x0) {
-   if (x0===undefined) x0 = 0;
+function chisquared_pdf(x, r, x0 = 0) {
    if ((x-x0) < 0) return 0.0;
    const a = r/2 -1.;
    // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
@@ -50592,7 +50589,7 @@ class JSRootMenu {
 
    /** @summary Close and remove menu */
    remove() {
-      if (this.element!==null) {
+      if (this.element !== null) {
          this.element.remove();
          if (this.resolveFunc) {
             this.resolveFunc();
@@ -52002,8 +51999,8 @@ class BootstrapMenu extends JSRootMenu {
          if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
          if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
 
-         if (newx!==null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
-         if (newy!==null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
+         if (newx !== null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
+         if (newy !== null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
 
          return new Promise(resolve => {
             this.resolveFunc = resolve;
@@ -54965,7 +54962,7 @@ class MDIDisplay extends BasePainter {
 
          if (only_frame_id && (select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.getItemName()!==null) && (typeof painter.checkResize == 'function')) {
+         if ((painter.getItemName() !== null) && (typeof painter.checkResize == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.checkResize(size);
@@ -55856,6 +55853,14 @@ class FlexibleDisplay extends MDIDisplay {
       this.forEachFrame(frame => this.changeFrameState(frame, "min"));
    }
 
+   /** @summary show all frames which are minimized */
+   showAll() {
+      this.forEachFrame(frame => {
+         if (this.getFrameState(frame) == "min")
+            this.changeFrameState(frame, "normal");
+      });
+   }
+
    /** @summary close all frames */
    closeAllFrames() {
       let arr = [];
@@ -55912,16 +55917,23 @@ class FlexibleDisplay extends MDIDisplay {
 
       evnt.preventDefault();
 
-      let arr = [];
-      this.forEachFrame(f => arr.push(f));
+      let arr = [], nummin = 0;
+      this.forEachFrame(f => {
+         arr.push(f);
+         if (this.getFrameState(f) == "min") nummin++;
+      });
       let active = this.getActiveFrame();
-      arr.sort((f1,f2) => { return  select(f1).property('frame_cnt') < select(f2).property('frame_cnt') ? -1 : 1; });
+
+      arr.sort((f1,f2) => (select(f1).property('frame_cnt') < select(f2).property('frame_cnt') ? -1 : 1));
 
       createMenu$1(evnt, this).then(menu => {
          menu.add("header:Flex");
-         menu.add("Cascade", () => this.sortFrames("cascade"));
-         menu.add("Tile", () => this.sortFrames("tile"));
-         menu.add("Minimize all", () => this.minimizeAll());
+         menu.add("Cascade", () => this.sortFrames("cascade"), "Cascade frames");
+         menu.add("Tile", () => this.sortFrames("tile"), "Tile all frames");
+         if (nummin < arr.length)
+            menu.add("Minimize all", () => this.minimizeAll(), "Minimize all frames");
+         if (nummin > 0)
+            menu.add("Show all", () => this.showAll(), "Restore minimized frames");
          menu.add("Close all", () => this.closeAllFrames());
          menu.add("separator");
 
@@ -56190,9 +56202,13 @@ class BrowserLayout {
           line = select("#"+id),
           is_visible = !line.empty();
 
-      if (mode==="toggle") { mode = !is_visible; } else
-      if (mode==="delete") { mode = false; height = 0; delete this.status_layout; } else
-      if (mode===undefined) { mode = true; this.status_layout = "app"; }
+      if (mode === "toggle") {
+         mode = !is_visible;
+      } else if (mode === "delete") {
+         mode = false; height = 0; delete this.status_layout;
+      } else if (mode === undefined) {
+         mode = true; this.status_layout = "app";
+      }
 
       if (is_visible) {
          if (mode === true)
@@ -56275,7 +56291,7 @@ class BrowserLayout {
 
       let main = select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
-      if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
+      if ((hsepar === null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select(".jsroot_h_separator").style('bottom');
          if ((typeof hsepar=='string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
@@ -56284,7 +56300,7 @@ class BrowserLayout {
             hsepar = null;
       }
 
-      if (hsepar!==null) {
+      if (hsepar !== null) {
          hsepar = parseInt(hsepar);
          let elem = main.select(".jsroot_h_separator"), hlimit = 0;
 
@@ -56308,7 +56324,7 @@ class BrowserLayout {
          select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
-      if (vsepar!==null) {
+      if (vsepar !== null) {
          vsepar = parseInt(vsepar);
          if (vsepar < 50) vsepar = 50;
          this._vsepar_position = vsepar;
@@ -58048,7 +58064,7 @@ class TPadPainter extends ObjectPainter {
       // find and remove painters which no longer exists in the list
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if ((sub.snapid===undefined) || sub.$secondary) continue; // look only for painters with snapid
+         if ((sub.snapid === undefined) || sub.$secondary) continue; // look only for painters with snapid
 
          for (let i = 0; i < snap.fPrimitives.length; ++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
@@ -58090,7 +58106,7 @@ class TPadPainter extends ObjectPainter {
          // redraw secondaries like stat box
          let promises = [];
          this.painters.forEach(sub => {
-            if ((sub.snapid===undefined) || sub.$secondary) {
+            if ((sub.snapid === undefined) || sub.$secondary) {
                let res = sub.redraw();
                if (isPromise(res)) promises.push(res);
             }
@@ -60400,17 +60416,17 @@ class TPavePainter extends ObjectPainter {
          for(let n = 0; n < f1.GetNumPars(); ++n) {
             let parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
 
-            parvalue = (parvalue===undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
+            parvalue = (parvalue === undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
             if (parerr !== undefined) {
                parerr = this.format(parerr,"last");
-               if ((Number(parerr)===0) && (f1.GetParError(n) != 0))
+               if ((Number(parerr) === 0) && (f1.GetParError(n) != 0))
                   parerr = this.format(f1.GetParError(n),"4.2g");
             }
 
             if ((print_ferrors > 0) && parerr)
-               this.addText(parname + " = " + parvalue + " #pm " + parerr);
+               this.addText(`${parname} = ${parvalue} #pm ${parerr}`);
             else
-               this.addText(parname + " = " + parvalue);
+               this.addText(`${parname} = ${parvalue}`);
          }
 
       return true;
@@ -61263,7 +61279,7 @@ class HistContour {
          if (this.colzmax <= 0)
             this.colzmax = 1.;
          if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
+            if ((zminpositive === undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;
             else
                this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
@@ -62850,14 +62866,14 @@ class THistPainter extends ObjectPainter {
                if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
                binz = binz/binarea;
             }
-            if (this.maxbin===null) {
+            if (this.maxbin === null) {
                this.maxbin = this.minbin = binz;
             } else {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin===null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz<this.minposbin)) this.minposbin = binz;
          }
       }
 
@@ -64437,7 +64453,7 @@ class TH2Painter$2 extends THistPainter {
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
 
             if (bin_content > 0)
-               if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+               if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
          }
       } else {
          // global min/max, used at the moment in 3D drawing
@@ -64451,7 +64467,7 @@ class TH2Painter$2 extends THistPainter {
                else if (bin_content > this.gmaxbin)
                   this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+                  if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
          }
       }
@@ -64586,7 +64602,7 @@ class TH2Painter$2 extends THistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
-      if (res.wmax===null) res.wmax = 0;
+      if (res.wmax === null) res.wmax = 0;
       res.integral = stat_sum0;
 
       if (histo.fEntries > 1) res.entries = histo.fEntries;
@@ -66461,7 +66477,7 @@ class TH2Painter$2 extends THistPainter {
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
-      if ((realx===undefined) && (realy===undefined)) {
+      if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
@@ -72567,7 +72583,7 @@ function objectHierarchy(top, obj, args = undefined) {
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = "0"+val;
          if (item._value.length>0)
-            item._value += (k%4===0) ? " | " : " ";
+            item._value += (k%4 === 0) ? " | " : " ";
 
          item._value += val;
       }
@@ -73087,7 +73103,7 @@ class HierarchyPainter extends BasePainter {
 
          let pos = fullname.length;
 
-         if (!top._parent && (top._kind !== 'TopFolder') && (fullname.indexOf(top._name)===0)) {
+         if (!top._parent && (top._kind !== 'TopFolder') && (fullname.indexOf(top._name) === 0)) {
             // it is allowed to provide item name, which includes top-parent like file.root/folder/item
             // but one could skip top-item name, if there are no other items
             if (fullname === top._name) return top;
@@ -73175,7 +73191,7 @@ class HierarchyPainter extends BasePainter {
 
       if (itemname === "__top_folder__") return top;
 
-      if ((typeof itemname == 'string') && (itemname.indexOf("img:")==0)) return null;
+      if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) return null;
 
       return find_in_hierarchy(top, itemname);
    }
@@ -73284,7 +73300,7 @@ class HierarchyPainter extends BasePainter {
          if (arg.item!==undefined) item = arg.item;
       }
 
-      if ((typeof itemname == 'string') && (itemname.indexOf("img:")==0)) {
+      if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) {
          // artificial class, can be created by users
          result.obj = { _typename: "TJSImage", fName: itemname.slice(4) };
          return result;
@@ -73359,7 +73375,7 @@ class HierarchyPainter extends BasePainter {
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if ((img1.length==0) && (typeof handle.icon_get == 'function'))
+         if ((img1.length == 0) && (typeof handle.icon_get == 'function'))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
@@ -73376,7 +73392,7 @@ class HierarchyPainter extends BasePainter {
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0))
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.") == 0))
          can_menu = can_click = true;
 
       if (img2.length == 0) img2 = img1;
@@ -73431,7 +73447,7 @@ class HierarchyPainter extends BasePainter {
       if (this.with_icons && !break_list) {
          let icon_name = hitem._isopen ? img2 : img1, d3img;
 
-         if (icon_name.indexOf("img_")==0)
+         if (icon_name.indexOf("img_") == 0)
             d3img = d3line.append("div")
                           .attr("class", icon_name)
                           .attr("title", hitem._kind);
@@ -73827,7 +73843,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw !== false))
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, "inspect", true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -73963,7 +73979,7 @@ class HierarchyPainter extends BasePainter {
                            item = _item;
                            opt = _opt;
                         } else if (top.getPadPainter() === p.getPadPainter()) {
-                           if (_opt.indexOf("same ")==0) _opt = _opt.slice(5);
+                           if (_opt.indexOf("same ") == 0) _opt = _opt.slice(5);
                            item += "+" + _item;
                            opt += "+" + _opt;
                         }
@@ -74124,7 +74140,7 @@ class HierarchyPainter extends BasePainter {
          if (item && ('_player' in item))
             return this.player(display_itemname, drawopt).then(res => complete(res));
 
-         updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:")==0);
+         updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:") == 0);
 
          if (updating) {
             drawopt = drawopt.slice(7);
@@ -74230,7 +74246,7 @@ class HierarchyPainter extends BasePainter {
       select(frame).on("dragover", function(ev) {
          let itemname = ev.dataTransfer.getData("item"),
               ditem = h.findItem(itemname);
-         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf("ROOT.")==0))
+         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf("ROOT.") == 0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
       }).on("dragenter", function() {
          select(this).classed('jsroot_drag_area', true);
@@ -74255,7 +74271,7 @@ class HierarchyPainter extends BasePainter {
    async dropItem(itemname, divid, opt) {
 
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
-      if (opt===undefined) opt = "";
+      if (opt === undefined) opt = "";
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
@@ -74373,7 +74389,7 @@ class HierarchyPainter extends BasePainter {
 
          let item = items[i], can_split = true;
 
-         if (item && item.indexOf("img:")==0) { images[i] = true; continue; }
+         if (item && item.indexOf("img:") == 0) { images[i] = true; continue; }
 
          if (item && (item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
             items[i] = item.slice(1, item.length-1);
@@ -74471,7 +74487,7 @@ class HierarchyPainter extends BasePainter {
 
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i)
-            if (options[i].indexOf('update:')!==0) {
+            if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
                options[i] += "::_display_on_frame_::"+frame_names[i];
             }
@@ -74484,7 +74500,7 @@ class HierarchyPainter extends BasePainter {
             items[indx] = null; // mark item as ready
 
             for (let cnt = 0; cnt < items.length; ++cnt) {
-               if (items[cnt]===null) continue; // ignore completed item
+               if (items[cnt] === null) continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt])===cnt) {
                   items_wait[cnt] = false;
                   return h.display(items[cnt], options[cnt]).then(painter => DropNextItem(cnt, painter));
@@ -74862,7 +74878,7 @@ class HierarchyPainter extends BasePainter {
    getOnlineItemUrl(item) {
       if (typeof item == "string") item = this.findItem(item);
       let prnt = item;
-      while (prnt && (prnt._online===undefined)) prnt = prnt._parent;
+      while (prnt && (prnt._online === undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
    }
 
@@ -74891,7 +74907,7 @@ class HierarchyPainter extends BasePainter {
 
       let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
-      if ((typeof option == "string") && (option.indexOf('hierarchy_expand')==0)) {
+      if ((typeof option == "string") && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
          option = undefined;
       }
@@ -75021,7 +75037,7 @@ class HierarchyPainter extends BasePainter {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
                      let typename = "kind:" + item._kind;
-                     if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
+                     if (item._kind.indexOf('ROOT.') == 0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
                      if (!canDrawHandle(typename) || drawopt)
                         addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
@@ -75371,7 +75387,7 @@ class HierarchyPainter extends BasePainter {
 
       let GetOption = opt => {
          let res = d.get(opt, null);
-         if ((res===null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt))
+         if ((res === null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt))
             res = gui_div.attr(opt);
          return res;
       };
@@ -75387,13 +75403,13 @@ class HierarchyPainter extends BasePainter {
             opt = (separ > 0) ? opt.slice(separ+1) : "";
 
             let canarray = true;
-            if (part[0]=='#') { part = part.slice(1); canarray = false; }
+            if (part[0] == '#') { part = part.slice(1); canarray = false; }
 
             let val = d.get(part,null);
 
             if (canarray)
                res = res.concat(parseAsArray(val));
-            else if (val!==null)
+            else if (val !== null)
                res.push(val);
          }
          return res;
@@ -75401,22 +75417,24 @@ class HierarchyPainter extends BasePainter {
 
       let GetOptionAsArray = opt => {
          let res = GetUrlOptionAsArray(opt);
-         if (res.length>0 || !gui_div || gui_div.empty()) return res;
-         while (opt.length>0) {
+         if (res.length > 0 || !gui_div || gui_div.empty()) return res;
+         while (opt.length > 0) {
             let separ = opt.indexOf(";");
             let part = separ>0 ? opt.slice(0, separ) : opt;
             if (separ>0) opt = opt.slice(separ+1); else opt = "";
 
             let canarray = true;
-            if (part[0]=='#') { part = part.slice(1); canarray = false; }
-            if (part==='files') continue; // special case for normal UI
+            if (part[0] == '#') { part = part.slice(1); canarray = false; }
+            if (part === 'files') continue; // special case for normal UI
 
             if (!gui_div.node().hasAttribute(part)) continue;
 
             let val = gui_div.attr(part);
 
-            if (canarray) res = res.concat(parseAsArray(val));
-            else if (val!==null) res.push(val);
+            if (canarray)
+               res = res.concat(parseAsArray(val));
+            else if (val !== null)
+               res.push(val);
          }
          return res;
       };
@@ -75445,27 +75463,27 @@ class HierarchyPainter extends BasePainter {
       else
          monitor = parseInt(monitor);
 
-      if (GetOption("float")!==null) { browser_kind = 'float'; browser_configured = true; } else
-      if (GetOption("fix")!==null) { browser_kind = 'fix'; browser_configured = true; }
+      if (GetOption("float") !== null) { browser_kind = 'float'; browser_configured = true; } else
+      if (GetOption("fix") !== null) { browser_kind = 'fix'; browser_configured = true; }
 
       this.no_select = GetOption("noselect");
 
-      if (GetOption('files_monitoring')!==null) this.files_monitoring = true;
+      if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
 
       if (title) document.title = title;
 
       let load = GetOption("load");
 
-      if (expanditems.length==0 && (GetOption("expand")==="")) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption("expand")==="")) expanditems.push("");
 
       if (filesdir) {
-         for (let i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
-         for (let i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
+         for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
+         for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
       if ((itemsarr.length == 0) && GetOption("item") === "") itemsarr.push("");
 
-      if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length==0)) itemsarr.push("");
+      if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push("");
 
       if (!this.disp_kind) {
          if ((typeof layout == "string") && (layout.length > 0))
@@ -75486,14 +75504,14 @@ class HierarchyPainter extends BasePainter {
          }
       }
 
-      if (status==="no")
+      if (status === "no")
          status = null;
-      else if (status==="off") {
+      else if (status === "off") {
          this.status_disabled = true;
          status = null;
-      } else if (status==="on")
+      } else if (status === "on")
          status = true;
-      else if (status!==null) {
+      else if (status !== null) {
          statush = parseInt(status);
          if (!Number.isInteger(statush) || (statush < 5)) statush = 0;
          status = true;
@@ -75504,12 +75522,13 @@ class HierarchyPainter extends BasePainter {
          browser_kind = "fix";
       else if (browser_kind === "no")
          browser_kind = "";
-      else if (browser_kind==="off") {
+      else if (browser_kind === "off") {
          browser_kind = "";
          status = null;
          this.exclude_browser = true;
       }
-      if (GetOption("nofloat")!==null) this.float_browser_disabled = true;
+      if (GetOption("nofloat") !== null)
+         this.float_browser_disabled = true;
 
       if (this.start_without_browser) browser_kind = "";
 
@@ -75528,7 +75547,7 @@ class HierarchyPainter extends BasePainter {
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
             promise = this.openRootFile(filesarr.shift());
-         else if ((localfile!==null) && (typeof this.selectLocalFile == 'function')) {
+         else if ((localfile !== null) && (typeof this.selectLocalFile == 'function')) {
             localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
             promise = this.expandItem(expanditems.shift());
@@ -75569,10 +75588,10 @@ class HierarchyPainter extends BasePainter {
             if (('_monitoring' in this.h) && !monitor)
                monitor = this.h._monitoring;
 
-            if (('_loadfile' in this.h) && (filesarr.length==0))
+            if (('_loadfile' in this.h) && (filesarr.length == 0))
                filesarr = parseAsArray(this.h._loadfile);
 
-            if (('_drawitem' in this.h) && (itemsarr.length==0)) {
+            if (('_drawitem' in this.h) && (itemsarr.length == 0)) {
                itemsarr = parseAsArray(this.h._drawitem);
                optionsarr = parseAsArray(this.h._drawopt);
             }
@@ -79921,7 +79940,7 @@ class Geometry {
 
       for(n = 0; n < arr.length; ++n) {
          parts = arr[n];
-         if (parts===undefined) continue;
+         if (parts === undefined) continue;
 
          len = parts.length;
 
@@ -82165,7 +82184,7 @@ function provideObjectInfo(obj) {
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
        useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
-          if (v===undefined) return "???";
+          if (v === undefined) return "???";
           if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
@@ -82384,7 +82403,7 @@ class ClonedNodes {
    cleanup(drawnodes, drawshapes) {
 
       if (drawnodes) {
-         for (let n = 0;n < drawnodes.length; ++n) {
+         for (let n = 0; n < drawnodes.length; ++n) {
             delete drawnodes[n].stack;
             drawnodes[n] = undefined;
          }
@@ -82502,7 +82521,7 @@ class ClonedNodes {
          delete this.origin[n]._refid;
 
       // do sorting once
-      sortarr.sort(function(a, b) { return b.vol - a.vol; });
+      sortarr.sort((a, b) => b.vol - a.vol);
 
       // remember sort map and also sortid
       this.sortmap = new Array(this.nodes.length);
@@ -83294,13 +83313,13 @@ class ClonedNodes {
       if (!oldlst) return newlst;
 
       // set geometry to shape object itself
-      for (let n=0;n<oldlst.length;++n) {
+      for (let n = 0; n < oldlst.length; ++n) {
          let item = oldlst[n];
 
          item.shape._geom = item.geom;
          delete item.geom;
 
-         if (item.geomZ!==undefined) {
+         if (item.geomZ !== undefined) {
             item.shape._geomZ = item.geomZ;
             delete item.geomZ;
          }
@@ -83407,81 +83426,65 @@ class ClonedNodes {
 }
 
 /** @summary Create flipped mesh for the shape
- * @desc When transformation matrix includes one or several inversion of axis,
- * one should inverse geometry object, otherwise three.js cannot correctly draw it
- * @param {Object} shape - TGeoShape object
- * @param {Object} material - material
- * @private */
-
+  * @desc When transformation matrix includes one or several inversion of axis,
+  * one should inverse geometry object, otherwise three.js cannot correctly draw it
+  * @param {Object} shape - TGeoShape object
+  * @param {Object} material - material
+  * @private */
 function createFlippedMesh(shape, material) {
 
    let flip =  new Vector3(1,1,-1);
 
    if (shape.geomZ === undefined) {
 
-      if (shape.geom.type == 'BufferGeometry') {
+      let pos = shape.geom.getAttribute('position').array,
+          norm = shape.geom.getAttribute('normal').array,
+          index = shape.geom.getIndex();
 
-         let pos = shape.geom.getAttribute('position').array,
-             norm = shape.geom.getAttribute('normal').array,
-             index = shape.geom.getIndex();
+      if (index) {
+         // we need to unfold all points to
+         let arr = index.array,
+             i0 = shape.geom.drawRange.start,
+             ilen = shape.geom.drawRange.count;
+         if (i0 + ilen > arr.length) ilen = arr.length - i0;
 
-         if (index) {
-            // we need to unfold all points to
-            let arr = index.array,
-                i0 = shape.geom.drawRange.start,
-                ilen = shape.geom.drawRange.count;
-            if (i0 + ilen > arr.length) ilen = arr.length - i0;
-
-            let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
-            for (let ii = 0; ii < ilen; ++ii) {
-               let k = arr[i0 + ii];
-               if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
-               dpos[ii*3] = pos[k*3];
-               dpos[ii*3+1] = pos[k*3+1];
-               dpos[ii*3+2] = pos[k*3+2];
-               dnorm[ii*3] = norm[k*3];
-               dnorm[ii*3+1] = norm[k*3+1];
-               dnorm[ii*3+2] = norm[k*3+2];
-            }
-
-            pos = dpos; norm = dnorm;
+         let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+         for (let ii = 0; ii < ilen; ++ii) {
+            let k = arr[i0 + ii];
+            if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            dpos[ii*3] = pos[k*3];
+            dpos[ii*3+1] = pos[k*3+1];
+            dpos[ii*3+2] = pos[k*3+2];
+            dnorm[ii*3] = norm[k*3];
+            dnorm[ii*3+1] = norm[k*3+1];
+            dnorm[ii*3+2] = norm[k*3+2];
          }
 
-         let len = pos.length, n, shift = 0,
-             newpos = new Float32Array(len),
-             newnorm = new Float32Array(len);
-
-         // we should swap second and third point in each face
-         for (n=0; n<len; n+=3) {
-            newpos[n]   = pos[n+shift];
-            newpos[n+1] = pos[n+1+shift];
-            newpos[n+2] = -pos[n+2+shift];
-
-            newnorm[n]   = norm[n+shift];
-            newnorm[n+1] = norm[n+1+shift];
-            newnorm[n+2] = -norm[n+2+shift];
-
-            shift+=3; if (shift===6) shift=-3; // values 0,3,-3
-         }
-
-         shape.geomZ = new BufferGeometry();
-         shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
-         shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
-         // normals are calculated with normal geometry and correctly scaled
-         // geom.computeVertexNormals();
-
-      } else {
-
-         shape.geomZ = shape.geom.clone();
-
-         shape.geomZ.scale(flip.x, flip.y, flip.z);
-
-         let face, d, n = 0;
-         while(n < shape.geomZ.faces.length) {
-            face = geom.faces[n++];
-            d = face.b; face.b = face.c; face.c = d;
-         }
+         pos = dpos; norm = dnorm;
       }
+
+      let len = pos.length, n, shift = 0,
+          newpos = new Float32Array(len),
+          newnorm = new Float32Array(len);
+
+      // we should swap second and third point in each face
+      for (n = 0; n < len; n += 3) {
+         newpos[n]   = pos[n+shift];
+         newpos[n+1] = pos[n+1+shift];
+         newpos[n+2] = -pos[n+2+shift];
+
+         newnorm[n]   = norm[n+shift];
+         newnorm[n+1] = norm[n+1+shift];
+         newnorm[n+2] = -norm[n+2+shift];
+
+         shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+      }
+
+      shape.geomZ = new BufferGeometry();
+      shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
+      shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
+      // normals are calculated with normal geometry and correctly scaled
+      // geom.computeVertexNormals();
    }
 
    let mesh = new Mesh( shape.geomZ, material );
@@ -83562,7 +83565,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
    function traverse(obj, lvl, arr) {
       // traverse hierarchy and extract all children of given level
-      // if (obj.$jsroot_depth===undefined) return;
+      // if (obj.$jsroot_depth === undefined) return;
 
       if (!obj.children) return;
 
@@ -83577,7 +83580,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                   setdefaults(chld);
                }
             }
-         } else if ((obj.$jsroot_depth===undefined) || (obj.$jsroot_depth < lvl)) {
+         } else if ((obj.$jsroot_depth === undefined) || (obj.$jsroot_depth < lvl)) {
             traverse(chld, lvl, arr);
          }
       }
@@ -98437,9 +98440,9 @@ class RPadPainter extends RObjectPainter {
       let isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
-      for (let k = 0;k < this.painters.length; ++k) {
+      for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (sub.snapid===undefined) continue; // look only for painters with snapid
+         if (sub.snapid === undefined) continue; // look only for painters with snapid
 
          snap.fPrimitives.forEach(prim => {
             if (sub && (prim.fObjectID === sub.snapid)) {
@@ -102123,17 +102126,17 @@ class RHistPainter extends RObjectPainter {
                binarea = (res.grx[i+res.stepi]-res.grx[i])*(res.gry[j]-res.gry[j+res.stepj]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
-               if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
+               if ((binz > 0) && ((binz < res.min) || (res.min === 0))) res.min = binz;
                binz = binz/binarea;
             }
-            if (this.maxbin===null) {
+            if (this.maxbin === null) {
                this.maxbin = this.minbin = binz;
             } else {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin===null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz < this.minposbin)) this.minposbin = binz;
          }
       }
 
@@ -102926,7 +102929,7 @@ class RH1Painter$2 extends RHistPainter {
          }
       }
 
-      if (findbin!==null) {
+      if (findbin !== null) {
          // if bin on boundary found, check that x position is ok
          if ((findbin === left) && (grx1 > pnt_x + gapx))  findbin = null; else
          if ((findbin === right-1) && (grx2 < pnt_x - gapx)) findbin = null; else
@@ -103420,7 +103423,7 @@ class RH2Painter$2 extends RHistPainter {
                if (bin_content < this.gminbin) this.gminbin = bin_content; else
                   if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+                  if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
          }
       }
@@ -103989,7 +103992,7 @@ class RH2Painter$2 extends RHistPainter {
       let histo = this.getHisto(),
           i, j, binz, binw, binh, text, x, y, width, height;
 
-      if (handle===null) handle = this.prepareDraw({ rounding: false });
+      if (handle === null) handle = this.prepareDraw({ rounding: false });
 
       let textFont  = this.v7EvalFont("text", { size: 20, color: "black", align: 22 }),
           text_offset = 0,

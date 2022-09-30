@@ -218,7 +218,7 @@ class RH2Painter extends RHistPainter {
                if (bin_content < this.gminbin) this.gminbin = bin_content; else
                   if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+                  if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
          }
       }
@@ -793,7 +793,7 @@ class RH2Painter extends RHistPainter {
       let histo = this.getHisto(),
           i, j, binz, binw, binh, text, x, y, width, height;
 
-      if (handle===null) handle = this.prepareDraw({ rounding: false });
+      if (handle === null) handle = this.prepareDraw({ rounding: false });
 
       let textFont  = this.v7EvalFont("text", { size: 20, color: "black", align: 22 }),
           text_offset = 0,
@@ -1376,7 +1376,7 @@ class RH2Painter extends RHistPainter {
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
-      if ((realx===undefined) && (realy===undefined)) {
+      if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }

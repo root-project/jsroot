@@ -1083,9 +1083,9 @@ class RPadPainter extends RObjectPainter {
       let isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
-      for (let k = 0;k < this.painters.length; ++k) {
+      for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (sub.snapid===undefined) continue; // look only for painters with snapid
+         if (sub.snapid === undefined) continue; // look only for painters with snapid
 
          snap.fPrimitives.forEach(prim => {
             if (sub && (prim.fObjectID === sub.snapid)) {

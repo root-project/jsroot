@@ -109,7 +109,7 @@ class MDIDisplay extends BasePainter {
 
          if (only_frame_id && (d3_select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.getItemName()!==null) && (typeof painter.checkResize == 'function')) {
+         if ((painter.getItemName() !== null) && (typeof painter.checkResize == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.checkResize(size);
@@ -1349,9 +1349,13 @@ class BrowserLayout {
           line = d3_select("#"+id),
           is_visible = !line.empty();
 
-      if (mode==="toggle") { mode = !is_visible; } else
-      if (mode==="delete") { mode = false; height = 0; delete this.status_layout; } else
-      if (mode===undefined) { mode = true; this.status_layout = "app"; }
+      if (mode === "toggle") {
+         mode = !is_visible;
+      } else if (mode === "delete") {
+         mode = false; height = 0; delete this.status_layout;
+      } else if (mode === undefined) {
+         mode = true; this.status_layout = "app";
+      }
 
       if (is_visible) {
          if (mode === true)
@@ -1434,7 +1438,7 @@ class BrowserLayout {
 
       let main = d3_select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
-      if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
+      if ((hsepar === null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select(".jsroot_h_separator").style('bottom');
          if ((typeof hsepar=='string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
@@ -1443,7 +1447,7 @@ class BrowserLayout {
             hsepar = null;
       }
 
-      if (hsepar!==null) {
+      if (hsepar !== null) {
          hsepar = parseInt(hsepar);
          let elem = main.select(".jsroot_h_separator"), hlimit = 0;
 
@@ -1467,7 +1471,7 @@ class BrowserLayout {
          d3_select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
-      if (vsepar!==null) {
+      if (vsepar !== null) {
          vsepar = parseInt(vsepar);
          if (vsepar < 50) vsepar = 50;
          this._vsepar_position = vsepar;
