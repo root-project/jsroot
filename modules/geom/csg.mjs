@@ -50,15 +50,27 @@ class Vertex {
    //   return this;
    // }
 
-   cross( vertex ) {
+   // cross( vertex ) {
+   //    let x = this.x, y = this.y, z = this.z,
+   //        vx = vertex.x, vy = vertex.y, vz = vertex.z;
+   //
+   //    this.x = y * vz - z * vy;
+   //    this.y = z * vx - x * vz;
+   //    this.z = x * vy - y * vx;
+   //
+   //    return this;
+   // }
+
+   cross3( vx, vy, vz ) {
       let x = this.x, y = this.y, z = this.z;
 
-      this.x = y * vertex.z - z * vertex.y;
-      this.y = z * vertex.x - x * vertex.z;
-      this.z = x * vertex.y - y * vertex.x;
+      this.x = y * vz - z * vy;
+      this.y = z * vx - x * vz;
+      this.z = x * vy - y * vx;
 
       return this;
    }
+
 
    normalize() {
       let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
@@ -164,9 +176,9 @@ class Polygon {
 
       this.nsign = 1;
 
-      this.normal = b.clone().subtract( a ).cross(
-         c.clone().subtract( a )
-      ).normalize();
+      //this.normal = b.clone().subtract( a ).cross( c.clone().subtract( a ) ).normalize();
+
+      this.normal = new Vertex(b.x - a.x, b.y - a.y, b.z - a.z, 0, 0, 0).cross3(c.x - a.x, c.y - a.y, c.z - a.z).normalize();
 
       this.w = this.normal.dot( a );
       return this;
@@ -363,16 +375,13 @@ class Node {
    }
 
    numPolygons() {
-      let res = this.polygons.length;
-      if ( this.front ) res += this.front.numPolygons();
-      if ( this.back ) res += this.back.numPolygons();
-      return res;
+      return this.polygons.length + (this.front?.numPolygons() || 0) + (this.back?.numPolygons() || 0);
    }
 
    clone() {
       let node = new Node();
 
-      node.divider = this.divider.clone();
+      node.divider = this.divider?.clone();
       node.polygons = this.polygons.map( polygon => polygon.clone() );
       node.front = this.front?.clone();
       node.back = this.back?.clone();
