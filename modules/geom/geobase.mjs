@@ -3302,7 +3302,7 @@ class ClonedNodes {
 
          if (res.faces >= limit) {
             res.done = true;
-         } else if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
+         } else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
             let tm2 = new Date().getTime();
             if (tm2-tm1 > timelimit) return res;
          }

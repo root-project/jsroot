@@ -4786,7 +4786,7 @@ function provideMenu(menu, item, hpainter) {
       if (!arg) arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
-         if (arg.assign!==undefined)
+         if (arg.assign !== undefined)
             obj.fRnrSelf = arg.assign;
          else if (obj.fRnrSelf)
             arg.vis++;
@@ -4896,7 +4896,7 @@ function browserIconClick(hitem, hpainter) {
    let newstate = drawitem._painter.extraObjectVisible(hpainter, hitem, true);
 
    // return true means browser should update icon for the item
-   return (newstate!==undefined) ? true : false;
+   return (newstate !== undefined) ? true : false;
 }
 
 

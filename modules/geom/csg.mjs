@@ -504,7 +504,7 @@ class Geometry {
          }
 
          this.tree = new Node( polygons, nodeid );
-         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+         if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else if (geometry.polygons && (geometry.polygons[0] instanceof Polygon)) {
@@ -525,7 +525,7 @@ class Geometry {
          }
 
          this.tree = new Node( polygons, nodeid );
-         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+         if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else {
@@ -570,7 +570,7 @@ class Geometry {
       }
 
       this.tree = new Node( polygons, nodeid );
-      if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+      if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
    }
 
    subtract( other_tree ) {

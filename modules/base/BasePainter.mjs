@@ -188,7 +188,7 @@ class DrawOptions {
   * @private */
 class TRandom {
    constructor(i) {
-      if (i!==undefined) this.seed(i);
+      if (i !== undefined) this.seed(i);
    }
    /** @summary Seed simple random generator */
    seed(i) {

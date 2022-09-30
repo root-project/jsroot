@@ -663,8 +663,8 @@ function parse(json) {
          newfmt = true;
          let f1 = unref_value(value.first),
              s1 = unref_value(value.second);
-         if (f1!==undefined) value.first = f1;
-         if (s1!==undefined) value.second = s1;
+         if (f1 !== undefined) value.first = f1;
+         if (s1 !== undefined) value.second = s1;
          value._typename = value['$pair'];
          delete value['$pair'];
          return; // pair object is not counted in the objects map
@@ -772,7 +772,7 @@ function decodeUrl(url) {
    let res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+      get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
    if (!url || (typeof url !== 'string')) {
@@ -1362,7 +1362,7 @@ const methodsCache = {};
 function getMethods(typename, obj) {
 
    let m = methodsCache[typename],
-       has_methods = (m!==undefined);
+       has_methods = (m !== undefined);
 
    if (!has_methods) m = {};
 

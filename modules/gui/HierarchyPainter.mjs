@@ -962,7 +962,7 @@ class HierarchyPainter extends BasePainter {
 
       while (node) {
          // online items never includes top-level folder
-         if ((node._online!==undefined) && !uptoparent) return res;
+         if ((node._online !== undefined) && !uptoparent) return res;
 
          if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
@@ -1046,10 +1046,10 @@ class HierarchyPainter extends BasePainter {
       if (typeof arg === 'string') {
          itemname = arg;
       } else if (typeof arg === 'object') {
-         if ((arg._parent!==undefined) && (arg._name!==undefined) && (arg._kind!==undefined)) item = arg; else
-         if (arg.name!==undefined) itemname = arg.name; else
-         if (arg.arg!==undefined) itemname = arg.arg; else
-         if (arg.item!==undefined) item = arg.item;
+         if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined)) item = arg; else
+         if (arg.name !== undefined) itemname = arg.name; else
+         if (arg.arg !== undefined) itemname = arg.arg; else
+         if (arg.item !== undefined) item = arg.item;
       }
 
       if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) {
@@ -2319,7 +2319,7 @@ class HierarchyPainter extends BasePainter {
             if (force) {
 
                // if after last expand no better solution found - skip it
-               if ((prev_found!==undefined) && (d.now_found === prev_found)) return find_next();
+               if ((prev_found !== undefined) && (d.now_found === prev_found)) return find_next();
 
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();

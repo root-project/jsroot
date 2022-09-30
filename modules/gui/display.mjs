@@ -1583,7 +1583,7 @@ class BrowserLayout {
       let h1 = cont.node().clientHeight,
           h2 = chld.node().clientHeight;
 
-      if ((h2!==undefined) && (h2 < h1*0.7)) area.style('bottom', '');
+      if ((h2 !== undefined) && (h2 < h1*0.7)) area.style('bottom', '');
    }
 
    /** @summary Set buttons position */
