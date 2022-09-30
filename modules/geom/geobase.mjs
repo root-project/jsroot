@@ -2324,7 +2324,7 @@ class ClonedNodes {
    cleanup(drawnodes, drawshapes) {
 
       if (drawnodes) {
-         for (let n = 0;n < drawnodes.length; ++n) {
+         for (let n = 0; n < drawnodes.length; ++n) {
             delete drawnodes[n].stack;
             drawnodes[n] = undefined;
          }
@@ -2442,7 +2442,7 @@ class ClonedNodes {
          delete this.origin[n]._refid;
 
       // do sorting once
-      sortarr.sort(function(a, b) { return b.vol - a.vol; });
+      sortarr.sort((a, b) => b.vol - a.vol);
 
       // remember sort map and also sortid
       this.sortmap = new Array(this.nodes.length);
@@ -3234,13 +3234,13 @@ class ClonedNodes {
       if (!oldlst) return newlst;
 
       // set geometry to shape object itself
-      for (let n=0;n<oldlst.length;++n) {
+      for (let n = 0; n < oldlst.length; ++n) {
          let item = oldlst[n];
 
          item.shape._geom = item.geom;
          delete item.geom;
 
-         if (item.geomZ!==undefined) {
+         if (item.geomZ !== undefined) {
             item.shape._geomZ = item.geomZ;
             delete item.geomZ;
          }
@@ -3347,81 +3347,65 @@ class ClonedNodes {
 }
 
 /** @summary Create flipped mesh for the shape
- * @desc When transformation matrix includes one or several inversion of axis,
- * one should inverse geometry object, otherwise three.js cannot correctly draw it
- * @param {Object} shape - TGeoShape object
- * @param {Object} material - material
- * @private */
-
+  * @desc When transformation matrix includes one or several inversion of axis,
+  * one should inverse geometry object, otherwise three.js cannot correctly draw it
+  * @param {Object} shape - TGeoShape object
+  * @param {Object} material - material
+  * @private */
 function createFlippedMesh(shape, material) {
 
    let flip =  new Vector3(1,1,-1);
 
    if (shape.geomZ === undefined) {
 
-      if (shape.geom.type == 'BufferGeometry') {
+      let pos = shape.geom.getAttribute('position').array,
+          norm = shape.geom.getAttribute('normal').array,
+          index = shape.geom.getIndex();
 
-         let pos = shape.geom.getAttribute('position').array,
-             norm = shape.geom.getAttribute('normal').array,
-             index = shape.geom.getIndex();
+      if (index) {
+         // we need to unfold all points to
+         let arr = index.array,
+             i0 = shape.geom.drawRange.start,
+             ilen = shape.geom.drawRange.count;
+         if (i0 + ilen > arr.length) ilen = arr.length - i0;
 
-         if (index) {
-            // we need to unfold all points to
-            let arr = index.array,
-                i0 = shape.geom.drawRange.start,
-                ilen = shape.geom.drawRange.count;
-            if (i0 + ilen > arr.length) ilen = arr.length - i0;
-
-            let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
-            for (let ii = 0; ii < ilen; ++ii) {
-               let k = arr[i0 + ii];
-               if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
-               dpos[ii*3] = pos[k*3];
-               dpos[ii*3+1] = pos[k*3+1];
-               dpos[ii*3+2] = pos[k*3+2];
-               dnorm[ii*3] = norm[k*3];
-               dnorm[ii*3+1] = norm[k*3+1];
-               dnorm[ii*3+2] = norm[k*3+2];
-            }
-
-            pos = dpos; norm = dnorm;
+         let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+         for (let ii = 0; ii < ilen; ++ii) {
+            let k = arr[i0 + ii];
+            if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            dpos[ii*3] = pos[k*3];
+            dpos[ii*3+1] = pos[k*3+1];
+            dpos[ii*3+2] = pos[k*3+2];
+            dnorm[ii*3] = norm[k*3];
+            dnorm[ii*3+1] = norm[k*3+1];
+            dnorm[ii*3+2] = norm[k*3+2];
          }
 
-         let len = pos.length, n, shift = 0,
-             newpos = new Float32Array(len),
-             newnorm = new Float32Array(len);
-
-         // we should swap second and third point in each face
-         for (n=0; n<len; n+=3) {
-            newpos[n]   = pos[n+shift];
-            newpos[n+1] = pos[n+1+shift];
-            newpos[n+2] = -pos[n+2+shift];
-
-            newnorm[n]   = norm[n+shift];
-            newnorm[n+1] = norm[n+1+shift];
-            newnorm[n+2] = -norm[n+2+shift];
-
-            shift+=3; if (shift===6) shift=-3; // values 0,3,-3
-         }
-
-         shape.geomZ = new BufferGeometry();
-         shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
-         shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
-         // normals are calculated with normal geometry and correctly scaled
-         // geom.computeVertexNormals();
-
-      } else {
-
-         shape.geomZ = shape.geom.clone();
-
-         shape.geomZ.scale(flip.x, flip.y, flip.z);
-
-         let face, d, n = 0;
-         while(n < shape.geomZ.faces.length) {
-            face = geom.faces[n++];
-            d = face.b; face.b = face.c; face.c = d;
-         }
+         pos = dpos; norm = dnorm;
       }
+
+      let len = pos.length, n, shift = 0,
+          newpos = new Float32Array(len),
+          newnorm = new Float32Array(len);
+
+      // we should swap second and third point in each face
+      for (n = 0; n < len; n += 3) {
+         newpos[n]   = pos[n+shift];
+         newpos[n+1] = pos[n+1+shift];
+         newpos[n+2] = -pos[n+2+shift];
+
+         newnorm[n]   = norm[n+shift];
+         newnorm[n+1] = norm[n+1+shift];
+         newnorm[n+2] = -norm[n+2+shift];
+
+         shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+      }
+
+      shape.geomZ = new BufferGeometry();
+      shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
+      shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
+      // normals are calculated with normal geometry and correctly scaled
+      // geom.computeVertexNormals();
    }
 
    let mesh = new Mesh( shape.geomZ, material );
