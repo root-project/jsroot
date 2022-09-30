@@ -62,7 +62,7 @@ class Vertex {
 
    normalize() {
       let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
-      
+
       this.x /= length;
       this.y /= length;
       this.z /= length;
@@ -168,7 +168,7 @@ class Polygon {
          c.clone().subtract( a )
       ).normalize();
 
-      this.w = this.normal.clone().dot( a );
+      this.w = this.normal.dot( a );
       return this;
    }
 
