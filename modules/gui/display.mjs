@@ -1000,6 +1000,14 @@ class FlexibleDisplay extends MDIDisplay {
       this.forEachFrame(frame => this.changeFrameState(frame, "min"));
    }
 
+   /** @summary show all frames which are minimized */
+   showAll() {
+      this.forEachFrame(frame => {
+         if (this.getFrameState(frame) == "min")
+            this.changeFrameState(frame, "normal");
+      });
+   }
+
    /** @summary close all frames */
    closeAllFrames() {
       let arr = [];
@@ -1056,16 +1064,23 @@ class FlexibleDisplay extends MDIDisplay {
 
       evnt.preventDefault();
 
-      let arr = [];
-      this.forEachFrame(f => arr.push(f));
+      let arr = [], nummin = 0;
+      this.forEachFrame(f => {
+         arr.push(f);
+         if (this.getFrameState(f) == "min") nummin++;
+      });
       let active = this.getActiveFrame();
-      arr.sort((f1,f2) => { return  d3_select(f1).property('frame_cnt') < d3_select(f2).property('frame_cnt') ? -1 : 1; });
+
+      arr.sort((f1,f2) => (d3_select(f1).property('frame_cnt') < d3_select(f2).property('frame_cnt') ? -1 : 1));
 
       createMenu(evnt, this).then(menu => {
          menu.add("header:Flex");
-         menu.add("Cascade", () => this.sortFrames("cascade"));
-         menu.add("Tile", () => this.sortFrames("tile"));
-         menu.add("Minimize all", () => this.minimizeAll());
+         menu.add("Cascade", () => this.sortFrames("cascade"), "Cascade frames");
+         menu.add("Tile", () => this.sortFrames("tile"), "Tile all frames");
+         if (nummin < arr.length)
+            menu.add("Minimize all", () => this.minimizeAll(), "Minimize all frames");
+         if (nummin > 0)
+            menu.add("Show all", () => this.showAll(), "Restore minimized frames");
          menu.add("Close all", () => this.closeAllFrames());
          menu.add("separator");
 
