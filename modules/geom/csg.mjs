@@ -51,9 +51,7 @@ class Vertex {
    // }
 
    cross( vertex ) {
-      let x = this.x,
-          y = this.y,
-          z = this.z;
+      let x = this.x, y = this.y, z = this.z;
 
       this.x = y * vertex.z - z * vertex.y;
       this.y = z * vertex.x - x * vertex.z;
@@ -64,7 +62,7 @@ class Vertex {
 
    normalize() {
       let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
-
+      
       this.x /= length;
       this.y /= length;
       this.z /= length;
@@ -82,7 +80,7 @@ class Vertex {
           dz = (this.z - vertex.z),
           len2 = this.x**2 + this.y**2 + this.z**2;
 
-      return (dx**2 + dy**2 + dz**2) / (len2>0 ? len2 : 1e-10);
+      return (dx**2 + dy**2 + dz**2) / (len2 > 0 ? len2 : 1e-10);
    }
 
 /*
@@ -312,13 +310,13 @@ class Node {
          this.back = new Node( back );
    }
 
-   isConvex(polygons) {
-      let i, j, len = polygons.length;
-      for ( i = 0; i < len; ++i )
-         for ( j = 0; j < len; ++j )
-            if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
-      return true;
-   }
+   //isConvex(polygons) {
+   //   let i, j, len = polygons.length;
+   //   for ( i = 0; i < len; ++i )
+   //      for ( j = 0; j < len; ++j )
+   //         if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
+   //   return true;
+   //}
 
    build( polygons ) {
       let polygon_count = polygons.length,
@@ -343,9 +341,10 @@ class Node {
 
    collectPolygons(arr) {
       let len = this.polygons.length;
-      for (let i = 0; i < len; ++i) arr.push(this.polygons[i]);
-      if ( this.front ) this.front.collectPolygons(arr);
-      if ( this.back ) this.back.collectPolygons(arr);
+      for (let i = 0; i < len; ++i)
+         arr.push(this.polygons[i]);
+      this.front?.collectPolygons(arr);
+      this.back?.collectPolygons(arr);
       return arr;
    }
 
@@ -368,8 +367,8 @@ class Node {
 
       node.divider = this.divider.clone();
       node.polygons = this.polygons.map( polygon => polygon.clone() );
-      node.front = this.front ? this.front.clone() : undefined;
-      node.back = this.back ? this.back.clone() : undefined;
+      node.front = this.front?.clone();
+      node.back = this.back?.clone();
 
       return node;
    }
