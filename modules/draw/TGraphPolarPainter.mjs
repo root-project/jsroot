@@ -123,7 +123,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
       if (!delta) return;
 
-      delta = (delta<0) ? -0.2 : 0.2;
+      delta = (delta < 0) ? -0.2 : 0.2;
 
       let rmin = this.scale_rmin, rmax = this.scale_rmax, range = rmax - rmin;
 

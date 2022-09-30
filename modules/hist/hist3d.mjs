@@ -1121,7 +1121,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       reduced = (binz2 === zmin) || (binz1 >= binz2);
 
-      if (!reduced || (level>0)) return true;
+      if (!reduced || (level > 0)) return true;
 
       if (basehisto) return false; // do not draw empty bins on top of other bins
 
@@ -1199,7 +1199,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
             if (!getBinContent(i,j,nlevel)) continue;
 
-            nobottom = !reduced && (nlevel>0);
+            nobottom = !reduced && (nlevel > 0);
             notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
             y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
@@ -1427,7 +1427,7 @@ function drawBinsLego(painter, is_v7 = false) {
    line.painter = painter;
    line.intersect_index = intersect_index;
    line.tooltip = function(intersect) {
-      if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
+      if ((intersect.index < 0) || (intersect.index >= this.intersect_index.length)) return null;
       return this.painter.get3DToolTip(this.intersect_index[intersect.index]);
    }
    */
@@ -1518,7 +1518,7 @@ function drawBinsError3D(painter, is_v7 = false) {
        }
 
        let pos = Math.floor(intersect.index / 6);
-       if ((pos<0) || (pos >= this.intersect_index.length)) return null;
+       if ((pos < 0) || (pos >= this.intersect_index.length)) return null;
        let p = this.painter,
            histo = p.getHisto(),
            main = p.getFramePainter(),
@@ -1720,7 +1720,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
             for (let kk=beg;kk<end;++kk) {
                let indx = normindx[kk];
-               if (indx<0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+               if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
                sumx+=arr[indx];
                sumy+=arr[indx+1];
                sumz+=arr[indx+2];
@@ -1764,7 +1764,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             }
 
             // check if any(contours for given level exists
-            if (((side1>0) || (side2>0) || (side3>0)) &&
+            if (((side1 > 0) || (side2 > 0) || (side3 > 0)) &&
                 ((side1!==side2) || (side2!==side3) || (side3!==side1))) ++ngridsegments;
 
             continue;
@@ -1796,8 +1796,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          if (side3 !== side1) {
             // order is important, should move from 3->1 point, checked via lastpart
             lastpart = 0;
-            if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-            if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
+            if ((side3 < 0) || (side1 < 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+            if ((side3 > 0) || (side1 > 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
          }
 
          if (k === 0) continue;
@@ -1842,7 +1842,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             }
          if (dolines && (nsegments > 0))
             lpos = new Float32Array(nsegments * 6);
-         if (dogrid && (ngridsegments>0))
+         if (dogrid && (ngridsegments > 0))
             grid = new Float32Array(ngridsegments * 6);
       }
       for (i = handle.i1;i < handle.i2-1; ++i) {

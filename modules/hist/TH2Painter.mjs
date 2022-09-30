@@ -45,7 +45,7 @@ function drawTH2PolyLego(painter) {
       }
 
       for (let ngr = 0; ngr < ngraphs; ++ngr) {
-         if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          let npnts = gr.fNpoints, x = gr.fX, y = gr.fY;
          while ((npnts>2) && (x[0]===x[npnts-1]) && (y[0]===y[npnts-1])) --npnts;
@@ -57,14 +57,14 @@ function drawTH2PolyLego(painter) {
 
             let lastx, lasty, currx, curry,
                 dist2 = pmain.size_x3d*pmain.size_z3d,
-                dist2limit = (ntry>0) ? 0 : dist2/1e6;
+                dist2limit = (ntry > 0) ? 0 : dist2/1e6;
 
             pnts = []; faces = null;
 
             for (let vert = 0; vert < npnts; ++vert) {
                currx = pmain.grx(x[vert]);
                curry = pmain.gry(y[vert]);
-               if (vert>0)
+               if (vert > 0)
                   dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                if (dist2 > dist2limit) {
                   pnts.push(new Vector2(currx, curry));

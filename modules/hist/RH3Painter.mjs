@@ -553,7 +553,7 @@ class RH3Painter extends RHistPainter {
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
-            if ((indx<0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             let p = this.painter,
                 main = p.getFramePainter(),
@@ -672,7 +672,7 @@ class RH3Painter extends RHistPainter {
             for (k = k1; k < k2; ++k)
                min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
 
-      if (min>0) return; // if all points positive, no chance for autoscale
+      if (min > 0) return; // if all points positive, no chance for autoscale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
 

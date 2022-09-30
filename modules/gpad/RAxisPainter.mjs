@@ -56,7 +56,7 @@ class RAxisPainter extends RObjectPainter {
       if (_log) {
          this.log = true;
          this.logbase = 10;
-         if (Math.abs(_log - Math.exp(1))<0.1)
+         if (Math.abs(_log - Math.exp(1)) < 0.1)
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
@@ -108,7 +108,7 @@ class RAxisPainter extends RObjectPainter {
             smin = smax * 0.0001;
          this.log = true;
          this.logbase = 10;
-         if (Math.abs(_log - Math.exp(1))<0.1)
+         if (Math.abs(_log - Math.exp(1)) < 0.1)
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
@@ -683,11 +683,11 @@ class RAxisPainter extends RObjectPainter {
          if (this.vertical) {
             arg.x = fix_coord;
             arg.y = pos;
-            arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+            arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
          } else {
             arg.x = pos;
             arg.y = fix_coord;
-            arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+            arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
          }
 
          arg.post_process = process_drawtext_ready;

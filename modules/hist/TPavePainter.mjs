@@ -164,7 +164,7 @@ class TPavePainter extends ObjectPainter {
          if (this.fillatt.empty()) {
             if ((dx < 0) && (dy < 0))
                spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
-            else // ((dx<0) && (dy>0))
+            else // ((dx < 0) && (dy > 0))
                spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
          } else {
             // when main is filled, one also can use fill for shadow to avoid complexity
@@ -178,7 +178,7 @@ class TPavePainter extends ObjectPainter {
       }
 
       if (pt.fNpaves)
-         for (let n = pt.fNpaves-1; n>0; --n)
+         for (let n = pt.fNpaves-1; n > 0; --n)
             this.draw_g.append("svg:path")
                .attr("d", `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
                .call(this.fillatt.func)

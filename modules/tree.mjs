@@ -2707,7 +2707,7 @@ function treeHierarchy(node, obj) {
                for (let key in methods) {
                   if (typeof methods[key] !== 'function') continue;
                   let s = methods[key].toString();
-                  if ((s.indexOf("return")>0) && (s.indexOf("function ()") == 0))
+                  if ((s.indexOf("return") > 0) && (s.indexOf("function ()") == 0))
                      bnode._childs.push({
                         _name: key+"()",
                         _title: "function " + key + " of class " + object_class,

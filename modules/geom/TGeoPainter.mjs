@@ -792,7 +792,7 @@ class TGeoPainter extends ObjectPainter {
       let macro = opt.indexOf("macro:");
       if (macro >= 0) {
          let separ = opt.indexOf(";", macro+6);
-         if (separ<0) separ = opt.length;
+         if (separ < 0) separ = opt.length;
          res.script_name = opt.slice(macro+6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ+1);
          console.log('script', res.script_name, 'rest', opt);
@@ -800,9 +800,9 @@ class TGeoPainter extends ObjectPainter {
 
       while (true) {
          let pp = opt.indexOf("+"), pm = opt.indexOf("-");
-         if ((pp<0) && (pm<0)) break;
+         if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = "+";
-         if ((p1<0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
+         if ((p1 < 0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
          while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
@@ -867,9 +867,9 @@ class TGeoPainter extends ObjectPainter {
       if (d.check("CLIPZ")) res.clipz = true;
       if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
 
-      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
       if (d.check("DFLT_COLORS") || d.check("DFLT")) res.dflt_colors = true;
       if (d.check("SSAO")) res.usessao = true;
@@ -961,7 +961,7 @@ class TGeoPainter extends ObjectPainter {
                let m1 = mesh.matrixWorld, flip;
 
                if (m1.equals(m2)) return true;
-               if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
+               if ((m1.determinant() > 0) && (m2.determinant()<-0.9)) {
                   flip = new Vector3(1,1,-1);
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
@@ -1640,7 +1640,7 @@ class TGeoPainter extends ObjectPainter {
          let extras = this.getExtrasContainer();
          if (extras)
             extras.traverse(obj3d => {
-               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(obj3d);
+               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d) < 0)) active_mesh.push(obj3d);
             });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
@@ -3335,7 +3335,7 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname.length>0) itemname += "/";
+         if (itemname.length > 0) itemname += "/";
          itemname += prnt.fName;
       }
 

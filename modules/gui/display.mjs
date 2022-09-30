@@ -204,7 +204,7 @@ class GridDisplay extends MDIDisplay {
       this.getcnt = 0;
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
-      this.use_separarators = !kind || (kind.indexOf("x")<0);
+      this.use_separarators = !kind || (kind.indexOf("x") < 0);
       this.simple_layout = false;
 
       let dom = this.selectDom();
@@ -262,7 +262,7 @@ class GridDisplay extends MDIDisplay {
          if (Number.isInteger(arg) && (arg > 10)) {
             kind = kind.slice(0, kind.indexOf("_"));
             sizes = [];
-            while (arg>0) {
+            while (arg > 0) {
                sizes.unshift(Math.max(arg % 10, 1));
                arg = Math.round((arg-sizes[0])/10);
                if (sizes[0] === 0) sizes[0] = 1;
@@ -276,7 +276,7 @@ class GridDisplay extends MDIDisplay {
             num = kind;
          } else {
             arr = [];
-            while (kind>0) {
+            while (kind > 0) {
                arr.unshift(kind % 10);
                kind = Math.round((kind-arr[0])/10);
                if (arr[0] === 0) arr[0] = 1;

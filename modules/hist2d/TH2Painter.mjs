@@ -363,7 +363,7 @@ class TH2Painter extends THistPainter {
             if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
             for (ngr = 0; ngr < numgraphs; ++ngr) {
-               if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+               if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
                for (n = 0; n < gr.fNpoints; ++n) {
                   ++numpoints;

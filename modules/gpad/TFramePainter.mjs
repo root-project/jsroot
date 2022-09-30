@@ -1536,11 +1536,11 @@ class TFramePainter extends ObjectPainter {
                    func(this.scale_xmin, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymin) ];
-      if (this.scale_xmin<0 && this.scale_xmax>0) {
+      if (this.scale_xmin < 0 && this.scale_xmax > 0) {
          pnts.push(func(0, this.scale_ymin));
          pnts.push(func(0, this.scale_ymax));
       }
-      if (this.scale_ymin<0 && this.scale_ymax>0) {
+      if (this.scale_ymin < 0 && this.scale_ymax > 0) {
          pnts.push(func(this.scale_xmin, 0));
          pnts.push(func(this.scale_xmax, 0));
       }

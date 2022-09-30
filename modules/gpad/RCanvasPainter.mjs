@@ -766,7 +766,7 @@ registerMethods("ROOT::Experimental::RPalette", {
 
          let entry = this.fColors[indx];
 
-         if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == this.fColors.length - 1)) {
+         if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx == this.fColors.length - 1)) {
             arr.push(this.extractRColor(entry.fColor));
             continue;
          }

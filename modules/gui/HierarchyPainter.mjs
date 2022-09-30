@@ -334,7 +334,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = "0"+val;
-         if (item._value.length>0)
+         if (item._value.length > 0)
             item._value += (k%4 === 0) ? " | " : " ";
 
          item._value += val;
@@ -503,7 +503,7 @@ function objectHierarchy(top, obj, args = undefined) {
                      if (isRootCollection(fld) && (typeof fld.arr === "object")) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
-                        if (fld.arr.length>0) item._more = true;
+                        if (fld.arr.length > 0) item._more = true;
                      } else {
                         item._more = true;
                         item._value = "{ }";
@@ -535,7 +535,7 @@ function objectHierarchy(top, obj, args = undefined) {
          top._childs.push(item);
    }
 
-   if (compress && lastitem && (cnt>0)) lastitem._name += ".." + lastkey;
+   if (compress && lastitem && (cnt > 0)) lastitem._name += ".." + lastkey;
 
    return true;
 }
@@ -2339,7 +2339,7 @@ class HierarchyPainter extends BasePainter {
                if (!prnt._isopen) {
                   if (force) {
                      prnt._isopen = true;
-                     if (update.indexOf(prnt)<0) update.push(prnt);
+                     if (update.indexOf(prnt) < 0) update.push(prnt);
                   } else {
                      hitem = prnt; break;
                   }
@@ -2348,7 +2348,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             hitem._background = 'LightSteelBlue';
-            if (active.indexOf(hitem)<0) active.push(hitem);
+            if (active.indexOf(hitem) < 0) active.push(hitem);
          }
 
          find_next();
@@ -3175,8 +3175,8 @@ class HierarchyPainter extends BasePainter {
          if (res.length > 0 || !gui_div || gui_div.empty()) return res;
          while (opt.length > 0) {
             let separ = opt.indexOf(";");
-            let part = separ>0 ? opt.slice(0, separ) : opt;
-            if (separ>0) opt = opt.slice(separ+1); else opt = "";
+            let part = separ > 0 ? opt.slice(0, separ) : opt;
+            if (separ > 0) opt = opt.slice(separ+1); else opt = "";
 
             let canarray = true;
             if (part[0] == '#') { part = part.slice(1); canarray = false; }

@@ -151,7 +151,7 @@ const AxisPainterMethods = {
       if (val <= 0) return null;
       let vlog = Math.log10(val), base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
-      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
 
@@ -309,8 +309,8 @@ const AxisPainterMethods = {
 
       if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {
-            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            let factor = (item.min > 0) ? Math.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor < 0.01) factor = 0.01;
             item.min = item.min / Math.pow(10, factor*delta_left*dmin);
             item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else if ((delta_left === -delta_right) && !item.reverse) {

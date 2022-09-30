@@ -325,7 +325,7 @@ class GeometryCreator {
    setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
+      let indx = this.indx - ((reduce > 0) ? 9 : 18), norm = this.norm;
 
       if (reduce!==1) {
          norm[indx]   = nx12;
@@ -890,9 +890,9 @@ function createTubeBuffer( shape, faces_limit) {
       numfaces += radiusSegments * (((innerR[0] <= 0) || (innerR[1] <= 0)) ? 1 : 2);
 
    // upper cap
-   if (outerR[0] > 0) numfaces += radiusSegments * ((innerR[0]>0) ? 2 : 1);
+   if (outerR[0] > 0) numfaces += radiusSegments * ((innerR[0] > 0) ? 2 : 1);
    // bottom cup
-   if (outerR[1] > 0) numfaces += radiusSegments * ((innerR[1]>0) ? 2 : 1);
+   if (outerR[1] > 0) numfaces += radiusSegments * ((innerR[1] > 0) ? 2 : 1);
 
    if (thetaLength < 360)
       numfaces += ((outerR[0] > innerR[0]) ? 2 : 0) + ((outerR[1] > innerR[1]) ? 2 : 0);
@@ -1090,7 +1090,7 @@ function createTorusBuffer( shape, faces_limit ) {
    for (let side = 0; side < 2; ++side) {
       if ((side > 0) && (shape.fRmin <= 0)) break;
       let tube = (side > 0) ? shape.fRmin : shape.fRmax,
-          d1 = 1 - side, d2 = 1 - d1, ns = side>0 ? -1 : 1;
+          d1 = 1 - side, d2 = 1 - d1, ns = side > 0 ? -1 : 1;
 
       for (let t = 0; t < tubularSegments; ++t) {
          let t1 = t + d1, t2 = t + d2;
@@ -1187,7 +1187,7 @@ function createPolygonBuffer( shape, faces_limit ) {
                continue;
             }
 
-         if ((layer>0) && ((side === 0) || hasrmin)) {
+         if ((layer > 0) && ((side === 0) || hasrmin)) {
             usage[layer*2+side] = 1;
             numusedlayers++;
          }
@@ -1212,7 +1212,7 @@ function createPolygonBuffer( shape, faces_limit ) {
       if (pnts.length === shape.fNz * 2) {
          // special case - all layers are there, create faces ourself
          cut_faces = [];
-         for (let layer = shape.fNz-1; layer>0; --layer) {
+         for (let layer = shape.fNz-1; layer > 0; --layer) {
             if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
             let right = 2*shape.fNz - 1 - layer;
             cut_faces.push([right, layer - 1, layer]);
@@ -1432,7 +1432,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
          case heightSegments + 1: layerz = zmax; radius = 0; break;
          default: {
             let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
-                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b < 0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
             if (radius < 1e-6) radius = 0;
             layerz = radius*tt;
@@ -3127,7 +3127,7 @@ class ClonedNodes {
              else
                 camVol = 0;
 
-             camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
+             camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
 
              // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
@@ -3374,7 +3374,7 @@ function createFlippedMesh(shape, material) {
          let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
          for (let ii = 0; ii < ilen; ++ii) {
             let k = arr[i0 + ii];
-            if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            if ((k < 0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
             dpos[ii*3] = pos[k*3];
             dpos[ii*3+1] = pos[k*3+1];
             dpos[ii*3+2] = pos[k*3+2];

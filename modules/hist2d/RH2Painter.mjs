@@ -744,7 +744,7 @@ class RH2Painter extends RHistPainter {
       }
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
-         if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          let npnts = gr.fNpoints, n,
              x = gr.fX, y = gr.fY,
@@ -936,7 +936,7 @@ class RH2Painter extends RHistPainter {
           xyfactor, uselogz = false, logmin = 0,
           di = handle.stepi, dj = handle.stepj;
 
-      if (main.logz && (absmax>0)) {
+      if (main.logz && (absmax > 0)) {
          uselogz = true;
          let logmax = Math.log(absmax);
          if (absmin > 0)
@@ -1215,7 +1215,7 @@ class RH2Painter extends RHistPainter {
 
       let layer = this.getFrameSvg().select('.main_layer'),
           defs = layer.select("defs");
-      if (defs.empty() && (colPaths.length>0))
+      if (defs.empty() && (colPaths.length > 0))
          defs = layer.insert("svg:defs",":first-child");
 
       this.createv7AttMarker();
@@ -1382,7 +1382,7 @@ class RH2Painter extends RHistPainter {
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
          for (let ngr=0;ngr<numgraphs;++ngr) {
-            if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+            if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
             for (let n=0;n<gr.fNpoints;++n) {
                ++numpoints;
@@ -1445,7 +1445,7 @@ class RH2Painter extends RHistPainter {
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
                for (let ngr=0;ngr<numgraphs;++ngr) {
-                  if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+                  if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
                   if (gr.IsInside(realx,realy)) {
                      foundindx = i;
                      break;

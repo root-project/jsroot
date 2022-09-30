@@ -265,13 +265,13 @@
 
          if (entry.file) {
              filename = entry.file;
-             if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
+             if ((filename.indexOf("http:") < 0) && (filename.indexOf("https:") < 0)) filename = filepath + filename;
          }
          if (entry.item) itemname = entry.item;
          if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
          if (entry.json) {
             jsonname = entry.json;
-            if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+            if ((jsonname.indexOf("http:") < 0) && (jsonname.indexOf("https:") < 0)) jsonname = filepath + jsonname;
          }
 
          if (entry.url) {
@@ -408,11 +408,11 @@
                url = entry.url.replace(/\$\$\$/g,filepath);
             } else if ('json' in entry) {
                jsonname = entry.json;
-               if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+               if ((jsonname.indexOf("http:") < 0) && (jsonname.indexOf("https:") < 0)) jsonname = filepath + jsonname;
             } else {
                if ('file' in entry) {
                   url = ""; filename = entry.file;
-                  if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
+                  if ((filename.indexOf("http:") < 0) && (filename.indexOf("https:") < 0)) filename = filepath + filename;
                }
                if ('item' in entry) {
                   url = ""; itemname = entry.item; style = entry.style;

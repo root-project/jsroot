@@ -1676,7 +1676,7 @@ function BetaDist(x, p, q) {
 /** @summary Computes the distribution function of the Beta distribution.
   * @memberof Math */
 function BetaDistI(x, p, q) {
-   if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
+   if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0)) return 0;
    return BetaIncomplete(x, p, q);
 }
 

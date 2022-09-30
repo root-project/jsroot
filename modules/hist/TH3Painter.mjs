@@ -553,7 +553,7 @@ class TH3Painter extends THistPainter {
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
-            if ((indx<0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             let p = this.painter,
                 histo = p.getHisto(),

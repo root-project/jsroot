@@ -120,8 +120,11 @@ function floatToString(value, fmt, ret_fmt) {
       if (sg.indexOf(".")>l) diff--;
 
       if (diff != 0) {
-         prec-=diff;
-         if (prec<0) prec = 0; else if (prec>20) prec = 20;
+         prec -= diff;
+         if (prec < 0)
+            prec = 0;
+         else if (prec > 20)
+            prec = 20;
          sg = value.toFixed(prec);
       }
    }

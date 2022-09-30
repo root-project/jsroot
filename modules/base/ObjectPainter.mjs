@@ -984,7 +984,7 @@ class ObjectPainter extends BasePainter {
             // handle latext drawing
             let box = arg.text_rect;
 
-            scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
+            scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
             arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
 

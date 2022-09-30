@@ -137,7 +137,7 @@ class THStackPainter extends ObjectPainter {
          res.min *= kmin;
          res.max *= kmax;
       } else {
-         if ((res.min>0) && (res.min < 0.05*res.max)) res.min = 0;
+         if ((res.min > 0) && (res.min < 0.05*res.max)) res.min = 0;
       }
 
       return res;
@@ -245,7 +245,7 @@ class THStackPainter extends ObjectPainter {
       this.options.errors = d.check("E");
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check("HIST") && (this.options.hopt.indexOf("E")<0)) this.options.draw_errors = true;
+      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check("HIST") && (this.options.hopt.indexOf("E") < 0)) this.options.draw_errors = true;
 
       this.options.horder = this.options.nostack || dolego;
    }

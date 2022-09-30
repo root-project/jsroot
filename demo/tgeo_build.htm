@@ -138,7 +138,7 @@
 
        // filename = "https://root.cern/files/tank.root";
 
-       if (filename.indexOf(".root")>0) {
+       if (filename.indexOf(".root") > 0) {
           // load geometry from ROOT file
           let itemname = d.get("item") || "geom";
           let file = await openFile(filename);

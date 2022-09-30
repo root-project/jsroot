@@ -484,7 +484,7 @@ class RHistPainter extends RObjectPainter {
             indx = taxis.FindBin(min, add || 0);
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         if (indx<0) indx = 0; else if (indx>nbins) indx = nbins;
+         if (indx < 0) indx = 0; else if (indx>nbins) indx = nbins;
       } else {
          indx = (size == "left") ? 0 : nbins;
       }

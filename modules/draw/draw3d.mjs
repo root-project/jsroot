@@ -87,7 +87,7 @@ function drawPolyMarker3D() {
             return null;
          }
          let indx = Math.floor(intersect.index / this.nvertex);
-         if ((indx<0) || (indx >= this.index.length)) return null;
+         if ((indx < 0) || (indx >= this.index.length)) return null;
 
          indx = this.index[indx];
 
