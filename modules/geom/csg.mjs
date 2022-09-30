@@ -6,7 +6,7 @@ const EPSILON = 1e-5,
       COPLANAR = 0,
       FRONT = 1,
       BACK = 2,
-      SPANNING = 3;
+      SPANNING = FRONT | BACK;
 
 class Vertex {
 
@@ -298,7 +298,6 @@ class Node {
 
       if (!polygons) return;
 
-      // this.divider = polygons[0].clone();
       this.divider = polygons[0].clone();
 
       let polygon_count = polygons.length,
@@ -359,19 +358,14 @@ class Node {
    }
 
    collectPolygons(arr) {
+      if (arr === undefined)
+         arr = [];
       let len = this.polygons.length;
       for (let i = 0; i < len; ++i)
          arr.push(this.polygons[i]);
       this.front?.collectPolygons(arr);
       this.back?.collectPolygons(arr);
       return arr;
-   }
-
-   allPolygons() {
-      let polygons = this.polygons.slice();
-      if ( this.front ) polygons = polygons.concat( this.front.allPolygons() );
-      if ( this.back ) polygons = polygons.concat( this.back.allPolygons() );
-      return polygons;
    }
 
    numPolygons() {
@@ -589,7 +583,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a.invert();
       a = new Geometry( a );
       a.matrix = this.matrix;
@@ -605,7 +599,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a = new Geometry( a );
       a.matrix = this.matrix;
       return a;
@@ -620,7 +614,7 @@ class Geometry {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a.invert();
       a = new Geometry( a );
       a.matrix = this.matrix;
@@ -636,7 +630,7 @@ class Geometry {
           p, p1, p2, i1, i2;
 
       // sort out polygons
-      for (n=0;n<len;++n) {
+      for (n = 0; n < len; ++n) {
          p = polygons[n];
          if (p.id === undefined) continue;
          if (arr[p.id] === undefined) arr[p.id] = [];
@@ -655,7 +649,7 @@ class Geometry {
          while (foundpair) {
             foundpair = false;
 
-            for (i1 = 0; i1<len-1; ++i1) {
+            for (i1 = 0; i1 < len-1; ++i1) {
                p1 = parts[i1];
                if (!p1?.parent) continue;
                for (i2 = i1+1; i2 < len; ++i2) {
@@ -676,13 +670,13 @@ class Geometry {
          }
       }
 
-      if (nreduce>0) {
+      if (nreduce > 0) {
          polygons.splice(0, polygons.length);
 
          for(n = 0; n < arr.length; ++n) {
             parts = arr[n];
             if (parts !== undefined)
-               for (i1=0,len=parts.length; i1<len;++i1)
+               for (i1 = 0, len = parts.length; i1 < len; ++i1)
                   if (parts[i1]) polygons.push(parts[i1]);
          }
 
@@ -698,7 +692,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       a.invert();
       return this;
    }
@@ -712,7 +706,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       return this;
    }
 
@@ -725,7 +719,7 @@ class Geometry {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       a.invert();
       return this;
    }
@@ -744,7 +738,7 @@ class Geometry {
 
    scale(x,y,z) {
       // try to scale as BufferGeometry
-      let polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons();
 
       for (let i = 0; i < polygons.length; ++i) {
          let polygon = polygons[i];
@@ -759,7 +753,7 @@ class Geometry {
    }
 
    toPolygons() {
-      let polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons();
 
       this.tryToCompress(polygons);
 

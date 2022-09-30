@@ -1751,7 +1751,7 @@ function geomBoundingBox(geom) {
    let polygons = null;
 
    if (geom instanceof CsgGeometry)
-      polygons = geom.tree.collectPolygons([]);
+      polygons = geom.tree.collectPolygons();
    else if (geom.polygons)
       polygons = geom.polygons;
 
