@@ -6,8 +6,7 @@ import { REVISION, DoubleSide, FrontSide,
          Euler, Quaternion, MathUtils,
          Mesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, BufferAttribute,
-         TextGeometry, BufferGeometry, BoxBufferGeometry, CircleBufferGeometry,
-         SphereBufferGeometry, SphereGeometry, WireframeGeometry,
+         TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from '../three.mjs';
@@ -614,7 +613,7 @@ class TGeoPainter extends ObjectPainter {
       let geometry = new SphereGeometry(0.025, 18, 36),
           material = new MeshBasicMaterial({ color: 'grey', vertexColors: false }),
           rayMaterial = new MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
-          rayGeometry = new BoxBufferGeometry(0.001, 0.001, 2),
+          rayGeometry = new BoxGeometry(0.001, 0.001, 2),
           ray1Mesh = new Mesh(rayGeometry, rayMaterial),
           ray2Mesh = new Mesh(rayGeometry, rayMaterial),
           sphere1 = new Mesh(geometry, material),
@@ -3972,8 +3971,8 @@ class TGeoPainter extends ObjectPainter {
 
          if ((center[naxis]===0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
            if ((this.ctrl._axis != 2) || (naxis===0)) {
-               let geom = ortho ? new CircleBufferGeometry(text_size*0.25) :
-                                  new SphereBufferGeometry(text_size*0.25);
+               let geom = ortho ? new CircleGeometry(text_size*0.25) :
+                                  new SphereGeometry(text_size*0.25);
                mesh = new Mesh(geom, textMaterial);
                mesh.translateX((naxis===0) ? center[0] : buf[0]);
                mesh.translateY((naxis===1) ? center[1] : buf[1]);
