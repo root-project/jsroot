@@ -346,7 +346,7 @@ class TGraphPainter extends ObjectPainter {
       if (typeof filter_func == 'function') {
          for (let n = 0; n < this.bins.length; ++n) {
             if (filter_func(this.bins[n],n)) {
-               if (!selbins) selbins = (n==0) ? [] : this.bins.slice(0, n);
+               if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
             } else {
                if (selbins) selbins.push(this.bins[n]);
             }

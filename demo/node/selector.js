@@ -21,7 +21,7 @@ selector.Process = function() {
 
 selector.Terminate = function(res) {
    // function called when processing finishes
-   if (!res || (cnt===0)) {
+   if (!res || (cnt === 0)) {
       console.error("Fail to process TTree");
    } else {
       let meanpx = sumpx/cnt, meanpy = sumpy/cnt;

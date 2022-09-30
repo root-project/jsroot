@@ -1927,7 +1927,7 @@ class TGeoPainter extends ObjectPainter {
          let need_worker = !isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
-         if (need_worker && source_dir.indexOf("file://")==0) {
+         if (need_worker && source_dir.indexOf("file://") == 0) {
             console.log('disable worker for jsroot from file system');
             need_worker = false;
          }
@@ -2819,7 +2819,7 @@ class TGeoPainter extends ObjectPainter {
             this.render3D(0);
          }
          let tm2 = new Date().getTime();
-         if ((step==0) && (tm2-tm1 > 200)) frames = 20;
+         if ((step == 0) && (tm2-tm1 > 200)) frames = 20;
          step++;
          this._animating = step < frames;
       };
@@ -3194,7 +3194,7 @@ class TGeoPainter extends ObjectPainter {
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      if (itemname && itemname.indexOf("<prnt>/Tracks")==0)
+      if (itemname && itemname.indexOf("<prnt>/Tracks") == 0)
          line.main_track = true;
 
       this.addToExtrasContainer(line);
@@ -3426,7 +3426,7 @@ class TGeoPainter extends ObjectPainter {
          while (indx < lines.length) {
             let line = lines[indx++].trim();
 
-            if (line.indexOf('//')==0) continue;
+            if (line.indexOf('//') == 0) continue;
 
             if (line.indexOf('gGeoManager') < 0) continue;
             line = line.replace('->GetVolume','.GetVolume');
@@ -3969,14 +3969,14 @@ class TGeoPainter extends ObjectPainter {
 
          let textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
 
-         if ((center[naxis]===0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
-           if ((this.ctrl._axis != 2) || (naxis===0)) {
+         if ((center[naxis] === 0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
+           if ((this.ctrl._axis != 2) || (naxis === 0)) {
                let geom = ortho ? new CircleGeometry(text_size*0.25) :
                                   new SphereGeometry(text_size*0.25);
                mesh = new Mesh(geom, textMaterial);
-               mesh.translateX((naxis===0) ? center[0] : buf[0]);
-               mesh.translateY((naxis===1) ? center[1] : buf[1]);
-               mesh.translateZ((naxis===2) ? center[2] : buf[2]);
+               mesh.translateX(naxis === 0 ? center[0] : buf[0]);
+               mesh.translateY(naxis === 1 ? center[1] : buf[1]);
+               mesh.translateZ(naxis === 2 ? center[2] : buf[2]);
                container.add(mesh);
            }
 
@@ -4648,7 +4648,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == "string") && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
@@ -4833,7 +4833,7 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf("TGeoNode")===0) && findItemWithPainter(item))
+   if ((item._geoobj._typename.indexOf("TGeoNode") === 0) && findItemWithPainter(item))
       menu.add("Focus", function() {
 
         let drawitem = findItemWithPainter(item);
@@ -4851,7 +4851,7 @@ function provideMenu(menu, item, hpainter) {
       let res = ScanEveVisible(obj, undefined, true);
 
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
+         menu.addchk((res.hidden == 0), "Daughters", res.hidden !== 0 ? "true" : "false", ToggleEveVisibility);
 
    } else {
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), "Invisible",
@@ -4936,11 +4936,11 @@ function createItem(node, obj, name) {
    if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
    if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
    if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-   if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
+   if ((obj._typename.indexOf("TGeoNode") === 0) && obj.fVolume) {
       sub._title = "node:"  + obj._typename;
       if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
       volume = obj.fVolume;
-   } else if (obj._typename.indexOf("TGeoVolume")===0) {
+   } else if (obj._typename.indexOf("TGeoVolume") === 0) {
       volume = obj;
    } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
       iseve = true;

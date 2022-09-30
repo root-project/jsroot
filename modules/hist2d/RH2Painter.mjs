@@ -877,7 +877,7 @@ class RH2Painter extends RHistPainter {
                   dy = 0.5*(histo.getBinContent(i+1, j+1+dj) - histo.getBinContent(i+1, j+1-dj));
                }
 
-               if (loop===0) {
+               if (loop === 0) {
                   dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
                } else {
                   xc = (handle.grx[i] + handle.grx[i+di])/2;
@@ -891,7 +891,7 @@ class RH2Painter extends RHistPainter {
                   dx = Math.round(x2-x1);
                   dy = Math.round(y2-y1);
 
-                  if ((dx!==0) || (dy!==0)) {
+                  if ((dx !== 0) || (dy !== 0)) {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);;
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {

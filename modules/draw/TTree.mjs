@@ -385,7 +385,7 @@ async function drawTree(dom, obj, opt) {
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
       args = { expr: "." + obj.func + "()", branch: obj.branch };
-      if (opt && opt.indexOf("dump")==0)
+      if (opt && opt.indexOf("dump") == 0)
          args.expr += ">>" + opt;
       else if (opt)
          args.expr += opt;

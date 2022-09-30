@@ -469,7 +469,7 @@ class WebWindowHandle {
       if (!relative_path || !this.kind || !this.href) return this.href;
 
       let addr = this.href;
-      if (relative_path.indexOf("../")==0) {
+      if (relative_path.indexOf("../") == 0) {
          let ddd = addr.lastIndexOf("/",addr.length-2);
          addr = addr.slice(0,ddd) + relative_path.slice(2);
       } else {

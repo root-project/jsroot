@@ -12,7 +12,7 @@ class TAttFillHandler {
 
    /** @summary constructor
      * @param {object} args - arguments see {@link TAttFillHandler#setArgs} for more info
-     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling */
+     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor == 0 and fillstyle == 1001 means no filling,  2 means all other objects where such combination is white-color filling */
    constructor(args) {
       this.color = "none";
       this.colorindx = 0;

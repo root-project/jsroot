@@ -2633,7 +2633,7 @@ class TDirectory {
              subname = keyname.slice(pos+1),
              dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
             return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
 

@@ -793,10 +793,10 @@ function createSphereBuffer( shape, faces_limit ) {
        creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
    for (let side = 0; side < 2; ++side) {
-      if ((side===1) && noInside) break;
+      if ((side === 1) && noInside) break;
 
       let r = radius[side],
-          s = (side===0) ? 1 : -1,
+          s = (side === 0) ? 1 : -1,
           d1 = 1 - side, d2 = 1 - d1;
 
       // use direct algorithm for the sphere - here normals and position can be calculated directly
@@ -827,7 +827,7 @@ function createSphereBuffer( shape, faces_limit ) {
    for (let side = 0; side <= heightSegments; side += heightSegments)
       if (Math.abs(_sint[side]) >= epsilon) {
          let ss = _sint[side], cc = _cost[side],
-             d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
+             d1 = (side === 0) ? 0 : 1, d2 = 1 - d1;
          for (let n = 0; n < widthSegments; ++n) {
             creator.addFace4(
                   radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
@@ -956,7 +956,8 @@ function createTubeBuffer( shape, faces_limit) {
       let d1 = side, d2 = 1- side,
           sign = (side == 0) ? 1 : -1,
           reduce = (innerR[side] <= 0) ? 2 : 0;
-      if ((reduce === 2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
+      if ((reduce === 2) && (thetaLength === 360) && !calcZ)
+         creator.startPolygon(side === 0);
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
                innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -1036,7 +1037,7 @@ function createEltuBuffer( shape , faces_limit ) {
 
    // create top/bottom sides
    for (let side = 0; side < 2; ++side) {
-      let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
+      let sign = (side === 0) ? 1 : -1, d1 = side, d2 = 1 - side;
       for (let seg=0; seg<radiusSegments; ++seg) {
          creator.addFace3(0,          0,          sign*shape.fDZ,
                           x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
@@ -1279,10 +1280,11 @@ function createPolygonBuffer( shape, faces_limit ) {
       if (rmin === rmax) continue;
 
       let layerz = shape.fZ[layer],
-          d1 = (layer===0) ? 1 : 0, d2 = 1 - d1,
-          normalz = (layer===0) ? -1: 1;
+          d1 = (layer === 0) ? 1 : 0, d2 = 1 - d1,
+          normalz = (layer === 0) ? -1: 1;
 
-      if (!hasrmin && !cut_faces) creator.startPolygon(layer>0);
+      if (!hasrmin && !cut_faces)
+         creator.startPolygon(layer > 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
@@ -1360,13 +1362,13 @@ function createXtruBuffer( shape, faces_limit ) {
       for (let n = 0; n < faces.length; ++n) {
          let face = faces[n],
              pnt1 = pnts[face[0]],
-             pnt2 = pnts[face[(layer===0) ? 2 : 1]],
-             pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+             pnt2 = pnts[face[layer === 0 ? 2 : 1]],
+             pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
          creator.addFace3(scale * pnt1.x + x0, scale * pnt1.y + y0, z,
                           scale * pnt2.x + x0, scale * pnt2.y + y0, z,
                           scale * pnt3.x + x0, scale * pnt3.y + y0, z);
-         creator.setNormal(0,0,layer===0 ? -1 : 1);
+         creator.setNormal(0,0,layer === 0 ? -1 : 1);
       }
    }
 
@@ -1470,7 +1472,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
   * @private */
 function createHypeBuffer( shape, faces_limit ) {
 
-   if ((shape.fTin===0) && (shape.fTout===0))
+   if ((shape.fTin === 0) && (shape.fTout === 0))
       return createTubeBuffer(shape, faces_limit);
 
    let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
@@ -1531,7 +1533,7 @@ function createHypeBuffer( shape, faces_limit ) {
                            r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                            r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
                            r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
-          creator.setNormal(0,0, (layer===0) ? 1 : -1);
+          creator.setNormal(0,0, (layer === 0) ? 1 : -1);
        }
    }
 
@@ -2035,7 +2037,7 @@ function createServerGeometry(rd, nsegm) {
       g = createGeometry(rd.shape);
    } else {
 
-      if (!rd.raw || (rd.raw.length==0)) {
+      if (!rd.raw) {
          console.error('No raw data at all');
          return null;
       }
@@ -2972,7 +2974,7 @@ class ClonedNodes {
          three_prnt.add(obj3d);
 
          // this is only for debugging - test inversion of whole geometry
-         if ((lvl==0) && (typeof options == 'object') && options.scale) {
+         if ((lvl == 0) && (typeof options == 'object') && options.scale) {
             if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
                obj3d.scale.copy(options.scale);
                obj3d.updateMatrix();

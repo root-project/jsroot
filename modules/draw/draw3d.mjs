@@ -62,7 +62,7 @@ function drawPolyMarker3D() {
 
       if (step > 1) {
          select = (select+1) % step;
-         if (select!==0) continue;
+         if (select !== 0) continue;
       }
 
       index[icnt++] = i;

@@ -400,8 +400,8 @@ class RH1Painter extends RHistPainter {
 
       if (options.ErrorKind === 1) {
          let lw = this.lineatt.width + gStyle.fEndErrorSize;
-         endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
-         endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
+         endx = `m0,${lw}v${-2*lw}m0,${lw}`;
+         endy = `m${lw},0h${-2*lw}m${lw},0`;
          dend = Math.floor((this.lineatt.width-1)/2);
       }
 
@@ -411,7 +411,7 @@ class RH1Painter extends RHistPainter {
 
       let draw_bin = besti => {
          bincont = histo.getBinContent(besti+1);
-         if (!exclude_zero || (bincont!==0)) {
+         if (!exclude_zero || (bincont !== 0)) {
             mx1 = Math.round(funcs.grx(xaxis.GetBinCoord(besti)));
             mx2 = Math.round(funcs.grx(xaxis.GetBinCoord(besti+di)));
             midx = Math.round((mx1+mx2)/2);

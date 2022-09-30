@@ -811,7 +811,7 @@ selector.Process = function() {
 }
 
 selector.Terminate = function(res) {
-   if (!res || (cnt===0)) return;
+   if (!res || (cnt === 0)) return;
    let meanpx = sumpx/cnt, meanpy = sumpy/cnt;
    console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
 }

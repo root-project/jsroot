@@ -253,7 +253,7 @@
          viewer.style.display = '';
          srcviewer.style.display = 'none';
 
-          if (durl.indexOf("http")==0)
+          if (durl.indexOf("http") == 0)
              viewer.src = durl;
           else
              viewer.src = jsroot_path + durl;
@@ -365,7 +365,7 @@
                if (entry.src === true) {
                   srcurl = github + url;
                   entry.src = source_dir + url;
-               } else if (entry.src.indexOf("http")===0)
+               } else if (entry.src.indexOf("http") === 0)
                   srcurl = entry.src;
                else
                   srcurl = github + entry.src;

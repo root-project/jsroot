@@ -18,7 +18,7 @@ const kMACHEP  = 1.11022302462515654042363166809e-16,
   * a[0]x^N+a[1]x^(N-1) + ... + a[N]
   * @memberof Math */
 function Polynomialeval(x, a, N) {
-   if (N==0) return a[0];
+   if (!N) return a[0];
 
    let pom = a[0];
    for (let i = 1; i <= N; ++i)
@@ -31,7 +31,7 @@ function Polynomialeval(x, a, N) {
   * x^N+a[0]x^(N-1) + ... + a[N-1]
   * @memberof Math */
 function Polynomial1eval(x, a, N) {
-   if (N==0) return a[0];
+   if (!N) return a[0];
 
    let pom = x + a[0];
    for (let i = 1; i < N; ++i)
@@ -1749,7 +1749,7 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
   * @memberof Math */
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    if (sigma == 0) return 0;
-   if (alpha==0) return 0.;
+   if (alpha == 0) return 0.;
    let useLog = (n == 1.0),
        z = (x-mean)/sigma;
    if (alpha < 0 ) z = -z;

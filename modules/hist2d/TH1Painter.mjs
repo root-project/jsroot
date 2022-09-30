@@ -515,10 +515,10 @@ class TH1Painter extends THistPainter {
       // just to get correct values for the specified bin
       const extract_bin = bin => {
          bincont = histo.getBinContent(bin+1);
-         if (exclude_zero && (bincont===0)) return false;
+         if (exclude_zero && (bincont === 0)) return false;
          mx1 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+1)));
          mx2 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+2)));
-         midx = Math.round((mx1+mx2)/2);
+         midx = Math.round((mx1 + mx2) / 2);
          my = Math.round(funcs.gry(bincont));
          if (show_errors) {
             binerr = histo.getBinError(bin+1);
@@ -531,7 +531,7 @@ class TH1Painter extends THistPainter {
       }, draw_errbin = () => {
          let edx = 5;
          if (this.options.errorX > 0) {
-            edx = Math.round((mx2-mx1)*this.options.errorX);
+            edx = Math.round((mx2 - mx1) * this.options.errorX);
             mmx1 = midx - edx;
             mmx2 = midx + edx;
             if (this.options.ErrorKind === 1)
@@ -561,7 +561,7 @@ class TH1Painter extends THistPainter {
             }
 
             if (show_line && (path_line !== null))
-               path_line += ((path_line.length===0) ? "M" : "L") + `${midx},${my}`;
+               path_line += ((path_line.length === 0) ? "M" : "L") + `${midx},${my}`;
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
@@ -881,7 +881,7 @@ class TH1Painter extends THistPainter {
             gry1 = Math.round(funcs.gry(cont + binerr)); // up
             gry2 = Math.round(funcs.gry(cont - binerr)); // down
 
-            if ((cont==0) && this.isTProfile()) findbin = null;
+            if ((cont == 0) && this.isTProfile()) findbin = null;
 
             let dx = (grx2-grx1)*this.options.errorX;
             grx1 = Math.round(midx - dx);

@@ -92,15 +92,15 @@ class TArrowPainter extends ObjectPainter {
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
 
-      if (oo.indexOf("<")==0)
+      if (oo.indexOf("<") == 0)
          this.beg = (oo.indexOf("<|") == 0) ? 12 : 2;
-      if (oo.indexOf("->-")>=0)
+      if (oo.indexOf("->-") >= 0)
          this.mid = 1;
-      else if (oo.indexOf("-|>-")>=0)
+      else if (oo.indexOf("-|>-") >= 0)
          this.mid = 11;
-      else if (oo.indexOf("-<-")>=0)
+      else if (oo.indexOf("-<-") >= 0)
          this.mid = 2;
-      else if (oo.indexOf("-<|-")>=0)
+      else if (oo.indexOf("-<|-") >= 0)
          this.mid = 12;
 
       let p1 = oo.lastIndexOf(">"), p2 = oo.lastIndexOf("|>"), len = oo.length;

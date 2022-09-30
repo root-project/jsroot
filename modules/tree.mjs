@@ -2652,10 +2652,10 @@ function treeHierarchy(node, obj) {
 
       function ClearName(arg) {
          let pos = arg.indexOf("[");
-         if (pos>0) arg = arg.slice(0, pos);
-         if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
+         if (pos > 0) arg = arg.slice(0, pos);
+         if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
             arg = arg.slice(parent_branch.fName.length);
-            if (arg[0]===".") arg = arg.slice(1);
+            if (arg[0] === ".") arg = arg.slice(1);
          }
          return arg;
       }

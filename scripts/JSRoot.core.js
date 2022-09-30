@@ -110,7 +110,7 @@ function v6_require(need) {
    if (typeof need == "string") need = need.split(";");
 
    need.forEach((name,indx) => {
-      if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
+      if ((name.indexOf("load:") == 0) || (name.indexOf("user:") == 0))
          need[indx] = name.slice(5);
       else if (name == "2d")
          need[indx] = "painter";
@@ -242,7 +242,7 @@ exports.decodeUrl = function(url) {
    while (url.length > 0) {
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
-      while ((pos < url.length) && ((nq!==0) || ((url[pos]!=="&") && (url[pos]!=="#")))) {
+      while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== "&") && (url[pos] !== "#")))) {
          switch (url[pos]) {
             case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
             case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
