@@ -598,7 +598,7 @@ function parse(json) {
 
       let ks = Object.keys(value), len = ks.length;
 
-      if ((newfmt!==false) && (len===1) && (ks[0]==='$ref')) {
+      if ((newfmt !== false) && (len === 1) && (ks[0] === '$ref')) {
          const ref = parseInt(value['$ref']);
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = true;
@@ -1472,7 +1472,7 @@ function getMethods(typename, obj) {
          // Set bin content - only trivial case, without expansion
          this.fEntries++;
          this.fTsumw = 0;
-         if ((bin>=0) && (bin<this.fArray.length))
+         if ((bin >= 0) && (bin<this.fArray.length))
             this.fArray[bin] = content;
       }
    }

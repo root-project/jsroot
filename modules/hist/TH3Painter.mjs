@@ -75,7 +75,7 @@ class TH3Painter extends THistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside==1) && (yside==1) && (zside==1)) {
+               if ((xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -301,7 +301,7 @@ class TH3Painter extends THistPainter {
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego)
-         box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
+         box_option = (this.options.Lego === 1) ? 10 : this.options.Lego;
 
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
 

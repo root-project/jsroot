@@ -792,7 +792,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    while (yticks.next()) {
       let gry = yticks.grpos,
-          is_major = (yticks.kind===1),
+          is_major = (yticks.kind === 1),
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
@@ -1700,7 +1700,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    function RememberVertex(indx, ii,jj) {
       let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
 
-      if (normindx[bin]>=0)
+      if (normindx[bin] >= 0)
          return console.error('More than 8 vertexes for the bin');
 
       let pos = bin+8+normindx[bin]; // position where write index
@@ -1715,7 +1715,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
             if (normindx[bin] === -1) continue; // nothing there
 
-            let beg = (normindx[bin] >=0) ? bin : bin+9+normindx[bin],
+            let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
                 end = bin+8, sumx=0, sumy = 0, sumz = 0;
 
             for (let kk=beg;kk<end;++kk) {
@@ -1810,7 +1810,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          }
 
 
-         // if three points and surf==14, remember vertex for each point
+         // if three points and surf == 14, remember vertex for each point
 
          let buf = pos[lvl], s = indx[lvl];
          if (donormals && (k===9)) {
@@ -1876,7 +1876,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          let geometry = new BufferGeometry();
          geometry.setAttribute('position', new BufferAttribute(pos[lvl], 3));
          geometry.computeVertexNormals();
-         if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
+         if (donormals && (lvl === 1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
          let fcolor, material;
          if (is_v7) {

@@ -370,7 +370,7 @@ class THistDrawOptions {
       if (d.check('SURF', true)) {
          this.Surf = d.partAsInt(10, 1);
          check3dbox = d.part;
-         if (d.part.indexOf('Z')>=0) this.Zscale = true;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
       }
 
       if (d.check('TF3', true)) check3dbox = d.part;
@@ -427,7 +427,7 @@ class THistDrawOptions {
       if (d.check('SCAT=', true)) {
          this.Scat = true;
          this.ScatCoef = parseFloat(d.part);
-         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef <= 0)) this.ScatCoef = 1.;
       }
 
       if (d.check('SCAT')) this.Scat = true;
@@ -510,7 +510,7 @@ class THistDrawOptions {
             if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
-            if (d.part.indexOf('X0')>=0) this.errorX = 0;
+            if (d.part.indexOf('X0') >= 0) this.errorX = 0;
          }
       }
       if (d.check('9')) this.HighRes = 1;
@@ -564,7 +564,7 @@ class THistDrawOptions {
             res = this.Zero ? "P0" : "P"; // here invert logic with 0
          } else if (this.Error) {
             res = "E";
-            if (this.ErrorKind>=0) res += this.ErrorKind;
+            if (this.ErrorKind >= 0) res += this.ErrorKind;
          } else if (this.Line) {
             res += "L";
             if (this.Fill) res += "F";
@@ -2124,8 +2124,8 @@ class THistPainter extends ObjectPainter {
           res = {
              i1: this.getSelectIndex("x", "left", 0 - args.extra),
              i2: this.getSelectIndex("x", "right", 1 + args.extra),
-             j1: (hdim===1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim===1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
+             j1: (hdim === 1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
+             j2: (hdim === 1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
@@ -2183,7 +2183,7 @@ class THistPainter extends ObjectPainter {
          }
       }
 
-      if (hdim===1) {
+      if (hdim === 1) {
          res.gry[0] = funcs.gry(0);
          res.gry[1] = funcs.gry(1);
       } else

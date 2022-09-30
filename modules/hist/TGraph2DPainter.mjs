@@ -76,14 +76,14 @@ class TGraph2DPainter extends ObjectPainter {
           uymin = ymin - dy, uymax = ymax + dy,
           uzmin = zmin - dz, uzmax = zmax + dz;
 
-      if ((uxmin < 0) && (xmin>=0)) uxmin = xmin*0.98;
-      if ((uxmax > 0) && (xmax<=0)) uxmax = 0;
+      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.98;
+      if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
-      if ((uymin < 0) && (ymin>=0)) uymin = ymin*0.98;
-      if ((uymax > 0) && (ymax<=0)) uymax = 0;
+      if ((uymin < 0) && (ymin >= 0)) uymin = ymin*0.98;
+      if ((uymax > 0) && (ymax <= 0)) uymax = 0;
 
-      if ((uzmin < 0) && (zmin>=0)) uzmin = zmin*0.98;
-      if ((uzmax > 0) && (zmax<=0)) uzmax = 0;
+      if ((uzmin < 0) && (zmin >= 0)) uzmin = zmin*0.98;
+      if ((uzmax > 0) && (zmax <= 0)) uzmax = 0;
 
       let graph = this.getObject();
 

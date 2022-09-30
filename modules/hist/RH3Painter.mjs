@@ -89,7 +89,7 @@ class RH3Painter extends RHistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside==1) && (yside==1) && (zside==1)) {
+               if ((xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -441,10 +441,10 @@ class RH3Painter extends RHistPainter {
          bin_norms[nseq] = new Float32Array(nbins * buffer_size);
          bin_tooltips[nseq] = new Int32Array(nbins);
 
-         if (helper_kind[nseq]===1)
+         if (helper_kind[nseq] === 1)
             helper_indexes[nseq] = new Uint16Array(nbins * Box3D.MeshSegments.length);
 
-         if (helper_kind[nseq]===2)
+         if (helper_kind[nseq] === 2)
             helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
       }
 
@@ -491,21 +491,21 @@ class RH3Painter extends RHistPainter {
                   bin_n[vvv+2] = single_bin_norms[vi+2];
                }
 
-               if (helper_kind[nseq]===1) {
+               if (helper_kind[nseq] === 1) {
                   // reuse vertices created for the mesh
                   let helper_segments = Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
                   let shift = Math.round(nbins * buffer_size/3),
                       helper_i = helper_indexes[nseq];
-                  for (let n=0;n<helper_segments.length;++n)
+                  for (let n = 0; n < helper_segments.length; ++n)
                      helper_i[vvv+n] = shift + helper_segments[n];
                }
 
-               if (helper_kind[nseq]===2) {
+               if (helper_kind[nseq] === 2) {
                   let helper_segments = Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
-                  for (let n=0;n<helper_segments.length;++n, vvv+=3) {
+                  for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
                      let vert = Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;

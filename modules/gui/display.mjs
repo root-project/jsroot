@@ -326,7 +326,7 @@ class GridDisplay extends MDIDisplay {
          else
             elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
 
-         if (group.drawid>=0) {
+         if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
             if (typeof this.frameid === 'string')
                elem.attr('id', this.frameid + "_" + group.drawid);

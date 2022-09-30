@@ -1259,7 +1259,7 @@ const FrameInteractive = {
           w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.can_zoom_x)
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h), cur[1] < 0);
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1]  >= 0) && (cur[1] <= h), cur[1] < 0);
 
       if (this.can_zoom_y)
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);

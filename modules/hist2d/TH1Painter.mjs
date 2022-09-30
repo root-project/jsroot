@@ -299,7 +299,7 @@ class TH1Painter extends THistPainter {
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
          this.startTextDrawing(42, text_size, this.draw_g, text_size);
@@ -494,7 +494,7 @@ class TH1Painter extends THistPainter {
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
          if (!text_angle && !this.options.TextKind) {
@@ -791,7 +791,7 @@ class TH1Painter extends THistPainter {
 
       const GetBinGrX = i => {
          let xx = histo.fXaxis.GetBinLowEdge(i+1);
-         return (funcs.logx && (xx<=0)) ? null : funcs.grx(xx);
+         return (funcs.logx && (xx <= 0)) ? null : funcs.grx(xx);
       }, GetBinGrY = i => {
          let yy = histo.getBinContent(i + 1);
          if (funcs.logy && (yy < funcs.scale_ymin))

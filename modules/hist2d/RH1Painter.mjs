@@ -654,7 +654,7 @@ class RH1Painter extends RHistPainter {
 
       function GetBinGrX(i) {
          let xx = xaxis.GetBinCoord(i);
-         return (funcs.logx && (xx<=0)) ? null : funcs.grx(xx);
+         return (funcs.logx && (xx <= 0)) ? null : funcs.grx(xx);
       }
 
       function GetBinGrY(i) {

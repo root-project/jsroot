@@ -534,7 +534,7 @@ class TPavePainter extends ObjectPainter {
 
          if (isEmpty(leg)) continue; // let discard empty entry
 
-         if (ncols==1) ++i; else i = ii;
+         if (ncols == 1) ++i; else i = ii;
 
          let lopt = leg.fOption.toLowerCase(),
              icol = i % ncols, irow = (i - icol) / ncols,

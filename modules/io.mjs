@@ -3115,7 +3115,7 @@ class TFile {
             }
 
             let obj = {};
-            buf.mapObject(1, obj); // tag object itself with id==1
+            buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
             if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))

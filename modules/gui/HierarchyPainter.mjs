@@ -188,7 +188,7 @@ function listHierarchy(folder, lst) {
       let objname = obj.fName || obj.name;
       if (!objname) continue;
       let indx = names.indexOf(objname);
-      if (indx>=0) {
+      if (indx >= 0) {
          cnt[indx]++;
       } else {
          cnt[names.length] = cycle[names.length] = 1;
@@ -573,7 +573,7 @@ function createStreamerInfoContent(lst) {
          if (!elem || !elem.fName) continue;
          let info = elem.fTypeName + " " + elem.fName,
              title = elem.fTypeName + " type:" + elem.fType;
-         if (elem.fArrayDim===1)
+         if (elem.fArrayDim === 1)
             info += "[" + elem.fArrayLength + "]";
          else
             for (let dim = 0; dim < elem.fArrayDim; ++dim)
@@ -1776,7 +1776,7 @@ class HierarchyPainter extends BasePainter {
                filepath = fileprop.kind + "=" + filepath;
                if (fileprop.itemname.length > 0) {
                   let name = fileprop.itemname;
-                  if (name.search(/\+| |\,/)>=0) name = "\'" + name + "\'";
+                  if (name.search(/\+| |\,/) >= 0) name = "\'" + name + "\'";
                   filepath += "&item=" + name;
                }
 
@@ -2219,7 +2219,7 @@ class HierarchyPainter extends BasePainter {
             fname = options[n].slice(p+8);
             options[n] = options[n].slice(0,p);
          } else {
-            while (frame_names.indexOf(fname)>=0)
+            while (frame_names.indexOf(fname) >= 0)
                fname = items[n] + "_" + k++;
          }
          frame_names[n] = fname;
@@ -2231,7 +2231,7 @@ class HierarchyPainter extends BasePainter {
          if (items_wait[n] !== 0) continue;
          let found_main = n;
          for (let k = 0; k < items.length; ++k)
-            if ((items[n]===items[k]) && (options[k].indexOf('main')>=0)) found_main = k;
+            if ((items[n]===items[k]) && (options[k].indexOf('main') >= 0)) found_main = k;
          for (let k = 0; k < items.length; ++k)
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }

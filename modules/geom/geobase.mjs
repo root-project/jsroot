@@ -130,7 +130,7 @@ function checkDuplicates(parent, chlds) {
       if (!chld?.fName) continue;
       if (!chld.$geo_suffix) {
          let indx = names.indexOf(chld.fName);
-         if (indx>=0) {
+         if (indx >= 0) {
             let cnt = cnts[indx] || 1;
             while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
             chld.$geo_suffix = "#" + cnt;
@@ -201,8 +201,8 @@ class GeometryCreator {
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced*/
+     * if (reduce == 1), first face is reduced
+     * if (reduce == 2), second face is reduced*/
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       let indx = this.indx, pos = this.pos;
 
@@ -400,15 +400,15 @@ class PolygonsCreator{
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced */
+     * if (reduce == 1), first face is reduced
+     * if (reduce == 2), second face is reduced */
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       if (reduce === undefined) reduce = 0;
 
       this.v1 = new CsgVertex(x1,y1,z1, 0,0,0);
-      this.v2 = (reduce===1) ? null : new CsgVertex(x2,y2,z2, 0,0,0);
+      this.v2 = (reduce === 1) ? null : new CsgVertex(x2,y2,z2, 0,0,0);
       this.v3 = new CsgVertex(x3,y3,z3, 0,0,0);
-      this.v4 = (reduce===2) ? null : new CsgVertex(x4,y4,z4, 0,0,0);
+      this.v4 = (reduce === 2) ? null : new CsgVertex(x4,y4,z4, 0,0,0);
 
       this.reduce = reduce;
 
@@ -493,7 +493,7 @@ class PolygonsCreator{
 
       this.pA.set( this.v1.x, this.v1.y, this.v1.z);
 
-      if (this.reduce!==1) {
+      if (this.reduce !== 1) {
          this.pB.set( this.v2.x, this.v2.y, this.v2.z);
          this.pC.set( this.v3.x, this.v3.y, this.v3.z);
       } else {
@@ -671,7 +671,7 @@ function createArb8Buffer( shape, faces_limit ) {
           id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
 
       if ((indicies[k] == indicies[k+1]) || (indicies[k] == indicies[k+2]) || (indicies[k+1] == indicies[k+2]) ||
-          (map.indexOf(id1)>=0) || (map.indexOf(id2)>=0) || (map.indexOf(id3)>=0)) {
+          (map.indexOf(id1) >= 0) || (map.indexOf(id2) >= 0) || (map.indexOf(id3) >= 0)) {
          indicies[k] = indicies[k+1] = indicies[k+2] = -1;
       } else {
          map.push(id1,id2,id3);

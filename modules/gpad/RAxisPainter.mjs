@@ -1061,8 +1061,8 @@ class RAxisPainter extends RObjectPainter {
 
       menu.add("sub:Log scale", () => this.changeAxisLog('toggle'));
       menu.addchk(!this.log && !this.symlog, "linear", 0, arg => this.changeAxisLog(arg));
-      menu.addchk(this.log && !this.symlog && (this.logbase==10), "log10", () => this.changeAxisLog(10));
-      menu.addchk(this.log && !this.symlog && (this.logbase==2), "log2", () => this.changeAxisLog(2));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 10), "log10", () => this.changeAxisLog(10));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 2), "log2", () => this.changeAxisLog(2));
       menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", () => this.changeAxisLog(Math.exp(1)));
       menu.addchk(!this.log && this.symlog, "symlog", 0, () =>
          menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v)));

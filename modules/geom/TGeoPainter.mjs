@@ -73,7 +73,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
-   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
+   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl <= 0)) {
       vol.fName = side;
       vol.fLineColor = ($comp_col_cnt++ % 8) + 2;
       vol.fShape = comp;
@@ -802,7 +802,7 @@ class TGeoPainter extends ObjectPainter {
          let pp = opt.indexOf("+"), pm = opt.indexOf("-");
          if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = "+";
-         if ((p1 < 0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
+         if ((p1 < 0) || ((pm >= 0) && (pm<pp))) { p1 = pm; sign = "-"; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
          while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
@@ -3028,7 +3028,7 @@ class TGeoPainter extends ObjectPainter {
       if ((indx < 0) && hitem._obj) {
          indx = this._extraObjects.arr.indexOf(hitem._obj);
          // workaround - if object found, replace its name
-         if (indx>=0) this._extraObjects.opt[indx] = itemname;
+         if (indx >= 0) this._extraObjects.opt[indx] = itemname;
       }
 
       if (indx < 0) return;
@@ -3697,7 +3697,7 @@ class TGeoPainter extends ObjectPainter {
      * @param [measure] - when true, for the first time printout rendering time
      * @return {Promise} when tmout bigger than 0 is specified
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
-     * superimposed with each other. If tmeout<=0, rendering performed immediately
+     * superimposed with each other. If tmeout <= 0, rendering performed immediately
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
@@ -3917,7 +3917,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl._axis == 2)
          for (let naxis = 0; naxis < 3; ++naxis) {
             let name = names[naxis];
-            if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
+            if ((box.min[name] <= 0) && (box.max[name] >= 0)) continue;
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 

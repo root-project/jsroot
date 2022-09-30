@@ -1204,7 +1204,7 @@ function translateMath(str, kind, color, painter) {
    if (typeof color != 'string') return str;
 
    // MathJax SVG converter use colors in normal form
-   //if (color.indexOf("rgb(")>=0)
+   //if (color.indexOf("rgb(") >= 0)
    //   color = color.replace(/rgb/g, "[RGB]")
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');

@@ -175,7 +175,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let lbls = [], indx = 0;
       while (indx<ticks.length) {
          let lbl = this.format(ticks[indx]);
-         if (lbls.indexOf(lbl)>=0) {
+         if (lbls.indexOf(lbl) >= 0) {
             if (++this.ndig>10) break;
             lbls = []; indx = 0; continue;
           }

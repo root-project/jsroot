@@ -50,7 +50,7 @@ class TH1Painter extends TH1Painter2D {
       }
 
       if (is_main)
-         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14))))
+         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14))))
                 .then(() => this.drawHistTitle());
 
       return pr.then(() => this);

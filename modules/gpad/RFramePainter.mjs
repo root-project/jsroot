@@ -430,7 +430,7 @@ class RFramePainter extends RObjectPainter {
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
-         // In v7 ticksx == 0 means no ticks, ticksx==1 equivalent to == 0 in v6
+         // In v7 ticksx == 0 means no ticks, ticksx == 1 equivalent to == 0 in v6
 
          let can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
 

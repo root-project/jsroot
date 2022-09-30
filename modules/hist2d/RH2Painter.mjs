@@ -574,8 +574,8 @@ class RH2Painter extends RHistPainter {
       }
       //store negative contours from 0 to minimum, then all positive contours
       k = 0;
-      for (ipoly=first-1;ipoly>=0;ipoly--) {polysort[k] = ipoly; k++;}
-      for (ipoly=first;ipoly<levels.length;ipoly++) { polysort[k] = ipoly; k++;}
+      for (ipoly = first - 1; ipoly >= 0; ipoly--) { polysort[k] = ipoly; k++; }
+      for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
 
       let xp = new Float32Array(2*npmax),
           yp = new Float32Array(2*npmax);
@@ -619,7 +619,7 @@ class RH2Painter extends RHistPainter {
                if (nadd == 0) break;
             }
 
-            if ((iminus+1 < iplus) && (iminus>=0))
+            if ((iminus+1 < iplus) && (iminus >= 0))
                contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
@@ -671,7 +671,7 @@ class RH2Painter extends RHistPainter {
          return cmd;
       };
 
-      if (this.options.Contour===14) {
+      if (this.options.Contour === 14) {
          let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
          if (this.options.Proj) {
             let dj = handle.stepj, sz = parseInt((handle.j2 - handle.j1)/dj),
@@ -1053,11 +1053,11 @@ class RH2Painter extends RHistPainter {
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
             posy = yaxis.GetBinCoord(j + 0.5);
-            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = posy; // Lower whisker
-            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = posy; // Lower edge of box
-            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = posy; //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = posy; //Upper edge of box
-            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = posy; // Upper whisker
+            if (counter/integral < 0.001 && (counter + cont)/integral >= 0.001) pnt.whiskerm = posy; // Lower whisker
+            if (counter/integral < 0.25 && (counter + cont)/integral >= 0.25) pnt.m25y = posy; // Lower edge of box
+            if (counter/integral < 0.5 && (counter + cont)/integral >= 0.5) pnt.median = posy; //Median
+            if (counter/integral < 0.75 && (counter + cont)/integral >= 0.75) pnt.p25y = posy; //Upper edge of box
+            if (counter/integral < 0.999 && (counter + cont)/integral >= 0.999) pnt.whiskerp = posy; // Upper whisker
             counter += cont;
             y = posy; // center of y bin coordinate
             sum1 += cont*y;
@@ -1076,7 +1076,7 @@ class RH2Painter extends RHistPainter {
          }
 
          // exclude points with negative y when log scale is specified
-         if (funcs.logy && (pnt.whiskerm<=0)) continue;
+         if (funcs.logy && (pnt.whiskerm <= 0)) continue;
 
          w = handle.grx[i+1] - handle.grx[i];
          w *= 0.66;

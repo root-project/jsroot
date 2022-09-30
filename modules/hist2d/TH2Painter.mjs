@@ -810,7 +810,7 @@ class TH2Painter extends THistPainter {
                if (nadd == 0) break;
             }
 
-            if ((iminus+1 < iplus) && (iminus>=0))
+            if ((iminus+1 < iplus) && (iminus >= 0))
                contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
@@ -1134,7 +1134,7 @@ class TH2Painter extends THistPainter {
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
              text_size = Math.round(0.02*h*histo.fMarkerSize);
 
          this.startTextDrawing(42, text_size, text_g, text_size);
@@ -1176,7 +1176,7 @@ class TH2Painter extends THistPainter {
 
       if (!handle) handle = this.prepareDraw({ rounding: false });
 
-      if ((histo.fMarkerSize!==1) && rotate)
+      if ((histo.fMarkerSize !== 1) && rotate)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
 
       if (histo.fBarOffset !== 0) text_offset = histo.fBarOffset*1e-3;
@@ -1206,7 +1206,7 @@ class TH2Painter extends THistPainter {
                   text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (rotate /*|| (histo.fMarkerSize!==1)*/) {
+            if (rotate /*|| (histo.fMarkerSize !== 1)*/) {
                x = Math.round(handle.grx[i] + binw*0.5);
                y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                width = height = 0;

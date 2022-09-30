@@ -284,7 +284,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
       if (graph.fMaximum != -1111) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
+      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
 
       histo = graph.fHistogram;
 
@@ -636,8 +636,8 @@ class TGraphPainter extends ObjectPainter {
                  d.bar = true; // element drawn as bar
                  let dx = Math.round(-d.width/2),
                      dw = Math.round(d.width),
-                     dy = (options.Bar!==1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
-                     dh = (options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
+                     dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                     dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
                  return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
               })
             .call(usefill.func);

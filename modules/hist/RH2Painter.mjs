@@ -43,7 +43,7 @@ class RH2Painter extends RH2Painter2D {
       this.zmax = this.gmaxbin;
       if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
       if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-      if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+      if (main.logz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
 
       this.deleteAttr();
 

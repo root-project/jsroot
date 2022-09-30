@@ -271,7 +271,7 @@ function drawBox() {
 
    let box = this.getObject(),
        opt = this.getDrawOpt(),
-       draw_line = (opt.toUpperCase().indexOf("L")>=0),
+       draw_line = (opt.toUpperCase().indexOf("L") >= 0),
        lineatt = this.createAttLine(box),
        fillatt = this.createAttFill(box);
 

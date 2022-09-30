@@ -130,8 +130,8 @@ class THStackPainter extends ObjectPainter {
       if (stack.fMinimum != -1111) res.min = stack.fMinimum;
 
       if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
-         if (res.max<=0) res.max = 1;
-         if (res.min<=0) res.min = 1e-4*res.max;
+         if (res.max <= 0) res.max = 1;
+         if (res.min <= 0) res.min = 1e-4*res.max;
          let kmin = 1/(1 + 0.5*Math.log10(res.max / res.min)),
              kmax = 1 + 0.2*Math.log10(res.max / res.min);
          res.min *= kmin;
@@ -262,14 +262,14 @@ class THStackPainter extends ObjectPainter {
       }
 
       let h0 = histos.arr[0],
-          histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+          histo = createHistogram((this.options.ndim == 1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
       Object.assign(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
          Object.assign(histo.fYaxis, h0.fYaxis);
 
       // this code is not exists in ROOT painter, can be skipped?
-      for (let n=1;n<numhistos;++n) {
+      for (let n = 1; n < numhistos; ++n) {
          let h = histos.arr[n];
 
          if (!histo.fXaxis.fLabels) {

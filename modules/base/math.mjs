@@ -1589,7 +1589,7 @@ function fdistribution_cdf(x, n, m, x0 = 0) {
 /** @summary Prob function
   * @memberof Math */
 function Prob(chi2, ndf) {
-   if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
+   if (ndf <= 0) return 0; // Set CL to zero in case ndf <= 0
 
    if (chi2 <= 0) {
       if (chi2 < 0) return 0;
