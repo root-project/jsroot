@@ -1694,7 +1694,7 @@ function getNodeMatrix(kind, node) {
            break;
 
         default:
-           geoWarn('Unsupported pattern type ' + node.fFinder._typename);
+           geoWarn(`Unsupported pattern type ${node.fFinder._typename}`);
            break;
       }
    }
@@ -1703,7 +1703,7 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
    if (!geom) return 0;
@@ -1711,20 +1711,16 @@ function numGeometryFaces(geom) {
    if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons();
 
-   if (geom.type == 'BufferGeometry') {
-      let attr = geom.getAttribute('position');
-      return attr && attr.count ? Math.round(attr.count / 3) : 0;
-   }
-
    // special array of polygons
    if (geom.polygons)
       return geom.polygons.length;
 
-   return geom.faces.length;
+   let attr = geom.getAttribute('position');
+   return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be Geometry, BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryVertices(geom) {
    if (!geom) return 0;
@@ -1732,15 +1728,11 @@ function numGeometryVertices(geom) {
    if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons() * 3;
 
-   if (geom.type == 'BufferGeometry') {
-      var attr = geom.getAttribute('position');
-      return attr ? attr.count : 0;
-   }
-
    if (geom.polygons)
       return geom.polygons.length * 4;
 
-   return geom.vertices.length;
+   let attr = geom.getAttribute('position');
+   return attr?.count || 0;
 }
 
 /** @summary Returns geometry bounding box
@@ -1765,7 +1757,8 @@ function geomBoundingBox(geom) {
       return box;
    }
 
-   if (!geom.boundingBox) geom.computeBoundingBox();
+   if (!geom.boundingBox)
+      geom.computeBoundingBox();
 
    return geom.boundingBox.clone();
 }
@@ -1821,16 +1814,12 @@ function countGeometryFaces(geom) {
    if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons();
 
-   if (geom.type == 'BufferGeometry') {
-      let attr = geom.getAttribute('position');
-      return attr && attr.count ? Math.round(attr.count / 3) : 0;
-   }
-
    // special array of polygons
    if (geom.polygons)
       return geom.polygons.length;
 
-   return geom.faces.length;
+   let attr = geom.getAttribute('position');
+   return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
 /** @summary Creates geometrey for composite shape
@@ -1922,8 +1911,8 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 
    if (!position) position = 0;
 
-   if (((box.min[projection]>=position) && (box.max[projection]>=position)) ||
-       ((box.min[projection]<=position) && (box.max[projection]<=position))) {
+   if (((box.min[projection] >= position) && (box.max[projection] >= position)) ||
+       ((box.min[projection] <= position) && (box.max[projection] <= position))) {
       return null; // not interesting
    }
 
@@ -1984,8 +1973,8 @@ function createGeometry(shape, limit) {
          case "TGeoShapeAssembly": break;
          case "TGeoScaledShape": {
             let res = createGeometry(shape.fShape, limit);
-            if (shape.fScale && (limit>=0) && (typeof res === 'object') && (typeof res.scale === 'function'))
-               res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
+            if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
+               res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
          case "TGeoHalfSpace":
