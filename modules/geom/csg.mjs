@@ -174,12 +174,12 @@ class Polygon {
 
    clone() {
       let vertice_count = this.vertices.length,
-          polygon = new Polygon;
+          vertices = [];
 
       for (let i = 0; i < vertice_count; ++i )
-         polygon.vertices.push( this.vertices[i].clone() );
+         vertices.push( this.vertices[i].clone() );
 
-      return polygon.copyProperties(this);
+      return new Polygon(vertices, this);
    }
 
    flip() {
@@ -204,12 +204,11 @@ class Polygon {
    }
 
    classifySide( polygon ) {
-      let i, classification,
-          num_positive = 0, num_negative = 0,
+      let num_positive = 0, num_negative = 0,
           vertice_count = polygon.vertices.length;
 
-      for ( i = 0; i < vertice_count; ++i ) {
-         classification = this.classifyVertex( polygon.vertices[i] );
+      for (let i = 0; i < vertice_count; ++i ) {
+         let classification = this.classifyVertex( polygon.vertices[i] );
          if ( classification === FRONT ) {
             ++num_positive;
          } else if ( classification === BACK ) {
@@ -287,18 +286,23 @@ class Node {
 
       if (!polygons) return;
 
+      // this.divider = polygons[0].clone();
       this.divider = polygons[0].clone();
 
       let polygon_count = polygons.length,
           front = [], back = [];
 
       for (let i = 0; i < polygon_count; ++i) {
-         if (nodeid!==undefined) {
+         if (nodeid !== undefined) {
             polygons[i].id = nodeid++;
             delete polygons[i].parent;
          }
 
-         this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
+         // by difinition polygon should be COPLANAR for itself
+         if (i == 0)
+            this.polygons.push(polygons[0]);
+         else
+            this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
 
       if (nodeid !== undefined) this.maxnodeid = nodeid;
@@ -320,12 +324,15 @@ class Node {
 
    build( polygons ) {
       let polygon_count = polygons.length,
-          front = [], back = [];
+          first = 0, front = [], back = [];
 
-      if ( !this.divider )
+      if ( !this.divider ) {
          this.divider = polygons[0].clone();
+         this.polygons.push(polygons[0]);
+         first = 1;
+      }
 
-      for (let i = 0; i < polygon_count; ++i )
+      for (let i = first; i < polygon_count; ++i )
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
 
       if ( front.length > 0 ) {
