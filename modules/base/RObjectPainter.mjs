@@ -99,7 +99,7 @@ class RObjectPainter extends ObjectPainter {
 
          if (pos > 0) { val = val.slice(pos); pos = 0; }
 
-         while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
+         while ((pos < val.length) && (((val[pos] >= '0') && (val[pos] <= '9')) || (val[pos] == '.'))) pos++;
 
          let v = parseFloat(val.slice(0, pos));
          if (!Number.isFinite(v)) {

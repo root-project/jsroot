@@ -722,7 +722,7 @@ class RH3Painter extends RHistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg);

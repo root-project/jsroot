@@ -709,7 +709,7 @@ class TH3Painter extends THistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg);

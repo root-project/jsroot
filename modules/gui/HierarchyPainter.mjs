@@ -359,7 +359,7 @@ function objectHierarchy(top, obj, args = undefined) {
       arrcompress = true;
       for (let k = 0; k < obj.length; ++k) {
          let typ = typeof obj[k];
-         if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
+         if ((typ === 'number') || (typ === 'boolean') || (typ == 'string' && (obj[k].length < 16))) continue;
          arrcompress = false; break;
       }
    }
@@ -419,7 +419,7 @@ function objectHierarchy(top, obj, args = undefined) {
    let lastitem, lastkey, lastfield, cnt;
 
    for (let key in obj) {
-      if ((key == '_typename') || (key[0]=='$')) continue;
+      if ((key == '_typename') || (key[0] == '$')) continue;
       let fld = obj[key];
       if (typeof fld == 'function') continue;
       if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
@@ -650,11 +650,11 @@ function parseAsArray(val) {
 
    for (let indx = 1; indx < val.length; ++indx) {
       if (nquotes > 0) {
-         if (val[indx]==="'") nquotes--;
+         if (val[indx] === "'") nquotes--;
          continue;
       }
       if (ndouble > 0) {
-         if (val[indx]==='"') ndouble--;
+         if (val[indx] === '"') ndouble--;
          continue;
       }
       switch (val[indx]) {
@@ -956,7 +956,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    itemFullName(node, uptoparent, compact) {
 
-      if (node && node._kind ==='TopFolder') return "__top_folder__";
+      if (node && node._kind === 'TopFolder') return "__top_folder__";
 
       let res = "";
 
@@ -964,7 +964,7 @@ class HierarchyPainter extends BasePainter {
          // online items never includes top-level folder
          if ((node._online!==undefined) && !uptoparent) return res;
 
-         if ((node === uptoparent) || (node._kind==='TopFolder')) break;
+         if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
          if (res.length > 0) res = "/" + res;
          res = node._name + res;
@@ -2145,7 +2145,7 @@ class HierarchyPainter extends BasePainter {
 
          if (item && item.indexOf("img:") == 0) { images[i] = true; continue; }
 
-         if (item && (item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
+         if (item && (item.length > 1) && (item[0] == '\'') && (item[item.length - 1] == '\'')) {
             items[i] = item.slice(1, item.length-1);
             can_split = false;
          }
@@ -2153,7 +2153,7 @@ class HierarchyPainter extends BasePainter {
          let elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
-         if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
+         if (can_split && (items[i][0] == '[') && (items[i][items[i].length - 1] == ']')) {
             dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
          } else if (can_split && (items[i].indexOf("+") > 0)) {

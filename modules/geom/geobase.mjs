@@ -2932,7 +2932,7 @@ class ClonedNodes {
    createObject3D(stack, toplevel, options) {
 
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
-          force = (typeof options == 'object') || (options==='force');
+          force = (typeof options == 'object') || (options === 'force');
 
       for(let lvl=0; lvl<=stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0;

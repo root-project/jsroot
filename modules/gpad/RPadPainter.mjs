@@ -392,7 +392,7 @@ class RPadPainter extends RObjectPainter {
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
+         if (this.enlargeMain('state') == 'off') svg_can.property("pad_enlarged", null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property("pad_enlarged", this.pad);
@@ -656,7 +656,7 @@ class RPadPainter extends RObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk((this.enlargeMain('state') == 'on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));

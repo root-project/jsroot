@@ -23,7 +23,7 @@ function toggleButtonsVisibility(handler, action) {
    let state = btn.property('buttons_state');
 
    if (btn.property('timout_handler')) {
-      if (action!=='timeout') clearTimeout(btn.property('timout_handler'));
+      if (action !== 'timeout') clearTimeout(btn.property('timout_handler'));
       btn.property('timout_handler', null);
    }
 
@@ -103,7 +103,7 @@ let PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
 
          ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
-             .property("buttons_state", (settings.ToolBar!=='popup'))
+             .property("buttons_state", (settings.ToolBar !== 'popup'))
              .on("click", () => toggleButtonsVisibility(this, 'toggle'))
              .on("mouseenter", () => toggleButtonsVisibility(this, 'enable'))
              .on("mouseleave", () => toggleButtonsVisibility(this, 'disable'));
@@ -416,7 +416,7 @@ class TPadPainter extends ObjectPainter {
 
          let render_to = this.selectDom();
 
-         if (render_to.style('position')=='static')
+         if (render_to.style('position') == 'static')
             render_to.style('position','relative');
 
          svg = render_to.append("svg")
@@ -577,7 +577,7 @@ class TPadPainter extends ObjectPainter {
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
+         if (this.enlargeMain('state') == 'off') svg_can.property("pad_enlarged", null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property("pad_enlarged", this.pad);
@@ -1036,7 +1036,7 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk(this.enlargeMain('state') == 'on', "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", this.iscan, arg));

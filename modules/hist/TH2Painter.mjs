@@ -39,7 +39,7 @@ function drawTH2PolyLego(painter) {
       let all_pnts = [], all_faces = [],
           ngraphs = 1, gr = bin.fPoly, nfaces = 0;
 
-      if (gr._typename=='TMultiGraph') {
+      if (gr._typename == 'TMultiGraph') {
          ngraphs = bin.fPoly.fGraphs.arr.length;
          gr = null;
       }

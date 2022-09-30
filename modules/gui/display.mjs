@@ -1332,7 +1332,7 @@ class BrowserLayout {
    /** @summary Toggle browser kind
      * @desc used together with browser buttons */
    toggleKind(browser_kind) {
-      if (this.browser_visible!=='changing') {
+      if (this.browser_visible !== 'changing') {
          if (browser_kind === this.browser_kind) this.toggleBrowserVisisbility();
                                             else this.toggleBrowserKind(browser_kind);
       }
@@ -1441,7 +1441,7 @@ class BrowserLayout {
       if ((hsepar === null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select(".jsroot_h_separator").style('bottom');
-         if ((typeof hsepar=='string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
+         if ((typeof hsepar == 'string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
             hsepar = hsepar.slice(0,hsepar.length-2);
          else
             hsepar = null;
@@ -1505,7 +1505,7 @@ class BrowserLayout {
 
    /** @summary Toggle browser visibility */
    toggleBrowserVisisbility(fast_close) {
-      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
+      if (!this.gui_div || (typeof this.browser_visible === 'string')) return;
 
       let main = d3_select("#" + this.gui_div + " .jsroot_browser"),
           area = main.select('.jsroot_browser_area');

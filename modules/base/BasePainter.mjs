@@ -79,11 +79,11 @@ function floatToString(value, fmt, ret_fmt) {
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
-   if ((last=='e') || (last=='E')) { isexp = true; } else
-   if (last=='Q') { isexp = true; significance = true; } else
-   if ((last=='f') || (last=='F')) { isexp = false; } else
-   if (last=='W') { isexp = false; significance = true; } else
-   if ((last=='g') || (last=='G')) {
+   if ((last == 'e') || (last == 'E')) { isexp = true; } else
+   if (last == 'Q') { isexp = true; significance = true; } else
+   if ((last == 'f') || (last == 'F')) { isexp = false; } else
+   if (last == 'W') { isexp = false; significance = true; } else
+   if ((last == 'g') || (last == 'G')) {
       let se = floatToString(value, fmt+'Q', true),
           sg = floatToString(value, fmt+'W', true);
 

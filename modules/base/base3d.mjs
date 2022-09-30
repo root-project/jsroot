@@ -662,7 +662,7 @@ class TooltipFor3D {
    show(v /*, mouse_pos, status_func*/) {
       if (!v || (v==="")) return this.hide();
 
-      if ((typeof v =='object') && (v.lines || v.line)) {
+      if ((typeof v == 'object') && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
          if (v.line) {

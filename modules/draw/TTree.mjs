@@ -267,7 +267,7 @@ function createTreePlayer(player) {
          expr += ">>" + hname;
       } else {
          hname = expr.slice(pos+2);
-         if (hname[0]=='+') hname = hname.slice(1);
+         if (hname[0] == '+') hname = hname.slice(1);
          let pos2 = hname.indexOf("(");
          if (pos2 > 0) hname = hname.slice(0, pos2);
       }

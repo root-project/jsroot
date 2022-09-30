@@ -226,7 +226,7 @@ class RCanvasPainter extends RPadPainter {
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.slice(0,5)=='SNAP:') {
+      } else if (msg.slice(0,5) == 'SNAP:') {
          msg = msg.slice(5);
          let p1 = msg.indexOf(":"),
              snapid = msg.slice(0,p1),
@@ -237,13 +237,13 @@ class RCanvasPainter extends RPadPainter {
                  handle.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
                  this.confirmDraw();
               });
-      } else if (msg.slice(0,4)=='JSON') {
+      } else if (msg.slice(0,4) == 'JSON') {
          let obj = parse(msg.slice(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
       } else if (msg.slice(0,9)=="REPL_REQ:") {
          this.processDrawableReply(msg.slice(9));
-      } else if (msg.slice(0,4)=='CMD:') {
+      } else if (msg.slice(0,4) == 'CMD:') {
          msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
              cmdid = msg.slice(0,p1),
@@ -299,11 +299,11 @@ class RCanvasPainter extends RPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5)=='SHOW:') {
+      } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),
              on = that[that.length-1] == '1';
          this.showSection(that.slice(0,that.length-2), on);

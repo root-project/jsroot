@@ -85,8 +85,8 @@ class RH2Painter extends RHistPainter {
       let kind = this.is_projection || "";
       if (kind) kind += this.projection_width;
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
-      for (let k=0;k<kinds.length;++k)
-         menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
+      for (let k = 0; k < kinds.length; ++k)
+         menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
       menu.add("endsub:");
 
       menu.add("Auto zoom-in", () => this.autoZoom());
@@ -94,7 +94,7 @@ class RH2Painter extends RHistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
          this.decodeOptions(arg);
          this.interactiveRedraw("pad", "drawopt");
@@ -728,7 +728,7 @@ class RH2Painter extends RHistPainter {
       let cmd = "", ngr, ngraphs = 1, gr = null,
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
 
-      if (bin.fPoly._typename=='TMultiGraph')
+      if (bin.fPoly._typename == 'TMultiGraph')
          ngraphs = bin.fPoly.fGraphs.arr.length;
       else
          gr = bin.fPoly;
@@ -800,7 +800,7 @@ class RH2Painter extends RHistPainter {
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == "E") &&
-                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
+                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function');
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 

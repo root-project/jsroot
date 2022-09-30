@@ -1239,7 +1239,7 @@ class THistPainter extends ObjectPainter {
       let histo = this.getHisto();
       if (!this.isMainPainter() || !histo)
          return false;
-      if (arg==='only-check')
+      if (arg === 'only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
       this.drawHistTitle();

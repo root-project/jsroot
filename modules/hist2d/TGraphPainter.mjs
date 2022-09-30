@@ -163,7 +163,7 @@ class TGraphPainter extends ObjectPainter {
       // special case - one could use svg:path to draw many pixels (
       if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
 
-      // if no drawing option is selected and if opt=='' nothing is done.
+      // if no drawing option is selected and if opt == '' nothing is done.
       if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
          if (d.empty()) res.Line = 1;
       }
@@ -382,13 +382,13 @@ class TGraphPainter extends ObjectPainter {
 
          if (gme)
             lines.push("error x = -" + funcs.axisAsText("x", gme.fExL[d.indx]) + "/+" + funcs.axisAsText("x", gme.fExH[d.indx]));
-         else if (this.options.Errors && (funcs.x_handle.kind=='normal') && (d.exlow || d.exhigh))
+         else if (this.options.Errors && (funcs.x_handle.kind == 'normal') && (d.exlow || d.exhigh))
             lines.push("error x = -" + funcs.axisAsText("x", d.exlow) + "/+" + funcs.axisAsText("x", d.exhigh));
 
          if (gme) {
             for (let ny = 0; ny < gme.fNYErrors; ++ny)
                lines.push(`error y${ny} = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
-         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && (d.eylow || d.eyhigh))
+         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind == 'normal') && (d.eylow || d.eyhigh))
             lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
 
       }

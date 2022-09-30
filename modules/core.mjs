@@ -542,7 +542,7 @@ function clone(src, map, nofunc) {
    for (let k in src) {
       if (typeof src[k] === 'object')
          tgt[k] = clone(src[k], map);
-      else if (!map.nofunc || (typeof src[k]!=='function'))
+      else if (!map.nofunc || (typeof src[k] !== 'function'))
          tgt[k] = src[k];
    }
 
@@ -605,7 +605,7 @@ function parse(json) {
          return map[ref];
       }
 
-      if ((newfmt!==false) && (len>1) && (ks[0]==='$arr') && (ks[1]==='len')) {
+      if ((newfmt !== false) && (len > 1) && (ks[0] === '$arr') && (ks[1] === 'len')) {
          // this is ROOT-coded array
          let arr;
          switch (value.$arr) {
@@ -640,15 +640,15 @@ function parse(json) {
          } else {
             // compressed coding
             let nkey = 2, p = 0;
-            while (nkey<len) {
-               if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
-               if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
+            while (nkey < len) {
+               if (ks[nkey][0] == "p") p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
                let v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
                   for (let k = 0; k < v.length; ++k) arr[p++] = v[k];
                } else {
                   arr[p++] = v;
-                  if ((nkey<len) && (ks[nkey][0]=='n')) {
+                  if ((nkey < len) && (ks[nkey][0] == 'n')) {
                      let cnt = value[ks[nkey++]]; // counter
                      while (--cnt) arr[p++] = v;
                   }
@@ -659,7 +659,7 @@ function parse(json) {
          return arr;
       }
 
-      if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+      if ((newfmt !== false) && (len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          newfmt = true;
          let f1 = unref_value(value.first),
              s1 = unref_value(value.second);
@@ -734,7 +734,7 @@ function toJSON(obj, spacing) {
 
       let ks = Object.keys(value), len = ks.length, tgt = {};
 
-      if ((len == 3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+      if ((len == 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          // special handling of pair objects which does not included into objects map
          tgt.$pair = value.$pair;
          tgt.first = copy_value(value.first);
@@ -802,7 +802,7 @@ function decodeUrl(url) {
          res.opts[url.slice(0,pos)] = "";
       } if (eq > 0) {
          let val = url.slice(eq+1, pos);
-         if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.slice(1, val.length-1);
+         if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
          res.opts[url.slice(0,eq)] = val;
       }
 
@@ -1383,11 +1383,11 @@ function getMethods(typename, obj) {
       }
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt=='string') ? opt : "");
+         this.opt.push((opt && typeof opt == 'string') ? opt : "");
       }
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt=='string') ? opt : "");
+         this.opt.unshift((opt && typeof opt == 'string') ? opt : "");
       }
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);

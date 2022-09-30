@@ -73,7 +73,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
-   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl <= 0)) {
+   if ((side && (comp._typename !== 'TGeoCompositeShape')) || (maxlvl <= 0)) {
       vol.fName = side;
       vol.fLineColor = ($comp_col_cnt++ % 8) + 2;
       vol.fShape = comp;
@@ -1195,7 +1195,7 @@ class TGeoPainter extends ObjectPainter {
       this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
-      if (main.style('position')=='static') main.style('position','relative');
+      if (main.style('position') == 'static') main.style('position','relative');
 
       let dom = this._datgui.domElement;
       dom.style.position = 'absolute';
@@ -2446,7 +2446,7 @@ class TGeoPainter extends ObjectPainter {
             this._renderer.domElement.style.width = "100%";
             this._renderer.domElement.style.height = "100%";
             let main = this.selectDom();
-            if (main.style('position')=='static') main.style('position','relative');
+            if (main.style('position') == 'static') main.style('position','relative');
          }
 
          this._animating = false;
@@ -2945,7 +2945,7 @@ class TGeoPainter extends ObjectPainter {
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
 
-      if (obj && (obj.$kind==='TTree')) {
+      if (obj && (obj.$kind === 'TTree')) {
          // drop tree means function call which must extract tracks from provided tree
 
          let funcname = "extract_geo_tracks";

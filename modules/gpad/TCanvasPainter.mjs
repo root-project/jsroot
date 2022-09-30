@@ -304,7 +304,7 @@ class TCanvasPainter extends TPadPainter {
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.slice(0,6)=='SNAP6:') {
+      } else if (msg.slice(0,6) == 'SNAP6:') {
          // This is snapshot, produced with ROOT6
 
          let snap = parse(msg.slice(6));
@@ -316,14 +316,14 @@ class TCanvasPainter extends TPadPainter {
             handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
             this.confirmDraw();
          });
-      } else if (msg.slice(0,5)=='MENU:') {
+      } else if (msg.slice(0,5) == 'MENU:') {
          // this is menu with exact identifier for object
          let lst = parse(msg.slice(5));
          if (typeof this._getmenu_callback == 'function') {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
          }
-      } else if (msg.slice(0,4)=='CMD:') {
+      } else if (msg.slice(0,4) == 'CMD:') {
          msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
              cmdid = msg.slice(0,p1),
@@ -336,11 +336,11 @@ class TCanvasPainter extends TPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5)=='SHOW:') {
+      } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),
              on = (that[that.length-1] == '1');
          this.showSection(that.slice(0,that.length-2), on);
