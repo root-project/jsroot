@@ -437,7 +437,7 @@ async function loadScript(url) {
       return loadNext();
    }
 
-   if (url.indexOf("$$$")===0) {
+   if (url.indexOf("$$$") === 0) {
       url = url.slice(3);
       if ((url.indexOf("style/") == 0) && (url.indexOf('.css') < 0))
          url += ".css";
@@ -547,7 +547,7 @@ function clone(src, map, nofunc) {
    for (let k in src) {
       if (typeof src[k] === 'object')
          tgt[k] = clone(src[k], map);
-      else if (!map.nofunc || (typeof src[k]!=='function'))
+      else if (!map.nofunc || (typeof src[k] !== 'function'))
          tgt[k] = src[k];
    }
 
@@ -603,14 +603,14 @@ function parse(json) {
 
       let ks = Object.keys(value), len = ks.length;
 
-      if ((newfmt!==false) && (len===1) && (ks[0]==='$ref')) {
+      if ((newfmt !== false) && (len === 1) && (ks[0] === '$ref')) {
          const ref = parseInt(value['$ref']);
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = true;
          return map[ref];
       }
 
-      if ((newfmt!==false) && (len>1) && (ks[0]==='$arr') && (ks[1]==='len')) {
+      if ((newfmt !== false) && (len > 1) && (ks[0] === '$arr') && (ks[1] === 'len')) {
          // this is ROOT-coded array
          let arr;
          switch (value.$arr) {
@@ -627,7 +627,7 @@ function parse(json) {
             default: arr = new Array(value.len);
          }
 
-         arr.fill((value.$arr==="Bool") ? false : 0);
+         arr.fill((value.$arr === "Bool") ? false : 0);
 
          if (value.b !== undefined) {
             // base64 coding
@@ -645,15 +645,15 @@ function parse(json) {
          } else {
             // compressed coding
             let nkey = 2, p = 0;
-            while (nkey<len) {
-               if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
-               if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
+            while (nkey < len) {
+               if (ks[nkey][0] == "p") p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
                let v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
                   for (let k = 0; k < v.length; ++k) arr[p++] = v[k];
                } else {
                   arr[p++] = v;
-                  if ((nkey<len) && (ks[nkey][0]=='n')) {
+                  if ((nkey < len) && (ks[nkey][0] == 'n')) {
                      let cnt = value[ks[nkey++]]; // counter
                      while (--cnt) arr[p++] = v;
                   }
@@ -664,12 +664,12 @@ function parse(json) {
          return arr;
       }
 
-      if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+      if ((newfmt !== false) && (len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          newfmt = true;
          let f1 = unref_value(value.first),
              s1 = unref_value(value.second);
-         if (f1!==undefined) value.first = f1;
-         if (s1!==undefined) value.second = s1;
+         if (f1 !== undefined) value.first = f1;
+         if (s1 !== undefined) value.second = s1;
          value._typename = value['$pair'];
          delete value['$pair'];
          return; // pair object is not counted in the objects map
@@ -739,7 +739,7 @@ function toJSON(obj, spacing) {
 
       let ks = Object.keys(value), len = ks.length, tgt = {};
 
-      if ((len == 3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+      if ((len == 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          // special handling of pair objects which does not included into objects map
          tgt.$pair = value.$pair;
          tgt.first = copy_value(value.first);
@@ -777,7 +777,7 @@ function decodeUrl(url) {
    let res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+      get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
    if (!url || (typeof url !== 'string')) {
@@ -794,7 +794,7 @@ function decodeUrl(url) {
 
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
-      while ((pos < url.length) && ((nq!==0) || ((url[pos]!=="&") && (url[pos]!=="#")))) {
+      while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== "&") && (url[pos] !== "#")))) {
          switch (url[pos]) {
             case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
             case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
@@ -807,7 +807,7 @@ function decodeUrl(url) {
          res.opts[url.slice(0,pos)] = "";
       } if (eq > 0) {
          let val = url.slice(eq+1, pos);
-         if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.slice(1, val.length-1);
+         if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
          res.opts[url.slice(0,eq)] = val;
       }
 
@@ -879,7 +879,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
       if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
           // in these special cases browsers not always set status
-          !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
+          !((this.status == 0) && ((url.indexOf("file://") == 0) || (url.indexOf("blob:") == 0)))) {
             return this.error_callback(Error(`Fail to load url ${url}`), this.status);
       }
 
@@ -1367,13 +1367,13 @@ const methodsCache = {};
 function getMethods(typename, obj) {
 
    let m = methodsCache[typename],
-       has_methods = (m!==undefined);
+       has_methods = (m !== undefined);
 
    if (!has_methods) m = {};
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename=="TObject") || (typename=="TNamed") || (obj && (obj.fBits!==undefined)))
+   if ((typename == "TObject") || (typename == "TNamed") || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1388,11 +1388,11 @@ function getMethods(typename, obj) {
       };
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt=='string') ? opt : "");
+         this.opt.push((opt && typeof opt == 'string') ? opt : "");
       };
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt=='string') ? opt : "");
+         this.opt.unshift((opt && typeof opt == 'string') ? opt : "");
       };
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);
@@ -1477,7 +1477,7 @@ function getMethods(typename, obj) {
          // Set bin content - only trivial case, without expansion
          this.fEntries++;
          this.fTsumw = 0;
-         if ((bin>=0) && (bin<this.fArray.length))
+         if ((bin >= 0) && (bin<this.fArray.length))
             this.fArray[bin] = content;
       };
    }
@@ -7689,11 +7689,11 @@ function floatToString(value, fmt, ret_fmt) {
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
-   if ((last=='e') || (last=='E')) { isexp = true; } else
-   if (last=='Q') { isexp = true; significance = true; } else
-   if ((last=='f') || (last=='F')) { isexp = false; } else
-   if (last=='W') { isexp = false; significance = true; } else
-   if ((last=='g') || (last=='G')) {
+   if ((last == 'e') || (last == 'E')) { isexp = true; } else
+   if (last == 'Q') { isexp = true; significance = true; } else
+   if ((last == 'f') || (last == 'F')) { isexp = false; } else
+   if (last == 'W') { isexp = false; significance = true; } else
+   if ((last == 'g') || (last == 'G')) {
       let se = floatToString(value, fmt+'Q', true),
           sg = floatToString(value, fmt+'W', true);
 
@@ -7719,7 +7719,7 @@ function floatToString(value, fmt, ret_fmt) {
    if (significance) {
 
       // when using fixed representation, one could get 0.0
-      if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
+      if (value && (Number(sg) === 0.) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 
@@ -7730,8 +7730,11 @@ function floatToString(value, fmt, ret_fmt) {
       if (sg.indexOf(".")>l) diff--;
 
       if (diff != 0) {
-         prec-=diff;
-         if (prec<0) prec = 0; else if (prec>20) prec = 20;
+         prec -= diff;
+         if (prec < 0)
+            prec = 0;
+         else if (prec > 20)
+            prec = 20;
          sg = value.toFixed(prec);
       }
    }
@@ -7795,7 +7798,7 @@ class DrawOptions {
   * @private */
 class TRandom {
    constructor(i) {
-      if (i!==undefined) this.seed(i);
+      if (i !== undefined) this.seed(i);
    }
    /** @summary Seed simple random generator */
    seed(i) {
@@ -9614,7 +9617,7 @@ function translateMath(str, kind, color, painter) {
    if (typeof color != 'string') return str;
 
    // MathJax SVG converter use colors in normal form
-   //if (color.indexOf("rgb(")>=0)
+   //if (color.indexOf("rgb(") >= 0)
    //   color = color.replace(/rgb/g, "[RGB]")
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');
@@ -9789,7 +9792,7 @@ function getRGBfromTColor(col) {
    if (!col || (col._typename != 'TColor')) return null;
 
    let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
-   if ((col.fAlpha !==undefined) && (col.fAlpha !== 1.))
+   if ((col.fAlpha !== undefined) && (col.fAlpha !== 1.))
       rgb += toHex(col.fAlpha);
 
    switch (rgb) {
@@ -10204,7 +10207,7 @@ class TAttFillHandler {
 
    /** @summary constructor
      * @param {object} args - arguments see {@link TAttFillHandler#setArgs} for more info
-     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling */
+     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor == 0 and fillstyle == 1001 means no filling,  2 means all other objects where such combination is white-color filling */
    constructor(args) {
       this.color = "none";
       this.colorindx = 0;
@@ -11666,7 +11669,7 @@ class ObjectPainter extends BasePainter {
             // handle latext drawing
             let box = arg.text_rect;
 
-            scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
+            scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
             arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
 
@@ -43177,7 +43180,7 @@ function createSVGRenderer(as_is, precision, doc) {
               _wrapper: this,
               setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
-                 if ((name=="style") && value) {
+                 if ((name == "style") && value) {
                     let pos1 = value.indexOf(excl_style1);
                     if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
                        value = value.slice(0, value.length - excl_style1.length);
@@ -43801,9 +43804,9 @@ class TooltipFor3D {
 
    /** @summary Show tooltip */
    show(v /*, mouse_pos, status_func*/) {
-      if (!v || (v==="")) return this.hide();
+      if (!v) return this.hide();
 
-      if ((typeof v =='object') && (v.lines || v.line)) {
+      if ((typeof v == 'object') && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
          if (v.line) {
@@ -43861,7 +43864,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // only left-button is considered
-      if ((evnt.button!==undefined) && (evnt.button !==0)) return;
+      if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
       if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
       if (control.enable_zoom) {
@@ -43902,7 +43905,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          control.removeZoomMesh();
 
       // only left-button is considered
-      //if ((evnt.button!==undefined) && (evnt.button !==0)) return;
+      //if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
       //if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
       if (control.enable_select && control.mouse_select_pnt) {
@@ -43956,7 +43959,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
          control.painter.analyzeMouseWheelEvent(evnt, item, position, false);
 
-         if ((kind==="z") && intersect.object.use_y_for_z) kind = "y";
+         if ((kind === "z") && intersect.object.use_y_for_z) kind = "y";
 
          control.painter.zoom(kind, item.min, item.max);
       }
@@ -44833,7 +44836,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
                 axis_name = zoom_mesh.zoom,
                 axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
-            if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
+            if ((axis_name === "z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
             return { name: axis_name,
                      title: "axis object",
@@ -45267,7 +45270,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          if (!pnt) return undefined;
 
          let min = -this.size_3d, max = this.size_3d;
-         if (this.zoom==="z") { min = 0; max = 2*this.size_3d; }
+         if (this.zoom === "z") { min = 0; max = 2*this.size_3d; }
 
          if (pnt[this.zoom] < min)
             pnt[this.zoom] = min;
@@ -45379,7 +45382,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    while (yticks.next()) {
       let gry = yticks.grpos,
-          is_major = (yticks.kind===1),
+          is_major = (yticks.kind === 1),
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
@@ -45620,12 +45623,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], linex_material, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
+      line.position.set(0, grminy, n == 0 ? grminz : grmaxz);
       line.xyboxid = 2; line.bottom = (n == 0);
       top.add(line);
 
       line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
+      line.position.set(0, grmaxy, n == 0 ? grminz : grmaxz);
       line.xyboxid = 4; line.bottom = (n == 0);
       top.add(line);
    }
@@ -45634,12 +45637,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], liney_material, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
+      line.position.set(grminx, 0, n == 0 ? grminz : grmaxz);
       line.xyboxid = 3; line.bottom = (n == 0);
       top.add(line);
 
       line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
+      line.position.set(grmaxx, 0, n == 0 ? grminz : grmaxz);
       line.xyboxid = 1; line.bottom = (n == 0);
       top.add(line);
    }
@@ -45708,7 +45711,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       reduced = (binz2 === zmin) || (binz1 >= binz2);
 
-      if (!reduced || (level>0)) return true;
+      if (!reduced || (level > 0)) return true;
 
       if (basehisto) return false; // do not draw empty bins on top of other bins
 
@@ -45786,7 +45789,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
             if (!getBinContent(i,j,nlevel)) continue;
 
-            nobottom = !reduced && (nlevel>0);
+            nobottom = !reduced && (nlevel > 0);
             notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
             y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
@@ -46014,7 +46017,7 @@ function drawBinsLego(painter, is_v7 = false) {
    line.painter = painter;
    line.intersect_index = intersect_index;
    line.tooltip = function(intersect) {
-      if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
+      if ((intersect.index < 0) || (intersect.index >= this.intersect_index.length)) return null;
       return this.painter.get3DToolTip(this.intersect_index[intersect.index]);
    }
    */
@@ -46042,50 +46045,50 @@ function drawBinsError3D(painter, is_v7 = false) {
     // loop over the points - first loop counts points, second fill arrays
    for (let loop = 0; loop < 2; ++loop) {
 
-       for (i=handle.i1;i<handle.i2;++i) {
-          x1 = handle.grx[i];
-          x2 = handle.grx[i+1];
-          for (j=handle.j1;j<handle.j2;++j) {
-             binz = histo.getBinContent(i+1, j+1);
-             if ((binz < zmin) || (binz > zmax)) continue;
-             if ((binz===zmin) && check_skip_min()) continue;
+      for (i = handle.i1; i < handle.i2; ++i) {
+         x1 = handle.grx[i];
+         x2 = handle.grx[i + 1];
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz < zmin) || (binz > zmax)) continue;
+            if ((binz === zmin) && check_skip_min()) continue;
 
-             // just count number of segments
-             if (loop===0) { nsegments+=3; continue; }
+            // just count number of segments
+            if (loop === 0) { nsegments += 3; continue; }
 
-             bin = histo.getBin(i+1,j+1);
-             binerr = histo.getBinError(bin);
-             binindx[lindx/18] = bin;
+            bin = histo.getBin(i + 1, j + 1);
+            binerr = histo.getBinError(bin);
+            binindx[lindx / 18] = bin;
 
-             y1 = handle.gry[j];
-             y2 = handle.gry[j+1];
+            y1 = handle.gry[j];
+            y2 = handle.gry[j + 1];
 
-             z1 = main.grz((binz - binerr < zmin) ? zmin : binz-binerr);
-             z2 = main.grz((binz + binerr > zmax) ? zmax : binz+binerr);
+            z1 = main.grz((binz - binerr < zmin) ? zmin : binz - binerr);
+            z2 = main.grz((binz + binerr > zmax) ? zmax : binz + binerr);
 
-             lpos[lindx] = x1; lpos[lindx+3] = x2;
-             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
-             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
-             lindx+=6;
+            lpos[lindx] = x1; lpos[lindx + 3] = x2;
+            lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
+            lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
+            lindx += 6;
 
-             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
-             lpos[lindx+1] = y1; lpos[lindx+4] = y2;
-             lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
-             lindx+=6;
+            lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
+            lpos[lindx + 1] = y1; lpos[lindx + 4] = y2;
+            lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
+            lindx += 6;
 
-             lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
-             lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
-             lpos[lindx+2] = z1; lpos[lindx+5] = z2;
-             lindx+=6;
-          }
-       }
+            lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
+            lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
+            lpos[lindx + 2] = z1; lpos[lindx + 5] = z2;
+            lindx += 6;
+         }
+      }
 
-       if (loop===0) {
-          if (nsegments===0) return;
-          lpos = new Float32Array(nsegments*6);
-          binindx = new Int32Array(nsegments/3);
-       }
-    }
+      if (loop === 0) {
+         if (nsegments === 0) return;
+         lpos = new Float32Array(nsegments * 6);
+         binindx = new Int32Array(nsegments / 3);
+      }
+   }
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
@@ -46105,7 +46108,7 @@ function drawBinsError3D(painter, is_v7 = false) {
        }
 
        let pos = Math.floor(intersect.index / 6);
-       if ((pos<0) || (pos >= this.intersect_index.length)) return null;
+       if ((pos < 0) || (pos >= this.intersect_index.length)) return null;
        let p = this.painter,
            histo = p.getHisto(),
            main = p.getFramePainter(),
@@ -46234,18 +46237,18 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (!dolines) return;
       let side1 = CheckSide(z1,0,2*main.size_z3d),
           side2 = CheckSide(z2,0,2*main.size_z3d);
-      if ((side1===side2) && (side1!==0)) return;
+      if ((side1 === side2) && (side1 !== 0)) return;
       if (!loop) return ++nsegments;
 
-      if (side1!==0) {
-         let diff = z2-z1;
-         z1 = (side1<0) ? 0 : 2*main.size_z3d;
+      if (side1 !== 0) {
+         let diff = z2 - z1;
+         z1 = (side1 < 0) ? 0 : 2*main.size_z3d;
          x1 = x2 - (x2-x1)/diff*(z2-z1);
          y1 = y2 - (y2-y1)/diff*(z2-z1);
       }
-      if (side2!==0) {
-         let diff = z1-z2;
-         z2 = (side2<0) ? 0 : 2*main.size_z3d;
+      if (side2 !== 0) {
+         let diff = z1 - z2;
+         z2 = (side2 < 0) ? 0 : 2*main.size_z3d;
          x2 = x1 - (x1-x2)/diff*(z1-z2);
          y2 = y1 - (y1-y2)/diff*(z1-z2);
       }
@@ -46261,7 +46264,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (k>=pntbuf.length) console.log('more than 6 points???');
 
       let part = (crossz - zz1) / (zz2 - zz1), shift = 3;
-      if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
+      if ((lastpart !== 0) && (Math.abs(part) < Math.abs(lastpart))) {
          // while second crossing point closer than first to original, move it in memory
          pntbuf[k] = pntbuf[k-3];
          pntbuf[k+1] = pntbuf[k-2];
@@ -46287,7 +46290,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    function RememberVertex(indx, ii,jj) {
       let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
 
-      if (normindx[bin]>=0)
+      if (normindx[bin] >= 0)
          return console.error('More than 8 vertexes for the bin');
 
       let pos = bin+8+normindx[bin]; // position where write index
@@ -46302,12 +46305,12 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
             if (normindx[bin] === -1) continue; // nothing there
 
-            let beg = (normindx[bin] >=0) ? bin : bin+9+normindx[bin],
+            let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
                 end = bin+8, sumx=0, sumy = 0, sumz = 0;
 
             for (let kk=beg;kk<end;++kk) {
                let indx = normindx[kk];
-               if (indx<0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+               if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
                sumx+=arr[indx];
                sumy+=arr[indx+1];
                sumz+=arr[indx+2];
@@ -46351,7 +46354,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             }
 
             // check if any(contours for given level exists
-            if (((side1>0) || (side2>0) || (side3>0)) &&
+            if (((side1 > 0) || (side2 > 0) || (side3 > 0)) &&
                 ((side1!==side2) || (side2!==side3) || (side3!==side1))) ++ngridsegments;
 
             continue;
@@ -46360,35 +46363,35 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          gridcnt = 0;
 
          k = 0;
-         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
+         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k += 3; }
 
          if (side1!==side2) {
             // order is important, should move from 1->2 point, checked via lastpart
             lastpart = 0;
-            if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
-            if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
+            if ((side1 < 0) || (side2 < 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+            if ((side1 > 0) || (side2 > 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
          }
 
-         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
+         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k += 3; }
 
          if (side2!==side3) {
             // order is important, should move from 2->3 point, checked via lastpart
             lastpart = 0;
-            if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
-            if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
+            if ((side2 < 0) || (side3 < 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+            if ((side2 > 0) || (side3 > 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
          }
 
          if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
 
-         if (side3!==side1) {
+         if (side3 !== side1) {
             // order is important, should move from 3->1 point, checked via lastpart
             lastpart = 0;
-            if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-            if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
+            if ((side3 < 0) || (side1 < 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+            if ((side3 > 0) || (side1 > 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
          }
 
-         if (k===0) continue;
-         if (k<9) { console.log('found less than 3 points', k/3); continue; }
+         if (k === 0) continue;
+         if (k < 9) { console.log('found less than 3 points', k/3); continue; }
 
          if (grid && (gridcnt === 6)) {
             for (let jj = 0; jj < 6; ++jj)
@@ -46397,7 +46400,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          }
 
 
-         // if three points and surf==14, remember vertex for each point
+         // if three points and surf == 14, remember vertex for each point
 
          let buf = pos[lvl], s = indx[lvl];
          if (donormals && (k===9)) {
@@ -46429,7 +46432,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             }
          if (dolines && (nsegments > 0))
             lpos = new Float32Array(nsegments * 6);
-         if (dogrid && (ngridsegments>0))
+         if (dogrid && (ngridsegments > 0))
             grid = new Float32Array(ngridsegments * 6);
       }
       for (i = handle.i1;i < handle.i2-1; ++i) {
@@ -46463,7 +46466,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          let geometry = new BufferGeometry();
          geometry.setAttribute('position', new BufferAttribute(pos[lvl], 3));
          geometry.computeVertexNormals();
-         if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
+         if (donormals && (lvl === 1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
          let fcolor, material;
          if (is_v7) {
@@ -46723,7 +46726,7 @@ const AxisPainterMethods = {
       if (val <= 0) return null;
       let vlog = Math.log10(val), base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
-      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
 
@@ -46881,8 +46884,8 @@ const AxisPainterMethods = {
 
       if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {
-            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            let factor = (item.min > 0) ? Math.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor < 0.01) factor = 0.01;
             item.min = item.min / Math.pow(10, factor*delta_left*dmin);
             item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else if ((delta_left === -delta_right) && !item.reverse) {
@@ -47055,7 +47058,7 @@ class TAxisPainter extends ObjectPainter {
       if (axis && !is_gaxis && (this.nticks > 20)) this.nticks = 20;
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-      if (gr_range<=0) gr_range = 100;
+      if (gr_range <= 0) gr_range = 100;
 
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
@@ -47264,8 +47267,9 @@ class TAxisPainter extends ObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order==0 we should virtually remove "0." and extra label on top
-            if (!order && (this.ndig < 4)) totallen -= (handle.major.length*2+3);
+            // for order == 0 we should virtually remove "0." and extra label on top
+            if (!order && (this.ndig < 4))
+               totallen -= handle.major.length * 2 + 3;
 
             if (totallen < bestlen) {
                bestlen = totallen;
@@ -47919,7 +47923,7 @@ const kMACHEP  = 1.11022302462515654042363166809e-16,
   * a[0]x^N+a[1]x^(N-1) + ... + a[N]
   * @memberof Math */
 function Polynomialeval(x, a, N) {
-   if (N==0) return a[0];
+   if (!N) return a[0];
 
    let pom = a[0];
    for (let i = 1; i <= N; ++i)
@@ -47932,7 +47936,7 @@ function Polynomialeval(x, a, N) {
   * x^N+a[0]x^(N-1) + ... + a[N-1]
   * @memberof Math */
 function Polynomial1eval(x, a, N) {
-   if (N==0) return a[0];
+   if (!N) return a[0];
 
    let pom = x + a[0];
    for (let i = 1; i < N; ++i)
@@ -49489,7 +49493,7 @@ function fdistribution_cdf(x, n, m, x0 = 0) {
 /** @summary Prob function
   * @memberof Math */
 function Prob(chi2, ndf) {
-   if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
+   if (ndf <= 0) return 0; // Set CL to zero in case ndf <= 0
 
    if (chi2 <= 0) {
       if (chi2 < 0) return 0;
@@ -49576,7 +49580,7 @@ function BetaDist(x, p, q) {
 /** @summary Computes the distribution function of the Beta distribution.
   * @memberof Math */
 function BetaDistI(x, p, q) {
-   if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
+   if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0)) return 0;
    return BetaIncomplete(x, p, q);
 }
 
@@ -49649,7 +49653,7 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
   * @memberof Math */
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    if (sigma == 0) return 0;
-   if (alpha==0) return 0.;
+   if (alpha == 0) return 0.;
    let useLog = (n == 1.0),
        z = (x-mean)/sigma;
    if (alpha < 0 ) z = -z;
@@ -50613,7 +50617,7 @@ class JSRootMenu {
       if (typeof arg == 'function') {
          title = func;
          func = arg;
-         handler = res => func(res=="1");
+         handler = res => func(res == "1");
          arg = flag ? "0" : "1";
       }
       this.add((flag ? "chk:" : "unk:") + name, arg, handler, title);
@@ -50626,7 +50630,7 @@ class JSRootMenu {
          return;
 
       let without_sub = false;
-      if (top_name.indexOf("nosub:")==0) {
+      if (top_name.indexOf("nosub:") == 0) {
          without_sub = true;
          top_name = top_name.slice(6);
       }
@@ -51530,14 +51534,14 @@ class StandaloneMenu extends JSRootMenu {
          return;
       }
 
-      if (name.indexOf("sub:")==0) {
+      if (name.indexOf("sub:") == 0) {
          name = name.slice(4);
          elem.sub = [];
          this.stack.push(elem.sub);
       }
 
-      if (name.indexOf("chk:")==0) { elem.checked = true; name = name.slice(4); } else
-      if (name.indexOf("unk:")==0) { elem.checked = false; name = name.slice(4); }
+      if (name.indexOf("chk:") == 0) { elem.checked = true; name = name.slice(4); } else
+      if (name.indexOf("unk:") == 0) { elem.checked = false; name = name.slice(4); }
 
       elem.text = name;
       elem.title = title;
@@ -51876,30 +51880,30 @@ class BootstrapMenu extends JSRootMenu {
          return;
       }
 
-      if ((name=="column:") || (name == "endcolumn:"))
+      if ((name == "column:") || (name == "endcolumn:"))
          return;
 
-      if (name.indexOf("header:")==0) {
+      if (name.indexOf("header:") == 0) {
          this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
          return;
       }
 
       let newlevel = false, extras = "", cl = "dropdown-item btn-sm", checked = "";
 
-      if (name=="endsub:") {
+      if (name == "endsub:") {
          this.lvl--;
          this.code += "</li>";
          this.code += "</ul>";
          return;
       }
-      if (name.indexOf("sub:")==0) { name = name.slice(4); newlevel = true; }
+      if (name.indexOf("sub:") == 0) { name = name.slice(4); newlevel = true; }
 
       if (typeof arg == 'function') { func = arg; arg = name; }
 
-      if (name.indexOf("chk:")==0) {
+      if (name.indexOf("chk:") == 0) {
          checked = '\u2713';
          name  = name.slice(4);
-      } else if (name.indexOf("unk:")==0) {
+      } else if (name.indexOf("unk:") == 0) {
          name = name.slice(4);
       }
 
@@ -51999,8 +52003,8 @@ class BootstrapMenu extends JSRootMenu {
          if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
          if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
 
-         if (newx !== null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
-         if (newy !== null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
+         if (newx !== null) this.element.style.left = ((newx > 0 ? newx : 0) + window.pageXOffset) + 'px';
+         if (newy !== null) this.element.style.top = ((newy > 0 ? newy : 0) + window.pageYOffset) + 'px';
 
          return new Promise(resolve => {
             this.resolveFunc = resolve;
@@ -53338,7 +53342,7 @@ const FrameInteractive = {
           w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.can_zoom_x)
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h), cur[1] < 0);
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1]  >= 0) && (cur[1] <= h), cur[1] < 0);
 
       if (this.can_zoom_y)
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
@@ -53430,7 +53434,7 @@ const FrameInteractive = {
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
+         if (fp && (!domenu || (frame_corner && (kind !== "frame"))))
             domenu = fp.fillContextMenu(menu);
 
          if (domenu)
@@ -53450,7 +53454,7 @@ const FrameInteractive = {
       let arr = pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
-      if (!kind || (kind=="")) kind = "main";
+      if (!kind) kind = "main";
       let fld = "touch_" + kind;
 
       evnt.sourceEvent.preventDefault();
@@ -53615,11 +53619,11 @@ class TFramePainter extends ObjectPainter {
                    func(this.scale_xmin, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymin) ];
-      if (this.scale_xmin<0 && this.scale_xmax>0) {
+      if (this.scale_xmin < 0 && this.scale_xmax > 0) {
          pnts.push(func(0, this.scale_ymin));
          pnts.push(func(0, this.scale_ymax));
       }
-      if (this.scale_ymin<0 && this.scale_ymax>0) {
+      if (this.scale_ymin < 0 && this.scale_ymax > 0) {
          pnts.push(func(this.scale_xmin, 0));
          pnts.push(func(this.scale_xmax, 0));
       }
@@ -53715,7 +53719,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       let aname = name;
-      if (this.swap_xy) aname = (name=="x") ? "y" : "x";
+      if (this.swap_xy) aname = (name == "x") ? "y" : "x";
       let smin = 'scale_' + aname + 'min',
           smax = 'scale_' + aname + 'max';
 
@@ -54457,8 +54461,8 @@ class TFramePainter extends ObjectPainter {
 
       // do not allow log scale for labels
       if (!pad[name]) {
-         if (this.swap_xy && axis==="x") axis = "y"; else
-         if (this.swap_xy && axis==="y") axis = "x";
+         if (this.swap_xy && axis === "x") axis = "y"; else
+         if (this.swap_xy && axis === "y") axis = "x";
          let handle = this[axis + "_handle"];
          if (handle && (handle.kind === "labels")) return;
       }
@@ -54616,7 +54620,7 @@ class TFramePainter extends ObjectPainter {
    }
 
     /** @summary Function can be used for zooming into specified range
-      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+      * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
       * @param {number} xmin
       * @param {number} xmax
       * @param {number} [ymin]
@@ -54629,9 +54633,9 @@ class TFramePainter extends ObjectPainter {
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
 
-      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+      if (xmin === "x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin === "y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin === "z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -54829,14 +54833,14 @@ class TFramePainter extends ObjectPainter {
     * @private */
    showAxisStatus(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
+          m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name == "x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0] + "," + m[1]);
    }
 
    /** @summary Add interactive keys handlers
@@ -55057,7 +55061,7 @@ class GridDisplay extends MDIDisplay {
       this.getcnt = 0;
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
-      this.use_separarators = !kind || (kind.indexOf("x")<0);
+      this.use_separarators = !kind || (kind.indexOf("x") < 0);
       this.simple_layout = false;
 
       let dom = this.selectDom();
@@ -55115,10 +55119,10 @@ class GridDisplay extends MDIDisplay {
          if (Number.isInteger(arg) && (arg > 10)) {
             kind = kind.slice(0, kind.indexOf("_"));
             sizes = [];
-            while (arg>0) {
+            while (arg > 0) {
                sizes.unshift(Math.max(arg % 10, 1));
                arg = Math.round((arg-sizes[0])/10);
-               if (sizes[0]===0) sizes[0]=1;
+               if (sizes[0] === 0) sizes[0] = 1;
             }
          }
       }
@@ -55129,10 +55133,10 @@ class GridDisplay extends MDIDisplay {
             num = kind;
          } else {
             arr = [];
-            while (kind>0) {
+            while (kind > 0) {
                arr.unshift(kind % 10);
                kind = Math.round((kind-arr[0])/10);
-               if (arr[0]==0) arr[0]=1;
+               if (arr[0] === 0) arr[0] = 1;
             }
             num = arr.length;
          }
@@ -55179,7 +55183,7 @@ class GridDisplay extends MDIDisplay {
          else
             elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
 
-         if (group.drawid>=0) {
+         if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
             if (typeof this.frameid === 'string')
                elem.attr('id', this.frameid + "_" + group.drawid);
@@ -55876,7 +55880,7 @@ class FlexibleDisplay extends MDIDisplay {
       let arr = [];
       this.forEachFrame(frame => {
          let state = this.getFrameState(frame);
-         if (state=="min") return;
+         if (state == "min") return;
          if (state == "max") this.changeFrameState(frame, "normal", true);
          arr.push(frame);
       });
@@ -56185,7 +56189,7 @@ class BrowserLayout {
    /** @summary Toggle browser kind
      * @desc used together with browser buttons */
    toggleKind(browser_kind) {
-      if (this.browser_visible!=='changing') {
+      if (this.browser_visible !== 'changing') {
          if (browser_kind === this.browser_kind) this.toggleBrowserVisisbility();
                                             else this.toggleBrowserKind(browser_kind);
       }
@@ -56294,7 +56298,7 @@ class BrowserLayout {
       if ((hsepar === null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select(".jsroot_h_separator").style('bottom');
-         if ((typeof hsepar=='string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
+         if ((typeof hsepar == 'string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
             hsepar = hsepar.slice(0,hsepar.length-2);
          else
             hsepar = null;
@@ -56358,7 +56362,7 @@ class BrowserLayout {
 
    /** @summary Toggle browser visibility */
    toggleBrowserVisisbility(fast_close) {
-      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
+      if (!this.gui_div || (typeof this.browser_visible === 'string')) return;
 
       let main = select("#" + this.gui_div + " .jsroot_browser"),
           area = main.select('.jsroot_browser_area');
@@ -56436,7 +56440,7 @@ class BrowserLayout {
       let h1 = cont.node().clientHeight,
           h2 = chld.node().clientHeight;
 
-      if ((h2!==undefined) && (h2 < h1*0.7)) area.style('bottom', '');
+      if ((h2 !== undefined) && (h2 < h1*0.7)) area.style('bottom', '');
    }
 
    /** @summary Set buttons position */
@@ -56592,7 +56596,7 @@ function toggleButtonsVisibility(handler, action) {
    let state = btn.property('buttons_state');
 
    if (btn.property('timout_handler')) {
-      if (action!=='timeout') clearTimeout(btn.property('timout_handler'));
+      if (action !== 'timeout') clearTimeout(btn.property('timout_handler'));
       btn.property('timout_handler', null);
    }
 
@@ -56672,7 +56676,7 @@ let PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
 
          ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
-             .property("buttons_state", (settings.ToolBar!=='popup'))
+             .property("buttons_state", (settings.ToolBar !== 'popup'))
              .on("click", () => toggleButtonsVisibility(this, 'toggle'))
              .on("mouseenter", () => toggleButtonsVisibility(this, 'enable'))
              .on("mouseleave", () => toggleButtonsVisibility(this, 'disable'));
@@ -56985,7 +56989,7 @@ class TPadPainter extends ObjectPainter {
 
          let render_to = this.selectDom();
 
-         if (render_to.style('position')=='static')
+         if (render_to.style('position') == 'static')
             render_to.style('position','relative');
 
          svg = render_to.append("svg")
@@ -57146,7 +57150,7 @@ class TPadPainter extends ObjectPainter {
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
+         if (this.enlargeMain('state') == 'off') svg_can.property("pad_enlarged", null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property("pad_enlarged", this.pad);
@@ -57605,7 +57609,7 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk(this.enlargeMain('state') == 'on', "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", this.iscan, arg));
@@ -58948,7 +58952,7 @@ class TCanvasPainter extends TPadPainter {
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.slice(0,6)=='SNAP6:') {
+      } else if (msg.slice(0,6) == 'SNAP6:') {
          // This is snapshot, produced with ROOT6
 
          let snap = parse(msg.slice(6));
@@ -58960,14 +58964,14 @@ class TCanvasPainter extends TPadPainter {
             handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
             this.confirmDraw();
          });
-      } else if (msg.slice(0,5)=='MENU:') {
+      } else if (msg.slice(0,5) == 'MENU:') {
          // this is menu with exact identifier for object
          let lst = parse(msg.slice(5));
          if (typeof this._getmenu_callback == 'function') {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
          }
-      } else if (msg.slice(0,4)=='CMD:') {
+      } else if (msg.slice(0,4) == 'CMD:') {
          msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
              cmdid = msg.slice(0,p1),
@@ -58980,11 +58984,11 @@ class TCanvasPainter extends TPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5)=='SHOW:') {
+      } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),
              on = (that[that.length-1] == '1');
          this.showSection(that.slice(0,that.length-2), on);
@@ -59560,7 +59564,7 @@ class TPavePainter extends ObjectPainter {
          if (this.fillatt.empty()) {
             if ((dx < 0) && (dy < 0))
                spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
-            else // ((dx<0) && (dy>0))
+            else // ((dx < 0) && (dy > 0))
                spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
          } else {
             // when main is filled, one also can use fill for shadow to avoid complexity
@@ -59574,7 +59578,7 @@ class TPavePainter extends ObjectPainter {
       }
 
       if (pt.fNpaves)
-         for (let n = pt.fNpaves-1; n>0; --n)
+         for (let n = pt.fNpaves-1; n > 0; --n)
             this.draw_g.append("svg:path")
                .attr("d", `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
                .call(this.fillatt.func)
@@ -59930,7 +59934,7 @@ class TPavePainter extends ObjectPainter {
 
          if (isEmpty(leg)) continue; // let discard empty entry
 
-         if (ncols==1) ++i; else i = ii;
+         if (ncols == 1) ++i; else i = ii;
 
          let lopt = leg.fOption.toLowerCase(),
              icol = i % ncols, irow = (i - icol) / ncols,
@@ -60060,10 +60064,10 @@ class TPavePainter extends ObjectPainter {
          }
          //zmin = Math.min(levels[0], framep.zmin);
          //zmax = Math.max(levels[levels.length-1], framep.zmax);
-      } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
+      } else if ((main.gmaxbin !== undefined) && (main.gminbin !== undefined)) {
          // this is case of TH2 (needs only for size adjustment)
          zmin = main.gminbin; zmax = main.gmaxbin;
-      } else if ((main.hmin!==undefined) && (main.hmax!==undefined)) {
+      } else if ((main.hmin !== undefined) && (main.hmax !== undefined)) {
          // this is case of TH1
          zmin = main.hmin; zmax = main.hmax;
       }
@@ -61021,7 +61025,7 @@ class THistDrawOptions {
       if (d.check('SURF', true)) {
          this.Surf = d.partAsInt(10, 1);
          check3dbox = d.part;
-         if (d.part.indexOf('Z')>=0) this.Zscale = true;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
       }
 
       if (d.check('TF3', true)) check3dbox = d.part;
@@ -61078,7 +61082,7 @@ class THistDrawOptions {
       if (d.check('SCAT=', true)) {
          this.Scat = true;
          this.ScatCoef = parseFloat(d.part);
-         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef <= 0)) this.ScatCoef = 1.;
       }
 
       if (d.check('SCAT')) this.Scat = true;
@@ -61161,7 +61165,7 @@ class THistDrawOptions {
             if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
-            if (d.part.indexOf('X0')>=0) this.errorX = 0;
+            if (d.part.indexOf('X0') >= 0) this.errorX = 0;
          }
       }
       if (d.check('9')) this.HighRes = 1;
@@ -61215,7 +61219,7 @@ class THistDrawOptions {
             res = this.Zero ? "P0" : "P"; // here invert logic with 0
          } else if (this.Error) {
             res = "E";
-            if (this.ErrorKind>=0) res += this.ErrorKind;
+            if (this.ErrorKind >= 0) res += this.ErrorKind;
          } else if (this.Line) {
             res += "L";
             if (this.Fill) res += "F";
@@ -61890,7 +61894,7 @@ class THistPainter extends ObjectPainter {
       let histo = this.getHisto();
       if (!this.isMainPainter() || !histo)
          return false;
-      if (arg==='only-check')
+      if (arg === 'only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
       this.drawHistTitle();
@@ -62775,8 +62779,8 @@ class THistPainter extends ObjectPainter {
           res = {
              i1: this.getSelectIndex("x", "left", 0 - args.extra),
              i2: this.getSelectIndex("x", "right", 1 + args.extra),
-             j1: (hdim===1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim===1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
+             j1: (hdim === 1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
+             j2: (hdim === 1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
@@ -62834,7 +62838,7 @@ class THistPainter extends ObjectPainter {
          }
       }
 
-      if (hdim===1) {
+      if (hdim === 1) {
          res.gry[0] = funcs.gry(0);
          res.gry[1] = funcs.gry(1);
       } else
@@ -62863,7 +62867,7 @@ class THistPainter extends ObjectPainter {
                binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
-               if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
+               if ((binz > 0) && ((binz<res.min) || (res.min === 0))) res.min = binz;
                binz = binz/binarea;
             }
             if (this.maxbin === null) {
@@ -63235,7 +63239,7 @@ class TH1Painter$2 extends THistPainter {
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
          this.startTextDrawing(42, text_size, this.draw_g, text_size);
@@ -63430,7 +63434,7 @@ class TH1Painter$2 extends THistPainter {
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
          if (!text_angle && !this.options.TextKind) {
@@ -63451,10 +63455,10 @@ class TH1Painter$2 extends THistPainter {
       // just to get correct values for the specified bin
       const extract_bin = bin => {
          bincont = histo.getBinContent(bin+1);
-         if (exclude_zero && (bincont===0)) return false;
+         if (exclude_zero && (bincont === 0)) return false;
          mx1 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+1)));
          mx2 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+2)));
-         midx = Math.round((mx1+mx2)/2);
+         midx = Math.round((mx1 + mx2) / 2);
          my = Math.round(funcs.gry(bincont));
          if (show_errors) {
             binerr = histo.getBinError(bin+1);
@@ -63467,7 +63471,7 @@ class TH1Painter$2 extends THistPainter {
       }, draw_errbin = () => {
          let edx = 5;
          if (this.options.errorX > 0) {
-            edx = Math.round((mx2-mx1)*this.options.errorX);
+            edx = Math.round((mx2 - mx1) * this.options.errorX);
             mmx1 = midx - edx;
             mmx2 = midx + edx;
             if (this.options.ErrorKind === 1)
@@ -63497,7 +63501,7 @@ class TH1Painter$2 extends THistPainter {
             }
 
             if (show_line && (path_line !== null))
-               path_line += ((path_line.length===0) ? "M" : "L") + `${midx},${my}`;
+               path_line += ((path_line.length === 0) ? "M" : "L") + `${midx},${my}`;
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
@@ -63727,7 +63731,7 @@ class TH1Painter$2 extends THistPainter {
 
       const GetBinGrX = i => {
          let xx = histo.fXaxis.GetBinLowEdge(i+1);
-         return (funcs.logx && (xx<=0)) ? null : funcs.grx(xx);
+         return (funcs.logx && (xx <= 0)) ? null : funcs.grx(xx);
       }, GetBinGrY = i => {
          let yy = histo.getBinContent(i + 1);
          if (funcs.logy && (yy < funcs.scale_ymin))
@@ -63817,7 +63821,7 @@ class TH1Painter$2 extends THistPainter {
             gry1 = Math.round(funcs.gry(cont + binerr)); // up
             gry2 = Math.round(funcs.gry(cont - binerr)); // down
 
-            if ((cont==0) && this.isTProfile()) findbin = null;
+            if ((cont == 0) && this.isTProfile()) findbin = null;
 
             let dx = (grx2-grx1)*this.options.errorX;
             grx1 = Math.round(midx - dx);
@@ -63946,7 +63950,7 @@ class TH1Painter$2 extends THistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg);
@@ -64142,7 +64146,7 @@ class TH1Painter extends TH1Painter$2 {
       }
 
       if (is_main)
-         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14))))
+         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14))))
                 .then(() => this.drawHistTitle());
 
       return pr.then(() => this);
@@ -64445,9 +64449,9 @@ class TH2Painter$2 extends THistPainter {
          this.gminposbin = null;
          this.gminbin = this.gmaxbin = 0;
 
-         for (let n = 0, len=histo.fBins.arr.length; n < len; ++n) {
+         for (let n = 0, len = histo.fBins.arr.length; n < len; ++n) {
             let bin_content = histo.fBins.arr[n].fContent;
-            if (n===0) this.gminbin = this.gmaxbin = bin_content;
+            if (n === 0) this.gminbin = this.gmaxbin = bin_content;
 
             if (bin_content < this.gminbin) this.gminbin = bin_content; else
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
@@ -64517,7 +64521,7 @@ class TH2Painter$2 extends THistPainter {
             if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
             for (ngr = 0; ngr < numgraphs; ++ngr) {
-               if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+               if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
                for (n = 0; n < gr.fNpoints; ++n) {
                   ++numpoints;
@@ -64962,7 +64966,7 @@ class TH2Painter$2 extends THistPainter {
                if (nadd == 0) break;
             }
 
-            if ((iminus+1 < iplus) && (iminus>=0))
+            if ((iminus+1 < iplus) && (iminus >= 0))
                contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
@@ -65285,7 +65289,7 @@ class TH2Painter$2 extends THistPainter {
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize !== 1) && text_angle)
              text_size = Math.round(0.02*h*histo.fMarkerSize);
 
          this.startTextDrawing(42, text_size, text_g, text_size);
@@ -65327,7 +65331,7 @@ class TH2Painter$2 extends THistPainter {
 
       if (!handle) handle = this.prepareDraw({ rounding: false });
 
-      if ((histo.fMarkerSize!==1) && rotate)
+      if ((histo.fMarkerSize !== 1) && rotate)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
 
       if (histo.fBarOffset !== 0) text_offset = histo.fBarOffset*1e-3;
@@ -65357,7 +65361,7 @@ class TH2Painter$2 extends THistPainter {
                   text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (rotate /*|| (histo.fMarkerSize!==1)*/) {
+            if (rotate /*|| (histo.fMarkerSize !== 1)*/) {
                x = Math.round(handle.grx[i] + binw*0.5);
                y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                width = height = 0;
@@ -66881,13 +66885,13 @@ function drawTH2PolyLego(painter) {
       let all_pnts = [], all_faces = [],
           ngraphs = 1, gr = bin.fPoly, nfaces = 0;
 
-      if (gr._typename=='TMultiGraph') {
+      if (gr._typename == 'TMultiGraph') {
          ngraphs = bin.fPoly.fGraphs.arr.length;
          gr = null;
       }
 
       for (let ngr = 0; ngr < ngraphs; ++ngr) {
-         if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          let npnts = gr.fNpoints, x = gr.fX, y = gr.fY;
          while ((npnts>2) && (x[0]===x[npnts-1]) && (y[0]===y[npnts-1])) --npnts;
@@ -66899,14 +66903,14 @@ function drawTH2PolyLego(painter) {
 
             let lastx, lasty, currx, curry,
                 dist2 = pmain.size_x3d*pmain.size_z3d,
-                dist2limit = (ntry>0) ? 0 : dist2/1e6;
+                dist2limit = (ntry > 0) ? 0 : dist2/1e6;
 
             pnts = []; faces = null;
 
             for (let vert = 0; vert < npnts; ++vert) {
                currx = pmain.grx(x[vert]);
                curry = pmain.gry(y[vert]);
-               if (vert>0)
+               if (vert > 0)
                   dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                if (dist2 > dist2limit) {
                   pnts.push(new Vector2(currx, curry));
@@ -66936,15 +66940,15 @@ function drawTH2PolyLego(painter) {
 
       let pos = new Float32Array(nfaces*9), indx = 0;
 
-      for (let ngr=0;ngr<all_pnts.length;++ngr) {
+      for (let ngr = 0; ngr < all_pnts.length; ++ngr) {
          let pnts = all_pnts[ngr], faces = all_faces[ngr];
 
-         for (let layer=0;layer<2;++layer) {
+         for (let layer = 0; layer < 2; ++layer) {
             for (let n=0;n<faces.length;++n) {
                let face = faces[n],
                    pnt1 = pnts[face[0]],
-                   pnt2 = pnts[face[(layer===0) ? 2 : 1]],
-                   pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+                   pnt2 = pnts[face[layer === 0 ? 2 : 1]],
+                   pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;
@@ -66964,9 +66968,9 @@ function drawTH2PolyLego(painter) {
          }
 
          if (z1>z0) {
-            for (let n=0;n<pnts.length;++n) {
+            for (let n = 0; n < pnts.length; ++n) {
                let pnt1 = pnts[n],
-                   pnt2 = pnts[(n>0) ? n-1 : pnts.length-1];
+                   pnt2 = pnts[n > 0 ? n-1 : pnts.length-1];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;
@@ -67187,7 +67191,7 @@ class TH3Painter extends THistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside==1) && (yside==1) && (zside==1)) {
+               if ((xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -67413,7 +67417,7 @@ class TH3Painter extends THistPainter {
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego)
-         box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
+         box_option = (this.options.Lego === 1) ? 10 : this.options.Lego;
 
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
 
@@ -67459,16 +67463,25 @@ class TH3Painter extends THistPainter {
             single_bin_verts[k*3+1] = vert.y-0.5;
             single_bin_verts[k*3+2] = vert.z-0.5;
 
-            if (k%6===0) nn+=3;
+            if (k%6 === 0) nn+=3;
             single_bin_norms[k*3]   = normals[nn];
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];
          }
          use_helper = true;
 
-         if (box_option===12) { use_colors = true; } else
-         if (box_option===13) { use_colors = true; use_helper = false; }  else
-         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; use_scale = false; use_helper = false; use_lambert = true; }
+         if (box_option === 12) {
+            use_colors = true;
+         } else if (box_option === 13) {
+            use_colors = true;
+            use_helper = false;
+         }  else if (this.options.GLColor) {
+            use_colors = true;
+            use_opacity = 0.5;
+            use_scale = false;
+            use_helper = false;
+            use_lambert = true;
+         }
       }
 
       if (use_scale)
@@ -67495,7 +67508,7 @@ class TH3Painter extends THistPainter {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.GLColor && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
@@ -67563,7 +67576,7 @@ class TH3Painter extends THistPainter {
             biny = histo.fYaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.GLColor && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not show very small bins
@@ -67656,7 +67669,7 @@ class TH3Painter extends THistPainter {
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
-            if ((indx<0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             let p = this.painter,
                 histo = p.getHisto(),
@@ -67812,7 +67825,7 @@ class TH3Painter extends THistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg);
@@ -68391,7 +68404,7 @@ async function makeSVG(args) {
 
          function clear_element() {
             const elem = select(this);
-            if (elem.style('display')=="none") elem.remove();
+            if (elem.style('display') == "none") elem.remove();
          }
          // remove containers with display: none
          if (has_workarounds)
@@ -71089,7 +71102,7 @@ class TDirectory {
              subname = keyname.slice(pos+1),
              dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
             return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
 
@@ -71571,7 +71584,7 @@ class TFile {
             }
 
             let obj = {};
-            buf.mapObject(1, obj); // tag object itself with id==1
+            buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
             if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
@@ -72436,7 +72449,7 @@ function listHierarchy(folder, lst) {
       let objname = obj.fName || obj.name;
       if (!objname) continue;
       let indx = names.indexOf(objname);
-      if (indx>=0) {
+      if (indx >= 0) {
          cnt[indx]++;
       } else {
          cnt[names.length] = cycle[names.length] = 1;
@@ -72582,7 +72595,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = "0"+val;
-         if (item._value.length>0)
+         if (item._value.length > 0)
             item._value += (k%4 === 0) ? " | " : " ";
 
          item._value += val;
@@ -72601,13 +72614,13 @@ function objectHierarchy(top, obj, args = undefined) {
    let isarray = (isArrayProto(proto) > 0) && obj.length,
        compress = isarray && (obj.length > settings.HierarchyLimit),  arrcompress = false;
 
-   if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
+   if (isarray && (top._name === "Object") && !top._parent) top._name = "Array";
 
    if (compress) {
       arrcompress = true;
       for (let k = 0; k < obj.length; ++k) {
          let typ = typeof obj[k];
-         if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
+         if ((typ === 'number') || (typ === 'boolean') || (typ == 'string' && (obj[k].length < 16))) continue;
          arrcompress = false; break;
       }
    }
@@ -72667,7 +72680,7 @@ function objectHierarchy(top, obj, args = undefined) {
    let lastitem, lastkey, lastfield, cnt;
 
    for (let key in obj) {
-      if ((key == '_typename') || (key[0]=='$')) continue;
+      if ((key == '_typename') || (key[0] == '$')) continue;
       let fld = obj[key];
       if (typeof fld == 'function') continue;
       if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
@@ -72751,7 +72764,7 @@ function objectHierarchy(top, obj, args = undefined) {
                      if (isRootCollection(fld) && (typeof fld.arr === "object")) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
-                        if (fld.arr.length>0) item._more = true;
+                        if (fld.arr.length > 0) item._more = true;
                      } else {
                         item._more = true;
                         item._value = "{ }";
@@ -72783,7 +72796,7 @@ function objectHierarchy(top, obj, args = undefined) {
          top._childs.push(item);
    }
 
-   if (compress && lastitem && (cnt>0)) lastitem._name += ".." + lastkey;
+   if (compress && lastitem && (cnt > 0)) lastitem._name += ".." + lastkey;
 
    return true;
 }
@@ -72821,7 +72834,7 @@ function createStreamerInfoContent(lst) {
          if (!elem || !elem.fName) continue;
          let info = elem.fTypeName + " " + elem.fName,
              title = elem.fTypeName + " type:" + elem.fType;
-         if (elem.fArrayDim===1)
+         if (elem.fArrayDim === 1)
             info += "[" + elem.fArrayLength + "]";
          else
             for (let dim = 0; dim < elem.fArrayDim; ++dim)
@@ -72898,11 +72911,11 @@ function parseAsArray(val) {
 
    for (let indx = 1; indx < val.length; ++indx) {
       if (nquotes > 0) {
-         if (val[indx]==="'") nquotes--;
+         if (val[indx] === "'") nquotes--;
          continue;
       }
       if (ndouble > 0) {
-         if (val[indx]==='"') ndouble--;
+         if (val[indx] === '"') ndouble--;
          continue;
       }
       switch (val[indx]) {
@@ -73204,15 +73217,15 @@ class HierarchyPainter extends BasePainter {
      * @private */
    itemFullName(node, uptoparent, compact) {
 
-      if (node && node._kind ==='TopFolder') return "__top_folder__";
+      if (node && node._kind === 'TopFolder') return "__top_folder__";
 
       let res = "";
 
       while (node) {
          // online items never includes top-level folder
-         if ((node._online!==undefined) && !uptoparent) return res;
+         if ((node._online !== undefined) && !uptoparent) return res;
 
-         if ((node === uptoparent) || (node._kind==='TopFolder')) break;
+         if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
          if (res.length > 0) res = "/" + res;
          res = node._name + res;
@@ -73294,10 +73307,10 @@ class HierarchyPainter extends BasePainter {
       if (typeof arg === 'string') {
          itemname = arg;
       } else if (typeof arg === 'object') {
-         if ((arg._parent!==undefined) && (arg._name!==undefined) && (arg._kind!==undefined)) item = arg; else
-         if (arg.name!==undefined) itemname = arg.name; else
-         if (arg.arg!==undefined) itemname = arg.arg; else
-         if (arg.item!==undefined) item = arg.item;
+         if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined)) item = arg; else
+         if (arg.name !== undefined) itemname = arg.name; else
+         if (arg.arg !== undefined) itemname = arg.arg; else
+         if (arg.item !== undefined) item = arg.item;
       }
 
       if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) {
@@ -74022,7 +74035,7 @@ class HierarchyPainter extends BasePainter {
                filepath = fileprop.kind + "=" + filepath;
                if (fileprop.itemname.length > 0) {
                   let name = fileprop.itemname;
-                  if (name.search(/\+| |\,/)>=0) name = "\'" + name + "\'";
+                  if (name.search(/\+| |\,/) >= 0) name = "\'" + name + "\'";
                   filepath += "&item=" + name;
                }
 
@@ -74391,7 +74404,7 @@ class HierarchyPainter extends BasePainter {
 
          if (item && item.indexOf("img:") == 0) { images[i] = true; continue; }
 
-         if (item && (item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
+         if (item && (item.length > 1) && (item[0] == '\'') && (item[item.length - 1] == '\'')) {
             items[i] = item.slice(1, item.length-1);
             can_split = false;
          }
@@ -74399,7 +74412,7 @@ class HierarchyPainter extends BasePainter {
          let elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
-         if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
+         if (can_split && (items[i][0] == '[') && (items[i][items[i].length - 1] == ']')) {
             dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
          } else if (can_split && (items[i].indexOf("+") > 0)) {
@@ -74465,7 +74478,7 @@ class HierarchyPainter extends BasePainter {
             fname = options[n].slice(p+8);
             options[n] = options[n].slice(0,p);
          } else {
-            while (frame_names.indexOf(fname)>=0)
+            while (frame_names.indexOf(fname) >= 0)
                fname = items[n] + "_" + k++;
          }
          frame_names[n] = fname;
@@ -74477,7 +74490,7 @@ class HierarchyPainter extends BasePainter {
          if (items_wait[n] !== 0) continue;
          let found_main = n;
          for (let k = 0; k < items.length; ++k)
-            if ((items[n]===items[k]) && (options[k].indexOf('main')>=0)) found_main = k;
+            if ((items[n]===items[k]) && (options[k].indexOf('main') >= 0)) found_main = k;
          for (let k = 0; k < items.length; ++k)
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
@@ -74565,7 +74578,7 @@ class HierarchyPainter extends BasePainter {
             if (force) {
 
                // if after last expand no better solution found - skip it
-               if ((prev_found!==undefined) && (d.now_found === prev_found)) return find_next();
+               if ((prev_found !== undefined) && (d.now_found === prev_found)) return find_next();
 
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
@@ -74585,7 +74598,7 @@ class HierarchyPainter extends BasePainter {
                if (!prnt._isopen) {
                   if (force) {
                      prnt._isopen = true;
-                     if (update.indexOf(prnt)<0) update.push(prnt);
+                     if (update.indexOf(prnt) < 0) update.push(prnt);
                   } else {
                      hitem = prnt; break;
                   }
@@ -74594,7 +74607,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             hitem._background = 'LightSteelBlue';
-            if (active.indexOf(hitem)<0) active.push(hitem);
+            if (active.indexOf(hitem) < 0) active.push(hitem);
          }
 
          find_next();
@@ -75420,8 +75433,8 @@ class HierarchyPainter extends BasePainter {
          if (res.length > 0 || !gui_div || gui_div.empty()) return res;
          while (opt.length > 0) {
             let separ = opt.indexOf(";");
-            let part = separ>0 ? opt.slice(0, separ) : opt;
-            if (separ>0) opt = opt.slice(separ+1); else opt = "";
+            let part = separ > 0 ? opt.slice(0, separ) : opt;
+            if (separ > 0) opt = opt.slice(separ+1); else opt = "";
 
             let canarray = true;
             if (part[0] == '#') { part = part.slice(1); canarray = false; }
@@ -75474,7 +75487,7 @@ class HierarchyPainter extends BasePainter {
 
       let load = GetOption("load");
 
-      if (expanditems.length == 0 && (GetOption("expand")==="")) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption("expand") === "")) expanditems.push("");
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
@@ -75581,8 +75594,8 @@ class HierarchyPainter extends BasePainter {
             // check if server enables monitoring
             if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
                browser_kind = this.h._browser;
-               if (browser_kind==="no") browser_kind = ""; else
-               if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+               if (browser_kind === "no") browser_kind = ""; else
+               if (browser_kind === "off") { browser_kind = ""; status = null; this.exclude_browser = true; }
             }
 
             if (('_monitoring' in this.h) && !monitor)
@@ -75725,7 +75738,7 @@ class HierarchyPainter extends BasePainter {
          guiCode += '<div style="display:flex;flex-direction:row">';
       }
 
-      if (this.is_online || !this.no_select || this.no_select=="file")
+      if (this.is_online || !this.no_select || this.no_select == "file")
          guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>' +
                     '</div>';
 
@@ -76135,7 +76148,7 @@ async function buildGUI(gui_element, gui_kind = "") {
 
    if (gui_kind == "draw") {
       online = drawing = nobrowser = true;
-   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false")) {
+   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser") !== "false")) {
       nobrowser = true;
    }
 
@@ -78806,10 +78819,10 @@ function treeHierarchy(node, obj) {
 
       function ClearName(arg) {
          let pos = arg.indexOf("[");
-         if (pos>0) arg = arg.slice(0, pos);
-         if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
+         if (pos > 0) arg = arg.slice(0, pos);
+         if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
             arg = arg.slice(parent_branch.fName.length);
-            if (arg[0]===".") arg = arg.slice(1);
+            if (arg[0] === ".") arg = arg.slice(1);
          }
          return arg;
       }
@@ -78861,7 +78874,7 @@ function treeHierarchy(node, obj) {
                for (let key in methods) {
                   if (typeof methods[key] !== 'function') continue;
                   let s = methods[key].toString();
-                  if ((s.indexOf("return")>0) && (s.indexOf("function ()")==0))
+                  if ((s.indexOf("return") > 0) && (s.indexOf("function ()") == 0))
                      bnode._childs.push({
                         _name: key+"()",
                         _title: "function " + key + " of class " + object_class,
@@ -79184,7 +79197,7 @@ function drawBox$1() {
 
    let box = this.getObject(),
        opt = this.getDrawOpt(),
-       draw_line = (opt.toUpperCase().indexOf("L")>=0),
+       draw_line = (opt.toUpperCase().indexOf("L") >= 0),
        lineatt = this.createAttLine(box),
        fillatt = this.createAttFill(box);
 
@@ -79804,7 +79817,7 @@ class Geometry {
          }
 
          this.tree = new Node( polygons, nodeid );
-         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+         if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else if (geometry.polygons && (geometry.polygons[0] instanceof Polygon)) {
@@ -79825,7 +79838,7 @@ class Geometry {
          }
 
          this.tree = new Node( polygons, nodeid );
-         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+         if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else {
@@ -79870,7 +79883,7 @@ class Geometry {
       }
 
       this.tree = new Node( polygons, nodeid );
-      if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
+      if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
    }
 
    subtract( other_tree ) {
@@ -80238,7 +80251,7 @@ function checkDuplicates(parent, chlds) {
       if (!chld?.fName) continue;
       if (!chld.$geo_suffix) {
          let indx = names.indexOf(chld.fName);
-         if (indx>=0) {
+         if (indx >= 0) {
             let cnt = cnts[indx] || 1;
             while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
             chld.$geo_suffix = "#" + cnt;
@@ -80309,8 +80322,8 @@ class GeometryCreator {
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced*/
+     * if (reduce == 1), first face is reduced
+     * if (reduce == 2), second face is reduced*/
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       let indx = this.indx, pos = this.pos;
 
@@ -80433,7 +80446,7 @@ class GeometryCreator {
    setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
+      let indx = this.indx - ((reduce > 0) ? 9 : 18), norm = this.norm;
 
       if (reduce!==1) {
          norm[indx]   = nx12;
@@ -80508,15 +80521,15 @@ class PolygonsCreator{
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced */
+     * if (reduce == 1), first face is reduced
+     * if (reduce == 2), second face is reduced */
    addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
       if (reduce === undefined) reduce = 0;
 
       this.v1 = new Vertex(x1,y1,z1, 0,0,0);
-      this.v2 = (reduce===1) ? null : new Vertex(x2,y2,z2, 0,0,0);
+      this.v2 = (reduce === 1) ? null : new Vertex(x2,y2,z2, 0,0,0);
       this.v3 = new Vertex(x3,y3,z3, 0,0,0);
-      this.v4 = (reduce===2) ? null : new Vertex(x4,y4,z4, 0,0,0);
+      this.v4 = (reduce === 2) ? null : new Vertex(x4,y4,z4, 0,0,0);
 
       this.reduce = reduce;
 
@@ -80601,7 +80614,7 @@ class PolygonsCreator{
 
       this.pA.set( this.v1.x, this.v1.y, this.v1.z);
 
-      if (this.reduce!==1) {
+      if (this.reduce !== 1) {
          this.pB.set( this.v2.x, this.v2.y, this.v2.z);
          this.pC.set( this.v3.x, this.v3.y, this.v3.z);
       } else {
@@ -80779,7 +80792,7 @@ function createArb8Buffer( shape, faces_limit ) {
           id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
 
       if ((indicies[k] == indicies[k+1]) || (indicies[k] == indicies[k+2]) || (indicies[k+1] == indicies[k+2]) ||
-          (map.indexOf(id1)>=0) || (map.indexOf(id2)>=0) || (map.indexOf(id3)>=0)) {
+          (map.indexOf(id1) >= 0) || (map.indexOf(id2) >= 0) || (map.indexOf(id3) >= 0)) {
          indicies[k] = indicies[k+1] = indicies[k+2] = -1;
       } else {
          map.push(id1,id2,id3);
@@ -80901,10 +80914,10 @@ function createSphereBuffer( shape, faces_limit ) {
        creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
    for (let side = 0; side < 2; ++side) {
-      if ((side===1) && noInside) break;
+      if ((side === 1) && noInside) break;
 
       let r = radius[side],
-          s = (side===0) ? 1 : -1,
+          s = (side === 0) ? 1 : -1,
           d1 = 1 - side, d2 = 1 - d1;
 
       // use direct algorithm for the sphere - here normals and position can be calculated directly
@@ -80935,7 +80948,7 @@ function createSphereBuffer( shape, faces_limit ) {
    for (let side = 0; side <= heightSegments; side += heightSegments)
       if (Math.abs(_sint[side]) >= epsilon) {
          let ss = _sint[side], cc = _cost[side],
-             d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
+             d1 = (side === 0) ? 0 : 1, d2 = 1 - d1;
          for (let n = 0; n < widthSegments; ++n) {
             creator.addFace4(
                   radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
@@ -80998,9 +81011,9 @@ function createTubeBuffer( shape, faces_limit) {
       numfaces += radiusSegments * (((innerR[0] <= 0) || (innerR[1] <= 0)) ? 1 : 2);
 
    // upper cap
-   if (outerR[0] > 0) numfaces += radiusSegments * ((innerR[0]>0) ? 2 : 1);
+   if (outerR[0] > 0) numfaces += radiusSegments * ((innerR[0] > 0) ? 2 : 1);
    // bottom cup
-   if (outerR[1] > 0) numfaces += radiusSegments * ((innerR[1]>0) ? 2 : 1);
+   if (outerR[1] > 0) numfaces += radiusSegments * ((innerR[1] > 0) ? 2 : 1);
 
    if (thetaLength < 360)
       numfaces += ((outerR[0] > innerR[0]) ? 2 : 0) + ((outerR[1] > innerR[1]) ? 2 : 0);
@@ -81063,7 +81076,8 @@ function createTubeBuffer( shape, faces_limit) {
       let d1 = side, d2 = 1- side,
           sign = (side == 0) ? 1 : -1,
           reduce = (innerR[side] <= 0) ? 2 : 0;
-      if ((reduce === 2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
+      if ((reduce === 2) && (thetaLength === 360) && !calcZ)
+         creator.startPolygon(side === 0);
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
                innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -81143,7 +81157,7 @@ function createEltuBuffer( shape , faces_limit ) {
 
    // create top/bottom sides
    for (let side = 0; side < 2; ++side) {
-      let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
+      let sign = (side === 0) ? 1 : -1, d1 = side, d2 = 1 - side;
       for (let seg=0; seg<radiusSegments; ++seg) {
          creator.addFace3(0,          0,          sign*shape.fDZ,
                           x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
@@ -81196,7 +81210,7 @@ function createTorusBuffer( shape, faces_limit ) {
    for (let side = 0; side < 2; ++side) {
       if ((side > 0) && (shape.fRmin <= 0)) break;
       let tube = (side > 0) ? shape.fRmin : shape.fRmax,
-          d1 = 1 - side, d2 = 1 - d1, ns = side>0 ? -1 : 1;
+          d1 = 1 - side, d2 = 1 - d1, ns = side > 0 ? -1 : 1;
 
       for (let t = 0; t < tubularSegments; ++t) {
          let t1 = t + d1, t2 = t + d2;
@@ -81293,7 +81307,7 @@ function createPolygonBuffer( shape, faces_limit ) {
                continue;
             }
 
-         if ((layer>0) && ((side === 0) || hasrmin)) {
+         if ((layer > 0) && ((side === 0) || hasrmin)) {
             usage[layer*2+side] = 1;
             numusedlayers++;
          }
@@ -81318,7 +81332,7 @@ function createPolygonBuffer( shape, faces_limit ) {
       if (pnts.length === shape.fNz * 2) {
          // special case - all layers are there, create faces ourself
          cut_faces = [];
-         for (let layer = shape.fNz-1; layer>0; --layer) {
+         for (let layer = shape.fNz-1; layer > 0; --layer) {
             if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
             let right = 2*shape.fNz - 1 - layer;
             cut_faces.push([right, layer - 1, layer]);
@@ -81386,10 +81400,11 @@ function createPolygonBuffer( shape, faces_limit ) {
       if (rmin === rmax) continue;
 
       let layerz = shape.fZ[layer],
-          d1 = (layer===0) ? 1 : 0, d2 = 1 - d1,
-          normalz = (layer===0) ? -1: 1;
+          d1 = (layer === 0) ? 1 : 0, d2 = 1 - d1,
+          normalz = (layer === 0) ? -1: 1;
 
-      if (!hasrmin && !cut_faces) creator.startPolygon(layer>0);
+      if (!hasrmin && !cut_faces)
+         creator.startPolygon(layer > 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
@@ -81467,13 +81482,13 @@ function createXtruBuffer( shape, faces_limit ) {
       for (let n = 0; n < faces.length; ++n) {
          let face = faces[n],
              pnt1 = pnts[face[0]],
-             pnt2 = pnts[face[(layer===0) ? 2 : 1]],
-             pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+             pnt2 = pnts[face[layer === 0 ? 2 : 1]],
+             pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
          creator.addFace3(scale * pnt1.x + x0, scale * pnt1.y + y0, z,
                           scale * pnt2.x + x0, scale * pnt2.y + y0, z,
                           scale * pnt3.x + x0, scale * pnt3.y + y0, z);
-         creator.setNormal(0,0,layer===0 ? -1 : 1);
+         creator.setNormal(0,0,layer === 0 ? -1 : 1);
       }
    }
 
@@ -81537,7 +81552,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
          case heightSegments + 1: layerz = zmax; radius = 0; break;
          default: {
             let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
-                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+                delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b < 0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
             if (radius < 1e-6) radius = 0;
             layerz = radius*tt;
@@ -81577,7 +81592,7 @@ function createParaboloidBuffer( shape, faces_limit ) {
   * @private */
 function createHypeBuffer( shape, faces_limit ) {
 
-   if ((shape.fTin===0) && (shape.fTout===0))
+   if ((shape.fTin === 0) && (shape.fTout === 0))
       return createTubeBuffer(shape, faces_limit);
 
    let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
@@ -81638,7 +81653,7 @@ function createHypeBuffer( shape, faces_limit ) {
                            r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                            r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
                            r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
-          creator.setNormal(0,0, (layer===0) ? 1 : -1);
+          creator.setNormal(0,0, (layer === 0) ? 1 : -1);
        }
    }
 
@@ -82126,7 +82141,7 @@ function createServerGeometry(rd, nsegm) {
       g = createGeometry(rd.shape);
    } else {
 
-      if (!rd.raw || (rd.raw.length==0)) {
+      if (!rd.raw) {
          console.error('No raw data at all');
          return null;
       }
@@ -83009,7 +83024,7 @@ class ClonedNodes {
    createObject3D(stack, toplevel, options) {
 
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
-          force = (typeof options == 'object') || (options==='force');
+          force = (typeof options == 'object') || (options === 'force');
 
       for(let lvl=0; lvl<=stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0;
@@ -83051,7 +83066,7 @@ class ClonedNodes {
          three_prnt.add(obj3d);
 
          // this is only for debugging - test inversion of whole geometry
-         if ((lvl==0) && (typeof options == 'object') && options.scale) {
+         if ((lvl == 0) && (typeof options == 'object') && options.scale) {
             if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
                obj3d.scale.copy(options.scale);
                obj3d.updateMatrix();
@@ -83204,7 +83219,7 @@ class ClonedNodes {
              else
                 camVol = 0;
 
-             camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
+             camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
 
              // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
@@ -83379,7 +83394,7 @@ class ClonedNodes {
 
          if (res.faces >= limit) {
             res.done = true;
-         } else if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
+         } else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
             let tm2 = new Date().getTime();
             if (tm2-tm1 > timelimit) return res;
          }
@@ -83451,7 +83466,7 @@ function createFlippedMesh(shape, material) {
          let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
          for (let ii = 0; ii < ilen; ++ii) {
             let k = arr[i0 + ii];
-            if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            if ((k < 0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
             dpos[ii*3] = pos[k*3];
             dpos[ii*3+1] = pos[k*3+1];
             dpos[ii*3+2] = pos[k*3+2];
@@ -83647,7 +83662,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          resort[i] = arr[i];
       }
 
-      if (method==="ray")
+      if (method === "ray")
          for (let i=arr.length - 1; i >= 0; --i) {
             let mesh = arr[i], intersects,
                 box3 = mesh.$jsroot_box3,
@@ -83785,7 +83800,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
-   if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
+   if ((side && (comp._typename !== 'TGeoCompositeShape')) || (maxlvl <= 0)) {
       vol.fName = side;
       vol.fLineColor = ($comp_col_cnt++ % 8) + 2;
       vol.fShape = comp;
@@ -84504,7 +84519,7 @@ class TGeoPainter extends ObjectPainter {
       let macro = opt.indexOf("macro:");
       if (macro >= 0) {
          let separ = opt.indexOf(";", macro+6);
-         if (separ<0) separ = opt.length;
+         if (separ < 0) separ = opt.length;
          res.script_name = opt.slice(macro+6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ+1);
          console.log('script', res.script_name, 'rest', opt);
@@ -84512,9 +84527,9 @@ class TGeoPainter extends ObjectPainter {
 
       while (true) {
          let pp = opt.indexOf("+"), pm = opt.indexOf("-");
-         if ((pp<0) && (pm<0)) break;
+         if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = "+";
-         if ((p1<0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
+         if ((p1 < 0) || ((pm >= 0) && (pm<pp))) { p1 = pm; sign = "-"; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
          while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
@@ -84579,9 +84594,9 @@ class TGeoPainter extends ObjectPainter {
       if (d.check("CLIPZ")) res.clipz = true;
       if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
 
-      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
       if (d.check("DFLT_COLORS") || d.check("DFLT")) res.dflt_colors = true;
       if (d.check("SSAO")) res.usessao = true;
@@ -84673,7 +84688,7 @@ class TGeoPainter extends ObjectPainter {
                let m1 = mesh.matrixWorld, flip;
 
                if (m1.equals(m2)) return true;
-               if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
+               if ((m1.determinant() > 0) && (m2.determinant()<-0.9)) {
                   flip = new Vector3(1,1,-1);
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
@@ -84907,7 +84922,7 @@ class TGeoPainter extends ObjectPainter {
       this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
-      if (main.style('position')=='static') main.style('position','relative');
+      if (main.style('position') == 'static') main.style('position','relative');
 
       let dom = this._datgui.domElement;
       dom.style.position = 'absolute';
@@ -85352,7 +85367,7 @@ class TGeoPainter extends ObjectPainter {
          let extras = this.getExtrasContainer();
          if (extras)
             extras.traverse(obj3d => {
-               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(obj3d);
+               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d) < 0)) active_mesh.push(obj3d);
             });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
@@ -85639,7 +85654,7 @@ class TGeoPainter extends ObjectPainter {
          let need_worker = !isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
-         if (need_worker && exports.source_dir.indexOf("file://")==0) {
+         if (need_worker && exports.source_dir.indexOf("file://") == 0) {
             console.log('disable worker for jsroot from file system');
             need_worker = false;
          }
@@ -86158,7 +86173,7 @@ class TGeoPainter extends ObjectPainter {
             this._renderer.domElement.style.width = "100%";
             this._renderer.domElement.style.height = "100%";
             let main = this.selectDom();
-            if (main.style('position')=='static') main.style('position','relative');
+            if (main.style('position') == 'static') main.style('position','relative');
          }
 
          this._animating = false;
@@ -86531,7 +86546,7 @@ class TGeoPainter extends ObjectPainter {
             this.render3D(0);
          }
          let tm2 = new Date().getTime();
-         if ((step==0) && (tm2-tm1 > 200)) frames = 20;
+         if ((step == 0) && (tm2-tm1 > 200)) frames = 20;
          step++;
          this._animating = step < frames;
       };
@@ -86657,7 +86672,7 @@ class TGeoPainter extends ObjectPainter {
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
 
-      if (obj && (obj.$kind==='TTree')) {
+      if (obj && (obj.$kind === 'TTree')) {
          // drop tree means function call which must extract tracks from provided tree
 
          let funcname = "extract_geo_tracks";
@@ -86740,7 +86755,7 @@ class TGeoPainter extends ObjectPainter {
       if ((indx < 0) && hitem._obj) {
          indx = this._extraObjects.arr.indexOf(hitem._obj);
          // workaround - if object found, replace its name
-         if (indx>=0) this._extraObjects.opt[indx] = itemname;
+         if (indx >= 0) this._extraObjects.opt[indx] = itemname;
       }
 
       if (indx < 0) return;
@@ -86906,7 +86921,7 @@ class TGeoPainter extends ObjectPainter {
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      if (itemname && itemname.indexOf("<prnt>/Tracks")==0)
+      if (itemname && itemname.indexOf("<prnt>/Tracks") == 0)
          line.main_track = true;
 
       this.addToExtrasContainer(line);
@@ -87047,7 +87062,7 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname.length>0) itemname += "/";
+         if (itemname.length > 0) itemname += "/";
          itemname += prnt.fName;
       }
 
@@ -87138,7 +87153,7 @@ class TGeoPainter extends ObjectPainter {
          while (indx < lines.length) {
             let line = lines[indx++].trim();
 
-            if (line.indexOf('//')==0) continue;
+            if (line.indexOf('//') == 0) continue;
 
             if (line.indexOf('gGeoManager') < 0) continue;
             line = line.replace('->GetVolume','.GetVolume');
@@ -87409,7 +87424,7 @@ class TGeoPainter extends ObjectPainter {
      * @param [measure] - when true, for the first time printout rendering time
      * @return {Promise} when tmout bigger than 0 is specified
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
-     * superimposed with each other. If tmeout<=0, rendering performed immediately
+     * superimposed with each other. If tmeout <= 0, rendering performed immediately
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
@@ -87629,7 +87644,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl._axis == 2)
          for (let naxis = 0; naxis < 3; ++naxis) {
             let name = names[naxis];
-            if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
+            if ((box.min[name] <= 0) && (box.max[name] >= 0)) continue;
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 
@@ -87681,14 +87696,14 @@ class TGeoPainter extends ObjectPainter {
 
          let textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
 
-         if ((center[naxis]===0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
-           if ((this.ctrl._axis != 2) || (naxis===0)) {
+         if ((center[naxis] === 0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name]))
+           if ((this.ctrl._axis != 2) || (naxis === 0)) {
                let geom = ortho ? new CircleGeometry(text_size*0.25) :
                                   new SphereGeometry(text_size*0.25);
                mesh = new Mesh(geom, textMaterial);
-               mesh.translateX((naxis===0) ? center[0] : buf[0]);
-               mesh.translateY((naxis===1) ? center[1] : buf[1]);
-               mesh.translateZ((naxis===2) ? center[2] : buf[2]);
+               mesh.translateX(naxis === 0 ? center[0] : buf[0]);
+               mesh.translateY(naxis === 1 ? center[1] : buf[1]);
+               mesh.translateZ(naxis === 2 ? center[2] : buf[2]);
                container.add(mesh);
            }
 
@@ -88360,7 +88375,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == "string") && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
@@ -88498,7 +88513,7 @@ function provideMenu(menu, item, hpainter) {
       if (!arg) arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
-         if (arg.assign!==undefined)
+         if (arg.assign !== undefined)
             obj.fRnrSelf = arg.assign;
          else if (obj.fRnrSelf)
             arg.vis++;
@@ -88545,7 +88560,7 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf("TGeoNode")===0) && findItemWithPainter(item))
+   if ((item._geoobj._typename.indexOf("TGeoNode") === 0) && findItemWithPainter(item))
       menu.add("Focus", function() {
 
         let drawitem = findItemWithPainter(item);
@@ -88563,7 +88578,7 @@ function provideMenu(menu, item, hpainter) {
       let res = ScanEveVisible(obj, undefined, true);
 
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
+         menu.addchk((res.hidden == 0), "Daughters", res.hidden !== 0 ? "true" : "false", ToggleEveVisibility);
 
    } else {
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), "Invisible",
@@ -88608,7 +88623,7 @@ function browserIconClick(hitem, hpainter) {
    let newstate = drawitem._painter.extraObjectVisible(hpainter, hitem, true);
 
    // return true means browser should update icon for the item
-   return (newstate!==undefined) ? true : false;
+   return (newstate !== undefined) ? true : false;
 }
 
 
@@ -88648,11 +88663,11 @@ function createItem(node, obj, name) {
    if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
    if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
    if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-   if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
+   if ((obj._typename.indexOf("TGeoNode") === 0) && obj.fVolume) {
       sub._title = "node:"  + obj._typename;
       if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
       volume = obj.fVolume;
-   } else if (obj._typename.indexOf("TGeoVolume")===0) {
+   } else if (obj._typename.indexOf("TGeoVolume") === 0) {
       volume = obj;
    } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
       iseve = true;
@@ -89041,7 +89056,7 @@ class THStackPainter extends ObjectPainter {
             i2 = hist.fXaxis.fLast;
          }
 
-         if (hist._typename.indexOf("TH2")===0) {
+         if (hist._typename.indexOf("TH2") === 0) {
             j2 = hist.fYaxis.fNbins;
             if (hist.fYaxis.TestBit(EAxisBits.kAxisRange)) {
                j1 = hist.fYaxis.fFirst;
@@ -89080,14 +89095,14 @@ class THStackPainter extends ObjectPainter {
       if (stack.fMinimum != -1111) res.min = stack.fMinimum;
 
       if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
-         if (res.max<=0) res.max = 1;
-         if (res.min<=0) res.min = 1e-4*res.max;
+         if (res.max <= 0) res.max = 1;
+         if (res.min <= 0) res.min = 1e-4*res.max;
          let kmin = 1/(1 + 0.5*Math.log10(res.max / res.min)),
              kmax = 1 + 0.2*Math.log10(res.max / res.min);
          res.min *= kmin;
          res.max *= kmax;
       } else {
-         if ((res.min>0) && (res.min < 0.05*res.max)) res.min = 0;
+         if ((res.min > 0) && (res.min < 0.05*res.max)) res.min = 0;
       }
 
       return res;
@@ -89158,12 +89173,12 @@ class THStackPainter extends ObjectPainter {
 
       const hasErrors = hist => {
          if (hist.fSumw2 && (hist.fSumw2.length > 0))
-            for (let n = 0;n < hist.fSumw2.length; ++n)
+            for (let n = 0; n < hist.fSumw2.length; ++n)
                if (hist.fSumw2[n] > 0) return true;
          return false;
       };
 
-      if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
+      if (hist && (hist._typename.indexOf("TH2") == 0)) this.options.ndim = 2;
 
       if ((this.options.ndim == 2) && !opt) opt = "lego1";
 
@@ -89195,7 +89210,7 @@ class THStackPainter extends ObjectPainter {
       this.options.errors = d.check("E");
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check("HIST") && (this.options.hopt.indexOf("E")<0)) this.options.draw_errors = true;
+      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check("HIST") && (this.options.hopt.indexOf("E") < 0)) this.options.draw_errors = true;
 
       this.options.horder = this.options.nostack || dolego;
    }
@@ -89212,14 +89227,14 @@ class THStackPainter extends ObjectPainter {
       }
 
       let h0 = histos.arr[0],
-          histo = createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+          histo = createHistogram((this.options.ndim == 1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
       Object.assign(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
          Object.assign(histo.fYaxis, h0.fYaxis);
 
       // this code is not exists in ROOT painter, can be skipped?
-      for (let n=1;n<numhistos;++n) {
+      for (let n = 1; n < numhistos; ++n) {
          let h = histos.arr[n];
 
          if (!histo.fXaxis.fLabels) {
@@ -89409,7 +89424,7 @@ function drawPolyMarker3D() {
 
       if (step > 1) {
          select = (select+1) % step;
-         if (select!==0) continue;
+         if (select !== 0) continue;
       }
 
       index[icnt++] = i;
@@ -89434,7 +89449,7 @@ function drawPolyMarker3D() {
             return null;
          }
          let indx = Math.floor(intersect.index / this.nvertex);
-         if ((indx<0) || (indx >= this.index.length)) return null;
+         if ((indx < 0) || (indx >= this.index.length)) return null;
 
          indx = this.index[indx];
 
@@ -89715,14 +89730,14 @@ class TGraph2DPainter extends ObjectPainter {
           uymin = ymin - dy, uymax = ymax + dy,
           uzmin = zmin - dz, uzmax = zmax + dz;
 
-      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.98;
-      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.98;
+      if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
-      if ((uymin<0) && (ymin>=0)) uymin = ymin*0.98;
-      if ((uymax>0) && (ymax<=0)) uymax = 0;
+      if ((uymin < 0) && (ymin >= 0)) uymin = ymin*0.98;
+      if ((uymax > 0) && (ymax <= 0)) uymax = 0;
 
-      if ((uzmin<0) && (zmin>=0)) uzmin = zmin*0.98;
-      if ((uzmax>0) && (zmax<=0)) uzmax = 0;
+      if ((uzmin < 0) && (zmin >= 0)) uzmin = zmin*0.98;
+      if ((uzmax > 0) && (zmax <= 0)) uzmax = 0;
 
       let graph = this.getObject();
 
@@ -89753,7 +89768,7 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       let indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx<0) || (indx >= this.index.length)) return null;
+      if ((indx < 0) || (indx >= this.index.length)) return null;
       let sqr = v => v*v;
 
       indx = this.index[indx];
@@ -89870,7 +89885,7 @@ class TGraph2DPainter extends ObjectPainter {
 
             if (step > 1) {
                select = (select+1) % step;
-               if (select!==0) continue;
+               if (select !== 0) continue;
             }
 
             index[icnt++] = i; // remember point index for tooltip
@@ -90126,7 +90141,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
       if (!delta) return;
 
-      delta = (delta<0) ? -0.2 : 0.2;
+      delta = (delta < 0) ? -0.2 : 0.2;
 
       let rmin = this.scale_rmin, rmax = this.scale_rmax, range = rmax - rmin;
 
@@ -90178,7 +90193,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let lbls = [], indx = 0;
       while (indx<ticks.length) {
          let lbl = this.format(ticks[indx]);
-         if (lbls.indexOf(lbl)>=0) {
+         if (lbls.indexOf(lbl) >= 0) {
             if (++this.ndig>10) break;
             lbls = []; indx = 0; continue;
           }
@@ -90706,7 +90721,7 @@ class TGraphPainter$1 extends ObjectPainter {
       // special case - one could use svg:path to draw many pixels (
       if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
 
-      // if no drawing option is selected and if opt=='' nothing is done.
+      // if no drawing option is selected and if opt == '' nothing is done.
       if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
          if (d.empty()) res.Line = 1;
       }
@@ -90757,7 +90772,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
+      if ((gr._typename === "TCutG") && (npoints > 3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphMultiErrors') kind = 2; else
@@ -90827,7 +90842,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
       if (graph.fMaximum != -1111) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
+      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
 
       histo = graph.fHistogram;
 
@@ -90889,7 +90904,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (typeof filter_func == 'function') {
          for (let n = 0; n < this.bins.length; ++n) {
             if (filter_func(this.bins[n],n)) {
-               if (!selbins) selbins = (n==0) ? [] : this.bins.slice(0, n);
+               if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
             } else {
                if (selbins) selbins.push(this.bins[n]);
             }
@@ -90925,13 +90940,13 @@ class TGraphPainter$1 extends ObjectPainter {
 
          if (gme)
             lines.push("error x = -" + funcs.axisAsText("x", gme.fExL[d.indx]) + "/+" + funcs.axisAsText("x", gme.fExH[d.indx]));
-         else if (this.options.Errors && (funcs.x_handle.kind=='normal') && (d.exlow || d.exhigh))
+         else if (this.options.Errors && (funcs.x_handle.kind == 'normal') && (d.exlow || d.exhigh))
             lines.push("error x = -" + funcs.axisAsText("x", d.exlow) + "/+" + funcs.axisAsText("x", d.exhigh));
 
          if (gme) {
             for (let ny = 0; ny < gme.fNYErrors; ++ny)
                lines.push(`error y${ny} = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
-         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && (d.eylow || d.eyhigh))
+         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind == 'normal') && (d.eylow || d.eyhigh))
             lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
 
       }
@@ -91179,8 +91194,8 @@ class TGraphPainter$1 extends ObjectPainter {
                  d.bar = true; // element drawn as bar
                  let dx = Math.round(-d.width/2),
                      dw = Math.round(d.width),
-                     dy = (options.Bar!==1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
-                     dh = (options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
+                     dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                     dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
                  return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
               })
             .call(usefill.func);
@@ -91635,8 +91650,8 @@ class TGraphPainter$1 extends ObjectPainter {
 
       if (!best || (!best.bin && !best.closeline)) return null;
 
-      let islines = (this.draw_kind=="lines"),
-          ismark = (this.draw_kind=="mark"),
+      let islines = (this.draw_kind == "lines"),
+          ismark = (this.draw_kind == "mark"),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           gr = this.getObject(),
@@ -92058,7 +92073,7 @@ function proivdeEvalPar(obj) {
    let _func = obj.fTitle, isformula = false, pprefix = "[";
    if (_func === "gaus") _func = "gaus(0)";
    if (obj.fFormula && typeof obj.fFormula.fFormula == "string") {
-     if (obj.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
+     if (obj.fFormula.fFormula.indexOf("[](double*x,double*p)") == 0) {
         isformula = true; pprefix = "p[";
         _func = obj.fFormula.fFormula.slice(21);
      } else {
@@ -93735,7 +93750,7 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis/*,min,max*/) {
-      if (axis!=="x") return false;
+      if (axis !== "x") return false;
 
       let spline = this.getObject();
       if (!spline) return false;
@@ -93888,15 +93903,15 @@ class TArrowPainter extends ObjectPainter {
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
 
-      if (oo.indexOf("<")==0)
+      if (oo.indexOf("<") == 0)
          this.beg = (oo.indexOf("<|") == 0) ? 12 : 2;
-      if (oo.indexOf("->-")>=0)
+      if (oo.indexOf("->-") >= 0)
          this.mid = 1;
-      else if (oo.indexOf("-|>-")>=0)
+      else if (oo.indexOf("-|>-") >= 0)
          this.mid = 11;
-      else if (oo.indexOf("-<-")>=0)
+      else if (oo.indexOf("-<-") >= 0)
          this.mid = 2;
-      else if (oo.indexOf("-<|-")>=0)
+      else if (oo.indexOf("-<|-") >= 0)
          this.mid = 12;
 
       let p1 = oo.lastIndexOf(">"), p2 = oo.lastIndexOf("|>"), len = oo.length;
@@ -94550,7 +94565,7 @@ function createTreePlayer(player) {
          expr += ">>" + hname;
       } else {
          hname = expr.slice(pos+2);
-         if (hname[0]=='+') hname = hname.slice(1);
+         if (hname[0] == '+') hname = hname.slice(1);
          let pos2 = hname.indexOf("(");
          if (pos2 > 0) hname = hname.slice(0, pos2);
       }
@@ -94565,8 +94580,8 @@ function createTreePlayer(player) {
          url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
          // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (nentries=="") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
-         if (firstentry=="") firstentry = "0";
+         if (nentries == "") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
+         if (firstentry == "") firstentry = "0";
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
       } else {
          url += `&prototype="Option_t*"&opt="${expr}"`;
@@ -94668,7 +94683,7 @@ async function drawTree(dom, obj, opt) {
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
       args = { expr: "." + obj.func + "()", branch: obj.branch };
-      if (opt && opt.indexOf("dump")==0)
+      if (opt && opt.indexOf("dump") == 0)
          args.expr += ">>" + opt;
       else if (opt)
          args.expr += opt;
@@ -94847,7 +94862,7 @@ class RObjectPainter extends ObjectPainter {
 
          if (pos > 0) { val = val.slice(pos); pos = 0; }
 
-         while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
+         while ((pos < val.length) && (((val[pos] >= '0') && (val[pos] <= '9')) || (val[pos] == '.'))) pos++;
 
          let v = parseFloat(val.slice(0, pos));
          if (!Number.isFinite(v)) {
@@ -95126,7 +95141,7 @@ class RAxisPainter extends RObjectPainter {
       if (_log) {
          this.log = true;
          this.logbase = 10;
-         if (Math.abs(_log - Math.exp(1))<0.1)
+         if (Math.abs(_log - Math.exp(1)) < 0.1)
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
@@ -95178,7 +95193,7 @@ class RAxisPainter extends RObjectPainter {
             smin = smax * 0.0001;
          this.log = true;
          this.logbase = 10;
-         if (Math.abs(_log - Math.exp(1))<0.1)
+         if (Math.abs(_log - Math.exp(1)) < 0.1)
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
@@ -95385,7 +95400,7 @@ class RAxisPainter extends RObjectPainter {
             let lbls = [], indx = 0, totallen = 0;
             while (indx<handle.major.length) {
                let lbl = this.format(handle.major[indx], true);
-               if (lbls.indexOf(lbl)<0) {
+               if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
                   totallen += lbl.length;
                   indx++;
@@ -95395,8 +95410,9 @@ class RAxisPainter extends RObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order==0 we should virually remove "0." and extra label on top
-            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+            // for order == 0 we should virually remove "0." and extra label on top
+            if (!order && (this.ndig < 4))
+               totallen -= (handle.major.length * 2 + 3);
 
             if (totallen < bestlen) {
                bestlen = totallen;
@@ -95752,11 +95768,11 @@ class RAxisPainter extends RObjectPainter {
          if (this.vertical) {
             arg.x = fix_coord;
             arg.y = pos;
-            arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+            arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
          } else {
             arg.x = pos;
             arg.y = fix_coord;
-            arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+            arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
          }
 
          arg.post_process = process_drawtext_ready;
@@ -96130,8 +96146,8 @@ class RAxisPainter extends RObjectPainter {
 
       menu.add("sub:Log scale", () => this.changeAxisLog('toggle'));
       menu.addchk(!this.log && !this.symlog, "linear", 0, arg => this.changeAxisLog(arg));
-      menu.addchk(this.log && !this.symlog && (this.logbase==10), "log10", () => this.changeAxisLog(10));
-      menu.addchk(this.log && !this.symlog && (this.logbase==2), "log2", () => this.changeAxisLog(2));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 10), "log10", () => this.changeAxisLog(10));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 2), "log2", () => this.changeAxisLog(2));
       menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", () => this.changeAxisLog(Math.exp(1)));
       menu.addchk(!this.log && this.symlog, "symlog", 0, () =>
          menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v)));
@@ -96283,11 +96299,11 @@ class RFramePainter extends RObjectPainter {
                    func(this.scale_xmin, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymin) ];
-      if (this.scale_xmin<0 && this.scale_xmax>0) {
+      if (this.scale_xmin < 0 && this.scale_xmax > 0) {
          pnts.push(func(0, this.scale_ymin));
          pnts.push(func(0, this.scale_ymax));
       }
-      if (this.scale_ymin<0 && this.scale_ymax>0) {
+      if (this.scale_ymin < 0 && this.scale_ymax > 0) {
          pnts.push(func(this.scale_xmin, 0));
          pnts.push(func(this.scale_xmax, 0));
       }
@@ -96598,7 +96614,7 @@ class RFramePainter extends RObjectPainter {
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
-         // In v7 ticksx==0 means no ticks, ticksx==1 equivalent to ==0 in v6
+         // In v7 ticksx == 0 means no ticks, ticksx == 1 equivalent to == 0 in v6
 
          let can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
 
@@ -96988,16 +97004,16 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary function can be used for zooming into specified range
-     * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+     * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
 
-      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+      if (xmin === "x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin === "y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin === "z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -97251,14 +97267,14 @@ class RFramePainter extends RObjectPainter {
 
       // when fill and show context menu, remove all zooming
 
-      if ((kind=="x") || (kind=="y") || (kind=="x2") || (kind=="y2")) {
+      if ((kind == "x") || (kind == "y") || (kind == "x2") || (kind == "y2")) {
          let handle = this[kind+"_handle"];
          if (!handle) return false;
          menu.add("header: " + kind.toUpperCase() + " axis");
          return handle.fillAxisContextMenu(menu, kind);
       }
 
-      let alone = menu.size()==0;
+      let alone = menu.size() == 0;
 
       if (alone)
          menu.add("header:Frame");
@@ -97326,13 +97342,13 @@ class RFramePainter extends RObjectPainter {
    showAxisStatus(axis_name, evnt) {
 
       let hint_name = axis_name, hint_title = "axis",
-          m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
+          m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name == "x") ? 0 : 1;
 
       if (this.swap_xy) id = 1-id;
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), Math.round(m[0])+","+Math.round(m[1]));
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), Math.round(m[0]) + "," + Math.round(m[1]));
    }
 
    /** @summary Add interactive keys handlers
@@ -97749,7 +97765,7 @@ class RPadPainter extends RObjectPainter {
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
+         if (this.enlargeMain('state') == 'off') svg_can.property("pad_enlarged", null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property("pad_enlarged", this.pad);
@@ -98013,7 +98029,7 @@ class RPadPainter extends RObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk((this.enlargeMain('state') == 'on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
@@ -99397,7 +99413,7 @@ class WebWindowHandle {
       if (!relative_path || !this.kind || !this.href) return this.href;
 
       let addr = this.href;
-      if (relative_path.indexOf("../")==0) {
+      if (relative_path.indexOf("../") == 0) {
          let ddd = addr.lastIndexOf("/",addr.length-2);
          addr = addr.slice(0,ddd) + relative_path.slice(2);
       } else {
@@ -99771,7 +99787,7 @@ class RCanvasPainter extends RPadPainter {
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.slice(0,5)=='SNAP:') {
+      } else if (msg.slice(0,5) == 'SNAP:') {
          msg = msg.slice(5);
          let p1 = msg.indexOf(":"),
              snapid = msg.slice(0,p1),
@@ -99782,13 +99798,13 @@ class RCanvasPainter extends RPadPainter {
                  handle.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
                  this.confirmDraw();
               });
-      } else if (msg.slice(0,4)=='JSON') {
+      } else if (msg.slice(0,4) == 'JSON') {
          let obj = parse(msg.slice(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
-      } else if (msg.slice(0,9)=="REPL_REQ:") {
+      } else if (msg.slice(0,9) == "REPL_REQ:") {
          this.processDrawableReply(msg.slice(9));
-      } else if (msg.slice(0,4)=='CMD:') {
+      } else if (msg.slice(0,4) == 'CMD:') {
          msg = msg.slice(4);
          let p1 = msg.indexOf(":"),
              cmdid = msg.slice(0,p1),
@@ -99813,7 +99829,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg(panel_handle, msg) {
-                     let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.slice(10) : "";
+                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : "";
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
@@ -99831,7 +99847,7 @@ class RCanvasPainter extends RPadPainter {
                });
 
                let addr = handle.href;
-               if (relative_path.indexOf("../")==0) {
+               if (relative_path.indexOf("../") == 0) {
                   let ddd = addr.lastIndexOf("/",addr.length-2);
                   addr = addr.slice(0,ddd) + relative_path.slice(2);
                } else {
@@ -99844,11 +99860,11 @@ class RCanvasPainter extends RPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.slice(0,7)=='DXPROJ:') || (msg.slice(0,7)=='DYPROJ:')) {
+      } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5)=='SHOW:') {
+      } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),
              on = that[that.length-1] == '1';
          this.showSection(that.slice(0,that.length-2), on);
@@ -100305,7 +100321,7 @@ registerMethods("ROOT::Experimental::RPalette", {
 
          let entry = this.fColors[indx];
 
-         if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == this.fColors.length - 1)) {
+         if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx == this.fColors.length - 1)) {
             arr.push(this.extractRColor(entry.fColor));
             continue;
          }
@@ -100361,7 +100377,7 @@ registerMethods("ROOT::Experimental::RPalette", {
       if (logz) {
          if (this.colzmax <= 0) this.colzmax = 1.;
          if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
+            if ((zminpositive === undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;
             else
                this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
@@ -101772,7 +101788,7 @@ class RHistPainter extends RObjectPainter {
             indx = taxis.FindBin(min, add || 0);
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         if (indx<0) indx = 0; else if (indx>nbins) indx = nbins;
+         if (indx < 0) indx = 0; else if (indx>nbins) indx = nbins;
       } else {
          indx = (size == "left") ? 0 : nbins;
       }
@@ -102546,8 +102562,8 @@ class RH1Painter$2 extends RHistPainter {
 
       if (options.ErrorKind === 1) {
          let lw = this.lineatt.width + gStyle.fEndErrorSize;
-         endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
-         endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
+         endx = `m0,${lw}v${-2*lw}m0,${lw}`;
+         endy = `m${lw},0h${-2*lw}m${lw},0`;
          dend = Math.floor((this.lineatt.width-1)/2);
       }
 
@@ -102557,7 +102573,7 @@ class RH1Painter$2 extends RHistPainter {
 
       let draw_bin = besti => {
          bincont = histo.getBinContent(besti+1);
-         if (!exclude_zero || (bincont!==0)) {
+         if (!exclude_zero || (bincont !== 0)) {
             mx1 = Math.round(funcs.grx(xaxis.GetBinCoord(besti)));
             mx2 = Math.round(funcs.grx(xaxis.GetBinCoord(besti+di)));
             midx = Math.round((mx1+mx2)/2);
@@ -102800,7 +102816,7 @@ class RH1Painter$2 extends RHistPainter {
 
       function GetBinGrX(i) {
          let xx = xaxis.GetBinCoord(i);
-         return (funcs.logx && (xx<=0)) ? null : funcs.grx(xx);
+         return (funcs.logx && (xx <= 0)) ? null : funcs.grx(xx);
       }
 
       function GetBinGrY(i) {
@@ -102936,7 +102952,7 @@ class RH1Painter$2 extends RHistPainter {
          // if bars option used check that bar is not match
          if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
          // exclude empty bin if empty bins suppressed
-         if (!this.options.Zero && (histo.getBinContent(findbin+1)===0)) findbin = null;
+         if (!this.options.Zero && (histo.getBinContent(findbin+1) === 0)) findbin = null;
       }
 
       let ttrect = this.draw_g.select(".tooltip_bin");
@@ -103020,7 +103036,7 @@ class RH1Painter$2 extends RHistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg); // obsolete, should be implemented differently
@@ -103238,7 +103254,7 @@ class RH2Painter$2 extends RHistPainter {
    /** @summary Toggle projection */
    toggleProjection(kind, width) {
 
-      if (kind=="Projections") kind = "";
+      if (kind == "Projections") kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
           width = parseInt(kind.slice(1));
@@ -103290,8 +103306,8 @@ class RH2Painter$2 extends RHistPainter {
       let kind = this.is_projection || "";
       if (kind) kind += this.projection_width;
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
-      for (let k=0;k<kinds.length;++k)
-         menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
+      for (let k = 0; k < kinds.length; ++k)
+         menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
       menu.add("endsub:");
 
       menu.add("Auto zoom-in", () => this.autoZoom());
@@ -103299,7 +103315,7 @@ class RH2Painter$2 extends RHistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
          this.decodeOptions(arg);
          this.interactiveRedraw("pad", "drawopt");
@@ -103774,8 +103790,8 @@ class RH2Painter$2 extends RHistPainter {
       }
       //store negative contours from 0 to minimum, then all positive contours
       k = 0;
-      for (ipoly=first-1;ipoly>=0;ipoly--) {polysort[k] = ipoly; k++;}
-      for (ipoly=first;ipoly<levels.length;ipoly++) { polysort[k] = ipoly; k++;}
+      for (ipoly = first - 1; ipoly >= 0; ipoly--) { polysort[k] = ipoly; k++; }
+      for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
 
       let xp = new Float32Array(2*npmax),
           yp = new Float32Array(2*npmax);
@@ -103819,7 +103835,7 @@ class RH2Painter$2 extends RHistPainter {
                if (nadd == 0) break;
             }
 
-            if ((iminus+1 < iplus) && (iminus>=0))
+            if ((iminus+1 < iplus) && (iminus >= 0))
                contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
@@ -103871,7 +103887,7 @@ class RH2Painter$2 extends RHistPainter {
          return cmd;
       };
 
-      if (this.options.Contour===14) {
+      if (this.options.Contour === 14) {
          let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
          if (this.options.Proj) {
             let dj = handle.stepj, sz = parseInt((handle.j2 - handle.j1)/dj),
@@ -103927,7 +103943,7 @@ class RH2Painter$2 extends RHistPainter {
       let cmd = "", ngr, ngraphs = 1, gr = null,
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
 
-      if (bin.fPoly._typename=='TMultiGraph')
+      if (bin.fPoly._typename == 'TMultiGraph')
          ngraphs = bin.fPoly.fGraphs.arr.length;
       else
          gr = bin.fPoly;
@@ -103943,7 +103959,7 @@ class RH2Painter$2 extends RHistPainter {
       }
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
-         if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          let npnts = gr.fNpoints, n,
              x = gr.fX, y = gr.fY,
@@ -103999,7 +104015,7 @@ class RH2Painter$2 extends RHistPainter {
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == "E") &&
-                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
+                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function');
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 
@@ -104076,7 +104092,7 @@ class RH2Painter$2 extends RHistPainter {
                   dy = 0.5*(histo.getBinContent(i+1, j+1+dj) - histo.getBinContent(i+1, j+1-dj));
                }
 
-               if (loop===0) {
+               if (loop === 0) {
                   dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
                } else {
                   xc = (handle.grx[i] + handle.grx[i+di])/2;
@@ -104090,7 +104106,7 @@ class RH2Painter$2 extends RHistPainter {
                   dx = Math.round(x2-x1);
                   dy = Math.round(y2-y1);
 
-                  if ((dx!==0) || (dy!==0)) {
+                  if ((dx !== 0) || (dy !== 0)) {
                      cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                         anr = Math.sqrt(2/(dx**2 + dy**2));
@@ -104133,7 +104149,7 @@ class RH2Painter$2 extends RHistPainter {
           xyfactor, uselogz = false, logmin = 0,
           di = handle.stepi, dj = handle.stepj;
 
-      if (main.logz && (absmax>0)) {
+      if (main.logz && (absmax > 0)) {
          uselogz = true;
          let logmax = Math.log(absmax);
          if (absmin > 0)
@@ -104250,11 +104266,11 @@ class RH2Painter$2 extends RHistPainter {
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
             posy = yaxis.GetBinCoord(j + 0.5);
-            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = posy; // Lower whisker
-            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = posy; // Lower edge of box
-            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = posy; //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = posy; //Upper edge of box
-            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = posy; // Upper whisker
+            if (counter/integral < 0.001 && (counter + cont)/integral >= 0.001) pnt.whiskerm = posy; // Lower whisker
+            if (counter/integral < 0.25 && (counter + cont)/integral >= 0.25) pnt.m25y = posy; // Lower edge of box
+            if (counter/integral < 0.5 && (counter + cont)/integral >= 0.5) pnt.median = posy; //Median
+            if (counter/integral < 0.75 && (counter + cont)/integral >= 0.75) pnt.p25y = posy; //Upper edge of box
+            if (counter/integral < 0.999 && (counter + cont)/integral >= 0.999) pnt.whiskerp = posy; // Upper whisker
             counter += cont;
             y = posy; // center of y bin coordinate
             sum1 += cont*y;
@@ -104273,7 +104289,7 @@ class RH2Painter$2 extends RHistPainter {
          }
 
          // exclude points with negative y when log scale is specified
-         if (funcs.logy && (pnt.whiskerm<=0)) continue;
+         if (funcs.logy && (pnt.whiskerm <= 0)) continue;
 
          w = handle.grx[i+1] - handle.grx[i];
          w *= 0.66;
@@ -104412,7 +104428,7 @@ class RH2Painter$2 extends RHistPainter {
 
       let layer = this.getFrameSvg().select('.main_layer'),
           defs = layer.select("defs");
-      if (defs.empty() && (colPaths.length>0))
+      if (defs.empty() && (colPaths.length > 0))
          defs = layer.insert("svg:defs",":first-child");
 
       this.createv7AttMarker();
@@ -104573,13 +104589,13 @@ class RH2Painter$2 extends RHistPainter {
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
-      if ((realx===undefined) && (realy===undefined)) {
+      if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
          if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
          for (let ngr=0;ngr<numgraphs;++ngr) {
-            if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+            if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
             for (let n=0;n<gr.fNpoints;++n) {
                ++numpoints;
@@ -104642,7 +104658,7 @@ class RH2Painter$2 extends RHistPainter {
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
                for (let ngr=0;ngr<numgraphs;++ngr) {
-                  if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+                  if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
                   if (gr.IsInside(realx,realy)) {
                      foundindx = i;
                      break;
@@ -104964,7 +104980,7 @@ class RH2Painter extends RH2Painter$2 {
       this.zmax = this.gmaxbin;
       if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
       if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-      if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+      if (main.logz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
 
       this.deleteAttr();
 
@@ -105084,7 +105100,7 @@ class RH3Painter extends RHistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside==1) && (yside==1) && (zside==1)) {
+               if ((xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -105335,13 +105351,13 @@ class RH3Painter extends RHistPainter {
          single_bin_verts = new Float32Array(buffer_size);
          single_bin_norms = new Float32Array(buffer_size);
 
-         for (let k=0,nn=-3;k<indicies.length;++k) {
+         for (let k = 0, nn = -3; k < indicies.length; ++k) {
             let vert = vertices[indicies[k]];
             single_bin_verts[k*3]   = vert.x-0.5;
             single_bin_verts[k*3+1] = vert.y-0.5;
             single_bin_verts[k*3+2] = vert.z-0.5;
 
-            if (k%6===0) nn+=3;
+            if (k%6 === 0) nn+=3;
             single_bin_norms[k*3]   = normals[nn];
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];
@@ -105381,7 +105397,7 @@ class RH3Painter extends RHistPainter {
          for (j = j1; j < j2; j += dj) {
             for (k = k1; k < k2; k += dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.Color && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.Color && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
@@ -105436,10 +105452,10 @@ class RH3Painter extends RHistPainter {
          bin_norms[nseq] = new Float32Array(nbins * buffer_size);
          bin_tooltips[nseq] = new Int32Array(nbins);
 
-         if (helper_kind[nseq]===1)
+         if (helper_kind[nseq] === 1)
             helper_indexes[nseq] = new Uint16Array(nbins * Box3D.MeshSegments.length);
 
-         if (helper_kind[nseq]===2)
+         if (helper_kind[nseq] === 2)
             helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
       }
 
@@ -105454,7 +105470,7 @@ class RH3Painter extends RHistPainter {
             biny = yaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; k +=dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.Color && ((bin_content===0) || (bin_content < this.gminbin))) continue;
+               if (!this.options.Color && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
                wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not show very small bins
@@ -105486,21 +105502,21 @@ class RH3Painter extends RHistPainter {
                   bin_n[vvv+2] = single_bin_norms[vi+2];
                }
 
-               if (helper_kind[nseq]===1) {
+               if (helper_kind[nseq] === 1) {
                   // reuse vertices created for the mesh
                   let helper_segments = Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
                   let shift = Math.round(nbins * buffer_size/3),
                       helper_i = helper_indexes[nseq];
-                  for (let n=0;n<helper_segments.length;++n)
+                  for (let n = 0; n < helper_segments.length; ++n)
                      helper_i[vvv+n] = shift + helper_segments[n];
                }
 
-               if (helper_kind[nseq]===2) {
+               if (helper_kind[nseq] === 2) {
                   let helper_segments = Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
-                  for (let n=0;n<helper_segments.length;++n, vvv+=3) {
+                  for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
                      let vert = Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
@@ -105548,7 +105564,7 @@ class RH3Painter extends RHistPainter {
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
-            if ((indx<0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             let p = this.painter,
                 main = p.getFramePainter(),
@@ -105667,7 +105683,7 @@ class RH3Painter extends RHistPainter {
             for (k = k1; k < k2; ++k)
                min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
 
-      if (min>0) return; // if all points positive, no chance for autoscale
+      if (min > 0) return; // if all points positive, no chance for autoscale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
 
@@ -105717,7 +105733,7 @@ class RH3Painter extends RHistPainter {
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu("Draw with", opts, arg => {
-         if (arg==='inspect')
+         if (arg === 'inspect')
             return this.showInspector();
 
          this.decodeOptions(arg);
