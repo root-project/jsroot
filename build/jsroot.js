@@ -79287,7 +79287,7 @@ const EPSILON = 1e-5,
       COPLANAR = 0,
       FRONT = 1,
       BACK = 2,
-      SPANNING = 3;
+      SPANNING = FRONT | BACK;
 
 class Vertex {
 
@@ -79579,7 +79579,6 @@ class Node {
 
       if (!polygons) return;
 
-      // this.divider = polygons[0].clone();
       this.divider = polygons[0].clone();
 
       let polygon_count = polygons.length,
@@ -79640,19 +79639,14 @@ class Node {
    }
 
    collectPolygons(arr) {
+      if (arr === undefined)
+         arr = [];
       let len = this.polygons.length;
       for (let i = 0; i < len; ++i)
          arr.push(this.polygons[i]);
       this.front?.collectPolygons(arr);
       this.back?.collectPolygons(arr);
       return arr;
-   }
-
-   allPolygons() {
-      let polygons = this.polygons.slice();
-      if ( this.front ) polygons = polygons.concat( this.front.allPolygons() );
-      if ( this.back ) polygons = polygons.concat( this.back.allPolygons() );
-      return polygons;
    }
 
    numPolygons() {
@@ -79870,7 +79864,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a.invert();
       a = new Geometry( a );
       a.matrix = this.matrix;
@@ -79886,7 +79880,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a = new Geometry( a );
       a.matrix = this.matrix;
       return a;
@@ -79901,7 +79895,7 @@ class Geometry {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons() );
       a.invert();
       a = new Geometry( a );
       a.matrix = this.matrix;
@@ -79917,7 +79911,7 @@ class Geometry {
           p, p1, p2, i1, i2;
 
       // sort out polygons
-      for (n=0;n<len;++n) {
+      for (n = 0; n < len; ++n) {
          p = polygons[n];
          if (p.id === undefined) continue;
          if (arr[p.id] === undefined) arr[p.id] = [];
@@ -79936,7 +79930,7 @@ class Geometry {
          while (foundpair) {
             foundpair = false;
 
-            for (i1 = 0; i1<len-1; ++i1) {
+            for (i1 = 0; i1 < len-1; ++i1) {
                p1 = parts[i1];
                if (!p1?.parent) continue;
                for (i2 = i1+1; i2 < len; ++i2) {
@@ -79957,13 +79951,13 @@ class Geometry {
          }
       }
 
-      if (nreduce>0) {
+      if (nreduce > 0) {
          polygons.splice(0, polygons.length);
 
          for(n = 0; n < arr.length; ++n) {
             parts = arr[n];
             if (parts !== undefined)
-               for (i1=0,len=parts.length; i1<len;++i1)
+               for (i1 = 0, len = parts.length; i1 < len; ++i1)
                   if (parts[i1]) polygons.push(parts[i1]);
          }
 
@@ -79979,7 +79973,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       a.invert();
       return this;
    }
@@ -79993,7 +79987,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       return this;
    }
 
@@ -80006,7 +80000,7 @@ class Geometry {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.collectPolygons([]) );
+      a.build( b.collectPolygons() );
       a.invert();
       return this;
    }
@@ -80025,7 +80019,7 @@ class Geometry {
 
    scale(x,y,z) {
       // try to scale as BufferGeometry
-      let polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons();
 
       for (let i = 0; i < polygons.length; ++i) {
          let polygon = polygons[i];
@@ -80040,7 +80034,7 @@ class Geometry {
    }
 
    toPolygons() {
-      let polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons();
 
       this.tryToCompress(polygons);
 
@@ -81788,7 +81782,7 @@ function getNodeMatrix(kind, node) {
            break;
 
         default:
-           geoWarn('Unsupported pattern type ' + node.fFinder._typename);
+           geoWarn(`Unsupported pattern type ${node.fFinder._typename}`);
            break;
       }
    }
@@ -81797,7 +81791,7 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be Geometry,m BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
    if (!geom) return 0;
@@ -81805,16 +81799,12 @@ function numGeometryFaces(geom) {
    if (geom instanceof Geometry)
       return geom.tree.numPolygons();
 
-   if (geom.type == 'BufferGeometry') {
-      let attr = geom.getAttribute('position');
-      return attr && attr.count ? Math.round(attr.count / 3) : 0;
-   }
-
    // special array of polygons
    if (geom.polygons)
       return geom.polygons.length;
 
-   return geom.faces.length;
+   let attr = geom.getAttribute('position');
+   return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
 /** @summary Returns geometry bounding box
@@ -81825,7 +81815,7 @@ function geomBoundingBox(geom) {
    let polygons = null;
 
    if (geom instanceof Geometry)
-      polygons = geom.tree.collectPolygons([]);
+      polygons = geom.tree.collectPolygons();
    else if (geom.polygons)
       polygons = geom.polygons;
 
@@ -81839,7 +81829,8 @@ function geomBoundingBox(geom) {
       return box;
    }
 
-   if (!geom.boundingBox) geom.computeBoundingBox();
+   if (!geom.boundingBox)
+      geom.computeBoundingBox();
 
    return geom.boundingBox.clone();
 }
@@ -81895,16 +81886,12 @@ function countGeometryFaces(geom) {
    if (geom instanceof Geometry)
       return geom.tree.numPolygons();
 
-   if (geom.type == 'BufferGeometry') {
-      let attr = geom.getAttribute('position');
-      return attr && attr.count ? Math.round(attr.count / 3) : 0;
-   }
-
    // special array of polygons
    if (geom.polygons)
       return geom.polygons.length;
 
-   return geom.faces.length;
+   let attr = geom.getAttribute('position');
+   return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
 /** @summary Creates geometrey for composite shape
@@ -81996,8 +81983,8 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 
    if (!position) position = 0;
 
-   if (((box.min[projection]>=position) && (box.max[projection]>=position)) ||
-       ((box.min[projection]<=position) && (box.max[projection]<=position))) {
+   if (((box.min[projection] >= position) && (box.max[projection] >= position)) ||
+       ((box.min[projection] <= position) && (box.max[projection] <= position))) {
       return null; // not interesting
    }
 
@@ -82058,8 +82045,8 @@ function createGeometry(shape, limit) {
          case "TGeoShapeAssembly": break;
          case "TGeoScaledShape": {
             let res = createGeometry(shape.fShape, limit);
-            if (shape.fScale && (limit>=0) && (typeof res === 'object') && (typeof res.scale === 'function'))
-               res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
+            if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
+               res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
          case "TGeoHalfSpace":
@@ -105144,8 +105131,8 @@ class RH3Painter extends RHistPainter {
           // print_under = Math.floor(dostat / 10000) % 10,
           // print_over = Math.floor(dostat / 100000) % 10,
           print_integral = Math.floor(dostat / 1000000) % 10;
-          // var print_skew = Math.floor(dostat / 10000000) % 10;
-          // var print_kurt = Math.floor(dostat / 100000000) % 10;
+          // print_skew = Math.floor(dostat / 10000000) % 10;
+          // print_kurt = Math.floor(dostat / 100000000) % 10;
 
       stat.clearStat();
 
