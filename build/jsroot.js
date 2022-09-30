@@ -79331,17 +79331,27 @@ class Vertex {
    //   return this;
    // }
 
-   cross( vertex ) {
-      let x = this.x,
-          y = this.y,
-          z = this.z;
+   // cross( vertex ) {
+   //    let x = this.x, y = this.y, z = this.z,
+   //        vx = vertex.x, vy = vertex.y, vz = vertex.z;
+   //
+   //    this.x = y * vz - z * vy;
+   //    this.y = z * vx - x * vz;
+   //    this.z = x * vy - y * vx;
+   //
+   //    return this;
+   // }
 
-      this.x = y * vertex.z - z * vertex.y;
-      this.y = z * vertex.x - x * vertex.z;
-      this.z = x * vertex.y - y * vertex.x;
+   cross3( vx, vy, vz ) {
+      let x = this.x, y = this.y, z = this.z;
+
+      this.x = y * vz - z * vy;
+      this.y = z * vx - x * vz;
+      this.z = x * vy - y * vx;
 
       return this;
    }
+
 
    normalize() {
       let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
@@ -79363,7 +79373,7 @@ class Vertex {
           dz = (this.z - vertex.z),
           len2 = this.x**2 + this.y**2 + this.z**2;
 
-      return (dx**2 + dy**2 + dz**2) / (len2>0 ? len2 : 1e-10);
+      return (dx**2 + dy**2 + dz**2) / (len2 > 0 ? len2 : 1e-10);
    }
 
 /*
@@ -79447,22 +79457,22 @@ class Polygon {
 
       this.nsign = 1;
 
-      this.normal = b.clone().subtract( a ).cross(
-         c.clone().subtract( a )
-      ).normalize();
+      //this.normal = b.clone().subtract( a ).cross( c.clone().subtract( a ) ).normalize();
 
-      this.w = this.normal.clone().dot( a );
+      this.normal = new Vertex(b.x - a.x, b.y - a.y, b.z - a.z, 0, 0, 0).cross3(c.x - a.x, c.y - a.y, c.z - a.z).normalize();
+
+      this.w = this.normal.dot( a );
       return this;
    }
 
    clone() {
       let vertice_count = this.vertices.length,
-          polygon = new Polygon;
+          vertices = [];
 
       for (let i = 0; i < vertice_count; ++i )
-         polygon.vertices.push( this.vertices[i].clone() );
+         vertices.push( this.vertices[i].clone() );
 
-      return polygon.copyProperties(this);
+      return new Polygon(vertices, this);
    }
 
    flip() {
@@ -79487,12 +79497,11 @@ class Polygon {
    }
 
    classifySide( polygon ) {
-      let i, classification,
-          num_positive = 0, num_negative = 0,
+      let num_positive = 0, num_negative = 0,
           vertice_count = polygon.vertices.length;
 
-      for ( i = 0; i < vertice_count; ++i ) {
-         classification = this.classifyVertex( polygon.vertices[i] );
+      for (let i = 0; i < vertice_count; ++i ) {
+         let classification = this.classifyVertex( polygon.vertices[i] );
          if ( classification === FRONT ) {
             ++num_positive;
          } else if ( classification === BACK ) {
@@ -79570,18 +79579,23 @@ class Node {
 
       if (!polygons) return;
 
+      // this.divider = polygons[0].clone();
       this.divider = polygons[0].clone();
 
       let polygon_count = polygons.length,
           front = [], back = [];
 
       for (let i = 0; i < polygon_count; ++i) {
-         if (nodeid!==undefined) {
+         if (nodeid !== undefined) {
             polygons[i].id = nodeid++;
             delete polygons[i].parent;
          }
 
-         this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
+         // by difinition polygon should be COPLANAR for itself
+         if (i == 0)
+            this.polygons.push(polygons[0]);
+         else
+            this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
 
       if (nodeid !== undefined) this.maxnodeid = nodeid;
@@ -79593,22 +79607,25 @@ class Node {
          this.back = new Node( back );
    }
 
-   isConvex(polygons) {
-      let i, j, len = polygons.length;
-      for ( i = 0; i < len; ++i )
-         for ( j = 0; j < len; ++j )
-            if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
-      return true;
-   }
+   //isConvex(polygons) {
+   //   let i, j, len = polygons.length;
+   //   for ( i = 0; i < len; ++i )
+   //      for ( j = 0; j < len; ++j )
+   //         if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
+   //   return true;
+   //}
 
    build( polygons ) {
       let polygon_count = polygons.length,
-          front = [], back = [];
+          first = 0, front = [], back = [];
 
-      if ( !this.divider )
+      if ( !this.divider ) {
          this.divider = polygons[0].clone();
+         this.polygons.push(polygons[0]);
+         first = 1;
+      }
 
-      for (let i = 0; i < polygon_count; ++i )
+      for (let i = first; i < polygon_count; ++i )
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
 
       if ( front.length > 0 ) {
@@ -79624,9 +79641,10 @@ class Node {
 
    collectPolygons(arr) {
       let len = this.polygons.length;
-      for (let i = 0; i < len; ++i) arr.push(this.polygons[i]);
-      if ( this.front ) this.front.collectPolygons(arr);
-      if ( this.back ) this.back.collectPolygons(arr);
+      for (let i = 0; i < len; ++i)
+         arr.push(this.polygons[i]);
+      this.front?.collectPolygons(arr);
+      this.back?.collectPolygons(arr);
       return arr;
    }
 
@@ -79638,19 +79656,16 @@ class Node {
    }
 
    numPolygons() {
-      let res = this.polygons.length;
-      if ( this.front ) res += this.front.numPolygons();
-      if ( this.back ) res += this.back.numPolygons();
-      return res;
+      return this.polygons.length + (this.front?.numPolygons() || 0) + (this.back?.numPolygons() || 0);
    }
 
    clone() {
       let node = new Node();
 
-      node.divider = this.divider.clone();
+      node.divider = this.divider?.clone();
       node.polygons = this.polygons.map( polygon => polygon.clone() );
-      node.front = this.front ? this.front.clone() : undefined;
-      node.back = this.back ? this.back.clone() : undefined;
+      node.front = this.front?.clone();
+      node.back = this.back?.clone();
 
       return node;
    }
