@@ -139,8 +139,8 @@ class RH3Painter extends RHistPainter {
           // print_under = Math.floor(dostat / 10000) % 10,
           // print_over = Math.floor(dostat / 100000) % 10,
           print_integral = Math.floor(dostat / 1000000) % 10;
-          // var print_skew = Math.floor(dostat / 10000000) % 10;
-          // var print_kurt = Math.floor(dostat / 100000000) % 10;
+          // print_skew = Math.floor(dostat / 10000000) % 10;
+          // print_kurt = Math.floor(dostat / 100000000) % 10;
 
       stat.clearStat();
 
