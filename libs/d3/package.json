@@ -33,7 +33,7 @@
     "default": "./src/index.js"
   },
   "dependencies": {
-    "d3-color": "3",
+    "d3-color": ">=3.1.0",
     "d3-chord": "3",
     "d3-drag": "3",
     "d3-scale": "4",
