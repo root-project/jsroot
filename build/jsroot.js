@@ -11,7 +11,7 @@ let version_id = "dev";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "30/09/2022";
+let version_date = "4/10/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -32,7 +32,7 @@ let internals = {
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
 
-const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && (typeof src == "string")) {
+const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && (typeof src == 'string')) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
       exports.source_dir = src.slice(0, pos);
@@ -716,12 +716,12 @@ function parseMulti(json) {
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code */
 function toJSON(obj, spacing) {
-   if (!obj || typeof obj !== 'object') return "";
+   if (!obj || typeof obj !== 'object') return '';
 
    let map = []; // map of stored objects
 
    const copy_value = value => {
-      if (typeof value === "function") return undefined;
+      if (typeof value === 'function') return undefined;
 
       if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 
@@ -894,7 +894,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
       switch(this.kind) {
          case "xml": return this.http_callback(this.responseXML);
          case "text": return this.http_callback(this.responseText);
-         case "object": return this.http_callback(parse(this.responseText));
+         case 'object': return this.http_callback(parse(this.responseText));
          case "multi": return this.http_callback(parseMulti(this.responseText));
          case "head": return this.http_callback(this);
       }
@@ -921,7 +921,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
    if ((kind == "bin") || (kind == "buf"))
       xhr.responseType = 'arraybuffer';
 
-   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz') > 0)) {
+   if (nodejs && (method == "GET") && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
       xhr.nodejs_checkzip = true;
       xhr.responseType = 'arraybuffer';
    }
@@ -952,7 +952,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *    - "bin" - abstract binary data, result as string
   *    - "buf" - abstract binary data, result as ArrayBuffer (default)
   *    - "text" - returns req.responseText
-  *    - "object" - returns parse(req.responseText)
+  *    - 'object' - returns parse(req.responseText)
   *    - "multi" - returns correctly parsed multi.json request
   *    - "xml" - returns req.responseXML
   *    - "head" - returns request itself, uses "HEAD" request method
@@ -963,7 +963,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
   * @example
-  * httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+  * httpRequest("https://root.cern/js/files/thstack.json.gz", 'object')
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 async function httpRequest(url, kind, post_data) {
@@ -988,7 +988,7 @@ function create$1(typename, target) {
           extend$1(obj, { fUniqueID: 0, fBits: 0 });
           break;
       case 'TNamed':
-         extend$1(obj, { fUniqueID: 0, fBits: 0, fName: "", fTitle: "" });
+         extend$1(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
       case 'TList':
       case 'THashList':
@@ -1003,7 +1003,7 @@ function create$1(typename, target) {
          create$1("TNamed", obj);
          create$1("TAttAxis", obj);
          extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
-                       fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null, fModLabs: null });
+                       fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
       case 'TAttLine':
          extend$1(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
@@ -1037,14 +1037,14 @@ function create$1(typename, target) {
       case 'TPaveText':
          create$1("TPave", obj);
          create$1("TAttText", obj);
-         extend$1(obj, { fLabel: "", fLongest: 27, fMargin: 0.05, fLines: create$1("TList") });
+         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1("TList") });
          break;
       case 'TPaveStats':
          create$1("TPaveText", obj);
          extend$1(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
-                       fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
+                       fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case 'TLegend':
          create$1("TPave", obj);
@@ -1058,7 +1058,7 @@ function create$1(typename, target) {
          create$1("TAttLine", obj);
          create$1("TAttFill", obj);
          create$1("TAttMarker", obj);
-         extend$1(obj, { fLabel: "", fObject: null, fOption: "" });
+         extend$1(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
          create$1("TNamed", obj);
@@ -1072,7 +1072,7 @@ function create$1(typename, target) {
          break;
       case 'TObjString':
          create$1("TObject", obj);
-         extend$1(obj, { fString: "" });
+         extend$1(obj, { fString: '' });
          break;
       case 'TH1':
          create$1("TNamed", obj);
@@ -1086,7 +1086,7 @@ function create$1(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: "", fFunctions: create$1("TList"),
+                       fSumw2: [], fOption: '', fFunctions: create$1("TList"),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1158,15 +1158,15 @@ function create$1(typename, target) {
          create$1("TObject", obj);
          create$1("TAttLine", obj);
          create$1("TAttFill", obj);
-         extend$1(obj, { fLastPoint: -1, fN: 0, fOption: "", fX: null, fY: null });
+         extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case 'TGaxis':
          create$1("TLine", obj);
          create$1("TAttText", obj);
-         extend$1(obj, { fChopt: "", fFunctionName: "", fGridLength: 0,
+         extend$1(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-                       fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
-                       fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
+                       fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
+                       fTitle: '', fTitleOffset: 1, fTitleSize: 0.035,
                        fWmax: 100, fWmin: 0 });
          break;
       case 'TAttPad':
@@ -1388,11 +1388,11 @@ function getMethods(typename, obj) {
       };
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt == 'string') ? opt : "");
+         this.opt.push((opt && typeof opt == 'string') ? opt : '');
       };
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt == 'string') ? opt : "");
+         this.opt.unshift((opt && typeof opt == 'string') ? opt : '');
       };
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);
@@ -3080,7 +3080,7 @@ function selection_data(value, key) {
 // cause the data to change while iterating by using a key function, but please
 // don’t; we’d rather avoid a gratuitous copy.)
 function arraylike(data) {
-  return typeof data === "object" && "length" in data
+  return typeof data === 'object' && "length" in data
     ? data // Array, TypedArray, NodeList, array-like
     : Array.from(data); // Map, Set, iterable, string, or anything else
 }
@@ -4242,8 +4242,8 @@ function object(a, b) {
       c = {},
       k;
 
-  if (a === null || typeof a !== "object") a = {};
-  if (b === null || typeof b !== "object") b = {};
+  if (a === null || typeof a !== 'object') a = {};
+  if (b === null || typeof b !== 'object') b = {};
 
   for (k in b) {
     if (k in a) {
@@ -6633,8 +6633,8 @@ var frame = 0, // is an animation frame pending?
     clockLast = 0,
     clockNow = 0,
     clockSkew = 0,
-    clock = typeof performance === "object" && performance.now ? performance : Date,
-    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+    clock = typeof performance === 'object' && performance.now ? performance : Date,
+    setFrame = typeof window === 'object' && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now$1() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -7748,7 +7748,7 @@ function floatToString(value, fmt, ret_fmt) {
 class DrawOptions {
 
    constructor(opt) {
-      this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
+      this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : '';
       this.part = "";
    }
 
@@ -7868,7 +7868,7 @@ function buildSvgPath(kind, bins, height, ndig) {
       }
    };
 
-   let res = { path: "", close: "" }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
+   let res = { path: '', close: '' }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
       currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
    const conv = val => {
@@ -8037,7 +8037,7 @@ class BasePainter {
 
       let res = this._selected_main;
       if (!res) {
-         if (typeof this.divid == "string") {
+         if (typeof this.divid == 'string') {
             let id = this.divid;
             if (id[0] != '#') id = "#" + id;
             res = select(id);
@@ -9628,7 +9628,7 @@ function translateMath(str, kind, color, painter) {
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
-      if (!value || (typeof value !== "string") || (value.length < 3)) return null;
+      if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
       let p = value.indexOf("ex");
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));
@@ -10709,9 +10709,9 @@ class ObjectPainter extends BasePainter {
       super(dom);
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
-      this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
+      this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
       this.assignObject(obj);
-      if (typeof opt == "string")
+      if (typeof opt == 'string')
          this.options = { original: opt };
    }
 
@@ -10823,9 +10823,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Return actual draw options as string
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt() {
-      if (!this.options) return "";
+      if (!this.options) return '';
 
-      if (typeof this.options.asString == "function") {
+      if (typeof this.options.asString == 'function') {
          let changed = false, pp = this.getPadPainter();
          if (!this.options_store || pp?._interactively_changed) {
             changed  = true;
@@ -10889,7 +10889,7 @@ class ObjectPainter extends BasePainter {
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
       let res = this.getItemName(), obj = this.getObject();
-      if (!res) res = obj && obj.fName ? obj.fName : "";
+      if (!res) res = obj && obj.fName ? obj.fName : '';
       if (!res) res = this.getClassName();
       if (res.length > 20) res = res.slice(0, 17) + "...";
       return res;
@@ -11067,7 +11067,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    selectCurrentPad(new_name) {
       let svg = this.getCanvSvg();
-      if (svg.empty()) return "";
+      if (svg.empty()) return '';
       let curr = svg.property('current_pad');
       if (new_name !== undefined) svg.property('current_pad', new_name);
       return curr;
@@ -11077,7 +11077,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] pad name or use current pad by default
      * @protected */
    getPadPainter(pad_name) {
-      let elem = this.getPadSvg(typeof pad_name == "string" ? pad_name : undefined);
+      let elem = this.getPadSvg(typeof pad_name == 'string' ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -11130,7 +11130,7 @@ class ObjectPainter extends BasePainter {
             return this.nornd ? value : Math.round(value);
          };
       } else {
-         console.error('Problem to create functor for', this.getClassName());
+         console.error(`Problem to create functor for ${this.getClassName()}`);
          func.x = () => 0;
          func.y = () => 0;
 
@@ -11378,7 +11378,7 @@ class ObjectPainter extends BasePainter {
    async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == "string") && (info.indexOf("exec:") != 0))
+      if ((typeof info == 'string') && (info.indexOf("exec:") != 0))
          reason = info;
 
       if (arg == "pad")
@@ -11434,7 +11434,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (typeof canp?.submitExec == "function")
+      if (typeof canp?.submitExec == 'function')
          canp.submitExec(this, exec, snapid);
    }
 
@@ -11975,7 +11975,7 @@ class ObjectPainter extends BasePainter {
          this._got_menu = true;
 
          if (reply && (_reqid !== reply.fId))
-            console.error(`missmatch between request ${_reqid} and reply ${reply.fId}  identifiers`);
+            console.error(`missmatch between request ${_reqid} and reply ${reply.fId} identifiers`);
 
          let items = reply ? reply.fItems : null;
 
@@ -12056,7 +12056,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserClickHandler == "function")
+      if (typeof fp?.configureUserClickHandler == 'function')
          fp.configureUserClickHandler(handler);
    }
 
@@ -12067,7 +12067,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserDblclickHandler == "function")
+      if (typeof fp?.configureUserDblclickHandler == 'function')
          fp.configureUserDblclickHandler(handler);
    }
 
@@ -12122,7 +12122,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
+      if (this._special_draw_area && (typeof canp?.drawProjection == 'function'))
          return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return false;
@@ -12218,7 +12218,7 @@ function getElementMainPainter(dom) {
   * @return {string} produced JSON string */
 function drawingJSON(dom) {
    let canp = getElementCanvPainter(dom);
-   return canp ? canp.produceJSON() : "";
+   return canp ? canp.produceJSON() : '';
 }
 
 
@@ -43173,7 +43173,7 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_attr: {},
      svg_style: {},
      path_attr: {},
-     accPath: "",
+     accPath: '',
      createElementNS(ns,kind) {
         if (kind == 'path')
            return {
@@ -43193,7 +43193,7 @@ function createSVGRenderer(as_is, precision, doc) {
            }
 
         if (kind != 'svg') {
-           console.error('not supported element for SVGRenderer', kind);
+           console.error(`not supported element for SVGRenderer ${kind}`);
            return null;
         }
 
@@ -43636,10 +43636,10 @@ function cleanupRender3D(renderer) {
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (browser$1.isChrome && (typeof renderer.forceContextLoss == "function"))
+      if (browser$1.isChrome && (typeof renderer.forceContextLoss == 'function'))
          renderer.forceContextLoss();
 
-      if (typeof renderer.dispose == "function")
+      if (typeof renderer.dispose == 'function')
          renderer.dispose();
    }
 }
@@ -43851,7 +43851,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    let control = null,
        enable_zoom = settings.Zooming && settings.ZoomMouse,
-       enable_select = (typeof painter.processMouseClick == "function");
+       enable_select = (typeof painter.processMouseClick == 'function');
 
    function control_mousedown(evnt) {
       if (!control) return;
@@ -44234,7 +44234,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (tip) {
          let name = "", title = "", coord = "", info = "";
          if (mouse) coord = mouse.x.toFixed(0) + "," + mouse.y.toFixed(0);
-         if (typeof tip == "string") {
+         if (typeof tip == 'string') {
             info = tip;
          } else {
             name = tip.name; title = tip.title;
@@ -44587,7 +44587,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
       lwidth = arg.fLineWidth;
    }
 
-   let style = lstyle ? getSvgLineStyle(lstyle) : "",
+   let style = lstyle ? getSvgLineStyle(lstyle) : '',
        dash = style ? style.split(",") : [], material;
 
    if (dash && dash.length >= 2)
@@ -44701,7 +44701,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       if (!this.mode3d) return;
 
       if (!this.clear3dCanvas) {
-         console.error('Strange, why mode3d is configured!!!!', this.mode3d);
+         console.error(`Strange, why mode3d=${this.mode3d} is configured!!!!`);
          return;
       }
 
@@ -44844,7 +44844,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
                      only_status: true };
          }
 
-         return tip?.lines ? tip : "";
+         return tip?.lines ? tip : '';
       };
 
       this.control.processMouseLeave = function() {
@@ -46346,7 +46346,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             if (side2 === 0) ++npnts;
             if (side3 === 0) ++npnts;
 
-            if ((npnts === 1) || (npnts === 2)) console.error('FOND npnts', npnts);
+            if ((npnts === 1) || (npnts === 2)) console.error(`FOUND npnts = ${npnts}`);
 
             if (npnts > 2) {
                if (nfaces[lvl] === undefined) nfaces[lvl] = 0;
@@ -46462,7 +46462,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    for (let lvl = 1; lvl < levels.length; ++lvl)
       if (pos[lvl]) {
          if (indx[lvl] !== nfaces[lvl]*9)
-              console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+              console.error(`SURF faces missmatch lvl=${lvl} faces=${nfaces[lvl]} index=${indx[lvl]} check=${nfaces[lvl]*9 - indx[lvl]}`);
          let geometry = new BufferGeometry();
          geometry.setAttribute('position', new BufferAttribute(pos[lvl], 3));
          geometry.computeVertexNormals();
@@ -46492,7 +46492,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (lpos) {
       if (nsegments*6 !== lindx)
-         console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
+         console.error(`SURF lines mismmatch nsegm=${nsegments} lindx=${lindx} diff=${nsegments*6 - lindx}`);
 
       const lcolor = painter.getColor(histo.fLineColor),
             material = new LineBasicMaterial({ color: new Color$1(lcolor), linewidth: histo.fLineWidth }),
@@ -46503,7 +46503,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (grid) {
       if (ngridsegments*6 !== gindx)
-         console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
+         console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments*6 - gindx}`);
 
       const material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
@@ -46612,7 +46612,7 @@ function getTimeOffset(axis) {
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
    // special case, used from DABC painters
-   if ((sof == "0") || (sof == "")) return 0;
+   if ((sof == "0") || (sof == '')) return 0;
 
    // decode time from ROOT string
    const next = (separ, min, max) => {
@@ -47445,7 +47445,7 @@ class TAxisPainter extends ObjectPainter {
             path2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
       }
 
-      return real_draw ? path1 + path2  : "";
+      return real_draw ? path1 + path2  : '';
    }
 
    /** @summary Returns modifier for axis label */
@@ -49922,7 +49922,7 @@ function getTEfficiencyBoundaryFunc(option, isbayessian) {
       case kFNormal: return eff_Normal;
       case kFWilson: return eff_Wilson;
       case kFAC: return eff_AgrestiCoull;
-      case kFFC: console.log("Feldman-Cousins interval kFFC not supported; using kFCP"); return eff_ClopperPearson;
+      case kFFC: console.log('Feldman-Cousins interval kFFC not supported; using kFCP'); return eff_ClopperPearson;
       case kMidP: return eff_MidPInterval;
       // case kBJeffrey:
       // case kBUniform:
@@ -50057,7 +50057,7 @@ function showProgress(msg, tmout) {
 
    box.property("with_timeout", false);
 
-   if (typeof msg === "string") {
+   if (typeof msg === 'string') {
       box.select("p").html(msg);
    } else {
       box.html("");
@@ -50123,7 +50123,7 @@ function tryOpenOpenUI(sources, args) {
    };
 
    element.onload = function() {
-      console.log('Load openui5 from ' + src);
+      console.log(`Load openui5 from ${src}`);
    };
 
    document.head.appendChild(element);
@@ -50151,7 +50151,7 @@ async function loadOpenui5(args) {
 
    let openui5_sources = [],
        openui5_dflt = "https://openui5.hana.ondemand.com/1.98.0/",
-       openui5_root = rootui5sys ? rootui5sys + "distribution/" : "";
+       openui5_root = rootui5sys ? rootui5sys + "distribution/" : '';
 
    if (typeof args.openui5src == 'string') {
       switch (args.openui5src) {
@@ -50535,7 +50535,7 @@ function setSaveFile(func) {
   * @private */
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
-   if (typeof col == "string") {
+   if (typeof col == 'string') {
       if (!col || (col == "none")) id = 0; else
          for (let k = 1; k < arr.length; ++k)
             if (arr[k] == col) { id = k; break; }
@@ -50545,7 +50545,7 @@ function getColorExec(col, method) {
       col = arr[id];
    }
 
-   if (id < 0) return "";
+   if (id < 0) return '';
 
    if (id >= 50) {
       // for higher color numbers ensure that such color exists
@@ -50567,7 +50567,7 @@ class JSRootMenu {
    constructor(painter, menuname, show_event) {
       this.painter = painter;
       this.menuname = menuname;
-      if (show_event && (typeof show_event == "object") &&
+      if (show_event && (typeof show_event == 'object') &&
           (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
          this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
@@ -50697,7 +50697,7 @@ class JSRootMenu {
             let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
                 fill = (n == 1) ? "white" : "black",
                 stroke = (n == 1) ? "red" : "black",
-                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : "",
+                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
                 svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
 
             this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
@@ -50864,7 +50864,7 @@ class JSRootMenu {
      * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
      * @protected */
    addSelectMenu(name, values, value, set_func) {
-      let use_number = (typeof value == "number");
+      let use_number = (typeof value == 'number');
       this.add("sub:" + name);
       for (let n = 0; n < values.length; ++n)
          this.addchk(use_number ? (n == value) : (values[n] == value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
@@ -51376,12 +51376,12 @@ class JSRootMenu {
      * @return {Promise} with input value
      * @param {string} title - input dialog title
      * @param value - initial value
-     * @param {string} [kind] - use "text" (default), "number", "float" or "int"
+     * @param {string} [kind] - use "text" (default), 'number', "float" or "int"
      * @protected */
    async input(title, value, kind, min, max) {
 
       if (!kind) kind = "text";
-      let inp_type = (kind == "int") ? "number" : "text", ranges = "";
+      let inp_type = (kind == "int") ? 'number' : "text", ranges = "";
       if ((value === undefined) || (value === null)) value = "";
       if (kind == "int") {
           if (min !== undefined) ranges += ` min="${min}"`;
@@ -51439,7 +51439,7 @@ class JSRootMenu {
             for (let k = 0; k < method.fArgs.length; ++k) {
                let arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
-               if (value === "") value = arg.fDefault;
+               if (value === '') value = arg.fDefault;
                if ((arg.fTitle == "Option_t*") || (arg.fTitle == "const char*")) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters
@@ -51448,7 +51448,7 @@ class JSRootMenu {
                   if (value[value.length-1] != '"') value += '"';
                }
 
-               args += (k > 0 ? "," : "") + value;
+               args += (k > 0 ? "," : '') + value;
             }
 
             resolveFunc(args);
@@ -51641,7 +51641,7 @@ class StandaloneMenu extends JSRootMenu {
                text.style.display = 'flex';
 
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.innerHTML = d.checked ? "\u2713" : '';
                chk.style.display = "inline-block";
                chk.style.width = "1em";
                text.appendChild(chk);
@@ -51656,7 +51656,7 @@ class StandaloneMenu extends JSRootMenu {
          } else {
             if (need_check_area) {
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.innerHTML = d.checked ? "\u2713" : '';
                chk.style.display = "inline-block";
                chk.style.width = "1em";
                text.appendChild(chk);
@@ -52074,7 +52074,7 @@ class BootstrapMenu extends JSRootMenu {
   * @example
   * import { createMenu } from 'path_to_jsroot/modules/gui/menu.mjs';
   * let menu = await createMenu());
-  * menu.add("First", () => console.log("Click first"));
+  * menu.add("First", () => console.log('Click first'));
   * let flag = true;
   * menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
@@ -52432,7 +52432,7 @@ const TooltipHandler = {
           hintsg = layer.select(".objects_hints"), // group with all tooltips
           title = "", name = "", info = "",
           hint = null, best_dist2 = 1e10, best_hint = null, show_only_best = nhints > 15,
-          coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : "";
+          coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : '';
 
       // try to select hint with exact match of the position when several hints available
       for (let k = 0; k < (hints ? hints.length : 0); ++k) {
@@ -53091,7 +53091,7 @@ const FrameInteractive = {
       if (valid_x && valid_y && this._dblclick_handler)
          if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
-      let kind = (this.can_zoom_x ? "x" : "") + (this.can_zoom_y ? "y" : "") + "z";
+      let kind = (this.can_zoom_x ? "x" : '') + (this.can_zoom_y ? "y" : '') + "z";
       if (!valid_x) {
          if (!this.can_zoom_y) return;
          kind = this.swap_xy ? "x" : "y";
@@ -53309,7 +53309,7 @@ const FrameInteractive = {
       }
       let handle = this[item.name + "_handle"];
       if (handle) return handle.analyzeWheelEvent(event, dmin, item, test_ignore);
-      console.error('Fail to analyze zooming event for ', item.name);
+      console.error(`Fail to analyze zooming event for ${item.name}`);
    },
 
     /** @summary return true if default Y zooming should be enabled
@@ -54576,7 +54576,7 @@ class TFramePainter extends ObjectPainter {
    fillWebObjectOptions(res) {
       if (!res) {
          if (!this.snapid) return null;
-         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
        }
 
       res.fcust = "frame";
@@ -54597,7 +54597,7 @@ class TFramePainter extends ObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : "",
+         transform: this.draw_g ? this.draw_g.attr("transform") : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
@@ -54951,7 +54951,7 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary Activate frame */
-   activateFrame(frame) { this.active_frame_title = frame ? select(frame).attr('frame_title') : ""; }
+   activateFrame(frame) { this.active_frame_title = frame ? select(frame).attr('frame_title') : ''; }
 
    /** @summary Return active frame */
    getActiveFrame() { return this.findFrame(this.active_frame_title); }
@@ -55941,7 +55941,7 @@ class FlexibleDisplay extends MDIDisplay {
          menu.add("Close all", () => this.closeAllFrames());
          menu.add("separator");
 
-         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + select(f).attr("frame_title"), i,
+         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : '') + select(f).attr("frame_title"), i,
                       arg => {
                         let frame = arr[arg];
                         if (this.getFrameState(frame) == "min")
@@ -56079,7 +56079,7 @@ class BrowserLayout {
       let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
           title_color = settings.DarkMode ? '#ccc' : "inherit",
           text_color = settings.DarkMode ? '#ddd' : "inherit",
-          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : "";
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
          `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }
@@ -56200,7 +56200,7 @@ class BrowserLayout {
 
       let main = select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty())
-         return "";
+         return '';
 
       let id = this.gui_div + "_status",
           line = select("#"+id),
@@ -56232,11 +56232,11 @@ class BrowserLayout {
          }
 
          this.adjustSeparators(null, 0, true);
-         return "";
+         return '';
       }
 
       if (mode === false)
-         return "";
+         return '';
 
       let left_pos = select("#" + this.gui_div + "_drawing").style('left');
 
@@ -56689,7 +56689,7 @@ let PadButtonsHandler = {
             if (!btn) btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
-                        item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
+                        item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ''));
 
             if (group.property('vertical'))
                 svg.attr("x", y).attr("y", x);
@@ -57315,7 +57315,7 @@ class TPadPainter extends ObjectPainter {
             if (col && (col._typename == 'TColor')) {
                arr[n] = getRGBfromTColor(col);
             } else {
-               console.log('Missing color with index ' + n); missing = true;
+               console.log(`Missing color with index ${n}`); missing = true;
             }
          }
          if (!this.options || (!missing && !this.options.IgnorePalette))
@@ -57807,7 +57807,7 @@ class TPadPainter extends ObjectPainter {
 
          if (objpainter.$primary && (pi > 0) && this.painters[pi-1].$secondary) {
             this.painters[pi-1].snapid = objpainter.snapid + "#hist";
-            console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
+            console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi-1].snapid}`);
          }
       }
    }
@@ -57997,7 +57997,7 @@ class TPadPainter extends ObjectPainter {
 
          let mainid = this.selectDom().attr("id");
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind("float");
@@ -58015,7 +58015,7 @@ class TPadPainter extends ObjectPainter {
 
          let pr = Promise.resolve(true);
 
-         if ((typeof snap.fScripts == "string") && snap.fScripts) {
+         if ((typeof snap.fScripts == 'string') && snap.fScripts) {
             let src = "";
 
             if (snap.fScripts.indexOf("load:") == 0)
@@ -58137,10 +58137,10 @@ class TPadPainter extends ObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ > 0) ? res.slice(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : '';
          });
 
-      return "";
+      return '';
    }
 
    /** @summary Collects pad information for TWebCanvas
@@ -58149,7 +58149,7 @@ class TPadPainter extends ObjectPainter {
    getWebPadOptions(arg) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
-      if (is_top && this._readonly) return "";
+      if (is_top && this._readonly) return '';
       if (arg === "only_this") { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
 
@@ -58169,15 +58169,15 @@ class TPadPainter extends ObjectPainter {
          if (this.getPadRanges(elem))
             arg.push(elem);
          else
-            console.log('fail to get ranges for pad ' +  this.pad.fName);
+            console.log(`fail to get ranges for pad ${this.pad.fName}`);
       }
 
       this.painters.forEach(sub => {
-         if (typeof sub.getWebPadOptions == "function") {
+         if (typeof sub.getWebPadOptions == 'function') {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
-            let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: "", fopt: [] };
-            if (typeof sub.fillWebObjectOptions == "function")
+            let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
+            if (typeof sub.fillWebObjectOptions == 'function')
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }
@@ -58307,7 +58307,7 @@ class TPadPainter extends ObjectPainter {
           active_pp = null;
 
       if (elem.empty())
-         return "";
+         return '';
 
       painter.forEachPainterInPad(pp => {
 
@@ -58432,7 +58432,7 @@ class TPadPainter extends ObjectPainter {
          };
 
          image.onerror = function(arg) {
-            console.log('IMAGE ERROR', arg);
+            console.log(`IMAGE ERROR ${arg}`);
             reconstruct();
             resolveFunc(null);
          };
@@ -58489,7 +58489,7 @@ class TPadPainter extends ObjectPainter {
                   let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
                   if (pp.$secondary) return;
-                  let name = ('_typename' in obj) ? (obj._typename + "::") : "";
+                  let name = ('_typename' in obj) ? (obj._typename + "::") : '';
                   if ('fName' in obj) name += obj.fName;
                   if (!name.length) name = "item" + indx;
                   menu.add(name, indx, this.itemContextMenu);
@@ -58908,7 +58908,7 @@ class TCanvasPainter extends TPadPainter {
       if (this._websocket.canSend())
          this._websocket.send(msg);
       else
-         console.warn("DROP SEND: " + msg);
+         console.warn(`DROP SEND: ${msg}`);
    }
 
    /** @summary Close websocket connection to canvas
@@ -58947,7 +58947,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Handle websocket messages
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log("GET MSG len:" + msg.length + " " + msg.slice(0,60));
+      console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
@@ -58981,7 +58981,7 @@ class TCanvasPainter extends TPadPainter {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else {
-            console.log('Unrecognized command ' + cmd);
+            console.log(`Unrecognized command ${cmd}`);
             handle.send(reply);
          }
       } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
@@ -58994,13 +58994,13 @@ class TCanvasPainter extends TPadPainter {
          this.showSection(that.slice(0,that.length-2), on);
       } else if (msg.slice(0,5) == "EDIT:") {
          let obj_painter = this.findSnap(msg.slice(5));
-         console.log('GET EDIT ' + msg.slice(5) +  ' found ' + !!obj_painter);
+         console.log(`GET EDIT ${msg.slice(5)} found ${!!obj_painter}`);
          if (obj_painter)
             this.showSection("Editor", true)
                 .then(() => this.producePadEvent("select", obj_painter.getPadPainter(), obj_painter));
 
       } else {
-         console.log("unrecognized msg " + msg);
+         console.log(`unrecognized msg ${msg}`);
       }
    }
 
@@ -59191,7 +59191,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
 
       let msg = "";
       if (!painter) painter = this;
@@ -59203,7 +59203,7 @@ class TCanvasPainter extends TPadPainter {
          case "zoom":  // when changing zoom inside frame
             if (!painter.getWebPadOptions)
                painter = painter.getPadPainter();
-            if (typeof painter.getWebPadOptions == "function")
+            if (typeof painter.getWebPadOptions == 'function')
                msg = "OPTIONS6:" + painter.getWebPadOptions("only_this");
             break;
          case "pave_moved":
@@ -59214,22 +59214,22 @@ class TCanvasPainter extends TPadPainter {
             break;
          default:
             if ((kind.slice(0,5) == "exec:") && painter?.snapid) {
-               console.log('Call exec', painter.snapid);
+               console.log(`Call exec for ${painter.snapid}`);
 
                msg = "PRIMIT6:" + toJSON({
                   _typename: "TWebObjectOptions",
-                  snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ""),
+                  snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ''),
                   opt: kind.slice(5),
                   fcust: "exec",
                   fopt: []
                });
             } else {
-               console.log("UNPROCESSED CHANGES", kind);
+               console.log(`UNPROCESSED CHANGES ${kind}`);
             }
       }
 
       if (msg) {
-         console.log("Sending " + msg.length + "  " + msg.slice(0,40));
+         console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
       }
    }
@@ -59241,7 +59241,7 @@ class TCanvasPainter extends TPadPainter {
       let arg = null, ischanged = false;
 
       if ((pad_painter.snapid !== undefined) && this._websocket)
-         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "", x: -1, y: -1, dbl: false };
+         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
@@ -59350,7 +59350,7 @@ async function ensureTCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
 
    // simple check - if canvas there, can use painter
-   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : '',
        promise = painter.getCanvSvg().empty()
                  ? TCanvasPainter.draw(painter.getDom(), null, noframe)
                  : Promise.resolve(true);
@@ -59462,7 +59462,7 @@ class TPavePainter extends ObjectPainter {
          } else if (opt.indexOf("NDC") >= 0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
-         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == "string") && (arg.indexOf('postpone') >= 0)) {
+         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == 'string') && (arg.indexOf('postpone') >= 0)) {
             // special case when pad not yet initialized
             pt.fInit = 0; // do not init until axes drawn
             pt.fX1NDC = pt.fY1NDC = 0.99;
@@ -59621,7 +59621,7 @@ class TPavePainter extends ObjectPainter {
    fillWebObjectOptions(res) {
       if (!res) {
          if (!this.snapid) return null;
-         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
       }
 
       let pave = this.getObject();
@@ -59780,7 +59780,7 @@ class TPavePainter extends ObjectPainter {
                   // individual positioning
                   let x = entry.fX ? entry.fX*width : margin_x,
                       y = entry.fY ? (1 - entry.fY)*height : texty,
-                      color = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
+                      color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) {
                      color = tcolor;
                      this.UseTextColor = true;
@@ -60033,9 +60033,9 @@ class TPavePainter extends ObjectPainter {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
-          can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
-          postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
-          cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
+          can_move = (typeof arg == 'string') && (arg.indexOf('can_move') >= 0),
+          postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone') >= 0),
+          cjust = (typeof arg == 'string') && (arg.indexOf('cjust') >= 0),
           pp = this.getPadPainter(),
           width = pp.getPadWidth(),
           height = pp.getPadHeight(),
@@ -60869,11 +60869,11 @@ class THistDrawOptions {
               Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
+              Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-              Candle: "", Violin: "", Scaled: null, Circular: 0,
-              GLBox: 0, GLColor: false, Project: "",
+              Candle: '', Violin: '', Scaled: null, Circular: 0,
+              GLBox: 0, GLColor: false, Project: '',
               System: CoordSystem.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
@@ -61293,7 +61293,7 @@ class HistContour {
              logmax = Math.log(this.colzmax)/Math.log(10),
              dz = (logmax-logmin)/nlevels;
          this.arr.push(this.colzmin);
-         for (let level=1; level<nlevels; level++)
+         for (let level = 1; level < nlevels; level++)
             this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
          this.arr.push(this.colzmax);
          this.custom = true;
@@ -61519,7 +61519,7 @@ class THistPainter extends ObjectPainter {
    createAutoColor(numprimitives) {
       if (!numprimitives) {
          let pad = this.getPadPainter().getRootPad(true);
-         numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+         numprimitives = pad?.fPrimitves ? pad.fPrimitves.arr.length : 5;
       }
 
       let indx = this._auto_color || 0;
@@ -61530,10 +61530,10 @@ class THistPainter extends ObjectPainter {
       if (pal) {
          if (numprimitives < 2) numprimitives = 2;
          if (indx >= numprimitives) indx = numprimitives - 1;
-         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
-         let colvalue = pal.getColor(palindx);
-         let colindx = this.addColor(colvalue);
-         return colindx;
+         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1)),
+             colvalue = pal.getColor(palindx);
+
+         return this.addColor(colvalue);
       }
 
       this._auto_color = this._auto_color % 8;
@@ -61914,7 +61914,7 @@ class THistPainter extends ObjectPainter {
           pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      if (!pt && typeof pp?.findInPrimitives == "function")
+      if (!pt && typeof pp?.findInPrimitives == 'function')
          pt = pp.findInPrimitives("title", "TPaveText");
 
       if (pt) {
@@ -61953,7 +61953,7 @@ class THistPainter extends ObjectPainter {
 
       tpainter.redraw();
 
-      this.submitCanvExec('SetTitle("' + histo.fTitle + '")');
+      this.submitCanvExec(`SetTitle("${histo.fTitle}")`);
    }
 
    /** @summary Update statistics when web canvas is drawn */
@@ -62144,7 +62144,7 @@ class THistPainter extends ObjectPainter {
                                                : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (painter && (typeof painter == "object"))
+         if (painter && (typeof painter == 'object'))
             painter.child_painter_id = this.hist_painter_id;
 
          return this.drawNextFunction(indx+1);
@@ -62272,7 +62272,7 @@ class THistPainter extends ObjectPainter {
       menu.input("Enter min/max hist values or empty string to reset", curr).then(res => {
          res = res ? JSON.parse(res) : [];
 
-         if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
+         if (!res || (typeof res != 'object') || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
             this.options.minimum = this.options.maximum = -1111;
          } else {
             this.options.minimum = res[0];
@@ -63667,7 +63667,7 @@ class TH1Painter$2 extends THistPainter {
 
       if (res && draw_hist)
          this.draw_g.append("svg:path")
-                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ""))
+                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
@@ -65007,7 +65007,7 @@ class TH2Painter$2 extends THistPainter {
             if (!cmd) {
                cmd = `M${x},${y}`; x0 = x; y0 = y;
             } else if ((i == iplus) && (iminus !== iplus) && (x == x0) && (y == y0)) {
-               if (!isany) return ""; // all same points
+               if (!isany) return ''; // all same points
                cmd += "z"; do_close = false; matched = true;
             } else {
                let dx = x - lastx, dy = y - lasty;
@@ -65082,7 +65082,7 @@ class TH2Painter$2 extends THistPainter {
          iplus++;
          while ((iminus < iplus - 1) && pnt1 && !pnt2)
             pnt2 = get_intersect(--iplus, -1);
-         if (!pnt1 || !pnt2) return "";
+         if (!pnt1 || !pnt2) return '';
 
          // TODO: now side is always same direction, could be that side should be checked more precise
 
@@ -65393,7 +65393,7 @@ class TH2Painter$2 extends THistPainter {
       const makeLine = (dx, dy) => {
          if (dx)
             return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : "";
+         return dy ? `v${dy}` : '';
       };
 
       for (let loop = 0; loop < 2; ++loop)
@@ -66791,7 +66791,7 @@ class TH2Painter$2 extends THistPainter {
       this.options.Zvert = pp._palette_vertical;
 
       // redraw palette till the end when contours are available
-      return pp.drawPave(this.options.Cjust ? "cjust" : "");
+      return pp.drawPave(this.options.Cjust ? "cjust" : '');
    }
 
    /** @summary Performs 2D drawing of histogram
@@ -67524,7 +67524,7 @@ class TH3Painter extends THistPainter {
                   }
                   cols_size[colindx]+=1;
                } else {
-                  console.error('not found color for', bin_content);
+                  console.error(`not found color for value = ${bin_content}`);
                }
             }
          }
@@ -67921,7 +67921,7 @@ const drawFuncs = { lst: [
    { name: /^RooHist/, sameas: "TGraph" },
    { name: /^RooCurve/, sameas: "TGraph" },
    { name: "RooPlot", icon: "img_canvas", func: drawRooPlot },
-   { name: "TRatioPlot", icon: "img_mgraph", class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: "" },
+   { name: "TRatioPlot", icon: "img_mgraph", class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
    { name: "TMultiGraph", icon: "img_mgraph", class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawStreamerInfo) },
    { name: "TWebPainting", icon: "img_graph", class: () => Promise.resolve().then(function () { return TWebPaintingPainter$1; }).then(h => h.TWebPaintingPainter) },
@@ -67983,25 +67983,25 @@ const drawFuncs = { lst: [
    { name: "Session", icon: "img_globe" },
    { name: "kind:TopFolder", icon: "img_base" },
    { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-   { name: _v7+"RCanvas", icon: "img_canvas", class: () => init_v7().then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7('rh1').then(h => h.RH1Painter), opt: "" },
-   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7('rh2').then(h => h.RH2Painter), opt: "" },
-   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7('rh3').then(h => h.RH3Painter), opt: "" },
-   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: "" },
-   { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
-   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
-   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: "" },
-   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: "" },
-   { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
-   { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
-   { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
-   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPavePainter), opt: "" },
-   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('pave').then(h => h.RLegendPainter), opt: "" },
-   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: "" },
-   { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: "" },
-   { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
-   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: "" }
+   { name: _v7+"RCanvas", icon: "img_canvas", class: () => init_v7().then(h => h.RCanvasPainter), opt: '', expand_item: "fPrimitives" },
+   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: "fPrimitives" },
+   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7('rh1').then(h => h.RH1Painter), opt: '' },
+   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7('rh2').then(h => h.RH2Painter), opt: '' },
+   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7('rh3').then(h => h.RH3Painter), opt: '' },
+   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
+   { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: '', direct: "v7", csstype: "text" },
+   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: '', direct: "v7", csstype: "title" },
+   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: '' },
+   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
+   { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: '', direct: "v7", csstype: "line" },
+   { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: '', direct: "v7", csstype: "box" },
+   { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawMarker), opt: '', direct: "v7", csstype: "marker" },
+   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPavePainter), opt: '' },
+   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('pave').then(h => h.RLegendPainter), opt: '' },
+   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
+   { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: '' },
+   { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: '', direct: "v7", csstype: "font" },
+   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: '' }
 ], cache: {} };
 
 
@@ -68031,7 +68031,7 @@ function addDrawFunc(args) {
 function getDrawHandle(kind, selector) {
 
    if (typeof kind != 'string') return null;
-   if (selector === "") selector = null;
+   if (selector === '') selector = null;
 
    let first = null;
 
@@ -68041,7 +68041,7 @@ function getDrawHandle(kind, selector) {
    let search = (kind.indexOf("ROOT.") == 0) ? kind.slice(5) : "kind:" + kind, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
-      if (typeof h.name == "string") {
+      if (typeof h.name == 'string') {
          if (h.name != search) continue;
       } else {
          if (!search.match(h.name)) continue;
@@ -68578,7 +68578,7 @@ const CustomStreamers = {
       streamer = buf.fFile.getSplittedStreamer(streamer);
 
       if (!streamer) {
-         console.log('Cannot get member-wise streamer for', classv, clv);
+         console.log(`Cannot get member-wise streamer for ${classv}:${clv}`);
       } else {
          // create objects
          for (let n = 0; n < nobjects; ++n)
@@ -69123,7 +69123,7 @@ function getTypeId(typname, norecursion) {
 
    if (!norecursion) {
       let replace = CustomStreamers[typname];
-      if (typeof replace === "string") return getTypeId(replace, true);
+      if (typeof replace === 'string') return getTypeId(replace, true);
    }
 
    return -1;
@@ -69138,7 +69138,7 @@ function createStreamerElement(name, typename, file) {
       fXmin: 0, fXmax: 0, fFactor: 0
    };
 
-   if (typeof typename === "string") {
+   if (typeof typename === 'string') {
       elem.fType = getTypeId(typename);
       if ((elem.fType < 0) && file && file.fBasicTypes[typename])
          elem.fType = file.fBasicTypes[typename];
@@ -69580,7 +69580,7 @@ function createMemberStreamer(element, file) {
          let stl = (element.fSTLtype || 0) % 40;
 
          if ((element._typename === 'TStreamerSTLstring') ||
-            (member.typename == "string") || (member.typename == "string*")) {
+            (member.typename == 'string') || (member.typename == "string*")) {
             member.readelem = buf => buf.readTString();
          } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
@@ -69592,12 +69592,12 @@ function createMemberStreamer(element, file) {
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                member.typeid = file.fBasicTypes[member.conttype];
-               console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
+               console.log(`!!! Reuse basic type ${member.conttype} from file streamer infos`);
             }
 
             // check
             if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
-               console.warn('Contained type', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
+               console.warn(`Contained type ${member.conttype} not recognized as basic type ${element.fCtype} FORCE`);
                member.typeid = element.fCtype;
             }
 
@@ -69738,7 +69738,7 @@ function createMemberStreamer(element, file) {
   * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
   * @private */
 function getArrayKind(type_name) {
-   if ((type_name === clTString) || (type_name === "string") ||
+   if ((type_name === clTString) || (type_name === 'string') ||
       (CustomStreamers[type_name] === clTString)) return 0;
    if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
    if (type_name.length == 7)
@@ -70514,7 +70514,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          let fmt = "unknown", off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
-            if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
+            if (!noalert) console.error('Error R__unzip: header size exceeds buffer size');
             return Promise.resolve(null);
          }
 
@@ -70692,7 +70692,7 @@ class TBuffer {
       let len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
-      if (len == 0) return "";
+      if (len == 0) return '';
 
       const pos = this.o;
       this.o += len;
@@ -70942,7 +70942,7 @@ class TBuffer {
 
       if (this.remain() <= 0) {
          if (!basket.fEntryOffset && (basket.fNevBuf <= 1)) basket.fEntryOffset = [basket.fKeylen];
-         if (!basket.fEntryOffset) console.warn("No fEntryOffset when expected for basket with", basket.fNevBuf, "entries");
+         if (!basket.fEntryOffset) console.warn(`No fEntryOffset when expected for basket with ${basket.fNevBuf} entries`);
          return;
       }
 
@@ -70950,7 +70950,7 @@ class TBuffer {
       // there is error in file=reco_103.root&item=Events;2/PCaloHits_g4SimHits_EcalHitsEE_Sim.&opt=dump;num:10;first:101
       // it is workaround, but normally I/O should fail here
       if ((nentries < 0) || (nentries > this.remain() * 4)) {
-         console.error("Error when reading entries offset from basket fNevBuf", basket.fNevBuf, "remains", this.remain(), "want to read", nentries);
+         console.error(`Error when reading entries offset from basket fNevBuf ${basket.fNevBuf} remains ${this.remain()} want to read ${nentries}`);
          if (basket.fNevBuf <= 1) basket.fEntryOffset = [basket.fKeylen];
          return;
       }
@@ -71050,7 +71050,7 @@ class TBuffer {
 
       } else {
          // just skip bytes belonging to not-recognized object
-         // console.warn('skip object ', classname);
+         // console.warn(`skip object ${classname}`);
 
          addMethods(obj);
       }
@@ -71328,11 +71328,11 @@ class TFile {
                else
                   file.fMaxRanges = 1;
                last = Math.min(last, file.fMaxRanges * 2);
-               // console.log('Change maxranges to ', file.fMaxRanges, 'last', last);
+               // console.log(`Change maxranges to ${file.fMaxRanges} last ${last}`);
                return send_new_request();
             }
 
-            return rejectFunc(Error("Fail to read with several ranges"));
+            return rejectFunc(Error('Fail to read with several ranges'));
          }
 
          // if only single segment requested, return result as is
@@ -71967,13 +71967,19 @@ function readVectorElement(buf) {
    const n = buf.ntou4();
    let res = new Array(n), i = 0;
 
-   if (n > 200000) { console.error('vector streaming for of', this.conttype, n); return res; }
+   if (n > 200000) { console.error(`vector streaming for ${this.conttype} at ${n}`); return res; }
 
-   if (this.arrkind > 0) { while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind); }
-   else if (this.arrkind === 0) { while (i < n) res[i++] = buf.readTString(); }
-   else if (this.isptr) { while (i < n) res[i++] = buf.readObjectAny(); }
-   else if (this.submember) { while (i < n) res[i++] = this.submember.readelem(buf); }
-   else { while (i < n) res[i++] = buf.classStreamer({}, this.conttype); }
+   if (this.arrkind > 0) {
+      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
+   } else if (this.arrkind === 0) {
+      while (i < n) res[i++] = buf.readTString();
+   } else if (this.isptr) {
+      while (i < n) res[i++] = buf.readObjectAny();
+   } else if (this.submember) {
+      while (i < n) res[i++] = this.submember.readelem(buf);
+   } else {
+      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
+   }
 
    return res;
 }
@@ -71995,7 +72001,7 @@ function readMapElement(buf) {
 
             streamer = getPairStreamer(si, this.pairtype, buf.fFile);
             if (!streamer || streamer.length !== 2) {
-               console.log('Fail to produce streamer for ', this.pairtype);
+               console.log(`Fail to produce streamer for ${this.pairtype}`);
                return null;
             }
          }
@@ -72166,7 +72172,7 @@ class FileProxy {
 
    async openFile() { return false; }
 
-   getFileName() { return ""; }
+   getFileName() { return ''; }
 
    getFileSize() { return 0; }
 
@@ -72245,7 +72251,7 @@ function openFile(arg) {
 
    let file;
 
-   if (isNodeJs() && (typeof arg == "string")) {
+   if (isNodeJs() && (typeof arg == 'string')) {
       if (arg.indexOf("file://") == 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf("http") !== 0)
@@ -72585,7 +72591,7 @@ function objectHierarchy(top, obj, args = undefined) {
             item = {
               _parent: top,
               _name: k.toString(),
-              _value: "",
+              _value: '',
               _vclass: 'h_value_num'
             };
             while (item._name.length < namelen)
@@ -72761,7 +72767,7 @@ function objectHierarchy(top, obj, args = undefined) {
                   case 'TLatex': item._value = fld.fTitle; break;
                   case 'TObjString': item._value = fld.fString; break;
                   default:
-                     if (isRootCollection(fld) && (typeof fld.arr === "object")) {
+                     if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
                         if (fld.arr.length > 0) item._more = true;
@@ -72865,7 +72871,7 @@ function markAsStreamerInfo(h, item, obj) {
 /** @summary Create hierarchy for object inspector
   * @private */
 function createInspectorContent(obj) {
-   let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
+   let h = { _name: "Object", _title: '', _click_action: "expand", _nosimple: false, _do_context: true };
 
    if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
       h._name = obj.fName;
@@ -73019,7 +73025,7 @@ class HierarchyPainter extends BasePainter {
 
       let folder = {
          _name: file.fFileName,
-         _title: (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
+         _title: (file.fTitle ? (file.fTitle + ", path ") : '')  + file.fFullURL,
          _kind: "ROOT.TFile",
          _file: file,
          _fullurl: file.fFullURL,
@@ -73251,7 +73257,7 @@ class HierarchyPainter extends BasePainter {
 
       if ('_numargs' in hitem)
          for (let n = 0; n < hitem._numargs; ++n)
-            cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : "");
+            cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : '');
 
       let promise = (cmdargs.length == 0) || !elem ? Promise.resolve(cmdargs) :
                      createMenu$1().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
@@ -73514,7 +73520,7 @@ class HierarchyPainter extends BasePainter {
          element_title = element_name;
 
       d3a.attr('title', element_title)
-         .text(element_name + ('_value' in hitem ? ":" : ""))
+         .text(element_name + ('_value' in hitem ? ":" : ''))
          .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
@@ -73713,10 +73719,10 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when done
      * @private */
    async focusOnItem(hitem) {
-      if (typeof hitem == "string")
+      if (typeof hitem == 'string')
          hitem = this.findItem(hitem);
 
-      let name = hitem ? this.itemFullName(hitem) : "";
+      let name = hitem ? this.itemFullName(hitem) : '';
       if (!name) return false;
 
       let itm = hitem, need_refresh = false;
@@ -73781,7 +73787,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = "item";
-      let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : "",
+      let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == "icon") {
@@ -73856,7 +73862,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
+         if ((typeof hitem._kind === 'string') && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, "inspect", true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -74323,7 +74329,7 @@ class HierarchyPainter extends BasePainter {
 
       let allitems = [], options = [], only_auto_items = false, want_update_all = false;
 
-      if (typeof arg == "string")
+      if (typeof arg == 'string')
          arg = [ arg ];
       else if (typeof arg != 'object') {
          if (arg === undefined) arg = !this.isMonitoring();
@@ -74889,7 +74895,7 @@ class HierarchyPainter extends BasePainter {
      * @return string or null if item is not online
      * @private */
    getOnlineItemUrl(item) {
-      if (typeof item == "string") item = this.findItem(item);
+      if (typeof item == 'string') item = this.findItem(item);
       let prnt = item;
       while (prnt && (prnt._online === undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
@@ -74918,9 +74924,9 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async getOnlineItem(item, itemname, option) {
 
-      let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
+      let url = itemname, h_get = false, req = "", req_kind = 'object', draw_handle = null;
 
-      if ((typeof option == "string") && (option.indexOf('hierarchy_expand') == 0)) {
+      if ((typeof option == 'string') && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
          option = undefined;
       }
@@ -74984,7 +74990,7 @@ class HierarchyPainter extends BasePainter {
             let handleAfterRequest = func => {
                if (typeof func == 'function') {
                   let res = func(this, item, obj, option, itemreq);
-                  if (res && (typeof res == "object")) obj = res;
+                  if (res && (typeof res == 'object')) obj = res;
                }
                resolveFunc(obj);
             };
@@ -75116,12 +75122,12 @@ class HierarchyPainter extends BasePainter {
       if (sett.opts && (node._can_draw !== false))
          menu.addDrawMenu("Draw in new window", sett.opts,
                            arg => window.open(onlineprop.server + "?nobrowser&item=" + onlineprop.itemname +
-                                              (this.isMonitoring() ? "&monitoring=" + this.getMonitoringInterval() : "") +
-                                              (arg ? "&opt=" + arg : "")));
+                                              (this.isMonitoring() ? "&monitoring=" + this.getMonitoringInterval() : '') +
+                                              (arg ? "&opt=" + arg : '')));
 
       if (sett.opts && (sett.opts.length > 0) && root_type && (node._can_draw !== false))
          menu.addDrawMenu("Draw as png", sett.opts,
-                           arg => window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=600&h=400" + (arg ? "&opt=" + arg : "")));
+                           arg => window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=600&h=400" + (arg ? "&opt=" + arg : '')));
 
       if ('_player' in node)
          menu.add("Player", () => this.player(itemname));
@@ -75413,7 +75419,7 @@ class HierarchyPainter extends BasePainter {
             let separ = opt.indexOf(";"),
                 part = (separ > 0) ? opt.slice(0, separ) : opt;
 
-            opt = (separ > 0) ? opt.slice(separ+1) : "";
+            opt = (separ > 0) ? opt.slice(separ+1) : '';
 
             let canarray = true;
             if (part[0] == '#') { part = part.slice(1); canarray = false; }
@@ -75471,7 +75477,7 @@ class HierarchyPainter extends BasePainter {
 
       if (monitor === null)
          monitor = 0;
-      else if (monitor === "")
+      else if (monitor === '')
          monitor = 3000;
       else
          monitor = parseInt(monitor);
@@ -75487,19 +75493,19 @@ class HierarchyPainter extends BasePainter {
 
       let load = GetOption("load");
 
-      if (expanditems.length == 0 && (GetOption("expand") === "")) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption("expand") === '')) expanditems.push("");
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
          for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length == 0) && GetOption("item") === "") itemsarr.push("");
+      if ((itemsarr.length == 0) && GetOption("item") === '') itemsarr.push("");
 
       if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push("");
 
       if (!this.disp_kind) {
-         if ((typeof layout == "string") && (layout.length > 0))
+         if ((typeof layout == 'string') && (layout.length > 0))
             this.disp_kind = layout;
          else
          switch (itemsarr.length) {
@@ -75529,7 +75535,7 @@ class HierarchyPainter extends BasePainter {
          if (!Number.isInteger(statush) || (statush < 5)) statush = 0;
          status = true;
       }
-      if (this.no_select === "") this.no_select = true;
+      if (this.no_select === '') this.no_select = true;
 
       if (!browser_kind)
          browser_kind = "fix";
@@ -75631,7 +75637,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    prepareGuiDiv(myDiv, layout) {
 
-      this.gui_div = (typeof myDiv == "string") ? myDiv : myDiv.attr('id');
+      this.gui_div = (typeof myDiv == 'string') ? myDiv : myDiv.attr('id');
 
       this.brlayout = new BrowserLayout(this.gui_div, this);
 
@@ -75668,7 +75674,7 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
-         return "";
+         return '';
       return this.brlayout.createStatusLine(height, mode);
    }
 
@@ -76302,7 +76308,7 @@ function checkArrayPrototype(arr, check_content) {
       let sub = typeof arr[k];
       if (!typ) typ = sub;
       if (sub !== typ) { plain = false; break; }
-      if ((sub == "object") && checkArrayPrototype(arr[k])) { plain = false; break; }
+      if ((sub == 'object') && checkArrayPrototype(arr[k])) { plain = false; break; }
    }
 
    return plain ? 2 : 1;
@@ -76354,7 +76360,7 @@ class ArrayIterator {
 
          typ = obj ? typeof obj : "any";
 
-         if (typ === "object") {
+         if (typ === 'object') {
             if (obj._typename !== undefined) {
                if (isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
@@ -76372,7 +76378,7 @@ class ArrayIterator {
             return true;
          }
 
-         if ((typ == "any") && (typeof this.select[cnt + 1] === "string")) {
+         if ((typ == "any") && (typeof this.select[cnt + 1] === 'string')) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
@@ -76437,7 +76443,7 @@ class ArrayIterator {
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
 
-   if (!branch || (branch._typename !== "TBranchElement")) return "";
+   if (!branch || (branch._typename !== "TBranchElement")) return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
       // object where all sub-branches will be collected
@@ -76463,7 +76469,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
       if (s_elem.fType === kObjectp) return s_elem.fTypeName.slice(0, s_elem.fTypeName.length - 1);
    }
 
-   return "";
+   return '';
 }
 
 
@@ -76516,7 +76522,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
-      if (brname === search) { res = { branch: lst.arr[n], rest: "" }; break; }
+      if (brname === search) { res = { branch: lst.arr[n], rest: '' }; break; }
 
       if (search.indexOf(brname) !== 0) continue;
 
@@ -76598,7 +76604,7 @@ class TDrawVariable {
 
       if (!code) code = ""; // should be empty string at least
 
-      this.code = (only_branch ? only_branch.fName : "") + code;
+      this.code = (only_branch ? only_branch.fName : '') + code;
 
       let pos = 0, pos2 = 0, br = null;
       while ((pos < code.length) || only_branch) {
@@ -76765,7 +76771,7 @@ class TDrawVariable {
 
       if (this.is_dummy()) {
          this.value = 1.; // used as dummy weight variable
-         this.kind = "number";
+         this.kind = 'number';
          return;
       }
 
@@ -76872,7 +76878,7 @@ class TDrawSelector extends TSelector {
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
 
-      if (!expr || (typeof expr !== "string")) return "";
+      if (!expr || (typeof expr !== 'string')) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(";");
@@ -77040,7 +77046,7 @@ class TDrawSelector extends TSelector {
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
       else
-         this.histo_drawopt = (this.ndim === 2) ? "col" : "";
+         this.histo_drawopt = (this.ndim === 2) ? "col" : '';
 
       return true;
    }
@@ -77079,7 +77085,7 @@ class TDrawSelector extends TSelector {
 
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
-      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
+      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : '') + "'  from " + tree.fName;
 
       this.cut = new TDrawVariable(this.globals);
 
@@ -77115,7 +77121,7 @@ class TDrawSelector extends TSelector {
    /** @summary Get min.max bins */
    getMinMaxBins(axisid, nbins) {
 
-      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
+      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: '' };
 
       if (axisid >= this.ndim) return res;
 
@@ -77123,7 +77129,7 @@ class TDrawSelector extends TSelector {
 
       res.title = this.vars[axisid].code || "";
 
-      if (this.vars[axisid].kind === "object") {
+      if (this.vars[axisid].kind === 'object') {
          // this is any object type
          let typename, similar = true, maxbits = 8;
          for (let k = 0; k < arr.length; ++k) {
@@ -77138,7 +77144,7 @@ class TDrawSelector extends TSelector {
                this.fill1DHistogram = this.fillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
 
-               if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0])
+               if ((this.hist_name === 'bits') && (this.hist_args.length == 1) && this.hist_args[0])
                   maxbits = this.hist_args[0];
 
                return this.getBitsBins(maxbits, res);
@@ -77146,7 +77152,7 @@ class TDrawSelector extends TSelector {
          }
       }
 
-      if (this.vars[axisid].kind === "string") {
+      if (this.vars[axisid].kind === 'string') {
          res.lbls = []; // all labels
 
          for (let k = 0; k < arr.length; ++k)
@@ -77161,7 +77167,7 @@ class TDrawSelector extends TSelector {
             let s = create$1("TObjString");
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
-            if (s.fString === "") s.fString = "<empty>";
+            if (s.fString === '') s.fString = "<empty>";
             res.fLabels.Add(s);
          }
       } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
@@ -77248,9 +77254,9 @@ class TDrawSelector extends TSelector {
          this.z = this.getMinMaxBins(2, 50);
 
          switch (this.ndim) {
-            case 1: this.hist = createHistogram("TH1" + this.htype, this.x.nbins); break;
-            case 2: this.hist = createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
+            case 1: this.hist = createHistogram('TH1' + this.htype, this.x.nbins); break;
+            case 2: this.hist = createHistogram('TH2' + this.htype, this.x.nbins, this.y.nbins); break;
+            case 3: this.hist = createHistogram('TH3' + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
 
          this.hist.fXaxis.fTitle = this.x.title;
@@ -77271,7 +77277,7 @@ class TDrawSelector extends TSelector {
          this.hist.fName = this.hist_name;
          this.hist.fTitle = this.hist_title;
          this.hist.fOption = this.histo_drawopt;
-         this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
+         this.hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
       }
 
       let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
@@ -77420,9 +77426,9 @@ class TDrawSelector extends TSelector {
                if (var2) var2.buf.push(this.tgtarr.br2[k]);
             }
          }
-         var0.kind = "number";
-         if (var1) var1.kind = "number";
-         if (var2) var2.kind = "number";
+         var0.kind = 'number';
+         if (var1) var1.kind = 'number';
+         if (var2) var2.kind = 'number';
          this.cut.buf = null; // do not create buffer for cuts
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
             this.createHistogram();
@@ -77586,12 +77592,12 @@ function findBrachStreamerElement(branch, file) {
    // first check branch fID - in many cases gut guess
    if (match_elem(arr[branch.fID])) return arr[branch.fID];
 
-   // console.warn('Missmatch with branch name and extracted element', branch.fName, match_name, (s_elem ? s_elem.fName : "---"));
+   // console.warn(`Missmatch with branch name ${branch.fName} and extracted element ${match_name} ${s_elem?.fName}`);
 
    for (let k = 0; k < arr.length; ++k)
       if ((k !== branch.fID) && match_elem(arr[k])) return arr[k];
 
-   console.error('Did not found/match element for branch', branch.fName, 'class', branch.fClassName);
+   console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
 
    return null;
 }
@@ -77602,7 +77608,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
    let s_i = file.findStreamerInfo(parent_class),
       arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
       elem = null;
-   if (!arr) return "";
+   if (!arr) return '';
 
    for (let k = 0; k < arr.length; ++k) {
       if (arr[k].fTypeName === "BASE") {
@@ -77612,7 +77618,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
          if (arr[k].fName === member_name) { elem = arr[k]; break; }
    }
 
-   if (!elem) return "";
+   if (!elem) return '';
 
    let clname = elem.fTypeName;
    if (clname[clname.length - 1] === "*") clname = clname.slice(0, clname.length - 1);
@@ -77723,17 +77729,17 @@ async function treeProcess(tree, selector, args) {
       let item = findInHandle(branch);
 
       if (item) {
-         console.error('Branch already configured for reading', branch.fName);
+         console.error(`Branch ${branch.fName} already configured for reading`);
          if (item.tgt !== target_object) console.error('Target object differs');
          return null;
       }
 
       if (!branch.fEntries) {
-         console.warn('Branch ', branch.fName, ' does not have entries');
+         console.warn(`Branch ${branch.fName} does not have entries`);
          return null;
       }
 
-      // console.log('Add branch', branch.fName);
+      // console.log(`Add branch ${branch.fName}`);
 
       item = {
          branch: branch,
@@ -77812,7 +77818,7 @@ async function treeProcess(tree, selector, args) {
          if (!item_cnt)
             item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true);
 
-         if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
+         if (!item_cnt) { console.error(`Cannot add counter branch ${branch.fBranchCount.fName}`); return null; }
 
          let BranchCount2 = branch.fBranchCount2;
 
@@ -77835,9 +77841,9 @@ async function treeProcess(tree, selector, args) {
          if (BranchCount2) {
             item_cnt2 = findInHandle(BranchCount2);
 
-            if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++, true);
+            if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, '$counter' + namecnt++, true);
 
-            if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
+            if (!item_cnt2) { console.error(`Cannot add counter branch2 ${BranchCount2.fName}`); return null; }
          }
       } else if (nb_leaves === 1 && leaf && leaf.fLeafCount) {
          let br_cnt = findBranch(handle.tree, leaf.fLeafCount.fName);
@@ -77845,9 +77851,9 @@ async function treeProcess(tree, selector, args) {
          if (br_cnt) {
             item_cnt = findInHandle(br_cnt);
 
-            if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, "$counter" + namecnt++, true);
+            if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, '$counter' + namecnt++, true);
 
-            if (!item_cnt) { console.error('Cannot add counter branch', br_cnt.fName); return null; }
+            if (!item_cnt) { console.error(`Cannot add counter branch ${br_cnt.fName}`); return null; }
          }
       }
 
@@ -77856,7 +77862,7 @@ async function treeProcess(tree, selector, args) {
 
          let match_prefix = branch.fName;
          if (match_prefix[match_prefix.length - 1] === ".") match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if ((typeof read_mode === "string") && (read_mode[0] == ".")) match_prefix += read_mode;
+         if ((typeof read_mode === 'string') && (read_mode[0] == ".")) match_prefix += read_mode;
          match_prefix += ".";
 
          for (let k = 0; k < lst.arr.length; ++k) {
@@ -77917,7 +77923,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createStreamerElement(target_name, kInt);
 
-         if (!read_mode || ((typeof read_mode === "string") && (read_mode[0] === ".")) || (read_mode === 1)) {
+         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === ".")) || (read_mode === 1)) {
             handle.process_arrays = false;
 
             member = {
@@ -77937,7 +77943,7 @@ async function treeProcess(tree, selector, args) {
                }
             };
 
-            if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
+            if ((typeof read_mode === 'string') && (read_mode[0] === ".")) {
                member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                if (!member.conttype) {
                   console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
@@ -78030,7 +78036,7 @@ async function treeProcess(tree, selector, args) {
       }
 
       if (!elem && !member) {
-         console.warn('Not supported branch kind', branch.fName, branch._typename);
+         console.warn(`Not supported branch ${branch.fName} type ${branch._typename}`);
          return null;
       }
 
@@ -78046,7 +78052,7 @@ async function treeProcess(tree, selector, args) {
          }
       }
 
-      if (item_cnt && (typeof read_mode === "string")) {
+      if (item_cnt && (typeof read_mode === 'string')) {
 
          member.name0 = item_cnt.name;
 
@@ -78393,7 +78399,7 @@ async function treeProcess(tree, selector, args) {
                   basket = buf.classStreamer({}, "TBasket");
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
-                  console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
+                  console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
 
                // items[k].obj = basket; // keep basket object itself if necessary
 
@@ -78729,7 +78735,7 @@ function treeIOTest(tree, args) {
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
          let br = obj.fBranches.arr[n],
-             name = (prntname ? prntname + "/" : "") + br.fName;
+             name = (prntname ? prntname + "/" : '') + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
@@ -80234,7 +80240,7 @@ function countNumShapes(shape) {
   * @desc Can appends some special suffixes
   * @private */
 function getObjectName(obj) {
-   return obj?.fName ? (obj.fName + (obj.$geo_suffix || "")) : "";
+   return obj?.fName ? (obj.fName + (obj.$geo_suffix || "")) : '';
 }
 
 /** @summary Check duplicates
@@ -80558,7 +80564,7 @@ class PolygonsCreator{
              next = this.mnormal ? this.v3 : this.v2;
 
          if (next.diff(first) < 1e-12) {
-            //console.log('polygon closed!!!', polygon.vertices.length);
+            //console.log(`polygon closed!!! nvertices = ${polygon.vertices.length}`);
             this.multi = 0;
          } else
          if (this.mnormal) {
@@ -81341,7 +81347,7 @@ function createPolygonBuffer( shape, faces_limit ) {
 
       } else {
          // let three.js calculate our faces
-         // console.log('triangulate polygon ' + shape.fShapeId);
+         // console.log(`triangulate polygon ${shape.fShapeId}`);
          cut_faces = ShapeUtils.triangulateShape(pnts, []);
       }
       numfaces += cut_faces.length*2;
@@ -81720,7 +81726,7 @@ function createMatrix(matrix) {
       case 'TGeoIdentity':
          break;
       default:
-         console.warn('unsupported matrix ' + matrix._typename);
+         console.warn(`unsupported matrix ${matrix._typename}`);
    }
 
    if (!translation && !rotation && !scale) return null;
@@ -82765,10 +82771,10 @@ class ClonedNodes {
    getNodeName(nodeid) {
       if (this.origin) {
          let obj = this.origin[nodeid];
-         return obj ? getObjectName(obj) : "";
+         return obj ? getObjectName(obj) : '';
       }
       let node = this.nodes[nodeid];
-      return node ? node.name : "";
+      return node ? node.name : '';
    }
 
    /** @summary Returns description for provide stack */
@@ -83132,7 +83138,7 @@ class ClonedNodes {
          return result;
       }
 
-      // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      // console.log(`Volume boundary ${currNode.vol}  cnt=${cnt}  faces=${facecnt}`);
       result.max = maxNode.vol;
       result.min = currNode.vol;
       result.sortidcut = currNode.sortid; // latest node is not included
@@ -83182,7 +83188,7 @@ class ClonedNodes {
 
       let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
-      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
+      console.log(`Total visible nodes ${total} numfaces ${arg.facecnt}`);
 
       if (arg.facecnt > maxnumfaces) {
 
@@ -83221,7 +83227,7 @@ class ClonedNodes {
 
              camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
 
-             // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
+             // console.log(`Limit for camera ${camVol}  faces in camera view ${arg.totalcam}`);
          }
       }
 
@@ -83466,7 +83472,8 @@ function createFlippedMesh(shape, material) {
          let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
          for (let ii = 0; ii < ilen; ++ii) {
             let k = arr[i0 + ii];
-            if ((k < 0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            if ((k < 0) || (k*3 >= pos.length))
+               console.log(`strange index ${k*3} totallen = ${pos.length}`);
             dpos[ii*3] = pos[k*3];
             dpos[ii*3+1] = pos[k*3+1];
             dpos[ii*3+2] = pos[k*3+2];
@@ -83686,7 +83693,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                intersects = unique;
 
                if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
-                  console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
+                  console.log(`MISS ${clones?.resolveStack(mesh.stack)?.name}`);
 
                if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
 
@@ -83958,7 +83965,7 @@ function findItemWithPainter(hitem, funcname) {
   * @private */
 function provideVisStyle(obj) {
    if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
-      return obj.fRnrSelf ? " geovis_this" : "";
+      return obj.fRnrSelf ? " geovis_this" : '';
 
    let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
               testGeoBit(obj, geoBITS.kVisThis),
@@ -83969,7 +83976,7 @@ function provideVisStyle(obj) {
    if (vis && chld) return " geovis_all";
    if (vis) return " geovis_this";
    if (chld) return " geovis_daughters";
-   return "";
+   return '';
 }
 
 
@@ -84494,7 +84501,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (typeof opt != "string") opt = "";
+      if (typeof opt != 'string') opt = "";
 
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
@@ -84506,7 +84513,7 @@ class TGeoPainter extends ObjectPainter {
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
-                   script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
+                   script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       let dd = decodeUrl();
@@ -84522,21 +84529,21 @@ class TGeoPainter extends ObjectPainter {
          if (separ < 0) separ = opt.length;
          res.script_name = opt.slice(macro+6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ+1);
-         console.log('script', res.script_name, 'rest', opt);
+         console.log(`script ${res.script_name} rest ${opt}`);
       }
 
       while (true) {
          let pp = opt.indexOf("+"), pm = opt.indexOf("-");
          if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = "+";
-         if ((p1 < 0) || ((pm >= 0) && (pm<pp))) { p1 = pm; sign = "-"; }
+         if ((p1 < 0) || ((pm >= 0) && (pm < pp))) { p1 = pm; sign = '-'; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
-         while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
+         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
 
          let name = opt.substring(p1+1, p2);
          opt = opt.slice(0,p1) + opt.slice(p2);
-         // console.log("Modify visibility", sign,':',name);
+         // console.log(`Modify visibility ${sign} : ${name}`);
 
          this.modifyVisisbility(name, sign);
       }
@@ -84702,7 +84709,7 @@ class TGeoPainter extends ObjectPainter {
 
                if (max < 1e-4) return true;
 
-               console.log(this._clones.resolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
+               console.log(`${this._clones.resolveStack(entry.stack).name} maxdiff ${max} determ ${m1.determinant()} ${m2.determinant()}`);
 
                errcnt++;
 
@@ -85511,7 +85518,7 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == "string"))
+                  if ((geo_index !== undefined) && (typeof tooltip == 'string'))
                      tooltip += " indx:" + JSON.stringify(geo_index);
                }
                if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
@@ -86123,7 +86130,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
-         if (this.ctrl.outline && (typeof this.createOutline == "function")) {
+         if (this.ctrl.outline && (typeof this.createOutline == 'function')) {
             this._effectComposer = new EffectComposer( this._renderer );
             this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
@@ -86713,7 +86720,7 @@ class TGeoPainter extends ObjectPainter {
 
       let obj = hitem._obj;
       if (this.ctrl._debug)
-         console.log('Mouse over', on, itemname, (obj ? obj._typename : "---"));
+         console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
       if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet" && obj._typename !== "TPolyMarker3D")) return;
@@ -86803,7 +86810,7 @@ class TGeoPainter extends ObjectPainter {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
-            let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : "";
+            let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : '';
             if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
@@ -87058,7 +87065,7 @@ class TGeoPainter extends ObjectPainter {
       if (!prnt) {
          prnt = this.getGeometry();
          if (!prnt && (getNodeKind(prnt) !== 0)) return null;
-         itemname = this.geo_manager ? prnt.fName : "";
+         itemname = this.geo_manager ? prnt.fName : '';
          first_level = true;
          volumes = [];
       } else {
@@ -87092,7 +87099,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Process script option - load and execute some gGeoManager-related calls */
    async loadMacro(script_name) {
 
-      let result = { obj: this.getGeometry(), prefix: "" };
+      let result = { obj: this.getGeometry(), prefix: '' };
 
       if (this.geo_manager)
          result.prefix = result.obj.fName;
@@ -87105,7 +87112,7 @@ class TGeoPainter extends ObjectPainter {
                let regexp = new RegExp("^"+name+"$"),
                    currnode = this.findNodeWithVolume(regexp, arg => arg);
 
-               if (!currnode) console.log('Did not found '+name + ' volume');
+               if (!currnode) console.log(`Did not found ${name} volume`);
 
                // return proxy object with several methods, typically used in ROOT geom scripts
                return {
@@ -87118,7 +87125,7 @@ class TGeoPainter extends ObjectPainter {
                       if (!this.found || !this.fVolume) return;
                       result.obj = this.found.node;
                       result.prefix = this.found.item;
-                      console.log('Select volume for drawing', this.fVolume.fName, result.prefix);
+                      console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
                    },
                    SetTransparency(lvl) {
                      if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
@@ -87170,13 +87177,13 @@ class TGeoPainter extends ObjectPainter {
                let func = new Function('gGeoManager', line);
                func(mgr);
             } catch(err) {
-               console.error('Problem by processing ' + line);
+               console.error(`Problem by processing ${line}`);
             }
          }
 
          return result;
       }).catch(() => {
-         console.error('Fail to load ' + script_name);
+         console.error(`Fail to load ${script_name}`);
          return result;
       });
    }
@@ -87587,7 +87594,7 @@ class TGeoPainter extends ObjectPainter {
                if (item.buf_pos.length === 0) {
                   origin.geom = null;
                } else if (item.buf_pos.length !== item.buf_norm.length) {
-                  console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
+                  console.error(`item.buf_pos.length ${item.buf_pos.length} != item.buf_norm.length ${item.buf_norm.length}`);
                   origin.geom = null;
                } else {
                   origin.geom = new BufferGeometry();
@@ -88375,7 +88382,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == "string") && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == 'string') && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
@@ -88702,7 +88709,7 @@ function createItem(node, obj, name) {
       if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
 
       if (shape) {
-         if (sub._title == "")
+         if (sub._title == '')
             sub._title = shape._typename;
 
          sub._icon = getShapeIcon(shape);
@@ -89166,7 +89173,7 @@ class THStackPainter extends ObjectPainter {
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
       if (!this.options) this.options = {};
-      Object.assign(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
+      Object.assign(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: '' });
 
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
@@ -90621,7 +90628,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Decode options */
    decodeOptions(opt, first_time) {
 
-      if ((typeof opt == "string") && (opt.indexOf("same ") == 0))
+      if ((typeof opt == 'string') && (opt.indexOf("same ") == 0))
          opt = opt.slice(5);
 
       let graph = this.getObject(),
@@ -90659,7 +90666,7 @@ class TGraphPainter$1 extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      Object.assign(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
          if (opt.indexOf(";") > 0) {
@@ -91217,8 +91224,8 @@ class TGraphPainter$1 extends ObjectPainter {
       if (options.Errors) {
          // to show end of error markers, use line width attribute
          let lw = lineatt.width + gStyle.fEndErrorSize, bb = 0,
-             vv = options.Ends ? `m0,${lw}v${-2*lw}` : "",
-             hh = options.Ends ? `m${lw},0h${-2*lw}` : "",
+             vv = options.Ends ? `m0,${lw}v${-2*lw}` : '',
+             hh = options.Ends ? `m${lw},0h${-2*lw}` : '',
              vleft = vv, vright = vv, htop = hh, hbottom = hh;
 
          const mainLine = (dx,dy) => {
@@ -91273,10 +91280,10 @@ class TGraphPainter$1 extends ObjectPainter {
              .style("fill", "none")
              .attr("d", d => {
                 d.error = true;
-                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : "") +
-                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : "") +
-                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : "") +
-                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : "");
+                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
+                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
+                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
+                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
               });
       }
 
@@ -92072,7 +92079,7 @@ function proivdeEvalPar(obj) {
 
    let _func = obj.fTitle, isformula = false, pprefix = "[";
    if (_func === "gaus") _func = "gaus(0)";
-   if (obj.fFormula && typeof obj.fFormula.fFormula == "string") {
+   if (obj.fFormula && typeof obj.fFormula.fFormula == 'string') {
      if (obj.fFormula.fFormula.indexOf("[](double*x,double*p)") == 0) {
         isformula = true; pprefix = "p[";
         _func = obj.fFormula.fFormula.slice(21);
@@ -93326,7 +93333,7 @@ class TWebPaintingPainter extends ObjectPainter {
                }
 
                default:
-                  console.log('unsupported operation ' + oper);
+                  console.log(`unsupported operation ${oper}`);
             }
          }
          return Promise.resolve(true);
@@ -94080,7 +94087,7 @@ class TASImagePainter extends ObjectPainter {
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = "";
 
-      if (typeof buf == "string")
+      if (typeof buf == 'string')
          pngbuf = buf;
       else
          for (let k = 0; k < buf.length; ++k)
@@ -94323,10 +94330,14 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    }
 
    let ndig = 0;
-   if (this.aver_diff <= 0) ndig = 0; else
-      if (this.aver_diff < 0.0001) ndig = 3; else
-         if (this.aver_diff < 0.001) ndig = 2; else
-            if (this.aver_diff < 0.01) ndig = 1;
+   if (this.aver_diff <= 0)
+      ndig = 0;
+   else if (this.aver_diff < 0.0001)
+      ndig = 3;
+   else if (this.aver_diff < 0.001)
+      ndig = 2;
+   else if (this.aver_diff < 0.01)
+      ndig = 1;
 
    let main_box = document.createElement("p"),
       text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
@@ -94442,8 +94453,8 @@ function createTreePlayer(player) {
       main.select(".treedraw_buttons").node().innerHTML +=
           'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
           'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
-          `Num: <input class="treedraw_number" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
-          `First: <input class="treedraw_first" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
+          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
+          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
           '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
       main.select('.treedraw_exe').on("click", () => this.performDraw());
@@ -94580,8 +94591,8 @@ function createTreePlayer(player) {
          url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
          // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (nentries == "") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
-         if (firstentry == "") firstentry = "0";
+         if (nentries == '') nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
+         if (firstentry == '') firstentry = "0";
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
       } else {
          url += `&prototype="Option_t*"&opt="${expr}"`;
@@ -94834,7 +94845,7 @@ class RObjectPainter extends ObjectPainter {
       if (value === undefined)
          return Math.round(dflt*sizepx);
 
-      if (typeof value == "number")
+      if (typeof value == 'number')
          return Math.round(value*sizepx);
 
       if (value === null)
@@ -94892,7 +94903,7 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Evaluate RColor using attribute storage and configured RStyle */
    v7EvalColor(name, dflt) {
       let val = this.v7EvalAttr(name, "");
-      if (!val || (typeof val != "string")) return dflt;
+      if (!val || (typeof val != 'string')) return dflt;
 
       if (val == "auto") {
          let pp = this.getPadPainter();
@@ -94927,10 +94938,10 @@ class RObjectPainter extends ObjectPainter {
    v7EvalFont(name, dflts, fontScale) {
 
       if (!dflts) dflts = {}; else
-      if (typeof dflts == "number") dflts = { size: dflts };
+      if (typeof dflts == 'number') dflts = { size: dflts };
 
       let pp = this.getPadPainter(),
-          rfont = pp?._dfltRFont || { fFamily: "Arial", fStyle: "", fWeight: "" },
+          rfont = pp?._dfltRFont || { fFamily: "Arial", fStyle: '', fWeight: '' },
           text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
           text_angle  = this.v7EvalAttr(name + "_angle", 0),
           text_align  = this.v7EvalAttr(name + "_align", dflts.align || "none"),
@@ -94939,7 +94950,7 @@ class RObjectPainter extends ObjectPainter {
           font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ""),
           font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || "");
 
-       if (typeof text_size == "string") text_size = parseFloat(text_size);
+       if (typeof text_size == 'string') text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = pp?.getPadHeight() || 100;
 
@@ -94954,7 +94965,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "fill_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "fill_";
 
       let color = this.v7EvalColor(prefix + "color", ""),
           pattern = this.v7EvalAttr(prefix + "style", 0);
@@ -94964,7 +94975,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.lineatt object based on v7 line attributes */
    createv7AttLine(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "line_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "line_";
 
       let color = this.v7EvalColor(prefix + "color", "black"),
           width = this.v7EvalAttr(prefix + "width", 1),
@@ -94979,7 +94990,7 @@ class RObjectPainter extends ObjectPainter {
 
     /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "marker_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "marker_";
 
       let color = this.v7EvalColor(prefix + "color", "black"),
           size = this.v7EvalAttr(prefix + "size", 0.01),
@@ -95019,7 +95030,7 @@ class RObjectPainter extends ObjectPainter {
 
       if (!kind)
          switch(typeof value) {
-            case "number": kind = "double"; break;
+            case 'number': kind = "double"; break;
             case "boolean": kind = "boolean"; break;
          }
 
@@ -95029,7 +95040,7 @@ class RObjectPainter extends ObjectPainter {
          case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
          case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
          case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;
-         default: obj._typename += "StringValue_t"; obj.v = (typeof value == "string") ? value : JSON.stringify(value); break;
+         default: obj._typename += "StringValue_t"; obj.v = (typeof value == 'string') ? value : JSON.stringify(value); break;
       }
 
       req.values.push(obj);
@@ -95425,8 +95436,8 @@ class RAxisPainter extends RObjectPainter {
          this.ndig = bestndig;
 
          if (optionInt) {
-            if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
-            if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
+            if (this.order) console.warn(`Axis painter - integer labels are configured, but axis order ${this.order} is preferable`);
+            if (this.ndig) console.warn(`Axis painter - integer labels are configured, but ${this.ndig} decimal digits are required`);
             this.ndig = 0;
             this.order = 0;
          }
@@ -96288,7 +96299,7 @@ class RFramePainter extends RObjectPainter {
       this.projection = Proj || 0;
 
       if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
-         console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+         console.warn(`Mercator Projection: latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
          this.projection = 0;
       }
 
@@ -96638,7 +96649,7 @@ class RFramePainter extends RObjectPainter {
          let arr = [];
 
          if (ticksx > 0)
-            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex));
+            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : '', sidex));
 
          if (ticksy > 0)
             arr.push(draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey));
@@ -96646,7 +96657,7 @@ class RFramePainter extends RObjectPainter {
          pr = Promise.all(arr).then(() => {
             arr = [];
             if (ticksx > 1)
-               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : '', -sidex, ticksx == 2));
 
             if (ticksy > 1)
                arr.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
@@ -96976,7 +96987,7 @@ class RFramePainter extends RObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : "",
+         transform: this.draw_g ? this.draw_g.attr("transform") : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
@@ -97955,7 +97966,7 @@ class RPadPainter extends RObjectPainter {
 
          if (this._start_tm) {
             let spenttm = new Date().getTime() - this._start_tm;
-            if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+            if (spenttm > 3000) console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
             delete this._start_tm;
          }
 
@@ -98430,7 +98441,7 @@ class RPadPainter extends RObjectPainter {
 
          let mainid = this.selectDom().attr("id");
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
@@ -98521,10 +98532,10 @@ class RPadPainter extends RObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ > 0) ? res.slice(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : '';
          });
 
-      return "";
+      return '';
    }
 
    /** @summary Show context menu for specified item
@@ -98587,7 +98598,7 @@ class RPadPainter extends RObjectPainter {
           items = []; // keep list of replaced elements, which should be moved back at the end
 
       if (elem.empty())
-         return "";
+         return '';
 
       if (!use_frame) // do not make transformations for the frame
       painter.forEachPainterInPad(pp => {
@@ -98705,7 +98716,7 @@ class RPadPainter extends RObjectPainter {
          };
 
          image.onerror = function(arg) {
-            console.log('IMAGE ERROR', arg);
+            console.log(`IMAGE ERROR ${arg}`);
             reconstruct();
             resolveFunc(null);
          };
@@ -98762,7 +98773,7 @@ class RPadPainter extends RObjectPainter {
                   let obj = this.painters[n]?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) continue;
 
-                  let name = obj._typename ? obj._typename + "::" : "";
+                  let name = obj._typename ? obj._typename + "::" : '';
                   if (obj.fName) name += obj.fName;
                   if (!name) name = "item" + n;
                   menu.add(name, n, this.itemContextMenu);
@@ -98972,15 +98983,15 @@ class LongPollSocket {
       if (kind === "connect") {
          url += this.raw ? "?raw_connect" : "?txt_connect";
          if (this.args) url += "&" + this.args;
-         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
+         console.log(`longpoll connect ${url} raw = ${this.raw}`);
          this.connid = "connect";
       } else if (kind === "close") {
-         if ((this.connid === null) || (this.connid === "close")) return;
+         if ((this.connid === null) || (this.connid === 'close')) return;
          url += "?connection=" + this.connid + "&close";
          this.connid = "close";
          reqmode = "text;sync"; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser$1.qt5) console.error("No connection");
+         if (!browser$1.qt5) console.error('No connection');
          return;
       } else {
          url += "?connection=" + this.connid;
@@ -99015,7 +99026,7 @@ class LongPollSocket {
 
             let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser$1.qt5) console.error('longpoll got short message in raw mode ' + offset);
+               if (!browser$1.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
@@ -99046,7 +99057,7 @@ class LongPollSocket {
             this.handle.processRequest(res, 0);
          } else {
             // text reply
-            if (res && typeof res !== "string") {
+            if (res && typeof res !== 'string') {
                let str = "", u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
@@ -99093,9 +99104,9 @@ class LongPollSocket {
 
          this.connid = parseInt(res);
          dummy_tmout = 100; // when establishing connection, wait a bit longer to submit dummy package
-         console.log('Get new longpoll connection with id ' + this.connid);
+         console.log(`Get new longpoll connection with id ${this.connid}`);
          if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid === "close") {
+      } else if (this.connid === 'close') {
          if (typeof this.onclose == 'function')
             this.onclose();
          return;
@@ -99106,14 +99117,14 @@ class LongPollSocket {
 
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
       if (!this.req)
-         setTimeout(() => { if (!this.req) this.nextRequest("", "dummy"); }, dummy_tmout);
+         setTimeout(() => { if (!this.req) this.nextRequest('', 'dummy'); }, dummy_tmout);
    }
 
    /** @summary Send data */
    send(str) { this.nextRequest(str); }
 
    /** @summary Close connection */
-   close() { this.nextRequest("", "close"); }
+   close() { this.nextRequest('', 'close'); }
 
 } // class LongPollSocket
 
@@ -99160,7 +99171,7 @@ class FileDumpSocket {
       let fname = this.protocol[this.cnt];
       if (!fname) return;
       if (fname == "send") return; // waiting for send
-      // console.log("getting file", fname, "wait", this.wait_for_file);
+      // console.log(`getting file ${fname} wait ${this.wait_for_file}`);
       this.wait_for_file = true;
       this.cnt++;
       httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
@@ -99237,9 +99248,9 @@ class WebWindowHandle {
     * @private */
    provideData(chid, _msg, _len) {
       if (this.wait_first_recv) {
-         console.log("FIRST MESSAGE", chid, _msg);
+         console.log(`FIRST MESSAGE ${chid} ${msg}`);
          delete this.wait_first_recv;
-         return this.invokeReceiver(false, "onWebsocketOpened");
+         return this.invokeReceiver(false, 'onWebsocketOpened');
       }
 
       if ((chid > 1) && this.channels) {
@@ -99251,7 +99262,7 @@ class WebWindowHandle {
       const force_queue = _len && (_len < 0);
 
       if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-         return this.invokeReceiver(false, "onWebsocketMsg", _msg, _len);
+         return this.invokeReceiver(false, 'onWebsocketMsg', _msg, _len);
 
       if (!this.msgqueue) this.msgqueue = [];
       if (force_queue) _len = undefined;
@@ -99332,7 +99343,7 @@ class WebWindowHandle {
 
       if (!Number.isInteger(chid)) chid = 1; // when not configured, channel 1 is used - main widget
 
-      if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
+      if (this.cansend <= 0) console.error(`should be queued before sending cansend: ${this.cansend}`);
 
       let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
       this.ackn = 0;
@@ -99359,10 +99370,10 @@ class WebWindowHandle {
 
       if (Array.isArray(msg)) {
          for (let k = 0; k < msg.length; ++k)
-            this.provideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
+            this.provideData(chid, (typeof msg[k] == 'string') ? msg[k] : JSON.stringify(msg[k]), -1);
          this.processQueue();
       } else if (msg) {
-         this.provideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
+         this.provideData(chid, typeof msg == 'string' ? msg : JSON.stringify(msg));
       }
    }
 
@@ -99430,7 +99441,7 @@ class WebWindowHandle {
       this.close();
       if (!href && this.href) href = this.href;
 
-      let ntry = 0, args = (this.key ? ("key=" + this.key) : "");
+      let ntry = 0, args = (this.key ? ("key=" + this.key) : '');
       if (this.token) {
          if (args) args += "&";
          args += "token=" + this.token;
@@ -99440,7 +99451,7 @@ class WebWindowHandle {
 
          if (this.state != 0) return;
 
-         if (!first_time) console.log("try connect window again " + new Date().toString());
+         if (!first_time) console.log(`try connect window again ${new Date().toString()}`);
 
          if (this._websocket) {
             this._websocket.close();
@@ -99455,24 +99466,24 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         if (first_time) console.log('Opening web socket at ' + href);
+         if (first_time) console.log(`Opening web socket at ${href}`);
 
-         if (ntry > 2) showProgress("Trying to connect " + href);
+         if (ntry > 2) showProgress(`Trying to connect ${href}`);
 
          let path = href;
 
          if (this.kind == "file") {
             path += "root.filedump";
             this._websocket = new FileDumpSocket(this);
-            console.log('configure protocol log ' + path);
+            console.log(`configure protocol log ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
             path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
             if (args) path += "?" + args;
-            console.log('configure websocket ' + path);
+            console.log(`configure websocket ${path}`);
             this._websocket = new WebSocket(path);
          } else {
-            path += "root.longpoll";
-            console.log('configure longpoll ' + path);
+            path += 'root.longpoll';
+            console.log(`configure longpoll ${path}`);
             this._websocket = new LongPollSocket(path, (this.kind === 'rawlongpoll'), args);
          }
 
@@ -99482,7 +99493,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            let key = this.key || "";
+            let key = this.key || '';
 
             this.send("READY=" + key, 0); // need to confirm connection
             this.invokeReceiver(false, "onWebsocketOpened");
@@ -99504,7 +99515,7 @@ class WebWindowHandle {
                   reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
-                  // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  // console.log(`got array ${typeof msg} len = ${msg.byteLength}`);
                   // this is from CEF or LongPoll handler
                   this.provideData(binchid, msg, e.offset || 0);
                }
@@ -99512,7 +99523,7 @@ class WebWindowHandle {
                return;
             }
 
-            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
+            if (typeof msg != 'string') return console.log(`unsupported message kind: ${typeof msg}`);
 
             let i1 = msg.indexOf(":"),
                credit = parseInt(msg.slice(0, i1)),
@@ -99527,7 +99538,7 @@ class WebWindowHandle {
             msg = msg.slice(i3 + 1);
 
             if (chid == 0) {
-               console.log('GET chid=0 message', msg);
+               console.log(`GET chid=0 message ${msg}`);
                if (msg == "CLOSE") {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, "onWebsocketClosed");
@@ -99829,7 +99840,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg(panel_handle, msg) {
-                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : "";
+                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : '';
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
@@ -99877,7 +99888,7 @@ class RCanvasPainter extends RPadPainter {
    submitDrawableRequest(kind, req, painter, method) {
 
       if (!this._websocket || !req || !req._typename ||
-          !painter.snapid || (typeof painter.snapid != "string")) return null;
+          !painter.snapid || (typeof painter.snapid != 'string')) return null;
 
       if (kind && method) {
          // if kind specified - check if such request already was submitted
@@ -100000,7 +100011,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
       if (!painter) painter = this;
       switch (kind) {
          case "sbits":
@@ -100147,7 +100158,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    produceJSON() {
       console.error('RCanvasPainter.produceJSON not yet implemented');
-      return "";
+      return '';
    }
 
    /** @summary draw RCanvas object */
@@ -100199,7 +100210,7 @@ async function ensureRCanvas(painter, frame_kind) {
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
+         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : '');
    }).then(() => {
       painter.addToPadPrimitives();
       return painter;
@@ -100340,7 +100351,7 @@ registerMethods("ROOT::Experimental::RPalette", {
       // extract color with ordinal value between 0 and 1
       if (!this.fColors)
          return "black";
-      if ((typeof value != "number") || (value < 0))
+      if ((typeof value != 'number') || (value < 0))
          value = 0;
       else if (value > 1)
          value = 1;
@@ -101278,7 +101289,7 @@ class RHistStatsPainter extends RPavePainter {
 
    /** @summary Redraw stats box */
    async redraw(reason) {
-      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) && this.v7NormalMode()) {
+      if (reason && (typeof reason == 'string') && (reason.indexOf("zoom") == 0) && this.v7NormalMode()) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.getObject().fShowMask // lines to show in stat box
@@ -101646,7 +101657,6 @@ class RHistPainter extends RObjectPainter {
             default: axis = obj.fAxes[0]; break;
          }
       } else if (histo && histo.fAxes) {
-         // console.log('histo fAxes', histo.fAxes, histo.fAxes._0)
          switch(name) {
             case "x": axis = histo.fAxes._0; break;
             case "y": axis = histo.fAxes._1; break;
@@ -101736,7 +101746,7 @@ class RHistPainter extends RObjectPainter {
    async drawingBins(reason) {
 
       let is_axes_zoomed = false;
-      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0)) {
+      if (reason && (typeof reason == 'string') && (reason.indexOf("zoom") == 0)) {
          if (reason.indexOf("0") > 0) is_axes_zoomed = true;
          if ((this.getDimension() > 1) && (reason.indexOf("1") > 0)) is_axes_zoomed = true;
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
@@ -101912,7 +101922,7 @@ class RHistPainter extends RObjectPainter {
           curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       menu.input("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr).then(res => {
          res = res ? JSON.parse(res) : [];
-         if (!res || (typeof res != "object") || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
+         if (!res || (typeof res != 'object') || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
             pmain.unzoom(arg);
          else
             pmain.zoom(arg, res[0], res[1]);
@@ -102785,7 +102795,7 @@ class RH1Painter$2 extends RHistPainter {
          tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
-         let lbl = "entries = " + (di > 1 ? "~" : "");
+         let lbl = "entries = " + (di > 1 ? "~" : '');
          if (cont === Math.round(cont))
             tips.push(lbl + cont);
          else
@@ -103128,7 +103138,7 @@ class RH1Painter$2 extends RHistPainter {
                              Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
                              Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
+                             Text: false, TextAngle: 0, TextKind: '', AutoColor: 0,
                              BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
          let d = new DrawOptions(opt);
@@ -103784,7 +103794,7 @@ class RH2Painter$2 extends RHistPainter {
       } // end of i
 
       let polysort = new Int32Array(levels.length), first = 0;
-      //find first positive contour
+      // find first positive contour
       for (ipoly=0;ipoly<levels.length;ipoly++) {
          if (levels[ipoly] >= 0) { first = ipoly; break; }
       }
@@ -103816,7 +103826,7 @@ class RH2Painter$2 extends RHistPainter {
             yy[istart] = yy[istart+1] = ymin;
             while (true) {
                nadd = 0;
-               for (i=2;i<np;i+=2) {
+               for (i = 2; i < np; i += 2) {
                   if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                      iplus++;
                      xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
@@ -103872,7 +103882,7 @@ class RH2Painter$2 extends RHistPainter {
             if (!cmd) {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
-               if (!isany) return ""; // all same points
+               if (!isany) return ''; // all same points
                cmd += "z"; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
@@ -104070,7 +104080,7 @@ class RH2Painter$2 extends RHistPainter {
       const makeLine = (dx, dy) => {
          if (dx)
             return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : "";
+         return dy ? `v${dy}` : '';
       };
 
       for (let loop = 0; loop < 2; ++loop)
@@ -104552,7 +104562,7 @@ class RH2Painter$2 extends RHistPainter {
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : "");
+      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : '');
 
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
@@ -104898,9 +104908,9 @@ class RH2Painter$2 extends RHistPainter {
 
          painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: true, TextAngle: 0, TextKind: "",
+                             Text: true, TextAngle: 0, TextKind: '',
                              BaseLine: false, Mode3D: false, AutoColor: 0,
-                             Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                             Color: false, Scat: false, ScatCoef: 1, Candle: '', Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                              BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
          let kind = painter.v7EvalAttr("kind", ""),
@@ -105198,7 +105208,7 @@ class RH3Painter extends RHistPainter {
       lines.push(`z = ${this.getAxisBinTip("z", iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
-          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : "");
+          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : '');
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
@@ -105413,7 +105423,7 @@ class RH3Painter extends RHistPainter {
                   }
                   cols_size[colindx]+=1;
                } else {
-                  console.error('not found color for', bin_content);
+                  console.error(`not found color for value = ${bin_content}`);
                }
             }
          }
@@ -106270,10 +106280,10 @@ var ColorMath = {
   }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
 
@@ -106342,7 +106352,7 @@ var get = function get(object, property, receiver) {
 };
 
 var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
+  if (typeof superClass !== 'function' && superClass !== null) {
     throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
   }
 
@@ -106372,7 +106382,7 @@ var possibleConstructorReturn = function (self, call) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
 
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
 };
 
 var Color = function () {
