@@ -1454,7 +1454,7 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when done
      * @private */
    async focusOnItem(hitem) {
-      if (typeof hitem == "string")
+      if (typeof hitem == 'string')
          hitem = this.findItem(hitem);
 
       let name = hitem ? this.itemFullName(hitem) : "";
@@ -1597,7 +1597,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
+         if ((typeof hitem._kind === 'string') && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, "inspect", true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -2064,7 +2064,7 @@ class HierarchyPainter extends BasePainter {
 
       let allitems = [], options = [], only_auto_items = false, want_update_all = false;
 
-      if (typeof arg == "string")
+      if (typeof arg == 'string')
          arg = [ arg ];
       else if (typeof arg != 'object') {
          if (arg === undefined) arg = !this.isMonitoring();
@@ -2631,7 +2631,7 @@ class HierarchyPainter extends BasePainter {
      * @return string or null if item is not online
      * @private */
    getOnlineItemUrl(item) {
-      if (typeof item == "string") item = this.findItem(item);
+      if (typeof item == 'string') item = this.findItem(item);
       let prnt = item;
       while (prnt && (prnt._online === undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
@@ -2662,7 +2662,7 @@ class HierarchyPainter extends BasePainter {
 
       let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
-      if ((typeof option == "string") && (option.indexOf('hierarchy_expand') == 0)) {
+      if ((typeof option == 'string') && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
          option = undefined;
       }
@@ -3241,7 +3241,7 @@ class HierarchyPainter extends BasePainter {
       if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push("");
 
       if (!this.disp_kind) {
-         if ((typeof layout == "string") && (layout.length > 0))
+         if ((typeof layout == 'string') && (layout.length > 0))
             this.disp_kind = layout;
          else
          switch (itemsarr.length) {
@@ -3373,7 +3373,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    prepareGuiDiv(myDiv, layout) {
 
-      this.gui_div = (typeof myDiv == "string") ? myDiv : myDiv.attr('id');
+      this.gui_div = (typeof myDiv == 'string') ? myDiv : myDiv.attr('id');
 
       this.brlayout = new BrowserLayout(this.gui_div, this);
 

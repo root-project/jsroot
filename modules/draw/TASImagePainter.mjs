@@ -127,7 +127,7 @@ class TASImagePainter extends ObjectPainter {
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = "";
 
-      if (typeof buf == "string")
+      if (typeof buf == 'string')
          pngbuf = buf;
       else
          for (let k = 0; k < buf.length; ++k)

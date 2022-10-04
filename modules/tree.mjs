@@ -189,7 +189,7 @@ class ArrayIterator {
             return true;
          }
 
-         if ((typ == "any") && (typeof this.select[cnt + 1] === "string")) {
+         if ((typ == "any") && (typeof this.select[cnt + 1] === 'string')) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
@@ -598,7 +598,7 @@ class TDrawVariable {
 
       if (this.is_dummy()) {
          this.value = 1.; // used as dummy weight variable
-         this.kind = "number";
+         this.kind = 'number';
          return;
       }
 
@@ -705,7 +705,7 @@ class TDrawSelector extends TSelector {
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
 
-      if (!expr || (typeof expr !== "string")) return "";
+      if (!expr || (typeof expr !== 'string')) return "";
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(";");
@@ -979,7 +979,7 @@ class TDrawSelector extends TSelector {
          }
       }
 
-      if (this.vars[axisid].kind === "string") {
+      if (this.vars[axisid].kind === 'string') {
          res.lbls = []; // all labels
 
          for (let k = 0; k < arr.length; ++k)
@@ -1253,9 +1253,9 @@ class TDrawSelector extends TSelector {
                if (var2) var2.buf.push(this.tgtarr.br2[k]);
             }
          }
-         var0.kind = "number";
-         if (var1) var1.kind = "number";
-         if (var2) var2.kind = "number";
+         var0.kind = 'number';
+         if (var1) var1.kind = 'number';
+         if (var2) var2.kind = 'number';
          this.cut.buf = null; // do not create buffer for cuts
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
             this.createHistogram();
@@ -1689,7 +1689,7 @@ async function treeProcess(tree, selector, args) {
 
          let match_prefix = branch.fName;
          if (match_prefix[match_prefix.length - 1] === ".") match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if ((typeof read_mode === "string") && (read_mode[0] == ".")) match_prefix += read_mode;
+         if ((typeof read_mode === 'string') && (read_mode[0] == ".")) match_prefix += read_mode;
          match_prefix += ".";
 
          for (let k = 0; k < lst.arr.length; ++k) {
@@ -1750,7 +1750,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createStreamerElement(target_name, kInt);
 
-         if (!read_mode || ((typeof read_mode === "string") && (read_mode[0] === ".")) || (read_mode === 1)) {
+         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === ".")) || (read_mode === 1)) {
             handle.process_arrays = false;
 
             member = {
@@ -1770,7 +1770,7 @@ async function treeProcess(tree, selector, args) {
                }
             };
 
-            if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
+            if ((typeof read_mode === 'string') && (read_mode[0] === ".")) {
                member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                if (!member.conttype) {
                   console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
@@ -1879,7 +1879,7 @@ async function treeProcess(tree, selector, args) {
          }
       }
 
-      if (item_cnt && (typeof read_mode === "string")) {
+      if (item_cnt && (typeof read_mode === 'string')) {
 
          member.name0 = item_cnt.name;
 

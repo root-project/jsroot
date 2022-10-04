@@ -138,7 +138,7 @@ function floatToString(value, fmt, ret_fmt) {
 class DrawOptions {
 
    constructor(opt) {
-      this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
+      this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : "";
       this.part = "";
    }
 
@@ -427,7 +427,7 @@ class BasePainter {
 
       let res = this._selected_main;
       if (!res) {
-         if (typeof this.divid == "string") {
+         if (typeof this.divid == 'string') {
             let id = this.divid;
             if (id[0] != '#') id = "#" + id;
             res = d3_select(id);

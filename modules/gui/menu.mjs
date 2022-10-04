@@ -13,7 +13,7 @@ import { FontHandler } from '../base/FontHandler.mjs';
   * @private */
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
-   if (typeof col == "string") {
+   if (typeof col == 'string') {
       if (!col || (col == "none")) id = 0; else
          for (let k = 1; k < arr.length; ++k)
             if (arr[k] == col) { id = k; break; }
@@ -342,7 +342,7 @@ class JSRootMenu {
      * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
      * @protected */
    addSelectMenu(name, values, value, set_func) {
-      let use_number = (typeof value == "number");
+      let use_number = (typeof value == 'number');
       this.add("sub:" + name);
       for (let n = 0; n < values.length; ++n)
          this.addchk(use_number ? (n == value) : (values[n] == value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
@@ -854,12 +854,12 @@ class JSRootMenu {
      * @return {Promise} with input value
      * @param {string} title - input dialog title
      * @param value - initial value
-     * @param {string} [kind] - use "text" (default), "number", "float" or "int"
+     * @param {string} [kind] - use "text" (default), 'number', "float" or "int"
      * @protected */
    async input(title, value, kind, min, max) {
 
       if (!kind) kind = "text";
-      let inp_type = (kind == "int") ? "number" : "text", ranges = "";
+      let inp_type = (kind == "int") ? 'number' : "text", ranges = "";
       if ((value === undefined) || (value === null)) value = "";
       if (kind == "int") {
           if (min !== undefined) ranges += ` min="${min}"`;

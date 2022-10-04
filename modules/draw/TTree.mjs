@@ -148,8 +148,8 @@ function createTreePlayer(player) {
       main.select(".treedraw_buttons").node().innerHTML +=
           'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
           'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
-          `Num: <input class="treedraw_number" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
-          `First: <input class="treedraw_first" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
+          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
+          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
           '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
       main.select('.treedraw_exe').on("click", () => this.performDraw());

@@ -543,7 +543,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
 
       let msg = "";
       if (!painter) painter = this;
@@ -555,7 +555,7 @@ class TCanvasPainter extends TPadPainter {
          case "zoom":  // when changing zoom inside frame
             if (!painter.getWebPadOptions)
                painter = painter.getPadPainter();
-            if (typeof painter.getWebPadOptions == "function")
+            if (typeof painter.getWebPadOptions == 'function')
                msg = "OPTIONS6:" + painter.getWebPadOptions("only_this");
             break;
          case "pave_moved":

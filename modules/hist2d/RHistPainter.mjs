@@ -431,7 +431,7 @@ class RHistPainter extends RObjectPainter {
    async drawingBins(reason) {
 
       let is_axes_zoomed = false;
-      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0)) {
+      if (reason && (typeof reason == 'string') && (reason.indexOf("zoom") == 0)) {
          if (reason.indexOf("0") > 0) is_axes_zoomed = true;
          if ((this.getDimension() > 1) && (reason.indexOf("1") > 0)) is_axes_zoomed = true;
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;

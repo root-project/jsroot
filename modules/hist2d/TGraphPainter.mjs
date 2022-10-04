@@ -63,7 +63,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Decode options */
    decodeOptions(opt, first_time) {
 
-      if ((typeof opt == "string") && (opt.indexOf("same ") == 0))
+      if ((typeof opt == 'string') && (opt.indexOf("same ") == 0))
          opt = opt.slice(5);
 
       let graph = this.getObject(),

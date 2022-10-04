@@ -71,7 +71,7 @@ class RObjectPainter extends ObjectPainter {
       if (value === undefined)
          return Math.round(dflt*sizepx);
 
-      if (typeof value == "number")
+      if (typeof value == 'number')
          return Math.round(value*sizepx);
 
       if (value === null)
@@ -129,7 +129,7 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Evaluate RColor using attribute storage and configured RStyle */
    v7EvalColor(name, dflt) {
       let val = this.v7EvalAttr(name, "");
-      if (!val || (typeof val != "string")) return dflt;
+      if (!val || (typeof val != 'string')) return dflt;
 
       if (val == "auto") {
          let pp = this.getPadPainter();
@@ -164,7 +164,7 @@ class RObjectPainter extends ObjectPainter {
    v7EvalFont(name, dflts, fontScale) {
 
       if (!dflts) dflts = {}; else
-      if (typeof dflts == "number") dflts = { size: dflts };
+      if (typeof dflts == 'number') dflts = { size: dflts };
 
       let pp = this.getPadPainter(),
           rfont = pp?._dfltRFont || { fFamily: "Arial", fStyle: "", fWeight: "" },
@@ -176,7 +176,7 @@ class RObjectPainter extends ObjectPainter {
           font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ""),
           font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || "");
 
-       if (typeof text_size == "string") text_size = parseFloat(text_size);
+       if (typeof text_size == 'string') text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = pp?.getPadHeight() || 100;
 
@@ -191,7 +191,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "fill_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "fill_";
 
       let color = this.v7EvalColor(prefix + "color", ""),
           pattern = this.v7EvalAttr(prefix + "style", 0);
@@ -201,7 +201,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.lineatt object based on v7 line attributes */
    createv7AttLine(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "line_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "line_";
 
       let color = this.v7EvalColor(prefix + "color", "black"),
           width = this.v7EvalAttr(prefix + "width", 1),
@@ -216,7 +216,7 @@ class RObjectPainter extends ObjectPainter {
 
     /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
-      if (!prefix || (typeof prefix != "string")) prefix = "marker_";
+      if (!prefix || (typeof prefix != 'string')) prefix = "marker_";
 
       let color = this.v7EvalColor(prefix + "color", "black"),
           size = this.v7EvalAttr(prefix + "size", 0.01),
@@ -256,7 +256,7 @@ class RObjectPainter extends ObjectPainter {
 
       if (!kind)
          switch(typeof value) {
-            case "number": kind = "double"; break;
+            case 'number': kind = "double"; break;
             case "boolean": kind = "boolean"; break;
          }
 
@@ -266,7 +266,7 @@ class RObjectPainter extends ObjectPainter {
          case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
          case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
          case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;
-         default: obj._typename += "StringValue_t"; obj.v = (typeof value == "string") ? value : JSON.stringify(value); break;
+         default: obj._typename += "StringValue_t"; obj.v = (typeof value == 'string') ? value : JSON.stringify(value); break;
       }
 
       req.values.push(obj);

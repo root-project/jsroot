@@ -27,7 +27,7 @@ let internals = {
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
 
 const src = import.meta?.url;
-if (src && (typeof src == "string")) {
+if (src && (typeof src == 'string')) {
    const pos = src.indexOf("modules/core.mjs");
    if (pos >= 0) {
       source_dir = src.slice(0, pos);
@@ -716,7 +716,7 @@ function toJSON(obj, spacing) {
    let map = []; // map of stored objects
 
    const copy_value = value => {
-      if (typeof value === "function") return undefined;
+      if (typeof value === 'function') return undefined;
 
       if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 

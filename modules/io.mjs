@@ -654,7 +654,7 @@ function getTypeId(typname, norecursion) {
 
    if (!norecursion) {
       let replace = CustomStreamers[typname];
-      if (typeof replace === "string") return getTypeId(replace, true);
+      if (typeof replace === 'string') return getTypeId(replace, true);
    }
 
    return -1;
@@ -669,7 +669,7 @@ function createStreamerElement(name, typename, file) {
       fXmin: 0, fXmax: 0, fFactor: 0
    };
 
-   if (typeof typename === "string") {
+   if (typeof typename === 'string') {
       elem.fType = getTypeId(typename);
       if ((elem.fType < 0) && file && file.fBasicTypes[typename])
          elem.fType = file.fBasicTypes[typename];
@@ -1111,7 +1111,7 @@ function createMemberStreamer(element, file) {
          let stl = (element.fSTLtype || 0) % 40;
 
          if ((element._typename === 'TStreamerSTLstring') ||
-            (member.typename == "string") || (member.typename == "string*")) {
+            (member.typename == 'string') || (member.typename == "string*")) {
             member.readelem = buf => buf.readTString();
          } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
@@ -1269,7 +1269,7 @@ function createMemberStreamer(element, file) {
   * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
   * @private */
 function getArrayKind(type_name) {
-   if ((type_name === clTString) || (type_name === "string") ||
+   if ((type_name === clTString) || (type_name === 'string') ||
       (CustomStreamers[type_name] === clTString)) return 0;
    if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
    if (type_name.length == 7)
@@ -3825,7 +3825,7 @@ function openFile(arg) {
 
    let file;
 
-   if (isNodeJs() && (typeof arg == "string")) {
+   if (isNodeJs() && (typeof arg == 'string')) {
       if (arg.indexOf("file://") == 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf("http") !== 0)

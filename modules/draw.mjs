@@ -186,7 +186,7 @@ function getDrawHandle(kind, selector) {
    let search = (kind.indexOf("ROOT.") == 0) ? kind.slice(5) : "kind:" + kind, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
-      if (typeof h.name == "string") {
+      if (typeof h.name == 'string') {
          if (h.name != search) continue;
       } else {
          if (!search.match(h.name)) continue;

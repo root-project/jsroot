@@ -316,7 +316,7 @@ class RCanvasPainter extends RPadPainter {
    submitDrawableRequest(kind, req, painter, method) {
 
       if (!this._websocket || !req || !req._typename ||
-          !painter.snapid || (typeof painter.snapid != "string")) return null;
+          !painter.snapid || (typeof painter.snapid != 'string')) return null;
 
       if (kind && method) {
          // if kind specified - check if such request already was submitted
@@ -439,7 +439,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
 
       let msg = "";
       if (!painter) painter = this;
@@ -644,7 +644,7 @@ async function ensureRCanvas(painter, frame_kind) {
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
+         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : "");
    }).then(() => {
       painter.addToPadPrimitives();
       return painter;
@@ -785,7 +785,7 @@ registerMethods("ROOT::Experimental::RPalette", {
       // extract color with ordinal value between 0 and 1
       if (!this.fColors)
          return "black";
-      if ((typeof value != "number") || (value < 0))
+      if ((typeof value != 'number') || (value < 0))
          value = 0;
       else if (value > 1)
          value = 1;

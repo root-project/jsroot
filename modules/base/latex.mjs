@@ -1215,7 +1215,7 @@ function translateMath(str, kind, color, painter) {
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
-      if (!value || (typeof value !== "string") || (value.length < 3)) return null;
+      if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
       let p = value.indexOf("ex");
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));

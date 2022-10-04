@@ -26,7 +26,7 @@ class ObjectPainter extends BasePainter {
       // this._main_painter = undefined;  // main painter in the correspondent pad
       this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
       this.assignObject(obj);
-      if (typeof opt == "string")
+      if (typeof opt == 'string')
          this.options = { original: opt };
    }
 
@@ -140,7 +140,7 @@ class ObjectPainter extends BasePainter {
    getDrawOpt() {
       if (!this.options) return "";
 
-      if (typeof this.options.asString == "function") {
+      if (typeof this.options.asString == 'function') {
          let changed = false, pp = this.getPadPainter();
          if (!this.options_store || pp?._interactively_changed) {
             changed  = true;
@@ -392,7 +392,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] pad name or use current pad by default
      * @protected */
    getPadPainter(pad_name) {
-      let elem = this.getPadSvg(typeof pad_name == "string" ? pad_name : undefined);
+      let elem = this.getPadSvg(typeof pad_name == 'string' ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -693,7 +693,7 @@ class ObjectPainter extends BasePainter {
    async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == "string") && (info.indexOf("exec:") != 0))
+      if ((typeof info == 'string') && (info.indexOf("exec:") != 0))
          reason = info;
 
       if (arg == "pad")
@@ -749,7 +749,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (typeof canp?.submitExec == "function")
+      if (typeof canp?.submitExec == 'function')
          canp.submitExec(this, exec, snapid);
    }
 
@@ -1371,7 +1371,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserClickHandler == "function")
+      if (typeof fp?.configureUserClickHandler == 'function')
          fp.configureUserClickHandler(handler);
    }
 
@@ -1382,7 +1382,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserDblclickHandler == "function")
+      if (typeof fp?.configureUserDblclickHandler == 'function')
          fp.configureUserDblclickHandler(handler);
    }
 
@@ -1437,7 +1437,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (this._special_draw_area && (typeof canp?.drawProjection == "function"))
+      if (this._special_draw_area && (typeof canp?.drawProjection == 'function'))
          return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return false;

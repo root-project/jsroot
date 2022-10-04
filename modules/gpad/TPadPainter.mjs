@@ -1424,7 +1424,7 @@ class TPadPainter extends ObjectPainter {
 
          let mainid = this.selectDom().attr("id");
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string")) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind("float");
@@ -1442,7 +1442,7 @@ class TPadPainter extends ObjectPainter {
 
          let pr = Promise.resolve(true);
 
-         if ((typeof snap.fScripts == "string") && snap.fScripts) {
+         if ((typeof snap.fScripts == 'string') && snap.fScripts) {
             let src = "";
 
             if (snap.fScripts.indexOf("load:") == 0)
@@ -1600,11 +1600,11 @@ class TPadPainter extends ObjectPainter {
       }
 
       this.painters.forEach(sub => {
-         if (typeof sub.getWebPadOptions == "function") {
+         if (typeof sub.getWebPadOptions == 'function') {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
-            if (typeof sub.fillWebObjectOptions == "function")
+            if (typeof sub.fillWebObjectOptions == 'function')
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }

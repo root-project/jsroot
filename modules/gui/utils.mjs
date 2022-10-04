@@ -32,7 +32,7 @@ function showProgress(msg, tmout) {
 
    box.property("with_timeout", false);
 
-   if (typeof msg === "string") {
+   if (typeof msg === 'string') {
       box.select("p").html(msg);
    } else {
       box.html("");

@@ -767,7 +767,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (typeof opt != "string") opt = "";
+      if (typeof opt != 'string') opt = "";
 
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
@@ -1784,7 +1784,7 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == "string"))
+                  if ((geo_index !== undefined) && (typeof tooltip == 'string'))
                      tooltip += " indx:" + JSON.stringify(geo_index);
                }
                if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
@@ -2396,7 +2396,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
-         if (this.ctrl.outline && (typeof this.createOutline == "function")) {
+         if (this.ctrl.outline && (typeof this.createOutline == 'function')) {
             this._effectComposer = new EffectComposer( this._renderer );
             this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
@@ -4648,7 +4648,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == "string") && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == 'string') && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }

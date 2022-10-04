@@ -492,10 +492,10 @@ function cleanupRender3D(renderer) {
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (browser.isChrome && (typeof renderer.forceContextLoss == "function"))
+      if (browser.isChrome && (typeof renderer.forceContextLoss == 'function'))
          renderer.forceContextLoss();
 
-      if (typeof renderer.dispose == "function")
+      if (typeof renderer.dispose == 'function')
          renderer.dispose();
    }
 }
@@ -707,7 +707,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    let control = null,
        enable_zoom = settings.Zooming && settings.ZoomMouse,
-       enable_select = (typeof painter.processMouseClick == "function");
+       enable_select = (typeof painter.processMouseClick == 'function');
 
    function control_mousedown(evnt) {
       if (!control) return;
@@ -1090,7 +1090,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (tip) {
          let name = "", title = "", coord = "", info = "";
          if (mouse) coord = mouse.x.toFixed(0) + "," + mouse.y.toFixed(0);
-         if (typeof tip == "string") {
+         if (typeof tip == 'string') {
             info = tip;
          } else {
             name = tip.name; title = tip.title;
