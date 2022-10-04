@@ -676,7 +676,7 @@ For instance to receive object from a THttpServer server one could do:
 ```javascript
 import { httpRequest } from 'https://root.cern/js/latest/modules/main.mjs';
 let obj = await httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object")
-console.log('Read object of type ', obj._typename);
+console.log('Read object of type', obj._typename);
 ```
 
 Function returns Promise, which provides parsed object (or Error in case of failure).
@@ -765,7 +765,7 @@ let filename = "https://root.cern/js/files/hsimple.root";
 let file = await openFile(filename);
 let obj = await file.readObject("hpxpy;1");
 await draw("drawing", obj, "colz");
-console.log("drawing completed");
+console.log('drawing completed');
 ```
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)

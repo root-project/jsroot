@@ -150,7 +150,7 @@ class TWebPaintingPainter extends ObjectPainter {
                }
 
                default:
-                  console.log('unsupported operation ' + oper);
+                  console.log(`unsupported operation ${oper}`);
             }
          };
 

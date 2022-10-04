@@ -2018,7 +2018,7 @@ function getTEfficiencyBoundaryFunc(option, isbayessian) {
       case kFNormal: return eff_Normal;
       case kFWilson: return eff_Wilson;
       case kFAC: return eff_AgrestiCoull;
-      case kFFC: console.log("Feldman-Cousins interval kFFC not supported; using kFCP"); return eff_ClopperPearson;
+      case kFFC: console.log('Feldman-Cousins interval kFFC not supported; using kFCP'); return eff_ClopperPearson;
       case kMidP: return eff_MidPInterval;
       // case kBJeffrey:
       // case kBUniform:
