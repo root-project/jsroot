@@ -586,7 +586,7 @@ public:
    TUserHandler(const char *name, const char *title) : THttpWSHandler(name, title) {}
 
    // provide custom HTML page when open correspondent address
-   TString GetDefaultPageContent() override { return ""; }
+   TString GetDefaultPageContent() override { return ''; }
 
    Bool_t ProcessWS(THttpCallArg *arg) override;
 };

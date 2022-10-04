@@ -138,7 +138,7 @@ function floatToString(value, fmt, ret_fmt) {
 class DrawOptions {
 
    constructor(opt) {
-      this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : "";
+      this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : '';
       this.part = "";
    }
 
@@ -258,7 +258,7 @@ function buildSvgPath(kind, bins, height, ndig) {
       }
    };
 
-   let res = { path: "", close: "" }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
+   let res = { path: '', close: '' }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
       currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
    const conv = val => {

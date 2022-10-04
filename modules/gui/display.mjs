@@ -94,7 +94,7 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary Activate frame */
-   activateFrame(frame) { this.active_frame_title = frame ? d3_select(frame).attr('frame_title') : ""; }
+   activateFrame(frame) { this.active_frame_title = frame ? d3_select(frame).attr('frame_title') : ''; }
 
    /** @summary Return active frame */
    getActiveFrame() { return this.findFrame(this.active_frame_title); }
@@ -1084,7 +1084,7 @@ class FlexibleDisplay extends MDIDisplay {
          menu.add("Close all", () => this.closeAllFrames());
          menu.add("separator");
 
-         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + d3_select(f).attr("frame_title"), i,
+         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : '') + d3_select(f).attr("frame_title"), i,
                       arg => {
                         let frame = arr[arg];
                         if (this.getFrameState(frame) == "min")
@@ -1222,7 +1222,7 @@ class BrowserLayout {
       let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
           title_color = settings.DarkMode ? '#ccc' : "inherit",
           text_color = settings.DarkMode ? '#ddd' : "inherit",
-          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : "";
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
          `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }
@@ -1343,7 +1343,7 @@ class BrowserLayout {
 
       let main = d3_select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty())
-         return "";
+         return '';
 
       let id = this.gui_div + "_status",
           line = d3_select("#"+id),
@@ -1375,11 +1375,11 @@ class BrowserLayout {
          }
 
          this.adjustSeparators(null, 0, true);
-         return "";
+         return '';
       }
 
       if (mode === false)
-         return "";
+         return '';
 
       let left_pos = d3_select("#" + this.gui_div + "_drawing").style('left');
 

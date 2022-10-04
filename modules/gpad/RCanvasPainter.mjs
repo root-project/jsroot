@@ -268,7 +268,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg(panel_handle, msg) {
-                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : "";
+                     let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : '';
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
@@ -592,7 +592,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    produceJSON() {
       console.error('RCanvasPainter.produceJSON not yet implemented');
-      return "";
+      return '';
    }
 
    /** @summary draw RCanvas object */
@@ -644,7 +644,7 @@ async function ensureRCanvas(painter, frame_kind) {
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : "");
+         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : '');
    }).then(() => {
       painter.addToPadPrimitives();
       return painter;

@@ -349,7 +349,7 @@ const TooltipHandler = {
           hintsg = layer.select(".objects_hints"), // group with all tooltips
           title = "", name = "", info = "",
           hint = null, best_dist2 = 1e10, best_hint = null, show_only_best = nhints > 15,
-          coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : "";
+          coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : '';
 
       // try to select hint with exact match of the position when several hints available
       for (let k = 0; k < (hints ? hints.length : 0); ++k) {
@@ -1008,7 +1008,7 @@ const FrameInteractive = {
       if (valid_x && valid_y && this._dblclick_handler)
          if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
-      let kind = (this.can_zoom_x ? "x" : "") + (this.can_zoom_y ? "y" : "") + "z";
+      let kind = (this.can_zoom_x ? "x" : '') + (this.can_zoom_y ? "y" : '') + "z";
       if (!valid_x) {
          if (!this.can_zoom_y) return;
          kind = this.swap_xy ? "x" : "y";
@@ -2493,7 +2493,7 @@ class TFramePainter extends ObjectPainter {
    fillWebObjectOptions(res) {
       if (!res) {
          if (!this.snapid) return null;
-         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
        }
 
       res.fcust = "frame";
@@ -2514,7 +2514,7 @@ class TFramePainter extends ObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : "",
+         transform: this.draw_g ? this.draw_g.attr("transform") : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }

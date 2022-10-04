@@ -254,7 +254,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
                      only_status: true };
          }
 
-         return tip?.lines ? tip : "";
+         return tip?.lines ? tip : '';
       };
 
       this.control.processMouseLeave = function() {

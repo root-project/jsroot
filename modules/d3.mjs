@@ -1382,7 +1382,7 @@ function selection_data(value, key) {
 // cause the data to change while iterating by using a key function, but please
 // don’t; we’d rather avoid a gratuitous copy.)
 function arraylike(data) {
-  return typeof data === "object" && "length" in data
+  return typeof data === 'object' && "length" in data
     ? data // Array, TypedArray, NodeList, array-like
     : Array.from(data); // Map, Set, iterable, string, or anything else
 }
@@ -2457,7 +2457,7 @@ function intern_delete({_intern, _key}, value) {
 }
 
 function keyof(value) {
-  return value !== null && typeof value === "object" ? value.valueOf() : value;
+  return value !== null && typeof value === 'object' ? value.valueOf() : value;
 }
 
 function compareDefined(compare = ascending) {
@@ -2921,8 +2921,8 @@ function object(a, b) {
       c = {},
       k;
 
-  if (a === null || typeof a !== "object") a = {};
-  if (b === null || typeof b !== "object") b = {};
+  if (a === null || typeof a !== 'object') a = {};
+  if (b === null || typeof b !== 'object') b = {};
 
   for (k in b) {
     if (k in a) {
@@ -5848,8 +5848,8 @@ var frame = 0, // is an animation frame pending?
     clockLast = 0,
     clockNow = 0,
     clockSkew = 0,
-    clock = typeof performance === "object" && performance.now ? performance : Date,
-    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+    clock = typeof performance === 'object' && performance.now ? performance : Date,
+    setFrame = typeof window === 'object' && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);

@@ -851,7 +851,7 @@ class TH2Painter extends THistPainter {
             if (!cmd) {
                cmd = `M${x},${y}`; x0 = x; y0 = y;
             } else if ((i == iplus) && (iminus !== iplus) && (x == x0) && (y == y0)) {
-               if (!isany) return ""; // all same points
+               if (!isany) return ''; // all same points
                cmd += "z"; do_close = false; matched = true;
             } else {
                let dx = x - lastx, dy = y - lasty;
@@ -926,7 +926,7 @@ class TH2Painter extends THistPainter {
          iplus++;
          while ((iminus < iplus - 1) && pnt1 && !pnt2)
             pnt2 = get_intersect(--iplus, -1);
-         if (!pnt1 || !pnt2) return "";
+         if (!pnt1 || !pnt2) return '';
 
          // TODO: now side is always same direction, could be that side should be checked more precise
 
@@ -1238,7 +1238,7 @@ class TH2Painter extends THistPainter {
       const makeLine = (dx, dy) => {
          if (dx)
             return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : "";
+         return dy ? `v${dy}` : '';
       };
 
       for (let loop = 0; loop < 2; ++loop)
@@ -2636,7 +2636,7 @@ class TH2Painter extends THistPainter {
       this.options.Zvert = pp._palette_vertical;
 
       // redraw palette till the end when contours are available
-      return pp.drawPave(this.options.Cjust ? "cjust" : "");
+      return pp.drawPave(this.options.Cjust ? "cjust" : '');
    }
 
    /** @summary Performs 2D drawing of histogram

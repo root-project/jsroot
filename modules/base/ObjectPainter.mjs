@@ -24,7 +24,7 @@ class ObjectPainter extends BasePainter {
       super(dom);
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
-      this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
+      this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
       this.assignObject(obj);
       if (typeof opt == 'string')
          this.options = { original: opt };
@@ -138,7 +138,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Return actual draw options as string
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt() {
-      if (!this.options) return "";
+      if (!this.options) return '';
 
       if (typeof this.options.asString == 'function') {
          let changed = false, pp = this.getPadPainter();
@@ -204,7 +204,7 @@ class ObjectPainter extends BasePainter {
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
       let res = this.getItemName(), obj = this.getObject();
-      if (!res) res = obj && obj.fName ? obj.fName : "";
+      if (!res) res = obj && obj.fName ? obj.fName : '';
       if (!res) res = this.getClassName();
       if (res.length > 20) res = res.slice(0, 17) + "...";
       return res;
@@ -382,7 +382,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    selectCurrentPad(new_name) {
       let svg = this.getCanvSvg();
-      if (svg.empty()) return "";
+      if (svg.empty()) return '';
       let curr = svg.property('current_pad');
       if (new_name !== undefined) svg.property('current_pad', new_name);
       return curr;
@@ -1533,7 +1533,7 @@ function getElementMainPainter(dom) {
   * @return {string} produced JSON string */
 function drawingJSON(dom) {
    let canp = getElementCanvPainter(dom);
-   return canp ? canp.produceJSON() : "";
+   return canp ? canp.produceJSON() : '';
 }
 
 

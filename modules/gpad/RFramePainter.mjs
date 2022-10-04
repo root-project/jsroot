@@ -454,7 +454,7 @@ class RFramePainter extends RObjectPainter {
          let arr = [];
 
          if (ticksx > 0)
-            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex));
+            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : '', sidex));
 
          if (ticksy > 0)
             arr.push(draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey));
@@ -462,7 +462,7 @@ class RFramePainter extends RObjectPainter {
          pr = Promise.all(arr).then(() => {
             arr = [];
             if (ticksx > 1)
-               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : '', -sidex, ticksx == 2));
 
             if (ticksy > 1)
                arr.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
@@ -792,7 +792,7 @@ class RFramePainter extends RObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : "",
+         transform: this.draw_g ? this.draw_g.attr("transform") : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }

@@ -23,7 +23,7 @@ function getColorExec(col, method) {
       col = arr[id];
    }
 
-   if (id < 0) return "";
+   if (id < 0) return '';
 
    if (id >= 50) {
       // for higher color numbers ensure that such color exists
@@ -45,7 +45,7 @@ class JSRootMenu {
    constructor(painter, menuname, show_event) {
       this.painter = painter;
       this.menuname = menuname;
-      if (show_event && (typeof show_event == "object") &&
+      if (show_event && (typeof show_event == 'object') &&
           (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
          this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
@@ -175,7 +175,7 @@ class JSRootMenu {
             let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
                 fill = (n == 1) ? "white" : "black",
                 stroke = (n == 1) ? "red" : "black",
-                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : "",
+                rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
                 svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
 
             this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
@@ -917,7 +917,7 @@ class JSRootMenu {
             for (let k = 0; k < method.fArgs.length; ++k) {
                let arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
-               if (value === "") value = arg.fDefault;
+               if (value === '') value = arg.fDefault;
                if ((arg.fTitle == "Option_t*") || (arg.fTitle == "const char*")) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters
@@ -926,7 +926,7 @@ class JSRootMenu {
                   if (value[value.length-1] != '"') value += '"';
                }
 
-               args += (k > 0 ? "," : "") + value;
+               args += (k > 0 ? "," : '') + value;
             }
 
             resolveFunc(args);
@@ -1119,7 +1119,7 @@ class StandaloneMenu extends JSRootMenu {
                text.style.display = 'flex';
 
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.innerHTML = d.checked ? "\u2713" : '';
                chk.style.display = "inline-block";
                chk.style.width = "1em";
                text.appendChild(chk);
@@ -1134,7 +1134,7 @@ class StandaloneMenu extends JSRootMenu {
          } else {
             if (need_check_area) {
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : "";
+               chk.innerHTML = d.checked ? "\u2713" : '';
                chk.style.display = "inline-block";
                chk.style.width = "1em";
                text.appendChild(chk);

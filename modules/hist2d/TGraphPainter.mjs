@@ -101,7 +101,7 @@ class TGraphPainter extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      Object.assign(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
          if (opt.indexOf(";") > 0) {
@@ -659,8 +659,8 @@ class TGraphPainter extends ObjectPainter {
       if (options.Errors) {
          // to show end of error markers, use line width attribute
          let lw = lineatt.width + gStyle.fEndErrorSize, bb = 0,
-             vv = options.Ends ? `m0,${lw}v${-2*lw}` : "",
-             hh = options.Ends ? `m${lw},0h${-2*lw}` : "",
+             vv = options.Ends ? `m0,${lw}v${-2*lw}` : '',
+             hh = options.Ends ? `m${lw},0h${-2*lw}` : '',
              vleft = vv, vright = vv, htop = hh, hbottom = hh;
 
          const mainLine = (dx,dy) => {
@@ -715,10 +715,10 @@ class TGraphPainter extends ObjectPainter {
              .style("fill", "none")
              .attr("d", d => {
                 d.error = true;
-                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : "") +
-                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : "") +
-                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : "") +
-                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : "");
+                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
+                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
+                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
+                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
               });
       }
 

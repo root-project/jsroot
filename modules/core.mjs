@@ -711,7 +711,7 @@ function parseMulti(json) {
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code */
 function toJSON(obj, spacing) {
-   if (!obj || typeof obj !== 'object') return "";
+   if (!obj || typeof obj !== 'object') return '';
 
    let map = []; // map of stored objects
 
@@ -889,7 +889,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
       switch(this.kind) {
          case "xml": return this.http_callback(this.responseXML);
          case "text": return this.http_callback(this.responseText);
-         case "object": return this.http_callback(parse(this.responseText));
+         case 'object': return this.http_callback(parse(this.responseText));
          case "multi": return this.http_callback(parseMulti(this.responseText));
          case "head": return this.http_callback(this);
       }
@@ -916,7 +916,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
    if ((kind == "bin") || (kind == "buf"))
       xhr.responseType = 'arraybuffer';
 
-   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz') > 0)) {
+   if (nodejs && (method == "GET") && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
       xhr.nodejs_checkzip = true;
       xhr.responseType = 'arraybuffer';
    }
@@ -947,7 +947,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *    - "bin" - abstract binary data, result as string
   *    - "buf" - abstract binary data, result as ArrayBuffer (default)
   *    - "text" - returns req.responseText
-  *    - "object" - returns parse(req.responseText)
+  *    - 'object' - returns parse(req.responseText)
   *    - "multi" - returns correctly parsed multi.json request
   *    - "xml" - returns req.responseXML
   *    - "head" - returns request itself, uses "HEAD" request method
@@ -958,7 +958,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
   * @example
-  * httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+  * httpRequest("https://root.cern/js/files/thstack.json.gz", 'object')
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 async function httpRequest(url, kind, post_data) {
@@ -983,7 +983,7 @@ function create(typename, target) {
           extend(obj, { fUniqueID: 0, fBits: 0 });
           break;
       case 'TNamed':
-         extend(obj, { fUniqueID: 0, fBits: 0, fName: "", fTitle: "" });
+         extend(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
       case 'TList':
       case 'THashList':
@@ -998,7 +998,7 @@ function create(typename, target) {
          create("TNamed", obj);
          create("TAttAxis", obj);
          extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
-                       fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null, fModLabs: null });
+                       fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
       case 'TAttLine':
          extend(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
@@ -1032,14 +1032,14 @@ function create(typename, target) {
       case 'TPaveText':
          create("TPave", obj);
          create("TAttText", obj);
-         extend(obj, { fLabel: "", fLongest: 27, fMargin: 0.05, fLines: create("TList") });
+         extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create("TList") });
          break;
       case 'TPaveStats':
          create("TPaveText", obj);
          extend(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
-                       fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
+                       fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case 'TLegend':
          create("TPave", obj);
@@ -1053,7 +1053,7 @@ function create(typename, target) {
          create("TAttLine", obj);
          create("TAttFill", obj);
          create("TAttMarker", obj);
-         extend(obj, { fLabel: "", fObject: null, fOption: "" });
+         extend(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
          create("TNamed", obj);
@@ -1067,7 +1067,7 @@ function create(typename, target) {
          break;
       case 'TObjString':
          create("TObject", obj);
-         extend(obj, { fString: "" });
+         extend(obj, { fString: '' });
          break;
       case 'TH1':
          create("TNamed", obj);
@@ -1081,7 +1081,7 @@ function create(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: "", fFunctions: create("TList"),
+                       fSumw2: [], fOption: '', fFunctions: create("TList"),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1153,15 +1153,15 @@ function create(typename, target) {
          create("TObject", obj);
          create("TAttLine", obj);
          create("TAttFill", obj);
-         extend(obj, { fLastPoint: -1, fN: 0, fOption: "", fX: null, fY: null });
+         extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case 'TGaxis':
          create("TLine", obj);
          create("TAttText", obj);
-         extend(obj, { fChopt: "", fFunctionName: "", fGridLength: 0,
+         extend(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-                       fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
-                       fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
+                       fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
+                       fTitle: '', fTitleOffset: 1, fTitleSize: 0.035,
                        fWmax: 100, fWmin: 0 });
          break;
       case 'TAttPad':
@@ -1383,11 +1383,11 @@ function getMethods(typename, obj) {
       }
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt == 'string') ? opt : "");
+         this.opt.push((opt && typeof opt == 'string') ? opt : '');
       }
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt == 'string') ? opt : "");
+         this.opt.unshift((opt && typeof opt == 'string') ? opt : '');
       }
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);

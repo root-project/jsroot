@@ -119,7 +119,7 @@ function checkArrayPrototype(arr, check_content) {
       let sub = typeof arr[k];
       if (!typ) typ = sub;
       if (sub !== typ) { plain = false; break; }
-      if ((sub == "object") && checkArrayPrototype(arr[k])) { plain = false; break; }
+      if ((sub == 'object') && checkArrayPrototype(arr[k])) { plain = false; break; }
    }
 
    return plain ? 2 : 1;
@@ -171,7 +171,7 @@ class ArrayIterator {
 
          typ = obj ? typeof obj : "any";
 
-         if (typ === "object") {
+         if (typ === 'object') {
             if (obj._typename !== undefined) {
                if (isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
@@ -254,7 +254,7 @@ class ArrayIterator {
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
 
-   if (!branch || (branch._typename !== "TBranchElement")) return "";
+   if (!branch || (branch._typename !== "TBranchElement")) return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
       // object where all sub-branches will be collected
@@ -280,7 +280,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
       if (s_elem.fType === kObjectp) return s_elem.fTypeName.slice(0, s_elem.fTypeName.length - 1);
    }
 
-   return "";
+   return '';
 }
 
 
@@ -333,7 +333,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
-      if (brname === search) { res = { branch: lst.arr[n], rest: "" }; break; }
+      if (brname === search) { res = { branch: lst.arr[n], rest: '' }; break; }
 
       if (search.indexOf(brname) !== 0) continue;
 
@@ -431,7 +431,7 @@ class TDrawVariable {
 
       if (!code) code = ""; // should be empty string at least
 
-      this.code = (only_branch ? only_branch.fName : "") + code;
+      this.code = (only_branch ? only_branch.fName : '') + code;
 
       let pos = 0, pos2 = 0, br = null;
       while ((pos < code.length) || only_branch) {
@@ -705,7 +705,7 @@ class TDrawSelector extends TSelector {
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
 
-      if (!expr || (typeof expr !== 'string')) return "";
+      if (!expr || (typeof expr !== 'string')) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(";");
@@ -873,7 +873,7 @@ class TDrawSelector extends TSelector {
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
       else
-         this.histo_drawopt = (this.ndim === 2) ? "col" : "";
+         this.histo_drawopt = (this.ndim === 2) ? "col" : '';
 
       return true;
    }
@@ -912,7 +912,7 @@ class TDrawSelector extends TSelector {
 
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
-      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
+      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : '') + "'  from " + tree.fName;
 
       this.cut = new TDrawVariable(this.globals);
 
@@ -948,7 +948,7 @@ class TDrawSelector extends TSelector {
    /** @summary Get min.max bins */
    getMinMaxBins(axisid, nbins) {
 
-      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
+      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: '' };
 
       if (axisid >= this.ndim) return res;
 
@@ -956,7 +956,7 @@ class TDrawSelector extends TSelector {
 
       res.title = this.vars[axisid].code || "";
 
-      if (this.vars[axisid].kind === "object") {
+      if (this.vars[axisid].kind === 'object') {
          // this is any object type
          let typename, similar = true, maxbits = 8;
          for (let k = 0; k < arr.length; ++k) {
@@ -971,7 +971,7 @@ class TDrawSelector extends TSelector {
                this.fill1DHistogram = this.fillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
 
-               if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0])
+               if ((this.hist_name === 'bits') && (this.hist_args.length == 1) && this.hist_args[0])
                   maxbits = this.hist_args[0];
 
                return this.getBitsBins(maxbits, res);
@@ -994,7 +994,7 @@ class TDrawSelector extends TSelector {
             let s = create("TObjString");
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
-            if (s.fString === "") s.fString = "<empty>";
+            if (s.fString === '') s.fString = "<empty>";
             res.fLabels.Add(s);
          }
       } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
@@ -1081,9 +1081,9 @@ class TDrawSelector extends TSelector {
          this.z = this.getMinMaxBins(2, 50);
 
          switch (this.ndim) {
-            case 1: this.hist = createHistogram("TH1" + this.htype, this.x.nbins); break;
-            case 2: this.hist = createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
+            case 1: this.hist = createHistogram('TH1' + this.htype, this.x.nbins); break;
+            case 2: this.hist = createHistogram('TH2' + this.htype, this.x.nbins, this.y.nbins); break;
+            case 3: this.hist = createHistogram('TH3' + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
 
          this.hist.fXaxis.fTitle = this.x.title;
@@ -1104,7 +1104,7 @@ class TDrawSelector extends TSelector {
          this.hist.fName = this.hist_name;
          this.hist.fTitle = this.hist_title;
          this.hist.fOption = this.histo_drawopt;
-         this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
+         this.hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
       }
 
       let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
@@ -1445,7 +1445,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
          if (arr[k].fName === member_name) { elem = arr[k]; break; }
    }
 
-   if (!elem) return "";
+   if (!elem) return '';
 
    let clname = elem.fTypeName;
    if (clname[clname.length - 1] === "*") clname = clname.slice(0, clname.length - 1);
@@ -2562,7 +2562,7 @@ function treeIOTest(tree, args) {
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
          let br = obj.fBranches.arr[n],
-             name = (prntname ? prntname + "/" : "") + br.fName;
+             name = (prntname ? prntname + "/" : '') + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);

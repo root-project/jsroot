@@ -593,7 +593,7 @@ class TCanvasPainter extends TPadPainter {
       let arg = null, ischanged = false;
 
       if ((pad_painter.snapid !== undefined) && this._websocket)
-         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "", x: -1, y: -1, dbl: false };
+         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
@@ -702,7 +702,7 @@ async function ensureTCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureTCanvas'));
 
    // simple check - if canvas there, can use painter
-   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+   let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : '',
        promise = painter.getCanvSvg().empty()
                  ? TCanvasPainter.draw(painter.getDom(), null, noframe)
                  : Promise.resolve(true);

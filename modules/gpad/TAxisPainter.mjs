@@ -37,7 +37,7 @@ function getTimeOffset(axis) {
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
    // special case, used from DABC painters
-   if ((sof == "0") || (sof == "")) return 0;
+   if ((sof == "0") || (sof == '')) return 0;
 
    // decode time from ROOT string
    const next = (separ, min, max) => {
@@ -870,7 +870,7 @@ class TAxisPainter extends ObjectPainter {
             path2 += this.vertical ? `M${secondShift-h1},${handle.grpos}H${secondShift-h2}` : `M${handle.grpos},${secondShift+h1}V${secondShift+h2}`;
       }
 
-      return real_draw ? path1 + path2  : "";
+      return real_draw ? path1 + path2  : '';
    }
 
    /** @summary Returns modifier for axis label */

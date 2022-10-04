@@ -113,7 +113,7 @@ function countNumShapes(shape) {
   * @desc Can appends some special suffixes
   * @private */
 function getObjectName(obj) {
-   return obj?.fName ? (obj.fName + (obj.$geo_suffix || "")) : "";
+   return obj?.fName ? (obj.fName + (obj.$geo_suffix || "")) : '';
 }
 
 /** @summary Check duplicates
@@ -2673,10 +2673,10 @@ class ClonedNodes {
    getNodeName(nodeid) {
       if (this.origin) {
          let obj = this.origin[nodeid];
-         return obj ? getObjectName(obj) : "";
+         return obj ? getObjectName(obj) : '';
       }
       let node = this.nodes[nodeid];
-      return node ? node.name : "";
+      return node ? node.name : '';
    }
 
    /** @summary Returns description for provide stack */

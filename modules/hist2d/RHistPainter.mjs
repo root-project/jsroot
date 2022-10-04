@@ -607,7 +607,7 @@ class RHistPainter extends RObjectPainter {
           curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       menu.input("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr).then(res => {
          res = res ? JSON.parse(res) : [];
-         if (!res || (typeof res != "object") || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
+         if (!res || (typeof res != 'object') || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
             pmain.unzoom(arg);
          else
             pmain.zoom(arg, res[0], res[1]);

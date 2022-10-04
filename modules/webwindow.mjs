@@ -486,7 +486,7 @@ class WebWindowHandle {
       this.close();
       if (!href && this.href) href = this.href;
 
-      let ntry = 0, args = (this.key ? ("key=" + this.key) : "");
+      let ntry = 0, args = (this.key ? ("key=" + this.key) : '');
       if (this.token) {
          if (args) args += "&";
          args += "token=" + this.token;

@@ -1148,10 +1148,10 @@ class RPadPainter extends RObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ > 0) ? res.slice(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : '';
          });
 
-      return "";
+      return '';
    }
 
    /** @summary Show context menu for specified item
@@ -1214,7 +1214,7 @@ class RPadPainter extends RObjectPainter {
           items = []; // keep list of replaced elements, which should be moved back at the end
 
       if (elem.empty())
-         return "";
+         return '';
 
       if (!use_frame) // do not make transformations for the frame
       painter.forEachPainterInPad(pp => {
@@ -1389,7 +1389,7 @@ class RPadPainter extends RObjectPainter {
                   let obj = this.painters[n]?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) continue;
 
-                  let name = obj._typename ? obj._typename + "::" : "";
+                  let name = obj._typename ? obj._typename + "::" : '';
                   if (obj.fName) name += obj.fName;
                   if (!name) name = "item" + n;
                   menu.add(name, n, this.itemContextMenu);

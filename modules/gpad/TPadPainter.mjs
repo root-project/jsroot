@@ -116,7 +116,7 @@ let PadButtonsHandler = {
             if (!btn) btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
-                        item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
+                        item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ''));
 
             if (group.property('vertical'))
                 svg.attr("x", y).attr("y", x);
@@ -1564,10 +1564,10 @@ class TPadPainter extends ObjectPainter {
          return this.produceImage(true, format).then(res => {
             if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
-            return (separ > 0) ? res.slice(separ+7) : "";
+            return (separ > 0) ? res.slice(separ+7) : '';
          });
 
-      return "";
+      return '';
    }
 
    /** @summary Collects pad information for TWebCanvas
@@ -1576,7 +1576,7 @@ class TPadPainter extends ObjectPainter {
    getWebPadOptions(arg) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
-      if (is_top && this._readonly) return "";
+      if (is_top && this._readonly) return '';
       if (arg === "only_this") { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
 
@@ -1734,7 +1734,7 @@ class TPadPainter extends ObjectPainter {
           active_pp = null;
 
       if (elem.empty())
-         return "";
+         return '';
 
       painter.forEachPainterInPad(pp => {
 
@@ -1916,7 +1916,7 @@ class TPadPainter extends ObjectPainter {
                   let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
                   if (pp.$secondary) return;
-                  let name = ('_typename' in obj) ? (obj._typename + "::") : "";
+                  let name = ('_typename' in obj) ? (obj._typename + "::") : '';
                   if ('fName' in obj) name += obj.fName;
                   if (!name.length) name = "item" + indx;
                   menu.add(name, indx, this.itemContextMenu);

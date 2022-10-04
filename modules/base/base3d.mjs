@@ -29,7 +29,7 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_attr: {},
      svg_style: {},
      path_attr: {},
-     accPath: "",
+     accPath: '',
      createElementNS(ns,kind) {
         if (kind == 'path')
            return {
@@ -1524,7 +1524,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
       lwidth = arg.fLineWidth;
    }
 
-   let style = lstyle ? getSvgLineStyle(lstyle) : "",
+   let style = lstyle ? getSvgLineStyle(lstyle) : '',
        dash = style ? style.split(",") : [], material;
 
    if (dash && dash.length >= 2)

@@ -214,11 +214,11 @@ class THistDrawOptions {
               Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
+              Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-              Candle: "", Violin: "", Scaled: null, Circular: 0,
-              GLBox: 0, GLColor: false, Project: "",
+              Candle: '', Violin: '', Scaled: null, Circular: 0,
+              GLBox: 0, GLColor: false, Project: '',
               System: CoordSystem.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
@@ -1489,7 +1489,7 @@ class THistPainter extends ObjectPainter {
                                                : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (painter && (typeof painter == "object"))
+         if (painter && (typeof painter == 'object'))
             painter.child_painter_id = this.hist_painter_id;
 
          return this.drawNextFunction(indx+1);
@@ -1617,7 +1617,7 @@ class THistPainter extends ObjectPainter {
       menu.input("Enter min/max hist values or empty string to reset", curr).then(res => {
          res = res ? JSON.parse(res) : [];
 
-         if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
+         if (!res || (typeof res != 'object') || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
             this.options.minimum = this.options.maximum = -1111;
          } else {
             this.options.minimum = res[0];

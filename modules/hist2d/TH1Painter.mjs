@@ -727,7 +727,7 @@ class TH1Painter extends THistPainter {
 
       if (res && draw_hist)
          this.draw_g.append("svg:path")
-                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ""))
+                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);

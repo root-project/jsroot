@@ -221,7 +221,7 @@ class TPavePainter extends ObjectPainter {
    fillWebObjectOptions(res) {
       if (!res) {
          if (!this.snapid) return null;
-         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
       }
 
       let pave = this.getObject();
@@ -380,7 +380,7 @@ class TPavePainter extends ObjectPainter {
                   // individual positioning
                   let x = entry.fX ? entry.fX*width : margin_x,
                       y = entry.fY ? (1 - entry.fY)*height : texty,
-                      color = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
+                      color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) {
                      color = tcolor;
                      this.UseTextColor = true;

@@ -187,7 +187,7 @@ class RH3Painter extends RHistPainter {
       lines.push(`z = ${this.getAxisBinTip("z", iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
-          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : "");
+          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : '');
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else

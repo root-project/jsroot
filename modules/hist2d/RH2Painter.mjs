@@ -656,7 +656,7 @@ class RH2Painter extends RHistPainter {
             if (!cmd) {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
-               if (!isany) return ""; // all same points
+               if (!isany) return ''; // all same points
                cmd += "z"; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
@@ -855,7 +855,7 @@ class RH2Painter extends RHistPainter {
       const makeLine = (dx, dy) => {
          if (dx)
             return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : "";
+         return dy ? `v${dy}` : '';
       };
 
       for (let loop = 0; loop < 2; ++loop)
@@ -1339,7 +1339,7 @@ class RH2Painter extends RHistPainter {
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : "");
+      let lbl = "entries = " + ((di > 1) || (dj > 1) ? "~" : '');
 
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
@@ -1685,9 +1685,9 @@ class RH2Painter extends RHistPainter {
 
          painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: true, TextAngle: 0, TextKind: "",
+                             Text: true, TextAngle: 0, TextKind: '',
                              BaseLine: false, Mode3D: false, AutoColor: 0,
-                             Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                             Color: false, Scat: false, ScatCoef: 1, Candle: '', Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                              BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
          let kind = painter.v7EvalAttr("kind", ""),

@@ -623,7 +623,7 @@ class RH1Painter extends RHistPainter {
          tips.push(`bin = ${bin+1}`);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
-         let lbl = "entries = " + (di > 1 ? "~" : "");
+         let lbl = "entries = " + (di > 1 ? "~" : '');
          if (cont === Math.round(cont))
             tips.push(lbl + cont);
          else
@@ -966,7 +966,7 @@ class RH1Painter extends RHistPainter {
                              Error: false, ErrorKind: -1, errorX: gStyle.fErrorX,
                              Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
+                             Text: false, TextAngle: 0, TextKind: '', AutoColor: 0,
                              BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
          let d = new DrawOptions(opt);

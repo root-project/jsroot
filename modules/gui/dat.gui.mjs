@@ -574,7 +574,7 @@ var possibleConstructorReturn = function (self, call) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
 
-  return call && (typeof call === "object" || typeof call === 'function') ? call : self;
+  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
 };
 
 var Color = function () {

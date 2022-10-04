@@ -126,7 +126,7 @@ async function loadOpenui5(args) {
 
    let openui5_sources = [],
        openui5_dflt = "https://openui5.hana.ondemand.com/1.98.0/",
-       openui5_root = rootui5sys ? rootui5sys + "distribution/" : "";
+       openui5_root = rootui5sys ? rootui5sys + "distribution/" : '';
 
    if (typeof args.openui5src == 'string') {
       switch (args.openui5src) {

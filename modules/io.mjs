@@ -2223,7 +2223,7 @@ class TBuffer {
       let len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
-      if (len == 0) return "";
+      if (len == 0) return '';
 
       const pos = this.o;
       this.o += len;
@@ -3475,7 +3475,7 @@ class TFile {
   * console.log(`Get histogram with title = ${histo.fTitle}`);
   *
   * // request same data via root.json request
-  * httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
+  * httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", 'object')
   *            .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`)); */
 function reconstructObject(class_name, obj_rawdata, sinfo_rawdata) {
 
@@ -3746,7 +3746,7 @@ class FileProxy {
 
    async openFile() { return false; }
 
-   getFileName() { return ""; }
+   getFileName() { return ''; }
 
    getFileSize() { return 0; }
 

@@ -231,7 +231,7 @@ function findItemWithPainter(hitem, funcname) {
   * @private */
 function provideVisStyle(obj) {
    if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
-      return obj.fRnrSelf ? " geovis_this" : "";
+      return obj.fRnrSelf ? " geovis_this" : '';
 
    let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
               testGeoBit(obj, geoBITS.kVisThis),
@@ -242,7 +242,7 @@ function provideVisStyle(obj) {
    if (vis && chld) return " geovis_all";
    if (vis) return " geovis_this";
    if (chld) return " geovis_daughters";
-   return "";
+   return '';
 }
 
 
@@ -779,7 +779,7 @@ class TGeoPainter extends ObjectPainter {
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
-                   script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
+                   script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       let dd = decodeUrl();
@@ -3076,7 +3076,7 @@ class TGeoPainter extends ObjectPainter {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
-            let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : "";
+            let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : '';
             if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
@@ -3331,7 +3331,7 @@ class TGeoPainter extends ObjectPainter {
       if (!prnt) {
          prnt = this.getGeometry();
          if (!prnt && (getNodeKind(prnt) !== 0)) return null;
-         itemname = this.geo_manager ? prnt.fName : "";
+         itemname = this.geo_manager ? prnt.fName : '';
          first_level = true;
          volumes = [];
       } else {
@@ -3365,7 +3365,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Process script option - load and execute some gGeoManager-related calls */
    async loadMacro(script_name) {
 
-      let result = { obj: this.getGeometry(), prefix: "" };
+      let result = { obj: this.getGeometry(), prefix: '' };
 
       if (this.geo_manager)
          result.prefix = result.obj.fName;
@@ -4975,7 +4975,7 @@ function createItem(node, obj, name) {
       if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
 
       if (shape) {
-         if (sub._title == "")
+         if (sub._title == '')
             sub._title = shape._typename;
 
          sub._icon = getShapeIcon(shape);

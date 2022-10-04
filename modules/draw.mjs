@@ -66,7 +66,7 @@ const drawFuncs = { lst: [
    { name: /^RooHist/, sameas: "TGraph" },
    { name: /^RooCurve/, sameas: "TGraph" },
    { name: "RooPlot", icon: "img_canvas", func: drawRooPlot },
-   { name: "TRatioPlot", icon: "img_mgraph", class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: "" },
+   { name: "TRatioPlot", icon: "img_mgraph", class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: '' },
    { name: "TMultiGraph", icon: "img_mgraph", class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
    { name: "TWebPainting", icon: "img_graph", class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
@@ -128,25 +128,25 @@ const drawFuncs = { lst: [
    { name: "Session", icon: "img_globe" },
    { name: "kind:TopFolder", icon: "img_base" },
    { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-   { name: _v7+"RCanvas", icon: "img_canvas", class: () => init_v7().then(h => h.RCanvasPainter), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: "", expand_item: "fPrimitives" },
-   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7('rh1').then(h => h.RH1Painter), opt: "" },
-   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7('rh2').then(h => h.RH2Painter), opt: "" },
-   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7('rh3').then(h => h.RH3Painter), opt: "" },
-   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: "" },
-   { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: "", direct: "v7", csstype: "text" },
-   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: "", direct: "v7", csstype: "title" },
-   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: "" },
-   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: "" },
-   { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: "", direct: "v7", csstype: "line" },
-   { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: "", direct: "v7", csstype: "box" },
-   { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawMarker), opt: "", direct: "v7", csstype: "marker" },
-   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPavePainter), opt: "" },
-   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('pave').then(h => h.RLegendPainter), opt: "" },
-   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: "" },
-   { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: "" },
-   { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: "", direct: "v7", csstype: "font" },
-   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: "" }
+   { name: _v7+"RCanvas", icon: "img_canvas", class: () => init_v7().then(h => h.RCanvasPainter), opt: '', expand_item: "fPrimitives" },
+   { name: _v7+"RCanvasDisplayItem", icon: "img_canvas", draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: "fPrimitives" },
+   { name: _v7+"RHist1Drawable", icon: "img_histo1d", class: () => init_v7('rh1').then(h => h.RH1Painter), opt: '' },
+   { name: _v7+"RHist2Drawable", icon: "img_histo2d", class: () => init_v7('rh2').then(h => h.RH2Painter), opt: '' },
+   { name: _v7+"RHist3Drawable", icon: "img_histo3d", class: () => init_v7('rh3').then(h => h.RH3Painter), opt: '' },
+   { name: _v7+"RHistDisplayItem", icon: "img_histo1d", draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
+   { name: _v7+"RText", icon: "img_text", draw: () => init_v7('more').then(h => h.drawText), opt: '', direct: "v7", csstype: "text" },
+   { name: _v7+"RFrameTitle", icon: "img_text", draw: () => init_v7().then(h => h.drawRFrameTitle), opt: '', direct: "v7", csstype: "title" },
+   { name: _v7+"RPaletteDrawable", icon: "img_text", class: () => init_v7('more').then(h => h.RPalettePainter), opt: '' },
+   { name: _v7+"RDisplayHistStat", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
+   { name: _v7+"RLine", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawLine), opt: '', direct: "v7", csstype: "line" },
+   { name: _v7+"RBox", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawBox), opt: '', direct: "v7", csstype: "box" },
+   { name: _v7+"RMarker", icon: "img_graph", draw: () => init_v7('more').then(h => h.drawMarker), opt: '', direct: "v7", csstype: "marker" },
+   { name: _v7+"RPave", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPavePainter), opt: '' },
+   { name: _v7+"RLegend", icon: "img_graph", class: () => init_v7('pave').then(h => h.RLegendPainter), opt: '' },
+   { name: _v7+"RPaveText", icon: "img_pavetext", class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
+   { name: _v7+"RFrame", icon: "img_frame", draw: () => init_v7().then(h => h.drawRFrame), opt: '' },
+   { name: _v7+"RFont", icon: "img_text", draw: () => init_v7().then(h => h.drawRFont), opt: '', direct: "v7", csstype: "font" },
+   { name: _v7+"RAxisDrawable", icon: "img_frame", draw: () => init_v7().then(h => h.drawRAxis), opt: '' }
 ], cache: {} };
 
 
@@ -176,7 +176,7 @@ function addDrawFunc(args) {
 function getDrawHandle(kind, selector) {
 
    if (typeof kind != 'string') return null;
-   if (selector === "") selector = null;
+   if (selector === '') selector = null;
 
    let first = null;
 

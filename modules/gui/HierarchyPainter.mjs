@@ -324,7 +324,7 @@ function objectHierarchy(top, obj, args = undefined) {
             item = {
               _parent: top,
               _name: k.toString(),
-              _value: "",
+              _value: '',
               _vclass: 'h_value_num'
             };
             while (item._name.length < namelen)
@@ -500,7 +500,7 @@ function objectHierarchy(top, obj, args = undefined) {
                   case 'TLatex': item._value = fld.fTitle; break;
                   case 'TObjString': item._value = fld.fString; break;
                   default:
-                     if (isRootCollection(fld) && (typeof fld.arr === "object")) {
+                     if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
                         if (fld.arr.length > 0) item._more = true;
@@ -604,7 +604,7 @@ function markAsStreamerInfo(h, item, obj) {
 /** @summary Create hierarchy for object inspector
   * @private */
 function createInspectorContent(obj) {
-   let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
+   let h = { _name: "Object", _title: '', _click_action: "expand", _nosimple: false, _do_context: true };
 
    if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
       h._name = obj.fName;
@@ -758,7 +758,7 @@ class HierarchyPainter extends BasePainter {
 
       let folder = {
          _name: file.fFileName,
-         _title: (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
+         _title: (file.fTitle ? (file.fTitle + ", path ") : '')  + file.fFullURL,
          _kind: "ROOT.TFile",
          _file: file,
          _fullurl: file.fFullURL,
@@ -990,7 +990,7 @@ class HierarchyPainter extends BasePainter {
 
       if ('_numargs' in hitem)
          for (let n = 0; n < hitem._numargs; ++n)
-            cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : "");
+            cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : '');
 
       let promise = (cmdargs.length == 0) || !elem ? Promise.resolve(cmdargs) :
                      createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
@@ -1255,7 +1255,7 @@ class HierarchyPainter extends BasePainter {
          element_title = element_name;
 
       d3a.attr('title', element_title)
-         .text(element_name + ('_value' in hitem ? ":" : ""))
+         .text(element_name + ('_value' in hitem ? ":" : ''))
          .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
@@ -1457,7 +1457,7 @@ class HierarchyPainter extends BasePainter {
       if (typeof hitem == 'string')
          hitem = this.findItem(hitem);
 
-      let name = hitem ? this.itemFullName(hitem) : "";
+      let name = hitem ? this.itemFullName(hitem) : '';
       if (!name) return false;
 
       let itm = hitem, need_refresh = false;
@@ -1522,7 +1522,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = "item";
-      let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : "",
+      let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == "icon") {
@@ -2660,7 +2660,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async getOnlineItem(item, itemname, option) {
 
-      let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
+      let url = itemname, h_get = false, req = "", req_kind = 'object', draw_handle = null;
 
       if ((typeof option == 'string') && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
@@ -2726,7 +2726,7 @@ class HierarchyPainter extends BasePainter {
             let handleAfterRequest = func => {
                if (typeof func == 'function') {
                   let res = func(this, item, obj, option, itemreq);
-                  if (res && (typeof res == "object")) obj = res;
+                  if (res && (typeof res == 'object')) obj = res;
                }
                resolveFunc(obj);
             };
@@ -2858,12 +2858,12 @@ class HierarchyPainter extends BasePainter {
       if (sett.opts && (node._can_draw !== false))
          menu.addDrawMenu("Draw in new window", sett.opts,
                            arg => window.open(onlineprop.server + "?nobrowser&item=" + onlineprop.itemname +
-                                              (this.isMonitoring() ? "&monitoring=" + this.getMonitoringInterval() : "") +
-                                              (arg ? "&opt=" + arg : "")));
+                                              (this.isMonitoring() ? "&monitoring=" + this.getMonitoringInterval() : '') +
+                                              (arg ? "&opt=" + arg : '')));
 
       if (sett.opts && (sett.opts.length > 0) && root_type && (node._can_draw !== false))
          menu.addDrawMenu("Draw as png", sett.opts,
-                           arg => window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=600&h=400" + (arg ? "&opt=" + arg : "")));
+                           arg => window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=600&h=400" + (arg ? "&opt=" + arg : '')));
 
       if ('_player' in node)
          menu.add("Player", () => this.player(itemname));
@@ -3155,7 +3155,7 @@ class HierarchyPainter extends BasePainter {
             let separ = opt.indexOf(";"),
                 part = (separ > 0) ? opt.slice(0, separ) : opt;
 
-            opt = (separ > 0) ? opt.slice(separ+1) : "";
+            opt = (separ > 0) ? opt.slice(separ+1) : '';
 
             let canarray = true;
             if (part[0] == '#') { part = part.slice(1); canarray = false; }
@@ -3213,7 +3213,7 @@ class HierarchyPainter extends BasePainter {
 
       if (monitor === null)
          monitor = 0;
-      else if (monitor === "")
+      else if (monitor === '')
          monitor = 3000;
       else
          monitor = parseInt(monitor);
@@ -3229,14 +3229,14 @@ class HierarchyPainter extends BasePainter {
 
       let load = GetOption("load");
 
-      if (expanditems.length == 0 && (GetOption("expand") === "")) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption("expand") === '')) expanditems.push("");
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
          for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length == 0) && GetOption("item") === "") itemsarr.push("");
+      if ((itemsarr.length == 0) && GetOption("item") === '') itemsarr.push("");
 
       if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push("");
 
@@ -3271,7 +3271,7 @@ class HierarchyPainter extends BasePainter {
          if (!Number.isInteger(statush) || (statush < 5)) statush = 0;
          status = true;
       }
-      if (this.no_select === "") this.no_select = true;
+      if (this.no_select === '') this.no_select = true;
 
       if (!browser_kind)
          browser_kind = "fix";
@@ -3410,7 +3410,7 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
-         return "";
+         return '';
       return this.brlayout.createStatusLine(height, mode);
    }
 
