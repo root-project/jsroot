@@ -559,7 +559,7 @@ class RH2Painter extends RHistPainter {
                         poly.fLastPoint = np+2;
                         npmax = Math.max(npmax, poly.fLastPoint+1);
                      } else {
-                        // console.log('reject point??', poly.fLastPoint);
+                        // console.log(`reject point ${poly.fLastPoint}`);
                      }
                   }
                }
@@ -568,7 +568,7 @@ class RH2Painter extends RHistPainter {
       } // end of i
 
       let polysort = new Int32Array(levels.length), first = 0;
-      //find first positive contour
+      // find first positive contour
       for (ipoly=0;ipoly<levels.length;ipoly++) {
          if (levels[ipoly] >= 0) { first = ipoly; break; }
       }
@@ -600,7 +600,7 @@ class RH2Painter extends RHistPainter {
             yy[istart] = yy[istart+1] = ymin;
             while (true) {
                nadd = 0;
-               for (i=2;i<np;i+=2) {
+               for (i = 2; i < np; i += 2) {
                   if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                      iplus++;
                      xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];

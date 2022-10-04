@@ -742,7 +742,7 @@ class TPadPainter extends ObjectPainter {
             if (col && (col._typename == 'TColor')) {
                arr[n] = getRGBfromTColor(col);
             } else {
-               console.log('Missing color with index ' + n); missing = true;
+               console.log(`Missing color with index ${n}`); missing = true;
             }
          }
          if (!this.options || (!missing && !this.options.IgnorePalette))
@@ -1234,7 +1234,7 @@ class TPadPainter extends ObjectPainter {
 
          if (objpainter.$primary && (pi > 0) && this.painters[pi-1].$secondary) {
             this.painters[pi-1].snapid = objpainter.snapid + "#hist";
-            console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
+            console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi-1].snapid}`);
          }
       }
    }
@@ -1596,14 +1596,14 @@ class TPadPainter extends ObjectPainter {
          if (this.getPadRanges(elem))
             arg.push(elem);
          else
-            console.log('fail to get ranges for pad ' +  this.pad.fName);
+            console.log(`fail to get ranges for pad ${this.pad.fName}`);
       }
 
       this.painters.forEach(sub => {
          if (typeof sub.getWebPadOptions == "function") {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
-            let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: "", fopt: [] };
+            let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
             if (typeof sub.fillWebObjectOptions == "function")
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
@@ -1859,7 +1859,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          image.onerror = function(arg) {
-            console.log('IMAGE ERROR', arg);
+            console.log(`IMAGE ERROR ${arg}`);
             reconstruct();
             resolveFunc(null);
          }

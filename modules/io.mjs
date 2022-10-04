@@ -102,7 +102,7 @@ const CustomStreamers = {
       streamer = buf.fFile.getSplittedStreamer(streamer);
 
       if (!streamer) {
-         console.log('Cannot get member-wise streamer for', classv, clv);
+         console.log(`Cannot get member-wise streamer for ${classv}:${clv}`);
       } else {
          // create objects
          for (let n = 0; n < nobjects; ++n)
@@ -2859,11 +2859,11 @@ class TFile {
                else
                   file.fMaxRanges = 1;
                last = Math.min(last, file.fMaxRanges * 2);
-               // console.log('Change maxranges to ', file.fMaxRanges, 'last', last);
+               // console.log(`Change maxranges to ${file.fMaxRanges} last ${last}`);
                return send_new_request();
             }
 
-            return rejectFunc(Error("Fail to read with several ranges"));
+            return rejectFunc(Error('Fail to read with several ranges'));
          }
 
          // if only single segment requested, return result as is
@@ -3575,7 +3575,7 @@ function readMapElement(buf) {
 
             streamer = getPairStreamer(si, this.pairtype, buf.fFile);
             if (!streamer || streamer.length !== 2) {
-               console.log('Fail to produce streamer for ', this.pairtype);
+               console.log(`Fail to produce streamer for ${this.pairtype}`);
                return null;
             }
          }

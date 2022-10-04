@@ -98,7 +98,7 @@ function tryOpenOpenUI(sources, args) {
    }
 
    element.onload = function() {
-      console.log('Load openui5 from ' + src);
+      console.log(`Load openui5 from ${src}`);
    }
 
    document.head.appendChild(element);

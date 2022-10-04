@@ -342,7 +342,6 @@ class RHistPainter extends RObjectPainter {
             default: axis = obj.fAxes[0]; break;
          }
       } else if (histo && histo.fAxes) {
-         // console.log('histo fAxes', histo.fAxes, histo.fAxes._0)
          switch(name) {
             case "x": axis = histo.fAxes._0; break;
             case "y": axis = histo.fAxes._1; break;

@@ -1552,7 +1552,7 @@ class BootstrapMenu extends JSRootMenu {
   * @example
   * import { createMenu } from 'path_to_jsroot/modules/gui/menu.mjs';
   * let menu = await createMenu());
-  * menu.add("First", () => console.log("Click first"));
+  * menu.add("First", () => console.log('Click first'));
   * let flag = true;
   * menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */

@@ -437,7 +437,7 @@ class PolygonsCreator{
              next = this.mnormal ? this.v3 : this.v2;
 
          if (next.diff(first) < 1e-12) {
-            //console.log('polygon closed!!!', polygon.vertices.length);
+            //console.log(`polygon closed!!! nvertices = ${polygon.vertices.length}`);
             this.multi = 0;
          } else
          if (this.mnormal) {
@@ -1221,7 +1221,7 @@ function createPolygonBuffer( shape, faces_limit ) {
 
       } else {
          // let three.js calculate our faces
-         // console.log('triangulate polygon ' + shape.fShapeId);
+         // console.log(`triangulate polygon ${shape.fShapeId}`);
          cut_faces = ShapeUtils.triangulateShape(pnts, []);
       }
       numfaces += cut_faces.length*2;
@@ -3040,7 +3040,7 @@ class ClonedNodes {
          return result;
       }
 
-      // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      // console.log(`Volume boundary ${currNode.vol}  cnt=${cnt}  faces=${facecnt}`);
       result.max = maxNode.vol;
       result.min = currNode.vol;
       result.sortidcut = currNode.sortid; // latest node is not included
@@ -3090,7 +3090,7 @@ class ClonedNodes {
 
       let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
-      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
+      console.log(`Total visible nodes ${total} numfaces ${arg.facecnt}`);
 
       if (arg.facecnt > maxnumfaces) {
 
@@ -3129,7 +3129,7 @@ class ClonedNodes {
 
              camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
 
-             // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
+             // console.log(`Limit for camera ${camVol}  faces in camera view ${arg.totalcam}`);
          }
       }
 
@@ -3374,7 +3374,8 @@ function createFlippedMesh(shape, material) {
          let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
          for (let ii = 0; ii < ilen; ++ii) {
             let k = arr[i0 + ii];
-            if ((k < 0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+            if ((k < 0) || (k*3 >= pos.length))
+               console.log(`strange index ${k*3} totallen = ${pos.length}`);
             dpos[ii*3] = pos[k*3];
             dpos[ii*3+1] = pos[k*3+1];
             dpos[ii*3+2] = pos[k*3+2];
@@ -3594,7 +3595,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                intersects = unique;
 
                if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
-                  console.log('MISS', clones ? clones.resolveStack(mesh.stack).name : "???");
+                  console.log(`MISS ${clones?.resolveStack(mesh.stack)?.name}`);
 
                if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
 

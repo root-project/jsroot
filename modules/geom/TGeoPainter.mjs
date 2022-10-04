@@ -795,21 +795,21 @@ class TGeoPainter extends ObjectPainter {
          if (separ < 0) separ = opt.length;
          res.script_name = opt.slice(macro+6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ+1);
-         console.log('script', res.script_name, 'rest', opt);
+         console.log(`script ${res.script_name} rest ${opt}`);
       }
 
       while (true) {
          let pp = opt.indexOf("+"), pm = opt.indexOf("-");
          if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = "+";
-         if ((p1 < 0) || ((pm >= 0) && (pm<pp))) { p1 = pm; sign = "-"; }
+         if ((p1 < 0) || ((pm >= 0) && (pm < pp))) { p1 = pm; sign = '-'; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
-         while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
+         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
 
          let name = opt.substring(p1+1, p2);
          opt = opt.slice(0,p1) + opt.slice(p2);
-         // console.log("Modify visibility", sign,':',name);
+         // console.log(`Modify visibility ${sign} : ${name}`);
 
          this.modifyVisisbility(name, sign);
       }
@@ -975,7 +975,7 @@ class TGeoPainter extends ObjectPainter {
 
                if (max < 1e-4) return true;
 
-               console.log(this._clones.resolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
+               console.log(`${this._clones.resolveStack(entry.stack).name} maxdiff ${max} determ ${m1.determinant()} ${m2.determinant()}`);
 
                errcnt++;
 
@@ -2986,7 +2986,7 @@ class TGeoPainter extends ObjectPainter {
 
       let obj = hitem._obj;
       if (this.ctrl._debug)
-         console.log('Mouse over', on, itemname, (obj ? obj._typename : "---"));
+         console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
       if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet" && obj._typename !== "TPolyMarker3D")) return;
@@ -3378,7 +3378,7 @@ class TGeoPainter extends ObjectPainter {
                let regexp = new RegExp("^"+name+"$"),
                    currnode = this.findNodeWithVolume(regexp, arg => arg);
 
-               if (!currnode) console.log('Did not found '+name + ' volume');
+               if (!currnode) console.log(`Did not found ${name} volume`);
 
                // return proxy object with several methods, typically used in ROOT geom scripts
                return {
@@ -3391,7 +3391,7 @@ class TGeoPainter extends ObjectPainter {
                       if (!this.found || !this.fVolume) return;
                       result.obj = this.found.node;
                       result.prefix = this.found.item;
-                      console.log('Select volume for drawing', this.fVolume.fName, result.prefix);
+                      console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
                    },
                    SetTransparency(lvl) {
                      if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)

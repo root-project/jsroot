@@ -750,7 +750,7 @@ class TH2Painter extends THistPainter {
                         poly.fLastPoint = np+2;
                         npmax = Math.max(npmax, poly.fLastPoint+1);
                      } else {
-                        // console.log('reject point??', poly.fLastPoint);
+                        // console.log(`reject point ${poly.fLastPoint}`);
                      }
                   }
                }

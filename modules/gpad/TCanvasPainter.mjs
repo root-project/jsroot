@@ -299,7 +299,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Handle websocket messages
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log("GET MSG len:" + msg.length + " " + msg.slice(0,60));
+      console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
@@ -333,7 +333,7 @@ class TCanvasPainter extends TPadPainter {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else {
-            console.log('Unrecognized command ' + cmd);
+            console.log(`Unrecognized command ${cmd}`);
             handle.send(reply);
          }
       } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
@@ -346,13 +346,13 @@ class TCanvasPainter extends TPadPainter {
          this.showSection(that.slice(0,that.length-2), on);
       } else if (msg.slice(0,5) == "EDIT:") {
          let obj_painter = this.findSnap(msg.slice(5));
-         console.log('GET EDIT ' + msg.slice(5) +  ' found ' + !!obj_painter);
+         console.log(`GET EDIT ${msg.slice(5)} found ${!!obj_painter}`);
          if (obj_painter)
             this.showSection("Editor", true)
                 .then(() => this.producePadEvent("select", obj_painter.getPadPainter(), obj_painter));
 
       } else {
-         console.log("unrecognized msg " + msg);
+         console.log(`unrecognized msg ${msg}`);
       }
    }
 
@@ -566,22 +566,22 @@ class TCanvasPainter extends TPadPainter {
             break;
          default:
             if ((kind.slice(0,5) == "exec:") && painter?.snapid) {
-               console.log('Call exec', painter.snapid);
+               console.log(`Call exec for ${painter.snapid}`);
 
                msg = "PRIMIT6:" + toJSON({
                   _typename: "TWebObjectOptions",
-                  snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ""),
+                  snapid: painter.snapid.toString() + (subelem ? "#"+subelem : ''),
                   opt: kind.slice(5),
                   fcust: "exec",
                   fopt: []
                });
             } else {
-               console.log("UNPROCESSED CHANGES", kind);
+               console.log(`UNPROCESSED CHANGES ${kind}`);
             }
       }
 
       if (msg) {
-         console.log("Sending " + msg.length + "  " + msg.slice(0,40));
+         console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
       }
    }

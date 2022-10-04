@@ -582,7 +582,7 @@ class RPadPainter extends RObjectPainter {
 
          if (this._start_tm) {
             let spenttm = new Date().getTime() - this._start_tm;
-            if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+            if (spenttm > 3000) console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
             delete this._start_tm;
          }
 
@@ -1332,7 +1332,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          image.onerror = function(arg) {
-            console.log('IMAGE ERROR', arg);
+            console.log(`IMAGE ERROR ${arg}`);
             reconstruct();
             resolveFunc(null);
          }

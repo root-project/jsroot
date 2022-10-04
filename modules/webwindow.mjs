@@ -28,7 +28,7 @@ class LongPollSocket {
       if (kind === "connect") {
          url += this.raw ? "?raw_connect" : "?txt_connect";
          if (this.args) url += "&" + this.args;
-         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
+         console.log(`longpoll connect ${url} raw = ${this.raw}`);
          this.connid = "connect";
       } else if (kind === "close") {
          if ((this.connid === null) || (this.connid === 'close')) return;
@@ -149,9 +149,9 @@ class LongPollSocket {
 
          this.connid = parseInt(res);
          dummy_tmout = 100; // when establishing connection, wait a bit longer to submit dummy package
-         console.log('Get new longpoll connection with id ' + this.connid);
+         console.log(`Get new longpoll connection with id ${this.connid}`);
          if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid === "close") {
+      } else if (this.connid === 'close') {
          if (typeof this.onclose == 'function')
             this.onclose();
          return;
@@ -162,14 +162,14 @@ class LongPollSocket {
 
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
       if (!this.req)
-         setTimeout(() => { if (!this.req) this.nextRequest("", "dummy"); }, dummy_tmout);
+         setTimeout(() => { if (!this.req) this.nextRequest('', 'dummy'); }, dummy_tmout);
    }
 
    /** @summary Send data */
    send(str) { this.nextRequest(str); }
 
    /** @summary Close connection */
-   close() { this.nextRequest("", "close"); }
+   close() { this.nextRequest('', 'close'); }
 
 } // class LongPollSocket
 
@@ -216,7 +216,7 @@ class FileDumpSocket {
       let fname = this.protocol[this.cnt];
       if (!fname) return;
       if (fname == "send") return; // waiting for send
-      // console.log("getting file", fname, "wait", this.wait_for_file);
+      // console.log(`getting file ${fname} wait ${this.wait_for_file}`);
       this.wait_for_file = true;
       this.cnt++;
       httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
@@ -293,9 +293,9 @@ class WebWindowHandle {
     * @private */
    provideData(chid, _msg, _len) {
       if (this.wait_first_recv) {
-         console.log("FIRST MESSAGE", chid, _msg);
+         console.log(`FIRST MESSAGE ${chid} ${msg}`);
          delete this.wait_first_recv;
-         return this.invokeReceiver(false, "onWebsocketOpened");
+         return this.invokeReceiver(false, 'onWebsocketOpened');
       }
 
       if ((chid > 1) && this.channels) {
@@ -307,7 +307,7 @@ class WebWindowHandle {
       const force_queue = _len && (_len < 0);
 
       if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-         return this.invokeReceiver(false, "onWebsocketMsg", _msg, _len);
+         return this.invokeReceiver(false, 'onWebsocketMsg', _msg, _len);
 
       if (!this.msgqueue) this.msgqueue = [];
       if (force_queue) _len = undefined;
@@ -496,7 +496,7 @@ class WebWindowHandle {
 
          if (this.state != 0) return;
 
-         if (!first_time) console.log("try connect window again " + new Date().toString());
+         if (!first_time) console.log(`try connect window again ${new Date().toString()}`);
 
          if (this._websocket) {
             this._websocket.close();
@@ -511,24 +511,24 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         if (first_time) console.log('Opening web socket at ' + href);
+         if (first_time) console.log(`Opening web socket at ${href}`);
 
-         if (ntry > 2) showProgress("Trying to connect " + href);
+         if (ntry > 2) showProgress(`Trying to connect ${href}`);
 
          let path = href;
 
          if (this.kind == "file") {
             path += "root.filedump";
             this._websocket = new FileDumpSocket(this);
-            console.log('configure protocol log ' + path);
+            console.log(`configure protocol log ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
             path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
             if (args) path += "?" + args;
-            console.log('configure websocket ' + path);
+            console.log(`configure websocket ${path}`);
             this._websocket = new WebSocket(path);
          } else {
-            path += "root.longpoll";
-            console.log('configure longpoll ' + path);
+            path += 'root.longpoll';
+            console.log(`configure longpoll ${path}`);
             this._websocket = new LongPollSocket(path, (this.kind === 'rawlongpoll'), args);
          }
 
@@ -538,7 +538,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            let key = this.key || "";
+            let key = this.key || '';
 
             this.send("READY=" + key, 0); // need to confirm connection
             this.invokeReceiver(false, "onWebsocketOpened");
@@ -560,7 +560,7 @@ class WebWindowHandle {
                   reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
-                  // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  // console.log(`got array ${typeof msg} len = ${msg.byteLength}`);
                   // this is from CEF or LongPoll handler
                   this.provideData(binchid, msg, e.offset || 0);
                }
@@ -568,7 +568,7 @@ class WebWindowHandle {
                return;
             }
 
-            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
+            if (typeof msg != 'string') return console.log(`unsupported message kind: ${typeof msg}`);
 
             let i1 = msg.indexOf(":"),
                credit = parseInt(msg.slice(0, i1)),
@@ -583,7 +583,7 @@ class WebWindowHandle {
             msg = msg.slice(i3 + 1);
 
             if (chid == 0) {
-               console.log('GET chid=0 message', msg);
+               console.log(`GET chid=0 message ${msg}`);
                if (msg == "CLOSE") {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, "onWebsocketClosed");
