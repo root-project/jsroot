@@ -251,7 +251,7 @@
             keyid = next;
             if (!next) return; // stop condition
             optid = -1; testfile = testobj = null;
-            // console.log("Switch key ", keyid);
+            // console.log(`Switch key ${keyid}`);
             return runBigTest(0);
          }
 
@@ -293,7 +293,7 @@
             if (entry.style) url += "&style=" + entry.style;
          }
 
-         // console.log('KEY ', keyid, 'opt', opt);
+         // console.log(`KEY ${keyid} opt ${opt}`);
          // if ((url.length == 0) || (keyid != 'Misc')) return runBigTest(0);
 
          if (hpainter) { hpainter.cleanup(); hpainter = null; }
