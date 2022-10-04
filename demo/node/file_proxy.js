@@ -8,7 +8,7 @@ import { writeFileSync, openSync, readSync, statSync } from "fs";
 
 import { open, stat } from "node:fs/promises";
 
-console.log('JSROOT version', version);
+console.log(`JSROOT version ${version}`);
 
 class FileProxySync extends FileProxy {
 
@@ -134,7 +134,7 @@ if (process.argv && process.argv[2] == "sync") {
                   .then(ntuple => treeDraw(ntuple, "px:py::pz>5"))
                   .then(hist => makeSVG({ object: hist, width: 1200, height: 800 }))
                   .then(svg => {
-                     writeFileSync("draw_proxy.svg", svg);
+                     writeFileSync('draw_proxy.svg', svg);
                      console.log(`Create draw_proxy.svg size ${svg.length}`);
                   });
 }

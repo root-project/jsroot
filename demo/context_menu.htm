@@ -32,10 +32,10 @@
             let tip = menu.painter.getToolTip(menu.getEventPosition());
 
             // example how to get label from bin index
-            // if (tip.binx !== undefined) console.log('binx as text', menu.painter.getFramePainter().axisAsText("x", tip.binx));
-            // if (tip.biny !== undefined) console.log('biny as text', menu.painter.getFramePainter().axisAsText("y", tip.biny));
+            // if (tip.binx !== undefined) console.log(`binx as text ${menu.painter.getFramePainter().axisAsText('x', tip.binx)}`);
+            // if (tip.biny !== undefined) console.log(`biny as text ${menu.painter.getFramePainter().axisAsText('y', tip.biny)}`);
 
-            console.log('Hist context menu for', itemname, tip.binx, tip.biny, tip.cont);
+            console.log(`Hist context menu for ${itemname} bins: ${tip.binx} ${tip.biny} cont: ${tip.cont}`);
 
             menu.add(`sub:Histogram bin [${tip.binx}, ${tip.biny}]`, () => menu.painter.provideSpecialDrawArea());
             menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("bottom").then(() => hpainter.getObject("hpx")).then(res => menu.painter.drawInSpecialArea(res.obj, "*H")));

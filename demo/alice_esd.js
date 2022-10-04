@@ -45,7 +45,7 @@ async function extract_geo_tracks(tree, opt) {
 
    selector.Terminate = function() {
       // function called when processing finishes
-      console.log('Read done num entries', numentry, 'tracks', numtracks);
+      console.log(`Read done num entries ${numentry} tracks ${numtracks}`);
    }
 
    await handle.treeProcess(tree, selector);
@@ -55,4 +55,4 @@ async function extract_geo_tracks(tree, opt) {
    return lst;
 }
 
-console.log('LOAD alice_esd.js with JSROOT', JSROOT.version);
+console.log(`LOAD alice_esd.js with JSROOT ${JSROOT.version}`);

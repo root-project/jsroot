@@ -2,7 +2,7 @@ import { version, httpRequest, openFile, makeSVG, treeDraw } from "jsroot";
 
 import { writeFileSync } from "fs";
 
-console.log('JSROOT version', version);
+console.log(`JSROOT version ${version}`);
 
 let arg = "https://root.cern/js/files/hsimple.root";
 
@@ -16,5 +16,5 @@ let file = await openFile(arg);
 let ntuple = await file.readObject("ntuple");
 let hist = await treeDraw(ntuple, "px:py::pz>5");
 let svg = await makeSVG({ object: hist, width: 1200, height: 800 });
-writeFileSync("tree_draw.svg", svg);
+writeFileSync('tree_draw.svg', svg);
 console.log(`Create tree_draw.svg size ${svg.length}`);

@@ -25,7 +25,7 @@ selector.Terminate = function(res) {
       console.error("Fail to process TTree");
    } else {
       let meanpx = sumpx/cnt, meanpy = sumpy/cnt;
-      console.log('MeanPX = ' + meanpx.toFixed(4) + '  MeanPY = ' + meanpy.toFixed(4));
+      console.log(`MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`);
    }
 }
 
@@ -36,4 +36,4 @@ let tree = await file.readObject("ntuple;1");
 
 await treeProcess(tree, selector);
 
-console.log("TTree::Process finished");
+console.log('TTree::Process finished');
