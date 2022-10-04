@@ -25,10 +25,14 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    }
 
    let ndig = 0;
-   if (this.aver_diff <= 0) ndig = 0; else
-      if (this.aver_diff < 0.0001) ndig = 3; else
-         if (this.aver_diff < 0.001) ndig = 2; else
-            if (this.aver_diff < 0.01) ndig = 1;
+   if (this.aver_diff <= 0)
+      ndig = 0;
+   else if (this.aver_diff < 0.0001)
+      ndig = 3;
+   else if (this.aver_diff < 0.001)
+      ndig = 2;
+   else if (this.aver_diff < 0.01)
+      ndig = 1;
 
    let main_box = document.createElement("p"),
       text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),

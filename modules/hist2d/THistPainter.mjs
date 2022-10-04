@@ -638,7 +638,7 @@ class HistContour {
              logmax = Math.log(this.colzmax)/Math.log(10),
              dz = (logmax-logmin)/nlevels;
          this.arr.push(this.colzmin);
-         for (let level=1; level<nlevels; level++)
+         for (let level = 1; level < nlevels; level++)
             this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
          this.arr.push(this.colzmax);
          this.custom = true;
@@ -864,7 +864,7 @@ class THistPainter extends ObjectPainter {
    createAutoColor(numprimitives) {
       if (!numprimitives) {
          let pad = this.getPadPainter().getRootPad(true);
-         numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+         numprimitives = pad?.fPrimitves ? pad.fPrimitves.arr.length : 5;
       }
 
       let indx = this._auto_color || 0;
@@ -875,10 +875,10 @@ class THistPainter extends ObjectPainter {
       if (pal) {
          if (numprimitives < 2) numprimitives = 2;
          if (indx >= numprimitives) indx = numprimitives - 1;
-         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
-         let colvalue = pal.getColor(palindx);
-         let colindx = this.addColor(colvalue);
-         return colindx;
+         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1)),
+             colvalue = pal.getColor(palindx);
+
+         return this.addColor(colvalue);
       }
 
       this._auto_color = this._auto_color % 8;
@@ -1298,7 +1298,7 @@ class THistPainter extends ObjectPainter {
 
       tpainter.redraw();
 
-      this.submitCanvExec('SetTitle("' + histo.fTitle + '")');
+      this.submitCanvExec(`SetTitle("${histo.fTitle}")`);
    }
 
    /** @summary Update statistics when web canvas is drawn */
