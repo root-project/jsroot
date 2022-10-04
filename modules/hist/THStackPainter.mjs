@@ -39,7 +39,7 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      let lst = create("TList");
+      let lst = create('TList');
       lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          let hnext = clone(stack.fHists.arr[i]),

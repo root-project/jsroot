@@ -173,8 +173,8 @@ class RObjectPainter extends ObjectPainter {
           text_align  = this.v7EvalAttr(name + "_align", dflts.align || "none"),
           text_color  = this.v7EvalColor(name + "_color", dflts.color || "none"),
           font_family = this.v7EvalAttr(name + "_font_family", rfont.fFamily || "Arial"),
-          font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ""),
-          font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || "");
+          font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ''),
+          font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || '');
 
        if (typeof text_size == 'string') text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;

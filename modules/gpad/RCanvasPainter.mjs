@@ -369,7 +369,7 @@ class RCanvasPainter extends RPadPainter {
       return new Promise(resolveFunc => {
          this.submitDrawableRequest("", {
             _typename: "ROOT::Experimental::RDrawableMenuRequest",
-            menukind: menukind || "",
+            menukind: menukind || '',
             menureqid: reqid, // used to identify menu request
          }, painter, resolveFunc);
       });

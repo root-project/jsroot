@@ -209,7 +209,7 @@ function listHierarchy(folder, lst) {
           } : {
             _name: obj.fName || obj.name,
             _kind: "ROOT." + obj._typename,
-            _title: (obj.fTitle || "") + " type:"  +  obj._typename,
+            _title: (obj.fTitle || '') + " type:"  +  obj._typename,
             _obj: obj
         };
 
@@ -548,7 +548,7 @@ function createStreamerInfoContent(lst) {
    for (let i = 0; i < lst.arr.length; ++i) {
       let entry = lst.arr[i];
 
-      if (entry._typename == "TList") continue;
+      if (entry._typename == 'TList') continue;
 
       if (typeof entry.fName == 'undefined') {
          console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
@@ -1727,7 +1727,7 @@ class HierarchyPainter extends BasePainter {
                      dummy.forEachPainter(p => {
                         let _item = p.getItemName();
                         if (!_item) return;
-                        let _opt = p.getDrawOpt() || p.getItemDrawOpt() || "";
+                        let _opt = p.getDrawOpt() || p.getItemDrawOpt() || '';
                         if (!top) {
                            top = p;
                            item = _item;
@@ -1742,7 +1742,7 @@ class HierarchyPainter extends BasePainter {
 
                   if (item) {
                      items.push(item);
-                     opts.push(opt || "");
+                     opts.push(opt || '');
                   }
                });
 
@@ -1933,7 +1933,7 @@ class HierarchyPainter extends BasePainter {
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
-               if (!drawopt) drawopt = handle.draw_field_opt || "";
+               if (!drawopt) drawopt = handle.draw_field_opt || '';
                handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
             }
 
@@ -3194,8 +3194,8 @@ class HierarchyPainter extends BasePainter {
          return res;
       };
 
-      let prereq = GetOption('prereq') || "",
-          filesdir = d.get("path") || "", // path used in normal gui
+      let prereq = GetOption('prereq') || '',
+          filesdir = d.get("path") || '', // path used in normal gui
           filesarr = GetOptionAsArray("#file;files"),
           localfile = GetOption("localfile"),
           jsonarr = GetOptionAsArray("#json;jsons"),
@@ -3459,7 +3459,7 @@ class HierarchyPainter extends BasePainter {
       } else if (!this.no_select) {
          let myDiv = d3_select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
-             path = decodeUrl().get("path") || myDiv.attr("path") || "",
+             path = decodeUrl().get("path") || myDiv.attr("path") || '',
              arrFiles = files.split(';');
 
          guiCode += '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>' +

@@ -154,7 +154,7 @@ class TH2Painter extends THistPainter {
    fillHistContextMenu(menu) {
       if (!this.isTH2Poly()) {
          menu.add("sub:Projections", () => this.toggleProjection());
-         let kind = this.is_projection || "";
+         let kind = this.is_projection || '';
          if (kind) kind += this.projection_width;
          const kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
          if (this.is_projection) kinds.push("Off");

@@ -1443,7 +1443,7 @@ class THistPainter extends ObjectPainter {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = create("TList");
+         histo.fFunctions = create('TList');
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);

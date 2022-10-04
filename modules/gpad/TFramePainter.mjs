@@ -369,7 +369,7 @@ const TooltipHandler = {
 
       if (hint) {
          name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
-         title = hint.title || "";
+         title = hint.title || '';
          info = hint.line;
          if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
       }
@@ -391,7 +391,7 @@ const TooltipHandler = {
             .attr("class", "objects_hints")
             .style("pointer-events", "none");
 
-      let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || "";
+      let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || '';
       if (!pp.iscan) {
          frame_shift = getAbsPosInCanvas(this.getPadSvg(), frame_shift);
          trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
@@ -402,7 +402,7 @@ const TooltipHandler = {
          .property("last_point", pnt)
          .property("hints_pad", this.getPadName());
 
-      let viewmode = hintsg.property('viewmode') || "",
+      let viewmode = hintsg.property('viewmode') || '',
          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
 
       if (show_only_best || (nhints == 1)) {

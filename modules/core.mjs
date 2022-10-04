@@ -1032,7 +1032,7 @@ function create(typename, target) {
       case 'TPaveText':
          create("TPave", obj);
          create("TAttText", obj);
-         extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create("TList") });
+         extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create('TList') });
          break;
       case 'TPaveStats':
          create("TPaveText", obj);
@@ -1044,7 +1044,7 @@ function create(typename, target) {
       case 'TLegend':
          create("TPave", obj);
          create("TAttText", obj);
-         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create("TList"),
+         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create('TList'),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
@@ -1081,7 +1081,7 @@ function create(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: '', fFunctions: create("TList"),
+                       fSumw2: [], fOption: '', fFunctions: create('TList'),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1121,14 +1121,14 @@ function create(typename, target) {
          break;
       case 'THStack':
          create("TNamed", obj);
-         extend(obj, { fHists: create("TList"), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+         extend(obj, { fHists: create('TList'), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraph':
          create("TNamed", obj);
          create("TAttLine", obj);
          create("TAttFill", obj);
          create("TAttMarker", obj);
-         extend(obj, { fFunctions: create("TList"), fHistogram: null,
+         extend(obj, { fFunctions: create('TList'), fHistogram: null,
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
@@ -1137,7 +1137,7 @@ function create(typename, target) {
          break;
       case 'TMultiGraph':
          create("TNamed", obj);
-         extend(obj, { fFunctions: create("TList"), fGraphs: create("TList"),
+         extend(obj, { fFunctions: create('TList'), fGraphs: create('TList'),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraphPolargram':
@@ -1198,7 +1198,7 @@ function create(typename, target) {
                        fBorderMode: 0, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
-                       fPrimitives: create("TList"), fExecs: null,
+                       fPrimitives: create('TList'), fExecs: null,
                        fName: "pad", fTitle: "canvas" });
 
          break;
@@ -1648,7 +1648,7 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
+      if ((lst.$kind === 'TList') || (lst.$kind === "TObjArray")) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;

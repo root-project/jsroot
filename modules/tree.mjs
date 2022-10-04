@@ -935,9 +935,9 @@ class TDrawSelector extends TSelector {
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = create("THashList");
+      res.fLabels = create('THashList');
       for (let k = 0; k < nbits; ++k) {
-         let s = create("TObjString");
+         let s = create('TObjString');
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -954,7 +954,7 @@ class TDrawSelector extends TSelector {
 
       let arr = this.vars[axisid].buf;
 
-      res.title = this.vars[axisid].code || "";
+      res.title = this.vars[axisid].code || '';
 
       if (this.vars[axisid].kind === 'object') {
          // this is any object type
@@ -967,7 +967,7 @@ class TDrawSelector extends TSelector {
          }
 
          if (typename && similar) {
-            if ((typename === "TBits") && (axisid === 0)) {
+            if ((typename === 'TBits') && (axisid === 0)) {
                this.fill1DHistogram = this.fillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
 
@@ -989,12 +989,12 @@ class TDrawSelector extends TSelector {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = create("THashList");
+         res.fLabels = create('THashList');
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = create("TObjString");
+            let s = create('TObjString');
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
-            if (s.fString === '') s.fString = "<empty>";
+            if (s.fString === '') s.fString = '<empty>';
             res.fLabels.Add(s);
          }
       } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {

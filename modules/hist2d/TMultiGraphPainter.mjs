@@ -151,14 +151,14 @@ class TMultiGraphPainter extends ObjectPainter {
       if (!histo) {
          let xaxis, yaxis;
          if (this._3d) {
-            histo = create("TH2I");
+            histo = create('TH2I');
             xaxis = histo.fXaxis;
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
             xaxis.fNbins = graphs.arr.length;
-            xaxis.fLabels = create("THashList");
+            xaxis.fLabels = create('THashList');
             for (let i = 0; i < graphs.arr.length; i++) {
-               let lbl = create("TObjString");
+               let lbl = create('TObjString');
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                xaxis.fLabels.Add(lbl, "");
@@ -242,7 +242,7 @@ class TMultiGraphPainter extends ObjectPainter {
          }
       }
 
-      let o = graphs.opt[indx] || opt || "";
+      let o = graphs.opt[indx] || opt || '';
 
       return this.drawGraph(graphs.arr[indx], o, graphs.arr.length - indx).then(subp => {
          if (subp) this.painters.push(subp);

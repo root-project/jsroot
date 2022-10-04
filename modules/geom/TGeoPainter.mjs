@@ -50,7 +50,7 @@ function buildOverlapVolume(overlap) {
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-   vol.fNodes = create("TList");
+   vol.fNodes = create('TList');
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -98,7 +98,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
 
-   vol.fNodes = create("TList");
+   vol.fNodes = create('TList');
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -3006,7 +3006,7 @@ class TGeoPainter extends ObjectPainter {
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = create("TList");
+         this._extraObjects = create('TList');
 
       if (this._extraObjects.arr.indexOf(obj) >= 0) return false;
 
@@ -3072,7 +3072,7 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
+      if ((obj._typename === 'TList') || (obj._typename === "TObjArray")) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {

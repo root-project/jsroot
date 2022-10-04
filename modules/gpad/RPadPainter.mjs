@@ -916,7 +916,7 @@ class RPadPainter extends RObjectPainter {
 
          let promise;
 
-         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
+         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ''))
             promise = objpainter.redraw();
 
          if (!isPromise(promise)) promise = Promise.resolve(true);
@@ -991,7 +991,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return this.drawObject(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
+      return this.drawObject(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || '').then(objpainter => {
          this.addObjectPainter(objpainter, lst, indx);
          return this.drawNextSnap(lst, indx);
       });

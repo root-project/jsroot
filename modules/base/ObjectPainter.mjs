@@ -49,7 +49,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Returns pad name where object is drawn */
    getPadName() {
-      return this.pad_name || "";
+      return this.pad_name || '';
    }
 
    /** @summary Assign snapid to the painter
@@ -98,7 +98,7 @@ class ObjectPainter extends BasePainter {
    getObject() { return this.draw_object; }
 
    /** @summary Returns drawn object class name */
-   getClassName() { return this.getObject()?._typename || ""; }
+   getClassName() { return this.getObject()?._typename || ''; }
 
    /** @summary Checks if drawn object matches with provided typename
      * @param {string|object} arg - typename (or object with _typename member)
@@ -153,7 +153,7 @@ class ObjectPainter extends BasePainter {
             return this.options.asString(this.isMainPainter(), pp?.getRootPad());
       }
 
-      return this.options.original || ""; // nothing better, return original draw option
+      return this.options.original || ''; // nothing better, return original draw option
    }
 
    /** @summary Returns array with supported draw options as configured in draw.mjs
@@ -1484,7 +1484,7 @@ function drawRawText(dom, txt /*, opt*/) {
    }
 
    painter.drawText = async function() {
-      let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
+      let txt = (this.txt._typename && (this.txt._typename == 'TObjString')) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = "<undefined>";
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants.Latex.AlwaysMathJax);

@@ -144,7 +144,7 @@ class CustomDisplay extends MDIDisplay {
    }
 
    addFrame(divid, itemname) {
-      let prev = this.frames[divid] || "";
+      let prev = this.frames[divid] || '';
       this.frames[divid] = prev + (itemname + ";");
    }
 
@@ -1493,7 +1493,7 @@ class BrowserLayout {
       for (let n = 0; n < 4; ++n) {
          let lbl = this.status_layout.getGridFrame(n).querySelector('label');
          maxh = Math.max(maxh, lbl.clientHeight);
-         lbl.innerHTML = arguments[n] || "";
+         lbl.innerHTML = arguments[n] || '';
       }
 
       if (!this.status_layout.first_check) {

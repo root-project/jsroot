@@ -153,10 +153,10 @@ function createTreePlayer(player) {
           '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
       main.select('.treedraw_exe').on("click", () => this.performDraw());
-      main.select(".treedraw_cut").property("value", args?.parse_cut || "").on("change", () => this.performDraw());
-      main.select(".treedraw_opt").property("value", args?.drawopt || "").on("change", () => this.performDraw());
-      main.select(".treedraw_number").attr("value", args?.numentries || ""); // .on("change", () => this.performDraw());
-      main.select(".treedraw_first").attr("value", args?.firstentry || ""); // .on("change", () => this.performDraw());
+      main.select(".treedraw_cut").property("value", args?.parse_cut || '').on("change", () => this.performDraw());
+      main.select(".treedraw_opt").property("value", args?.drawopt || '').on("change", () => this.performDraw());
+      main.select(".treedraw_number").attr("value", args?.numentries || ''); // .on("change", () => this.performDraw());
+      main.select(".treedraw_first").attr("value", args?.firstentry || ''); // .on("change", () => this.performDraw());
       main.select(".treedraw_clear").on("click", () => cleanup(this.drawid));
    }
 
@@ -396,7 +396,7 @@ async function drawTree(dom, obj, opt) {
       tree = obj.branch.$tree;
    } else if (obj.$branch) {
       // this is drawing of the single leaf from the branch
-      args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
+      args = { expr: "." + obj.fName + (opt || ''), branch: obj.$branch };
       if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
          // special case of size
          args.expr = opt;

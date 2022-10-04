@@ -82,7 +82,7 @@ class RH2Painter extends RHistPainter {
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
       menu.add("sub:Projections", () => this.toggleProjection());
-      let kind = this.is_projection || "";
+      let kind = this.is_projection || '';
       if (kind) kind += this.projection_width;
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
       for (let k = 0; k < kinds.length; ++k)
