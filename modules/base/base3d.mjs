@@ -49,7 +49,7 @@ function createSVGRenderer(as_is, precision, doc) {
            }
 
         if (kind != 'svg') {
-           console.error('not supported element for SVGRenderer', kind);
+           console.error(`not supported element for SVGRenderer ${kind}`);
            return null;
         }
 

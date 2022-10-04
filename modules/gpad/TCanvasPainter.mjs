@@ -260,7 +260,7 @@ class TCanvasPainter extends TPadPainter {
       if (this._websocket.canSend())
          this._websocket.send(msg);
       else
-         console.warn("DROP SEND: " + msg);
+         console.warn(`DROP SEND: ${msg}`);
    }
 
    /** @summary Close websocket connection to canvas

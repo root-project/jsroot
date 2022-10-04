@@ -1600,7 +1600,7 @@ function createMatrix(matrix) {
       case 'TGeoIdentity':
          break;
       default:
-         console.warn('unsupported matrix ' + matrix._typename);
+         console.warn(`unsupported matrix ${matrix._typename}`);
    }
 
    if (!translation && !rotation && !scale) return null;

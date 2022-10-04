@@ -111,7 +111,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       if (!this.mode3d) return;
 
       if (!this.clear3dCanvas) {
-         console.error('Strange, why mode3d is configured!!!!', this.mode3d);
+         console.error(`Strange, why mode3d=${this.mode3d} is configured!!!!`);
          return;
       }
 
@@ -1756,7 +1756,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             if (side2 === 0) ++npnts;
             if (side3 === 0) ++npnts;
 
-            if ((npnts === 1) || (npnts === 2)) console.error('FOND npnts', npnts);
+            if ((npnts === 1) || (npnts === 2)) console.error(`FOUND npnts = ${npnts}`);
 
             if (npnts > 2) {
                if (nfaces[lvl] === undefined) nfaces[lvl] = 0;
@@ -1872,7 +1872,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    for (let lvl = 1; lvl < levels.length; ++lvl)
       if (pos[lvl]) {
          if (indx[lvl] !== nfaces[lvl]*9)
-              console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+              console.error(`SURF faces missmatch lvl=${lvl} faces=${nfaces[lvl]} index=${indx[lvl]} check=${nfaces[lvl]*9 - indx[lvl]}`);
          let geometry = new BufferGeometry();
          geometry.setAttribute('position', new BufferAttribute(pos[lvl], 3));
          geometry.computeVertexNormals();
@@ -1902,7 +1902,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (lpos) {
       if (nsegments*6 !== lindx)
-         console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
+         console.error(`SURF lines mismmatch nsegm=${nsegments} lindx=${lindx} diff=${nsegments*6 - lindx}`);
 
       const lcolor = painter.getColor(histo.fLineColor),
             material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
@@ -1913,7 +1913,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (grid) {
       if (ngridsegments*6 !== gindx)
-         console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
+         console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments*6 - gindx}`);
 
       const material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )

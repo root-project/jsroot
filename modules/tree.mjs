@@ -1419,12 +1419,12 @@ function findBrachStreamerElement(branch, file) {
    // first check branch fID - in many cases gut guess
    if (match_elem(arr[branch.fID])) return arr[branch.fID];
 
-   // console.warn('Missmatch with branch name and extracted element', branch.fName, match_name, (s_elem ? s_elem.fName : "---"));
+   // console.warn(`Missmatch with branch name ${branch.fName} and extracted element ${match_name} ${s_elem?.fName}`);
 
    for (let k = 0; k < arr.length; ++k)
       if ((k !== branch.fID) && match_elem(arr[k])) return arr[k];
 
-   console.error('Did not found/match element for branch', branch.fName, 'class', branch.fClassName);
+   console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
 
    return null;
 }
@@ -1435,7 +1435,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
    let s_i = file.findStreamerInfo(parent_class),
       arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
       elem = null;
-   if (!arr) return "";
+   if (!arr) return '';
 
    for (let k = 0; k < arr.length; ++k) {
       if (arr[k].fTypeName === "BASE") {
@@ -1556,13 +1556,13 @@ async function treeProcess(tree, selector, args) {
       let item = findInHandle(branch);
 
       if (item) {
-         console.error('Branch already configured for reading', branch.fName);
+         console.error(`Branch ${branch.fName} already configured for reading`);
          if (item.tgt !== target_object) console.error('Target object differs');
          return null;
       }
 
       if (!branch.fEntries) {
-         console.warn('Branch ', branch.fName, ' does not have entries');
+         console.warn(`Branch ${branch.fName} does not have entries`);
          return null;
       }
 
@@ -1645,7 +1645,7 @@ async function treeProcess(tree, selector, args) {
          if (!item_cnt)
             item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true);
 
-         if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
+         if (!item_cnt) { console.error(`Cannot add counter branch ${branch.fBranchCount.fName}`); return null; }
 
          let BranchCount2 = branch.fBranchCount2;
 
@@ -1668,9 +1668,9 @@ async function treeProcess(tree, selector, args) {
          if (BranchCount2) {
             item_cnt2 = findInHandle(BranchCount2);
 
-            if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++, true);
+            if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, '$counter' + namecnt++, true);
 
-            if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
+            if (!item_cnt2) { console.error(`Cannot add counter branch2 ${BranchCount2.fName}`); return null; }
          }
       } else if (nb_leaves === 1 && leaf && leaf.fLeafCount) {
          let br_cnt = findBranch(handle.tree, leaf.fLeafCount.fName);
@@ -1678,9 +1678,9 @@ async function treeProcess(tree, selector, args) {
          if (br_cnt) {
             item_cnt = findInHandle(br_cnt);
 
-            if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, "$counter" + namecnt++, true);
+            if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, '$counter' + namecnt++, true);
 
-            if (!item_cnt) { console.error('Cannot add counter branch', br_cnt.fName); return null; }
+            if (!item_cnt) { console.error(`Cannot add counter branch ${br_cnt.fName}`); return null; }
          }
       }
 
@@ -1863,7 +1863,7 @@ async function treeProcess(tree, selector, args) {
       }
 
       if (!elem && !member) {
-         console.warn('Not supported branch kind', branch.fName, branch._typename);
+         console.warn(`Not supported branch ${branch.fName} type ${branch._typename}`);
          return null;
       }
 
@@ -2226,7 +2226,7 @@ async function treeProcess(tree, selector, args) {
                   basket = buf.classStreamer({}, "TBasket");
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
-                  console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
+                  console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
 
                // items[k].obj = basket; // keep basket object itself if necessary
 

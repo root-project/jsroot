@@ -445,7 +445,7 @@ class ObjectPainter extends BasePainter {
             return this.nornd ? value : Math.round(value);
          }
       } else {
-         console.error('Problem to create functor for', this.getClassName());
+         console.error(`Problem to create functor for ${this.getClassName()}`);
          func.x = () => 0;
          func.y = () => 0;
 
@@ -1290,7 +1290,7 @@ class ObjectPainter extends BasePainter {
          this._got_menu = true;
 
          if (reply && (_reqid !== reply.fId))
-            console.error(`missmatch between request ${_reqid} and reply ${reply.fId}  identifiers`);
+            console.error(`missmatch between request ${_reqid} and reply ${reply.fId} identifiers`);
 
          let items = reply ? reply.fItems : null;
 

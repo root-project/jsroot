@@ -402,7 +402,7 @@ class RH3Painter extends RHistPainter {
                   }
                   cols_size[colindx]+=1;
                } else {
-                  console.error('not found color for', bin_content);
+                  console.error(`not found color for value = ${bin_content}`);
                }
             }
          }

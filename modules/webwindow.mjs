@@ -31,12 +31,12 @@ class LongPollSocket {
          console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
-         if ((this.connid === null) || (this.connid === "close")) return;
+         if ((this.connid === null) || (this.connid === 'close')) return;
          url += "?connection=" + this.connid + "&close";
          this.connid = "close";
          reqmode = "text;sync"; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser.qt5) console.error("No connection");
+         if (!browser.qt5) console.error('No connection');
          return;
       } else {
          url += "?connection=" + this.connid;
@@ -71,7 +71,7 @@ class LongPollSocket {
 
             let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
+               if (!browser.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
@@ -388,7 +388,7 @@ class WebWindowHandle {
 
       if (!Number.isInteger(chid)) chid = 1; // when not configured, channel 1 is used - main widget
 
-      if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
+      if (this.cansend <= 0) console.error(`should be queued before sending cansend: ${this.cansend}`);
 
       let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
       this.ackn = 0;

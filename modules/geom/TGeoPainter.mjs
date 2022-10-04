@@ -3443,13 +3443,13 @@ class TGeoPainter extends ObjectPainter {
                let func = new Function('gGeoManager', line);
                func(mgr);
             } catch(err) {
-               console.error('Problem by processing ' + line);
+               console.error(`Problem by processing ${line}`);
             }
          }
 
          return result;
       }).catch(() => {
-         console.error('Fail to load ' + script_name);
+         console.error(`Fail to load ${script_name}`);
          return result;
       });
    }
@@ -3860,7 +3860,7 @@ class TGeoPainter extends ObjectPainter {
                if (item.buf_pos.length === 0) {
                   origin.geom = null;
                } else if (item.buf_pos.length !== item.buf_norm.length) {
-                  console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
+                  console.error(`item.buf_pos.length ${item.buf_pos.length} != item.buf_norm.length ${item.buf_norm.length}`);
                   origin.geom = null;
                } else {
                   origin.geom = new BufferGeometry();

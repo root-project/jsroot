@@ -1123,12 +1123,12 @@ function createMemberStreamer(element, file) {
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                member.typeid = file.fBasicTypes[member.conttype];
-               console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
+               console.log(`!!! Reuse basic type ${member.conttype} from file streamer infos`);
             }
 
             // check
             if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
-               console.warn('Contained type', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
+               console.warn(`Contained type ${member.conttype} not recognized as basic type ${element.fCtype} FORCE`);
                member.typeid = element.fCtype;
             }
 
@@ -2045,7 +2045,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          let fmt = "unknown", off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
-            if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
+            if (!noalert) console.error('Error R__unzip: header size exceeds buffer size');
             return Promise.resolve(null);
          }
 
@@ -2473,7 +2473,7 @@ class TBuffer {
 
       if (this.remain() <= 0) {
          if (!basket.fEntryOffset && (basket.fNevBuf <= 1)) basket.fEntryOffset = [basket.fKeylen];
-         if (!basket.fEntryOffset) console.warn("No fEntryOffset when expected for basket with", basket.fNevBuf, "entries");
+         if (!basket.fEntryOffset) console.warn(`No fEntryOffset when expected for basket with ${basket.fNevBuf} entries`);
          return;
       }
 
@@ -2481,7 +2481,7 @@ class TBuffer {
       // there is error in file=reco_103.root&item=Events;2/PCaloHits_g4SimHits_EcalHitsEE_Sim.&opt=dump;num:10;first:101
       // it is workaround, but normally I/O should fail here
       if ((nentries < 0) || (nentries > this.remain() * 4)) {
-         console.error("Error when reading entries offset from basket fNevBuf", basket.fNevBuf, "remains", this.remain(), "want to read", nentries);
+         console.error(`Error when reading entries offset from basket fNevBuf ${basket.fNevBuf} remains ${this.remain()} want to read ${nentries}`);
          if (basket.fNevBuf <= 1) basket.fEntryOffset = [basket.fKeylen];
          return;
       }
@@ -2581,7 +2581,7 @@ class TBuffer {
 
       } else {
          // just skip bytes belonging to not-recognized object
-         // console.warn('skip object ', classname);
+         // console.warn(`skip object ${classname}`);
 
          addMethods(obj);
       }
@@ -3541,13 +3541,19 @@ function readVectorElement(buf) {
    const n = buf.ntou4();
    let res = new Array(n), i = 0;
 
-   if (n > 200000) { console.error('vector streaming for of', this.conttype, n); return res; }
+   if (n > 200000) { console.error(`vector streaming for ${this.conttype} at ${n}`); return res; }
 
-   if (this.arrkind > 0) { while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind); }
-   else if (this.arrkind === 0) { while (i < n) res[i++] = buf.readTString(); }
-   else if (this.isptr) { while (i < n) res[i++] = buf.readObjectAny(); }
-   else if (this.submember) { while (i < n) res[i++] = this.submember.readelem(buf); }
-   else { while (i < n) res[i++] = buf.classStreamer({}, this.conttype); }
+   if (this.arrkind > 0) {
+      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
+   } else if (this.arrkind === 0) {
+      while (i < n) res[i++] = buf.readTString();
+   } else if (this.isptr) {
+      while (i < n) res[i++] = buf.readObjectAny();
+   } else if (this.submember) {
+      while (i < n) res[i++] = this.submember.readelem(buf);
+   } else {
+      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
+   }
 
    return res;
 }
