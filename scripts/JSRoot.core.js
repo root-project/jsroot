@@ -282,7 +282,7 @@ exports.connectWebWindow = function(arg) {
       if (is_chrome) {
          let element = document.createElement("script");
          element.setAttribute("type", "text/javascript");
-         element.setAttribute("src", "root_batch_holder.js?key=" + d.get("key"));
+         element.setAttribute('src', "root_batch_holder.js?key=" + d.get("key"));
          document.head.appendChild(element);
          arg.ignore_chrome_batch_holder = true;
       }

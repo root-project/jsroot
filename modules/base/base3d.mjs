@@ -36,7 +36,7 @@ function createSVGRenderer(as_is, precision, doc) {
               _wrapper: this,
               setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
-                 if ((name == "style") && value) {
+                 if ((name == 'style') && value) {
                     let pos1 = value.indexOf(excl_style1);
                     if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
                        value = value.slice(0, value.length - excl_style1.length);
@@ -410,7 +410,7 @@ async function createRender3D(width, height, render3d, args) {
          need_workaround = true;
       } else {
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-         // d3_select(r.jsroot_dom).attr("width", width).attr("height", height);
+         // d3_select(r.jsroot_dom).attr('width', width).attr('height', height);
       }
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
@@ -447,7 +447,7 @@ async function createRender3D(width, height, render3d, args) {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      d3_select(r.jsroot_dom).attr("width", width).attr("height", height);
+      d3_select(r.jsroot_dom).attr('width', width).attr('height', height);
       promise = Promise.resolve(r);
    }
 
@@ -473,7 +473,7 @@ async function createRender3D(width, height, render3d, args) {
       // apply size to dom element
       renderer.setJSROOTSize = function(width, height) {
          if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
-            return d3_select(this.jsroot_dom).attr("width", width).attr("height", height);
+            return d3_select(this.jsroot_dom).attr('width', width).attr('height', height);
       };
 
       return renderer;
@@ -1393,7 +1393,7 @@ class PointsControl extends InteractiveControl {
 
       if (!m.js_special) {
          let geom = new BufferGeometry();
-         geom.setAttribute( 'position', m.geometry.getAttribute("position"));
+         geom.setAttribute( 'position', m.geometry.getAttribute('position'));
          let material = new PointsMaterial({ size: m.material.size*2, color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
@@ -1516,8 +1516,8 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    let lcolor, lstyle, lwidth;
    if ((typeof arg == 'string') || is_v7) {
       lcolor = painter.v7EvalColor(arg+"color", "black");
-      lstyle = parseInt(painter.v7EvalAttr(arg+"style", 0));
-      lwidth = parseInt(painter.v7EvalAttr(arg+"width", 1));
+      lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
+      lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));
    } else {
       lcolor = painter.getColor(arg.fLineColor);
       lstyle = arg.fLineStyle;

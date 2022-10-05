@@ -8,11 +8,11 @@ import { settings, internals, isNodeJs } from '../core.mjs';
   * @desc kind = 'bbox' use getBBox, works only with SVG
   * kind = 'full' - full size of element, using getBoundingClientRect function
   * kind = 'nopadding' - excludes padding area
-  * With node.js can use "width" and "height" attributes when provided in element
+  * With node.js can use 'width' and 'height' attributes when provided in element
   * @private */
 function getElementRect(elem, sizearg) {
    if (isNodeJs() && (sizearg != 'bbox'))
-      return { x: 0, y: 0, width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
+      return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
    const styleValue = name => {
       let value = elem.style(name);
@@ -527,7 +527,7 @@ class BasePainter {
          can_resize = main_origin.attr('can_resize'),
          do_resize = false;
 
-      if (can_resize == "height")
+      if (can_resize == 'height')
          if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
 
       if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
@@ -594,7 +594,7 @@ class BasePainter {
          enlarge = d3_select(document.body)
             .append("div")
             .attr("id", "jsroot_enlarge_div")
-            .attr("style", "position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; right: 1px; top: 1px; bottom: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;");
+            .attr('style', "position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; right: 1px; top: 1px; bottom: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;");
 
          let rect1 = getElementRect(main),
              rect2 = getElementRect(enlarge);

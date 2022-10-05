@@ -435,7 +435,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          if (!isBatchMode() || (this.pad.fFillStyle > 0))
-            frect = svg.append("svg:path").attr("class","canvas_fillrect");
+            frect = svg.append('svg:path').attr("class","canvas_fillrect");
 
          if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
@@ -459,7 +459,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          if (this._fixed_size) {
-            render_to.style("overflow","auto");
+            render_to.style('overflow',"auto");
             rect = { width: this.pad.fCw, height: this.pad.fCh };
             if (!rect.width || !rect.height)
                rect = getElementRect(render_to);
@@ -481,15 +481,15 @@ class TPadPainter extends ObjectPainter {
       if (this._fixed_size) {
          svg.attr("x", 0)
             .attr("y", 0)
-            .attr("width", rect.width)
-            .attr("height", rect.height)
-            .style("position", "absolute");
+            .attr('width', rect.width)
+            .attr('height', rect.height)
+            .style('position', 'absolute');
       } else {
         svg.attr("x", 0)
            .attr("y", 0)
-           .style("width", "100%")
-           .style("height", "100%")
-           .style("position", "absolute")
+           .style('width', '100%')
+           .style('height', '100%')
+           .style('position', 'absolute')
            .style("left", 0)
            .style("top", 0)
            .style("right", 0)
@@ -512,7 +512,7 @@ class TPadPainter extends ObjectPainter {
       this._pad_height = rect.height;
 
       if (frect) {
-         frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
+         frect.attr('d', `M0,0H${rect.width}V${rect.height}H0Z`)
               .call(this.fillatt.func);
          this.drawActiveBorder(frect);
       }
@@ -635,7 +635,7 @@ class TPadPainter extends ObjectPainter {
 
          // need to check attributes directly while attributes objects will be created later
          if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
-            svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
+            svg_rect = svg_pad.append('svg:path').attr("class", "root_pad_border");
 
          if (!isBatchMode())
             svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
@@ -660,8 +660,8 @@ class TPadPainter extends ObjectPainter {
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
              .attr("x", x)        // due to svg
              .attr("y", y)        // due to svg
-             .attr("width", w)    // due to svg
-             .attr("height", h)   // due to svg
+             .attr('width', w)    // due to svg
+             .attr('height', h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
@@ -673,7 +673,7 @@ class TPadPainter extends ObjectPainter {
       this._pad_height = h;
 
       if (svg_rect) {
-         svg_rect.attr("d", `M0,0H${w}V${h}H0Z`)
+         svg_rect.attr('d', `M0,0H${w}V${h}H0Z`)
                  .call(this.fillatt.func)
                  .call(this.lineatt.func);
 
@@ -1488,7 +1488,7 @@ class TPadPainter extends ObjectPainter {
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       MatchPrimitive(this.painters, snap.fPrimitives, "TFrame");
-      MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", "title");
+      MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", 'title');
 
       let isanyfound = false, isanyremove = false;
 
@@ -1787,8 +1787,8 @@ class TPadPainter extends ObjectPainter {
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
                         .attr("x", sz2.x)
                         .attr("y", sz2.y)
-                        .attr("width", canvas.width)
-                        .attr("height", canvas.height)
+                        .attr('width', canvas.width)
+                        .attr('height', canvas.height)
                         .attr("href", dataUrl);
 
       }, "pads");

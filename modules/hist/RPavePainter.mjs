@@ -31,8 +31,8 @@ class RPavePainter extends RObjectPainter {
       let visible      = this.v7EvalAttr("visible", true),
           offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
           offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
-          pave_width   = this.v7EvalLength("width", rect.width, 0.3),
-          pave_height  = this.v7EvalLength("height", rect.height, 0.3);
+          pave_width   = this.v7EvalLength('width', rect.width, 0.3),
+          pave_height  = this.v7EvalLength('height', rect.height, 0.3);
 
       this.createG();
 
@@ -70,9 +70,9 @@ class RPavePainter extends RObjectPainter {
 
       this.draw_g.append("svg:rect")
                  .attr("x", 0)
-                 .attr("width", pave_width)
+                 .attr('width', pave_width)
                  .attr("y", 0)
-                 .attr("height", pave_height)
+                 .attr('height', pave_height)
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
 
@@ -128,13 +128,13 @@ class RPavePainter extends RObjectPainter {
 
       this.v7AttrChange(changes, "offsetX", offsetx / rect.width);
       this.v7AttrChange(changes, "offsetY", offsety / rect.height);
-      this.v7AttrChange(changes, "width", this.pave_width / rect.width);
-      this.v7AttrChange(changes, "height", this.pave_height / rect.height);
+      this.v7AttrChange(changes, 'width', this.pave_width / rect.width);
+      this.v7AttrChange(changes, 'height', this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
       this.draw_g.select("rect")
-                 .attr("width", this.pave_width)
-                 .attr("height", this.pave_height);
+                 .attr('width', this.pave_width)
+                 .attr('height', this.pave_height);
 
       this.drawContent();
    }
@@ -199,25 +199,25 @@ class RLegendPainter extends RPavePainter {
 
          if (objp && entry.fFill && objp.fillatt)
             this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
+              .append('svg:path')
+              .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
               .call(objp.fillatt.func);
 
          if (objp && entry.fLine && objp.lineatt)
             this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
+              .append('svg:path')
+              .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
               .call(objp.lineatt.func);
 
          if (objp && entry.fError && objp.lineatt)
             this.draw_g
-              .append("svg:path")
-              .attr("d", `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
+              .append('svg:path')
+              .attr('d', `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
               .call(objp.lineatt.func);
 
          if (objp && entry.fMarker && objp.markeratt)
-            this.draw_g.append("svg:path")
-                .attr("d", objp.markeratt.create(margin_x + width/8, posy + stepy/2))
+            this.draw_g.append('svg:path')
+                .attr('d', objp.markeratt.create(margin_x + width/8, posy + stepy/2))
                 .call(objp.markeratt.func);
 
          posy += stepy;
@@ -468,7 +468,7 @@ class RHistStatsPainter extends RPavePainter {
             lpath += "M" + Math.round(width / num_cols * (ncol + 1)) + "," + Math.round(first_stat * stepy) + "V" + height;
       }
 
-      if (lpath) this.draw_g.append("svg:path").attr("d",lpath) /*.call(this.lineatt.func)*/;
+      if (lpath) this.draw_g.append('svg:path').attr('d',lpath) /*.call(this.lineatt.func)*/;
 
       return this.finishTextDrawing(text_g);
    }

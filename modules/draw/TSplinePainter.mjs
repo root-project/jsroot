@@ -233,9 +233,9 @@ class TSplinePainter extends ObjectPainter {
 
          let path = buildSvgPath("bezier", bins, h0, 2);
 
-         this.draw_g.append("svg:path")
+         this.draw_g.append('svg:path')
              .attr("class", "line")
-             .attr("d", path.path)
+             .attr('d', path.path)
              .style("fill", "none")
              .call(this.lineatt.func);
       }
@@ -263,8 +263,8 @@ class TSplinePainter extends ObjectPainter {
          }
 
          if (path)
-            this.draw_g.append("svg:path")
-                       .attr("d", path)
+            this.draw_g.append('svg:path')
+                       .attr('d', path)
                        .call(this.markeratt.func);
       }
    }

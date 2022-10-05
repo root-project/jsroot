@@ -174,11 +174,11 @@ async function buildGUI(gui_element, gui_kind = "") {
       }
 
       if (guisize) {
-         myDiv.style('position',"relative").style('width', guisize[0] + "px").style('height', guisize[1] + "px");
+         myDiv.style('position','relative').style('width', guisize[0] + "px").style('height', guisize[1] + 'px');
       } else {
          d3_select('html').style('height','100%');
-         d3_select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
-         myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
+         d3_select('body').style('min-height','100%').style('margin',0).style('overflow','hidden');
+         myDiv.style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
       }
    }
 

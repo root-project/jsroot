@@ -283,7 +283,7 @@ class TAttMarkerHandler {
       if (plain) svg = d3_select(svg);
       this.resetPos();
       svg.append("path")
-         .attr("d", this.create(width / 2, height / 2))
+         .attr('d', this.create(width / 2, height / 2))
          .call(this.func);
    }
 

@@ -185,7 +185,7 @@ function createTreePlayer(player) {
 
       if (this.local_tree)
          main.select('.treedraw_buttons')
-             .attr("title", "Tree draw player for: " + this.local_tree.fName);
+             .attr('title', "Tree draw player for: " + this.local_tree.fName);
       main.select('.treedraw_exe').on("click", () => this.performDraw());
       main.select('.treedraw_varexp')
           .attr("value", args?.parse_expr || this.draw_expr || "px:py")

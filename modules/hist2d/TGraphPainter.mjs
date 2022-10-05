@@ -447,8 +447,8 @@ class TGraphPainter extends ObjectPainter {
 
       let path2 = buildSvgPath(is_curve ? "Lbezier" : "Lline", extrabins);
 
-      this.draw_g.append("svg:path")
-                 .attr("d", path.path + path2.path + "Z")
+      this.draw_g.append('svg:path')
+                 .attr('d', path.path + path2.path + "Z")
                  .call(this.fillatt.func)
                  .style('opacity', 0.75);
    }
@@ -486,8 +486,8 @@ class TGraphPainter extends ObjectPainter {
          // build upper part (in reverse direction)
          let path2 = buildSvgPath((options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
-         draw_g.append("svg:path")
-               .attr("d", path1.path + path2.path + "Z")
+         draw_g.append('svg:path')
+               .attr('d', path1.path + path2.path + "Z")
                .call(fillatt.func);
          if (main_block)
             this.draw_kind = "lines";
@@ -519,7 +519,7 @@ class TGraphPainter extends ObjectPainter {
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
 
-         let elem = draw_g.append("svg:path").attr("d", path.path + close_symbol);
+         let elem = draw_g.append('svg:path').attr('d', path.path + close_symbol);
          if (options.Line)
             elem.call(lineatt.func);
 
@@ -551,8 +551,8 @@ class TGraphPainter extends ObjectPainter {
          if (excl_width)
              this.appendExclusion(true, path, curvebins, excl_width);
 
-         draw_g.append("svg:path")
-               .attr("d", path.path)
+         draw_g.append('svg:path')
+               .attr('d', path.path)
                .call(lineatt.func)
                .style('fill', 'none');
          if (main_block)
@@ -631,8 +631,8 @@ class TGraphPainter extends ObjectPainter {
                usefill = new TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
          }
 
-         nodes.append("svg:path")
-              .attr("d", d => {
+         nodes.append('svg:path')
+              .attr('d', d => {
                  d.bar = true; // element drawn as bar
                  let dx = Math.round(-d.width/2),
                      dw = Math.round(d.width),
@@ -645,8 +645,8 @@ class TGraphPainter extends ObjectPainter {
 
       if (options.Rect) {
          nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
-           .append("svg:path")
-           .attr("d", d => {
+           .append('svg:path')
+           .attr('d', d => {
                d.rect = true;
                return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
             })
@@ -705,15 +705,15 @@ class TGraphPainter extends ObjectPainter {
             visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
 
          if (!isBatchMode() && settings.Tooltip && main_block)
-            visible.append("svg:path")
+            visible.append('svg:path')
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
-                   .attr("d", d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
+                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
 
-         visible.append("svg:path")
+         visible.append('svg:path')
              .call(lineatt.func)
              .style("fill", "none")
-             .attr("d", d => {
+             .attr('d', d => {
                 d.error = true;
                 return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
                        ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
@@ -753,15 +753,15 @@ class TGraphPainter extends ObjectPainter {
          }
 
          if (path.length > 0) {
-            draw_g.append("svg:path")
-                  .attr("d", path)
+            draw_g.append('svg:path')
+                  .attr('d', path)
                   .call(this.markeratt.func);
             if ((nodes === null) && (this.draw_kind == "none") && main_block)
                this.draw_kind = (options.Mark == 101) ? "path" : "mark";
          }
          if (want_tooltip && hints_marker)
-            draw_g.append("svg:path")
-                  .attr("d", hints_marker)
+            draw_g.append('svg:path')
+                  .attr('d', hints_marker)
                   .style("fill", "none")
                   .style("pointer-events", "visibleFill");
       }
@@ -796,12 +796,12 @@ class TGraphPainter extends ObjectPainter {
           latt2 = new TAttLineHandler({ style: 2, width: 1, color: "black" });
 
       this.draw_g.append("path")
-                 .attr("d", makeLine(xqmin,yqmin,xqmax,yqmax))
+                 .attr('d', makeLine(xqmin,yqmin,xqmax,yqmax))
                  .call(latt1.func)
                  .style("fill", "none");
 
       this.draw_g.append("path")
-                 .attr("d", path2)
+                 .attr('d', path2)
                  .call(latt2.func)
                  .style("fill", "none");
    }
@@ -971,9 +971,9 @@ class TGraphPainter extends ObjectPainter {
 
       if (hint.changed)
          ttrect.attr("x", d.grx1 + hint.rect.x1)
-               .attr("width", hint.rect.x2 - hint.rect.x1)
+               .attr('width', hint.rect.x2 - hint.rect.x1)
                .attr("y", d.gry1 + hint.rect.y1)
-               .attr("height", hint.rect.y2 - hint.rect.y1)
+               .attr('height', hint.rect.y2 - hint.rect.y1)
                .style("opacity", "0.3")
                .property("current_bin", hint.d3bin);
    }
@@ -1170,8 +1170,8 @@ class TGraphPainter extends ObjectPainter {
                  .style("opacity", "0.3")
                  .attr("x", Math.round(hint.x - hint.radius))
                  .attr("y", Math.round(hint.y - hint.radius))
-                 .attr("width", 2*hint.radius)
-                 .attr("height", 2*hint.radius);
+                 .attr('width', 2*hint.radius)
+                 .attr('height', 2*hint.radius);
          } else {
             ttbin.append("svg:circle").attr("cy", Math.round(hint.gry1));
             if (Math.abs(hint.gry1-hint.gry2) > 1)

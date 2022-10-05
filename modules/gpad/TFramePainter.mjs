@@ -135,7 +135,7 @@ function addDragHandler(_painter, arg) {
 
          drag_rect = d3_select(painter.draw_g.node().parentNode).append("path")
             .classed("zoom", true)
-            .attr("d", `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
+            .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style("cursor", "move")
             .style("pointer-events", "none") // let forward double click to underlying elements
             .property('drag_handle', handle);
@@ -157,7 +157,7 @@ function addDragHandler(_painter, arg) {
          handle.x = Math.min(Math.max(handle.acc_x1, 0), handle.pad_w);
          handle.y = Math.min(Math.max(handle.acc_y1, 0), handle.pad_h);
 
-         drag_rect.attr("d", `M${handle.x},${handle.y}${handle.path}`);
+         drag_rect.attr('d', `M${handle.x},${handle.y}${handle.path}`);
 
       }).on("end", function(evnt) {
          if (!drag_rect) return;
@@ -206,8 +206,8 @@ function addDragHandler(_painter, arg) {
             .style("cursor", d3_select(this).style("cursor"))
             .attr("x", handle.acc_x1)
             .attr("y", handle.acc_y1)
-            .attr("width", handle.acc_x2 - handle.acc_x1)
-            .attr("height", handle.acc_y2 - handle.acc_y1)
+            .attr('width', handle.acc_x2 - handle.acc_x1)
+            .attr('height', handle.acc_y2 - handle.acc_y1)
             .property('drag_handle', handle);
 
       }).on("drag", function(evnt) {
@@ -239,7 +239,7 @@ function addDragHandler(_painter, arg) {
          handle.width = Math.abs(x2 - x1);
          handle.height = Math.abs(y2 - y1);
 
-         drag_rect.attr("x", handle.x).attr("y", handle.y).attr("width", handle.width).attr("height", handle.height);
+         drag_rect.attr("x", handle.x).attr("y", handle.y).attr('width', handle.width).attr('height', handle.height);
 
       }).on("end", function(evnt) {
          if (!drag_rect) return;
@@ -493,14 +493,14 @@ const TooltipHandler = {
          if (!was_empty)
             group.selectAll("*").remove();
 
-         group.attr("width", 60)
-            .attr("height", hint.height);
+         group.attr('width', 60)
+            .attr('height', hint.height);
 
          let r = group.append("rect")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("width", 60)
-            .attr("height", hint.height)
+            .attr('width', 60)
+            .attr('height', hint.height)
             .style("fill", "lightgrey")
             .style("pointer-events", "none");
 
@@ -570,8 +570,8 @@ const TooltipHandler = {
       }
 
       if (actualw > 10)
-         svgs.attr("width", actualw)
-            .select('rect').attr("width", actualw);
+         svgs.attr('width', actualw)
+            .select('rect').attr('width', actualw);
 
       hintsg.property('startx', posx);
 
@@ -637,8 +637,8 @@ const FrameInteractive = {
 
       main_svg.attr("x", 0)
               .attr("y", 0)
-              .attr("width", this.getFrameWidth())
-              .attr("height", this.getFrameHeight());
+              .attr('width', this.getFrameWidth())
+              .attr('height', this.getFrameHeight());
 
       let hintsg = this.hints_layer().select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
@@ -913,7 +913,7 @@ const FrameInteractive = {
                               .style("pointer-events","none");
       }
 
-      this.zoom_rect.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
+      this.zoom_rect.attr("x", x).attr("y", y).attr('width', w).attr('height', h);
    },
 
    /** @summary Finish mouse rect zooming */
@@ -1105,8 +1105,8 @@ const FrameInteractive = {
             .attr("id", "zoomRect")
             .attr("x", this.zoom_curr[0])
             .attr("y", this.zoom_curr[1])
-            .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
-            .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+            .attr('width', this.zoom_origin[0] - this.zoom_curr[0])
+            .attr('height', this.zoom_origin[1] - this.zoom_curr[1]);
 
       d3_select(window).on("touchmove.zoomRect", this.moveTouchZoom.bind(this))
                        .on("touchcancel.zoomRect", this.endTouchZoom.bind(this))
@@ -1137,8 +1137,8 @@ const FrameInteractive = {
 
       this.zoom_rect.attr("x", this.zoom_curr[0])
                      .attr("y", this.zoom_curr[1])
-                     .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
-                     .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+                     .attr('width', this.zoom_origin[0] - this.zoom_curr[0])
+                     .attr('height', this.zoom_origin[1] - this.zoom_curr[1]);
 
       if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
            || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
@@ -1932,9 +1932,9 @@ class TFramePainter extends ObjectPainter {
              grid_color = this.getColor(colid) || "black";
 
          if (gridx)
-           layer.append("svg:path")
+           layer.append('svg:path')
                 .attr("class", "xgrid")
-                .attr("d", gridx)
+                .attr('d', gridx)
                 .style("stroke", grid_color)
                 .style("stroke-width", gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
@@ -1953,9 +1953,9 @@ class TFramePainter extends ObjectPainter {
              grid_color = this.getColor(colid) || "black";
 
          if (gridy)
-           layer.append("svg:path")
+           layer.append('svg:path')
                 .attr("class", "ygrid")
-                .attr("d", gridy)
+                .attr('d', gridy)
                 .style("stroke", grid_color)
                 .style("stroke-width",gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
@@ -2326,7 +2326,7 @@ class TFramePainter extends ObjectPainter {
          if (!isBatchMode())
             this.draw_g.append("svg:title").text("");
 
-         top_rect = this.draw_g.append("svg:path");
+         top_rect = this.draw_g.append('svg:path');
 
          // append for the moment three layers - for drawing and axis
          this.draw_g.append('svg:g').attr('class','grid_layer');
@@ -2348,12 +2348,12 @@ class TFramePainter extends ObjectPainter {
 
       this.draw_g.attr("transform", trans);
 
-      top_rect.attr("d", `M0,0H${w}V${h}H0Z`)
+      top_rect.attr('d', `M0,0H${w}V${h}H0Z`)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      main_svg.attr("width", w)
-              .attr("height", h)
+      main_svg.attr('width', w)
+              .attr('height', h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
       if (!isBatchMode()) {

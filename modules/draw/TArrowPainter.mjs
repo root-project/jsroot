@@ -66,7 +66,7 @@ class TArrowPainter extends ObjectPainter {
    moveDrag(dx,dy) {
       if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
       if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
-      this.draw_g.select('path').attr("d", this.createPath());
+      this.draw_g.select('path').attr('d', this.createPath());
    }
 
    /** @summary Finish interactive moving */
@@ -116,8 +116,8 @@ class TArrowPainter extends ObjectPainter {
       this.x2 = this.axisToSvg("x", arrow.fX2, this.isndc, true);
       this.y2 = this.axisToSvg("y", arrow.fY2, this.isndc, true);
 
-      let elem = this.draw_g.append("svg:path")
-                     .attr("d", this.createPath())
+      let elem = this.draw_g.append('svg:path')
+                     .attr('d', this.createPath())
                      .call(this.lineatt.func);
 
       if ((this.beg > 10) || (this.end > 10)) {

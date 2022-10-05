@@ -194,7 +194,7 @@ class RObjectPainter extends ObjectPainter {
       if (!prefix || (typeof prefix != 'string')) prefix = "fill_";
 
       let color = this.v7EvalColor(prefix + "color", ""),
-          pattern = this.v7EvalAttr(prefix + "style", 0);
+          pattern = this.v7EvalAttr(prefix + 'style', 0);
 
       this.createAttFill({ pattern, color,  color_as_svg: true });
    }
@@ -204,8 +204,8 @@ class RObjectPainter extends ObjectPainter {
       if (!prefix || (typeof prefix != 'string')) prefix = "line_";
 
       let color = this.v7EvalColor(prefix + "color", "black"),
-          width = this.v7EvalAttr(prefix + "width", 1),
-          style = this.v7EvalAttr(prefix + "style", 1),
+          width = this.v7EvalAttr(prefix + 'width', 1),
+          style = this.v7EvalAttr(prefix + 'style', 1),
           pattern = this.v7EvalAttr(prefix + "pattern");
 
       this.createAttLine({ color, width, style, pattern });
@@ -220,7 +220,7 @@ class RObjectPainter extends ObjectPainter {
 
       let color = this.v7EvalColor(prefix + "color", "black"),
           size = this.v7EvalAttr(prefix + "size", 0.01),
-          style = this.v7EvalAttr(prefix + "style", 1),
+          style = this.v7EvalAttr(prefix + 'style', 1),
           refsize = 1;
       if (size < 1) {
          let pp = this.getPadPainter();

@@ -388,7 +388,7 @@ class JSRootMenu {
 
       this.addSelectMenu("family", ["Arial", "Times New Roman", "Courier New", "Symbol"], fontHandler.name, res => set_func( {name: "font_family", value: res }));
 
-      this.addSelectMenu("style", ["normal", "italic", "oblique"], fontHandler.style || "normal", res => set_func( {name: "font_style", value: res == "normal" ? null : res }));
+      this.addSelectMenu('style', ["normal", "italic", "oblique"], fontHandler.style || "normal", res => set_func( {name: "font_style", value: res == "normal" ? null : res }));
 
       this.addSelectMenu("weight", ["normal", "lighter", "bold", "bolder"], fontHandler.weight || "normal", res => set_func( {name: "font_weight", value: res == "normal" ? null : res }));
 
@@ -511,11 +511,11 @@ class JSRootMenu {
 
       if (painter.lineatt?.used) {
          this.add("sub:" + preffix + "Line att");
-         this.addSizeMenu("width", 1, 10, 1, painter.lineatt.width,
+         this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
          this.addColorMenu("color", painter.lineatt.color,
             arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
-         this.addLineStyleMenu("style", painter.lineatt.style, id => {
+         this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
          });
@@ -531,7 +531,7 @@ class JSRootMenu {
                }.bind(painter));
             this.add("endsub:");
 
-            this.addSizeMenu("width", 10, 100, 10, painter.lineatt.excl_width,
+            this.addSizeMenu('width', 10, 100, 10, painter.lineatt.excl_width,
                arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
 
             this.add("endsub:");
@@ -544,7 +544,7 @@ class JSRootMenu {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor"));
          }, painter.fillatt.kind);
-         this.addFillStyleMenu("style", painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
+         this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
@@ -1106,7 +1106,7 @@ class StandaloneMenu extends JSRootMenu {
          hovArea.style.display = 'flex';
          hovArea.style.justifyContent = 'space-between';
          hovArea.style.cursor = 'pointer';
-         if (d.title) hovArea.setAttribute("title", d.title);
+         if (d.title) hovArea.setAttribute('title', d.title);
 
          item.appendChild(hovArea);
          if (!d.text) d.text = "item";
@@ -1266,7 +1266,7 @@ class StandaloneMenu extends JSRootMenu {
       let element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr("class","jsroot_dialog").style("width",(args.width || 450) + "px")
+                      .attr("class","jsroot_dialog").style('width',(args.width || 450) + "px")
                       .attr("tabindex", "0")
                       .html(
          `<div class="jsroot_dialog_body">

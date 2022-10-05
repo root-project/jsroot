@@ -168,9 +168,9 @@ class RFramePainter extends RObjectPainter {
                grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
          if (grid.length > 0)
-            layer.append("svg:path")
+            layer.append('svg:path')
                  .attr("class", "xgrid")
-                 .attr("d", grid)
+                 .attr('d', grid)
                  .style('stroke',grid_color)
                  .style("stroke-width", gStyle.fGridWidth)
                  .style("stroke-dasharray", grid_style);
@@ -189,9 +189,9 @@ class RFramePainter extends RObjectPainter {
                grid += "M0,"+(h+this.y_handle.ticks[n])+"h"+w;
 
          if (grid.length > 0)
-          layer.append("svg:path")
+          layer.append('svg:path')
                .attr("class", "ygrid")
-               .attr("d", grid)
+               .attr('d', grid)
                .style('stroke', grid_color)
                .style("stroke-width", gStyle.fGridWidth)
                .style("stroke-dasharray", grid_style);
@@ -748,15 +748,15 @@ class RFramePainter extends RObjectPainter {
 
       top_rect.attr("x", 0)
               .attr("y", 0)
-              .attr("width", w)
-              .attr("height", h)
+              .attr('width', w)
+              .attr('height', h)
               .attr("rx", this.lineatt.rx || null)
               .attr("ry", this.lineatt.ry || null)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      main_svg.attr("width", w)
-              .attr("height", h)
+      main_svg.attr('width', w)
+              .attr('height', h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
       let pr = Promise.resolve(true);

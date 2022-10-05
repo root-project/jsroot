@@ -409,9 +409,9 @@ class RH2Painter extends RHistPainter {
       entries.forEach((entry,colindx) => {
         if (entry)
            this.draw_g
-               .append("svg:path")
+               .append('svg:path')
                .style("fill", handle.palette.getColor(colindx))
-               .attr("d", entry.path);
+               .attr('d', entry.path);
       });
 
       this.updatePaletteDraw();
@@ -686,8 +686,8 @@ class RH2Painter extends RHistPainter {
          }
 
          this.draw_g
-             .append("svg:path")
-             .attr("d", dd)
+             .append('svg:path')
+             .attr('d', dd)
              .style("fill", palette.getColor(0));
       }
 
@@ -708,9 +708,9 @@ class RH2Painter extends RHistPainter {
             if (!dd) return;
 
             let elem = this.draw_g
-                          .append("svg:path")
+                          .append('svg:path')
                           .attr("class","th2_contour")
-                          .attr("d", dd)
+                          .attr('d', dd)
                           .style("fill", fillcolor);
 
             if (lineatt)
@@ -906,8 +906,8 @@ class RH2Painter extends RHistPainter {
             }
 
       this.draw_g
-         .append("svg:path")
-         .attr("d", cmd)
+         .append('svg:path')
+         .attr('d', cmd)
          .style("fill", "none")
          .call(this.lineatt.func);
 
@@ -994,28 +994,28 @@ class RH2Painter extends RHistPainter {
 
       if (res.length > 0) {
          let elem = this.draw_g
-                        .append("svg:path")
-                        .attr("d", res)
+                        .append('svg:path')
+                        .attr('d', res)
                         .call(this.fillatt.func);
          if ((this.options.BoxStyle !== 11) && this.fillatt.empty())
             elem.call(this.lineatt.func);
       }
 
       if ((btn1.length > 0) && this.fillatt.hasColor())
-         this.draw_g.append("svg:path")
-                    .attr("d", btn1)
+         this.draw_g.append('svg:path')
+                    .attr('d', btn1)
                     .call(this.fillatt.func)
                     .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
-         this.draw_g.append("svg:path")
-                    .attr("d", btn2)
+         this.draw_g.append('svg:path')
+                    .attr('d', btn2)
                     .call(this.fillatt.func)
                     .style("fill", !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
-         let elem = this.draw_g.append("svg:path")
-                               .attr("d", cross)
+         let elem = this.draw_g.append('svg:path')
+                               .attr('d', cross)
                                .style("fill", "none");
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
@@ -1120,14 +1120,14 @@ class RH2Painter extends RHistPainter {
       }
 
       if (bars.length > 0)
-         this.draw_g.append("svg:path")
-             .attr("d", bars)
+         this.draw_g.append('svg:path')
+             .attr('d', bars)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
 
       if (markers.length > 0)
-         this.draw_g.append("svg:path")
-             .attr("d", markers)
+         this.draw_g.append('svg:path')
+             .attr('d', markers)
              .call(this.markeratt.func);
 
       return handle;
@@ -1169,8 +1169,8 @@ class RH2Painter extends RHistPainter {
          }
 
          this.draw_g
-              .append("svg:path")
-              .attr("d", path)
+              .append('svg:path')
+              .attr('d', path)
               .call(this.markeratt.func);
 
          return handle;
@@ -1257,17 +1257,17 @@ class RH2Painter extends RHistPainter {
            for (let n = 0; n < npix; ++n)
               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
-           pattern.attr("width", cell_w[colindx])
-                  .attr("height", cell_h[colindx])
-                  .append("svg:path")
-                  .attr("d",path)
+           pattern.attr('width', cell_w[colindx])
+                  .attr('height', cell_h[colindx])
+                  .append('svg:path')
+                  .attr('d',path)
                   .call(this.markeratt.func);
 
            this.draw_g
-               .append("svg:path")
+               .append('svg:path')
                .attr("scatter-index", colindx)
                .style("fill", 'url(#' + pattern.attr("id") + ')')
-               .attr("d", colPaths[colindx]);
+               .attr('d', colPaths[colindx]);
         }
 
       return handle;
@@ -1459,7 +1459,7 @@ class RH2Painter extends RHistPainter {
             return null;
          }
 
-         let res = { name: "histo", title: histo.fTitle || "title",
+         let res = { name: "histo", title: histo.fTitle || 'title',
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
@@ -1472,14 +1472,14 @@ class RH2Painter extends RHistPainter {
          } else {
 
             if (ttrect.empty())
-               ttrect = this.draw_g.append("svg:path")
+               ttrect = this.draw_g.append('svg:path')
                             .attr("class","tooltip_bin h1bin")
                             .style("pointer-events","none");
 
             res.changed = ttrect.property("current_bin") !== foundindx;
 
             if (res.changed)
-                  ttrect.attr("d", this.createPolyBin(pmain, bin))
+                  ttrect.attr('d', this.createPolyBin(pmain, bin))
                         .style("opacity", "0.7")
                         .property("current_bin", foundindx);
          }
@@ -1509,7 +1509,7 @@ class RH2Painter extends RHistPainter {
             return null;
          }
 
-         let res = { name: "histo", title: histo.fTitle || "title",
+         let res = { name: "histo", title: histo.fTitle || 'title',
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
@@ -1529,9 +1529,9 @@ class RH2Painter extends RHistPainter {
 
             if (res.changed)
                ttrect.attr("x", p.x1)
-                     .attr("width", p.x2-p.x1)
+                     .attr('width', p.x2-p.x1)
                      .attr("y", p.yy1)
-                     .attr("height", p.yy2- p.yy1)
+                     .attr('height', p.yy2- p.yy1)
                      .style("opacity", "0.7")
                      .property("current_bin", i);
          }
@@ -1570,7 +1570,7 @@ class RH2Painter extends RHistPainter {
          return null;
       }
 
-      let res = { name: "histo", title: histo.fTitle || "title",
+      let res = { name: "histo", title: histo.fTitle || 'title',
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
@@ -1617,9 +1617,9 @@ class RH2Painter extends RHistPainter {
 
          if (res.changed)
             ttrect.attr("x", x1)
-                  .attr("width", x2 - x1)
+                  .attr('width', x2 - x1)
                   .attr("y", y1)
-                  .attr("height", y2 - y1)
+                  .attr('height', y2 - y1)
                   .style("opacity", "0.7")
                   .property("current_bin", binid);
 

@@ -300,15 +300,15 @@ class TAttFillHandler {
 
       let patt = defs.append('svg:pattern')
                      .attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
-                     .attr("width", w).attr("height", h);
+                     .attr('width', w).attr('height', h);
 
       if (fills2) {
          let col = d3_rgb(this.color);
          col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
-         patt.append("svg:path").attr("d", fills2).style("fill", col);
+         patt.append('svg:path').attr('d', fills2).style("fill", col);
       }
-      if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
-      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", gStyle.fHatchesLineWidth).style("fill", lfill);
+      if (fills) patt.append('svg:path').attr('d', fills).style("fill", this.color);
+      if (lines) patt.append('svg:path').attr('d', lines).style('stroke', this.color).style("stroke-width", gStyle.fHatchesLineWidth).style("fill", lfill);
 
       return true;
    }
@@ -322,7 +322,7 @@ class TAttFillHandler {
       const sample = new TAttFillHandler({ svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
       svg.append("path")
-         .attr("d", `M0,0h${width}v${height}h${-width}z`)
+         .attr('d', `M0,0h${width}v${height}h${-width}z`)
          .call(sample.func);
    }
 

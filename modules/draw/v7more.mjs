@@ -41,8 +41,8 @@ function drawLine() {
     this.createv7AttLine();
 
     this.draw_g
-        .append("svg:path")
-        .attr("d",`M${p1.x},${p1.y}L${p2.x},${p2.y}`)
+        .append('svg:path')
+        .attr('d',`M${p1.x},${p1.y}L${p2.x},${p2.y}`)
         .call(this.lineatt.func);
 }
 
@@ -64,8 +64,8 @@ function drawBox() {
    this.createv7AttFill();
 
    this.draw_g
-       .append("svg:path")
-       .attr("d",`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
+       .append('svg:path')
+       .attr('d',`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
        .call(this.lineatt.func)
        .call(this.fillatt.func);
 }
@@ -86,8 +86,8 @@ function drawMarker() {
     let path = this.markeratt.create(p.x, p.y);
 
     if (path)
-       this.draw_g.append("svg:path")
-                  .attr("d", path)
+       this.draw_g.append('svg:path')
+                  .attr('d', path)
                   .call(this.markeratt.func);
 }
 
@@ -141,17 +141,17 @@ class RPalettePainter extends RObjectPainter {
          let changes = {};
          if (vertical) {
             this.v7AttrChange(changes, "margin", (drag.x - rect.x - rect.width) / pad_width);
-            this.v7AttrChange(changes, "width", palette_width / pad_width);
+            this.v7AttrChange(changes, 'width', palette_width / pad_width);
          } else {
             this.v7AttrChange(changes, "margin", (drag.y - rect.y - rect.height) / pad_width);
-            this.v7AttrChange(changes, "width", palette_height / pad_height);
+            this.v7AttrChange(changes, 'width', palette_height / pad_height);
          }
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
           if (vertical) {
             let margin = this.v7EvalLength("margin", pad_width, 0.02);
             palette_x = Math.round(rect.x + rect.width + margin);
-            palette_width = this.v7EvalLength("width", pad_width, 0.05);
+            palette_width = this.v7EvalLength('width', pad_width, 0.05);
             palette_y = rect.y;
             palette_height = rect.height;
           } else {
@@ -159,7 +159,7 @@ class RPalettePainter extends RObjectPainter {
             palette_x = rect.x;
             palette_width = rect.width;
             palette_y = Math.round(rect.y + rect.height + margin);
-            palette_height = this.v7EvalLength("width", pad_height, 0.05);
+            palette_height = this.v7EvalLength('width', pad_height, 0.05);
           }
 
           // x,y,width,height attributes used for drag functionality
@@ -174,8 +174,8 @@ class RPalettePainter extends RObjectPainter {
 
       if (!visible) return;
 
-      g_btns.append("svg:path")
-          .attr("d", `M0,0H${palette_width}V${palette_height}H0Z`)
+      g_btns.append('svg:path')
+          .attr('d', `M0,0H${palette_width}V${palette_height}H0Z`)
           .style("stroke", "black")
           .style("fill", "none");
 
@@ -191,8 +191,8 @@ class RPalettePainter extends RObjectPainter {
              z1 = Math.round(framep.z_handle.gr(contour[i+1])),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
-         let r = g_btns.append("svg:path")
-                     .attr("d", vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
+         let r = g_btns.append('svg:path')
+                     .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                      .style("fill", col)
                      .style("stroke", col)
                      .property("fill0", col)
@@ -260,9 +260,9 @@ class RPalettePainter extends RObjectPainter {
             }
 
             if (vertical)
-               zoom_rect.attr("y", Math.min(sel1, sel2)).attr("height", sz);
+               zoom_rect.attr("y", Math.min(sel1, sel2)).attr('height', sz);
             else
-               zoom_rect.attr("x", Math.min(sel1, sel2)).attr("width", sz);
+               zoom_rect.attr("x", Math.min(sel1, sel2)).attr('width', sz);
          }, endRectSel = evnt => {
             if (!doing_zoom) return;
 
@@ -297,9 +297,9 @@ class RPalettePainter extends RObjectPainter {
                  .attr("id", "colzoomRect")
                  .style('display', 'none');
             if (vertical)
-               zoom_rect.attr("x", 0).attr("width", palette_width).attr("y", sel1).attr("height", 1);
+               zoom_rect.attr("x", 0).attr('width', palette_width).attr("y", sel1).attr('height', 1);
             else
-               zoom_rect.attr("x", sel1).attr("width", 1).attr("y", 0).attr("height", palette_height);
+               zoom_rect.attr("x", sel1).attr('width', 1).attr("y", 0).attr('height', palette_height);
 
             d3_select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);

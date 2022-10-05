@@ -22,9 +22,9 @@ sap.ui.define([
          oRm.write("<div");
          oRm.writeControlData(oControl);  // writes the Control ID and enables event handling - important!
          // oRm.addStyle("background-color", oControl.getColor());  // write the color property; UI5 has validated it to be a valid CSS color
-         oRm.addStyle("width", "100%");
-         oRm.addStyle("height", "100%");
-         oRm.addStyle("overflow", "hidden");
+         oRm.addStyle('width', '100%');
+         oRm.addStyle('height', '100%');
+         oRm.addStyle('overflow', 'hidden');
          oRm.writeStyles();
          oRm.writeClasses();              // this call writes the above class plus enables support for Square.addStyleClass(...)
          oRm.write(">");

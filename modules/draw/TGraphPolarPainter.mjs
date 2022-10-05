@@ -236,8 +236,8 @@ class TGraphPolargramPainter extends ObjectPainter {
 
          for (let n = 0; n < nmajor; ++n) {
             let angle = -n*2*Math.PI/nmajor - this.angle;
-            this.draw_g.append("svg:path")
-                .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+            this.draw_g.append('svg:path')
+                .attr('d',`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                 .call(this.lineatt.func);
 
             let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
@@ -258,8 +258,8 @@ class TGraphPolargramPainter extends ObjectPainter {
             for (let n = 0; n < nmajor*nminor; ++n) {
                if (n % nminor === 0) continue;
                let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
-               this.draw_g.append("svg:path")
-                   .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+               this.draw_g.append('svg:path')
+                   .attr('d',`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                    .call(this.gridatt.func);
             }
 
@@ -393,31 +393,31 @@ class TGraphPolarPainter extends ObjectPainter {
       }
 
       if (this.options.fill && lpath)
-         this.draw_g.append("svg:path")
-             .attr("d", lpath + "Z")
+         this.draw_g.append('svg:path')
+             .attr('d', lpath + "Z")
              .call(this.fillatt.func);
 
       if (this.options.line && lpath)
-         this.draw_g.append("svg:path")
-             .attr("d", lpath)
+         this.draw_g.append('svg:path')
+             .attr('d', lpath)
              .style("fill", "none")
              .call(this.lineatt.func);
 
       if (this.options.curve && bins.length)
-         this.draw_g.append("svg:path")
-                 .attr("d", buildSvgPath("bezier", bins).path)
+         this.draw_g.append('svg:path')
+                 .attr('d', buildSvgPath("bezier", bins).path)
                  .style("fill", "none")
                  .call(this.lineatt.func);
 
       if (epath)
-         this.draw_g.append("svg:path")
-             .attr("d", epath)
+         this.draw_g.append('svg:path')
+             .attr('d', epath)
              .style("fill","none")
              .call(this.lineatt.func);
 
       if (mpath)
-         this.draw_g.append("svg:path")
-               .attr("d", mpath)
+         this.draw_g.append('svg:path')
+               .attr('d', mpath)
                .call(this.markeratt.func);
    }
 

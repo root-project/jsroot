@@ -2443,8 +2443,8 @@ class TGeoPainter extends ObjectPainter {
          this._renderer.setClearColor(this.ctrl.background, 1);
 
          if (this._fit_main_area && this._webgl) {
-            this._renderer.domElement.style.width = "100%";
-            this._renderer.domElement.style.height = "100%";
+            this._renderer.domElement.style.width = '100%';
+            this._renderer.domElement.style.height = '100%';
             let main = this.selectDom();
             if (main.style('position') == 'static') main.style('position','relative');
          }
@@ -2464,8 +2464,8 @@ class TGeoPainter extends ObjectPainter {
             // create top-most SVG for geomtery drawings
             let doc = getDocument(),
                 svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-            svg.setAttribute("width", w);
-            svg.setAttribute("height", h);
+            svg.setAttribute('width', w);
+            svg.setAttribute('height', h);
             svg.appendChild(this._renderer.jsroot_dom);
             return svg;
          }
@@ -3609,7 +3609,7 @@ class TGeoPainter extends ObjectPainter {
          if (!info) {
             info = document.createElement("p");
             info.setAttribute("class", "geo_info");
-            info.setAttribute("style",  "position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;");
+            info.setAttribute('style',  "position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;");
             main.append(info);
          }
          info.innerHTML = `${msg}, ${spent.toFixed(1)}s`;

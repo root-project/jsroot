@@ -100,8 +100,8 @@ async function drawTLine(dom, obj) {
       this.createG();
 
       this.draw_g
-          .append("svg:path")
-          .attr("d", `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},${this.axisToSvg("y", line.fY2, isndc)}`)
+          .append('svg:path')
+          .attr('d', `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},${this.axisToSvg("y", line.fY2, isndc)}`)
           .call(lineatt.func);
 
       return this;
@@ -132,8 +132,8 @@ function drawPolyLine() {
    if (!fillatt.empty()) cmd+="Z";
 
    this.draw_g
-       .append("svg:path")
-       .attr("d", cmd)
+       .append('svg:path')
+       .attr('d', cmd)
        .call(lineatt.func)
        .call(fillatt.func);
 }
@@ -219,9 +219,9 @@ function drawEllipse() {
    }
 
    this.draw_g
-      .append("svg:path")
+      .append('svg:path')
       .attr("transform",`translate(${x},${y})`)
-      .attr("d", path)
+      .attr('d', path)
       .call(this.lineatt.func).call(this.fillatt.func);
 }
 
@@ -257,8 +257,8 @@ function drawPie() {
       let x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
 
       this.draw_g
-          .append("svg:path")
-          .attr("d", `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
+          .append('svg:path')
+          .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
           .call(lineatt.func)
           .call(fillatt.func);
       x1 = x2; y1 = y2;
@@ -289,8 +289,8 @@ function drawBox() {
    if (!fillatt.empty() && !draw_line) lineatt.color = "none";
 
    this.draw_g
-       .append("svg:path")
-       .attr("d", `M${xx},${yy}h${ww}v${hh}h${-ww}z`)
+       .append('svg:path')
+       .attr('d', `M${xx},${yy}h${ww}v${hh}h${-ww}z`)
        .call(lineatt.func)
        .call(fillatt.func);
 
@@ -301,13 +301,13 @@ function drawBox() {
 
       if (box.fBorderMode < 0) { let s = side1; side1 = side2; side2 = s; }
 
-      this.draw_g.append("svg:path")
-                 .attr("d", side1)
+      this.draw_g.append('svg:path')
+                 .attr('d', side1)
                  .call(fillatt.func)
                  .style("fill", d3_rgb(fillatt.color).brighter(0.5).formatHex());
 
-      this.draw_g.append("svg:path")
-          .attr("d", side2)
+      this.draw_g.append('svg:path')
+          .attr('d', side2)
           .call(fillatt.func)
           .style("fill", d3_rgb(fillatt.color).darker(0.5).formatHex());
    }
@@ -329,8 +329,8 @@ function drawMarker() {
        path = att.create(x,y);
 
    if (path)
-      this.draw_g.append("svg:path")
-          .attr("d", path)
+      this.draw_g.append('svg:path')
+          .attr('d', path)
           .call(att.func);
 }
 
@@ -350,8 +350,8 @@ function drawPolyMarker() {
       path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
    if (path)
-      this.draw_g.append("svg:path")
-          .attr("d", path)
+      this.draw_g.append('svg:path')
+          .attr('d', path)
           .call(att.func);
 }
 
@@ -360,13 +360,13 @@ function drawPolyMarker() {
 function drawJSImage(dom, obj, opt) {
    let painter = new BasePainter(dom),
        main = painter.selectDom(),
-       img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
+       img = main.append('img').attr('src', obj.fName).attr('title', obj.fTitle || obj.fName);
 
    if (opt && opt.indexOf("scale") >= 0) {
-      img.style("width","100%").style("height","100%");
+      img.style('width','100%').style('height','100%');
    } else if (opt && opt.indexOf("center") >= 0) {
-      main.style("position", "relative");
-      img.attr("style", "margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);");
+      main.style('position', 'relative');
+      img.attr('style', 'margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);');
    }
 
    painter.setTopPainter();

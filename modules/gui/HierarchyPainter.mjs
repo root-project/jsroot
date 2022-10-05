@@ -1201,15 +1201,15 @@ class HierarchyPainter extends BasePainter {
       if (this.with_icons && !break_list) {
          let icon_name = hitem._isopen ? img2 : img1, d3img;
 
-         if (icon_name.indexOf("img_") == 0)
+         if (icon_name.indexOf('img_') == 0)
             d3img = d3line.append("div")
                           .attr("class", icon_name)
-                          .attr("title", hitem._kind);
+                          .attr('title', hitem._kind);
          else
-            d3img = d3line.append("img")
-                          .attr("src", icon_name)
+            d3img = d3line.append('img')
+                          .attr('src', icon_name)
                           .attr("alt","")
-                          .attr("title", hitem._kind)
+                          .attr('title', hitem._kind)
                           .style('vertical-align','top').style('width','18px').style('height','18px');
 
          if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
@@ -1266,7 +1266,7 @@ class HierarchyPainter extends BasePainter {
 
       if (has_childs && (isroot || hitem._isopen)) {
          let d3chlds = d3cont.append("div").attr("class", "h_childs");
-         if (this.show_overflow) d3chlds.style("overflow", "initial");
+         if (this.show_overflow) d3chlds.style('overflow', "initial");
          for (let i = 0; i < hitem._childs.length; ++i) {
             let chld = hitem._childs[i];
             chld._parent = hitem;
@@ -1344,13 +1344,13 @@ class HierarchyPainter extends BasePainter {
          return this;
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append("div").attr("style", "display: inline; vertical-align: middle; white-space: nowrap;");
+         let fastbtns = d3elem.append("div").attr('style', "display: inline; vertical-align: middle; white-space: nowrap;");
          for (let n = 0; n < factcmds.length; ++n) {
             let btn = fastbtns.append("button")
                        .text("")
                        .attr("class",'jsroot_fastcmd_btn')
                        .attr("item", this.itemFullName(factcmds[n]))
-                       .attr("title", factcmds[n]._title)
+                       .attr('title', factcmds[n]._title)
                        .on("click", function() { h.executeCommand(d3_select(this).attr("item"), this); } );
 
             if (factcmds[n]._icon)
@@ -1360,27 +1360,27 @@ class HierarchyPainter extends BasePainter {
 
       let d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
       d3btns.append("a").attr("class", "h_button").text("open all")
-            .attr("title","open all items in the browser").on("click", () => this.toggleOpenState(true));
+            .attr('title',"open all items in the browser").on("click", () => this.toggleOpenState(true));
       d3btns.append("text").text(" | ");
       d3btns.append("a").attr("class", "h_button").text("close all")
-            .attr("title","close all items in the browser").on("click", () => this.toggleOpenState(false));
+            .attr('title',"close all items in the browser").on("click", () => this.toggleOpenState(false));
 
       if (typeof this.removeInspector == 'function') {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("remove")
-               .attr("title","remove inspector").on("click", () => this.removeInspector());
+               .attr('title',"remove inspector").on("click", () => this.removeInspector());
       }
 
       if ('_online' in this.h) {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("reload")
-               .attr("title","reload object list from the server").on("click", () => this.reload());
+               .attr('title',"reload object list from the server").on("click", () => this.reload());
       }
 
       if ('disp_kind' in this) {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("clear")
-               .attr("title","clear all drawn objects").on("click", () => this.clearHierarchy(false));
+               .attr('title',"clear all drawn objects").on("click", () => this.clearHierarchy(false));
       }
 
       let maindiv =
@@ -1390,7 +1390,7 @@ class HierarchyPainter extends BasePainter {
                .style("flex","1");
 
       if (!this.show_overflow)
-         maindiv.style("overflow","auto");
+         maindiv.style('overflow',"auto");
 
       if (this.background) // case of object inspector and streamer infos display
          maindiv.style("background-color", this.background)
@@ -3209,7 +3209,7 @@ class HierarchyPainter extends BasePainter {
           statush = 0, status = GetOption("status"),
           browser_kind = GetOption("browser"),
           browser_configured = !!browser_kind,
-          title = GetOption("title");
+          title = GetOption('title');
 
       if (monitor === null)
          monitor = 0;

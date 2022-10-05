@@ -352,19 +352,19 @@ class TH1Painter extends THistPainter {
       }
 
       if (bars)
-         this.draw_g.append("svg:path")
-                    .attr("d", bars)
+         this.draw_g.append('svg:path')
+                    .attr('d', bars)
                     .call(this.fillatt.func);
 
       if (barsl)
-         this.draw_g.append("svg:path")
-               .attr("d", barsl)
+         this.draw_g.append('svg:path')
+               .attr('d', barsl)
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr)
-         this.draw_g.append("svg:path")
-               .attr("d", barsr)
+         this.draw_g.append('svg:path')
+               .attr('d', barsr)
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
@@ -402,8 +402,8 @@ class TH1Painter extends THistPainter {
           path1 = buildSvgPath(kind, bins1),
           path2 = buildSvgPath("L"+kind, bins2);
 
-      this.draw_g.append("svg:path")
-                 .attr("d", path1.path + path2.path + "Z")
+      this.draw_g.append('svg:path')
+                 .attr('d', path1.path + path2.path + "Z")
                  .call(this.fillatt.func);
    }
 
@@ -686,48 +686,48 @@ class TH1Painter extends THistPainter {
 
       if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))
-            this.draw_g.append("svg:path")
-                       .attr("d", path_fill)
+            this.draw_g.append('svg:path')
+                       .attr('d', path_fill)
                        .call(this.fillatt.func);
 
          if (path_err)
-               this.draw_g.append("svg:path")
-                   .attr("d", path_err)
+               this.draw_g.append('svg:path')
+                   .attr('d', path_err)
                    .call(this.lineatt.func);
 
           if (hints_err)
-               this.draw_g.append("svg:path")
-                   .attr("d", hints_err)
+               this.draw_g.append('svg:path')
+                   .attr('d', hints_err)
                    .style("fill", "none")
                    .style("pointer-events", isBatchMode() ? null : "visibleFill");
 
          if (path_line) {
             if (!this.fillatt.empty() && !draw_hist)
-               this.draw_g.append("svg:path")
-                     .attr("d", path_line + close_path)
+               this.draw_g.append('svg:path')
+                     .attr('d', path_line + close_path)
                      .call(this.fillatt.func);
 
-            this.draw_g.append("svg:path")
-                   .attr("d", path_line)
+            this.draw_g.append('svg:path')
+                   .attr('d', path_line)
                    .style("fill", "none")
                    .call(this.lineatt.func);
          }
 
          if (path_marker)
-            this.draw_g.append("svg:path")
-                .attr("d", path_marker)
+            this.draw_g.append('svg:path')
+                .attr('d', path_marker)
                 .call(this.markeratt.func);
 
          if (hints_marker)
-            this.draw_g.append("svg:path")
-                .attr("d", hints_marker)
+            this.draw_g.append('svg:path')
+                .attr('d', hints_marker)
                 .style("fill", "none")
                 .style("pointer-events", isBatchMode() ? null : "visibleFill");
       }
 
       if (res && draw_hist)
-         this.draw_g.append("svg:path")
-                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
+         this.draw_g.append('svg:path')
+                    .attr('d', res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
@@ -958,9 +958,9 @@ class TH1Painter extends THistPainter {
 
          if (res.changed)
             ttrect.attr("x", funcs.swap_xy ? gry1 : grx1)
-                  .attr("width", funcs.swap_xy ? gry2-gry1 : grx2-grx1)
+                  .attr('width', funcs.swap_xy ? gry2-gry1 : grx2-grx1)
                   .attr("y", funcs.swap_xy ? grx1 : gry1)
-                  .attr("height", funcs.swap_xy ? grx2-grx1 : gry2-gry1)
+                  .attr('height', funcs.swap_xy ? grx2-grx1 : gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
 

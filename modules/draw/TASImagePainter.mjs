@@ -202,8 +202,8 @@ class TASImagePainter extends ObjectPainter {
             this.createG(fp ? true : false)
                 .append("image")
                 .attr("href", res.url)
-                .attr("width", rect.width)
-                .attr("height", rect.height)
+                .attr('width', rect.width)
+                .attr('height', rect.height)
                 .attr("preserveAspectRatio", res.constRatio ? null : "none");
 
          if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
@@ -310,7 +310,7 @@ class TASImagePainter extends ObjectPainter {
           fp = this.getFramePainter();
 
       if (img && !img.empty() && (reason !== "zoom") && fp) {
-         img.attr("width", fp.getFrameWidth()).attr("height", fp.getFrameHeight());
+         img.attr('width', fp.getFrameWidth()).attr('height', fp.getFrameHeight());
       } else {
          return this.drawImage();
       }

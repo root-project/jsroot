@@ -117,8 +117,8 @@ class ObjectPainter extends BasePainter {
       super.setItemName(name, opt, hpainter);
       if (this.no_default_title || !name) return;
       let can = this.getCanvSvg();
-      if (!can.empty()) can.select("title").text(name);
-                   else this.selectDom().attr("title", name);
+      if (!can.empty()) can.select('title').text(name);
+                   else this.selectDom().attr('title', name);
       let cp = this.getCanvPainter();
       if (cp && ((cp === this) || (this.isMainPainter() && (cp === this.getPadPainter()))))
          cp.drawItemNameOnCanvas(name);

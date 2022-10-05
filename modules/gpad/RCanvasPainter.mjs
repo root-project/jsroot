@@ -668,7 +668,7 @@ function drawRFrameTitle(reason, drag) {
        title        = this.getObject(),
        title_margin = this.v7EvalLength("margin", ph, 0.02),
        title_width  = fw,
-       title_height = this.v7EvalLength("height", ph, 0.05),
+       title_height = this.v7EvalLength('height', ph, 0.05),
        textFont     = this.v7EvalFont("text", { size: 0.07, color: "black", align: 22 });
 
    if (reason == 'drag') {
@@ -676,7 +676,7 @@ function drawRFrameTitle(reason, drag) {
       title_margin = fy - drag.y - drag.height;
       let changes = {};
       this.v7AttrChange(changes, "margin", title_margin / ph);
-      this.v7AttrChange(changes, "height", title_height / ph);
+      this.v7AttrChange(changes, 'height', title_height / ph);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
    }
 
@@ -865,7 +865,7 @@ function drawRFont() {
 
    let entry = defs.select("." + clname);
    if (entry.empty())
-      entry = defs.append("style").attr("type", "text/css").attr("class", clname);
+      entry = defs.append('style').attr("type", "text/css").attr("class", clname);
 
    entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
 

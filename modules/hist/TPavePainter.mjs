@@ -141,14 +141,14 @@ class TPavePainter extends ObjectPainter {
              dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
          if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
-            this.draw_g.append("svg:path")
-                 .attr("d","M0,"+(h2+brd) + dpath)
+            this.draw_g.append('svg:path')
+                 .attr('d',"M0,"+(h2+brd) + dpath)
                  .style("fill", this.getColor(pt.fShadowColor))
                  .style("stroke", this.getColor(pt.fShadowColor))
                  .style("stroke-width", "1px");
 
-         this.draw_g.append("svg:path")
-             .attr("d", "M0,"+h2 +dpath)
+         this.draw_g.append('svg:path')
+             .attr('d', "M0,"+h2 +dpath)
              .call(this.fillatt.func)
              .call(this.lineatt.func);
 
@@ -170,8 +170,8 @@ class TPavePainter extends ObjectPainter {
             // when main is filled, one also can use fill for shadow to avoid complexity
             spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
          }
-         this.draw_g.append("svg:path")
-                    .attr("d", spath + "z")
+         this.draw_g.append('svg:path')
+                    .attr('d', spath + "z")
                     .style("fill", scol)
                     .style("stroke", scol)
                     .style("stroke-width", "1px");
@@ -179,15 +179,15 @@ class TPavePainter extends ObjectPainter {
 
       if (pt.fNpaves)
          for (let n = pt.fNpaves-1; n > 0; --n)
-            this.draw_g.append("svg:path")
-               .attr("d", `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
+            this.draw_g.append('svg:path')
+               .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
       let rect;
       if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
-           rect = this.draw_g.append("svg:path")
-                      .attr("d", `M0,0H${width}V${height}H0Z`)
+           rect = this.draw_g.append('svg:path')
+                      .attr('d', `M0,0H${width}V${height}H0Z`)
                       .call(this.fillatt.func)
                       .call(this.lineatt.func);
 
@@ -337,7 +337,7 @@ class TPavePainter extends ObjectPainter {
             lpath += `M${Math.round(width / num_cols * (ncol + 1))},${Math.round(first_stat * stepy)}V${height}`;
       }
 
-      if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
+      if (lpath) this.draw_g.append('svg:path').attr('d',lpath).call(this.lineatt.func);
 
       // this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
@@ -425,8 +425,8 @@ class TPavePainter extends ObjectPainter {
                    ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
                    ly2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy*0.5),
                    lineatt = new TAttLineHandler(entry);
-               text_g.append("svg:path")
-                     .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
+               text_g.append('svg:path')
+                     .attr('d', `M${lx1},${ly1}L${lx2},${ly2}`)
                      .call(lineatt.func);
                break;
 
@@ -436,8 +436,8 @@ class TPavePainter extends ObjectPainter {
                    by1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty),
                    by2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy),
                    fillatt = this.createAttFill(entry);
-               text_g.append("svg:path")
-                     .attr("d", `M${bx1},${by1}H${bx2}V${by2}H${bx1}Z`)
+               text_g.append('svg:path')
+                     .attr('d', `M${bx1},${by1}H${bx2}V${by2}H${bx1}Z`)
                      .call(fillatt.func);
                break;
          }
@@ -453,8 +453,8 @@ class TPavePainter extends ObjectPainter {
              h = Math.round(height*0.04),
              lbl_g = text_g.append("svg:g");
 
-         lbl_g.append("svg:path")
-               .attr("d", `M${x},${y}h${w}v${h}h${-w}z`)
+         lbl_g.append('svg:path')
+               .attr('d', `M${x},${y}h${w}v${h}h${-w}z`)
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
@@ -572,8 +572,8 @@ class TPavePainter extends ObjectPainter {
                 isany = true;
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
-               let rect = this.draw_g.append("svg:path")
-                              .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
+               let rect = this.draw_g.append('svg:path')
+                              .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
                               .call(fillatt.func);
                 if (lineatt)
                    rect.call(lineatt.func);
@@ -585,12 +585,12 @@ class TPavePainter extends ObjectPainter {
             let lineatt = painter?.lineatt || new TAttLineHandler(o_line);
             if (!lineatt.empty()) {
                isany = true;
-               this.draw_g.append("svg:path")
-                  .attr("d", `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
+               this.draw_g.append('svg:path')
+                  .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
                   .call(lineatt.func);
                if (draw_error)
-                  this.draw_g.append("svg:path")
-                      .attr("d", `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
+                  this.draw_g.append('svg:path')
+                      .attr('d', `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
                       .call(lineatt.func);
             }
          }
@@ -601,16 +601,16 @@ class TPavePainter extends ObjectPainter {
             if (!marker.empty()) {
                isany = true;
                this.draw_g
-                   .append("svg:path")
-                   .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
+                   .append('svg:path')
+                   .attr('d', marker.create((x0 + tpos_x)/2, mid_y))
                    .call(marker.func);
             }
          }
 
          // special case - nothing draw, try to show rect with line attributes
          if (!isany && painter?.lineatt && !painter.lineatt.empty())
-            this.draw_g.append("svg:path")
-                       .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
+            this.draw_g.append('svg:path')
+                       .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
                        .style("fill", "none")
                        .call(painter.lineatt.func);
 
@@ -690,8 +690,8 @@ class TPavePainter extends ObjectPainter {
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
-         this.draw_g.append("svg:path")
-                    .attr("d", `M0,0H${s_width}V${s_height}H0Z`)
+         this.draw_g.append('svg:path')
+                    .attr('d', `M0,0H${s_width}V${s_height}H0Z`)
                     .style("fill", 'white');
       else
          for (let i = 0; i < levels.length-1; ++i) {
@@ -728,8 +728,8 @@ class TPavePainter extends ObjectPainter {
             let col = contour.getPaletteColor(draw_palette, lvl);
             if (!col) continue;
 
-            let r = this.draw_g.append("svg:path")
-                       .attr("d", d)
+            let r = this.draw_g.append('svg:path')
+                       .attr('d', d)
                        .style("fill", col)
                        .property("fill0", col)
                        .property("fill1", d3_rgb(col).darker(0.5).formatHex());
@@ -787,11 +787,11 @@ class TPavePainter extends ObjectPainter {
          if (this._palette_vertical) {
             sel2 = Math.min(Math.max(m[1], 0), s_height);
             zoom_rect.attr("y", Math.min(sel1, sel2))
-                     .attr("height", Math.abs(sel2-sel1));
+                     .attr('height', Math.abs(sel2-sel1));
          } else {
             sel2 = Math.min(Math.max(m[0], 0), s_width);
             zoom_rect.attr("x", Math.min(sel1, sel2))
-                     .attr("width", Math.abs(sel2-sel1));
+                     .attr('width', Math.abs(sel2-sel1));
          }
       }, endRectSel = evnt => {
          if (!doing_zoom) return;
@@ -821,15 +821,15 @@ class TPavePainter extends ObjectPainter {
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];
             zoom_rect.attr("x", "0")
-                     .attr("width", s_width)
+                     .attr('width', s_width)
                      .attr("y", sel1)
-                     .attr("height", 1);
+                     .attr('height', 1);
          } else {
             sel1 = sel2 = origin[0];
             zoom_rect.attr("x", sel1)
-                     .attr("width", 1)
+                     .attr('width', 1)
                      .attr("y", 0)
-                     .attr("height", s_height);
+                     .attr('height', s_height);
          }
 
          d3_select(window).on("mousemove.colzoomRect", moveRectSel)
@@ -939,7 +939,7 @@ class TPavePainter extends ObjectPainter {
          menu.add("endsub:");
 
          menu.add("separator");
-      } else if (pave.fName === "title") {
+      } else if (pave.fName === 'title') {
          menu.add("Default position", function() {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
             pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
@@ -984,7 +984,7 @@ class TPavePainter extends ObjectPainter {
 
       createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
-         return this.fillObjectExecMenu(menu, "title");
+         return this.fillObjectExecMenu(menu, 'title');
        }).then(menu => menu.show());
    }
 
@@ -1141,8 +1141,8 @@ class TPavePainter extends ObjectPainter {
 
       return ensureTCanvas(painter, false).then(() => {
 
-         if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
-            let tpainter = painter.getPadPainter().findPainterFor(null, "title");
+         if ((pave.fName === 'title') && (pave._typename === "TPaveText")) {
+            let tpainter = painter.getPadPainter().findPainterFor(null, 'title');
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();

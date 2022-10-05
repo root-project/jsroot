@@ -623,7 +623,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.opposite = this.x_handle.titleOpposite;
       text3d.offsety = 1.6 * this.x_handle.titleOffset + (grmaxy - grminy) * 0.005;
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
-      text3d.kind = "title";
+      text3d.kind = 'title';
       lbls.push(text3d);
    }
 
@@ -835,7 +835,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.opposite = this.y_handle.titleOpposite;
       text3d.offsetx = 1.6 * this.y_handle.titleOffset + (grmaxx - grminx) * 0.005;
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
-      text3d.kind = "title";
+      text3d.kind = 'title';
       lbls.push(text3d);
    }
 

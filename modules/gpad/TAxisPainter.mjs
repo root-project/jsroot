@@ -773,8 +773,8 @@ class TAxisPainter extends ObjectPainter {
                  .classed("zoom", true)
                  .attr("x", box.x)
                  .attr("y", box.y)
-                 .attr("width", box.width)
-                 .attr("height", box.height)
+                 .attr('width', box.width)
+                 .attr('height', box.height)
                  .style("cursor", "move");
 //                 .style("pointer-events","none"); // let forward double click to underlying elements
           }).on("drag", evnt => {
@@ -1147,8 +1147,8 @@ class TAxisPainter extends ObjectPainter {
       axis_lines += this.produceTicksPath(handle, side, this.ticksSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
 
       if (!disable_axis_drawing && axis_lines && !this.lineatt.empty())
-         axis_g.append("svg:path")
-               .attr("d", axis_lines)
+         axis_g.append('svg:path')
+               .attr('d', axis_lines)
                .call(this.lineatt.func);
 
       let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, labelsMaxWidth = 0,
@@ -1170,10 +1170,10 @@ class TAxisPainter extends ObjectPainter {
             if (this.vertical) {
                let rw = (labelsMaxWidth || 2*labelSize) + 3;
                r.attr("x", (side > 0) ? -rw : 0).attr("y", 0)
-                .attr("width", rw).attr("height", h);
+                .attr('width', rw).attr('height', h);
             } else {
                r.attr("x", 0).attr("y", (side > 0) ? 0 : -labelSize - 3)
-                .attr("width", w).attr("height", labelSize + 3);
+                .attr('width', w).attr('height', labelSize + 3);
             }
          }
 

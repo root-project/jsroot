@@ -479,7 +479,7 @@ async function loadScript(url) {
    } else {
       element = document.createElement("script");
       element.setAttribute("type", "text/javascript");
-      element.setAttribute("src", url);
+      element.setAttribute('src', url);
    }
 
    return new Promise((resolveFunc, rejectFunc) => {
@@ -1024,7 +1024,7 @@ function create(typename, target) {
          create("TBox", obj);
          extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                       fCornerRadius: 0, fOption: "brNDC", fName: "title" });
+                       fCornerRadius: 0, fOption: "brNDC", fName: 'title' });
          break;
       case 'TAttText':
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
@@ -1260,7 +1260,7 @@ function create(typename, target) {
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    let histo = create(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
-   histo.fName = "hist"; histo.fTitle = "title";
+   histo.fName = "hist"; histo.fTitle = 'title';
    if (nbinsx) extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
    if (nbinsy) extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
    if (nbinsz) extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
@@ -1307,7 +1307,7 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend(create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
+   let graph = extend(create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;

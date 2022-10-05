@@ -250,19 +250,19 @@ class RH1Painter extends RHistPainter {
       if (this.fillatt.empty()) this.fillatt.setSolidColor("blue");
 
       if (bars.length > 0)
-         this.draw_g.append("svg:path")
-                    .attr("d", bars)
+         this.draw_g.append('svg:path')
+                    .attr('d', bars)
                     .call(this.fillatt.func);
 
       if (barsl.length > 0)
-         this.draw_g.append("svg:path")
-               .attr("d", barsl)
+         this.draw_g.append('svg:path')
+               .attr('d', barsl)
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr.length > 0)
-         this.draw_g.append("svg:path")
-               .attr("d", barsr)
+         this.draw_g.append('svg:path')
+               .attr('d', barsr)
                .call(this.fillatt.func)
                .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
@@ -300,8 +300,8 @@ class RH1Painter extends RHistPainter {
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor("blue");
 
-      this.draw_g.append("svg:path")
-                 .attr("d", path1.path + path2.path + "Z")
+      this.draw_g.append('svg:path')
+                 .attr('d', path1.path + path2.path + "Z")
                  .call(this.fillatt.func);
 
       return true;
@@ -554,41 +554,41 @@ class RH1Painter extends RHistPainter {
 
       if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))
-            this.draw_g.append("svg:path")
-                       .attr("d", path_fill)
+            this.draw_g.append('svg:path')
+                       .attr('d', path_fill)
                        .call(this.fillatt.func);
 
          if ((path_err !== null) && (path_err.length > 0))
-               this.draw_g.append("svg:path")
-                   .attr("d", path_err)
+               this.draw_g.append('svg:path')
+                   .attr('d', path_err)
                    .call(this.lineatt.func);
 
          if ((hints_err !== null) && (hints_err.length > 0))
-               this.draw_g.append("svg:path")
-                   .attr("d", hints_err)
+               this.draw_g.append('svg:path')
+                   .attr('d', hints_err)
                    .style("fill", "none")
                    .style("pointer-events", isBatchMode() ? null : "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
-               this.draw_g.append("svg:path")
-                     .attr("d", options.Fill ? (path_line + close_path) : res)
+               this.draw_g.append('svg:path')
+                     .attr('d', options.Fill ? (path_line + close_path) : res)
                      .call(this.fillatt.func);
 
-            this.draw_g.append("svg:path")
-                   .attr("d", path_line)
+            this.draw_g.append('svg:path')
+                   .attr('d', path_line)
                    .style("fill", "none")
                    .call(this.lineatt.func);
          }
 
          if ((path_marker !== null) && (path_marker.length > 0))
-            this.draw_g.append("svg:path")
-                .attr("d", path_marker)
+            this.draw_g.append('svg:path')
+                .attr('d', path_marker)
                 .call(this.markeratt.func);
 
       } else if (res && options.Hist) {
-         this.draw_g.append("svg:path")
-                    .attr("d", res)
+         this.draw_g.append('svg:path')
+                    .attr('d', res)
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
@@ -822,9 +822,9 @@ class RH1Painter extends RHistPainter {
 
          if (res.changed)
             ttrect.attr("x", pmain.swap_xy ? gry1 : grx1)
-                  .attr("width", pmain.swap_xy ? gry2-gry1 : grx2-grx1)
+                  .attr('width', pmain.swap_xy ? gry2-gry1 : grx2-grx1)
                   .attr("y", pmain.swap_xy ? grx1 : gry1)
-                  .attr("height", pmain.swap_xy ? grx2-grx1 : gry2-gry1)
+                  .attr('height', pmain.swap_xy ? grx2-grx1 : gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
 

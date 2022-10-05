@@ -667,7 +667,7 @@ class TCanvasPainter extends TPadPainter {
       if (!nocanvas && can.fCw && can.fCh && !isBatchMode()) {
          let rect0 = painter.selectDom().node().getBoundingClientRect();
          if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
-            painter.selectDom().style("width", can.fCw+"px").style("height", can.fCh+"px");
+            painter.selectDom().style('width', can.fCw+"px").style('height', can.fCh+"px");
             painter._fixed_size = true;
          }
       }

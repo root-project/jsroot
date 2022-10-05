@@ -373,8 +373,8 @@ class RAxisPainter extends RObjectPainter {
                  .classed("zoom", true)
                  .attr("x", box.x)
                  .attr("y", box.y)
-                 .attr("width", box.width)
-                 .attr("height", box.height)
+                 .attr('width', box.width)
+                 .attr('height', box.height)
                  .style("cursor", "move");
          if (this.vertical) {
             this.drag_pos0 = pos[0];
@@ -456,8 +456,8 @@ class RAxisPainter extends RObjectPainter {
                  .classed("zoom", true)
                  .attr("x", box.x)
                  .attr("y", box.y)
-                 .attr("width", box.width)
-                 .attr("height", box.height)
+                 .attr('width', box.width)
+                 .attr('height', box.height)
                  .style("cursor", "move");
 //                 .style("pointer-events","none"); // let forward double click to underlying elements
           }).on("drag", evnt => {
@@ -553,8 +553,8 @@ class RAxisPainter extends RObjectPainter {
             ending = `l${sz},${sz7}M${this.gr_range},0l${sz},${-sz7}`;
       }
 
-      axis_g.append("svg:path")
-            .attr("d","M0,0" + (this.vertical ? "v" : "h") + this.gr_range + ending)
+      axis_g.append('svg:path')
+            .attr('d',"M0,0" + (this.vertical ? "v" : "h") + this.gr_range + ending)
             .call(this.lineatt.func)
             .style('fill', ending ? "none" : null);
    }
@@ -603,8 +603,8 @@ class RAxisPainter extends RObjectPainter {
       }
 
       if (res)
-         axis_g.append("svg:path")
-               .attr("d", res)
+         axis_g.append('svg:path')
+               .attr('d', res)
                .style('stroke', this.ticksColor || this.lineatt.color)
                .style('stroke-width', !this.ticksWidth || (this.ticksWidth == 1) ? null : this.ticksWidth);
 
@@ -737,8 +737,8 @@ class RAxisPainter extends RObjectPainter {
          let sz = Math.max(lgaps[side], 10),
              d = this.vertical ? `v${this.gr_range}h${-side*sz}v${-this.gr_range}`
                                : `h${this.gr_range}v${side*sz}h${-this.gr_range}`;
-         axis_g.append("svg:path")
-               .attr("d",`M0,0${d}z`)
+         axis_g.append('svg:path')
+               .attr('d',`M0,0${d}z`)
                .attr("class", "axis_zoom")
                .style("opacity", "0")
                .style("cursor", "crosshair");
@@ -813,7 +813,7 @@ class RAxisPainter extends RObjectPainter {
       this.fTitle = this.v7EvalAttr("title_value", "");
 
       if (this.fTitle) {
-         this.titleFont = this.v7EvalFont("title", { size: 0.03 }, scalingSize || pp?.getPadHeight() || 10);
+         this.titleFont = this.v7EvalFont('title', { size: 0.03 }, scalingSize || pp?.getPadHeight() || 10);
          this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
          this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
@@ -1092,7 +1092,7 @@ class RAxisPainter extends RObjectPainter {
          menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scalingSize,
                            offset => this.changeAxisAttr(1, "title_offset", offset));
 
-         menu.addSelectMenu("position", ["left", "center", "right"], this.titlePos,
+         menu.addSelectMenu('position', ["left", "center", "right"], this.titlePos,
                             pos => this.changeAxisAttr(1, "title_position", pos));
 
          menu.addchk(this.isTitleRotated(), "rotate", flag => this.changeAxisAttr(1, "title_angle", flag ? 180 : 0));

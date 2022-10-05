@@ -654,13 +654,13 @@ class TabsDisplay extends MDIDisplay {
          .style("background", "white")
          .property('frame_id', frame_id)
          .text(lbl)
-         .attr("title", title)
+         .attr('title', title)
          .on("click", function(evnt) {
             evnt.preventDefault(); // prevent handling in close button
             mdi.modifyTabsFrame(d3_select(this).property('frame_id'), "activate");
          }).append("button")
-         .attr("title", "close")
-         .attr("style", 'margin-left: .5em; padding: 0; font-size: 0.5em; width: 1.8em; height: 1.8em; vertical-align: center;')
+         .attr('title', "close")
+         .attr('style', 'margin-left: .5em; padding: 0; font-size: 0.5em; width: 1.8em; height: 1.8em; vertical-align: center;')
          .html('&#x2715;')
          .on("click", function() {
             mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), "close");
@@ -785,26 +785,26 @@ class FlexibleDisplay extends MDIDisplay {
 
       switch (newstate) {
          case "min":
-            main.style("height","auto").style("width", "auto");
+            main.style('height',"auto").style('width', "auto");
             main.select(".jsroot_flex_draw").style("display","none");
             break;
          case "max":
-            main.style("height","100%").style("width", "100%").style('left','').style('top','');
+            main.style('height','100%').style('width', '100%').style('left','').style('top','');
             main.select(".jsroot_flex_draw").style("display", null);
             top.style('overflow', 'hidden');
             break;
          default:
             main.select(".jsroot_flex_draw").style("display", null);
-            main.attr("style", main.property("original_style"));
+            main.attr('style', main.property("original_style"));
       }
 
       main.select(".jsroot_flex_header").selectAll("button").each(function(d) {
          let btn = d3_select(this);
          if (((d.t == "minimize") && (newstate == "min")) ||
              ((d.t == "maximize") && (newstate == "max")))
-               btn.html("&#x259E;").attr("title", "restore");
+               btn.html("&#x259E;").attr('title', "restore");
          else
-            btn.html(d.n).attr("title", d.t);
+            btn.html(d.n).attr('title', d.t);
       });
 
       main.property("state", newstate);
@@ -900,7 +900,7 @@ class FlexibleDisplay extends MDIDisplay {
                  <div class="jsroot_flex_resize">&#x25FF;</div>`);
 
       main.attr("class", "jsroot_flex_frame")
-         .style("position", "absolute")
+         .style('position', 'absolute')
          .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
          .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
          .style('width', Math.round(w * 0.58) + "px")
@@ -914,7 +914,7 @@ class FlexibleDisplay extends MDIDisplay {
          .append("button")
          .attr("type", "button")
          .attr("class", "jsroot_flex_btn")
-         .attr("title", d => d.t)
+         .attr('title', d => d.t)
          .html(d => d.n)
          .on("click", function() { mdi._clickButton(this); });
 
@@ -936,11 +936,11 @@ class FlexibleDisplay extends MDIDisplay {
 
          moving_div = top.append('div').classed("jsroot_flex_resizable_helper", true);
 
-         moving_div.attr("style", main.attr("style"));
+         moving_div.attr('style', main.attr('style'));
 
          if (main.property("state") == "min")
-            moving_div.style("width", main.node().clientWidth + "px")
-                      .style("height", main.node().clientHeight + "px");
+            moving_div.style('width', main.node().clientWidth + "px")
+                      .style('height', main.node().clientHeight + "px");
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -964,8 +964,8 @@ class FlexibleDisplay extends MDIDisplay {
             changeProp(0, "left", evnt.dx);
             changeProp(1, "top", evnt.dy);
          } else {
-            changeProp(0, "width", evnt.dx);
-            changeProp(1, "height", evnt.dy);
+            changeProp(0, 'width', evnt.dx);
+            changeProp(1, 'height', evnt.dy);
          }
       }).on("end", function(evnt) {
          if (!moving_div) return;
@@ -975,8 +975,8 @@ class FlexibleDisplay extends MDIDisplay {
             moving_frame.style("left", moving_div.style("left"));
             moving_frame.style("top", moving_div.style("top"));
          } else {
-            moving_frame.style("width", moving_div.style("width"));
-            moving_frame.style("height", moving_div.style("height"));
+            moving_frame.style('width', moving_div.style('width'));
+            moving_frame.style('height', moving_div.style('height'));
          }
          moving_div.remove();
          moving_div = null;
@@ -1125,9 +1125,9 @@ class BatchDisplay extends MDIDisplay {
 
       let frame =
          this.jsdom_body.append('div')
-             .style("visible", "hidden")
-             .attr("width", this.width).attr("height", this.height)
-             .style("width", this.width + "px").style("height", this.height + "px")
+             .style("visible", 'hidden')
+             .attr('width', this.width).attr('height', this.height)
+             .style('width', this.width + "px").style('height', this.height + "px")
              .attr("id","jsroot_batch_" + this.frames.length)
              .attr("frame_title", title);
 
@@ -1163,9 +1163,9 @@ class BatchDisplay extends MDIDisplay {
       main.select('svg')
           .attr("xmlns", "http://www.w3.org/2000/svg")
           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-          .attr("width", this.width)
-          .attr("height", this.height)
-          .attr("title", null).attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+          .attr('width', this.width)
+          .attr('height', this.height)
+          .attr('title', null).attr('style', null).attr("class", null).attr("x", null).attr("y", null);
 
       let svg = main.html();
       if (has_workarounds)
@@ -1251,7 +1251,7 @@ class BrowserLayout {
 
       main.append("div").attr("id", this.drawing_divid())
                         .classed("jsroot_draw_area", true)
-                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
+                        .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
 
       if (with_browser) main.append("div").classed("jsroot_browser", true);
 
@@ -1263,7 +1263,7 @@ class BrowserLayout {
       let br = this.main().select(".jsroot_browser");
       if (br.empty()) return;
       let btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
-      btns.style('position',"absolute").style("left","7px").style("top","7px");
+      btns.style('position','absolute').style("left","7px").style("top","7px");
       if (browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
    }
@@ -1279,7 +1279,7 @@ class BrowserLayout {
       if (main.empty()) return;
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
-          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
+          .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('width','250px')
           .style('overflow', 'hidden')
           .style('padding-left','5px')
           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
@@ -1386,7 +1386,7 @@ class BrowserLayout {
       main.insert("div",".jsroot_browser_area")
           .attr("id",id)
           .classed("jsroot_status_area", true)
-          .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
+          .style('position','absolute').style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
           .style('margin',0).style('border',0);
 
       let hsepar = main.insert("div",".jsroot_browser_area")

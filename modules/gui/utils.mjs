@@ -26,7 +26,7 @@ function showProgress(msg, tmout) {
    if (box.empty()) {
       box = d3_select(document.body)
               .append("div").attr("id", id)
-              .attr("style", "position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;");
+              .attr('style', "position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;");
       box.append("p");
    }
 
@@ -201,17 +201,17 @@ const ToolbarIcons = {
 
       let svg = group.append("svg:svg")
                      .attr("class", "jsroot_svg_toolbar_btn")
-                     .attr("width", size + "px")
-                     .attr("height", size + "px")
+                     .attr('width', size + "px")
+                     .attr('height', size + "px")
                      .attr("viewBox", "0 0 512 512")
-                     .style("overflow", "hidden");
+                     .style('overflow', 'hidden');
 
       if ('recs' in btn) {
          let rec = {};
          for (let n = 0; n < btn.recs.length; ++n) {
             Object.assign(rec, btn.recs[n]);
             svg.append('rect').attr("x", rec.x).attr("y", rec.y)
-               .attr("width", rec.w).attr("height", rec.h)
+               .attr('width', rec.w).attr('height', rec.h)
                .style("fill", rec.f);
          }
       } else {
@@ -219,7 +219,7 @@ const ToolbarIcons = {
       }
 
       //  special rect to correctly get mouse events for whole button area
-      svg.append("svg:rect").attr("x", 0).attr("y", 0).attr("width", 512).attr("height", 512)
+      svg.append("svg:rect").attr("x", 0).attr("y", 0).attr('width', 512).attr('height', 512)
          .style('opacity', 0).style('fill', "none").style("pointer-events", "visibleFill")
          .append("svg:title").text(title);
 
@@ -355,7 +355,7 @@ function injectStyle(code, node, tag) {
          return true;
    }
 
-   let element = document.createElement("style");
+   let element = document.createElement('style');
    if (tag) element.setAttribute("tag", tag);
    element.innerHTML = code;
    (node || document.head).appendChild(element);

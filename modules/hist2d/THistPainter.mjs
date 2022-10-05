@@ -1255,12 +1255,12 @@ class THistPainter extends ObjectPainter {
 
       let histo = this.getHisto(), st = gStyle,
           pp = this.getPadPainter(),
-          tpainter = pp?.findPainterFor(null, "title"),
+          tpainter = pp?.findPainterFor(null, 'title'),
           pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       if (!pt && typeof pp?.findInPrimitives == 'function')
-         pt = pp.findInPrimitives("title", "TPaveText");
+         pt = pp.findInPrimitives('title', "TPaveText");
 
       if (pt) {
          pt.Clear();
@@ -1268,7 +1268,7 @@ class THistPainter extends ObjectPainter {
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = create("TPaveText");
-         Object.assign(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
          return TPavePainter.draw(this.getDom(), pt, "postitle").then(tp => {
@@ -1286,7 +1286,7 @@ class THistPainter extends ObjectPainter {
 
       let histo = this.getHisto(),
           pp = this.getPadPainter(),
-          tpainter = pp?.findPainterFor(null, "title");
+          tpainter = pp?.findPainterFor(null, 'title');
 
       if (!histo || !tpainter) return null;
 

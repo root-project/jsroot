@@ -28,14 +28,14 @@ class TWebPaintingPainter extends ObjectPainter {
          if (kind == lastkind) return;
 
          if (lastpath) {
-            lastpath.attr("d", d); // flush previous
+            lastpath.attr('d', d); // flush previous
             d = ""; lastpath = null; lastkind = "none";
          }
 
          if (!kind) return;
 
          lastkind = kind;
-         lastpath = this.draw_g.append("svg:path");
+         lastpath = this.draw_g.append('svg:path');
          switch (kind) {
             case "f": lastpath.call(this.fillatt.func); break;
             case "l": lastpath.call(this.lineatt.func).style('fill', 'none'); break;

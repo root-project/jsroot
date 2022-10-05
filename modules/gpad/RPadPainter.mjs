@@ -292,7 +292,7 @@ class RPadPainter extends RObjectPainter {
          if (!isBatchMode() && !this.online_canvas)
             svg.append("svg:title").text("ROOT canvas");
 
-         frect = svg.append("svg:path").attr("class","canvas_fillrect");
+         frect = svg.append('svg:path').attr("class","canvas_fillrect");
          if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
@@ -315,7 +315,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (this._fixed_size) {
-            render_to.style("overflow","auto");
+            render_to.style('overflow',"auto");
             rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
             if (!rect.width || !rect.height)
                rect = getElementRect(render_to);
@@ -337,15 +337,15 @@ class RPadPainter extends RObjectPainter {
       if (this._fixed_size) {
          svg.attr("x", 0)
             .attr("y", 0)
-            .attr("width", rect.width)
-            .attr("height", rect.height)
-            .style("position", "absolute");
+            .attr('width', rect.width)
+            .attr('height', rect.height)
+            .style('position', 'absolute');
       } else {
         svg.attr("x", 0)
            .attr("y", 0)
-           .style("width", "100%")
-           .style("height", "100%")
-           .style("position", "absolute")
+           .style('width', '100%')
+           .style('height', '100%')
+           .style('position', 'absolute')
            .style("left", 0)
            .style("top", 0)
            .style("right", 0)
@@ -367,7 +367,7 @@ class RPadPainter extends RObjectPainter {
       this._pad_width = rect.width;
       this._pad_height = rect.height;
 
-      frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
+      frect.attr('d', `M0,0H${rect.width}V${rect.height}H0Z`)
            .call(this.fillatt.func);
 
       this._fast_drawing = settings.SmallPad && ((rect.width < settings.SmallPad.width) || (rect.height < settings.SmallPad.height));
@@ -461,7 +461,7 @@ class RPadPainter extends RObjectPainter {
          if (!isBatchMode())
             svg_pad.append("svg:title").text("ROOT subpad");
 
-         svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
+         svg_rect = svg_pad.append('svg:path').attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
          if (!isBatchMode())
@@ -489,8 +489,8 @@ class RPadPainter extends RObjectPainter {
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
              .attr("x", x)    // due to svg
              .attr("y", y)   // due to svg
-             .attr("width", w)    // due to svg
-             .attr("height", h)   // due to svg
+             .attr('width', w)    // due to svg
+             .attr('height', h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
@@ -501,7 +501,7 @@ class RPadPainter extends RObjectPainter {
       this._pad_width = w;
       this._pad_height = h;
 
-      svg_rect.attr("d", `M0,0H${w}V${h}H0Z`)
+      svg_rect.attr('d', `M0,0H${w}V${h}H0Z`)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
@@ -1263,8 +1263,8 @@ class RPadPainter extends RObjectPainter {
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
                         .attr("x", sz2.x)
                         .attr("y", sz2.y)
-                        .attr("width", canvas.width)
-                        .attr("height", canvas.height)
+                        .attr('width', canvas.width)
+                        .attr('height', canvas.height)
                         .attr("href", dataUrl);
 
       }, "pads");

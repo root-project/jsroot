@@ -308,16 +308,16 @@ class TF1Painter extends ObjectPainter {
          let path = buildSvgPath("bezier", this.bins, h0, 2);
 
          if (!this.lineatt.empty())
-            this.draw_g.append("svg:path")
+            this.draw_g.append('svg:path')
                 .attr("class", "line")
-                .attr("d", path.path)
+                .attr('d', path.path)
                 .style("fill", "none")
                 .call(this.lineatt.func);
 
          if (!this.fillatt.empty())
-            this.draw_g.append("svg:path")
+            this.draw_g.append('svg:path')
                 .attr("class", "area")
-                .attr("d", path.path + path.close)
+                .attr('d', path.path + path.close)
                 .call(this.fillatt.func);
       }
    }

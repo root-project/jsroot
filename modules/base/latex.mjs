@@ -390,7 +390,7 @@ function parseLatex(node, arg, label, curr) {
    };
 
    const createPath = (gg, dofill) => {
-      return gg.append("svg:path")
+      return gg.append('svg:path')
                .style("stroke", dofill ? "none" : (curr.color || arg.color))
                .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
                .style("fill", dofill ? (curr.color || arg.color) : "none");
@@ -500,15 +500,15 @@ function parseLatex(node, arg, label, curr) {
          positionGNode(subpos, xpos, 0, true);
 
          switch(found.name) {
-            case "#check{": createPath(gg).attr("d",`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
-            case "#acute{": createPath(gg).attr("d",`M${w5},${y1}l${dy},${-dy}`); break;
-            case "#grave{": createPath(gg).attr("d",`M${w5},${y1}l${-dy},${-dy}`); break;
-            case "#dot{": createPath(gg, true).attr("d",`M${w5-dy2},${y1}${dot}`); break;
-            case "#ddot{": createPath(gg, true).attr("d",`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
-            case "#tilde{": createPath(gg).attr("d",`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
-            case "#slash{": createPath(gg).attr("d",`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
-            case "#vec{": createPath(gg).attr("d",`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
-            default: createPath(gg).attr("d",`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
+            case "#check{": createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+            case "#acute{": createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
+            case "#grave{": createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
+            case "#dot{": createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
+            case "#ddot{": createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
+            case "#tilde{": createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
+            case "#slash{": createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
+            case "#vec{": createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
+            default: createPath(gg).attr('d',`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
          }
 
          shiftX(subpos.rect.width);
@@ -542,7 +542,7 @@ function parseLatex(node, arg, label, curr) {
 
          positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
-         if (path) path.attr("d", `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
+         if (path) path.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
          shiftX(w);
 
@@ -622,10 +622,10 @@ function parseLatex(node, arg, label, curr) {
 
          if (found.name == "#sum") {
             x_up = x_low = w/2;
-            path.attr("d",`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
+            path.attr('d',`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
          } else {
             x_up = 3*r; x_low = r;
-            path.attr("d",`M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+            path.attr('d',`M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
             // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
          }
 
@@ -664,20 +664,20 @@ function parseLatex(node, arg, label, curr) {
 
          switch (found.braces) {
             case "||":
-               path1.attr("d",`M${w},${r_y1}v${dy}`);
-               path2.attr("d",`M${3*w+r_width},${r_y1}v${dy}`);
+               path1.attr('d',`M${w},${r_y1}v${dy}`);
+               path2.attr('d',`M${3*w+r_width},${r_y1}v${dy}`);
                break;
             case "[]":
-               path1.attr("d",`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
-               path2.attr("d",`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
+               path1.attr('d',`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
+               path2.attr('d',`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
             case "{}":
-               path1.attr("d",`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
-               path2.attr("d",`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
+               path1.attr('d',`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
+               path2.attr('d',`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
                break;
             default: // ()
-               path1.attr("d",`M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
-               path2.attr("d",`M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
+               path1.attr('d',`M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
+               path2.attr('d',`M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
          }
 
          positionGNode(subpos, 2*w, 0, true);
@@ -707,9 +707,9 @@ function parseLatex(node, arg, label, curr) {
          if (subpos.deco) {
             let path = createPath(gg), r_width = Math.round(r.width);
             switch(subpos.deco) {
-               case "underline": path.attr("d",`M0,${Math.round(r.y2)}h${r_width}`); break;
-               case "overline": path.attr("d",`M0,${Math.round(r.y1)}h${r_width}`); break;
-               case "line-through": path.attr("d",`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+               case "underline": path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
+               case "overline": path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
+               case "line-through": path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
             }
          }
 
@@ -823,7 +823,7 @@ function parseLatex(node, arg, label, curr) {
          if (subpos0)
             positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
 
-         path.attr("d", `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${-h+f2}h${Math.round(h*0.2+w)}v${h1}`);
+         path.attr('d', `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${-h+f2}h${Math.round(h*0.2+w)}v${h1}`);
 
          positionGNode(subpos, h*0.4, 0, true);
 
@@ -1222,9 +1222,9 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
    };
 
-   let width = transform(svg.getAttribute("width")),
-       height = transform(svg.getAttribute("height")),
-       valign = svg.getAttribute("style");
+   let width = transform(svg.getAttribute('width')),
+       height = transform(svg.getAttribute('height')),
+       valign = svg.getAttribute('style');
 
    if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
       let p = valign.indexOf("ex;");
@@ -1236,9 +1236,9 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
    height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
 
-   svg.setAttribute("width", width);
+   svg.setAttribute('width', width);
    svg.setAttribute('height', height);
-   svg.removeAttribute("style");
+   svg.removeAttribute('style');
 
    if (!isNodeJs()) {
       let box = getElementRect(mj_node, 'bbox');
@@ -1254,14 +1254,14 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
 /** @summary Apply attributes to mathjax drawing
   * @private */
 function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_factor) {
-   let mw = parseInt(svg.attr("width")),
-       mh = parseInt(svg.attr("height"));
+   let mw = parseInt(svg.attr('width')),
+       mh = parseInt(svg.attr('height'));
 
    if (Number.isInteger(mh) && Number.isInteger(mw)) {
       if (svg_factor > 0.) {
          mw = mw / svg_factor;
          mh = mh / svg_factor;
-         svg.attr("width", Math.round(mw)).attr("height", Math.round(mh));
+         svg.attr('width', Math.round(mw)).attr('height', Math.round(mh));
       }
    } else {
       let box = getElementRect(mj_node, 'bbox'); // sizes before rotation
