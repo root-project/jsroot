@@ -485,7 +485,7 @@ class TGeoPainter extends ObjectPainter {
          { name: 'Default', value: "dflt" },
          { name: 'Raytraicing', value: "ray" },
          { name: 'Boundary box', value: "box" },
-         { name: 'Mesh size', value: "size" },
+         { name: 'Mesh size', value: 'size' },
          { name: 'Central point', value: "pnt" }
        ];
 
@@ -829,7 +829,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check("DEPTHRAY") || d.check("DRAY")) res.depthMethod = "ray";
       if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
       if (d.check("DEPTHPNT") || d.check("DPNT")) res.depthMethod = "pnt";
-      if (d.check("DEPTHSIZE") || d.check("DSIZE")) res.depthMethod = "size";
+      if (d.check("DEPTHSIZE") || d.check("DSIZE")) res.depthMethod = 'size';
       if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "dflt";
 
       if (d.check("ZOOM", true)) res.zoom = d.partAsFloat(0, 100) / 100;
@@ -1468,7 +1468,7 @@ class TGeoPainter extends ObjectPainter {
                } else
                   continue;
 
-               menu.add((many ? "sub:" : "header:") + hdr, itemname, arg => this.activateInBrowser([arg], true));
+               menu.add((many ? 'sub:' : "header:") + hdr, itemname, arg => this.activateInBrowser([arg], true));
 
                menu.add("Browse", itemname, arg => this.activateInBrowser([arg], true));
 
@@ -1483,7 +1483,7 @@ class TGeoPainter extends ObjectPainter {
                      menu.painter.render3D();
                   });
 
-                  if (many) menu.add("endsub:");
+                  if (many) menu.add('endsub:');
 
                   continue;
                }
@@ -1539,7 +1539,7 @@ class TGeoPainter extends ObjectPainter {
                   this.testGeomChanges();// while many volumes may disappear, recheck all of them
                });
 
-               if (many) menu.add("endsub:");
+               if (many) menu.add('endsub:');
             }
          }
          menu.show();
@@ -1735,7 +1735,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Configure depth method, used for render order production.
-     * @param {string} method - Allowed values: "ray", "box","pnt", "size", "dflt" */
+     * @param {string} method - Allowed values: "ray", "box","pnt", 'size', "dflt" */
    setDepthMethod(method) {
       if (this.ctrl)
          this.ctrl.depthMethod = method;

@@ -41,7 +41,7 @@
             menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("bottom").then(() => hpainter.getObject("hpx")).then(res => menu.painter.drawInSpecialArea(res.obj, "*H")));
             menu.add("Show hprof", () => menu.painter.provideSpecialDrawArea("left").then(() => hpainter.getObject("hprof")).then(res => menu.painter.drawInSpecialArea(res.obj, "E")));
             menu.add("Close extra area", () => menu.painter.provideSpecialDrawArea());
-            menu.add("endsub:");
+            menu.add('endsub:');
          }
          return this.oldFillHistContextMenu(menu);
       }

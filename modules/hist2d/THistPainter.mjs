@@ -1654,7 +1654,7 @@ class THistPainter extends ObjectPainter {
                menu.add("Z", () => this.changeUserRange(menu, "Z"));
             else
                menu.add("Values", () => this.changeValuesRange(menu));
-            menu.add("endsub:");
+            menu.add('endsub:');
          }
 
          if (typeof this.fillHistContextMenu == 'function')

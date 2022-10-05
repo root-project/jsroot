@@ -924,7 +924,7 @@ class TPavePainter extends ObjectPainter {
          AddStatOpt(6, "Integral");
          AddStatOpt(7, "Skewness");
          AddStatOpt(8, "Kurtosis");
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("sub:SetOptFit", () => {
             menu.input("Enter OptStat", pave.fOptFit, "int").then(fmt => {
@@ -936,7 +936,7 @@ class TPavePainter extends ObjectPainter {
          AddStatOpt(11, "Par errors");
          AddStatOpt(12, "Chi square / NDF");
          AddStatOpt(13, "Probability");
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("separator");
       } else if (pave.fName === 'title') {

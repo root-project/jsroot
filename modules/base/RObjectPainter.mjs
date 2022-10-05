@@ -219,7 +219,7 @@ class RObjectPainter extends ObjectPainter {
       if (!prefix || (typeof prefix != 'string')) prefix = "marker_";
 
       let color = this.v7EvalColor(prefix + 'color', 'black'),
-          size = this.v7EvalAttr(prefix + "size", 0.01),
+          size = this.v7EvalAttr(prefix + 'size', 0.01),
           style = this.v7EvalAttr(prefix + 'style', 1),
           refsize = 1;
       if (size < 1) {

@@ -87,7 +87,7 @@ class RH2Painter extends RHistPainter {
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
       for (let k = 0; k < kinds.length; ++k)
          menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-      menu.add("endsub:");
+      menu.add('endsub:');
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 

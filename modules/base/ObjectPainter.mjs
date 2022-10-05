@@ -1307,7 +1307,7 @@ class ObjectPainter extends BasePainter {
                let item = items[n];
 
                if (item.fClassName && lastclname && (lastclname != item.fClassName)) {
-                  _menu.add("endsub:");
+                  _menu.add('endsub:');
                   lastclname = "";
                }
                if (lastclname != item.fClassName) {
@@ -1315,7 +1315,7 @@ class ObjectPainter extends BasePainter {
                   let p = lastclname.lastIndexOf("::"),
                       shortname = (p > 0) ? lastclname.slice(p+2) : lastclname;
 
-                  _menu.add("sub:" + shortname.replace(/[<>]/g,"_"));
+                  _menu.add('sub:' + shortname.replace(/[<>]/g,"_"));
                }
 
                if ((item.fChecked === undefined) || (item.fChecked < 0))
@@ -1324,7 +1324,7 @@ class ObjectPainter extends BasePainter {
                   _menu.addchk(item.fChecked, item.fName, n, DoExecMenu);
             }
 
-            if (lastclname) _menu.add("endsub:");
+            if (lastclname) _menu.add('endsub:');
          }
 
          _resolveFunc(_menu);

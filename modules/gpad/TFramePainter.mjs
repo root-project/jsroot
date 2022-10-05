@@ -2414,7 +2414,7 @@ class TFramePainter extends ObjectPainter {
             menu.addchk(pad["fLog" + kind[0]] == 0, "linear", () => this.changeAxisLog(kind[0], 0));
             menu.addchk(pad["fLog" + kind[0]] == 1, "log", () => this.changeAxisLog(kind[0], 1));
             menu.addchk(pad["fLog" + kind[0]] == 2, "log2", () => this.changeAxisLog(kind[0], 2));
-            menu.add("endsub:");
+            menu.add('endsub:');
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), "More log",
                () => { faxis.InvertBit(EAxisBits.kMoreLogLabels); this.redrawPad(); });

@@ -3474,7 +3474,7 @@ function cleanupShape(shape) {
  * @desc depending from provided method sort differently objects
  * @param toplevel - top element
  * @param origin - camera position used to provide sorting
- * @param method - name of sorting method like "pnt", "ray", "size", "dflt"  */
+ * @param method - name of sorting method like "pnt", "ray", 'size', "dflt"  */
 function produceRenderOrder(toplevel, origin, method, clones) {
 
    let raycast = new Raycaster();

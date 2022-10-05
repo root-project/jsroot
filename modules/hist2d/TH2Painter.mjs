@@ -160,7 +160,7 @@ class TH2Painter extends THistPainter {
          if (this.is_projection) kinds.push("Off");
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("Auto zoom-in", () => this.autoZoom());
       }
