@@ -613,7 +613,7 @@ function igam(a, x) {
 function igami(a, y0) {
    // check the domain
    if (a <= 0) {
-      console.error("igami : Wrong domain for parameter a (must be > 0)");
+      console.error('igami : Wrong domain for parameter a (must be > 0)');
       return 0;
    }
    if (y0 <= 0) {
@@ -1146,11 +1146,11 @@ function incbi(aa,bb,yy0) {
 
    // check the domain
    if (aa <= 0) {
-      // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter a (must be > 0)");
+      // MATH_ERROR_MSG('Cephes::incbi','Wrong domain for parameter a (must be > 0)');
       return 0;
    }
    if (bb <= 0) {
-      // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter b (must be > 0)");
+      // MATH_ERROR_MSG('Cephes::incbi','Wrong domain for parameter b (must be > 0)');
       return 0;
    }
 
@@ -1326,13 +1326,13 @@ function incbi(aa,bb,yy0) {
                dir -= 1;
             }
          }
-         //math_error( "incbi", PLOSS );
+         //math_error( 'incbi', PLOSS );
          if( x0 >= 1.0 ) {
             x = 1.0 - kMACHEP;
             return process_done(); //goto done;
          }
          if( x <= 0.0 ) {
-            //math_error( "incbi", UNDERFLOW );
+            //math_error( 'incbi', UNDERFLOW );
             x = 0.0;
             return process_done(); //goto done;
          }
