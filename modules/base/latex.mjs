@@ -193,7 +193,7 @@ const translateLaTeX = (str, more) => {
    while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
       str = str.slice(1, str.length - 1);
 
-   return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, "");
+   return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, '');
 };
 
 // array with relative width of base symbols from range 32..126
@@ -224,42 +224,42 @@ function approximateLabelWidth(label, font, fsize) {
 /** @summary array defines features supported by latex parser, used by both old and new parsers
   * @private */
 const latex_features = [
-   { name: "#it{" }, // italic
-   { name: "#bf{" }, // bold
-   { name: "#underline{", deco: "underline" }, // underline
-   { name: "#overline{", deco: "overline" }, // overline
-   { name: "#strike{", deco: "line-through" }, // line through
-   { name: "#kern[", arg: 'float' }, // horizontal shift
-   { name: "#lower[", arg: 'float' },  // vertical shift
-   { name: "#scale[", arg: 'float' },  // font scale
-   { name: "#color[", arg: 'int' },   // font color
-   { name: "#font[", arg: 'int' },    // font face
-   { name: "_{", low_up: "low" },  // subscript
-   { name: "^{", low_up: "up" },   // superscript
-   { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
-   { name: "#hat{", accent: "\u02C6", hasw: true }, // "\u0302"
-   { name: "#check{", accent: "\u02C7", hasw: true }, // "\u030C"
-   { name: "#acute{", accent: "\u02CA" }, // "\u0301"
-   { name: "#grave{", accent: "\u02CB" }, // "\u0300"
-   { name: "#dot{", accent: "\u02D9" }, // "\u0307"
-   { name: "#ddot{", accent: "\u02BA", hasw: true }, // "\u0308"
-   { name: "#tilde{", accent: "\u02DC", hasw: true }, // "\u0303"
-   { name: "#slash{", accent: "\u2215" }, // "\u0337"
-   { name: "#vec{", accent: "\u02ED", hasw: true }, // "\u0350" arrowhead
-   { name: "#frac{", twolines: 'line' },
-   { name: "#splitline{", twolines: true },
-   { name: "#sqrt[", arg: 'int', sqrt: true }, // root with arbitrary power
-   { name: "#sqrt{", sqrt: true },             // square root
-   { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
-   { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
-   { name: "#left[", right: "#right]", braces: "[]" },
-   { name: "#left(", right: "#right)", braces: "()" },
-   { name: "#left{", right: "#right}", braces: "{}" },
-   { name: "#left|", right: "#right|", braces: "||" },
-   { name: "#[]{", braces: "[]" },
-   { name: "#(){", braces: "()" },
-   { name: "#{}{", braces: "{}" },
-   { name: "#||{", braces: "||" }
+   { name: '#it{' }, // italic
+   { name: '#bf{' }, // bold
+   { name: '#underline{', deco: 'underline' }, // underline
+   { name: '#overline{', deco: 'overline' }, // overline
+   { name: '#strike{', deco: 'line-through' }, // line through
+   { name: '#kern[', arg: 'float' }, // horizontal shift
+   { name: '#lower[', arg: 'float' },  // vertical shift
+   { name: '#scale[', arg: 'float' },  // font scale
+   { name: '#color[', arg: 'int' },   // font color
+   { name: '#font[', arg: 'int' },    // font face
+   { name: '_{', low_up: 'low' },  // subscript
+   { name: '^{', low_up: 'up' },   // superscript
+   { name: '#bar{', deco: 'overline' /* accent: '\u02C9' */ }, // '\u0305'
+   { name: '#hat{', accent: '\u02C6', hasw: true }, // '\u0302'
+   { name: '#check{', accent: '\u02C7', hasw: true }, // '\u030C'
+   { name: '#acute{', accent: '\u02CA' }, // '\u0301'
+   { name: '#grave{', accent: '\u02CB' }, // '\u0300'
+   { name: '#dot{', accent: '\u02D9' }, // '\u0307'
+   { name: '#ddot{', accent: '\u02BA', hasw: true }, // '\u0308'
+   { name: '#tilde{', accent: '\u02DC', hasw: true }, // '\u0303'
+   { name: '#slash{', accent: '\u2215' }, // '\u0337'
+   { name: '#vec{', accent: '\u02ED', hasw: true }, // '\u0350' arrowhead
+   { name: '#frac{', twolines: 'line' },
+   { name: '#splitline{', twolines: true },
+   { name: '#sqrt[', arg: 'int', sqrt: true }, // root with arbitrary power
+   { name: '#sqrt{', sqrt: true },             // square root
+   { name: '#sum', special: '\u2211', w: 0.8, h: 0.9 },
+   { name: '#int', special: '\u222B', w: 0.3, h: 1.0 },
+   { name: '#left[', right: '#right]', braces: '[]' },
+   { name: '#left(', right: '#right)', braces: '()' },
+   { name: '#left{', right: '#right}', braces: '{}' },
+   { name: '#left|', right: '#right|', braces: '||' },
+   { name: '#[]{', braces: '[]' },
+   { name: '#(){', braces: '()' },
+   { name: '#{}{', braces: '{}' },
+   { name: '#||{', braces: '||' }
 ];
 
 // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm, starts from 33
@@ -269,7 +269,7 @@ const symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0
 const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505];
 
 function replaceSymbols(s, kind) {
-   let res = "", m = kind == "Wingdings" ? wingdingsMap : symbolsMap;
+   let res = '', m = kind == 'Wingdings' ? wingdingsMap : symbolsMap;
    for (let k = 0; k < s.length; ++k) {
       let code = s.charCodeAt(k),
           new_code = (code > 32) ? m[code-33] : 0;
@@ -419,7 +419,7 @@ function parseLatex(node, arg, label, curr) {
          if ((s.length > 0) || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
-                elem = g.append("svg:text");
+                elem = g.append('svg:text');
 
             if (alone && !curr.g) curr.g = elem;
 
@@ -438,7 +438,7 @@ function parseLatex(node, arg, label, curr) {
 
             // set font size directly to element to avoid complex control
             if (curr.fisze !== curr.font.size)
-               elem.attr("font-size", Math.round(curr.fsize));
+               elem.attr('font-size', Math.round(curr.fsize));
 
             if (curr.font && curr.font.isSymbol)
                elem.text(replaceSymbols(s, curr.font.isSymbol));
@@ -500,14 +500,14 @@ function parseLatex(node, arg, label, curr) {
          positionGNode(subpos, xpos, 0, true);
 
          switch(found.name) {
-            case "#check{": createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
-            case "#acute{": createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
-            case "#grave{": createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
-            case "#dot{": createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
-            case "#ddot{": createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
-            case "#tilde{": createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
-            case "#slash{": createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
-            case "#vec{": createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
+            case '#check{': createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+            case '#acute{': createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
+            case '#grave{': createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
+            case '#dot{': createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
+            case '#ddot{': createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
+            case '#tilde{': createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
+            case '#slash{': createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
+            case '#vec{': createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
             default: createPath(gg).attr('d',`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
          }
 
@@ -620,7 +620,7 @@ function parseLatex(node, arg, label, curr) {
              gg = createGG(), path = createPath(gg),
              h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
 
-         if (found.name == "#sum") {
+         if (found.name == '#sum') {
             x_up = x_low = w/2;
             path.attr('d',`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
          } else {
@@ -663,15 +663,15 @@ function parseLatex(node, arg, label, curr) {
              r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
 
          switch (found.braces) {
-            case "||":
+            case '||':
                path1.attr('d',`M${w},${r_y1}v${dy}`);
                path2.attr('d',`M${3*w+r_width},${r_y1}v${dy}`);
                break;
-            case "[]":
+            case '[]':
                path1.attr('d',`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
                path2.attr('d',`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
-            case "{}":
+            case '{}':
                path1.attr('d',`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
                path2.attr('d',`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
                break;
@@ -707,9 +707,9 @@ function parseLatex(node, arg, label, curr) {
          if (subpos.deco) {
             let path = createPath(gg), r_width = Math.round(r.width);
             switch(subpos.deco) {
-               case "underline": path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
-               case "overline": path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
-               case "line-through": path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+               case 'underline': path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
+               case 'overline': path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
+               case 'line-through': path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
             }
          }
 
@@ -720,13 +720,13 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if (found.name == "#bf{" || found.name == "#it{") {
+      if (found.name == '#bf{' || found.name == '#it{') {
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
          let subpos = createSubPos();
 
-         if (found.name == "#bf{")
+         if (found.name == '#bf{')
             subpos.bold = !subpos.bold;
          else
             subpos.italic = !subpos.italic;
@@ -743,7 +743,7 @@ function parseLatex(node, arg, label, curr) {
       let foundarg = 0;
 
       if (found.arg) {
-         let pos = label.indexOf("]{");
+         let pos = label.indexOf(']{');
          if (pos < 0) { console.log('missing argument for ', found.name); return false; }
          foundarg = label.slice(0, pos);
          if (found.arg == 'int') {
@@ -756,7 +756,7 @@ function parseLatex(node, arg, label, curr) {
          label = label.slice(pos + 2);
       }
 
-      if ((found.name == "#kern[") || (found.name == "#lower[")) {
+      if ((found.name == '#kern[') || (found.name == '#lower[')) {
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
@@ -765,7 +765,7 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(currG(), arg, sublabel, subpos);
 
          let shiftx = 0, shifty = 0;
-         if (found.name == "kern[") shiftx = foundarg; else shifty = foundarg;
+         if (found.name == 'kern[') shiftx = foundarg; else shifty = foundarg;
 
          positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
@@ -774,16 +774,16 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if ((found.name == "#color[") || (found.name == "#scale[") || (found.name == "#font[")) {
+      if ((found.name == '#color[') || (found.name == '#scale[') || (found.name == '#font[')) {
 
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
          let subpos = createSubPos();
 
-         if (found.name == "#color[")
+         if (found.name == '#color[')
             subpos.color = curr.painter.getColor(foundarg);
-         else if (found.name == "#font[") {
+         else if (found.name == '#font[') {
             subpos.font = new FontHandler(foundarg);
             subpos.ufont = true; // mark that custom font is applied
          } else
@@ -946,103 +946,103 @@ async function loadMathjax() {
 }
 
 const math_symbols_map = {
-      '#LT': "\\langle",
-      '#GT': "\\rangle",
-      '#club': "\\clubsuit",
-      '#spade': "\\spadesuit",
-      '#heart': "\\heartsuit",
-      '#diamond': "\\diamondsuit",
-      '#voidn': "\\wp",
-      '#voidb': "f",
-      '#copyright': "(c)",
-      '#ocopyright': "(c)",
-      '#trademark': "TM",
-      '#void3': "TM",
-      '#oright': "R",
-      '#void1': "R",
-      '#3dots': "\\ldots",
-      '#lbar': "\\mid",
-      '#void8': "\\mid",
-      '#divide': "\\div",
-      '#Jgothic': "\\Im",
-      '#Rgothic': "\\Re",
-      '#doublequote': "\"",
-      '#plus': "+",
-      '#minus': "-",
-      '#\/': "/",
+      '#LT': '\\langle',
+      '#GT': '\\rangle',
+      '#club': '\\clubsuit',
+      '#spade': '\\spadesuit',
+      '#heart': '\\heartsuit',
+      '#diamond': '\\diamondsuit',
+      '#voidn': '\\wp',
+      '#voidb': 'f',
+      '#copyright': '(c)',
+      '#ocopyright': '(c)',
+      '#trademark': 'TM',
+      '#void3': 'TM',
+      '#oright': 'R',
+      '#void1': 'R',
+      '#3dots': '\\ldots',
+      '#lbar': '\\mid',
+      '#void8': '\\mid',
+      '#divide': '\\div',
+      '#Jgothic': '\\Im',
+      '#Rgothic': '\\Re',
+      '#doublequote': '"',
+      '#plus': '+',
+      '#minus': '-',
+      '#\/': '/',
       '#upoint': '.',
-      '#aa': "\\mathring{a}",
-      '#AA': "\\mathring{A}",
-      '#omicron': "o",
-      '#Alpha': "A",
-      '#Beta': "B",
-      '#Epsilon': "E",
-      '#Zeta': "Z",
-      '#Eta': "H",
-      '#Iota': "I",
-      '#Kappa': "K",
-      '#Mu': "M",
-      '#Nu': "N",
-      '#Omicron': "O",
-      '#Rho': "P",
-      '#Tau': "T",
-      '#Chi': "X",
-      '#varomega': "\\varpi",
-      '#corner': "?",
-      '#ltbar': "?",
-      '#bottombar': "?",
-      '#notsubset': "?",
-      '#arcbottom': "?",
-      '#cbar': "?",
-      '#arctop': "?",
-      '#topbar': "?",
-      '#arcbar': "?",
-      '#downleftarrow': "?",
-      '#splitline': "\\genfrac{}{}{0pt}{}",
-      '#it': "\\textit",
-      '#bf': "\\textbf",
-      '#frac': "\\frac",
-      '#left{': "\\lbrace",
-      '#right}': "\\rbrace",
-      '#left\\[': "\\lbrack",
-      '#right\\]': "\\rbrack",
-      '#\\[\\]{': "\\lbrack",
-      ' } ': "\\rbrack",
-      '#\\[': "\\lbrack",
-      '#\\]': "\\rbrack",
-      '#{': "\\lbrace",
-      '#}': "\\rbrace",
-      ' ': "\\;"
+      '#aa': '\\mathring{a}',
+      '#AA': '\\mathring{A}',
+      '#omicron': 'o',
+      '#Alpha': 'A',
+      '#Beta': 'B',
+      '#Epsilon': 'E',
+      '#Zeta': 'Z',
+      '#Eta': 'H',
+      '#Iota': 'I',
+      '#Kappa': 'K',
+      '#Mu': 'M',
+      '#Nu': 'N',
+      '#Omicron': 'O',
+      '#Rho': 'P',
+      '#Tau': 'T',
+      '#Chi': 'X',
+      '#varomega': '\\varpi',
+      '#corner': '?',
+      '#ltbar': '?',
+      '#bottombar': '?',
+      '#notsubset': '?',
+      '#arcbottom': '?',
+      '#cbar': '?',
+      '#arctop': '?',
+      '#topbar': '?',
+      '#arcbar': '?',
+      '#downleftarrow': '?',
+      '#splitline': '\\genfrac{}{}{0pt}{}',
+      '#it': '\\textit',
+      '#bf': '\\textbf',
+      '#frac': '\\frac',
+      '#left{': '\\lbrace',
+      '#right}': '\\rbrace',
+      '#left\\[': '\\lbrack',
+      '#right\\]': '\\rbrack',
+      '#\\[\\]{': '\\lbrack',
+      ' } ': '\\rbrack',
+      '#\\[': '\\lbrack',
+      '#\\]': '\\rbrack',
+      '#{': '\\lbrace',
+      '#}': '\\rbrace',
+      ' ': '\\;'
  };
 
  const mathjax_remap = {
-   'upDelta': "Updelta",
-   'upGamma': "Upgamma",
-   'upLambda': "Uplambda",
-   'upOmega': "Upomega",
-   'upPhi': "Upphi",
-   'upPi': "Uppi",
-   'upPsi': "Uppsi",
-   'upSigma': "Upsigma",
-   'upTheta': "Uptheta",
-   'upUpsilon': "Upupsilon",
-   'upXi': "Upxi",
-   'notcong': "ncong",
-   'notgeq': "ngeq",
-   'notgr': "ngtr",
-   'notless': "nless",
-   'notleq': "nleq",
-   'notsucc': "nsucc",
-   'notprec': "nprec",
-   'notsubseteq': "nsubseteq",
-   'notsupseteq': "nsupseteq",
-   'openclubsuit': "clubsuit",
-   'openspadesuit': "spadesuit",
-   'dasharrow': "dashrightarrow",
-   'comp': "circ",
-   'iiintop': "iiint",
-   'iintop': "iint",
-   'ointop': "oint"
+   'upDelta': 'Updelta',
+   'upGamma': 'Upgamma',
+   'upLambda': 'Uplambda',
+   'upOmega': 'Upomega',
+   'upPhi': 'Upphi',
+   'upPi': 'Uppi',
+   'upPsi': 'Uppsi',
+   'upSigma': 'Upsigma',
+   'upTheta': 'Uptheta',
+   'upUpsilon': 'Upupsilon',
+   'upXi': 'Upxi',
+   'notcong': 'ncong',
+   'notgeq': 'ngeq',
+   'notgr': 'ngtr',
+   'notless': 'nless',
+   'notleq': 'nleq',
+   'notsucc': 'nsucc',
+   'notprec': 'nprec',
+   'notsubseteq': 'nsubseteq',
+   'notsupseteq': 'nsupseteq',
+   'openclubsuit': 'clubsuit',
+   'openspadesuit': 'spadesuit',
+   'dasharrow': 'dashrightarrow',
+   'comp': 'circ',
+   'iiintop': 'iiint',
+   'iintop': 'iint',
+   'ointop': 'oint'
  };
 
  const mathjax_unicode = {
@@ -1143,7 +1143,7 @@ const math_symbols_map = {
    'slashint': 0x2A0F
  };
 
-const mathjax_asis = ['"', "'", "`", "=", "~"];
+const mathjax_asis = ['"', "'", '`', '=', '~'];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -1155,12 +1155,12 @@ function translateMath(str, kind, color, painter) {
 
       for (let x in symbols_map)
          if (x.length > 2)
-            str = str.replace(new RegExp(x, 'g'), "\\" + x.slice(1));
+            str = str.replace(new RegExp(x, 'g'), '\\' + x.slice(1));
 
       // replace all #color[]{} occurances
-      let clean = "", first = true;
+      let clean = '', first = true;
       while (str) {
-         let p = str.indexOf("#color[");
+         let p = str.indexOf('#color[');
          if ((p < 0) && first) { clean = str; break; }
          first = false;
          if (p != 0) {
@@ -1170,7 +1170,7 @@ function translateMath(str, kind, color, painter) {
          }
 
          str = str.slice(p + 7);
-         p = str.indexOf("]{");
+         p = str.indexOf(']{');
          if (p <= 0) break;
          let colindx = parseInt(str.slice(0, p));
          if (!Number.isInteger(colindx)) break;
@@ -1185,14 +1185,14 @@ function translateMath(str, kind, color, painter) {
          let part = str.slice(0, p);
          str = str.slice(p + 1);
          if (part)
-            clean += "\\color{" + col + '}{' + part + "}";
+            clean += `\\color{${col}}{${part}}`;
       }
 
       str = clean;
    } else {
-      if (str == "\\^") str = "\\unicode{0x5E}";
-      if (str == "\\vec") str = "\\unicode{0x2192}";
-      str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
+      if (str == '\\^') str = '\\unicode{0x5E}';
+      if (str == '\\vec') str = '\\unicode{0x2192}';
+      str = str.replace(/\\\./g, '\\unicode{0x2E}').replace(/\\\^/g, '\\hat');
       for (let x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
       for(let x in mathjax_asis)
@@ -1204,11 +1204,11 @@ function translateMath(str, kind, color, painter) {
    if (typeof color != 'string') return str;
 
    // MathJax SVG converter use colors in normal form
-   //if (color.indexOf("rgb(") >= 0)
-   //   color = color.replace(/rgb/g, "[RGB]")
+   //if (color.indexOf('rgb(') >= 0)
+   //   color = color.replace(/rgb/g, '[RGB]')
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');
-   return "\\color{" + color + '}{' + str + "}";
+   return `\\color{${color}}{${str}}`;
 }
 
 /** @summary Workaround to fix size attributes in MathJax SVG
@@ -1216,7 +1216,7 @@ function translateMath(str, kind, color, painter) {
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
       if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
-      let p = value.indexOf("ex");
+      let p = value.indexOf('ex');
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
@@ -1226,8 +1226,8 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
        height = transform(svg.getAttribute('height')),
        valign = svg.getAttribute('style');
 
-   if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
-      let p = valign.indexOf("ex;");
+   if (valign && (valign.length > 18) && valign.indexOf('vertical-align:') == 0) {
+      let p = valign.indexOf('ex;');
       valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
    } else {
       valign = null;
