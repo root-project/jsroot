@@ -38,8 +38,8 @@ class TH1Painter extends THistPainter {
       if (!when_axis_changed)
          this.extractAxesProperties(1);
 
-      let left = this.getSelectIndex('x', "left"),
-          right = this.getSelectIndex('x', "right");
+      let left = this.getSelectIndex('x', 'left'),
+          right = this.getSelectIndex('x', 'right');
 
       if (when_axis_changed) {
          if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
@@ -153,8 +153,8 @@ class TH1Painter extends THistPainter {
    countStat(cond) {
       let profile = this.isTProfile(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
-          left = this.getSelectIndex('x', "left"),
-          right = this.getSelectIndex('x', "right"),
+          left = this.getSelectIndex('x', 'left'),
+          right = this.getSelectIndex('x', 'right'),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
@@ -231,43 +231,43 @@ class TH1Painter extends THistPainter {
       if (this.isTProfile()) {
 
          if (print_entries > 0)
-            stat.addText("Entries = " + stat.format(data.entries,"entries"));
+            stat.addText('Entries = ' + stat.format(data.entries,'entries'));
 
          if (print_mean > 0) {
-            stat.addText("Mean = " + stat.format(data.meanx));
-            stat.addText("Mean y = " + stat.format(data.meany));
+            stat.addText('Mean = ' + stat.format(data.meanx));
+            stat.addText('Mean y = ' + stat.format(data.meany));
          }
 
          if (print_rms > 0) {
-            stat.addText("Std Dev = " + stat.format(data.rmsx));
-            stat.addText("Std Dev y = " + stat.format(data.rmsy));
+            stat.addText('Std Dev = ' + stat.format(data.rmsx));
+            stat.addText('Std Dev y = ' + stat.format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.addText("Entries = " + stat.format(data.entries, "entries"));
+            stat.addText('Entries = ' + stat.format(data.entries, 'entries'));
 
          if (print_mean > 0)
-            stat.addText("Mean = " + stat.format(data.meanx));
+            stat.addText('Mean = ' + stat.format(data.meanx));
 
          if (print_rms > 0)
-            stat.addText("Std Dev = " + stat.format(data.rmsx));
+            stat.addText('Std Dev = ' + stat.format(data.rmsx));
 
          if (print_under > 0)
-            stat.addText("Underflow = " + stat.format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
+            stat.addText('Underflow = ' + stat.format((histo.fArray.length > 0) ? histo.fArray[0] : 0, 'entries'));
 
          if (print_over > 0)
-            stat.addText("Overflow = " + stat.format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
+            stat.addText('Overflow = ' + stat.format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, 'entries'));
 
          if (print_integral > 0)
-            stat.addText("Integral = " + stat.format(data.integral, "entries"));
+            stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
          if (print_skew > 0)
-            stat.addText("Skew = <not avail>");
+            stat.addText('Skew = <not avail>');
 
          if (print_kurt > 0)
-            stat.addText("Kurt = <not avail>");
+            stat.addText('Kurt = <not avail>');
       }
 
       if (dofit) stat.fillFunctionStat(this.findFunction('TF1'), dofit);
@@ -280,12 +280,12 @@ class TH1Painter extends THistPainter {
 
       this.createG(true);
 
-      let left = this.getSelectIndex('x', "left", -1),
-          right = this.getSelectIndex('x', "right", 1),
+      let left = this.getSelectIndex('x', 'left', -1),
+          right = this.getSelectIndex('x', 'right', 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           show_text = this.options.Text, text_col, text_angle, text_size,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
-          bars = "", barsl = "", barsr = "",
+          bars = '', barsl = '', barsr = '',
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
       if (side > 4) side = 4;
@@ -376,8 +376,8 @@ class TH1Painter extends THistPainter {
    drawFilledErrors(funcs) {
       this.createG(true);
 
-      let left = this.getSelectIndex('x', "left", -1),
-          right = this.getSelectIndex('x', "right", 1),
+      let left = this.getSelectIndex('x', 'left', -1),
+          right = this.getSelectIndex('x', 'right', 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
@@ -398,12 +398,12 @@ class TH1Painter extends THistPainter {
          bins2.unshift({ grx, gry: gry2 });
       }
 
-      let kind = (this.options.ErrorKind === 4) ? "bezier" : 'line',
+      let kind = (this.options.ErrorKind === 4) ? 'bezier' : 'line',
           path1 = buildSvgPath(kind, bins1),
-          path2 = buildSvgPath("L"+kind, bins2);
+          path2 = buildSvgPath('L'+kind, bins2);
 
       this.draw_g.append('svg:path')
-                 .attr('d', path1.path + path2.path + "Z")
+                 .attr('d', path1.path + path2.path + 'Z')
                  .call(this.fillatt.func);
    }
 
@@ -426,19 +426,19 @@ class TH1Painter extends THistPainter {
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
          return this.drawFilledErrors(pmain, funcs);
 
-      let left = this.getSelectIndex('x', "left", -1),
-          right = this.getSelectIndex('x', "right", 2),
+      let left = this.getSelectIndex('x', 'left', -1),
+          right = this.getSelectIndex('x', 'right', 2),
           histo = this.getHisto(),
           want_tooltip = !isBatchMode() && settings.Tooltip,
           xaxis = histo.fXaxis,
-          res = "", lastbin = false,
+          res = '', lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           exclude_zero = !this.options.Zero,
           show_errors = this.options.Error,
           show_markers = this.options.Mark,
           show_line = this.options.Line || this.options.Curve,
           show_text = this.options.Text,
-          text_profile = show_text && (this.options.TextKind == "E") && this.isTProfile() && histo.fBinEntries,
+          text_profile = show_text && (this.options.TextKind == 'E') && this.isTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           hints_err = null, hints_marker = null, hsz = 5,
           do_marker = false, do_err = false,
@@ -450,14 +450,14 @@ class TH1Painter extends THistPainter {
 
       if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
-                              else path_fill = "";
+                              else path_fill = '';
       } else if (this.options.Error) {
-         path_err = "";
-         hints_err = want_tooltip ? "" : null;
+         path_err = '';
+         hints_err = want_tooltip ? '' : null;
          do_err = true;
       }
 
-      if (show_line) path_line = "";
+      if (show_line) path_line = '';
 
       dlw = this.lineatt.width + gStyle.fEndErrorSize;
       if (this.options.ErrorKind === 1)
@@ -468,11 +468,11 @@ class TH1Painter extends THistPainter {
          this.createAttMarker({ attr: histo, style: this.options.MarkStyle }); // when style not configured, it will be ignored
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
-            path_marker = "";
+            path_marker = '';
             do_marker = true;
             this.markeratt.resetPos();
             if ((hints_err === null) && want_tooltip && (!this.markeratt.fill || (this.markeratt.getFullSize() < 7))) {
-               hints_marker = "";
+               hints_marker = '';
                hsz = Math.max(5, Math.round(this.markeratt.getFullSize()*0.7));
              }
          } else {
@@ -561,7 +561,7 @@ class TH1Painter extends THistPainter {
             }
 
             if (show_line && (path_line !== null))
-               path_line += ((path_line.length === 0) ? "M" : "L") + `${midx},${my}`;
+               path_line += ((path_line.length === 0) ? 'M' : 'L') + `${midx},${my}`;
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
@@ -699,7 +699,7 @@ class TH1Painter extends THistPainter {
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
                    .style('fill', 'none')
-                   .style("pointer-events", isBatchMode() ? null : "visibleFill");
+                   .style('pointer-events', isBatchMode() ? null : 'visibleFill');
 
          if (path_line) {
             if (!this.fillatt.empty() && !draw_hist)
@@ -722,13 +722,13 @@ class TH1Painter extends THistPainter {
             this.draw_g.append('svg:path')
                 .attr('d', hints_marker)
                 .style('fill', 'none')
-                .style("pointer-events", isBatchMode() ? null : "visibleFill");
+                .style('pointer-events', isBatchMode() ? null : 'visibleFill');
       }
 
       if (res && draw_hist)
          this.draw_g.append('svg:path')
                     .attr('d', res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
-                    .style("stroke-linejoin","miter")
+                    .style('stroke-linejoin','miter')
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
 
@@ -751,20 +751,18 @@ class TH1Painter extends THistPainter {
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
-         tips.push("x = " + xlbl);
-         tips.push("y = " + funcs.axisAsText('y', cont));
+         tips.push('x = ' + xlbl, 'y = ' + funcs.axisAsText('y', cont));
          if (this.options.Error) {
-            if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
-            tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
+            if (xlbl[0] == '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
+            tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push(`bin = ${bin+1}`);
-         tips.push("x = " + xlbl);
+         tips.push(`bin = ${bin+1}`, 'x = ' + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          if (cont === Math.round(cont))
-            tips.push("entries = " + cont);
+            tips.push('entries = ' + cont);
          else
-            tips.push("entries = " + floatToString(cont, gStyle.fStatFormat));
+            tips.push('entries = ' + floatToString(cont, gStyle.fStatFormat));
       }
 
       return tips;
@@ -774,15 +772,15 @@ class TH1Painter extends THistPainter {
    processTooltipEvent(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || this.options.Mode3D) {
          if (this.draw_g)
-            this.draw_g.select(".tooltip_bin").remove();
+            this.draw_g.select('.tooltip_bin').remove();
          return null;
       }
 
       const pmain = this.getFramePainter(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
             histo = this.getHisto(),
-            left = this.getSelectIndex('x', "left", -1),
-            right = this.getSelectIndex('x', "right", 2);
+            left = this.getSelectIndex('x', 'left', -1),
+            right = this.getSelectIndex('x', 'right', 2);
       let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           findbin = null, show_rect,
@@ -929,7 +927,7 @@ class TH1Painter extends THistPainter {
             findbin = null; // exclude empty bin if empty bins suppressed
       }
 
-      let ttrect = this.draw_g.select(".tooltip_bin");
+      let ttrect = this.draw_g.select('.tooltip_bin');
 
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
@@ -950,19 +948,19 @@ class TH1Painter extends THistPainter {
       } else if (show_rect) {
 
          if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:rect")
-                                .attr('class',"tooltip_bin h1bin")
-                                .style("pointer-events",'none');
+            ttrect = this.draw_g.append('svg:rect')
+                                .attr('class', 'tooltip_bin h1bin')
+                                .style('pointer-events', 'none');
 
-         res.changed = ttrect.property("current_bin") !== findbin;
+         res.changed = ttrect.property('current_bin') !== findbin;
 
          if (res.changed)
             ttrect.attr('x', funcs.swap_xy ? gry1 : grx1)
                   .attr('width', funcs.swap_xy ? gry2-gry1 : grx2-grx1)
                   .attr('y', funcs.swap_xy ? grx1 : gry1)
                   .attr('height', funcs.swap_xy ? grx2-grx1 : gry2-gry1)
-                  .style("opacity", "0.3")
-                  .property("current_bin", findbin);
+                  .style('opacity', '0.3')
+                  .property('current_bin', findbin);
 
          res.exact = (Math.abs(midy - pnt_y) <= 5) || ((pnt_y >= gry1) && (pnt_y <= gry2));
 
@@ -974,9 +972,9 @@ class TH1Painter extends THistPainter {
          let radius = this.lineatt.width + 3;
 
          if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:circle")
-                                .attr('class',"tooltip_bin")
-                                .style("pointer-events",'none')
+            ttrect = this.draw_g.append('svg:circle')
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
                                 .attr('r', radius)
                                 .call(this.lineatt.func)
                                 .call(this.fillatt.func);
@@ -986,12 +984,12 @@ class TH1Painter extends THistPainter {
          res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
          res.menu_dist = Math.sqrt((midx-pnt.x)**2 + (midy-pnt.y)**2);
 
-         res.changed = ttrect.property("current_bin") !== findbin;
+         res.changed = ttrect.property('current_bin') !== findbin;
 
          if (res.changed)
-            ttrect.attr("cx", midx)
-                  .attr("cy", midy)
-                  .property("current_bin", findbin);
+            ttrect.attr('cx', midx)
+                  .attr('cy', midy)
+                  .property('current_bin', findbin);
       }
 
       if (res.changed)
@@ -1005,11 +1003,11 @@ class TH1Painter extends THistPainter {
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
 
-      menu.add("Auto zoom-in", () => this.autoZoom());
+      menu.add('Auto zoom-in', () => this.autoZoom());
 
       let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", opts, arg => {
+      menu.addDrawMenu('Draw with', opts, arg => {
          if (arg === 'inspect')
             return this.showInspector();
 
@@ -1075,8 +1073,8 @@ class TH1Painter extends THistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let left = this.getSelectIndex('x', "left", -1),
-          right = this.getSelectIndex('x', "right", 1),
+      let left = this.getSelectIndex('x', 'left', -1),
+          right = this.getSelectIndex('x', 'right', 1),
           dist = right - left,
           histo = this.getHisto();
 
