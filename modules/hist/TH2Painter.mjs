@@ -213,7 +213,7 @@ class TH2Painter extends TH2Painter2D {
           histo = this.getHisto(),
           pr = Promise.resolve(true);
 
-      if (reason == "resize") {
+      if (reason == 'resize') {
 
          if (is_main && main.resize3D()) main.render3D();
 
