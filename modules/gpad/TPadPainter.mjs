@@ -45,7 +45,7 @@ function toggleButtonsVisibility(handler, action) {
 
    group.selectAll('svg').each(function() {
       if (this===btn.node()) return;
-      d3_select(this).style('display', is_visible ? "" : "none");
+      d3_select(this).style('display', is_visible ? "" : 'none');
    });
 }
 
@@ -382,7 +382,7 @@ class TPadPainter extends ObjectPainter {
 
       let lineatt = this.is_active_pad ? new TAttLineHandler({ style: 1, width: 1, color: "red" }) : this.lineatt;
 
-      if (!lineatt) lineatt = new TAttLineHandler({ color: "none" });
+      if (!lineatt) lineatt = new TAttLineHandler({ color: 'none' });
 
       svg_rect.call(lineatt.func);
    }
@@ -420,7 +420,7 @@ class TPadPainter extends ObjectPainter {
             render_to.style('position','relative');
 
          svg = render_to.append("svg")
-             .attr("class", "jsroot root_canvas")
+             .attr('class', "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
@@ -435,7 +435,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          if (!isBatchMode() || (this.pad.fFillStyle > 0))
-            frect = svg.append('svg:path').attr("class","canvas_fillrect");
+            frect = svg.append('svg:path').attr('class',"canvas_fillrect");
 
          if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
@@ -444,11 +444,11 @@ class TPadPainter extends ObjectPainter {
                  .on("mouseenter", () => this.showObjectStatus())
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg.append("svg:g").attr("class","primitives_layer");
-         info = svg.append("svg:g").attr("class", "info_layer");
+         svg.append('svg:g').attr('class',"primitives_layer");
+         info = svg.append('svg:g').attr('class', "info_layer");
          if (!isBatchMode())
-            btns = svg.append("svg:g")
-                      .attr("class","btns_layer")
+            btns = svg.append('svg:g')
+                      .attr('class',"btns_layer")
                       .property('leftside', settings.ToolBarSide == 'left')
                       .property('vertical', settings.ToolBarVert);
 
@@ -471,7 +471,7 @@ class TPadPainter extends ObjectPainter {
       this.createAttFill({ attr: this.pad });
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
-         svg.style("display", "none");
+         svg.style("display", 'none');
          console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
@@ -499,7 +499,7 @@ class TPadPainter extends ObjectPainter {
       svg.style("filter", settings.DarkMode || this.pad?.$dark ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
-         .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
+         .attr("preserveAspectRatio", 'none')  // we do not preserve relative ratio
          .property('height_factor', factor)
          .property('draw_x', 0)
          .property('draw_y', 0)
@@ -526,7 +526,7 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptDate) {
          dt.remove();
       } else {
-         if (dt.empty()) dt = info.append("text").attr("class", "canvas_date");
+         if (dt.empty()) dt = info.append('text').attr('class', "canvas_date");
          let date = new Date(),
              posx = Math.round(rect.width * gStyle.fDateX),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
@@ -553,7 +553,7 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptFile || !item_name) {
          df.remove();
       } else {
-         if (df.empty()) df = info.append("text").attr("class", "canvas_item");
+         if (df.empty()) df = info.append('text').attr('class', "canvas_item");
          let rect = this.getPadRect(),
              posx = Math.round(rect.width * (1 - gStyle.fDateX)),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
@@ -635,7 +635,7 @@ class TPadPainter extends ObjectPainter {
 
          // need to check attributes directly while attributes objects will be created later
          if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
-            svg_rect = svg_pad.append('svg:path').attr("class", "root_pad_border");
+            svg_rect = svg_pad.append('svg:path').attr('class', "root_pad_border");
 
          if (!isBatchMode())
             svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
@@ -644,10 +644,10 @@ class TPadPainter extends ObjectPainter {
                     .on("mouseenter", () => this.showObjectStatus())
                     .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg_pad.append("svg:g").attr("class","primitives_layer");
+         svg_pad.append('svg:g').attr('class',"primitives_layer");
          if (!isBatchMode())
-            btns = svg_pad.append("svg:g")
-                          .attr("class","btns_layer")
+            btns = svg_pad.append('svg:g')
+                          .attr('class',"btns_layer")
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
@@ -655,9 +655,9 @@ class TPadPainter extends ObjectPainter {
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
-      svg_pad.style("display", pad_visible ? null : "none")
+      svg_pad.style("display", pad_visible ? null : 'none')
              .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
-             .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
+             .attr("preserveAspectRatio", 'none')   // due to svg, we do not preserve relative ratio
              .attr('x', x)        // due to svg
              .attr('y', y)        // due to svg
              .attr('width', w)    // due to svg

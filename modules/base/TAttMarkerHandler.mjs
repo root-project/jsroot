@@ -252,10 +252,10 @@ class TAttMarkerHandler {
    }
 
    /** @summary get stroke color */
-   getStrokeColor() { return this.stroke ? this.color : "none"; }
+   getStrokeColor() { return this.stroke ? this.color : 'none'; }
 
    /** @summary get fill color */
-   getFillColor() { return this.fill ? this.color : "none"; }
+   getFillColor() { return this.fill ? this.color : 'none'; }
 
    /** @summary returns true if marker attributes will produce empty (invisible) output */
    empty() {
@@ -264,8 +264,8 @@ class TAttMarkerHandler {
 
    /** @summary Apply marker styles to created element */
    apply(selection) {
-      selection.style('stroke', this.stroke ? this.color : "none")
-               .style('fill', this.fill ? this.color : "none");
+      selection.style('stroke', this.stroke ? this.color : 'none')
+               .style('fill', this.fill ? this.color : 'none');
    }
 
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets.

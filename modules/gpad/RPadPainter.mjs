@@ -282,7 +282,7 @@ class RPadPainter extends RObjectPainter {
             render_to.style('position', 'relative');
 
          svg = render_to.append("svg")
-             .attr("class", "jsroot root_canvas")
+             .attr('class', "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
@@ -292,7 +292,7 @@ class RPadPainter extends RObjectPainter {
          if (!isBatchMode() && !this.online_canvas)
             svg.append("svg:title").text("ROOT canvas");
 
-         frect = svg.append('svg:path').attr("class","canvas_fillrect");
+         frect = svg.append('svg:path').attr('class',"canvas_fillrect");
          if (!isBatchMode())
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
@@ -300,11 +300,11 @@ class RPadPainter extends RObjectPainter {
                  .on("mouseenter", () => this.showObjectStatus())
                  .on("contextmenu", settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg.append("svg:g").attr("class", "primitives_layer");
-         svg.append("svg:g").attr("class", "info_layer");
+         svg.append('svg:g').attr('class', "primitives_layer");
+         svg.append('svg:g').attr('class', "info_layer");
          if (!isBatchMode())
-            btns = svg.append("svg:g")
-                      .attr("class","btns_layer")
+            btns = svg.append('svg:g')
+                      .attr('class',"btns_layer")
                       .property('leftside', settings.ToolBarSide == 'left')
                       .property('vertical', settings.ToolBarVert);
 
@@ -327,7 +327,7 @@ class RPadPainter extends RObjectPainter {
       this.createAttFill({ pattern: 1001, color: 0 });
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
-         svg.style("display", "none");
+         svg.style("display", 'none');
          console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
@@ -355,7 +355,7 @@ class RPadPainter extends RObjectPainter {
       svg.style("filter", settings.DarkMode ? "invert(100%)" : null);
 
       svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
-         .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
+         .attr("preserveAspectRatio", 'none')  // we do not preserve relative ratio
          .property('height_factor', factor)
          .property('draw_x', 0)
          .property('draw_y', 0)
@@ -461,12 +461,12 @@ class RPadPainter extends RObjectPainter {
          if (!isBatchMode())
             svg_pad.append("svg:title").text("ROOT subpad");
 
-         svg_rect = svg_pad.append('svg:path').attr("class", "root_pad_border");
+         svg_rect = svg_pad.append('svg:path').attr('class', "root_pad_border");
 
-         svg_pad.append("svg:g").attr("class","primitives_layer");
+         svg_pad.append('svg:g').attr('class',"primitives_layer");
          if (!isBatchMode())
-            btns = svg_pad.append("svg:g")
-                          .attr("class","btns_layer")
+            btns = svg_pad.append('svg:g')
+                          .attr('class',"btns_layer")
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
 
@@ -484,9 +484,9 @@ class RPadPainter extends RObjectPainter {
 
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
-      svg_pad.style("display", pad_visible ? null : "none")
+      svg_pad.style("display", pad_visible ? null : 'none')
              .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
-             .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
+             .attr("preserveAspectRatio", 'none')   // due to svg, we do not preserve relative ratio
              .attr('x', x)    // due to svg
              .attr('y', y)   // due to svg
              .attr('width', w)    // due to svg

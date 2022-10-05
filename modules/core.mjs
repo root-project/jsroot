@@ -445,7 +445,7 @@ async function loadScript(url) {
       if (isstyle)
          return null;
       if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-         return httpRequest(url, "text").then(code => injectCode(code));
+         return httpRequest(url, 'text').then(code => injectCode(code));
 
       return import(/* webpackIgnore: true */ url);
    }
@@ -840,7 +840,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
    if (p > 0) { kind = kind.slice(0,p); is_async = false; }
    switch (kind) {
       case "head": method = "HEAD"; break;
-      case "posttext": method = "POST"; kind = "text"; break;
+      case "posttext": method = "POST"; kind = 'text'; break;
       case "postbuf":  method = "POST"; kind = "buf"; break;
       case "post":
       case "multi": method = "POST"; break;
@@ -888,7 +888,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
       switch(this.kind) {
          case "xml": return this.http_callback(this.responseXML);
-         case "text": return this.http_callback(this.responseText);
+         case 'text': return this.http_callback(this.responseText);
          case 'object': return this.http_callback(parse(this.responseText));
          case "multi": return this.http_callback(parseMulti(this.responseText));
          case "head": return this.http_callback(this);
@@ -946,7 +946,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @desc Following requests kind can be specified:
   *    - "bin" - abstract binary data, result as string
   *    - "buf" - abstract binary data, result as ArrayBuffer (default)
-  *    - "text" - returns req.responseText
+  *    - 'text' - returns req.responseText
   *    - 'object' - returns parse(req.responseText)
   *    - "multi" - returns correctly parsed multi.json request
   *    - "xml" - returns req.responseXML

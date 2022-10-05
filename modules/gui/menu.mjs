@@ -14,7 +14,7 @@ import { FontHandler } from '../base/FontHandler.mjs';
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
    if (typeof col == 'string') {
-      if (!col || (col == "none")) id = 0; else
+      if (!col || (col == 'none')) id = 0; else
          for (let k = 1; k < arr.length; ++k)
             if (arr[k] == col) { id = k; break; }
       if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
@@ -152,7 +152,7 @@ class JSRootMenu {
       if (value === undefined) return;
       let useid = (typeof value !== 'string');
       this.add("sub:" + name, () => {
-         this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : "text", useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
+         this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             let id = parseInt(col);
             if (Number.isInteger(id) && getColor(id)) {
                col = getColor(id);
@@ -173,8 +173,8 @@ class JSRootMenu {
             let col = (n < 0) ? 'none' : getColor(n);
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
-                fill = (n == 1) ? "white" : "black",
-                stroke = (n == 1) ? "red" : "black",
+                fill = (n == 1) ? "white" : 'black',
+                stroke = (n == 1) ? "red" : 'black',
                 rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
                 svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
 
@@ -380,7 +380,7 @@ class JSRootMenu {
      * @protected */
    addRAttrTextItems(fontHandler, opts, set_func) {
       if (!opts) opts = {};
-      this.addRColorMenu("color", fontHandler.color, sel => set_func({ name: "color", value: sel }));
+      this.addRColorMenu('color', fontHandler.color, sel => set_func({ name: 'color', value: sel }));
       if (fontHandler.scaled)
          this.addSizeMenu("size", 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: "size", value: sz }));
       else
@@ -407,7 +407,7 @@ class JSRootMenu {
       if ((obj?.fTextColor === undefined) || (obj?.fTextAlign == undefined)) return;
 
       this.add("sub:" + (prefix ? prefix : "Text"));
-      this.addColorMenu("color", obj.fTextColor,
+      this.addColorMenu('color', obj.fTextColor,
          arg => { obj.fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, "SetTextColor")); });
 
       let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
@@ -478,7 +478,7 @@ class JSRootMenu {
 
       for (let n = 1; n < 20; ++n) {
          let handler = new FontHandler(n*10+2, 14),
-             txt = d3_select(document.createElementNS("http://www.w3.org/2000/svg", "text")),
+             txt = d3_select(document.createElementNS("http://www.w3.org/2000/svg", 'text')),
              fullname = handler.getFontName(),
              name = " " + fullname.split(" ")[0] + " ";
          if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
@@ -513,7 +513,7 @@ class JSRootMenu {
          this.add("sub:" + preffix + "Line att");
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
-         this.addColorMenu("color", painter.lineatt.color,
+         this.addColorMenu('color', painter.lineatt.color,
             arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
@@ -540,7 +540,7 @@ class JSRootMenu {
 
       if (painter.fillatt?.used) {
          this.add("sub:" + preffix + "Fill att");
-         this.addColorMenu("color", painter.fillatt.colorindx, arg => {
+         this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor"));
          }, painter.fillatt.kind);
@@ -553,7 +553,7 @@ class JSRootMenu {
 
       if (painter.markeratt?.used) {
          this.add("sub:" + preffix + "Marker att");
-         this.addColorMenu("color", painter.markeratt.color,
+         this.addColorMenu('color', painter.markeratt.color,
             arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
          this.addSizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
             arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`); });
@@ -564,7 +564,7 @@ class JSRootMenu {
          for (let n = 0; n < supported.length; ++n) {
 
             let clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
-                svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40, 8) + "'></path></svg>";
+                svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? 'black' : 'none') + "' d='" + clone.create(40, 8) + "'></path></svg>";
 
             this.addchk(painter.markeratt.style == supported[n], svg, supported[n],
                function(arg) { this.markeratt.change(undefined, parseInt(arg)); this.interactiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(painter));
@@ -854,12 +854,12 @@ class JSRootMenu {
      * @return {Promise} with input value
      * @param {string} title - input dialog title
      * @param value - initial value
-     * @param {string} [kind] - use "text" (default), 'number', "float" or "int"
+     * @param {string} [kind] - use 'text' (default), 'number', "float" or "int"
      * @protected */
    async input(title, value, kind, min, max) {
 
-      if (!kind) kind = "text";
-      let inp_type = (kind == "int") ? 'number' : "text", ranges = "";
+      if (!kind) kind = 'text';
+      let inp_type = (kind == "int") ? 'number' : 'text', ranges = "";
       if ((value === undefined) || (value === null)) value = "";
       if (kind == "int") {
           if (min !== undefined) ranges += ` min="${min}"`;
@@ -903,7 +903,7 @@ class JSRootMenu {
          arg.fValue = arg.fDefault;
          if (arg.fValue == '\"\"') arg.fValue = "";
          main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                          <input type="text" tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
+                          <input type='text' tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
       }
 
       main_content += '</fieldset></form>';
@@ -942,7 +942,7 @@ class JSRootMenu {
 
       for (let n = 0; n < args.length; ++n)
          main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>`+
-                         `<input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
+                         `<input type='text' id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
 
       main_content += '</fieldset></form>';
 
@@ -1261,12 +1261,12 @@ class StandaloneMenu extends JSRootMenu {
       d3_select("#" + dlg_id).remove();
       d3_select("#" + dlg_id+"_block").remove();
 
-      let block = d3_select('body').append('div').attr('id', dlg_id+"_block").attr("class", "jsroot_dialog_block");
+      let block = d3_select('body').append('div').attr('id', dlg_id+"_block").attr('class', "jsroot_dialog_block");
 
       let element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr("class","jsroot_dialog").style('width',(args.width || 450) + "px")
+                      .attr('class',"jsroot_dialog").style('width',(args.width || 450) + "px")
                       .attr("tabindex", "0")
                       .html(
          `<div class="jsroot_dialog_body">

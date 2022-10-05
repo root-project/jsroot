@@ -14,7 +14,7 @@ function drawText() {
        onframe   = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
        clipping  = onframe ? this.v7EvalAttr("clipping", false) : false,
        p         = pp.getCoordinate(text.fPos, onframe),
-       textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 });
+       textFont  = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 });
 
    this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
 
@@ -168,16 +168,16 @@ class RPalettePainter extends RObjectPainter {
 
       let g_btns = this.draw_g.select(".colbtns");
       if (g_btns.empty())
-         g_btns = this.draw_g.append("svg:g").attr("class", "colbtns");
+         g_btns = this.draw_g.append('svg:g').attr('class', 'colbtns');
       else
-         g_btns.selectAll("*").remove();
+         g_btns.selectAll('*').remove();
 
       if (!visible) return;
 
       g_btns.append('svg:path')
           .attr('d', `M0,0H${palette_width}V${palette_height}H0Z`)
-          .style("stroke", "black")
-          .style("fill", "none");
+          .style('stroke', 'black')
+          .style('fill', 'none');
 
       if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
 
@@ -193,16 +193,16 @@ class RPalettePainter extends RObjectPainter {
 
          let r = g_btns.append('svg:path')
                      .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
-                     .style("fill", col)
-                     .style("stroke", col)
+                     .style('fill', col)
+                     .style('stroke', col)
                      .property("fill0", col)
                      .property("fill1", d3_rgb(col).darker(0.5).toString());
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
-               d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill1'));
+               d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
             }).on('mouseout', function() {
-               d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
+               d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill0'));
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (settings.Zooming)
@@ -293,7 +293,7 @@ class RPalettePainter extends RObjectPainter {
             moving_labels = false;
             zoom_rect = g_btns
                  .append("svg:rect")
-                 .attr("class", 'zoom')
+                 .attr('class', 'zoom')
                  .attr("id", "colzoomRect")
                  .style('display', 'none');
             if (vertical)

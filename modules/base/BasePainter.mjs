@@ -48,7 +48,7 @@ function getElementRect(elem, sizearg) {
   * @private */
 function getAbsPosInCanvas(sel, pos) {
    while (!sel.empty() && !sel.classed('root_canvas') && pos) {
-      let cl = sel.attr("class");
+      let cl = sel.attr('class');
       if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
          pos.x += sel.property("draw_x") || 0;
          pos.y += sel.property("draw_y") || 0;
@@ -214,7 +214,7 @@ class TRandom {
 
 /** @summary Function used to provide svg:path for the smoothed curves.
   * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-  * @param {string} kind  should contain "bezier" or "line".
+  * @param {string} kind  should contain "bezier" or 'line'.
   * If first symbol "L", then it used to continue drawing
   * @private */
 function buildSvgPath(kind, bins, height, ndig) {

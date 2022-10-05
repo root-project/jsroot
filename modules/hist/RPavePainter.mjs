@@ -163,7 +163,7 @@ class RLegendPainter extends RPavePainter {
    /** @summary draw RLegend content */
    async drawContent() {
       let legend     = this.getObject(),
-          textFont   = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
+          textFont   = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 }),
           width      = this.pave_width,
           height     = this.pave_height,
           nlines     = legend.fEntries.length,
@@ -246,7 +246,7 @@ class RPaveTextPainter extends RPavePainter {
    /** @summary draw RPaveText content */
    drawContent() {
       let pavetext  = this.getObject(),
-          textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
+          textFont  = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 }),
           width     = this.pave_width,
           height    = this.pave_height,
           nlines    = pavetext.fText.length;
@@ -384,7 +384,7 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary Draw statistic */
    async drawStatistic(lines) {
 
-      let textFont = this.v7EvalFont("stats_text", { size: 12, color: "black", align: 22 }),
+      let textFont = this.v7EvalFont("stats_text", { size: 12, color: 'black', align: 22 }),
           first_stat = 0, num_cols = 0, maxlen = 0,
           width = this.pave_width,
           height = this.pave_height;
@@ -408,7 +408,7 @@ class RHistStatsPainter extends RPavePainter {
 
       let text_g = this.draw_g.select(".statlines");
       if (text_g.empty())
-         text_g = this.draw_g.append("svg:g").attr("class", "statlines");
+         text_g = this.draw_g.append('svg:g').attr('class', "statlines");
       else
          text_g.selectAll("*").remove();
 

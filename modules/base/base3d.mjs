@@ -315,14 +315,14 @@ let Handling3DDrawings = {
             // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
-               elem = svg.insert("g", ".primitives_layer").attr("class", size.clname);
+               elem = svg.insert("g", ".primitives_layer").attr('class', size.clname);
 
             elem.attr("transform", `translate(${size.x},${size.y})`);
 
          } else {
 
             if (elem.empty())
-               elem = svg.insert("foreignObject", ".primitives_layer").attr("class", size.clname);
+               elem = svg.insert("foreignObject", ".primitives_layer").attr('class', size.clname);
 
             elem.attr('x', size.x)
                 .attr('y', size.y)
@@ -342,8 +342,8 @@ let Handling3DDrawings = {
          this.getCanvSvg().property('redraw_by_resize', true);
 
          if (elem.empty())
-            elem = d3_select(prnt).append('div').attr("class", size.clname)
-                                  .style("user-select", "none");
+            elem = d3_select(prnt).append('div').attr('class', size.clname)
+                                  .style("user-select", 'none');
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
@@ -1515,7 +1515,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
 
    let lcolor, lstyle, lwidth;
    if ((typeof arg == 'string') || is_v7) {
-      lcolor = painter.v7EvalColor(arg+"color", "black");
+      lcolor = painter.v7EvalColor(arg+'color', 'black');
       lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
       lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));
    } else {

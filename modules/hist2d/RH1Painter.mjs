@@ -258,13 +258,13 @@ class RH1Painter extends RHistPainter {
          this.draw_g.append('svg:path')
                .attr('d', barsl)
                .call(this.fillatt.func)
-               .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+               .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr.length > 0)
          this.draw_g.append('svg:path')
                .attr('d', barsr)
                .call(this.fillatt.func)
-               .style("fill", d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+               .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
        return true;
    }
@@ -294,7 +294,7 @@ class RH1Painter extends RHistPainter {
          bins2.unshift({grx: grx, gry: gry2});
       }
 
-      let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
+      let kind = (this.options.ErrorKind === 4) ? "bezier" : 'line',
           path1 = buildSvgPath(kind, bins1),
           path2 = buildSvgPath("L"+kind, bins2);
 
@@ -381,7 +381,7 @@ class RH1Painter extends RHistPainter {
       }
 
       if (show_text) {
-         text_font = this.v7EvalFont("text", { size: 20, color: "black", align: 22 });
+         text_font = this.v7EvalFont('text', { size: 20, color: 'black', align: 22 });
 
          if (!text_font.angle && !options.TextKind) {
              let space = width / (right - left + 1);
@@ -566,7 +566,7 @@ class RH1Painter extends RHistPainter {
          if ((hints_err !== null) && (hints_err.length > 0))
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
-                   .style("fill", "none")
+                   .style('fill', 'none')
                    .style("pointer-events", isBatchMode() ? null : "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
@@ -577,7 +577,7 @@ class RH1Painter extends RHistPainter {
 
             this.draw_g.append('svg:path')
                    .attr('d', path_line)
-                   .style("fill", "none")
+                   .style('fill', 'none')
                    .call(this.lineatt.func);
          }
 
@@ -815,8 +815,8 @@ class RH1Painter extends RHistPainter {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+                                .attr('class',"tooltip_bin h1bin")
+                                .style("pointer-events",'none');
 
          res.changed = ttrect.property("current_bin") !== findbin;
 
@@ -839,9 +839,9 @@ class RH1Painter extends RHistPainter {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:circle")
-                                .attr("class","tooltip_bin")
-                                .style("pointer-events","none")
-                                .attr("r", radius)
+                                .attr('class',"tooltip_bin")
+                                .style("pointer-events",'none')
+                                .attr('r', radius)
                                 .call(this.lineatt.func)
                                 .call(this.fillatt.func);
 

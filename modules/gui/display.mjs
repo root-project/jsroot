@@ -565,7 +565,7 @@ class TabsDisplay extends MDIDisplay {
          let id = d3_select(this).property('frame_id'),
              is_same = (id == frame_id);
          if (action == "activate")
-            d3_select(this).style("background", is_same ? (settings.DarkMode ? "black" : "white") : null);
+            d3_select(this).style("background", is_same ? (settings.DarkMode ? 'black' : "white") : null);
          else if ((action == "close") && is_same)
             this.parentNode.remove();
       });
@@ -734,7 +734,7 @@ class FlexibleDisplay extends MDIDisplay {
          frame = res;
       }
       if (!frame) return;
-      if (frame.getAttribute("class") != "jsroot_flex_draw") return;
+      if (frame.getAttribute('class') != "jsroot_flex_draw") return;
 
       if (this.getActiveFrame() === frame) return;
 
@@ -786,7 +786,7 @@ class FlexibleDisplay extends MDIDisplay {
       switch (newstate) {
          case "min":
             main.style('height',"auto").style('width', "auto");
-            main.select(".jsroot_flex_draw").style("display","none");
+            main.select(".jsroot_flex_draw").style("display",'none');
             break;
          case "max":
             main.style('height','100%').style('width', '100%').style('left','').style('top','');
@@ -808,7 +808,7 @@ class FlexibleDisplay extends MDIDisplay {
       });
 
       main.property("state", newstate);
-      main.select(".jsroot_flex_resize").style("display", (newstate == "normal") ? null : "none");
+      main.select(".jsroot_flex_resize").style("display", (newstate == "normal") ? null : 'none');
 
       // adjust position of new minified rect
       if (newstate == "min") {
@@ -899,7 +899,7 @@ class FlexibleDisplay extends MDIDisplay {
                  <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
                  <div class="jsroot_flex_resize">&#x25FF;</div>`);
 
-      main.attr("class", "jsroot_flex_frame")
+      main.attr('class', "jsroot_flex_frame")
          .style('position', 'absolute')
          .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
          .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
@@ -913,7 +913,7 @@ class FlexibleDisplay extends MDIDisplay {
          .enter()
          .append("button")
          .attr("type", "button")
-         .attr("class", "jsroot_flex_btn")
+         .attr('class', "jsroot_flex_btn")
          .attr('title', d => d.t)
          .html(d => d.n)
          .on("click", function() { mdi._clickButton(this); });
@@ -1060,7 +1060,7 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary context menu */
    showContextMenu(evnt) {
       // handle context menu only for MDI area
-      if ((evnt.target.getAttribute("class") != "jsroot_flex_top") || (this.numDraw() == 0)) return;
+      if ((evnt.target.getAttribute('class') != "jsroot_flex_top") || (this.numDraw() == 0)) return;
 
       evnt.preventDefault();
 
@@ -1165,7 +1165,7 @@ class BatchDisplay extends MDIDisplay {
           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
           .attr('width', this.width)
           .attr('height', this.height)
-          .attr('title', null).attr('style', null).attr("class", null).attr('x', null).attr('y', null);
+          .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
       let svg = main.html();
       if (has_workarounds)
@@ -1424,7 +1424,7 @@ class BrowserLayout {
       for (let k = 0; k < 4; ++k)
          d3_select(this.status_layout.getGridFrame(k))
            .attr('title', frame_titles[k]).style('overflow','hidden')
-           .append("label").attr("class","jsroot_status_label");
+           .append("label").attr('class',"jsroot_status_label");
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
@@ -1642,7 +1642,7 @@ class BrowserLayout {
       this.browser_kind = kind;
       this.browser_visible = true;
 
-      main.select(".jsroot_browser_resize").style("display", (kind === "float") ? null : "none");
+      main.select(".jsroot_browser_resize").style("display", (kind === "float") ? null : 'none');
       main.select(".jsroot_browser_title").style("cursor", (kind === "float") ? "move" : null);
 
       if (kind === "float") {

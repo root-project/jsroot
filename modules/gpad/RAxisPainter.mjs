@@ -459,7 +459,7 @@ class RAxisPainter extends RObjectPainter {
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style("cursor", "move");
-//                 .style("pointer-events","none"); // let forward double click to underlying elements
+//                 .style("pointer-events",'none'); // let forward double click to underlying elements
           }).on("drag", evnt => {
                if (!drag_rect) return;
 
@@ -556,7 +556,7 @@ class RAxisPainter extends RObjectPainter {
       axis_g.append('svg:path')
             .attr('d',"M0,0" + (this.vertical ? "v" : "h") + this.gr_range + ending)
             .call(this.lineatt.func)
-            .style('fill', ending ? "none" : null);
+            .style('fill', ending ? 'none' : null);
    }
 
    /** @summary Draw axis ticks
@@ -619,7 +619,7 @@ class RAxisPainter extends RObjectPainter {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = this.labelsFont.angle != 0,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
-          label_g = axis_g.append("svg:g").attr("class","axis_labels").property('side', side),
+          label_g = axis_g.append('svg:g').attr('class',"axis_labels").property('side', side),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
           max_lbl_width = 0, max_lbl_height = 0;
 
@@ -714,7 +714,7 @@ class RAxisPainter extends RObjectPainter {
       return this.finishTextDrawing(label_g).then(() => {
 
         if (lbls_tilt)
-           label_g.selectAll("text").each(function () {
+           label_g.selectAll('text').each(function () {
                let txt = d3_select(this), tr = txt.attr("transform");
                txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
            });
@@ -739,7 +739,7 @@ class RAxisPainter extends RObjectPainter {
                                : `h${this.gr_range}v${side*sz}h${-this.gr_range}`;
          axis_g.append('svg:path')
                .attr('d',`M0,0${d}z`)
-               .attr("class", "axis_zoom")
+               .attr('class', "axis_zoom")
                .style("opacity", "0")
                .style("cursor", "crosshair");
       }
@@ -755,7 +755,7 @@ class RAxisPainter extends RObjectPainter {
       if (!this.fTitle)
          return this;
 
-      let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+      let title_g = axis_g.append('svg:g').attr('class', "axis_title"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
       let rotated = this.isTitleRotated();
@@ -848,7 +848,7 @@ class RAxisPainter extends RObjectPainter {
       if (!this.standalone) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
-            axis_g = layer.append("svg:g").attr("class", this.name + "_container");
+            axis_g = layer.append('svg:g').attr('class', this.name + "_container");
          else
             axis_g.selectAll("*").remove();
       }
@@ -925,7 +925,7 @@ class RAxisPainter extends RObjectPainter {
    drawAxisOtherPlace(layer, transform, side, only_ticks) {
       let axis_g = layer.select("." + this.name + "_container2");
       if (axis_g.empty())
-         axis_g = layer.append("svg:g").attr("class",this.name + "_container2");
+         axis_g = layer.append('svg:g').attr('class',this.name + "_container2");
       else
          axis_g.selectAll("*").remove();
 
@@ -1071,7 +1071,7 @@ class RAxisPainter extends RObjectPainter {
       menu.add("Divisions", () => menu.input("Set axis devisions", this.v7EvalAttr("ndiv", 508), "int").then(val => this.changeAxisAttr(2, "ndiv", val)));
 
       menu.add("sub:Ticks");
-      menu.addRColorMenu("color", this.ticksColor, col => this.changeAxisAttr(1, "ticks_color", col));
+      menu.addRColorMenu('color', this.ticksColor, col => this.changeAxisAttr(1, "ticks_color", col));
       menu.addSizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scalingSize, sz => this.changeAxisAttr(1, "ticks_size", sz));
       menu.addSelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.changeAxisAttr(1, "ticks_side", side));
       menu.add("endsub:");

@@ -293,7 +293,7 @@ function producePlainText(painter, txt_node, arg) {
 /** @summary Check if plain text
   * @private */
 function isPlainText(txt) {
-   return !txt || ((txt.indexOf("#") < 0) && (txt.indexOf("{") < 0));
+   return !txt || ((txt.indexOf('#') < 0) && (txt.indexOf('{') < 0));
 }
 
 /** @ummary translate TLatex and draw inside provided g element
@@ -303,7 +303,7 @@ function parseLatex(node, arg, label, curr) {
 
    let nelements = 0;
 
-   const currG = () => { if (!curr.g) curr.g = node.append("svg:g"); return curr.g; };
+   const currG = () => { if (!curr.g) curr.g = node.append('svg:g'); return curr.g; };
 
    const shiftX = dx => { curr.x += Math.round(dx); };
 
@@ -353,7 +353,7 @@ function parseLatex(node, arg, label, curr) {
          return gg;
       }
 
-      gg = gg.append("svg:g");
+      gg = gg.append('svg:g');
 
       if (curr.y)
          gg.attr('transform',`translate(${curr.x},${curr.y})`);
@@ -364,8 +364,8 @@ function parseLatex(node, arg, label, curr) {
 
    const extractSubLabel = (check_first, lbrace, rbrace) => {
       let pos = 0, n = 1, err = false;
-      if (!lbrace) lbrace = "{";
-      if (!rbrace) rbrace = "}";
+      if (!lbrace) lbrace = '{';
+      if (!rbrace) rbrace = '}';
 
       const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) == br);
 
@@ -391,9 +391,9 @@ function parseLatex(node, arg, label, curr) {
 
    const createPath = (gg, dofill) => {
       return gg.append('svg:path')
-               .style("stroke", dofill ? "none" : (curr.color || arg.color))
-               .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
-               .style("fill", dofill ? (curr.color || arg.color) : "none");
+               .style('stroke', dofill ? 'none' : (curr.color || arg.color))
+               .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
+               .style('fill', dofill ? (curr.color || arg.color) : 'none');
    };
 
    const createSubPos = fscale => {
@@ -434,7 +434,7 @@ function parseLatex(node, arg, label, curr) {
                curr.g.attr('font-style', curr.italic ? 'italic' : 'normal');
 
             // set fill color directly to element
-            elem.attr("fill", curr.color || arg.color || null);
+            elem.attr('fill', curr.color || arg.color || null);
 
             // set font size directly to element to avoid complex control
             if (curr.fisze !== curr.font.size)
@@ -649,7 +649,7 @@ function parseLatex(node, arg, label, curr) {
       }
 
       if (found.braces) {
-         let rbrace = found.right, lbrace = rbrace ? found.name : "{",
+         let rbrace = found.right, lbrace = rbrace ? found.name : '{',
              sublabel = extractSubLabel(false, lbrace, rbrace),
              gg = createGG(),
              subpos = createSubPos(),

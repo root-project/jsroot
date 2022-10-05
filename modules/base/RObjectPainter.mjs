@@ -149,7 +149,7 @@ class RObjectPainter extends ObjectPainter {
          }
       } else if (val[0] == "[") {
          let ordinal = parseFloat(val.slice(1, val.length-1));
-         val = "black";
+         val = 'black';
          if (Number.isFinite(ordinal)) {
              let pp = this.getPadPainter(),
                  pal = pp?.getHistPalette();
@@ -170,8 +170,8 @@ class RObjectPainter extends ObjectPainter {
           rfont = pp?._dfltRFont || { fFamily: "Arial", fStyle: '', fWeight: '' },
           text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
           text_angle  = this.v7EvalAttr(name + "_angle", 0),
-          text_align  = this.v7EvalAttr(name + "_align", dflts.align || "none"),
-          text_color  = this.v7EvalColor(name + "_color", dflts.color || "none"),
+          text_align  = this.v7EvalAttr(name + "_align", dflts.align || 'none'),
+          text_color  = this.v7EvalColor(name + "_color", dflts.color || 'none'),
           font_family = this.v7EvalAttr(name + "_font_family", rfont.fFamily || "Arial"),
           font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ''),
           font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || '');
@@ -183,8 +183,8 @@ class RObjectPainter extends ObjectPainter {
        let handler = new FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
        if (text_angle) handler.setAngle(360 - text_angle);
-       if (text_align !== "none") handler.setAlign(text_align);
-       if (text_color !== "none") handler.setColor(text_color);
+       if (text_align !== 'none') handler.setAlign(text_align);
+       if (text_color !== 'none') handler.setColor(text_color);
 
        return handler;
     }
@@ -193,7 +193,7 @@ class RObjectPainter extends ObjectPainter {
    createv7AttFill(prefix) {
       if (!prefix || (typeof prefix != 'string')) prefix = "fill_";
 
-      let color = this.v7EvalColor(prefix + "color", ""),
+      let color = this.v7EvalColor(prefix + 'color', ""),
           pattern = this.v7EvalAttr(prefix + 'style', 0);
 
       this.createAttFill({ pattern, color,  color_as_svg: true });
@@ -203,7 +203,7 @@ class RObjectPainter extends ObjectPainter {
    createv7AttLine(prefix) {
       if (!prefix || (typeof prefix != 'string')) prefix = "line_";
 
-      let color = this.v7EvalColor(prefix + "color", "black"),
+      let color = this.v7EvalColor(prefix + 'color', 'black'),
           width = this.v7EvalAttr(prefix + 'width', 1),
           style = this.v7EvalAttr(prefix + 'style', 1),
           pattern = this.v7EvalAttr(prefix + "pattern");
@@ -218,7 +218,7 @@ class RObjectPainter extends ObjectPainter {
    createv7AttMarker(prefix) {
       if (!prefix || (typeof prefix != 'string')) prefix = "marker_";
 
-      let color = this.v7EvalColor(prefix + "color", "black"),
+      let color = this.v7EvalColor(prefix + 'color', 'black'),
           size = this.v7EvalAttr(prefix + "size", 0.01),
           style = this.v7EvalAttr(prefix + 'style', 1),
           refsize = 1;
@@ -262,7 +262,7 @@ class RObjectPainter extends ObjectPainter {
 
       obj = { _typename: "ROOT::Experimental::RAttrMap::" };
       switch(kind) {
-         case "none": obj._typename += "NoValue_t"; break;
+         case 'none': obj._typename += "NoValue_t"; break;
          case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
          case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
          case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;

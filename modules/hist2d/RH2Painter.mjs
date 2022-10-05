@@ -410,7 +410,7 @@ class RH2Painter extends RHistPainter {
         if (entry)
            this.draw_g
                .append('svg:path')
-               .style("fill", handle.palette.getColor(colindx))
+               .style('fill', handle.palette.getColor(colindx))
                .attr('d', entry.path);
       });
 
@@ -688,7 +688,7 @@ class RH2Painter extends RHistPainter {
          this.draw_g
              .append('svg:path')
              .attr('d', dd)
-             .style("fill", palette.getColor(0));
+             .style('fill', palette.getColor(0));
       }
 
       this.buildContour(handle, levels, palette,
@@ -709,9 +709,9 @@ class RH2Painter extends RHistPainter {
 
             let elem = this.draw_g
                           .append('svg:path')
-                          .attr("class","th2_contour")
+                          .attr('class',"th2_contour")
                           .attr('d', dd)
-                          .style("fill", fillcolor);
+                          .style('fill', fillcolor);
 
             if (lineatt)
                elem.call(lineatt.func);
@@ -795,9 +795,9 @@ class RH2Painter extends RHistPainter {
 
       if (handle === null) handle = this.prepareDraw({ rounding: false });
 
-      let textFont  = this.v7EvalFont("text", { size: 20, color: "black", align: 22 }),
+      let textFont  = this.v7EvalFont('text', { size: 20, color: 'black', align: 22 }),
           text_offset = 0,
-          text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
+          text_g = this.draw_g.append('svg:g').attr('class',"th2_text"),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == "E") &&
                       this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function');
@@ -908,7 +908,7 @@ class RH2Painter extends RHistPainter {
       this.draw_g
          .append('svg:path')
          .attr('d', cmd)
-         .style("fill", "none")
+         .style('fill', 'none')
          .call(this.lineatt.func);
 
       return handle;
@@ -1005,18 +1005,18 @@ class RH2Painter extends RHistPainter {
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
-                    .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
-                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', cross)
-                               .style("fill", "none");
+                               .style('fill', 'none');
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
       }
@@ -1228,7 +1228,7 @@ class RH2Painter extends RHistPainter {
                pattern = defs.select('.' + pattern_class);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
-                            .attr("class", pattern_class)
+                            .attr('class', pattern_class)
                             .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
@@ -1266,7 +1266,7 @@ class RH2Painter extends RHistPainter {
            this.draw_g
                .append('svg:path')
                .attr("scatter-index", colindx)
-               .style("fill", 'url(#' + pattern.attr("id") + ')')
+               .style('fill', 'url(#' + pattern.attr("id") + ')')
                .attr('d', colPaths[colindx]);
         }
 
@@ -1473,8 +1473,8 @@ class RH2Painter extends RHistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append('svg:path')
-                            .attr("class","tooltip_bin h1bin")
-                            .style("pointer-events","none");
+                            .attr('class',"tooltip_bin h1bin")
+                            .style("pointer-events",'none');
 
             res.changed = ttrect.property("current_bin") !== foundindx;
 
@@ -1522,8 +1522,8 @@ class RH2Painter extends RHistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append("svg:rect")
-                                   .attr("class","tooltip_bin h1bin")
-                                   .style("pointer-events","none");
+                                   .attr('class',"tooltip_bin h1bin")
+                                   .style("pointer-events",'none');
 
             res.changed = ttrect.property("current_bin") !== i;
 
@@ -1584,8 +1584,8 @@ class RH2Painter extends RHistPainter {
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+                                .attr('class',"tooltip_bin h1bin")
+                                .style("pointer-events",'none');
 
          let i1 = i, i2 = i+1,
              j1 = j, j2 = j+1,

@@ -21,7 +21,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
       if (!obj?.fOper || !func) return;
 
-      let indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
+      let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = "",
           oper, npoints, n, arr = obj.fOper.split(";");
 
       const check_attributes = kind => {
@@ -29,7 +29,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
          if (lastpath) {
             lastpath.attr('d', d); // flush previous
-            d = ""; lastpath = null; lastkind = "none";
+            d = ""; lastpath = null; lastkind = 'none';
          }
 
          if (!kind) return;
@@ -70,7 +70,7 @@ class TWebPaintingPainter extends ObjectPainter {
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   check_attributes();
                   continue;
-               case "r":
+               case 'r':
                case "b": {
 
                   check_attributes((oper == "b") ? "f" : "l");
@@ -122,7 +122,7 @@ class TWebPaintingPainter extends ObjectPainter {
                      let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize,
                          angle = attr.fTextAngle,
                          txt = arr[k].slice(1),
-                         group = this.draw_g.append("svg:g");
+                         group = this.draw_g.append('svg:g');
 
                      if (angle >= 360) angle -= Math.floor(angle/360) * 360;
 

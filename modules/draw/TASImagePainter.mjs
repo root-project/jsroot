@@ -204,7 +204,7 @@ class TASImagePainter extends ObjectPainter {
                 .attr("href", res.url)
                 .attr('width', rect.width)
                 .attr('height', rect.height)
-                .attr("preserveAspectRatio", res.constRatio ? null : "none");
+                .attr("preserveAspectRatio", res.constRatio ? null : 'none');
 
          if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
             return this;

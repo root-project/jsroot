@@ -200,7 +200,7 @@ const ToolbarIcons = {
       injectStyle('.jsroot_svg_toolbar_btn { fill: steelblue; cursor: pointer; opacity: 0.3; } .jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node());
 
       let svg = group.append("svg:svg")
-                     .attr("class", "jsroot_svg_toolbar_btn")
+                     .attr('class', "jsroot_svg_toolbar_btn")
                      .attr('width', size + "px")
                      .attr('height', size + "px")
                      .attr("viewBox", "0 0 512 512")
@@ -212,7 +212,7 @@ const ToolbarIcons = {
             Object.assign(rec, btn.recs[n]);
             svg.append('rect').attr('x', rec.x).attr('y', rec.y)
                .attr('width', rec.w).attr('height', rec.h)
-               .style("fill", rec.f);
+               .style('fill', rec.f);
          }
       } else {
          svg.append('svg:path').attr('d', btn.path);
@@ -220,7 +220,7 @@ const ToolbarIcons = {
 
       //  special rect to correctly get mouse events for whole button area
       svg.append("svg:rect").attr('x', 0).attr('y', 0).attr('width', 512).attr('height', 512)
-         .style('opacity', 0).style('fill', "none").style("pointer-events", "visibleFill")
+         .style('opacity', 0).style('fill', 'none').style("pointer-events", "visibleFill")
          .append("svg:title").text(title);
 
       return svg;

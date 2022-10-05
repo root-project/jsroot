@@ -46,7 +46,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    format(radius) {
 
       if (radius === Math.round(radius)) return radius.toString();
-      if (this.ndig>10) return radius.toExponential(4);
+      if (this.ndig > 10) return radius.toExponential(4);
 
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
@@ -54,7 +54,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Convert axis values to text */
    axisAsText(axis, value) {
 
-      if (axis == "r") {
+      if (axis == 'r') {
          if (value === Math.round(value)) return value.toString();
          if (this.ndig>10) return value.toExponential(4);
          return value.toFixed(this.ndig+2);
@@ -199,7 +199,7 @@ class TGraphPolargramPainter extends ObjectPainter {
              .attr("cy",0)
              .attr("rx",Math.round(rx))
              .attr("ry",Math.round(ry))
-             .style("fill", "none")
+             .style('fill', 'none')
              .call(this.lineatt.func);
 
          if ((n < ticks.length-1) || !exclude_last)
@@ -217,7 +217,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                    .attr("cy",0)
                    .attr("rx",Math.round(rx))
                    .attr("ry",Math.round(ry))
-                   .style("fill", "none")
+                   .style('fill', 'none')
                    .call(this.gridatt.func);
             }
          }
@@ -277,7 +277,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                                .classed("interactive_ellipse", true)
                                .attr("cx",0)
                                .attr("cy",0)
-                               .style("fill", "none")
+                               .style('fill', 'none')
                                .style("pointer-events","visibleFill")
                                .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
                                .on('mousemove', evnt => this.mouseEvent('move', evnt))
@@ -400,19 +400,19 @@ class TGraphPolarPainter extends ObjectPainter {
       if (this.options.line && lpath)
          this.draw_g.append('svg:path')
              .attr('d', lpath)
-             .style("fill", "none")
+             .style('fill', 'none')
              .call(this.lineatt.func);
 
       if (this.options.curve && bins.length)
          this.draw_g.append('svg:path')
                  .attr('d', buildSvgPath("bezier", bins).path)
-                 .style("fill", "none")
+                 .style('fill', 'none')
                  .call(this.lineatt.func);
 
       if (epath)
          this.draw_g.append('svg:path')
              .attr('d', epath)
-             .style("fill","none")
+             .style('fill','none')
              .call(this.lineatt.func);
 
       if (mpath)
@@ -467,11 +467,11 @@ class TGraphPolarPainter extends ObjectPainter {
                   radius: match_distance
                 };
 
-      res.lines.push("r = " + main.axisAsText("r", graph.fY[bestindx]));
+      res.lines.push("r = " + main.axisAsText('r', graph.fY[bestindx]));
       res.lines.push("phi = " + main.axisAsText("phi",graph.fX[bestindx]));
 
       if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push("error r = " + main.axisAsText("r", graph.fEY[bestindx]));
+         res.lines.push("error r = " + main.axisAsText('r', graph.fEY[bestindx]));
 
       if (graph.fEX && graph.fEX[bestindx])
          res.lines.push("error phi = " + main.axisAsText("phi", graph.fEX[bestindx]));
@@ -493,8 +493,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (ttcircle.empty())
          ttcircle = this.draw_g.append("svg:ellipse")
-                             .attr("class","tooltip_bin")
-                             .style("pointer-events","none");
+                             .attr('class',"tooltip_bin")
+                             .style("pointer-events",'none');
 
       hint.changed = ttcircle.property("current_bin") !== hint.binindx;
 
@@ -503,8 +503,8 @@ class TGraphPolarPainter extends ObjectPainter {
                .attr("cy", hint.y)
                .attr("rx", Math.round(hint.radius))
                .attr("ry", Math.round(hint.radius))
-               .style("fill", "none")
-               .style("stroke", hint.color1)
+               .style('fill', 'none')
+               .style('stroke', hint.color1)
                .property("current_bin", hint.binindx);
    }
 

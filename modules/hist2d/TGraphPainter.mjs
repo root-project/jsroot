@@ -474,7 +474,7 @@ class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y - bin.eylow);
          }
 
-         let path1 = buildSvgPath((options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = buildSvgPath((options.EF > 1) ? "bezier" : 'line', drawbins),
              bins2 = [];
 
          for (let n = drawbins.length-1; n >= 0; --n) {
@@ -511,7 +511,7 @@ class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y);
          }
 
-         let kind = "line"; // simple line
+         let kind = 'line'; // simple line
          if (excl_width) kind += "calc"; // we need to calculated deltas to build exclusion points
 
          let path = buildSvgPath(kind, drawbins);
@@ -602,8 +602,8 @@ class TGraphPainter extends ObjectPainter {
          nodes = draw_g.selectAll(".grpoint")
                        .data(drawbins)
                        .enter()
-                       .append("svg:g")
-                       .attr("class", "grpoint")
+                       .append('svg:g')
+                       .attr('class', "grpoint")
                        .attr("transform", d => `translate(${d.grx1},${d.gry1})`);
       }
 
@@ -706,13 +706,13 @@ class TGraphPainter extends ObjectPainter {
 
          if (!isBatchMode() && settings.Tooltip && main_block)
             visible.append('svg:path')
-                   .style("fill", "none")
+                   .style('fill', 'none')
                    .style("pointer-events", "visibleFill")
                    .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
 
          visible.append('svg:path')
              .call(lineatt.func)
-             .style("fill", "none")
+             .style('fill', 'none')
              .attr('d', d => {
                 d.error = true;
                 return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
@@ -756,13 +756,13 @@ class TGraphPainter extends ObjectPainter {
             draw_g.append('svg:path')
                   .attr('d', path)
                   .call(this.markeratt.func);
-            if ((nodes === null) && (this.draw_kind == "none") && main_block)
+            if ((nodes === null) && (this.draw_kind == 'none') && main_block)
                this.draw_kind = (options.Mark == 101) ? "path" : "mark";
          }
          if (want_tooltip && hints_marker)
             draw_g.append('svg:path')
                   .attr('d', hints_marker)
-                  .style("fill", "none")
+                  .style('fill', 'none')
                   .style("pointer-events", "visibleFill");
       }
    }
@@ -792,18 +792,18 @@ class TGraphPainter extends ObjectPainter {
          path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
       }
 
-      let latt1 = new TAttLineHandler({ style: 1, width: 1, color: "black" }),
-          latt2 = new TAttLineHandler({ style: 2, width: 1, color: "black" });
+      let latt1 = new TAttLineHandler({ style: 1, width: 1, color: 'black' }),
+          latt2 = new TAttLineHandler({ style: 2, width: 1, color: 'black' });
 
       this.draw_g.append("path")
                  .attr('d', makeLine(xqmin,yqmin,xqmax,yqmax))
                  .call(latt1.func)
-                 .style("fill", "none");
+                 .style('fill', 'none');
 
       this.draw_g.append("path")
                  .attr('d', path2)
                  .call(latt2.func)
-                 .style("fill", "none");
+                 .style('fill', 'none');
    }
 
    drawBins3D(/*fp, graph*/) {
@@ -844,9 +844,9 @@ class TGraphPainter extends ObjectPainter {
 
       this.fillatt.used = false; // mark used only when really used
 
-      this.draw_kind = "none"; // indicate if special svg:g were created for each bin
+      this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
-      let draw_g = is_gme ? this.draw_g.append("svg:g") : this.draw_g;
+      let draw_g = is_gme ? this.draw_g.append('svg:g') : this.draw_g;
 
       this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
 
@@ -860,7 +860,7 @@ class TGraphPainter extends ObjectPainter {
                lineatt = new TAttLineHandler({ attr: graph.fAttLine[k], std: false });
                fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
-            let sub_g = this.draw_g.append("svg:g"),
+            let sub_g = this.draw_g.append('svg:g'),
                 options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
@@ -964,8 +964,8 @@ class TGraphPainter extends ObjectPainter {
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
-                             .attr("class","tooltip_bin h1bin")
-                             .style("pointer-events","none");
+                             .attr('class',"tooltip_bin h1bin")
+                             .style("pointer-events",'none');
 
       hint.changed = ttrect.property("current_bin") !== hint.d3bin;
 
@@ -1155,7 +1155,7 @@ class TGraphPainter extends ObjectPainter {
       }
 
       if (ttbin.empty())
-         ttbin = this.draw_g.append("svg:g").attr("class","tooltip_bin");
+         ttbin = this.draw_g.append('svg:g').attr('class',"tooltip_bin");
 
       hint.changed = ttbin.property("current_bin") !== hint.bin;
 
@@ -1165,8 +1165,8 @@ class TGraphPainter extends ObjectPainter {
 
          if (hint.ismark) {
             ttbin.append("svg:rect")
-                 .attr("class","h1bin")
-                 .style("pointer-events","none")
+                 .attr('class',"h1bin")
+                 .style("pointer-events",'none')
                  .style("opacity", "0.3")
                  .attr('x', Math.round(hint.x - hint.radius))
                  .attr('y', Math.round(hint.y - hint.radius))
@@ -1178,7 +1178,7 @@ class TGraphPainter extends ObjectPainter {
                ttbin.append("svg:circle").attr("cy", Math.round(hint.gry2));
 
             let elem = ttbin.selectAll("circle")
-                            .attr("r", hint.radius)
+                            .attr('r', hint.radius)
                             .attr("cx", Math.round(hint.x));
 
             if (!hint.islines) {

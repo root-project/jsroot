@@ -604,7 +604,7 @@ class TH2Painter extends THistPainter {
         if (entry)
            this.draw_g
                .append('svg:path')
-               .attr("fill", palette.getColor(colindx))
+               .attr('fill', palette.getColor(colindx))
                .attr('d', entry.path);
       });
 
@@ -960,7 +960,7 @@ class TH2Painter extends THistPainter {
          this.draw_g
              .append('svg:path')
              .attr('d', dd)
-             .style("fill", palette.calcColor(0, levels.length));
+             .style('fill', palette.calcColor(0, levels.length));
       }
 
       this.buildContour(handle, levels, palette, (colindx,xp,yp,iminus,iplus,ipoly) => {
@@ -982,9 +982,9 @@ class TH2Painter extends THistPainter {
 
          let elem = this.draw_g
                         .append('svg:path')
-                        .attr("class","th2_contour")
+                        .attr('class',"th2_contour")
                         .attr('d', dd)
-                        .style("fill", fillcolor);
+                        .style('fill', fillcolor);
 
          if (lineatt)
             elem.call(lineatt.func);
@@ -1120,7 +1120,7 @@ class TH2Painter extends THistPainter {
          if (colPaths[colindx]) {
             item = this.draw_g
                      .append('svg:path')
-                     .style("fill", colindx ? this.fPalette.getColor(colindx) : 'none')
+                     .style('fill', colindx ? this.fPalette.getColor(colindx) : 'none')
                      .attr('d', colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
@@ -1131,7 +1131,7 @@ class TH2Painter extends THistPainter {
       if (textbins.length > 0) {
          let text_col = this.getColor(histo.fMarkerColor),
              text_angle = -1*this.options.TextAngle,
-             text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
+             text_g = this.draw_g.append('svg:g').attr('class',"th2poly_text"),
              text_size = 12;
 
          if ((histo.fMarkerSize !== 1) && text_angle)
@@ -1168,7 +1168,7 @@ class TH2Painter extends THistPainter {
           x, y, width, height,
           color = this.getColor(histo.fMarkerColor),
           rotate = -1*this.options.TextAngle,
-          draw_g = this.draw_g.append("svg:g").attr("class","th2_text"),
+          draw_g = this.draw_g.append('svg:g').attr('class',"th2_text"),
           text_size = 20, text_offset = 0,
           profile2d = this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function'),
           show_err = (this.options.TextKind == "E"),
@@ -1290,7 +1290,7 @@ class TH2Painter extends THistPainter {
       this.draw_g
          .append('svg:path')
          .attr('d', cmd)
-         .style("fill", "none")
+         .style('fill', 'none')
          .call(this.lineatt.func);
 
       return handle;
@@ -1388,18 +1388,18 @@ class TH2Painter extends THistPainter {
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
-                    .style("fill", d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
-                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', cross)
-                               .style("fill", "none");
+                               .style('fill', 'none');
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
          else
@@ -1810,13 +1810,13 @@ class TH2Painter extends THistPainter {
       if ((hlines.length > 0) && (histo.fFillColor > 0))
          this.draw_g.append('svg:path')
              .attr('d', hlines)
-             .style("stroke", this.getColor(histo.fFillColor));
+             .style('stroke', this.getColor(histo.fFillColor));
 
       let hline_color = (isOption(kHistoZeroIndicator) && (histo.fFillStyle != 0)) ? this.fillatt.color : this.lineatt.color;
       if (hists && (!this.fillatt.empty() || (hline_color != 'none')))
          this.draw_g.append('svg:path')
              .attr('d', hists)
-             .style("stroke", (hline_color != 'none') ? hline_color : null)
+             .style('stroke', (hline_color != 'none') ? hline_color : null)
              .style("pointer-events", isBatchMode() ? null : "visibleFill")
              .call(this.fillatt.func);
 
@@ -1945,7 +1945,7 @@ class TH2Painter extends THistPainter {
                pattern = defs.select('.' + pattern_class);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
-                            .attr("class", pattern_class)
+                            .attr('class', pattern_class)
                             .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
@@ -1983,7 +1983,7 @@ class TH2Painter extends THistPainter {
            this.draw_g
                .append('svg:path')
                .attr("scatter-index", colindx)
-               .style("fill", 'url(#' + pattern.attr("id") + ')')
+               .style('fill', 'url(#' + pattern.attr("id") + ')')
                .attr('d', colPaths[colindx]);
         }
 
@@ -2120,12 +2120,12 @@ class TH2Painter extends THistPainter {
 
             if ((this.options.Circular > 11) && (max_value > min_value)) {
                let width = Math.round((cont - min_value) / (max_value - min_value) * (max_width - 1) + 1);
-               this.draw_g.append("path").attr('d', path).style("stroke", pi.color).style("stroke-width", width).style('fill','none');
+               this.draw_g.append("path").attr('d', path).style('stroke', pi.color).style('stroke-width', width).style('fill','none');
                path = "";
             }
          }
          if (path)
-            this.draw_g.append("path").attr('d', path).style("stroke", pi.color).style('fill','none');
+            this.draw_g.append("path").attr('d', path).style('stroke', pi.color).style('fill','none');
       }
 
       return this.finishTextDrawing();
@@ -2225,7 +2225,7 @@ class TH2Painter extends THistPainter {
       }
 
       group.append("path")
-         .attr("fill", d => getColor(d.index))
+         .attr('fill', d => getColor(d.index))
          .attr('d', arc);
 
       group.append('title').text(d => `${labels[d.index]} ${formatValue(d.value)}`);
@@ -2235,18 +2235,18 @@ class TH2Painter extends THistPainter {
          .data(ticks)
          .join("g")
          .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
-      groupTick.append("line")
-         .attr("stroke", "currentColor")
+      groupTick.append('line')
+         .attr('stroke', "currentColor")
          .attr("x2", 6);
 
-      groupTick.append("text")
+      groupTick.append('text')
          .attr('x', 8)
          .attr("dy", "0.35em")
          .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
          .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
          .text(d => formatTicks(d.value));
 
-      group.select("text")
+      group.select('text')
          .attr("font-weight", "bold")
          .text(function(d) {
             return this.getAttribute("text-anchor") === "end"
@@ -2259,7 +2259,7 @@ class TH2Painter extends THistPainter {
          .data(chords)
          .join("path")
          .style("mix-blend-mode", "multiply")
-         .attr("fill", d => getColor(d.source.index))
+         .attr('fill', d => getColor(d.source.index))
          .attr('d', ribbon)
          .append('title')
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
@@ -2425,8 +2425,8 @@ class TH2Painter extends THistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append('svg:path')
-                            .attr("class","tooltip_bin h1bin")
-                            .style("pointer-events","none");
+                            .attr('class',"tooltip_bin h1bin")
+                            .style("pointer-events",'none');
 
             res.changed = ttrect.property("current_bin") !== foundindx;
 
@@ -2474,8 +2474,8 @@ class TH2Painter extends THistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append('svg:path')
-                                   .attr("class","tooltip_bin h1bin")
-                                   .style("pointer-events","none")
+                                   .attr('class',"tooltip_bin h1bin")
+                                   .style("pointer-events",'none')
                                    .style("opacity", "0.7");
 
             res.changed = ttrect.property("current_bin") !== i;
@@ -2573,8 +2573,8 @@ class TH2Painter extends THistPainter {
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:path')
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+                                .attr('class',"tooltip_bin h1bin")
+                                .style("pointer-events",'none');
 
          let binid = i*10000 + j;
 

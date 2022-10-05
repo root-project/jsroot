@@ -187,7 +187,7 @@ class FileDumpSocket {
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      httpRequest("protocol.json", "text").then(res => this.getProtocol(res));
+      httpRequest("protocol.json", 'text').then(res => this.getProtocol(res));
    }
 
    /** @summary Get stored protocol */
@@ -219,7 +219,7 @@ class FileDumpSocket {
       // console.log(`getting file ${fname} wait ${this.wait_for_file}`);
       this.wait_for_file = true;
       this.cnt++;
-      httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
+      httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : 'text')).then(res => {
          this.wait_for_file = false;
          if (!res) return;
          if (this.receiver.provideData)

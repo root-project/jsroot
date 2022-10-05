@@ -127,7 +127,7 @@ function drawPolyLine() {
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += ((n > 0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
 
-   if (polyline._typename != "TPolyLine") fillatt.setSolidColor("none");
+   if (polyline._typename != "TPolyLine") fillatt.setSolidColor('none');
 
    if (!fillatt.empty()) cmd+="Z";
 
@@ -286,7 +286,7 @@ function drawBox() {
        ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
    // if box filled, contour line drawn only with "L" draw option:
-   if (!fillatt.empty() && !draw_line) lineatt.color = "none";
+   if (!fillatt.empty() && !draw_line) lineatt.color = 'none';
 
    this.draw_g
        .append('svg:path')
@@ -304,12 +304,12 @@ function drawBox() {
       this.draw_g.append('svg:path')
                  .attr('d', side1)
                  .call(fillatt.func)
-                 .style("fill", d3_rgb(fillatt.color).brighter(0.5).formatHex());
+                 .style('fill', d3_rgb(fillatt.color).brighter(0.5).formatHex());
 
       this.draw_g.append('svg:path')
           .attr('d', side2)
           .call(fillatt.func)
-          .style("fill", d3_rgb(fillatt.color).darker(0.5).formatHex());
+          .style('fill', d3_rgb(fillatt.color).darker(0.5).formatHex());
    }
 }
 

@@ -234,9 +234,9 @@ class TF1Painter extends ObjectPainter {
 
       if (gbin.empty())
          gbin = this.draw_g.append("svg:circle")
-                           .attr("class","tooltip_bin")
-                           .style("pointer-events","none")
-                           .attr("r", radius)
+                           .attr('class',"tooltip_bin")
+                           .style("pointer-events",'none')
+                           .attr('r', radius)
                            .call(this.lineatt.func)
                            .call(this.fillatt.func);
 
@@ -309,14 +309,14 @@ class TF1Painter extends ObjectPainter {
 
          if (!this.lineatt.empty())
             this.draw_g.append('svg:path')
-                .attr("class", "line")
+                .attr('class', 'line')
                 .attr('d', path.path)
-                .style("fill", "none")
+                .style('fill', 'none')
                 .call(this.lineatt.func);
 
          if (!this.fillatt.empty())
             this.draw_g.append('svg:path')
-                .attr("class", "area")
+                .attr('class', "area")
                 .attr('d', path.path + path.close)
                 .call(this.fillatt.func);
       }

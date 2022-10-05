@@ -137,7 +137,7 @@ function addDragHandler(_painter, arg) {
             .classed('zoom', true)
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style("cursor", "move")
-            .style("pointer-events", "none") // let forward double click to underlying elements
+            .style("pointer-events", 'none') // let forward double click to underlying elements
             .property('drag_handle', handle);
 
 
@@ -387,9 +387,9 @@ const TooltipHandler = {
       // placed in front of so-called interactive rect in frame, used to catch mouse events
 
       if (hintsg.empty())
-         hintsg = layer.append("svg:g")
-            .attr("class", "objects_hints")
-            .style("pointer-events", "none");
+         hintsg = layer.append('svg:g')
+            .attr('class', "objects_hints")
+            .style("pointer-events", 'none');
 
       let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || '';
       if (!pp.iscan) {
@@ -468,10 +468,10 @@ const TooltipHandler = {
 
          if (was_empty)
             group = hintsg.append("svg:svg")
-               .attr("class", "painter_hint_" + n)
+               .attr('class', "painter_hint_" + n)
                .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
                .style('overflow', 'hidden')
-               .style("pointer-events", "none");
+               .style("pointer-events", 'none');
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
@@ -501,15 +501,15 @@ const TooltipHandler = {
             .attr('y', 0)
             .attr('width', 60)
             .attr('height', hint.height)
-            .style("fill", "lightgrey")
-            .style("pointer-events", "none");
+            .style('fill', "lightgrey")
+            .style("pointer-events", 'none');
 
          if (nhints > 1) {
             let col = usecolor1 ? hint.color1 : hint.color2;
             if (col && (col !== 'none'))
-               r.style("stroke", col);
+               r.style('stroke', col);
          }
-         r.attr("stroke-width", hint.exact ? 3 : 1);
+         r.attr('stroke-width', hint.exact ? 3 : 1);
 
          for (let l = 0; l < (hint.lines ? hint.lines.length : 0); l++)
             if (hint.lines[l] !== null) {
@@ -518,8 +518,8 @@ const TooltipHandler = {
                   .attr('x', wmargin)
                   .attr('y', hmargin + l * textheight * hstep)
                   .attr("dy", ".8em")
-                  .style("fill", "black")
-                  .style("pointer-events", "none")
+                  .style('fill', 'black')
+                  .style("pointer-events", 'none')
                   .call(font.func)
                   .text(hint.lines[l]);
 
@@ -909,8 +909,8 @@ const FrameInteractive = {
 
          this.zoom_rect = this.getFrameSvg()
                               .append("rect")
-                              .attr("class", 'zoom')
-                              .style("pointer-events","none");
+                              .attr('class', 'zoom')
+                              .style("pointer-events",'none');
       }
 
       this.zoom_rect.attr('x', x).attr('y', y).attr('width', w).attr('height', h);
@@ -1101,7 +1101,7 @@ const FrameInteractive = {
       setPainterTooltipEnabled(this, false);
 
       this.zoom_rect = this.getFrameSvg().append("rect")
-            .attr("class", 'zoom')
+            .attr('class', 'zoom')
             .attr("id", "zoomRect")
             .attr('x', this.zoom_curr[0])
             .attr('y', this.zoom_curr[1])
@@ -1929,14 +1929,14 @@ class TFramePainter extends ObjectPainter {
                gridx += `M${this.x_handle.ticks[n]},0v${h}`;
 
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x') ? this.getAxis('x').fAxisColor : 1),
-             grid_color = this.getColor(colid) || "black";
+             grid_color = this.getColor(colid) || 'black';
 
          if (gridx)
            layer.append('svg:path')
-                .attr("class", "xgrid")
+                .attr('class', "xgrid")
                 .attr('d', gridx)
-                .style("stroke", grid_color)
-                .style("stroke-width", gStyle.fGridWidth)
+                .style('stroke', grid_color)
+                .style('stroke-width', gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
 
@@ -1950,14 +1950,14 @@ class TFramePainter extends ObjectPainter {
                gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
 
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y') ? this.getAxis('y').fAxisColor : 1),
-             grid_color = this.getColor(colid) || "black";
+             grid_color = this.getColor(colid) || 'black';
 
          if (gridy)
            layer.append('svg:path')
-                .attr("class", "ygrid")
+                .attr('class', "ygrid")
                 .attr('d', gridy)
-                .style("stroke", grid_color)
-                .style("stroke-width",gStyle.fGridWidth)
+                .style('stroke', grid_color)
+                .style('stroke-width',gStyle.fGridWidth)
                 .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
    }
@@ -2320,7 +2320,7 @@ class TFramePainter extends ObjectPainter {
 
       if (this.draw_g.empty()) {
 
-         this.draw_g = this.getLayerSvg("primitives_layer").append("svg:g").attr("class", "root_frame");
+         this.draw_g = this.getLayerSvg("primitives_layer").append('svg:g').attr('class', "root_frame");
 
          // empty title on the frame required to suppress title of the canvas
          if (!isBatchMode())

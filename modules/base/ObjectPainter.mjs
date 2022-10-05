@@ -308,7 +308,7 @@ class ObjectPainter extends BasePainter {
          // clear all elements, keep g element on its place
          this.draw_g.selectAll('*').remove();
       } else {
-         this.draw_g = layer.append("svg:g");
+         this.draw_g = layer.append('svg:g');
 
          if (!frame_layer)
             layer.selectChildren(".most_upper_primitives").raise();
@@ -1023,7 +1023,7 @@ class ObjectPainter extends BasePainter {
          font.clearFont(draw_g);
 
       if ((optimize_arr !== null) && (optimize_arr.length > 1))
-         ["fill", "text-anchor"].forEach(name => {
+         ['fill', "text-anchor"].forEach(name => {
             let first = optimize_arr[0].attr(name);
             optimize_arr.forEach(txt_node => {
                let value = txt_node.attr(name);
@@ -1152,7 +1152,7 @@ class ObjectPainter extends BasePainter {
 
          arg.txt_node = arg.draw_g.append("svg:text");
 
-         if (arg.color) arg.txt_node.attr("fill", arg.color);
+         if (arg.color) arg.txt_node.attr('fill', arg.color);
 
          if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
@@ -1168,7 +1168,7 @@ class ObjectPainter extends BasePainter {
             } else {
                arg.txt_node.remove(); // just remove text node,
                delete arg.txt_node;
-               arg.txt_g = arg.draw_g.append("svg:g");
+               arg.txt_g = arg.draw_g.append('svg:g');
                produceLatex(this, arg.txt_g, arg);
             }
             arg.ready = true;
@@ -1186,7 +1186,7 @@ class ObjectPainter extends BasePainter {
          return this._postprocessDrawText(arg, arg.txt_node);
       }
 
-      arg.mj_node = arg.draw_g.append("svg:g").attr('visibility', 'hidden'); // hide text until drawing is finished
+      arg.mj_node = arg.draw_g.append('svg:g').attr('visibility', 'hidden'); // hide text until drawing is finished
 
       produceMathjax(this, arg.mj_node, arg).then(() => {
          arg.ready = true;

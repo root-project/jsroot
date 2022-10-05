@@ -352,7 +352,7 @@ class Toolbar {
       this.bright = bright;
       if (this.element)
          this.element.selectAll(bright ? '.geo_toolbar_btn' : ".geo_toolbar_btn_bright")
-                     .attr("class", !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
+                     .attr('class', !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
    }
 
    /** @summary cleanup toolbar */
@@ -1259,7 +1259,7 @@ class TGeoPainter extends ObjectPainter {
                      .listen().onChange(() => this.changedWireFrame());
 
       this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { "none": 0, "show": 1, "center": 2 }).name('Axes')
+      appearance.add(this.ctrl, '_axis', { 'none': 0, "show": 1, "center": 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
@@ -3420,7 +3420,7 @@ class TGeoPainter extends ObjectPainter {
 
       showProgress('Loading macro ' + script_name);
 
-      return httpRequest(script_name, "text").then(script => {
+      return httpRequest(script_name, 'text').then(script => {
          let lines = script.split('\n'), indx = 0;
 
          while (indx < lines.length) {
@@ -3608,7 +3608,7 @@ class TGeoPainter extends ObjectPainter {
          let spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
          if (!info) {
             info = document.createElement("p");
-            info.setAttribute("class", "geo_info");
+            info.setAttribute('class', "geo_info");
             info.setAttribute('style',  "position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;");
             main.append(info);
          }

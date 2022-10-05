@@ -776,7 +776,7 @@ class TAxisPainter extends ObjectPainter {
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style("cursor", "move");
-//                 .style("pointer-events","none"); // let forward double click to underlying elements
+//                 .style("pointer-events",'none'); // let forward double click to underlying elements
           }).on("drag", evnt => {
                if (!drag_rect) return;
 
@@ -890,11 +890,11 @@ class TAxisPainter extends ObjectPainter {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
-          label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
+          label_g = [ axis_g.append('svg:g').attr('class',"axis_labels") ],
           lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
 
       if (this.lbls_both_sides)
-         label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? `translate(${w})` : `translate(0,${-h})`));
+         label_g.push(axis_g.append('svg:g').attr('class',"axis_labels").attr("transform", this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       // must be function to correctly handle 'this' argument
@@ -1004,7 +1004,7 @@ class TAxisPainter extends ObjectPainter {
          }
       }).then(() => {
          if (lbl_tilt)
-            label_g[0].selectAll("text").each(function() {
+            label_g[0].selectAll('text').each(function() {
                let txt = d3_select(this), tr = txt.attr("transform");
                txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
             });
@@ -1116,7 +1116,7 @@ class TAxisPainter extends ObjectPainter {
       if (!is_gaxis || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
-            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+            axis_g = layer.append('svg:g').attr('class',this.name + "_container");
          else
             axis_g.selectAll("*").remove();
       }
@@ -1163,7 +1163,7 @@ class TAxisPainter extends ObjectPainter {
          if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
             let labelSize = Math.max(this.labelsFont.size, 5),
                 r = axis_g.append("svg:rect")
-                          .attr("class", "axis_zoom")
+                          .attr('class', "axis_zoom")
                           .style("opacity", "0")
                           .style("cursor", "crosshair");
 
@@ -1193,7 +1193,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (!this.fTitle || disable_axis_drawing) return true;
 
-         title_g = axis_g.append("svg:g").attr("class", "axis_title");
+         title_g = axis_g.append('svg:g').attr('class', "axis_title");
 
          let title_offest_k = 1.6 / this.scalingSize,
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;

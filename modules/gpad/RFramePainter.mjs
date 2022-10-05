@@ -153,7 +153,7 @@ class RFramePainter extends RObjectPainter {
           gridx = this.v7EvalAttr("gridX", false),
           gridy = this.v7EvalAttr("gridY", false),
           grid_style = getSvgLineStyle(gStyle.fGridStyle),
-          grid_color = (gStyle.fGridColor > 0) ? this.getColor(gStyle.fGridColor) : "black";
+          grid_color = (gStyle.fGridColor > 0) ? this.getColor(gStyle.fGridColor) : 'black';
 
       if (this.x_handle)
          this.x_handle.draw_grid = gridx;
@@ -169,10 +169,10 @@ class RFramePainter extends RObjectPainter {
 
          if (grid.length > 0)
             layer.append('svg:path')
-                 .attr("class", "xgrid")
+                 .attr('class', "xgrid")
                  .attr('d', grid)
                  .style('stroke',grid_color)
-                 .style("stroke-width", gStyle.fGridWidth)
+                 .style('stroke-width', gStyle.fGridWidth)
                  .style("stroke-dasharray", grid_style);
       }
 
@@ -190,10 +190,10 @@ class RFramePainter extends RObjectPainter {
 
          if (grid.length > 0)
           layer.append('svg:path')
-               .attr("class", "ygrid")
+               .attr('class', "ygrid")
                .attr('d', grid)
                .style('stroke', grid_color)
-               .style("stroke-width", gStyle.fGridWidth)
+               .style('stroke-width', gStyle.fGridWidth)
                .style("stroke-dasharray", grid_style);
       }
    }
@@ -719,7 +719,7 @@ class RFramePainter extends RObjectPainter {
 
       if (this.draw_g.empty()) {
 
-         this.draw_g = this.getLayerSvg("primitives_layer").append("svg:g").attr("class", "root_frame");
+         this.draw_g = this.getLayerSvg("primitives_layer").append('svg:g').attr('class', "root_frame");
 
          if (!isBatchMode())
             this.draw_g.append("svg:title").text("");

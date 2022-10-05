@@ -669,7 +669,7 @@ function drawRFrameTitle(reason, drag) {
        title_margin = this.v7EvalLength("margin", ph, 0.02),
        title_width  = fw,
        title_height = this.v7EvalLength('height', ph, 0.05),
-       textFont     = this.v7EvalFont("text", { size: 0.07, color: "black", align: 22 });
+       textFont     = this.v7EvalFont('text', { size: 0.07, color: 'black', align: 22 });
 
    if (reason == 'drag') {
       title_height = drag.height;
@@ -702,7 +702,7 @@ function drawRFrameTitle(reason, drag) {
 registerMethods("ROOT::Experimental::RPalette", {
 
    extractRColor(rcolor) {
-     return rcolor.fColor || "black";
+     return rcolor.fColor || 'black';
    },
 
    getColor(indx) {
@@ -784,7 +784,7 @@ registerMethods("ROOT::Experimental::RPalette", {
    getColorOrdinal(value) {
       // extract color with ordinal value between 0 and 1
       if (!this.fColors)
-         return "black";
+         return 'black';
       if ((typeof value != 'number') || (value < 0))
          value = 0;
       else if (value > 1)
@@ -861,11 +861,11 @@ function drawRFont() {
        clname = "custom_font_" + font.fFamily+font.fWeight+font.fStyle;
 
    if (defs.empty())
-      defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
+      defs = svg.insert("svg:defs", ":first-child").attr('class', "canvas_defs");
 
    let entry = defs.select("." + clname);
    if (entry.empty())
-      entry = defs.append('style').attr("type", "text/css").attr("class", clname);
+      entry = defs.append('style').attr("type", "text/css").attr('class', clname);
 
    entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
 

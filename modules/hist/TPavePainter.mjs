@@ -143,16 +143,16 @@ class TPavePainter extends ObjectPainter {
          if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
             this.draw_g.append('svg:path')
                  .attr('d',"M0,"+(h2+brd) + dpath)
-                 .style("fill", this.getColor(pt.fShadowColor))
-                 .style("stroke", this.getColor(pt.fShadowColor))
-                 .style("stroke-width", "1px");
+                 .style('fill', this.getColor(pt.fShadowColor))
+                 .style('stroke', this.getColor(pt.fShadowColor))
+                 .style('stroke-width', "1px");
 
          this.draw_g.append('svg:path')
              .attr('d', "M0,"+h2 +dpath)
              .call(this.fillatt.func)
              .call(this.lineatt.func);
 
-         let text_g = this.draw_g.append("svg:g")
+         let text_g = this.draw_g.append('svg:g')
                                  .attr("transform", `translate(${Math.round(width/4)},${Math.round(height/4)})`);
 
          return this.drawPaveText(w2, h2, arg, text_g);
@@ -172,9 +172,9 @@ class TPavePainter extends ObjectPainter {
          }
          this.draw_g.append('svg:path')
                     .attr('d', spath + 'z')
-                    .style("fill", scol)
-                    .style("stroke", scol)
-                    .style("stroke-width", "1px");
+                    .style('fill', scol)
+                    .style('stroke', scol)
+                    .style('stroke-width', "1px");
       }
 
       if (pt.fNpaves)
@@ -386,7 +386,7 @@ class TPavePainter extends ObjectPainter {
                      this.UseTextColor = true;
                   }
 
-                  let sub_g = text_g.append("svg:g");
+                  let sub_g = text_g.append('svg:g');
 
                   this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
 
@@ -451,7 +451,7 @@ class TPavePainter extends ObjectPainter {
              y = Math.round(-height*0.02),
              w = Math.round(width*0.5),
              h = Math.round(height*0.04),
-             lbl_g = text_g.append("svg:g");
+             lbl_g = text_g.append('svg:g');
 
          lbl_g.append('svg:path')
                .attr('d', `M${x},${y}h${w}v${h}h${-w}z`)
@@ -611,7 +611,7 @@ class TPavePainter extends ObjectPainter {
          if (!isany && painter?.lineatt && !painter.lineatt.empty())
             this.draw_g.append('svg:path')
                        .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
-                       .style("fill", "none")
+                       .style('fill', 'none')
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
@@ -672,7 +672,7 @@ class TPavePainter extends ObjectPainter {
          zmin = main.hmin; zmax = main.hmax;
       }
 
-      this.draw_g.selectAll("rect").style("fill", 'white');
+      this.draw_g.selectAll("rect").style('fill', 'white');
 
       if ((gzmin === undefined) || (gzmax === undefined) || (gzmin == gzmax)) {
          gzmin = zmin; gzmax = zmax;
@@ -692,7 +692,7 @@ class TPavePainter extends ObjectPainter {
          // we need such rect to correctly calculate size
          this.draw_g.append('svg:path')
                     .attr('d', `M0,0H${s_width}V${s_height}H0Z`)
-                    .style("fill", 'white');
+                    .style('fill', 'white');
       else
          for (let i = 0; i < levels.length-1; ++i) {
             let z0 = Math.round(this.z_handle.gr(levels[i])),
@@ -730,15 +730,15 @@ class TPavePainter extends ObjectPainter {
 
             let r = this.draw_g.append('svg:path')
                        .attr('d', d)
-                       .style("fill", col)
+                       .style('fill', col)
                        .property("fill0", col)
                        .property("fill1", d3_rgb(col).darker(0.5).formatHex());
 
             if (this.isTooltipAllowed())
                r.on('mouseover', function() {
-                  d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill1'));
+                  d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
                }).on('mouseout', function() {
-                  d3_select(this).transition().duration(100).style("fill", d3_select(this).property('fill0'));
+                  d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill0'));
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (settings.Zooming)
@@ -816,7 +816,7 @@ class TPavePainter extends ObjectPainter {
 
          let origin = d3_pointer(evnt, this.draw_g.node());
 
-         zoom_rect = this.draw_g.append("svg:rect").attr("class", 'zoom').attr("id", "colzoomRect");
+         zoom_rect = this.draw_g.append("svg:rect").attr('class', 'zoom').attr("id", "colzoomRect");
 
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];

@@ -131,7 +131,7 @@ class FontHandler {
 
    /** @summary Returns font name */
    getFontName() {
-      return this.isSymbol || this.name || "none";
+      return this.isSymbol || this.name || 'none';
    }
 
 } // class FontHandler

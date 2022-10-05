@@ -144,10 +144,10 @@ class TSplinePainter extends ObjectPainter {
 
       if (gbin.empty())
          gbin = this.draw_g.append("svg:circle")
-                           .attr("class", "tooltip_bin")
-                           .style("pointer-events","none")
-                           .attr("r", radius)
-                           .style("fill", "none")
+                           .attr('class', "tooltip_bin")
+                           .style("pointer-events",'none')
+                           .attr('r', radius)
+                           .style('fill', 'none')
                            .call(this.lineatt.func);
 
       let res = { name: this.getObject().fName,
@@ -231,12 +231,12 @@ class TSplinePainter extends ObjectPainter {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = buildSvgPath("bezier", bins, h0, 2);
+         let path = buildSvgPath('bezier', bins, h0, 2);
 
          this.draw_g.append('svg:path')
-             .attr("class", "line")
+             .attr('class', 'line')
              .attr('d', path.path)
-             .style("fill", "none")
+             .style('fill', 'none')
              .call(this.lineatt.func);
       }
 
@@ -251,7 +251,7 @@ class TSplinePainter extends ObjectPainter {
 
          this.knot_size = this.markeratt.getFullSize();
 
-         for (let n=0; n<spline.fPoly.length; n++) {
+         for (let n = 0; n < spline.fPoly.length; n++) {
             let knot = spline.fPoly[n],
                 grx = funcs.grx(knot.fX);
             if ((grx > -this.knot_size) && (grx < w + this.knot_size)) {
@@ -301,8 +301,8 @@ class TSplinePainter extends ObjectPainter {
       if (!this.options.Line && !this.options.Curve && !this.options.Mark)
          this.options.Curve = true;
 
-      if (d.check("X+")) { this.options.Hopt += "X+"; this.options.second_x = has_main; }
-      if (d.check("Y+")) { this.options.Hopt += "Y+"; this.options.second_y = has_main; }
+      if (d.check('X+')) { this.options.Hopt += 'X+'; this.options.second_x = has_main; }
+      if (d.check('Y+')) { this.options.Hopt += 'Y+'; this.options.second_y = has_main; }
 
       this.storeDrawOpt(opt);
    }
