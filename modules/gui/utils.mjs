@@ -25,7 +25,7 @@ function showProgress(msg, tmout) {
 
    if (box.empty()) {
       box = d3_select(document.body)
-              .append("div").attr("id", id)
+              .append('div').attr('id', id)
               .attr('style', "position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;");
       box.append("p");
    }

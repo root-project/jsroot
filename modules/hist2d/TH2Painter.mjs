@@ -1946,7 +1946,7 @@ class TH2Painter extends THistPainter {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr('class', pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
+                            .attr('id', "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();
@@ -1983,7 +1983,7 @@ class TH2Painter extends THistPainter {
            this.draw_g
                .append('svg:path')
                .attr("scatter-index", colindx)
-               .style('fill', 'url(#' + pattern.attr("id") + ')')
+               .style('fill', `url(#${pattern.attr('id')})`)
                .attr('d', colPaths[colindx]);
         }
 

@@ -1055,7 +1055,7 @@ class RPadPainter extends RObjectPainter {
          if (this.batch_mode && this.iscan)
              this._fixed_size = true;
 
-         let mainid = this.selectDom().attr("id");
+         let mainid = this.selectDom().attr('id');
 
          if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
             this.brlayout = new BrowserLayout(mainid, null, this);

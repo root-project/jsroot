@@ -1102,7 +1102,7 @@ const FrameInteractive = {
 
       this.zoom_rect = this.getFrameSvg().append("rect")
             .attr('class', 'zoom')
-            .attr("id", "zoomRect")
+            .attr('id', "zoomRect")
             .attr('x', this.zoom_curr[0])
             .attr('y', this.zoom_curr[1])
             .attr('width', this.zoom_origin[0] - this.zoom_curr[0])

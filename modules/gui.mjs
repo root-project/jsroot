@@ -19,7 +19,7 @@ function readStyleFromURL(url) {
    function get_bool(name, field) {
       if (d.has(name)) {
          let val = d.get(name);
-         settings[field] = (val != "0") && (val != "false") && (val != "off");
+         settings[field] = (val != "0") && (val != 'false') && (val != 'off');
       }
    }
 
@@ -93,7 +93,7 @@ function readStyleFromURL(url) {
       if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
       if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
       if (toolbar.indexOf('show') >= 0) val = true;
-      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
+      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf('false') < 0) && (toolbar.indexOf('off') < 0));
    }
 
    get_bool("skipsi", "SkipStreamerInfos");
@@ -118,9 +118,9 @@ function readStyleFromURL(url) {
    function get_int_style(name, field, dflt) {
       if (!d.has(name)) return;
       let val = d.get(name);
-      if (!val || (val == "true") || (val == "on"))
+      if (!val || (val == 'true') || (val == 'on'))
          gStyle[field] = dflt;
-      else if ((val == "false") || (val == "off"))
+      else if ((val == 'false') || (val == 'off'))
          gStyle[field] = 0;
       else
          gStyle[field] = parseInt(val);
@@ -157,11 +157,11 @@ async function buildGUI(gui_element, gui_kind = "") {
 
    if (gui_kind == "draw") {
       online = drawing = nobrowser = true;
-   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser") !== "false")) {
+   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser") !== 'false')) {
       nobrowser = true;
    }
 
-   if (myDiv.attr("ignoreurl") === "true")
+   if (myDiv.attr("ignoreurl") === 'true')
       settings.IgnoreUrlOptions = true;
 
    readStyleFromURL();

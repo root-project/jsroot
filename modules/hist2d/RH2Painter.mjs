@@ -1120,7 +1120,7 @@ class RH2Painter extends RHistPainter {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr('class', pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + internals.id_counter++)
+                            .attr('id', "jsroot_scatter_pattern_" + internals.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();
@@ -1157,7 +1157,7 @@ class RH2Painter extends RHistPainter {
            this.draw_g
                .append('svg:path')
                .attr("scatter-index", colindx)
-               .style('fill', 'url(#' + pattern.attr("id") + ')')
+               .style('fill', `url(#${pattern.attr('id')})`)
                .attr('d', colPaths[colindx]);
         }
 

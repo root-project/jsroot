@@ -303,7 +303,7 @@ class Toolbar {
    constructor(container, bright) {
       this.bright = bright;
 
-      this.element = container.append("div").attr('class','geo_toolbar_group');
+      this.element = container.append('div').attr('class','geo_toolbar_group');
 
       injectStyle(
          `.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }
@@ -783,9 +783,9 @@ class TGeoPainter extends ObjectPainter {
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       let dd = decodeUrl();
-      if (dd.get('_grid') == "true") res._grid = true;
+      if (dd.get('_grid') == 'true') res._grid = true;
       let _opt = dd.get('_debug');
-      if (_opt == "true") { res._debug = true; res._grid = true; }
+      if (_opt == 'true') { res._debug = true; res._grid = true; }
       if (_opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
@@ -4807,7 +4807,7 @@ function provideMenu(menu, item, hpainter) {
          item._icon = item._icon.split(" ")[0] + provideVisStyle(obj);
          hpainter.updateTreeNode(item);
       } else {
-         ScanEveVisible(obj, { assign: (arg === "true") }, true);
+         ScanEveVisible(obj, { assign: (arg === 'true') }, true);
          hpainter.forEachItem(m => {
             // update all child items
             if (m._geoobj && m._icon) {
@@ -4851,7 +4851,7 @@ function provideMenu(menu, item, hpainter) {
       let res = ScanEveVisible(obj, undefined, true);
 
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden == 0), "Daughters", res.hidden !== 0 ? "true" : "false", ToggleEveVisibility);
+         menu.addchk((res.hidden == 0), "Daughters", res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
 
    } else {
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), "Invisible",

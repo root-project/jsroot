@@ -1496,9 +1496,9 @@ function drawRawText(dom, txt /*, opt*/) {
       }
 
       let frame = this.selectDom(),
-          main = frame.select("div");
+          main = frame.select('div');
       if (main.empty())
-         main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
+         main = frame.append('div').attr('style', 'max-width:100%;max-height:100%;overflow:auto');
       main.html(txt);
 
       // (re) set painter to first child element, base painter not requires canvas
@@ -1570,7 +1570,7 @@ function getActivePad() {
   * @param {string|object} dom - id or DOM element
   * @param {boolean|object} arg - options on how to resize
   * @desc As first argument dom one should use same argument as for the drawing
-  * As second argument, one could specify "true" value to force redrawing of
+  * As second argument, one could specify 'true' value to force redrawing of
   * the element even after minimal resize
   * Or one just supply object with exact sizes like { width:300, height:200, force:true };
   * @example

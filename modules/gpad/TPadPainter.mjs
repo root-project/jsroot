@@ -1422,7 +1422,7 @@ class TPadPainter extends ObjectPainter {
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
-         let mainid = this.selectDom().attr("id");
+         let mainid = this.selectDom().attr('id');
 
          if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
             this.brlayout = new BrowserLayout(mainid, null, this);

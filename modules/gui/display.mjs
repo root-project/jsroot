@@ -319,7 +319,7 @@ class GridDisplay extends MDIDisplay {
 
          handle.groups.push(group);
 
-         let elem = main.append("div").attr('groupid', group.id);
+         let elem = main.append('div').attr('groupid', group.id);
 
          if (handle.vertical)
             elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
@@ -427,7 +427,7 @@ class GridDisplay extends MDIDisplay {
    /** @summary Create group separator
      * @private */
    createSeparator(handle, main, group) {
-      let separ = main.append("div");
+      let separ = main.append('div');
 
       separ.classed('jsroot_separator', true)
            .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
@@ -610,9 +610,9 @@ class TabsDisplay extends MDIDisplay {
           top = dom.select(".jsroot_tabs"), labels, main;
 
       if (top.empty()) {
-         top = dom.append("div").classed("jsroot_tabs", true);
-         labels = top.append("div").classed("jsroot_tabs_labels", true);
-         main = top.append("div").classed("jsroot_tabs_main", true);
+         top = dom.append('div').classed("jsroot_tabs", true);
+         labels = top.append('div').classed("jsroot_tabs_labels", true);
+         main = top.append('div').classed("jsroot_tabs_main", true);
       } else {
          labels = top.select(".jsroot_tabs_labels");
          main = top.select(".jsroot_tabs_main");
@@ -889,7 +889,7 @@ class FlexibleDisplay extends MDIDisplay {
           .jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
 
       if (top.empty())
-         top = dom.append("div").classed("jsroot_flex_top", true);
+         top = dom.append('div').classed("jsroot_flex_top", true);
 
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
@@ -1128,7 +1128,7 @@ class BatchDisplay extends MDIDisplay {
              .style("visible", 'hidden')
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
-             .attr("id","jsroot_batch_" + this.frames.length)
+             .attr('id',"jsroot_batch_" + this.frames.length)
              .attr("frame_title", title);
 
       if (this.frames.length == 0)
@@ -1249,11 +1249,11 @@ class BrowserLayout {
    create(with_browser) {
       let main = this.main();
 
-      main.append("div").attr("id", this.drawing_divid())
+      main.append('div').attr('id', this.drawing_divid())
                         .classed("jsroot_draw_area", true)
                         .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      if (with_browser) main.append("div").classed("jsroot_browser", true);
+      if (with_browser) main.append('div').classed("jsroot_browser", true);
 
       this.createStyle();
    }
@@ -1262,7 +1262,7 @@ class BrowserLayout {
    createBrowserBtns() {
       let br = this.main().select(".jsroot_browser");
       if (br.empty()) return;
-      let btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
+      let btns = br.append('div').classed("jsroot_browser_btns", true).classed("jsroot", true);
       btns.style('position','absolute').style("left","7px").style("top","7px");
       if (browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
@@ -1383,13 +1383,13 @@ class BrowserLayout {
 
       let left_pos = d3_select("#" + this.gui_div + "_drawing").style('left');
 
-      main.insert("div",".jsroot_browser_area")
-          .attr("id",id)
+      main.insert('div',".jsroot_browser_area")
+          .attr('id',id)
           .classed("jsroot_status_area", true)
           .style('position','absolute').style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
           .style('margin',0).style('border',0);
 
-      let hsepar = main.insert("div",".jsroot_browser_area")
+      let hsepar = main.insert('div',".jsroot_browser_area")
                        .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
                        .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 

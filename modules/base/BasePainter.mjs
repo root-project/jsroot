@@ -17,7 +17,7 @@ function getElementRect(elem, sizearg) {
    const styleValue = name => {
       let value = elem.style(name);
       if (!value || (typeof value !== 'string')) return 0;
-      value = parseFloat(value.replace('px', ""));
+      value = parseFloat(value.replace('px', ''));
       return !Number.isFinite(value) ? 0 : Math.round(value);
    };
 
@@ -49,7 +49,7 @@ function getElementRect(elem, sizearg) {
 function getAbsPosInCanvas(sel, pos) {
    while (!sel.empty() && !sel.classed('root_canvas') && pos) {
       let cl = sel.attr('class');
-      if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
+      if (cl && ((cl.indexOf('root_frame') >= 0) || (cl.indexOf('__root_pad_') >= 0))) {
          pos.x += sel.property('draw_x') || 0;
          pos.y += sel.property('draw_y') || 0;
       }
@@ -61,17 +61,17 @@ function getAbsPosInCanvas(sel, pos) {
 
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert
-  * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
-  * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
+  * @param {string} [fmt='6.4g'] - format can be like 5.4g or 4.2e or 6.4f
+  * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ['0.1','6.4f']
   * @return {string|Array} - converted value or array with value and actual format
   * @private */
 function floatToString(value, fmt, ret_fmt) {
-   if (!fmt) fmt = "6.4g";
+   if (!fmt) fmt = '6.4g';
 
    fmt = fmt.trim();
    let len = fmt.length;
    if (len < 2)
-      return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
+      return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
    let last = fmt[len-1];
    fmt = fmt.slice(0,len-1);
    let isexp, prec = fmt.indexOf('.');
@@ -139,13 +139,13 @@ class DrawOptions {
 
    constructor(opt) {
       this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : '';
-      this.part = "";
+      this.part = '';
    }
 
    /** @summary Returns true if remaining options are empty or contain only seperators symbols. */
    empty() {
       if (this.opt.length === 0) return true;
-      return this.opt.replace(/[ ;_,]/g,"").length == 0;
+      return this.opt.replace(/[ ;_,]/g, '').length == 0;
    }
 
    /** @summary Returns remaining part of the draw options. */
@@ -156,7 +156,7 @@ class DrawOptions {
       let pos = this.opt.indexOf(name);
       if (pos < 0) return false;
       this.opt = this.opt.slice(0, pos) + this.opt.slice(pos + name.length);
-      this.part = "";
+      this.part = '';
       if (!postpart) return true;
 
       let pos2 = pos;
@@ -214,12 +214,12 @@ class TRandom {
 
 /** @summary Function used to provide svg:path for the smoothed curves.
   * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-  * @param {string} kind  should contain "bezier" or 'line'.
-  * If first symbol "L", then it used to continue drawing
+  * @param {string} kind  should contain 'bezier' or 'line'.
+  * If first symbol 'L', then it used to continue drawing
   * @private */
 function buildSvgPath(kind, bins, height, ndig) {
 
-   const smooth = kind.indexOf("bezier") >= 0;
+   const smooth = kind.indexOf('bezier') >= 0;
 
    if (ndig === undefined) ndig = smooth ? 2 : 0;
    if (height === undefined) height = 0;
@@ -269,11 +269,11 @@ function buildSvgPath(kind, bins, height, ndig) {
          str = str.slice(0, str.length - 1);
       if (str[str.length - 1] == '.')
          str = str.slice(0, str.length - 1);
-      if (str == "-0") str = "0";
+      if (str == '-0') str = '0';
       return str;
    };
 
-   res.path = ((kind[0] == "L") ? "L" : "M") + conv(bin.grx) + "," + conv(bin.gry);
+   res.path = ((kind[0] == 'L') ? 'L' : 'M') + conv(bin.grx) + ',' + conv(bin.gry);
 
    // just calculate all deltas, can be used to build exclusion
    if (smooth || kind.indexOf('calc') >= 0)
@@ -285,7 +285,7 @@ function buildSvgPath(kind, bins, height, ndig) {
       for (let n = 1; n < npnts; ++n) {
          let prev = bin;
          bin = bins[n];
-         if (n > 1) res.path += "S";
+         if (n > 1) res.path += 'S';
          res.path += `${conv(bin.grx - bin.dgrx)},${conv(bin.gry - bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
          maxy = Math.max(maxy, prev.gry);
       }
@@ -381,7 +381,7 @@ function compressSVG(svg) {
    svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, '')
 
    if (svg.indexOf('xlink:href') < 0)
-      svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, "");
+      svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, '');
 
    return svg;
 }
@@ -429,7 +429,7 @@ class BasePainter {
       if (!res) {
          if (typeof this.divid == 'string') {
             let id = this.divid;
-            if (id[0] != '#') id = "#" + id;
+            if (id[0] != '#') id = '#' + id;
             res = d3_select(id);
             if (!res.empty()) this.divid = res.node();
          } else {
@@ -442,12 +442,12 @@ class BasePainter {
 
       let use_enlarge = res.property('use_enlarge'),
           layout = res.property('layout') || 'simple',
-          layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
+          layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
 
       if (layout_selector) res = res.select(layout_selector);
 
       // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = d3_select("#jsroot_enlarge_div");
+      if (!is_direct && !res.empty() && use_enlarge) res = d3_select('#jsroot_enlarge_div');
 
       return res;
    }
@@ -488,7 +488,7 @@ class BasePainter {
    cleanup(keep_origin) {
       this.clearTopPainter();
       let origin = this.selectDom('origin');
-      if (!origin.empty() && !keep_origin) origin.html("");
+      if (!origin.empty() && !keep_origin) origin.html('');
       this.divid = null;
       delete this._selected_main;
 
@@ -580,21 +580,21 @@ class BasePainter {
 
       if ((action === undefined) || (action === 'verify')) return true;
 
-      let state = origin.property('use_enlarge') ? "on" : "off";
+      let state = origin.property('use_enlarge') ? 'on' : 'off';
 
       if (action === 'state') return state;
 
-      if (action === 'toggle') action = (state === "off");
+      if (action === 'toggle') action = (state === 'off');
 
-      let enlarge = d3_select("#jsroot_enlarge_div");
+      let enlarge = d3_select('#jsroot_enlarge_div');
 
-      if ((action === true) && (state !== "on")) {
+      if ((action === true) && (state !== 'on')) {
          if (!enlarge.empty()) return false;
 
          enlarge = d3_select(document.body)
-            .append("div")
-            .attr("id", "jsroot_enlarge_div")
-            .attr('style', "position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; right: 1px; top: 1px; bottom: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;");
+            .append('div')
+            .attr('id', 'jsroot_enlarge_div')
+            .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; right: 1px; top: 1px; bottom: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
          let rect1 = getElementRect(main),
              rect2 = getElementRect(enlarge);
@@ -615,7 +615,7 @@ class BasePainter {
 
          return true;
       }
-      if ((action === false) && (state !== "off")) {
+      if ((action === false) && (state !== 'off')) {
 
          while (enlarge.node() && enlarge.node().childNodes.length > 0)
             main.node().appendChild(enlarge.node().firstChild);
@@ -648,7 +648,7 @@ class BasePainter {
 
    /** @summary Returns assigned item draw option
      * @desc Used with {@link HierarchyPainter} to identify drawn item option */
-   getItemDrawOpt() { return this._hdrawopt ?? ""; }
+   getItemDrawOpt() { return this._hdrawopt ?? ''; }
 
 } // class BasePainter
 
@@ -656,10 +656,10 @@ class BasePainter {
   * @return {Promise} with d3 selection for d3_body
    * @private */
 async function _loadJSDOM() {
-   return import("jsdom").then(handle => {
+   return import('jsdom').then(handle => {
 
       if (!internals.nodejs_window) {
-         internals.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
+         internals.nodejs_window = (new handle.JSDOM('<!DOCTYPE html>hello')).window;
          internals.nodejs_document = internals.nodejs_window.document; // used with three.js
          internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); //get d3 handle for body
       }

@@ -816,7 +816,7 @@ class TPavePainter extends ObjectPainter {
 
          let origin = d3_pointer(evnt, this.draw_g.node());
 
-         zoom_rect = this.draw_g.append("svg:rect").attr('class', 'zoom').attr("id", "colzoomRect");
+         zoom_rect = this.draw_g.append("svg:rect").attr('class', 'zoom').attr('id', "colzoomRect");
 
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];

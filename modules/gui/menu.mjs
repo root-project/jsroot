@@ -738,9 +738,9 @@ class JSRootMenu {
       this.add("endsub:");
       addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
       addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
-      addStyleIntField("Log X", "fOptLogx", ["off", "on", "log 2"]);
-      addStyleIntField("Log Y", "fOptLogy", ["off", "on", "log 2"]);
-      addStyleIntField("Log Z", "fOptLogz", ["off", "on", "log 2"]);
+      addStyleIntField("Log X", "fOptLogx", ['off', 'on', "log 2"]);
+      addStyleIntField("Log Y", "fOptLogy", ['off', 'on', "log 2"]);
+      addStyleIntField("Log Z", "fOptLogz", ['off', 'on', "log 2"]);
       this.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
       this.add("endsub:");
 
@@ -1387,7 +1387,7 @@ class BootstrapMenu extends JSRootMenu {
 
       if (title) extras += ` title="${title}"`;
       if (arg !== undefined) extras += ` arg="${arg}"`;
-      if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"`; cl += " dropdown-toggle"; }
+      if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded='false'`; cl += " dropdown-toggle"; }
 
       let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
 
@@ -1505,7 +1505,7 @@ class BootstrapMenu extends JSRootMenu {
          myModalEl.setAttribute('class', 'modal fade');
          myModalEl.setAttribute('role', "dialog");
          myModalEl.setAttribute('tabindex', "-1");
-         myModalEl.setAttribute('aria-hidden', "true");
+         myModalEl.setAttribute('aria-hidden', 'true');
          let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
 
          myModalEl.innerHTML =

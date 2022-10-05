@@ -1155,7 +1155,7 @@ class HierarchyPainter extends BasePainter {
          d3prnt.selectAll("*").remove();
          d3cont = d3prnt;
       } else {
-         d3cont = d3prnt.append("div");
+         d3cont = d3prnt.append('div');
          if (arg && (arg >= (hitem._parent._show_limit || settings.HierarchyLimit))) break_list = true;
       }
 
@@ -1163,12 +1163,12 @@ class HierarchyPainter extends BasePainter {
       d3cont.attr("item", itemname);
 
       // line with all html elements for this item (excluding childs)
-      let d3line = d3cont.append("div").attr('class','h_line');
+      let d3line = d3cont.append('div').attr('class','h_line');
 
       // build indent
       let prnt = isroot ? null : hitem._parent;
       while (prnt && (prnt !== this.h)) {
-         d3line.insert("div",":first-child")
+         d3line.insert('div',":first-child")
                .attr('class', this.isLastSibling(prnt) ? "img_empty" : "img_line");
          prnt = prnt._parent;
       }
@@ -1191,7 +1191,7 @@ class HierarchyPainter extends BasePainter {
 
       if (icon_class.length > 0) {
          if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
-         let d3icon = d3line.append("div").attr('class', icon_class);
+         let d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
                               .on("click", function(evnt) { h.tree_click(evnt, this, "plusminus"); });
       }
@@ -1202,7 +1202,7 @@ class HierarchyPainter extends BasePainter {
          let icon_name = hitem._isopen ? img2 : img1, d3img;
 
          if (icon_name.indexOf('img_') == 0)
-            d3img = d3line.append("div")
+            d3img = d3line.append('div')
                           .attr('class', icon_name)
                           .attr('title', hitem._kind);
          else
@@ -1265,7 +1265,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
-         let d3chlds = d3cont.append("div").attr('class', "h_childs");
+         let d3chlds = d3cont.append('div').attr('class', "h_childs");
          if (this.show_overflow) d3chlds.style('overflow', "initial");
          for (let i = 0; i < hitem._childs.length; ++i) {
             let chld = hitem._childs[i];
@@ -1344,7 +1344,7 @@ class HierarchyPainter extends BasePainter {
          return this;
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append("div").attr('style', "display: inline; vertical-align: middle; white-space: nowrap;");
+         let fastbtns = d3elem.append('div').attr('style', "display: inline; vertical-align: middle; white-space: nowrap;");
          for (let n = 0; n < factcmds.length; ++n) {
             let btn = fastbtns.append("button")
                        .text("")
@@ -1384,7 +1384,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       let maindiv =
-         d3elem.append("div")
+         d3elem.append('div')
                .attr('class', "jsroot")
                .style('font-size', this.with_icons ? "12px" : "15px")
                .style("flex","1");
@@ -1398,7 +1398,7 @@ class HierarchyPainter extends BasePainter {
       if (this.textcolor)
          maindiv.style('color', this.textcolor);
 
-      this.addItemHtml(this.h, maindiv.append("div").attr('class',"h_tree"));
+      this.addItemHtml(this.h, maindiv.append('div').attr('class',"h_tree"));
 
       this.setTopPainter(); //assign hpainter as top painter
 
@@ -1987,7 +1987,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Enable drag of the element
      * @private  */
    enableDrag(d3elem /*, itemname*/) {
-      d3elem.attr("draggable", "true").on("dragstart", function(ev) {
+      d3elem.attr("draggable", 'true').on("dragstart", function(ev) {
          let itemname = this.parentNode.parentNode.getAttribute('item');
          ev.dataTransfer.setData("item", itemname);
       });
@@ -2009,7 +2009,7 @@ class HierarchyPainter extends BasePainter {
       }).on("drop", function(ev) {
          d3_select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData("item");
-         if (itemname) h.dropItem(itemname, this.getAttribute("id"));
+         if (itemname) h.dropItem(itemname, this.getAttribute('id'));
       });
    }
 
@@ -3261,10 +3261,10 @@ class HierarchyPainter extends BasePainter {
 
       if (status === "no")
          status = null;
-      else if (status === "off") {
+      else if (status === 'off') {
          this.status_disabled = true;
          status = null;
-      } else if (status === "on")
+      } else if (status === 'on')
          status = true;
       else if (status !== null) {
          statush = parseInt(status);
@@ -3277,7 +3277,7 @@ class HierarchyPainter extends BasePainter {
          browser_kind = "fix";
       else if (browser_kind === "no")
          browser_kind = "";
-      else if (browser_kind === "off") {
+      else if (browser_kind === 'off') {
          browser_kind = "";
          status = null;
          this.exclude_browser = true;
@@ -3337,7 +3337,7 @@ class HierarchyPainter extends BasePainter {
             if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
                browser_kind = this.h._browser;
                if (browser_kind === "no") browser_kind = ""; else
-               if (browser_kind === "off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+               if (browser_kind === 'off') { browser_kind = ""; status = null; this.exclude_browser = true; }
             }
 
             if (('_monitoring' in this.h) && !monitor)
@@ -3635,8 +3635,8 @@ ObjectPainter.prototype.showInspector = function(obj) {
       h = Math.round(rect.height * 0.05) + 'px',
       id = "root_inspector_" + internals.id_counter++;
 
-   main.append("div")
-      .attr("id", id)
+   main.append('div')
+      .attr('id', id)
       .attr('class', "jsroot_inspector")
       .style('position', 'absolute')
       .style('top', h)

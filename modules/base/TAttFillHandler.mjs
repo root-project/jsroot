@@ -299,7 +299,7 @@ class TAttFillHandler {
       if (!fills && !lines) return false;
 
       let patt = defs.append('svg:pattern')
-                     .attr("id", id).attr('class', id).attr("patternUnits", "userSpaceOnUse")
+                     .attr('id', id).attr('class', id).attr("patternUnits", "userSpaceOnUse")
                      .attr('width', w).attr('height', h);
 
       if (fills2) {

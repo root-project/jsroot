@@ -294,7 +294,7 @@ class RPalettePainter extends RObjectPainter {
             zoom_rect = g_btns
                  .append("svg:rect")
                  .attr('class', 'zoom')
-                 .attr("id", "colzoomRect")
+                 .attr('id', "colzoomRect")
                  .style('display', 'none');
             if (vertical)
                zoom_rect.attr('x', 0).attr('width', palette_width).attr('y', sel1).attr('height', 1);

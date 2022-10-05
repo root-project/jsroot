@@ -255,7 +255,7 @@ class RCanvasPainter extends RPadPainter {
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             let relative_path = cmd.slice(9);
             if (!this.showUI5Panel) {
-               handle.send(reply + "false");
+               handle.send(reply + 'false');
             } else {
 
                let conn = new WebWindowHandle(handle.kind);
@@ -270,17 +270,17 @@ class RCanvasPainter extends RPadPainter {
                   onWebsocketMsg(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:") == 0) ? msg.slice(10) : '';
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
-                                  .then(res => handle.send(reply + (res ? "true" : "false")));
+                                  .then(res => handle.send(reply + (res ? 'true' : 'false')));
                   },
 
                   onWebsocketClosed() {
                      // if connection failed,
-                     handle.send(reply + "false");
+                     handle.send(reply + 'false');
                   },
 
                   onWebsocketError() {
                      // if connection failed,
-                     handle.send(reply + "false");
+                     handle.send(reply + 'false');
                   }
 
                });

@@ -137,7 +137,7 @@ let constants = {
          if (!s || (typeof s !== 'string'))
             return this.Normal;
          switch(s){
-            case "off": return this.Off;
+            case 'off': return this.Off;
             case "symbols": return this.Symbols;
             case "normal":
             case "latex":

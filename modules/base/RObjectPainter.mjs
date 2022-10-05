@@ -22,7 +22,7 @@ class RObjectPainter extends ObjectPainter {
          let typ1 = typeof dflt, typ2 = typeof res;
          if (typ1 == typ2) return res;
          if (typ1 == 'boolean') {
-            if (typ2 == 'string') return (res != "") && (res != "0") && (res != "no") && (res != "off");
+            if (typ2 == 'string') return (res != "") && (res != "0") && (res != "no") && (res != 'off');
             return !!res;
          }
          if ((typ1 == 'number') && (typ2 == 'string'))
