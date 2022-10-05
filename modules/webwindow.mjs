@@ -647,8 +647,8 @@ async function connectWebWindow(arg) {
    let d = decodeUrl();
 
    // special holder script, prevents headless chrome browser from too early exit
-   if (d.has("headless") && d.get("key") && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
-      loadScript("root_batch_holder.js?key=" + d.get("key"));
+   if (d.has("headless") && d.get('key') && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
+      loadScript("root_batch_holder.js?key=" + d.get('key'));
 
    if (!arg.platform)
       arg.platform = d.get("platform");
@@ -688,7 +688,7 @@ async function connectWebWindow(arg) {
          if (browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
 
-      handle.key = d.get("key");
+      handle.key = d.get('key');
       handle.token = d.get("token");
 
       if (arg.receiver) {

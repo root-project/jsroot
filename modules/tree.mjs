@@ -708,11 +708,11 @@ class TDrawSelector extends TSelector {
       if (!expr || (typeof expr !== 'string')) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
-      let pos = expr.lastIndexOf(";");
+      let pos = expr.lastIndexOf(';');
       while (pos >= 0) {
          let parname = expr.slice(pos + 1), parvalue = undefined;
          expr = expr.slice(0, pos);
-         pos = expr.lastIndexOf(";");
+         pos = expr.lastIndexOf(';');
 
          let separ = parname.indexOf(":");
          if (separ > 0) { parvalue = parname.slice(separ + 1); parname = parname.slice(0, separ); }
@@ -784,7 +784,7 @@ class TDrawSelector extends TSelector {
          } else if (pos < 0) {
             this.hist_name = harg;
          } else if ((harg[0] == "(") && (harg[harg.length - 1] == ")")) {
-            harg = harg.slice(1, harg.length - 1).split(",");
+            harg = harg.slice(1, harg.length - 1).split(',');
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
                harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
@@ -882,7 +882,7 @@ class TDrawSelector extends TSelector {
    drawOnlyBranch(tree, branch, expr, args) {
       this.ndim = 1;
 
-      if (expr.indexOf("dump") == 0) expr = ";" + expr;
+      if (expr.indexOf("dump") == 0) expr = ';' + expr;
 
       expr = this.parseParameters(tree, args, expr);
 
@@ -2674,7 +2674,7 @@ function treeHierarchy(node, obj) {
       node._childs.push(subitem);
 
       if (branch._typename === 'TBranchElement')
-         subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
+         subitem._title += " from " + branch.fClassName + ';' + branch.fClassVersion;
 
       if (nb_branches > 0) {
          subitem._more = true;

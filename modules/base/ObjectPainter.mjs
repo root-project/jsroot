@@ -317,7 +317,7 @@ class ObjectPainter extends BasePainter {
       // set attributes for debugging
       if (this.draw_object) {
          this.draw_g.attr('objname', (this.draw_object.fName || "name").replace(/[^\w]/g, '_'));
-         this.draw_g.attr('objtype', (this.draw_object._typename || "type").replace(/[^\w]/g, '_'));
+         this.draw_g.attr('objtype', (this.draw_object._typename || 'type').replace(/[^\w]/g, '_'));
       }
 
       this.draw_g.property('in_frame', !!frame_layer); // indicates coordinate system
@@ -900,7 +900,7 @@ class ObjectPainter extends BasePainter {
 
       all_args.forEach(arg => {
          if (arg.mj_node && arg.applyAttributesToMathJax) {
-            let svg = arg.mj_node.select("svg"); // MathJax svg
+            let svg = arg.mj_node.select('svg'); // MathJax svg
             arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
             only_text = false;
@@ -1014,7 +1014,7 @@ class ObjectPainter extends BasePainter {
             trans += ` translate(${Math.round(arg.dx)},${Math.round(arg.dy)})`;
          else if (arg.dx)
             trans += ` translate(${Math.round(arg.dx)})`;
-         if (trans) txt.attr("transform", trans);
+         if (trans) txt.attr('transform', trans);
       });
 
 
@@ -1099,7 +1099,7 @@ class ObjectPainter extends BasePainter {
       let align = ['start', 'middle'];
 
       if (typeof arg.align == 'string') {
-         align = arg.align.split(";");
+         align = arg.align.split(';');
          if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
          if ((arg.align / 10) >= 3)

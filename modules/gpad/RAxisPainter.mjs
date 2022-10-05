@@ -715,8 +715,8 @@ class RAxisPainter extends RObjectPainter {
 
         if (lbls_tilt)
            label_g.selectAll('text').each(function () {
-               let txt = d3_select(this), tr = txt.attr("transform");
-               txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+               let txt = d3_select(this), tr = txt.attr('transform');
+               txt.attr('transform', tr + " rotate(25)").style("text-anchor", "start");
            });
 
          if (this.vertical) {
@@ -853,7 +853,7 @@ class RAxisPainter extends RObjectPainter {
             axis_g.selectAll("*").remove();
       }
 
-      axis_g.attr("transform", transform || null);
+      axis_g.attr('transform', transform || null);
 
       this.extractDrawAttributes();
       this.axis_g = axis_g;
@@ -929,7 +929,7 @@ class RAxisPainter extends RObjectPainter {
       else
          axis_g.selectAll("*").remove();
 
-      axis_g.attr("transform", transform || null);
+      axis_g.attr('transform', transform || null);
 
       if (this.ticksSide == "invert") side = -side;
 

@@ -2234,7 +2234,7 @@ class TH2Painter extends THistPainter {
          .selectAll("g")
          .data(ticks)
          .join("g")
-         .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+         .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
       groupTick.append('line')
          .attr('stroke', "currentColor")
          .attr("x2", 6);
@@ -2242,7 +2242,7 @@ class TH2Painter extends THistPainter {
       groupTick.append('text')
          .attr('x', 8)
          .attr("dy", "0.35em")
-         .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
+         .attr('transform', d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
          .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
          .text(d => formatTicks(d.value));
 

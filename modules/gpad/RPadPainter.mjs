@@ -281,7 +281,7 @@ class RPadPainter extends RObjectPainter {
          if (render_to.style('position') == 'static')
             render_to.style('position', 'relative');
 
-         svg = render_to.append("svg")
+         svg = render_to.append('svg')
              .attr('class', "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -659,8 +659,8 @@ class RPadPainter extends RObjectPainter {
          menu.addchk((this.enlargeMain('state') == 'on'), "Enlarge " + (this.iscan ? "canvas" : 'pad'), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? "canvas" : 'pad');
-      menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
-      menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", false, arg));
+      menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs('png', false, arg));
+      menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs('svg', false, arg));
 
       return true;
    }
@@ -898,7 +898,7 @@ class RPadPainter extends RObjectPainter {
 
       // first appropriate painter for the object
       // if same object drawn twice, two painters will exists
-      for (let k = 0; k<this.painters.length; ++k) {
+      for (let k = 0; k < this.painters.length; ++k) {
          if (this.painters[k].snapid === snapid)
             if (--cnt === 0) { objpainter = this.painters[k]; break;  }
       }
@@ -951,7 +951,7 @@ class RPadPainter extends RObjectPainter {
       // will be used in addToPadPrimitives to assign style to sub-painters
       this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
-      if (snap._typename === "ROOT::Experimental::TObjectDisplayItem") {
+      if (snap._typename === 'ROOT::Experimental::TObjectDisplayItem') {
 
          // identifier used in RObjectDrawable
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
@@ -964,7 +964,7 @@ class RPadPainter extends RObjectPainter {
          if (snap.fKind == webSnapIds.kColors) {
             let ListOfColors = [], arr = snap.fObject.arr;
             for (let n = 0; n < arr.length; ++n) {
-               let name = arr[n].fString, p = name.indexOf("=");
+               let name = arr[n].fString, p = name.indexOf('=');
                if (p > 0)
                   ListOfColors[parseInt(name.slice(0,p))] = name.slice(p+1);
             }
@@ -1041,7 +1041,7 @@ class RPadPainter extends RObjectPainter {
       // if canvas size not specified in batch mode, temporary use 900x700 size
       // if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
-      if (this.iscan && this._websocket && snap.fTitle && !this.embed_canvas && (typeof document !== "undefined"))
+      if (this.iscan && this._websocket && snap.fTitle && !this.embed_canvas && (typeof document !== 'undefined'))
          document.title = snap.fTitle;
 
       if (this.snapid === undefined) {
@@ -1141,12 +1141,12 @@ class RPadPainter extends RObjectPainter {
      * @private */
    async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
-      if (format == "pdf")
-         return btoa_func("dummy PDF file");
+      if (format == 'pdf')
+         return btoa_func('dummy PDF file');
 
-      if ((format == "png") || (format == "jpeg") || (format == "svg"))
+      if ((format == 'png') || (format == 'jpeg') || (format == 'svg'))
          return this.produceImage(true, format).then(res => {
-            if (!res || (format == "svg")) return res;
+            if (!res || (format == 'svg')) return res;
             let separ = res.indexOf("base64,");
             return (separ > 0) ? res.slice(separ+7) : '';
          });
@@ -1167,13 +1167,13 @@ class RPadPainter extends RObjectPainter {
        let selp = null, selkind;
 
        switch(name) {
-          case "xaxis":
-          case "yaxis":
-          case "zaxis":
+          case 'xaxis':
+          case 'yaxis':
+          case 'zaxis':
              selp = this.getMainPainter();
              selkind = name[0];
              break;
-          case "frame":
+          case 'frame':
              selp = this.getFramePainter();
              break;
           default: {
@@ -1200,7 +1200,7 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
+         saveFile(filename, (kind != 'svg') ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata));
       });
    }
 
@@ -1208,7 +1208,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
 
-      let use_frame = (full_canvas === "frame"),
+      let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
           painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
           items = []; // keep list of replaced elements, which should be moved back at the end
@@ -1310,7 +1310,7 @@ class RPadPainter extends RObjectPainter {
 
       svg = compressSVG(svg);
 
-      if (file_format == "svg") {
+      if (file_format == 'svg') {
          reconstruct();
          return svg; // return SVG file as is
       }
@@ -1345,13 +1345,13 @@ class RPadPainter extends RObjectPainter {
    clickPadButton(funcname, evnt) {
 
       if (funcname == "CanvasSnapShot")
-         return this.saveAs("png", true);
+         return this.saveAs('png', true);
 
       if (funcname == "enlargePad")
          return this.enlargePad();
 
       if (funcname == "PadSnapShot")
-         return this.saveAs("png", false);
+         return this.saveAs('png', false);
 
       if (funcname == "PadContextMenus") {
 
@@ -1371,15 +1371,15 @@ class RPadPainter extends RObjectPainter {
                menu.add("Pad", 'pad', this.itemContextMenu);
 
             if (this.getFramePainter())
-               menu.add("Frame", "frame", this.itemContextMenu);
+               menu.add("Frame", 'frame', this.itemContextMenu);
 
             let main = this.getMainPainter(); // here hist painter methods
 
             if (main) {
-               menu.add("X axis", "xaxis", this.itemContextMenu);
-               menu.add("Y axis", "yaxis", this.itemContextMenu);
+               menu.add("X axis", 'xaxis', this.itemContextMenu);
+               menu.add("Y axis", 'yaxis', this.itemContextMenu);
                if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
-                  menu.add("Z axis", "zaxis", this.itemContextMenu);
+                  menu.add("Z axis", 'zaxis', this.itemContextMenu);
             }
 
             if (this.painters?.length) {

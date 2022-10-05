@@ -171,8 +171,8 @@ class TMultiGraphPainter extends ObjectPainter {
             yaxis = histo.fYaxis;
          }
          histo.fTitle = mgraph.fTitle;
-         if (histo.fTitle.indexOf(";") >= 0) {
-            let t = histo.fTitle.split(";");
+         if (histo.fTitle.indexOf(';') >= 0) {
+            let t = histo.fTitle.split(';');
             histo.fTitle = t[0];
             if (t[1]) xaxis.fTitle = t[1];
             if (t[2]) yaxis.fTitle = t[2];
@@ -263,7 +263,7 @@ class TMultiGraphPainter extends ObjectPainter {
       painter._pmc = d.check("PMC");
 
       let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY", "FB"];
-      checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+      checkhopt.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
       let promise = Promise.resolve(true);
       if (d.check("A") || !painter.getMainPainter()) {

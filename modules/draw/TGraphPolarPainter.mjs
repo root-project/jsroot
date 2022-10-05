@@ -148,7 +148,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.createG();
 
-      this.draw_g.attr("transform", `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -285,7 +285,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
          interactive.attr("rx", this.szx).attr("ry", this.szy);
 
-         d3_select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+         d3_select(interactive.node().parentNode).attr('transform', this.draw_g.attr('transform'));
 
          if (settings.Zooming && settings.ZoomWheel)
             interactive.on("wheel", evnt => this.mouseWheel(evnt));
@@ -356,7 +356,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       this.createG();
 
-      this.draw_g.attr("transform", main.draw_g.attr("transform"));
+      this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
       let mpath = "", epath = "", lpath = "", bins = [];
 

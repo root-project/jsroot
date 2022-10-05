@@ -97,7 +97,7 @@ function chooseTimeFormat(awidth, ticks) {
 const AxisPainterMethods = {
 
    initAxisPainter() {
-      this.name = "yaxis";
+      this.name = 'yaxis';
       this.kind = "normal";
       this.func = null;
       this.order = 0; // scaling order for axis labels
@@ -894,7 +894,7 @@ class TAxisPainter extends ObjectPainter {
           lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
 
       if (this.lbls_both_sides)
-         label_g.push(axis_g.append('svg:g').attr('class',"axis_labels").attr("transform", this.vertical ? `translate(${w})` : `translate(0,${-h})`));
+         label_g.push(axis_g.append('svg:g').attr('class',"axis_labels").attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       // must be function to correctly handle 'this' argument
@@ -1005,8 +1005,8 @@ class TAxisPainter extends ObjectPainter {
       }).then(() => {
          if (lbl_tilt)
             label_g[0].selectAll('text').each(function() {
-               let txt = d3_select(this), tr = txt.attr("transform");
-               txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+               let txt = d3_select(this), tr = txt.attr('transform');
+               txt.attr('transform', tr + " rotate(25)").style("text-anchor", "start");
             });
 
          return max_textwidth;
@@ -1113,7 +1113,7 @@ class TAxisPainter extends ObjectPainter {
       // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
       this.lineatt.not_standard = true;
 
-      if (!is_gaxis || (this.name === "zaxis")) {
+      if (!is_gaxis || (this.name === 'zaxis')) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
             axis_g = layer.append('svg:g').attr('class',this.name + "_container");
@@ -1128,7 +1128,7 @@ class TAxisPainter extends ObjectPainter {
             axis_lines += this.vertical ? `M${secondShift},0v${h}` : `M0,${secondShift}h${w}`;
       }
 
-      axis_g.attr("transform", transform || null);
+      axis_g.attr('transform', transform || null);
 
       let side = 1, ticksPlusMinus = 0;
 
@@ -1209,7 +1209,7 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_x = Math.round(title_offest_k * this.titleOffset);
 
-            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+            if ((this.name == 'zaxis') && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
                if (title_shift_x < rect.width - this.ticksSize)
@@ -1275,7 +1275,7 @@ class TAxisPainter extends ObjectPainter {
           gaxis.fY1 = (ph - y1) / ph;
           gaxis.fY2 = (ph - y2)/ ph;
           this.use_ndc = true;
-      } else if (opt == "frame") {
+      } else if (opt == 'frame') {
          let rect = this.getFramePainter().getFrameRect();
          gaxis.fX1 = (x1 - rect.x) / rect.width;
          gaxis.fX2 = (x2 - rect.x) / rect.width;
@@ -1314,7 +1314,7 @@ class TAxisPainter extends ObjectPainter {
          if (vertical) y2 = y1; else x1 = x2;
       }
 
-      this.configureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
+      this.configureAxis(vertical ? 'yaxis' : 'xaxis', min, max, min, max, vertical, [0, sz], {
          time_scale: gaxis.fChopt.indexOf("t") >= 0,
          log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0,
          reverse,

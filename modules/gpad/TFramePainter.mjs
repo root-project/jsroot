@@ -73,7 +73,7 @@ function addDragHandler(_painter, arg) {
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
-      painter.draw_g.attr("transform", `translate(${newx},${newy})`);
+      painter.draw_g.attr('transform', `translate(${newx},${newy})`);
 
       drag_rect.remove();
       drag_rect = null;
@@ -398,7 +398,7 @@ const TooltipHandler = {
       }
 
       // copy transform attributes from frame itself
-      hintsg.attr("transform", trans)
+      hintsg.attr('transform', trans)
          .property("last_point", pnt)
          .property("hints_pad", this.getPadName());
 
@@ -406,7 +406,7 @@ const TooltipHandler = {
          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
 
       if (show_only_best || (nhints == 1)) {
-         viewmode = "single";
+         viewmode = 'single';
          posx += 15;
       } else {
          // if there are many hints, place them left or right
@@ -473,7 +473,7 @@ const TooltipHandler = {
                .style('overflow', 'hidden')
                .style("pointer-events", 'none');
 
-         if (viewmode == "single") {
+         if (viewmode == 'single') {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
          } else {
             gapy = FindPosInGap(gapy);
@@ -547,20 +547,20 @@ const TooltipHandler = {
 
       actualw += 2 * wmargin;
 
-      let svgs = hintsg.selectAll("svg");
+      let svgs = hintsg.selectAll('svg');
 
       if ((viewmode == "right") && (posx + actualw > frame_rect.width - 20)) {
          posx = frame_rect.width - actualw - 20;
          svgs.attr('x', posx);
       }
 
-      if ((viewmode == "single") && (posx + actualw > pad_width - frame_rect.x) && (posx > actualw + 20)) {
+      if ((viewmode == 'single') && (posx + actualw > pad_width - frame_rect.x) && (posx > actualw + 20)) {
          posx -= (actualw + 20);
          svgs.attr('x', posx);
       }
 
       // if gap not very big, apply gapy coordinate to open view on the histogram
-      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
+      if ((viewmode !== 'single') && (gapy < maxhinty) && (gapy !== curry)) {
          if ((gapminx <= posx + actualw + 5) && (gapmaxx >= posx - 5))
             svgs.attr('y', function() { return d3_select(this).property('gapy'); });
       } else if ((viewmode !== 'single') && (curry > maxhinty)) {
@@ -984,11 +984,11 @@ const FrameInteractive = {
             this.processFrameClick(pnt);
             break;
          case 2: {
-            this.getPadPainter()?.selectObjectPainter(this, null, "xaxis");
+            this.getPadPainter()?.selectObjectPainter(this, null, 'xaxis');
             break;
          }
          case 3: {
-            this.getPadPainter()?.selectObjectPainter(this, null, "yaxis");
+            this.getPadPainter()?.selectObjectPainter(this, null, 'yaxis');
             break;
          }
       }
@@ -1324,7 +1324,7 @@ const FrameInteractive = {
                   }
             }
 
-            if (sel) menu_painter = sel; else kind = "frame";
+            if (sel) menu_painter = sel; else kind = 'frame';
 
             if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
@@ -1351,7 +1351,7 @@ const FrameInteractive = {
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind !== "frame"))))
+         if (fp && (!domenu || (frame_corner && (kind !== 'frame'))))
             domenu = fp.fillContextMenu(menu);
 
          if (domenu)
@@ -1464,8 +1464,8 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Returns frame or sub-objects, used in GED editor */
    getObject(place) {
-      if (place === "xaxis") return this.xaxis;
-      if (place === "yaxis") return this.yaxis;
+      if (place === 'xaxis') return this.xaxis;
+      if (place === 'yaxis') return this.yaxis;
       return super.getObject();
    }
 
@@ -1739,7 +1739,7 @@ class TFramePainter extends ObjectPainter {
       this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
 
-      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
@@ -1751,7 +1751,7 @@ class TFramePainter extends ObjectPainter {
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
 
-      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
@@ -2156,7 +2156,7 @@ class TFramePainter extends ObjectPainter {
          this.setRootPadRange(pad);
       }
 
-      this.interactiveRedraw('pad', "frame");
+      this.interactiveRedraw('pad', 'frame');
    }
 
     /** @summary Remove all kinds of X/Y function for axes transformation */
@@ -2346,7 +2346,7 @@ class TFramePainter extends ObjectPainter {
 
       this.axes_drawn = false;
 
-      this.draw_g.attr("transform", trans);
+      this.draw_g.attr('transform', trans);
 
       top_rect.attr('d', `M0,0H${w}V${h}H0Z`)
               .call(this.fillatt.func)
@@ -2482,8 +2482,8 @@ class TFramePainter extends ObjectPainter {
       }, "Store frame position and graphical attributes to gStyle");
 
       menu.add("separator");
-      menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
-      menu.add("Save as frame.svg", () => pp.saveAs("svg", 'frame', 'frame.svg'));
+      menu.add("Save as frame.png", () => pp.saveAs('png', 'frame', 'frame.png'));
+      menu.add("Save as frame.svg", () => pp.saveAs('svg', 'frame', 'frame.svg'));
 
       return true;
    }
@@ -2496,7 +2496,7 @@ class TFramePainter extends ObjectPainter {
          res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
        }
 
-      res.fcust = "frame";
+      res.fcust = 'frame';
       res.fopt = [this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0];
       return res;
    }
@@ -2514,7 +2514,7 @@ class TFramePainter extends ObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : '',
+         transform: this.draw_g ? this.draw_g.attr('transform') : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }

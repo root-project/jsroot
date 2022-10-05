@@ -19,7 +19,7 @@ class RFramePainter extends RObjectPainter {
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} tframe - RFrame object */
    constructor(dom, tframe) {
-      super(dom, tframe, "", "frame");
+      super(dom, tframe, "", 'frame');
       this.mode3d = false;
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
@@ -320,7 +320,7 @@ class RFramePainter extends RObjectPainter {
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.optionUnlab = this.v7EvalAttr("x_labels_hide", false);
 
-      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? this.logy : this.logx,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
@@ -333,7 +333,7 @@ class RFramePainter extends RObjectPainter {
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.optionUnlab = this.v7EvalAttr("y_labels_hide", false);
 
-      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? this.logx : this.logy,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
@@ -407,14 +407,14 @@ class RFramePainter extends RObjectPainter {
          this.z_handle.setPadName(this.getPadName());
          this.z_handle.snapid = this.snapid;
 
-         this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
+         this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
          this.x_handle.assignFrameMembers(this,'x');
 
-         this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
+         this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
          this.y_handle.assignFrameMembers(this,'y');
 
          // only get basic properties like log scale
-         this.z_handle.configureZAxis("zaxis", this);
+         this.z_handle.configureZAxis('zaxis', this);
       }
 
       let layer = this.getFrameSvg().select(".axis_layer");
@@ -744,7 +744,7 @@ class RFramePainter extends RObjectPainter {
 
       this.axes_drawn = false;
 
-      this.draw_g.attr("transform", trans);
+      this.draw_g.attr('transform', trans);
 
       top_rect.attr('x', 0)
               .attr('y', 0)
@@ -792,7 +792,7 @@ class RFramePainter extends RObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : '',
+         transform: this.draw_g ? this.draw_g.attr('transform') : '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
@@ -1140,8 +1140,8 @@ class RFramePainter extends RObjectPainter {
 
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", () => this.getPadPainter().saveAs("png", 'frame', 'frame.png'));
-      menu.add("Save as frame.svg", () => this.getPadPainter().saveAs("svg", 'frame', 'frame.svg'));
+      menu.add("Save as frame.png", () => this.getPadPainter().saveAs('png', 'frame', 'frame.png'));
+      menu.add("Save as frame.svg", () => this.getPadPainter().saveAs('svg', 'frame', 'frame.svg'));
 
       return true;
    }

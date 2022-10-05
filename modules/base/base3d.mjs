@@ -317,7 +317,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert("g", ".primitives_layer").attr('class', size.clname);
 
-            elem.attr("transform", `translate(${size.x},${size.y})`);
+            elem.attr('transform', `translate(${size.x},${size.y})`);
 
          } else {
 
@@ -1089,7 +1089,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (tip) {
          let name = "", title = "", coord = "", info = "";
-         if (mouse) coord = mouse.x.toFixed(0) + "," + mouse.y.toFixed(0);
+         if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
          if (typeof tip == 'string') {
             info = tip;
          } else {
@@ -1525,7 +1525,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    }
 
    let style = lstyle ? getSvgLineStyle(lstyle) : '',
-       dash = style ? style.split(",") : [], material;
+       dash = style ? style.split(',') : [], material;
 
    if (dash && dash.length >= 2)
       material = new LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });

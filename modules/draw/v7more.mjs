@@ -163,7 +163,7 @@ class RPalettePainter extends RObjectPainter {
           }
 
           // x,y,width,height attributes used for drag functionality
-          this.draw_g.attr("transform",`translate(${palette_x},${palette_y})`);
+          this.draw_g.attr('transform',`translate(${palette_x},${palette_y})`);
       }
 
       let g_btns = this.draw_g.select(".colbtns");
@@ -182,9 +182,9 @@ class RPalettePainter extends RObjectPainter {
       if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
 
       if (vertical)
-         framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
+         framep.z_handle.configureAxis('zaxis', gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
       else
-         framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, false, [0, palette_width], palette_width, { reverse: false });
+         framep.z_handle.configureAxis('zaxis', gmin, gmax, zmin, zmax, false, [0, palette_width], palette_width, { reverse: false });
 
       for (let i = 0; i < contour.length-1; ++i) {
          let z0 = Math.round(framep.z_handle.gr(contour[i])),

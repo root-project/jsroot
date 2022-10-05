@@ -857,7 +857,7 @@ let _mj_loading;
 async function loadMathjax() {
    let loading = (_mj_loading !== undefined);
 
-   if (!loading && (typeof globalThis.MathJax != "undefined"))
+   if (!loading && (typeof globalThis.MathJax != 'undefined'))
       return globalThis.MathJax;
 
    if (!loading) _mj_loading = [];

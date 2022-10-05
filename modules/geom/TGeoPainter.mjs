@@ -791,7 +791,7 @@ class TGeoPainter extends ObjectPainter {
 
       let macro = opt.indexOf("macro:");
       if (macro >= 0) {
-         let separ = opt.indexOf(";", macro+6);
+         let separ = opt.indexOf(';', macro+6);
          if (separ < 0) separ = opt.length;
          res.script_name = opt.slice(macro+6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ+1);
@@ -1848,13 +1848,13 @@ class TGeoPainter extends ObjectPainter {
             this._tcontrols.setRotationSnap( MathUtils.degToRad( 15 ) );
             break;
          case 't': // Translate
-            this._tcontrols.setMode( "translate" );
+            this._tcontrols.setMode( 'translate' );
             break;
          case 'r': // Rotate
-            this._tcontrols.setMode( "rotate" );
+            this._tcontrols.setMode( 'rotate' );
             break;
          case 's': // Scale
-            this._tcontrols.setMode( "scale" );
+            this._tcontrols.setMode( 'scale' );
             break;
          case '+':
             this._tcontrols.setSize(this._tcontrols.size + 0.1);
@@ -2463,7 +2463,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
             let doc = getDocument(),
-                svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg = doc.createElementNS("http://www.w3.org/2000/svg", 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
             svg.appendChild(this._renderer.jsroot_dom);

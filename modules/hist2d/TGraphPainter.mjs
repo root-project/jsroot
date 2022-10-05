@@ -104,8 +104,8 @@ class TGraphPainter extends ObjectPainter {
       Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
-         if (opt.indexOf(";") > 0) {
-            blocks_gme = opt.split(";");
+         if (opt.indexOf(';') > 0) {
+            blocks_gme = opt.split(';');
             opt = blocks_gme.shift();
          } else if (opt.indexOf("_") > 0) {
             blocks_gme = opt.split("_");
@@ -119,7 +119,7 @@ class TGraphPainter extends ObjectPainter {
       // check pad options first
       res.PadStats = d.check("USE_PAD_STATS");
       let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
-      checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+      checkhopt.forEach(name => { if (d.check(name)) hopt += ';' + name; });
       if (d.check('XAXIS_', true)) hopt += ";XAXIS_" + d.part;
       if (d.check('YAXIS_', true)) hopt += ";YAXIS_" + d.part;
 
@@ -604,7 +604,7 @@ class TGraphPainter extends ObjectPainter {
                        .enter()
                        .append('svg:g')
                        .attr('class', "grpoint")
-                       .attr("transform", d => `translate(${d.grx1},${d.gry1})`);
+                       .attr('transform', d => `translate(${d.grx1},${d.gry1})`);
       }
 
       if (options.Bar) {
@@ -1224,7 +1224,7 @@ class TGraphPainter extends ObjectPainter {
       this.pos_dy += dy;
 
       if (this.move_binindx === undefined) {
-         this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
+         this.draw_g.attr('transform', `translate(${this.pos_dx},${this.pos_dy})`);
       } else {
          let pmain = this.getFramePainter(),
              funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
@@ -1241,7 +1241,7 @@ class TGraphPainter extends ObjectPainter {
       let exec = "";
 
       if (this.move_binindx === undefined) {
-         this.draw_g.attr("transform", null);
+         this.draw_g.attr('transform', null);
 
          let pmain = this.getFramePainter(),
              funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);

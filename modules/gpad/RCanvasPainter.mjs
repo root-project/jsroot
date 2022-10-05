@@ -447,7 +447,7 @@ class RCanvasPainter extends RPadPainter {
          case "sbits":
             console.log("Status bits in RCanvas are changed - that to do?");
             break;
-         case "frame": // when moving frame
+         case 'frame': // when moving frame
          case 'zoom':  // when changing zoom inside frame
             console.log("Frame moved or zoom is changed - that to do?");
             break;
@@ -682,7 +682,7 @@ function drawRFrameTitle(reason, drag) {
 
    this.createG();
 
-   this.draw_g.attr("transform",`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
+   this.draw_g.attr('transform',`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
 
    let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
@@ -865,7 +865,7 @@ function drawRFont() {
 
    let entry = defs.select("." + clname);
    if (entry.empty())
-      entry = defs.append('style').attr("type", "text/css").attr('class', clname);
+      entry = defs.append('style').attr('type', "text/css").attr('class', clname);
 
    entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
 

@@ -130,7 +130,7 @@ class TPavePainter extends ObjectPainter {
       let width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
-      this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
+      this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
 
       this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -153,7 +153,7 @@ class TPavePainter extends ObjectPainter {
              .call(this.lineatt.func);
 
          let text_g = this.draw_g.append('svg:g')
-                                 .attr("transform", `translate(${Math.round(width/4)},${Math.round(height/4)})`);
+                                 .attr('transform', `translate(${Math.round(width/4)},${Math.round(height/4)})`);
 
          return this.drawPaveText(w2, h2, arg, text_g);
       }
@@ -680,11 +680,11 @@ class TPavePainter extends ObjectPainter {
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
-         this.z_handle.configureAxis("zaxis", gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? "" : `translate(${s_width})`;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
-         this.z_handle.configureAxis("zaxis", gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? "" : `translate(0,${s_height})`;
       }
 
@@ -755,7 +755,7 @@ class TPavePainter extends ObjectPainter {
 
                if (shift > 0) {
                   this._pave_x -= shift;
-                  this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
+                  this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
                }
@@ -763,7 +763,7 @@ class TPavePainter extends ObjectPainter {
                let shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
                if (shift > 0) {
                   this._pave_y += shift;
-                  this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
+                  this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
                   palette.fY1NDC -= shift/height;
                   palette.fY2NDC -= shift/height;
                }

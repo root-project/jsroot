@@ -84,7 +84,7 @@ const CustomStreamers = {
       if (ver > 2) buf.classStreamer(list, clTObject);
       if (ver > 1) list.name = buf.readTString();
       let classv = buf.readTString(), clv = 0,
-          pos = classv.lastIndexOf(";");
+          pos = classv.lastIndexOf(';');
 
       if (pos > 0) {
          clv = parseInt(classv.slice(pos + 1));
@@ -251,7 +251,7 @@ const CustomStreamers = {
 
          if ((p1 >= 0) && (p2 >= p1 + 2)) {
 
-            let arr = element.fTitle.slice(p1+1, p2).split(","), nbits = 32;
+            let arr = element.fTitle.slice(p1+1, p2).split(','), nbits = 32;
             if (!arr || arr.length < 2)
                throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
@@ -3077,7 +3077,7 @@ class TFile {
      * console.log(`Read object of type ${obj._typename}`); */
    async readObject(obj_name, cycle, only_dir) {
 
-      let pos = obj_name.lastIndexOf(";");
+      let pos = obj_name.lastIndexOf(';');
       if (pos > 0) {
          cycle = parseInt(obj_name.slice(pos + 1));
          obj_name = obj_name.slice(0, pos);
@@ -3176,7 +3176,7 @@ class TFile {
                      typname = typname.slice(prefix.length, typname.length - 1).trim();
 
                      if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap))
-                        if (typname.indexOf(",") > 0) typname = typname.slice(0, typname.indexOf(",")).trim();
+                        if (typname.indexOf(',') > 0) typname = typname.slice(0, typname.indexOf(',')).trim();
                         else continue;
                   }
                }

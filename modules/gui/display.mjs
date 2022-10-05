@@ -145,7 +145,7 @@ class CustomDisplay extends MDIDisplay {
 
    addFrame(divid, itemname) {
       let prev = this.frames[divid] || '';
-      this.frames[divid] = prev + (itemname + ";");
+      this.frames[divid] = prev + (itemname + ';');
    }
 
    forEachFrame(userfunc) {
@@ -163,7 +163,7 @@ class CustomDisplay extends MDIDisplay {
       let ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
          let items = this.frames[ks[k]];
-         if (items.indexOf(title+";") >= 0)
+         if (items.indexOf(title+';') >= 0)
             return d3_select("#"+ks[k]).node();
       }
       return null;
@@ -912,7 +912,7 @@ class FlexibleDisplay extends MDIDisplay {
          .data([{ n: '&#x2715;', t: "close" }, { n: '&#x2594;', t: "maximize" }, { n: '&#x2581;', t: "minimize" }])
          .enter()
          .append("button")
-         .attr("type", "button")
+         .attr('type', "button")
          .attr('class', "jsroot_flex_btn")
          .attr('title', d => d.t)
          .html(d => d.n)

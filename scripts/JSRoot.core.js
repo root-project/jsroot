@@ -107,7 +107,7 @@ function v6_require(need) {
    if (!need)
       return Promise.resolve(null);
 
-   if (typeof need == "string") need = need.split(";");
+   if (typeof need == "string") need = need.split(';');
 
    need.forEach((name,indx) => {
       if ((name.indexOf("load:") == 0) || (name.indexOf("user:") == 0))
@@ -275,14 +275,14 @@ exports.connectWebWindow = function(arg) {
 
    let d = exports.decodeUrl();
 
-   if (d.has("headless") && d.get("key")) {
+   if (d.has("headless") && d.get('key')) {
       let is_chrome = false;
-      if ((typeof document !== "undefined") && (typeof window !== "undefined"))
+      if ((typeof document !== 'undefined') && (typeof window !== 'undefined'))
          is_chrome = (!!window.chrome && !browser.isOpera) || (navigator.userAgent.indexOf('HeadlessChrome') >= 0);
       if (is_chrome) {
          let element = document.createElement("script");
-         element.setAttribute("type", "text/javascript");
-         element.setAttribute('src', "root_batch_holder.js?key=" + d.get("key"));
+         element.setAttribute('type', 'text/javascript');
+         element.setAttribute('src', 'root_batch_holder.js?key=' + d.get('key'));
          document.head.appendChild(element);
          arg.ignore_chrome_batch_holder = true;
       }
@@ -292,7 +292,7 @@ exports.connectWebWindow = function(arg) {
 
       let prereq = "";
       if (arg.prereq) prereq = arg.prereq;
-      if (arg.prereq2) prereq += ";" + arg.prereq2;
+      if (arg.prereq2) prereq += ';' + arg.prereq2;
 
       if (!prereq) return;
 
@@ -314,7 +314,7 @@ exports.connectWebWindow = function(arg) {
 
 
 // try to define global JSROOT
-if ((typeof globalThis !== "undefined") && !globalThis.JSROOT) {
+if ((typeof globalThis !== 'undefined') && !globalThis.JSROOT) {
 
    globalThis.JSROOT = exports;
 

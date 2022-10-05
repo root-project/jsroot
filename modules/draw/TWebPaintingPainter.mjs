@@ -22,7 +22,7 @@ class TWebPaintingPainter extends ObjectPainter {
       if (!obj?.fOper || !func) return;
 
       let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = "",
-          oper, npoints, n, arr = obj.fOper.split(";");
+          oper, npoints, n, arr = obj.fOper.split(';');
 
       const check_attributes = kind => {
          if (kind == lastkind) return;

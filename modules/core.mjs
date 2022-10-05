@@ -57,7 +57,7 @@ const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64
 
 let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
-if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
+if ((typeof document !== 'undefined') && (typeof window !== 'undefined')) {
    browser.isFirefox = (navigator.userAgent.indexOf("Firefox") >= 0) || (typeof InstallTrigger !== 'undefined');
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser.isChrome = !!window.chrome;
@@ -95,7 +95,7 @@ let constants = {
       fromString(s) {
          if ((s === "webgl") || (s == "gl")) return this.WebGL;
          if (s === "img") return this.WebGLImage;
-         if (s === "svg") return this.SVG;
+         if (s === 'svg') return this.SVG;
          return this.Default;
       }
    },
@@ -403,7 +403,7 @@ async function injectCode(code) {
       return promise.then(() => {
          return new Promise(resolve => {
             let element = document.createElement("script");
-            element.setAttribute("type", "text/javascript");
+            element.setAttribute('type', "text/javascript");
             element.innerHTML = code;
             document.head.appendChild(element);
             setTimeout(() => resolve(true), 10); // while onload event not fired, just postpone resolve
@@ -421,8 +421,8 @@ async function loadScript(url) {
    if (!url)
       return true;
 
-   if ((typeof url == 'string') && (url.indexOf(";") >= 0))
-      url = url.split(";");
+   if ((typeof url == 'string') && (url.indexOf(';') >= 0))
+      url = url.split(';');
 
    if (typeof url != 'string') {
       let scripts = url, loadNext = () => {
@@ -474,11 +474,11 @@ async function loadScript(url) {
    if (isstyle) {
       element = document.createElement("link");
       element.setAttribute("rel", "stylesheet");
-      element.setAttribute("type", "text/css");
+      element.setAttribute('type', "text/css");
       element.setAttribute("href", url);
    } else {
       element = document.createElement("script");
-      element.setAttribute("type", "text/javascript");
+      element.setAttribute('type', "text/javascript");
       element.setAttribute('src', url);
    }
 
@@ -1254,8 +1254,8 @@ function create(typename, target) {
   * let h1 = createHistogram("TH1I", 20);
   * h1.fName = "Hist1";
   * h1.fTitle = "Histogram title";
-  * h1.fXaxis.fTitle = "xaxis";
-  * h1.fYaxis.fTitle = "yaxis";
+  * h1.fXaxis.fTitle = 'xaxis';
+  * h1.fYaxis.fTitle = 'yaxis';
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    let histo = create(typename);
