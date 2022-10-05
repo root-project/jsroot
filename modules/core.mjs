@@ -973,7 +973,7 @@ async function httpRequest(url, kind, post_data) {
   * @example
   * import { create } from 'path_to_jsroot/modules/core.mjs';
   * let obj = create("TNamed");
-  * obj.fName = "name";
+  * obj.fName = 'name';
   * obj.fTitle = "title"; */
 function create(typename, target) {
    let obj = target || {};

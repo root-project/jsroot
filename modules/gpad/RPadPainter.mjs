@@ -270,7 +270,7 @@ class RPadPainter extends RObjectPainter {
          if (!rect.changed) return false;
 
          if (!isBatchMode())
-            btns = this.getLayerSvg("btns_layer", this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          frect = svg.select(".canvas_fillrect");
 
@@ -304,7 +304,7 @@ class RPadPainter extends RObjectPainter {
          svg.append('svg:g').attr('class', "info_layer");
          if (!isBatchMode())
             btns = svg.append('svg:g')
-                      .attr('class',"btns_layer")
+                      .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
                       .property('vertical', settings.ToolBarVert);
 
@@ -346,9 +346,9 @@ class RPadPainter extends RObjectPainter {
            .style('width', '100%')
            .style('height', '100%')
            .style('position', 'absolute')
-           .style("left", 0)
+           .style('left', 0)
            .style("top", 0)
-           .style("right", 0)
+           .style('right', 0)
            .style("bottom", 0);
       }
 
@@ -387,18 +387,18 @@ class RPadPainter extends RObjectPainter {
       }
 
       let svg_can = this.getCanvSvg(),
-          pad_enlarged = svg_can.property("pad_enlarged");
+          pad_enlarged = svg_can.property('pad_enlarged');
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state') == 'off') svg_can.property("pad_enlarged", null);
+         if (this.enlargeMain('state') == 'off') svg_can.property('pad_enlarged', null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
-         svg_can.property("pad_enlarged", this.pad);
+         svg_can.property('pad_enlarged', this.pad);
       } else if (pad_enlarged === this.pad) {
          this.enlargeMain(false);
-         svg_can.property("pad_enlarged", null);
+         svg_can.property('pad_enlarged', null);
       } else {
          console.error('missmatch with pad double click events');
       }
@@ -424,7 +424,7 @@ class RPadPainter extends RObjectPainter {
           svg_can = this.getCanvSvg(),
           width = svg_parent.property('draw_width'),
           height = svg_parent.property('draw_height'),
-          pad_enlarged = svg_can.property("pad_enlarged"),
+          pad_enlarged = svg_can.property('pad_enlarged'),
           pad_visible = true,
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
@@ -450,7 +450,7 @@ class RPadPainter extends RObjectPainter {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.select(".root_pad_border");
          if (!isBatchMode())
-            btns = this.getLayerSvg("btns_layer", this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_parent.select('.primitives_layer')
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
@@ -466,7 +466,7 @@ class RPadPainter extends RObjectPainter {
          svg_pad.append('svg:g').attr('class',"primitives_layer");
          if (!isBatchMode())
             btns = svg_pad.append('svg:g')
-                          .attr('class',"btns_layer")
+                          .attr('class','btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
 
@@ -1223,7 +1223,7 @@ class RPadPainter extends RObjectPainter {
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.getLayerSvg("btns_layer", this.this_pad_name);
+         let btns = pp.getLayerSvg('btns_layer', this.this_pad_name);
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;

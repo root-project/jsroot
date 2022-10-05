@@ -126,9 +126,9 @@ class RCanvasPainter extends RPadPainter {
          case "X":
          case "bottom": layout = 'vert2_31'; mainid = 0; break;
          case "Y":
-         case "left": layout = 'horiz2_13'; mainid = 1; break;
+         case 'left': layout = 'horiz2_13'; mainid = 1; break;
          case "top": layout = 'vert2_13'; mainid = 1; break;
-         case "right": layout = 'horiz2_31'; mainid = 0; break;
+         case 'right': layout = 'horiz2_31'; mainid = 0; break;
       }
 
       return this.changeLayout(layout, mainid);

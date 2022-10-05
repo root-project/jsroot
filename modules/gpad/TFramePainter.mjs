@@ -413,16 +413,16 @@ const TooltipHandler = {
 
          let bleft = 0.5, bright = 0.5;
 
-         if (viewmode == "left")
+         if (viewmode == 'left')
             bright = 0.7;
-         else if (viewmode == "right")
+         else if (viewmode == 'right')
             bleft = 0.3;
 
          if (posx <= bleft * frame_rect.width) {
-            viewmode = "left";
+            viewmode = 'left';
             posx = 20;
          } else if (posx >= bright * frame_rect.width) {
-            viewmode = "right";
+            viewmode = 'right';
             posx = frame_rect.width - 60;
          } else {
             posx = hintsg.property('startx');
@@ -549,7 +549,7 @@ const TooltipHandler = {
 
       let svgs = hintsg.selectAll('svg');
 
-      if ((viewmode == "right") && (posx + actualw > frame_rect.width - 20)) {
+      if ((viewmode == 'right') && (posx + actualw > frame_rect.width - 20)) {
          posx = frame_rect.width - actualw - 20;
          svgs.attr('x', posx);
       }
