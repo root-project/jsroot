@@ -73,7 +73,7 @@ function drawPolyMarker3D() {
    return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
 
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-      mesh.tip_name = poly.fName || "Poly3D";
+      mesh.tip_name = poly.fName || 'Poly3D';
       mesh.poly = poly;
       mesh.painter = fp;
       mesh.scale0 = 0.7*pnts.scale;
@@ -105,10 +105,10 @@ function drawPolyMarker3D() {
             z2: grz + this.scale0,
             color: this.tip_color,
             lines: [ this.tip_name,
-                     "pnt: " + indx/3,
-                     "x: " + p.axisAsText('x', this.poly.fP[indx]),
-                     "y: " + p.axisAsText('y', this.poly.fP[indx+1]),
-                     "z: " + p.axisAsText('z', this.poly.fP[indx+2])
+                     'pnt: ' + indx/3,
+                     'x: ' + p.axisAsText('x', this.poly.fP[indx]),
+                     'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
+                     'z: ' + p.axisAsText('z', this.poly.fP[indx+2])
                    ]
          };
       };

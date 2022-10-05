@@ -11,12 +11,12 @@ import { createMenu } from '../gui/menu.mjs';
 function drawText() {
    let text      = this.getObject(),
        pp        = this.getPadPainter(),
-       onframe   = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-       clipping  = onframe ? this.v7EvalAttr("clipping", false) : false,
+       onframe   = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+       clipping  = onframe ? this.v7EvalAttr('clipping', false) : false,
        p         = pp.getCoordinate(text.fPos, onframe),
        textFont  = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 });
 
-   this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+   this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
    this.startTextDrawing(textFont, 'font');
 
@@ -31,12 +31,12 @@ function drawLine() {
 
     let line     = this.getObject(),
         pp       = this.getPadPainter(),
-        onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-        clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+        onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
         p1       = pp.getCoordinate(line.fP1, onframe),
         p2       = pp.getCoordinate(line.fP2, onframe);
 
-    this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
     this.createv7AttLine();
 
@@ -52,14 +52,14 @@ function drawBox() {
 
    let box      = this.getObject(),
        pp       = this.getPadPainter(),
-       onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-       clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+       onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+       clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
        p1       = pp.getCoordinate(box.fP1, onframe),
        p2       = pp.getCoordinate(box.fP2, onframe);
 
-   this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+   this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
-   this.createv7AttLine("border_");
+   this.createv7AttLine('border_');
 
    this.createv7AttFill();
 
@@ -75,11 +75,11 @@ function drawBox() {
 function drawMarker() {
     let marker   = this.getObject(),
         pp       = this.getPadPainter(),
-        onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-        clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+        onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
         p        = pp.getCoordinate(marker.fP, onframe);
 
-    this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
     this.createv7AttMarker();
 
@@ -104,7 +104,7 @@ class RPalettePainter extends RObjectPainter {
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
-         addMethods(pal, "ROOT::Experimental::RPalette");
+         addMethods(pal, 'ROOT::Experimental::RPalette');
 
       return pal;
    }
@@ -130,8 +130,8 @@ class RPalettePainter extends RObjectPainter {
           rect         = framep.getFrameRect(),
           pad_width    = this.getPadPainter().getPadWidth(),
           pad_height   = this.getPadPainter().getPadHeight(),
-          visible      = this.v7EvalAttr("visible", true),
-          vertical     = this.v7EvalAttr("vertical", true),
+          visible      = this.v7EvalAttr('visible', true),
+          vertical     = this.v7EvalAttr('vertical', true),
           palette_x, palette_y, palette_width, palette_height;
 
       if (drag) {
@@ -140,22 +140,22 @@ class RPalettePainter extends RObjectPainter {
 
          let changes = {};
          if (vertical) {
-            this.v7AttrChange(changes, "margin", (drag.x - rect.x - rect.width) / pad_width);
+            this.v7AttrChange(changes, 'margin', (drag.x - rect.x - rect.width) / pad_width);
             this.v7AttrChange(changes, 'width', palette_width / pad_width);
          } else {
-            this.v7AttrChange(changes, "margin", (drag.y - rect.y - rect.height) / pad_width);
+            this.v7AttrChange(changes, 'margin', (drag.y - rect.y - rect.height) / pad_width);
             this.v7AttrChange(changes, 'width', palette_height / pad_height);
          }
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
           if (vertical) {
-            let margin = this.v7EvalLength("margin", pad_width, 0.02);
+            let margin = this.v7EvalLength('margin', pad_width, 0.02);
             palette_x = Math.round(rect.x + rect.width + margin);
             palette_width = this.v7EvalLength('width', pad_width, 0.05);
             palette_y = rect.y;
             palette_height = rect.height;
           } else {
-            let margin = this.v7EvalLength("margin", pad_height, 0.02);
+            let margin = this.v7EvalLength('margin', pad_height, 0.02);
             palette_x = rect.x;
             palette_width = rect.width;
             palette_y = Math.round(rect.y + rect.height + margin);
@@ -166,7 +166,7 @@ class RPalettePainter extends RObjectPainter {
           this.draw_g.attr('transform',`translate(${palette_x},${palette_y})`);
       }
 
-      let g_btns = this.draw_g.select(".colbtns");
+      let g_btns = this.draw_g.select('.colbtns');
       if (g_btns.empty())
          g_btns = this.draw_g.append('svg:g').attr('class', 'colbtns');
       else
@@ -195,18 +195,18 @@ class RPalettePainter extends RObjectPainter {
                      .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                      .style('fill', col)
                      .style('stroke', col)
-                     .property("fill0", col)
-                     .property("fill1", d3_rgb(col).darker(0.5).toString());
+                     .property('fill0', col)
+                     .property('fill1', d3_rgb(col).darker(0.5).toString());
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
                d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
             }).on('mouseout', function() {
                d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill0'));
-            }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+            }).append('svg:title').text(contour[i].toFixed(2) + ' - ' + contour[i+1].toFixed(2));
 
          if (settings.Zooming)
-            r.on("dblclick", () => framep.unzoom('z'));
+            r.on('dblclick', () => framep.unzoom('z'));
       }
 
       framep.z_handle.maxTickSize = Math.round(palette_width*0.3);
@@ -219,12 +219,12 @@ class RPalettePainter extends RObjectPainter {
       return promise.then(() => {
 
          if (settings.ContextMenu)
-            this.draw_g.on("contextmenu", evnt => {
+            this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                createMenu(evnt, this).then(menu => {
-                  menu.add("header:Palette");
-                  menu.addchk(vertical, "Vertical", flag => { this.v7SetAttr("vertical", flag); this.redrawPad(); });
+                  menu.add('header:Palette');
+                  menu.addchk(vertical, 'Vertical', flag => { this.v7SetAttr('vertical', flag); this.redrawPad(); });
                   framep.z_handle.fillAxisContextMenu(menu, 'z');
                   menu.show();
                });
@@ -267,8 +267,8 @@ class RPalettePainter extends RObjectPainter {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
-            d3_select(window).on("mousemove.colzoomRect", null)
-                             .on("mouseup.colzoomRect", null);
+            d3_select(window).on('mousemove.colzoomRect', null)
+                             .on('mouseup.colzoomRect', null);
             zoom_rect.remove();
             zoom_rect = null;
             doing_zoom = false;
@@ -292,29 +292,29 @@ class RPalettePainter extends RObjectPainter {
             zoom_rect_visible = false;
             moving_labels = false;
             zoom_rect = g_btns
-                 .append("svg:rect")
+                 .append('svg:rect')
                  .attr('class', 'zoom')
-                 .attr('id', "colzoomRect")
+                 .attr('id', 'colzoomRect')
                  .style('display', 'none');
             if (vertical)
                zoom_rect.attr('x', 0).attr('width', palette_width).attr('y', sel1).attr('height', 1);
             else
                zoom_rect.attr('x', sel1).attr('width', 1).attr('y', 0).attr('height', palette_height);
 
-            d3_select(window).on("mousemove.colzoomRect", moveRectSel)
-                             .on("mouseup.colzoomRect", endRectSel, true);
+            d3_select(window).on('mousemove.colzoomRect', moveRectSel)
+                             .on('mouseup.colzoomRect', endRectSel, true);
 
             setTimeout(() => {
                if (!zoom_rect_visible && doing_zoom)
                   moving_labels = framep.z_handle.processLabelsMove('start', last_pos);
             }, 500);
          },  assignHandlers = () => {
-            this.draw_g.selectAll(".axis_zoom, .axis_labels")
-                       .on("mousedown", startRectSel)
-                       .on("dblclick", () => framep.unzoom('z'));
+            this.draw_g.selectAll('.axis_zoom, .axis_labels')
+                       .on('mousedown', startRectSel)
+                       .on('dblclick', () => framep.unzoom('z'));
 
             if (settings.ZoomWheel)
-               this.draw_g.on("wheel", evnt => {
+               this.draw_g.on('wheel', evnt => {
                   evnt.stopPropagation();
                   evnt.preventDefault();
 
@@ -335,7 +335,7 @@ class RPalettePainter extends RObjectPainter {
 
    /** @summary draw RPalette object */
    static async draw(dom, palette, opt) {
-      let painter = new RPalettePainter(dom, palette, opt, "palette");
+      let painter = new RPalettePainter(dom, palette, opt, 'palette');
       return ensureRCanvas(painter, false).then(() => {
          painter.createG(); // just create container, real drawing will be done by histogram
          return painter;

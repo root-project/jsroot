@@ -28,7 +28,7 @@ async function drawText() {
       // frame coordiantes
       w = main.getFrameWidth();
       h = main.getFrameHeight();
-      use_frame = "upper_layer";
+      use_frame = 'upper_layer';
    } else if (pp.getRootPad(true)) {
       // force pad coordiantes
    } else {
@@ -364,7 +364,7 @@ function drawJSImage(dom, obj, opt) {
 
    if (opt && opt.indexOf('scale') >= 0) {
       img.style('width','100%').style('height','100%');
-   } else if (opt && opt.indexOf("center") >= 0) {
+   } else if (opt && opt.indexOf('center') >= 0) {
       main.style('position', 'relative');
       img.attr('style', 'margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);');
    }
