@@ -672,7 +672,7 @@ class RH2Painter extends RHistPainter {
       };
 
       if (this.options.Contour === 14) {
-         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+'z';
+         let dd = `M0,0h${frame_w}v${frame_h}h${-frame_w}z`;
          if (this.options.Proj) {
             let dj = handle.stepj, sz = parseInt((handle.j2 - handle.j1)/dj),
                 xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
@@ -1024,115 +1024,6 @@ class RH2Painter extends RHistPainter {
       return handle;
    }
 
-   /** @summary Draw histogram bins as candle plot */
-   drawBinsCandle(funcs, w) {
-      let histo = this.getHisto(), yaxis = this.getAxis('y'),
-          handle = this.prepareDraw(),
-          i, j, y, sum1, cont, center, counter, integral, pnt,
-          bars = "", markers = "", posy;
-
-      // create attribute only when necessary
-      this.createv7AttMarker();
-
-      // reset absolution position for markers
-      this.markeratt.resetPos();
-
-      handle.candle = []; // array of drawn points
-
-      // loop over visible x-bins
-      for (i = handle.i1; i < handle.i2; ++i) {
-         sum1 = 0;
-         //estimate integral
-         integral = 0;
-         counter = 0;
-         for (j = 0; j < this.nbinsy; ++j) {
-            integral += histo.getBinContent(i+1,j+1);
-         }
-         pnt = { bin:i, meany:0, m25y:0, p25y:0, median:0, iqr:0, whiskerp:0, whiskerm:0};
-         //estimate quantiles... simple function... not so nice as GetQuantiles
-         for (j = 0; j < this.nbinsy; ++j) {
-            cont = histo.getBinContent(i+1,j+1);
-            posy = yaxis.GetBinCoord(j + 0.5);
-            if (counter/integral < 0.001 && (counter + cont)/integral >= 0.001) pnt.whiskerm = posy; // Lower whisker
-            if (counter/integral < 0.25 && (counter + cont)/integral >= 0.25) pnt.m25y = posy; // Lower edge of box
-            if (counter/integral < 0.5 && (counter + cont)/integral >= 0.5) pnt.median = posy; //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >= 0.75) pnt.p25y = posy; //Upper edge of box
-            if (counter/integral < 0.999 && (counter + cont)/integral >= 0.999) pnt.whiskerp = posy; // Upper whisker
-            counter += cont;
-            y = posy; // center of y bin coordinate
-            sum1 += cont*y;
-         }
-         if (counter > 0) {
-            pnt.meany = sum1/counter;
-         }
-         pnt.iqr = pnt.p25y-pnt.m25y;
-
-         //Whiskers cannot exceed 1.5*iqr from box
-         if ((pnt.m25y-1.5*pnt.iqr) > pnt.whsikerm)  {
-            pnt.whiskerm = pnt.m25y-1.5*pnt.iqr;
-         }
-         if ((pnt.p25y+1.5*pnt.iqr) < pnt.whiskerp) {
-            pnt.whiskerp = pnt.p25y+1.5*pnt.iqr;
-         }
-
-         // exclude points with negative y when log scale is specified
-         if (funcs.logy && (pnt.whiskerm <= 0)) continue;
-
-         w = handle.grx[i+1] - handle.grx[i];
-         w *= 0.66;
-         center = (handle.grx[i+1] + handle.grx[i]) / 2 + this.options.BarOffset*w;
-         if (this.options.BarWidth > 0) w = w * this.options.BarWidth;
-
-         pnt.x1 = Math.round(center - w/2);
-         pnt.x2 = Math.round(center + w/2);
-         center = Math.round(center);
-
-         pnt.y0 = Math.round(funcs.gry(pnt.median));
-         // mean line
-         bars += "M" + pnt.x1 + "," + pnt.y0 + "h" + (pnt.x2-pnt.x1);
-
-         pnt.y1 = Math.round(funcs.gry(pnt.p25y));
-         pnt.y2 = Math.round(funcs.gry(pnt.m25y));
-
-         // rectangle
-         bars += "M" + pnt.x1 + "," + pnt.y1 +
-         "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + 'z';
-
-         pnt.yy1 = Math.round(funcs.gry(pnt.whiskerp));
-         pnt.yy2 = Math.round(funcs.gry(pnt.whiskerm));
-
-         // upper part
-         bars += "M" + center + "," + pnt.y1 + "v" + (pnt.yy1-pnt.y1);
-         bars += "M" + pnt.x1 + "," + pnt.yy1 + "h" + (pnt.x2-pnt.x1);
-
-         // lower part
-         bars += "M" + center + "," + pnt.y2 + "v" + (pnt.yy2-pnt.y2);
-         bars += "M" + pnt.x1 + "," + pnt.yy2 + "h" + (pnt.x2-pnt.x1);
-
-         //estimate outliers
-         for (j = 0; j < this.nbinsy; ++j) {
-            cont = histo.getBinContent(i+1,j+1);
-            posy = yaxis.GetBinCoord(j + 0.5);
-            if (cont > 0 && posy < pnt.whiskerm) markers += this.markeratt.create(center, posy);
-            if (cont > 0 && posy > pnt.whiskerp) markers += this.markeratt.create(center, posy);         }
-
-         handle.candle.push(pnt); // keep point for the tooltip
-      }
-
-      if (bars.length > 0)
-         this.draw_g.append('svg:path')
-             .attr('d', bars)
-             .call(this.lineatt.func)
-             .call(this.fillatt.func);
-
-      if (markers.length > 0)
-         this.draw_g.append('svg:path')
-             .attr('d', markers)
-             .call(this.markeratt.func);
-
-      return handle;
-   }
-
    /** @summary Draw RH2 bins as scatter plot */
    drawBinsScatter() {
       let histo = this.getHisto(),
@@ -1302,8 +1193,6 @@ class RH2Painter extends RHistPainter {
          handle = this.drawBinsArrow();
       else if (this.options.Contour > 0)
          handle = this.drawBinsContour(funcs, rect.width, rect.height);
-      else if (this.options.Candle)
-         handle = this.drawBinsCandle(funcs, rect.width);
 
       if (this.options.Text)
          pr = this.drawBinsText(handle);
@@ -1345,21 +1234,6 @@ class RH2Painter extends RHistPainter {
          lines.push(lbl + binz);
       else
          lines.push(lbl + floatToString(binz, gStyle.fStatFormat));
-
-      return lines;
-   }
-
-   /** @summary Provide text information (tooltips) for candle bin */
-   getCandleTooltips(p) {
-      let lines = [], main = this.getFramePainter(), xaxis = this.getAxis('y');
-
-      lines.push(this.getObjectHint() || "histo");
-
-      lines.push("x = " + main.axisAsText('x', xaxis.GetBinCoord(p.bin)));
-
-      lines.push('mean y = ' + floatToString(p.meany, gStyle.fStatFormat))
-      lines.push('m25 = ' + floatToString(p.m25y, gStyle.fStatFormat))
-      lines.push('p25 = ' + floatToString(p.p25y, gStyle.fStatFormat))
 
       return lines;
    }
@@ -1492,56 +1366,6 @@ class RH2Painter extends RHistPainter {
 
          return res;
 
-      } else
-
-      if (h.candle) {
-         // process tooltips for candle
-
-         let p, i;
-
-         for (i=0;i<h.candle.length;++i) {
-            p = h.candle[i];
-            if ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2)) break;
-         }
-
-         if (i>=h.candle.length) {
-            ttrect.remove();
-            return null;
-         }
-
-         let res = { name: "histo", title: histo.fTitle || 'title',
-                     x: pnt.x, y: pnt.y,
-                     color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
-                     lines: this.getCandleTooltips(p), exact: true, menu: true };
-
-         if (pnt.disabled) {
-            ttrect.remove();
-            res.changed = true;
-         } else {
-
-            if (ttrect.empty())
-               ttrect = this.draw_g.append("svg:rect")
-                                   .attr('class',"tooltip_bin h1bin")
-                                   .style("pointer-events",'none');
-
-            res.changed = ttrect.property("current_bin") !== i;
-
-            if (res.changed)
-               ttrect.attr('x', p.x1)
-                     .attr('width', p.x2-p.x1)
-                     .attr('y', p.yy1)
-                     .attr('height', p.yy2- p.yy1)
-                     .style("opacity", "0.7")
-                     .property("current_bin", i);
-         }
-
-         if (res.changed)
-            res.user_info = { obj: histo,  name: "histo",
-                              bin: i+1, cont: p.median, binx: i+1, biny: 1,
-                              grx: pnt.x, gry: pnt.y };
-
-         return res;
       }
 
       let i, j, binz = 0, colindx = null;
@@ -1687,7 +1511,7 @@ class RH2Painter extends RHistPainter {
                              Line: false, Fill: false, Lego: 0, Surf: 0,
                              Text: true, TextAngle: 0, TextKind: '',
                              BaseLine: false, Mode3D: false, AutoColor: 0,
-                             Color: false, Scat: false, ScatCoef: 1, Candle: '', Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                             Color: false, Scat: false, ScatCoef: 1, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                              BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
          let kind = painter.v7EvalAttr("kind", ""),
