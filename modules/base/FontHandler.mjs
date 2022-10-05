@@ -65,7 +65,7 @@ class FontHandler {
          this.isSymbol = this.name;
          this.name = "Times New Roman";
       } else {
-         this.isSymbol = "";
+         this.isSymbol = '';
       }
 
       this.func = this.setFont.bind(this);

@@ -25,23 +25,23 @@ class RPavePainter extends RObjectPainter {
       let rect = this.getPadPainter().getPadRect(),
           fp = this.getFramePainter();
 
-      this.onFrame = fp && this.v7EvalAttr("onFrame", true);
-      this.corner = this.v7EvalAttr("corner", ECorner.kTopRight);
+      this.onFrame = fp && this.v7EvalAttr('onFrame', true);
+      this.corner = this.v7EvalAttr('corner', ECorner.kTopRight);
 
-      let visible      = this.v7EvalAttr("visible", true),
-          offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
-          offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
+      let visible      = this.v7EvalAttr('visible', true),
+          offsetx      = this.v7EvalLength('offsetX', rect.width, 0.02),
+          offsety      = this.v7EvalLength('offsetY', rect.height, 0.02),
           pave_width   = this.v7EvalLength('width', rect.width, 0.3),
           pave_height  = this.v7EvalLength('height', rect.height, 0.3);
 
       this.createG();
 
-      this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
+      this.draw_g.classed('most_upper_primitives', true); // this primitive will remain on top of list
 
       if (!visible)
          return this;
 
-      this.createv7AttLine("border_");
+      this.createv7AttLine('border_');
 
       this.createv7AttFill();
 
@@ -68,7 +68,7 @@ class RPavePainter extends RObjectPainter {
 
       this.draw_g.attr('transform', `translate(${pave_x},${pave_y})`);
 
-      this.draw_g.append("svg:rect")
+      this.draw_g.append('svg:rect')
                  .attr('x', 0)
                  .attr('width', pave_width)
                  .attr('y', 0)
@@ -87,7 +87,7 @@ class RPavePainter extends RObjectPainter {
 
          // TODO: provide pave context menu as in v6
          if (settings.ContextMenu && this.paveContextMenu)
-            this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
+            this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
          addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
                                 minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
@@ -126,8 +126,8 @@ class RPavePainter extends RObjectPainter {
             offsety = pave_y - fr.y;
       }
 
-      this.v7AttrChange(changes, "offsetX", offsetx / rect.width);
-      this.v7AttrChange(changes, "offsetY", offsety / rect.height);
+      this.v7AttrChange(changes, 'offsetX', offsetx / rect.width);
+      this.v7AttrChange(changes, 'offsetY', offsety / rect.height);
       this.v7AttrChange(changes, 'width', this.pave_width / rect.width);
       this.v7AttrChange(changes, 'height', this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
@@ -146,7 +146,7 @@ class RPavePainter extends RObjectPainter {
 
    /** @summary draw RPave object */
    static async draw(dom, pave, opt) {
-      let painter = new RPavePainter(dom, pave, opt, "pave");
+      let painter = new RPavePainter(dom, pave, opt, 'pave');
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 }
@@ -188,7 +188,7 @@ class RLegendPainter extends RPavePainter {
 
          this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + w4, y: posy, text: entry.fLabel });
 
-         if (entry.fDrawableId != "custom") {
+         if (entry.fDrawableId != 'custom') {
             objp = pp.findSnap(entry.fDrawableId, true);
          } else if (entry.fDrawable.fIO) {
             objp = new RObjectPainter(this.getDom(), entry.fDrawable.fIO);
@@ -228,7 +228,7 @@ class RLegendPainter extends RPavePainter {
 
    /** @summary draw RLegend object */
    static async draw(dom, legend, opt) {
-      let painter = new RLegendPainter(dom, legend, opt, "legend");
+      let painter = new RLegendPainter(dom, legend, opt, 'legend');
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
@@ -271,7 +271,7 @@ class RPaveTextPainter extends RPavePainter {
 
    /** @summary draw RPaveText object */
    static async draw(dom, pave, opt) {
-      let painter = new RPaveTextPainter(dom, pave, opt, "pavetext");
+      let painter = new RPaveTextPainter(dom, pave, opt, 'pavetext');
       return ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
@@ -327,16 +327,16 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary format float value as string
      * @private */
    format(value, fmt) {
-      if (!fmt) fmt = "stat";
+      if (!fmt) fmt = 'stat';
 
       switch(fmt) {
-         case "stat" : fmt = gStyle.fStatFormat; break;
-         case "fit": fmt = gStyle.fFitFormat; break;
-         case "entries": if ((Math.abs(value) < 1e9) && (Math.round(value) == value)) return value.toFixed(0); fmt = "14.7g"; break;
-         case "last": fmt = this.lastformat; break;
+         case 'stat' : fmt = gStyle.fStatFormat; break;
+         case 'fit': fmt = gStyle.fFitFormat; break;
+         case 'entries': if ((Math.abs(value) < 1e9) && (Math.round(value) == value)) return value.toFixed(0); fmt = '14.7g'; break;
+         case 'last': fmt = this.lastformat; break;
       }
 
-      let res = floatToString(value, fmt || "6.4g", true);
+      let res = floatToString(value, fmt || '6.4g', true);
 
       this.lastformat = res[1];
 
@@ -372,7 +372,7 @@ class RHistStatsPainter extends RPavePainter {
          let obj = this.getObject(),
              action = this.changeMask.bind(this);
 
-         menu.add("header: StatBox");
+         menu.add('header: StatBox');
 
          for (let n=0;n<obj.fEntries.length; ++n)
             menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
@@ -384,7 +384,7 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary Draw statistic */
    async drawStatistic(lines) {
 
-      let textFont = this.v7EvalFont("stats_text", { size: 12, color: 'black', align: 22 }),
+      let textFont = this.v7EvalFont('stats_text', { size: 12, color: 'black', align: 22 }),
           first_stat = 0, num_cols = 0, maxlen = 0,
           width = this.pave_width,
           height = this.pave_height;
@@ -398,7 +398,7 @@ class RHistStatsPainter extends RPavePainter {
          if (j > 0) maxlen = Math.max(maxlen, line.length);
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
-         let parts = line.split("|");
+         let parts = line.split('|');
          if (parts.length > num_cols)
             num_cols = parts.length;
       }
@@ -406,11 +406,11 @@ class RHistStatsPainter extends RPavePainter {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = 0.02 * width;
 
-      let text_g = this.draw_g.select(".statlines");
+      let text_g = this.draw_g.select('.statlines');
       if (text_g.empty())
-         text_g = this.draw_g.append('svg:g').attr('class', "statlines");
+         text_g = this.draw_g.append('svg:g').attr('class', 'statlines');
       else
-         text_g.selectAll("*").remove();
+         text_g.selectAll('*').remove();
 
       textFont.setSize(height/(nlines * 1.2));
       this.startTextDrawing(textFont, 'font' , text_g);
@@ -422,25 +422,25 @@ class RHistStatsPainter extends RPavePainter {
          let posy = j*stepy;
 
          if (first_stat && (j >= first_stat)) {
-            let parts = lines[j].split("|");
+            let parts = lines[j].split('|');
             for (let n = 0; n < parts.length; ++n)
-               this.drawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
+               this.drawText({ align: 'middle', x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], draw_g: text_g });
          } else if (lines[j].indexOf('=') < 0) {
             if (j == 0) {
                has_head = true;
                let max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
                if (lines[j].length > max_hlen + 5)
-                  lines[j] = lines[j].slice(0,max_hlen+2) + "...";
+                  lines[j] = lines[j].slice(0,max_hlen+2) + '...';
             }
-            this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
+            this.drawText({ align: (j == 0) ? 'middle' : 'start', x: margin_x, y: posy,
                             width: width - 2*margin_x, height: stepy, text: lines[j], draw_g: text_g });
          } else {
-            let parts = lines[j].split("="), args = [];
+            let parts = lines[j].split('='), args = [];
 
             for (let n = 0; n < 2; ++n) {
                let arg = {
-                  align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
+                  align: (n == 0) ? 'start' : 'end', x: margin_x, y: posy,
                   width: width-2*margin_x, height: stepy, text: parts[n], draw_g: text_g,
                   _expected_width: width-2*margin_x, _args: args,
                   post_process(painter) {
@@ -456,16 +456,16 @@ class RHistStatsPainter extends RPavePainter {
          }
       }
 
-      let lpath = "";
+      let lpath = '';
 
       if (has_head)
-         lpath += "M0," + Math.round(stepy) + 'h' + width;
+         lpath += 'M0,' + Math.round(stepy) + 'h' + width;
 
       if ((first_stat > 0) && (num_cols > 1)) {
          for (let nrow = first_stat; nrow < nlines; ++nrow)
-            lpath += "M0," + Math.round(nrow * stepy) + 'h' + width;
+            lpath += 'M0,' + Math.round(nrow * stepy) + 'h' + width;
          for (let ncol = 0; ncol < num_cols - 1; ++ncol)
-            lpath += "M" + Math.round(width / num_cols * (ncol + 1)) + "," + Math.round(first_stat * stepy) + "V" + height;
+            lpath += 'M' + Math.round(width / num_cols * (ncol + 1)) + ',' + Math.round(first_stat * stepy) + 'V' + height;
       }
 
       if (lpath) this.draw_g.append('svg:path').attr('d',lpath) /*.call(this.lineatt.func)*/;
@@ -477,11 +477,11 @@ class RHistStatsPainter extends RPavePainter {
    async redraw(reason) {
       if (reason && (typeof reason == 'string') && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
          let req = {
-            _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
+            _typename: 'ROOT::Experimental::RHistStatBoxBase::RRequest',
             mask: this.getObject().fShowMask // lines to show in stat box
          };
 
-         this.v7SubmitRequest("stat", req, reply => this.updateStatistic(reply));
+         this.v7SubmitRequest('stat', req, reply => this.updateStatistic(reply));
       }
 
       return this.drawPave();
