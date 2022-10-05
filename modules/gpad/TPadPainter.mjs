@@ -606,8 +606,8 @@ class TPadPainter extends ObjectPainter {
       }
 
       let svg_can = this.getCanvSvg(),
-          width = svg_can.property("draw_width"),
-          height = svg_can.property("draw_height"),
+          width = svg_can.property('draw_width'),
+          height = svg_can.property('draw_height'),
           pad_enlarged = svg_can.property("pad_enlarged"),
           pad_visible = !this.pad_draw_disabled && (!pad_enlarged || (pad_enlarged === this.pad)),
           w = Math.round(this.pad.fAbsWNDC * width),
@@ -624,7 +624,7 @@ class TPadPainter extends ObjectPainter {
          if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = svg_can.select(".primitives_layer")
+         svg_pad = svg_can.select('.primitives_layer')
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
@@ -1653,9 +1653,9 @@ class TPadPainter extends ObjectPainter {
 
       let func = direct_funcs[main.logx],
           func2 = revert_funcs[main.logx],
-          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
-          x1 = func(main.scale_xmin) - k*p.property("draw_x"),
-          x2 = x1 + k*p.property("draw_width");
+          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property('draw_width'),
+          x1 = func(main.scale_xmin) - k*p.property('draw_x'),
+          x2 = x1 + k*p.property('draw_width');
 
       r.ux1 = match(func2(x1), r.ux1, r.px2-r.px1);
       r.ux2 = match(func2(x2), r.ux2, r.px2-r.px1);
@@ -1663,9 +1663,9 @@ class TPadPainter extends ObjectPainter {
       func = direct_funcs[main.logy];
       func2 = revert_funcs[main.logy];
 
-      k = (func(main.scale_ymax) - func(main.scale_ymin))/p.property("draw_height");
-      let y2 = func(main.scale_ymax) + k*p.property("draw_y"),
-          y1 = y2 - k*p.property("draw_height");
+      k = (func(main.scale_ymax) - func(main.scale_ymin))/p.property('draw_height');
+      let y2 = func(main.scale_ymax) + k*p.property('draw_y'),
+          y1 = y2 - k*p.property('draw_height');
 
       r.uy1 = match(func2(y1), r.uy1, r.py2-r.py1);
       r.uy2 = match(func2(y2), r.uy2, r.py2-r.py1);
@@ -1713,7 +1713,7 @@ class TPadPainter extends ObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + "." + kind;
+         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + '.' + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
@@ -1768,11 +1768,11 @@ class TPadPainter extends ObjectPainter {
 
          let canvas = main.renderer.domElement;
          main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
-         let dataUrl = canvas.toDataURL("image/png");
+         let dataUrl = canvas.toDataURL('image/png');
 
          // remove 3D drawings
          if (can3d === constants.Embed3D.Embed) {
-            item.foreign = item.prnt.select("." + sz2.clname);
+            item.foreign = item.prnt.select('.' + sz2.clname);
             item.foreign.remove();
          }
 
@@ -1784,7 +1784,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          // add svg image
-         item.img = item.prnt.insert("image",".primitives_layer")     // create image object
+         item.img = item.prnt.insert("image",'.primitives_layer')     // create image object
                         .attr('x', sz2.x)
                         .attr('y', sz2.y)
                         .attr('width', canvas.width)
@@ -1811,7 +1811,7 @@ class TPadPainter extends ObjectPainter {
             if (item.img)
                item.img.remove(); // delete embed image
 
-            let prim = item.prnt.select(".primitives_layer");
+            let prim = item.prnt.select('.primitives_layer');
 
             if (item.foreign) // reinsert foreign object
                item.prnt.node().insertBefore(item.foreign.node(), prim.node());

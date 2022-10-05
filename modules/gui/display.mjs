@@ -837,7 +837,7 @@ class FlexibleDisplay extends MDIDisplay {
          } while ((rect.x + rect.w > ww - step) && (rect.y > 0));
          if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
 
-         main.style("left", rect.x + "px").style("top", rect.y + "px");
+         main.style("left", rect.x + 'px').style("top", rect.y + 'px');
       } else if (!no_redraw) {
          resize(frame);
       }
@@ -901,10 +901,10 @@ class FlexibleDisplay extends MDIDisplay {
 
       main.attr('class', "jsroot_flex_frame")
          .style('position', 'absolute')
-         .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
-         .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
-         .style('width', Math.round(w * 0.58) + "px")
-         .style('height', Math.round(h * 0.58) + "px")
+         .style('left', Math.round(w * (this.cnt % 5)/10) + 'px')
+         .style('top', Math.round(h * (this.cnt % 5)/10) + 'px')
+         .style('width', Math.round(w * 0.58) + 'px')
+         .style('height', Math.round(h * 0.58) + 'px')
          .property("state", "normal")
          .select(".jsroot_flex_header")
          .on("click", function() { mdi.activateFrame(d3_select(this.parentNode).select(".jsroot_flex_draw").node()); })
@@ -939,8 +939,8 @@ class FlexibleDisplay extends MDIDisplay {
          moving_div.attr('style', main.attr('style'));
 
          if (main.property("state") == "min")
-            moving_div.style('width', main.node().clientWidth + "px")
-                      .style('height', main.node().clientHeight + "px");
+            moving_div.style('width', main.node().clientWidth + 'px')
+                      .style('height', main.node().clientHeight + 'px');
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -958,7 +958,7 @@ class FlexibleDisplay extends MDIDisplay {
                current[i] = parseInt(v.slice(0,v.length-2));
             }
             current[i] += dd;
-            moving_div.style(name, Math.max(0, current[i])+"px");
+            moving_div.style(name, Math.max(0, current[i])+'px');
          };
          if (doing_move) {
             changeProp(0, "left", evnt.dx);
@@ -1044,15 +1044,15 @@ class FlexibleDisplay extends MDIDisplay {
       arr.forEach((frame,i) => {
          let main = d3_select(frame.parentNode);
          if (kind == "cascade")
-            main.style('left', (i*dx) + "px")
-                .style('top', (i*dy) + "px")
-                .style('width', Math.round(w * 0.58) + "px")
-                .style('height', Math.round(h * 0.58) + "px");
+            main.style('left', (i*dx) + 'px')
+                .style('top', (i*dy) + 'px')
+                .style('width', Math.round(w * 0.58) + 'px')
+                .style('height', Math.round(h * 0.58) + 'px');
          else
-            main.style('left', Math.round(w/nx*(i%nx)) + "px")
-                .style('top', Math.round(h/ny*((i-i%nx)/nx)) + "px")
-                .style('width', Math.round(w/nx - 4) + "px")
-                .style('height', Math.round(h/ny - 4) + "px");
+            main.style('left', Math.round(w/nx*(i%nx)) + 'px')
+                .style('top', Math.round(h/ny*((i-i%nx)/nx)) + 'px')
+                .style('width', Math.round(w/nx - 4) + 'px')
+                .style('height', Math.round(h/ny - 4) + 'px');
          resize(frame);
       });
    }
@@ -1127,7 +1127,7 @@ class BatchDisplay extends MDIDisplay {
          this.jsdom_body.append('div')
              .style("visible", 'hidden')
              .attr('width', this.width).attr('height', this.height)
-             .style('width', this.width + "px").style('height', this.height + "px")
+             .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr("id","jsroot_batch_" + this.frames.length)
              .attr("frame_title", title);
 
@@ -1479,7 +1479,7 @@ class BrowserLayout {
          d3_select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
          main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
          d3_select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
-         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
+         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+'px');
       }
 
       if (redraw) this.checkResize();
@@ -1528,11 +1528,11 @@ class BrowserLayout {
             area.property('last_drawing', drawing.style('left'));
          }
 
-         tgt = (-area.node().clientWidth - 10) + "px";
+         tgt = (-area.node().clientWidth - 10) + 'px';
          let mainw = main.node().clientWidth;
 
          if (vsepar.empty() && (area.node().offsetLeft > mainw/2))
-            tgt = (mainw+10) + "px";
+            tgt = (mainw+10) + 'px';
 
          tgt_separ = "-10px";
          tgt_drawing = "0px";
@@ -1660,8 +1660,8 @@ class BrowserLayout {
            this._float_left += evnt.dx;
            this._float_top += evnt.dy;
 
-           area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + "px")
-               .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + "px");
+           area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + 'px')
+               .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + 'px');
 
            this.setButtonsPosition();
         });
@@ -1677,8 +1677,8 @@ class BrowserLayout {
            this._float_width += evnt.dx;
            this._float_height += evnt.dy;
 
-           area.style('width', Math.min(Math.max(100, this._float_width), this._max_width) + "px")
-               .style('height', Math.min(Math.max(100, this._float_height), this._max_height) + "px");
+           area.style('width', Math.min(Math.max(100, this._float_width), this._max_width) + 'px')
+               .style('height', Math.min(Math.max(100, this._float_height), this._max_height) + 'px');
 
            this.setButtonsPosition();
         });

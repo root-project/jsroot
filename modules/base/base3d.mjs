@@ -22,8 +22,8 @@ function createSVGRenderer(as_is, precision, doc) {
       return rndr;
    }
 
-   const excl_style1 = ";stroke-opacity:1;stroke-width:1;stroke-linecap:round",
-         excl_style2 = ";fill-opacity:1";
+   const excl_style1 = ';stroke-opacity:1;stroke-width:1;stroke-linecap:round',
+         excl_style2 = ';fill-opacity:1';
 
    let doc_wrapper = {
      svg_attr: {},
@@ -61,7 +61,7 @@ function createSVGRenderer(as_is, precision, doc) {
               this._wrapper.svg_attr[name] = value;
            },
            appendChild(node) {
-              this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
+              this._wrapper.accPath += `<path style="${this._wrapper.path_attr['style']}" d="${this._wrapper.path_attr['d']}"/>`;
               this._wrapper.path_attr = {};
            },
            removeChild(node) {
@@ -92,20 +92,16 @@ function createSVGRenderer(as_is, precision, doc) {
    }
 
    rndr.clearHTML = function() {
-      this.doc_wrapper.accPath = "";
+      this.doc_wrapper.accPath = '';
    }
 
    rndr.makeOuterHTML = function() {
 
-      let wrap = this.doc_wrapper;
+      let wrap = this.doc_wrapper,
+         _textSizeAttr = `viewBox="${wrap.svg_attr['viewBox']}" width="${wrap.svg_attr['width']}" height="${wrap.svg_attr['height']}"`,
+         _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
 
-      let _textSizeAttr = ' viewBox="' + wrap.svg_attr['viewBox'] + '" width="' + wrap.svg_attr['width'] + '" height="' + wrap.svg_attr['height'] + '"';
-
-      let _textClearAttr = '';
-
-      if (wrap.svg_style.backgroundColor) _textClearAttr = ' style="background:' + wrap.svg_style.backgroundColor + '"';
-
-      return '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr + _textClearAttr + '>' + wrap.accPath + '</svg>';
+      return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    }
 
    rndr.setPrecision(precision);
@@ -115,9 +111,9 @@ function createSVGRenderer(as_is, precision, doc) {
 
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
- * @param {value} [render3d] - preconfigured value, will be used if applicable
- * @return {value} - rendering kind, see constants.Render3D
- * @private */
+  * @param {value} [render3d] - preconfigured value, will be used if applicable
+  * @return {value} - rendering kind, see constants.Render3D
+  * @private */
 function getRender3DKind(render3d) {
    if (!render3d) render3d = isBatchMode() ? settings.Render3DBatch : settings.Render3D;
    let rc = constants.Render3D;
@@ -167,7 +163,7 @@ let Handling3DDrawings = {
       }
 
       let pad = this.getPadSvg(),
-          clname = "draw3d_" + (this.getPadName() || 'canvas');
+          clname = 'draw3d_' + (this.getPadName() || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
@@ -176,7 +172,7 @@ let Handling3DDrawings = {
 
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);
-            this.selectDom().style('height', rect.height + "px");
+            this.selectDom().style('height', rect.height + 'px');
          }
          rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
          return rect;
@@ -188,14 +184,14 @@ let Handling3DDrawings = {
          size = fp.getFrameRect();
       } else {
          let elem = (can3d > 0) ? pad : this.getCanvSvg();
-         size = { x: 0, y: 0, width: elem.property("draw_width"), height: elem.property("draw_height") };
-         if (isNaN(size.width) || isNaN(size.height)) {
+         size = { x: 0, y: 0, width: elem.property('draw_width'), height: elem.property('draw_height') };
+         if (Number.isNaN(size.width) || Number.isNaN(size.height)) {
             size.width = pp.getPadWidth();
             size.height = pp.getPadHeight();
          } else if (fp && !fp.mode3d) {
             elem = this.getFrameSvg();
-            size.x = elem.property("draw_x");
-            size.y = elem.property("draw_y");
+            size.x = elem.property('draw_x');
+            size.y = elem.property('draw_y');
          }
       }
 
@@ -306,7 +302,7 @@ let Handling3DDrawings = {
 
          elem = this.getLayerSvg(size.clname);
 
-         // elem = layer.select("." + size.clname);
+         // elem = layer.select('.' + size.clname);
          if (onlyget) return elem;
 
          let svg = this.getPadSvg();
@@ -315,14 +311,14 @@ let Handling3DDrawings = {
             // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
-               elem = svg.insert("g", ".primitives_layer").attr('class', size.clname);
+               elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
             elem.attr('transform', `translate(${size.x},${size.y})`);
 
          } else {
 
             if (elem.empty())
-               elem = svg.insert("foreignObject", ".primitives_layer").attr('class', size.clname);
+               elem = svg.insert('foreignObject', '.primitives_layer').attr('class', size.clname);
 
             elem.attr('x', size.x)
                 .attr('y', size.y)
@@ -335,7 +331,7 @@ let Handling3DDrawings = {
       } else {
          let prnt = this.getCanvSvg().node().parentNode;
 
-         elem = d3_select(prnt).select("." + size.clname);
+         elem = d3_select(prnt).select('.' + size.clname);
          if (onlyget) return elem;
 
          // force redraw by resize
@@ -343,7 +339,7 @@ let Handling3DDrawings = {
 
          if (elem.empty())
             elem = d3_select(prnt).append('div').attr('class', size.clname)
-                                  .style("user-select", 'none');
+                                  .style('user-select', 'none');
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
@@ -361,9 +357,8 @@ let Handling3DDrawings = {
             prnt = prnt.parentNode;
          }
 
-         let pos1 = prnt ? prnt.getBoundingClientRect() : { top: 0, left: 0 };
-
-         let offx = Math.round(pos0.left - pos1.left),
+         let pos1 = prnt?.getBoundingClientRect() ?? { top: 0, left: 0 },
+             offx = Math.round(pos0.left - pos1.left),
              offy = Math.round(pos0.top - pos1.top);
 
          elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
@@ -423,13 +418,13 @@ async function createRender3D(width, height, render3d, args) {
          return import('gl');
       }).then(node_gl => {
          let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
-         if (!gl) throw(Error("Fail to create headless-gl"));
+         if (!gl) throw(Error('Fail to create headless-gl'));
          args.context = gl;
          gl.canvas = args.canvas;
          let wk_rnd = false;
          if (typeof navigator == 'undefined') {
             // TODO: check if needed after r145
-            globalThis.navigator = { userAgent: "node" };
+            globalThis.navigator = { userAgent: 'node' };
             wk_rnd = true;
          }
 
@@ -456,7 +451,7 @@ async function createRender3D(width, height, render3d, args) {
       if (need_workaround) {
           if (!internals.svg_3ds) internals.svg_3ds = [];
          renderer.workaround_id = internals.svg_3ds.length;
-         internals.svg_3ds[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in afterRender3D
+         internals.svg_3ds[renderer.workaround_id] = '<svg></svg>'; // dummy, provided in afterRender3D
 
          // replace DOM element in renderer
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -465,7 +460,7 @@ async function createRender3D(width, height, render3d, args) {
          renderer.jsroot_dom = renderer.domElement;
       }
 
-      // res.renderer.setClearColor("#000000", 1);
+      // res.renderer.setClearColor('#000000', 1);
       // res.renderer.setClearColor(0x0, 0);
       renderer.setSize(width, height);
       renderer.jsroot_render3d = render3d;
@@ -544,16 +539,16 @@ function afterRender3D(renderer) {
          indx2 -= 4 * canvas.width;
       }
 
-      let imageData = context.createImageData( canvas.width, canvas.height );
-      imageData.data.set( pixels );
-      context.putImageData( imageData, 0, 0 );
+      let imageData = context.createImageData(canvas.width, canvas.height);
+      imageData.data.set(pixels);
+      context.putImageData(imageData, 0, 0);
 
-      let dataUrl = canvas.toDataURL("image/png"),
-          svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+      let dataUrl = canvas.toDataURL('image/png'),
+          svg = `<image width="${canvas.width}" height="${canvas.height}" xlink:href="${dataUrl}"></image>`;
       internals.svg_3ds[renderer.workaround_id] = svg;
    } else {
-      let dataUrl = renderer.domElement.toDataURL("image/png");
-      d3_select(renderer.jsroot_dom).attr("xlink:href", dataUrl);
+      let dataUrl = renderer.domElement.toDataURL('image/png');
+      d3_select(renderer.jsroot_dom).attr('xlink:href', dataUrl);
    }
 }
 
@@ -669,7 +664,7 @@ class TooltipFor3D {
             v = v.line;
          } else {
             let res = v.lines[0];
-            for (let n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
+            for (let n=1;n<v.lines.length;++n) res+= '<br/>' + v.lines[n];
             v = res;
          }
       }
@@ -696,7 +691,7 @@ class TooltipFor3D {
          this.parent.removeChild(this.tt);
 
       this.tt = null;
-      this.lastlbl = "";
+      this.lastlbl = '';
    }
 
 } // class TooltipFor3D
@@ -1088,7 +1083,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
           tip = this.processMouseMove(intersects);
 
       if (tip) {
-         let name = "", title = "", coord = "", info = "";
+         let name = '', title = '', coord = '', info = '';
          if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
          if (typeof tip == 'string') {
             info = tip;
@@ -1271,7 +1266,7 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
          }
       } else {
          distances = new Float32Array(arr.length/3);
-         for (let n=0; n<arr.length; n+=6) {
+         for (let n = 0; n < arr.length; n += 6) {
             v1.set(arr[n],arr[n+1],arr[n+2]);
             v2.set(arr[n+3],arr[n+4],arr[n+5]);
             distances[n/3] = d;

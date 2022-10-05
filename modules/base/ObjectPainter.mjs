@@ -294,7 +294,7 @@ class ObjectPainter extends BasePainter {
             return frame;
          }
          if (typeof frame_layer != 'string') frame_layer = "main_layer";
-         layer = frame.select("." + frame_layer);
+         layer = frame.select('.' + frame_layer);
       } else {
          layer = this.getLayerSvg("primitives_layer");
       }
@@ -362,7 +362,7 @@ class ObjectPainter extends BasePainter {
       if (svg.empty()) return svg;
 
       if (name.indexOf("prim#") == 0) {
-         svg = svg.select(".primitives_layer");
+         svg = svg.select('.primitives_layer');
          name = name.slice(5);
       }
 

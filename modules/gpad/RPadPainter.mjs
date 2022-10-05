@@ -422,8 +422,8 @@ class RPadPainter extends RObjectPainter {
 
       let svg_parent = this.getPadSvg(this.pad_name), // this.pad_name MUST be here to select parent pad
           svg_can = this.getCanvSvg(),
-          width = svg_parent.property("draw_width"),
-          height = svg_parent.property("draw_height"),
+          width = svg_parent.property('draw_width'),
+          height = svg_parent.property('draw_height'),
           pad_enlarged = svg_can.property("pad_enlarged"),
           pad_visible = true,
           w = width, h = height, x = 0, y = 0,
@@ -452,7 +452,7 @@ class RPadPainter extends RObjectPainter {
          if (!isBatchMode())
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = svg_parent.select(".primitives_layer")
+         svg_pad = svg_parent.select('.primitives_layer')
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
@@ -1194,7 +1194,7 @@ class RPadPainter extends RObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + "." + kind;
+         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + '.' + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
@@ -1243,12 +1243,12 @@ class RPadPainter extends RObjectPainter {
 
          main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
 
-         let dataUrl = canvas.toDataURL("image/png");
+         let dataUrl = canvas.toDataURL('image/png');
 
          // remove 3D drawings
 
          if (can3d === constants.Embed3D.Embed) {
-            item.foreign = item.prnt.select("." + sz2.clname);
+            item.foreign = item.prnt.select('.' + sz2.clname);
             item.foreign.remove();
          }
 
@@ -1260,7 +1260,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          // add svg image
-         item.img = item.prnt.insert("image",".primitives_layer")     // create image object
+         item.img = item.prnt.insert("image",'.primitives_layer')     // create image object
                         .attr('x', sz2.x)
                         .attr('y', sz2.y)
                         .attr('width', canvas.width)
@@ -1283,7 +1283,7 @@ class RPadPainter extends RObjectPainter {
             if (item.img)
                item.img.remove(); // delete embed image
 
-            let prim = item.prnt.select(".primitives_layer");
+            let prim = item.prnt.select('.primitives_layer');
 
             if (item.foreign) // reinsert foreign object
                item.prnt.node().insertBefore(item.foreign.node(), prim.node());

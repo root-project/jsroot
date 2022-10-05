@@ -167,7 +167,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
-      let pnt = fname.indexOf(".");
+      let pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
           .then(res => { console.log('save', fname, res.length); this.sendWebsocket("SAVE:" + fname + ":" + res); });
    }
@@ -863,7 +863,7 @@ function drawRFont() {
    if (defs.empty())
       defs = svg.insert("svg:defs", ":first-child").attr('class', "canvas_defs");
 
-   let entry = defs.select("." + clname);
+   let entry = defs.select('.' + clname);
    if (entry.empty())
       entry = defs.append('style').attr('type', "text/css").attr('class', clname);
 

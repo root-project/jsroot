@@ -169,7 +169,7 @@ class TAttFillHandler {
       this.pattern_url = `url(#${id})`;
       this.antialias = false;
 
-      if (!defs.select("." + id).empty())
+      if (!defs.select('.' + id).empty())
          return true;
 
       let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;

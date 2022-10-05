@@ -17,7 +17,7 @@ function getElementRect(elem, sizearg) {
    const styleValue = name => {
       let value = elem.style(name);
       if (!value || (typeof value !== 'string')) return 0;
-      value = parseFloat(value.replace("px", ""));
+      value = parseFloat(value.replace('px', ""));
       return !Number.isFinite(value) ? 0 : Math.round(value);
    };
 
@@ -50,8 +50,8 @@ function getAbsPosInCanvas(sel, pos) {
    while (!sel.empty() && !sel.classed('root_canvas') && pos) {
       let cl = sel.attr('class');
       if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
-         pos.x += sel.property("draw_x") || 0;
-         pos.y += sel.property("draw_y") || 0;
+         pos.x += sel.property('draw_x') || 0;
+         pos.y += sel.property('draw_y') || 0;
       }
       sel = d3_select(sel.node().parentNode);
    }
@@ -74,7 +74,7 @@ function floatToString(value, fmt, ret_fmt) {
       return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
    let last = fmt[len-1];
    fmt = fmt.slice(0,len-1);
-   let isexp, prec = fmt.indexOf(".");
+   let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
@@ -117,7 +117,7 @@ function floatToString(value, fmt, ret_fmt) {
       while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
       let diff = sg.length - l - prec;
-      if (sg.indexOf(".")>l) diff--;
+      if (sg.indexOf('.')>l) diff--;
 
       if (diff != 0) {
          prec -= diff;
@@ -265,7 +265,7 @@ function buildSvgPath(kind, bins, height, ndig) {
       let vvv = Math.round(val);
       if ((ndig == 0) || (vvv === val)) return vvv.toString();
       let str = val.toFixed(ndig);
-      while ((str[str.length - 1] == '0') && (str.lastIndexOf(".") < str.length - 1))
+      while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
          str = str.slice(0, str.length - 1);
       if (str[str.length - 1] == '.')
          str = str.slice(0, str.length - 1);
@@ -369,18 +369,18 @@ function buildSvgPath(kind, bins, height, ndig) {
   * @private */
 function compressSVG(svg) {
 
-   svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
-            .replace(/ class=\"\w*\"/g, "")                                // remove all classes
-            .replace(/ pad=\"\w*\"/g, "")                                  // remove all pad ids
-            .replace(/ title=\"\"/g, "")                                   // remove all empty titles
-            .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, "<g")          // remove object ids
-            .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
-            .replace(/<g><\/g>/g, "");                                     // remove all empty groups
+   svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, 'url(#$1)')        // decode all URL
+            .replace(/ class=\"\w*\"/g, '')                                // remove all classes
+            .replace(/ pad=\"\w*\"/g, '')                                  // remove all pad ids
+            .replace(/ title=\"\"/g, '')                                   // remove all empty titles
+            .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, '<g')          // remove object ids
+            .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, '')  // remove all empty groups with transform
+            .replace(/<g><\/g>/g, '');                                     // remove all empty groups
 
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
-   svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, "")
+   svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, '')
 
-   if (svg.indexOf("xlink:href") < 0)
+   if (svg.indexOf('xlink:href') < 0)
       svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, "");
 
    return svg;
@@ -519,8 +519,8 @@ class BasePainter {
 
       if (enlarge !== 'on') {
          if (new_size && new_size.width && new_size.height)
-            main_origin.style('width', new_size.width + "px")
-               .style('height', new_size.height + "px");
+            main_origin.style('width', new_size.width + 'px')
+               .style('height', new_size.height + 'px');
       }
 
       let rect_origin = getElementRect(main_origin, true),

@@ -388,7 +388,7 @@ async function drawTree(dom, obj, opt) {
 
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
-      args = { expr: "." + obj.func + "()", branch: obj.branch };
+      args = { expr: '.' + obj.func + "()", branch: obj.branch };
       if (opt && opt.indexOf("dump") == 0)
          args.expr += ">>" + opt;
       else if (opt)
@@ -396,7 +396,7 @@ async function drawTree(dom, obj, opt) {
       tree = obj.branch.$tree;
    } else if (obj.$branch) {
       // this is drawing of the single leaf from the branch
-      args = { expr: "." + obj.fName + (opt || ''), branch: obj.$branch };
+      args = { expr: '.' + obj.fName + (opt || ''), branch: obj.$branch };
       if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
          // special case of size
          args.expr = opt;

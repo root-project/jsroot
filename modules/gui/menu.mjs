@@ -1266,7 +1266,7 @@ class StandaloneMenu extends JSRootMenu {
       let element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class',"jsroot_dialog").style('width',(args.width || 450) + "px")
+                      .attr('class',"jsroot_dialog").style('width',(args.width || 450) + 'px')
                       .attr("tabindex", "0")
                       .html(
          `<div class="jsroot_dialog_body">

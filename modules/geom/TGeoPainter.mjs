@@ -2550,9 +2550,9 @@ class TGeoPainter extends ObjectPainter {
    createSnapshot(filename) {
       if (!this._renderer) return;
       this.render3D(0);
-      let dataUrl = this._renderer.domElement.toDataURL("image/png");
+      let dataUrl = this._renderer.domElement.toDataURL('image/png');
       if (filename === "asis") return dataUrl;
-      dataUrl.replace("image/png", "image/octet-stream");
+      dataUrl.replace('image/png', "image/octet-stream");
       let doc = getDocument(),
           link = doc.createElement('a');
       if (typeof link.download === 'string') {

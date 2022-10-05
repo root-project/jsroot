@@ -351,7 +351,7 @@ let gStyle = {
    fHistLineStyle: 1,
    fHistLineWidth: 1,
    /** @summary format for bin content */
-   fPaintTextFormat: "g",
+   fPaintTextFormat: 'g',
    /** @summary default time offset, UTC time at 01/01/95   */
    fTimeOffset: 788918400,
    fLegendBorderSize: 1,

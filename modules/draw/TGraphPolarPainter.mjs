@@ -271,7 +271,7 @@ class TGraphPolargramPainter extends ObjectPainter {
              interactive = layer.select(".interactive_ellipse");
 
          if (interactive.empty())
-            interactive = layer.append("g")
+            interactive = layer.append('g')
                                .classed("most_upper_primitives", true)
                                .append("ellipse")
                                .classed("interactive_ellipse", true)

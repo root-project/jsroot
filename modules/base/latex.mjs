@@ -970,7 +970,7 @@ const math_symbols_map = {
       '#plus': "+",
       '#minus': "-",
       '#\/': "/",
-      '#upoint': ".",
+      '#upoint': '.',
       '#aa': "\\mathring{a}",
       '#AA': "\\mathring{A}",
       '#omicron': "o",

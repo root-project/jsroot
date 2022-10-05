@@ -41,7 +41,7 @@ class RObjectPainter extends ObjectPainter {
             let block = blks[k],
                 match = (this.csstype && (block.selector == this.csstype)) ||
                         (obj.fId && (block.selector == ("#" + obj.fId))) ||
-                        (obj.fCssClass && (block.selector == ("." + obj.fCssClass)));
+                        (obj.fCssClass && (block.selector == ('.' + obj.fCssClass)));
 
             if (match && block.map && block.map.m) {
                let value = block.map.m[name.toLowerCase()];

@@ -3631,8 +3631,8 @@ ObjectPainter.prototype.showInspector = function(obj) {
 
    let main = this.selectDom(),
       rect = getElementRect(main),
-      w = Math.round(rect.width * 0.05) + "px",
-      h = Math.round(rect.height * 0.05) + "px",
+      w = Math.round(rect.width * 0.05) + 'px',
+      h = Math.round(rect.height * 0.05) + 'px',
       id = "root_inspector_" + internals.id_counter++;
 
    main.append("div")

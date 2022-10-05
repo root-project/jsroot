@@ -2205,12 +2205,12 @@ class TH2Painter extends THistPainter {
 
       const chords = chord(data);
 
-      const group = this.draw_g.append("g")
+      const group = this.draw_g.append('g')
          .attr("font-size", 10)
          .attr("font-family", "sans-serif")
-         .selectAll("g")
+         .selectAll('g')
          .data(chords.groups)
-         .join("g");
+         .join('g');
 
       const arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius);
 
@@ -2230,10 +2230,10 @@ class TH2Painter extends THistPainter {
 
       group.append('title').text(d => `${labels[d.index]} ${formatValue(d.value)}`);
 
-      const groupTick = group.append("g")
-         .selectAll("g")
+      const groupTick = group.append('g')
+         .selectAll('g')
          .data(ticks)
-         .join("g")
+         .join('g')
          .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
       groupTick.append('line')
          .attr('stroke', "currentColor")
@@ -2253,7 +2253,7 @@ class TH2Painter extends THistPainter {
                ? `↑ ${labels[d.index]}` : `${labels[d.index]} ↓`;
          });
 
-      this.draw_g.append("g")
+      this.draw_g.append('g')
          .attr("fill-opacity", 0.8)
          .selectAll("path")
          .data(chords)

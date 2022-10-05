@@ -201,8 +201,8 @@ const ToolbarIcons = {
 
       let svg = group.append("svg:svg")
                      .attr('class', "jsroot_svg_toolbar_btn")
-                     .attr('width', size + "px")
-                     .attr('height', size + "px")
+                     .attr('width', size + 'px')
+                     .attr('height', size + 'px')
                      .attr("viewBox", "0 0 512 512")
                      .style('overflow', 'hidden');
 

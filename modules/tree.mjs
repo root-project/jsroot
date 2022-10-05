@@ -44,9 +44,9 @@ class TSelector {
    /** @summary Add branch to the selector
     * @desc Either branch name or branch itself should be specified
     * Second parameter defines member name in the tgtobj
-    * If selector.addBranch("px", "read_px") is called,
+    * If selector.addBranch('px', "read_px") is called,
     * branch will be read into selector.tgtobj.read_px member
-    * If second parameter not specified, branch name (here "px") will be used
+    * If second parameter not specified, branch name (here 'px') will be used
     * If branch object specified as first parameter and second parameter missing,
     * then member like "br0", "br1" and so on will be assigned
     * @param {string|Object} branch - name of branch (or branch object itself}
@@ -444,7 +444,7 @@ class TDrawVariable {
          } else {
             // first try to find branch
             pos2 = pos;
-            while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
+            while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === '.')) pos2++;
             if (code[pos2] == '$') {
                let repl = "";
                switch (code.slice(pos, pos2)) {
@@ -471,7 +471,7 @@ class TDrawVariable {
 
             // when code ends with the point - means object itself will be accessed
             // sometime branch name itself ends with the point
-            if ((pos2 >= code.length - 1) && (code[code.length - 1] === ".")) {
+            if ((pos2 >= code.length - 1) && (code[code.length - 1] === '.')) {
                arriter.push("$self$");
                pos2 = code.length;
             }
@@ -486,7 +486,7 @@ class TDrawVariable {
                break;
             }
 
-            if (code[pos2] === ".") {
+            if (code[pos2] === '.') {
                // this is object member
                let prev = ++pos2;
 
@@ -1401,7 +1401,7 @@ function findBrachStreamerElement(branch, file) {
    let match_name = branch.fName,
       pos = match_name.indexOf("[");
    if (pos > 0) match_name = match_name.slice(0, pos);
-   pos = match_name.lastIndexOf(".");
+   pos = match_name.lastIndexOf('.');
    if (pos > 0) match_name = match_name.slice(pos + 1);
 
    function match_elem(elem) {
@@ -1657,7 +1657,7 @@ async function treeProcess(tree, selector, args) {
 
             if (elemd && elemd.fCountName && arrd)
                for (let k = 0; k < arrd.length; ++k)
-                  if (arrd[k].fName === branch.fBranchCount.fName + "." + elemd.fCountName) {
+                  if (arrd[k].fName === branch.fBranchCount.fName + '.' + elemd.fCountName) {
                      BranchCount2 = arrd[k];
                      break;
                   }
@@ -1688,9 +1688,9 @@ async function treeProcess(tree, selector, args) {
          if (!lst || !lst.arr.length) return true;
 
          let match_prefix = branch.fName;
-         if (match_prefix[match_prefix.length - 1] === ".") match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if ((typeof read_mode === 'string') && (read_mode[0] == ".")) match_prefix += read_mode;
-         match_prefix += ".";
+         if (match_prefix[match_prefix.length - 1] === '.') match_prefix = match_prefix.slice(0, match_prefix.length - 1);
+         if ((typeof read_mode === 'string') && (read_mode[0] == '.')) match_prefix += read_mode;
+         match_prefix += '.';
 
          for (let k = 0; k < lst.arr.length; ++k) {
             let br = lst.arr[k];
@@ -1724,8 +1724,8 @@ async function treeProcess(tree, selector, args) {
 
             if (chld_kind > 0) {
                chld_direct = "$child$";
-               let pp = subname.indexOf(".");
-               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + "." + subname.slice(0, pp + 1), k) || "TObject";
+               let pp = subname.indexOf('.');
+               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || "TObject";
             }
 
             if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -1750,7 +1750,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createStreamerElement(target_name, kInt);
 
-         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === ".")) || (read_mode === 1)) {
+         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === '.')) || (read_mode === 1)) {
             handle.process_arrays = false;
 
             member = {
@@ -1770,7 +1770,7 @@ async function treeProcess(tree, selector, args) {
                }
             };
 
-            if ((typeof read_mode === 'string') && (read_mode[0] === ".")) {
+            if ((typeof read_mode === 'string') && (read_mode[0] === '.')) {
                member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                if (!member.conttype) {
                   console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
@@ -1883,7 +1883,7 @@ async function treeProcess(tree, selector, args) {
 
          member.name0 = item_cnt.name;
 
-         let snames = target_name.split(".");
+         let snames = target_name.split('.');
 
          if (snames.length === 1) {
             // no point in the name - just plain array of objects
@@ -2655,7 +2655,7 @@ function treeHierarchy(node, obj) {
          if (pos > 0) arg = arg.slice(0, pos);
          if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
             arg = arg.slice(parent_branch.fName.length);
-            if (arg[0] === ".") arg = arg.slice(1);
+            if (arg[0] === '.') arg = arg.slice(1);
          }
          return arg;
       }
