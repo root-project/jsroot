@@ -8303,7 +8303,7 @@ class FontHandler {
 
    /** @summary constructor */
    constructor(fontIndex, size, scale, name, style, weight) {
-      this.name = "Arial";
+      this.name = 'Arial';
       this.style = null;
       this.weight = null;
 
@@ -8318,15 +8318,15 @@ class FontHandler {
       if (fontIndex !== null) {
 
          let indx = Math.floor(fontIndex / 10),
-             fontName = root_fonts[indx] || "Arial";
+             fontName = root_fonts[indx] || 'Arial';
 
          while (fontName.length > 0) {
             if (fontName[0] === 'b')
-               this.weight = "bold";
+               this.weight = 'bold';
             else if (fontName[0] === 'i')
-               this.style = "italic";
+               this.style = 'italic';
             else if (fontName[0] === 'o')
-               this.style = "oblique";
+               this.style = 'oblique';
             else
                break;
             fontName = fontName.slice(1);
@@ -8606,7 +8606,7 @@ const translateLaTeX = (str, more) => {
    while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
       str = str.slice(1, str.length - 1);
 
-   return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, "");
+   return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, '');
 };
 
 // array with relative width of base symbols from range 32..126
@@ -8637,42 +8637,42 @@ function approximateLabelWidth(label, font, fsize) {
 /** @summary array defines features supported by latex parser, used by both old and new parsers
   * @private */
 const latex_features = [
-   { name: "#it{" }, // italic
-   { name: "#bf{" }, // bold
-   { name: "#underline{", deco: "underline" }, // underline
-   { name: "#overline{", deco: "overline" }, // overline
-   { name: "#strike{", deco: "line-through" }, // line through
-   { name: "#kern[", arg: 'float' }, // horizontal shift
-   { name: "#lower[", arg: 'float' },  // vertical shift
-   { name: "#scale[", arg: 'float' },  // font scale
-   { name: "#color[", arg: 'int' },   // font color
-   { name: "#font[", arg: 'int' },    // font face
-   { name: "_{", low_up: "low" },  // subscript
-   { name: "^{", low_up: "up" },   // superscript
-   { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
-   { name: "#hat{", accent: "\u02C6", hasw: true }, // "\u0302"
-   { name: "#check{", accent: "\u02C7", hasw: true }, // "\u030C"
-   { name: "#acute{", accent: "\u02CA" }, // "\u0301"
-   { name: "#grave{", accent: "\u02CB" }, // "\u0300"
-   { name: "#dot{", accent: "\u02D9" }, // "\u0307"
-   { name: "#ddot{", accent: "\u02BA", hasw: true }, // "\u0308"
-   { name: "#tilde{", accent: "\u02DC", hasw: true }, // "\u0303"
-   { name: "#slash{", accent: "\u2215" }, // "\u0337"
-   { name: "#vec{", accent: "\u02ED", hasw: true }, // "\u0350" arrowhead
-   { name: "#frac{", twolines: 'line' },
-   { name: "#splitline{", twolines: true },
-   { name: "#sqrt[", arg: 'int', sqrt: true }, // root with arbitrary power
-   { name: "#sqrt{", sqrt: true },             // square root
-   { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
-   { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
-   { name: "#left[", right: "#right]", braces: "[]" },
-   { name: "#left(", right: "#right)", braces: "()" },
-   { name: "#left{", right: "#right}", braces: "{}" },
-   { name: "#left|", right: "#right|", braces: "||" },
-   { name: "#[]{", braces: "[]" },
-   { name: "#(){", braces: "()" },
-   { name: "#{}{", braces: "{}" },
-   { name: "#||{", braces: "||" }
+   { name: '#it{' }, // italic
+   { name: '#bf{' }, // bold
+   { name: '#underline{', deco: 'underline' }, // underline
+   { name: '#overline{', deco: 'overline' }, // overline
+   { name: '#strike{', deco: 'line-through' }, // line through
+   { name: '#kern[', arg: 'float' }, // horizontal shift
+   { name: '#lower[', arg: 'float' },  // vertical shift
+   { name: '#scale[', arg: 'float' },  // font scale
+   { name: '#color[', arg: 'int' },   // font color
+   { name: '#font[', arg: 'int' },    // font face
+   { name: '_{', low_up: 'low' },  // subscript
+   { name: '^{', low_up: 'up' },   // superscript
+   { name: '#bar{', deco: 'overline' /* accent: '\u02C9' */ }, // '\u0305'
+   { name: '#hat{', accent: '\u02C6', hasw: true }, // '\u0302'
+   { name: '#check{', accent: '\u02C7', hasw: true }, // '\u030C'
+   { name: '#acute{', accent: '\u02CA' }, // '\u0301'
+   { name: '#grave{', accent: '\u02CB' }, // '\u0300'
+   { name: '#dot{', accent: '\u02D9' }, // '\u0307'
+   { name: '#ddot{', accent: '\u02BA', hasw: true }, // '\u0308'
+   { name: '#tilde{', accent: '\u02DC', hasw: true }, // '\u0303'
+   { name: '#slash{', accent: '\u2215' }, // '\u0337'
+   { name: '#vec{', accent: '\u02ED', hasw: true }, // '\u0350' arrowhead
+   { name: '#frac{', twolines: 'line' },
+   { name: '#splitline{', twolines: true },
+   { name: '#sqrt[', arg: 'int', sqrt: true }, // root with arbitrary power
+   { name: '#sqrt{', sqrt: true },             // square root
+   { name: '#sum', special: '\u2211', w: 0.8, h: 0.9 },
+   { name: '#int', special: '\u222B', w: 0.3, h: 1.0 },
+   { name: '#left[', right: '#right]', braces: '[]' },
+   { name: '#left(', right: '#right)', braces: '()' },
+   { name: '#left{', right: '#right}', braces: '{}' },
+   { name: '#left|', right: '#right|', braces: '||' },
+   { name: '#[]{', braces: '[]' },
+   { name: '#(){', braces: '()' },
+   { name: '#{}{', braces: '{}' },
+   { name: '#||{', braces: '||' }
 ];
 
 // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm, starts from 33
@@ -8682,7 +8682,7 @@ const symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0
 const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505];
 
 function replaceSymbols(s, kind) {
-   let res = "", m = kind == "Wingdings" ? wingdingsMap : symbolsMap;
+   let res = '', m = kind == 'Wingdings' ? wingdingsMap : symbolsMap;
    for (let k = 0; k < s.length; ++k) {
       let code = s.charCodeAt(k),
           new_code = (code > 32) ? m[code-33] : 0;
@@ -8832,7 +8832,7 @@ function parseLatex(node, arg, label, curr) {
          if ((s.length > 0) || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
-                elem = g.append("svg:text");
+                elem = g.append('svg:text');
 
             if (alone && !curr.g) curr.g = elem;
 
@@ -8851,7 +8851,7 @@ function parseLatex(node, arg, label, curr) {
 
             // set font size directly to element to avoid complex control
             if (curr.fisze !== curr.font.size)
-               elem.attr("font-size", Math.round(curr.fsize));
+               elem.attr('font-size', Math.round(curr.fsize));
 
             if (curr.font && curr.font.isSymbol)
                elem.text(replaceSymbols(s, curr.font.isSymbol));
@@ -8913,14 +8913,14 @@ function parseLatex(node, arg, label, curr) {
          positionGNode(subpos, xpos, 0, true);
 
          switch(found.name) {
-            case "#check{": createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
-            case "#acute{": createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
-            case "#grave{": createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
-            case "#dot{": createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
-            case "#ddot{": createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
-            case "#tilde{": createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
-            case "#slash{": createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
-            case "#vec{": createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
+            case '#check{': createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+            case '#acute{': createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
+            case '#grave{': createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
+            case '#dot{': createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
+            case '#ddot{': createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
+            case '#tilde{': createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
+            case '#slash{': createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
+            case '#vec{': createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
             default: createPath(gg).attr('d',`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
          }
 
@@ -9033,7 +9033,7 @@ function parseLatex(node, arg, label, curr) {
              gg = createGG(), path = createPath(gg),
              h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
 
-         if (found.name == "#sum") {
+         if (found.name == '#sum') {
             x_up = x_low = w/2;
             path.attr('d',`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
          } else {
@@ -9076,15 +9076,15 @@ function parseLatex(node, arg, label, curr) {
              r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
 
          switch (found.braces) {
-            case "||":
+            case '||':
                path1.attr('d',`M${w},${r_y1}v${dy}`);
                path2.attr('d',`M${3*w+r_width},${r_y1}v${dy}`);
                break;
-            case "[]":
+            case '[]':
                path1.attr('d',`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
                path2.attr('d',`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
-            case "{}":
+            case '{}':
                path1.attr('d',`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
                path2.attr('d',`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
                break;
@@ -9120,9 +9120,9 @@ function parseLatex(node, arg, label, curr) {
          if (subpos.deco) {
             let path = createPath(gg), r_width = Math.round(r.width);
             switch(subpos.deco) {
-               case "underline": path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
-               case "overline": path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
-               case "line-through": path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+               case 'underline': path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
+               case 'overline': path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
+               case 'line-through': path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
             }
          }
 
@@ -9133,13 +9133,13 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if (found.name == "#bf{" || found.name == "#it{") {
+      if (found.name == '#bf{' || found.name == '#it{') {
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
          let subpos = createSubPos();
 
-         if (found.name == "#bf{")
+         if (found.name == '#bf{')
             subpos.bold = !subpos.bold;
          else
             subpos.italic = !subpos.italic;
@@ -9156,7 +9156,7 @@ function parseLatex(node, arg, label, curr) {
       let foundarg = 0;
 
       if (found.arg) {
-         let pos = label.indexOf("]{");
+         let pos = label.indexOf(']{');
          if (pos < 0) { console.log('missing argument for ', found.name); return false; }
          foundarg = label.slice(0, pos);
          if (found.arg == 'int') {
@@ -9169,7 +9169,7 @@ function parseLatex(node, arg, label, curr) {
          label = label.slice(pos + 2);
       }
 
-      if ((found.name == "#kern[") || (found.name == "#lower[")) {
+      if ((found.name == '#kern[') || (found.name == '#lower[')) {
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
@@ -9178,7 +9178,7 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(currG(), arg, sublabel, subpos);
 
          let shiftx = 0, shifty = 0;
-         if (found.name == "kern[") shiftx = foundarg; else shifty = foundarg;
+         if (found.name == 'kern[') shiftx = foundarg; else shifty = foundarg;
 
          positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
@@ -9187,16 +9187,16 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if ((found.name == "#color[") || (found.name == "#scale[") || (found.name == "#font[")) {
+      if ((found.name == '#color[') || (found.name == '#scale[') || (found.name == '#font[')) {
 
          let sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
          let subpos = createSubPos();
 
-         if (found.name == "#color[")
+         if (found.name == '#color[')
             subpos.color = curr.painter.getColor(foundarg);
-         else if (found.name == "#font[") {
+         else if (found.name == '#font[') {
             subpos.font = new FontHandler(foundarg);
             subpos.ufont = true; // mark that custom font is applied
          } else
@@ -9359,103 +9359,103 @@ async function loadMathjax() {
 }
 
 const math_symbols_map = {
-      '#LT': "\\langle",
-      '#GT': "\\rangle",
-      '#club': "\\clubsuit",
-      '#spade': "\\spadesuit",
-      '#heart': "\\heartsuit",
-      '#diamond': "\\diamondsuit",
-      '#voidn': "\\wp",
-      '#voidb': "f",
-      '#copyright': "(c)",
-      '#ocopyright': "(c)",
-      '#trademark': "TM",
-      '#void3': "TM",
-      '#oright': "R",
-      '#void1': "R",
-      '#3dots': "\\ldots",
-      '#lbar': "\\mid",
-      '#void8': "\\mid",
-      '#divide': "\\div",
-      '#Jgothic': "\\Im",
-      '#Rgothic': "\\Re",
-      '#doublequote': "\"",
-      '#plus': "+",
-      '#minus': "-",
-      '#\/': "/",
+      '#LT': '\\langle',
+      '#GT': '\\rangle',
+      '#club': '\\clubsuit',
+      '#spade': '\\spadesuit',
+      '#heart': '\\heartsuit',
+      '#diamond': '\\diamondsuit',
+      '#voidn': '\\wp',
+      '#voidb': 'f',
+      '#copyright': '(c)',
+      '#ocopyright': '(c)',
+      '#trademark': 'TM',
+      '#void3': 'TM',
+      '#oright': 'R',
+      '#void1': 'R',
+      '#3dots': '\\ldots',
+      '#lbar': '\\mid',
+      '#void8': '\\mid',
+      '#divide': '\\div',
+      '#Jgothic': '\\Im',
+      '#Rgothic': '\\Re',
+      '#doublequote': '"',
+      '#plus': '+',
+      '#minus': '-',
+      '#\/': '/',
       '#upoint': '.',
-      '#aa': "\\mathring{a}",
-      '#AA': "\\mathring{A}",
-      '#omicron': "o",
-      '#Alpha': "A",
-      '#Beta': "B",
-      '#Epsilon': "E",
-      '#Zeta': "Z",
-      '#Eta': "H",
-      '#Iota': "I",
-      '#Kappa': "K",
-      '#Mu': "M",
-      '#Nu': "N",
-      '#Omicron': "O",
-      '#Rho': "P",
-      '#Tau': "T",
-      '#Chi': "X",
-      '#varomega': "\\varpi",
-      '#corner': "?",
-      '#ltbar': "?",
-      '#bottombar': "?",
-      '#notsubset': "?",
-      '#arcbottom': "?",
-      '#cbar': "?",
-      '#arctop': "?",
-      '#topbar': "?",
-      '#arcbar': "?",
-      '#downleftarrow': "?",
-      '#splitline': "\\genfrac{}{}{0pt}{}",
-      '#it': "\\textit",
-      '#bf': "\\textbf",
-      '#frac': "\\frac",
-      '#left{': "\\lbrace",
-      '#right}': "\\rbrace",
-      '#left\\[': "\\lbrack",
-      '#right\\]': "\\rbrack",
-      '#\\[\\]{': "\\lbrack",
-      ' } ': "\\rbrack",
-      '#\\[': "\\lbrack",
-      '#\\]': "\\rbrack",
-      '#{': "\\lbrace",
-      '#}': "\\rbrace",
-      ' ': "\\;"
+      '#aa': '\\mathring{a}',
+      '#AA': '\\mathring{A}',
+      '#omicron': 'o',
+      '#Alpha': 'A',
+      '#Beta': 'B',
+      '#Epsilon': 'E',
+      '#Zeta': 'Z',
+      '#Eta': 'H',
+      '#Iota': 'I',
+      '#Kappa': 'K',
+      '#Mu': 'M',
+      '#Nu': 'N',
+      '#Omicron': 'O',
+      '#Rho': 'P',
+      '#Tau': 'T',
+      '#Chi': 'X',
+      '#varomega': '\\varpi',
+      '#corner': '?',
+      '#ltbar': '?',
+      '#bottombar': '?',
+      '#notsubset': '?',
+      '#arcbottom': '?',
+      '#cbar': '?',
+      '#arctop': '?',
+      '#topbar': '?',
+      '#arcbar': '?',
+      '#downleftarrow': '?',
+      '#splitline': '\\genfrac{}{}{0pt}{}',
+      '#it': '\\textit',
+      '#bf': '\\textbf',
+      '#frac': '\\frac',
+      '#left{': '\\lbrace',
+      '#right}': '\\rbrace',
+      '#left\\[': '\\lbrack',
+      '#right\\]': '\\rbrack',
+      '#\\[\\]{': '\\lbrack',
+      ' } ': '\\rbrack',
+      '#\\[': '\\lbrack',
+      '#\\]': '\\rbrack',
+      '#{': '\\lbrace',
+      '#}': '\\rbrace',
+      ' ': '\\;'
  };
 
  const mathjax_remap = {
-   'upDelta': "Updelta",
-   'upGamma': "Upgamma",
-   'upLambda': "Uplambda",
-   'upOmega': "Upomega",
-   'upPhi': "Upphi",
-   'upPi': "Uppi",
-   'upPsi': "Uppsi",
-   'upSigma': "Upsigma",
-   'upTheta': "Uptheta",
-   'upUpsilon': "Upupsilon",
-   'upXi': "Upxi",
-   'notcong': "ncong",
-   'notgeq': "ngeq",
-   'notgr': "ngtr",
-   'notless': "nless",
-   'notleq': "nleq",
-   'notsucc': "nsucc",
-   'notprec': "nprec",
-   'notsubseteq': "nsubseteq",
-   'notsupseteq': "nsupseteq",
-   'openclubsuit': "clubsuit",
-   'openspadesuit': "spadesuit",
-   'dasharrow': "dashrightarrow",
-   'comp': "circ",
-   'iiintop': "iiint",
-   'iintop': "iint",
-   'ointop': "oint"
+   'upDelta': 'Updelta',
+   'upGamma': 'Upgamma',
+   'upLambda': 'Uplambda',
+   'upOmega': 'Upomega',
+   'upPhi': 'Upphi',
+   'upPi': 'Uppi',
+   'upPsi': 'Uppsi',
+   'upSigma': 'Upsigma',
+   'upTheta': 'Uptheta',
+   'upUpsilon': 'Upupsilon',
+   'upXi': 'Upxi',
+   'notcong': 'ncong',
+   'notgeq': 'ngeq',
+   'notgr': 'ngtr',
+   'notless': 'nless',
+   'notleq': 'nleq',
+   'notsucc': 'nsucc',
+   'notprec': 'nprec',
+   'notsubseteq': 'nsubseteq',
+   'notsupseteq': 'nsupseteq',
+   'openclubsuit': 'clubsuit',
+   'openspadesuit': 'spadesuit',
+   'dasharrow': 'dashrightarrow',
+   'comp': 'circ',
+   'iiintop': 'iiint',
+   'iintop': 'iint',
+   'ointop': 'oint'
  };
 
  const mathjax_unicode = {
@@ -9556,7 +9556,7 @@ const math_symbols_map = {
    'slashint': 0x2A0F
  };
 
-const mathjax_asis = ['"', "'", "`", "=", "~"];
+const mathjax_asis = ['"', "'", '`', '=', '~'];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -9568,12 +9568,12 @@ function translateMath(str, kind, color, painter) {
 
       for (let x in symbols_map)
          if (x.length > 2)
-            str = str.replace(new RegExp(x, 'g'), "\\" + x.slice(1));
+            str = str.replace(new RegExp(x, 'g'), '\\' + x.slice(1));
 
       // replace all #color[]{} occurances
-      let clean = "", first = true;
+      let clean = '', first = true;
       while (str) {
-         let p = str.indexOf("#color[");
+         let p = str.indexOf('#color[');
          if ((p < 0) && first) { clean = str; break; }
          first = false;
          if (p != 0) {
@@ -9583,7 +9583,7 @@ function translateMath(str, kind, color, painter) {
          }
 
          str = str.slice(p + 7);
-         p = str.indexOf("]{");
+         p = str.indexOf(']{');
          if (p <= 0) break;
          let colindx = parseInt(str.slice(0, p));
          if (!Number.isInteger(colindx)) break;
@@ -9598,14 +9598,14 @@ function translateMath(str, kind, color, painter) {
          let part = str.slice(0, p);
          str = str.slice(p + 1);
          if (part)
-            clean += "\\color{" + col + '}{' + part + "}";
+            clean += `\\color{${col}}{${part}}`;
       }
 
       str = clean;
    } else {
-      if (str == "\\^") str = "\\unicode{0x5E}";
-      if (str == "\\vec") str = "\\unicode{0x2192}";
-      str = str.replace(/\\\./g, "\\unicode{0x2E}").replace(/\\\^/g, "\\hat");
+      if (str == '\\^') str = '\\unicode{0x5E}';
+      if (str == '\\vec') str = '\\unicode{0x2192}';
+      str = str.replace(/\\\./g, '\\unicode{0x2E}').replace(/\\\^/g, '\\hat');
       for (let x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
       for(let x in mathjax_asis)
@@ -9617,11 +9617,11 @@ function translateMath(str, kind, color, painter) {
    if (typeof color != 'string') return str;
 
    // MathJax SVG converter use colors in normal form
-   //if (color.indexOf("rgb(") >= 0)
-   //   color = color.replace(/rgb/g, "[RGB]")
+   //if (color.indexOf('rgb(') >= 0)
+   //   color = color.replace(/rgb/g, '[RGB]')
    //                .replace(/\(/g, '{')
    //                .replace(/\)/g, '}');
-   return "\\color{" + color + '}{' + str + "}";
+   return `\\color{${color}}{${str}}`;
 }
 
 /** @summary Workaround to fix size attributes in MathJax SVG
@@ -9629,7 +9629,7 @@ function translateMath(str, kind, color, painter) {
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
       if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
-      let p = value.indexOf("ex");
+      let p = value.indexOf('ex');
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
@@ -9639,8 +9639,8 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
        height = transform(svg.getAttribute('height')),
        valign = svg.getAttribute('style');
 
-   if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
-      let p = valign.indexOf("ex;");
+   if (valign && (valign.length > 18) && valign.indexOf('vertical-align:') == 0) {
+      let p = valign.indexOf('ex;');
       valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
    } else {
       valign = null;
@@ -9941,7 +9941,7 @@ class TAttMarkerHandler {
       this.scale = 1;
       this.stroke = true;
       this.fill = true;
-      this.marker = "";
+      this.marker = '';
       this.ndig = 0;
       this.used = true;
       this.changed = false;
@@ -9992,14 +9992,14 @@ class TAttMarkerHandler {
       let xx = Math.round(x), yy = Math.round(y), mv = `M${xx},${yy}`;
       if (this.lastx !== null) {
          if ((xx == this.lastx) && (yy == this.lasty)) {
-            mv = ""; // pathological case, but let exclude it
+            mv = ''; // pathological case, but let exclude it
          } else {
             let m2 = `m${xx-this.lastx},${yy - this.lasty}`;
             if (m2.length < mv.length) mv = m2;
          }
       }
       this.lastx = xx + 1; this.lasty = yy;
-      return mv + "h1";
+      return mv + 'h1';
    }
 
    /** @summary Returns full size of marker */
@@ -10030,7 +10030,7 @@ class TAttMarkerHandler {
 
       if ((this.style === 1) || (this.style === 777)) {
          this.fill = false;
-         this.marker = "h1";
+         this.marker = 'h1';
          this.size = 1;
          this.optimized = true;
          this.resetPos();
@@ -10059,7 +10059,7 @@ class TAttMarkerHandler {
 
       switch (shape) {
          case 1: // dot
-            this.marker = "h1";
+            this.marker = 'h1';
             break;
          case 2: // plus
             this.y0 = -size / 2;
@@ -10080,11 +10080,11 @@ class TAttMarkerHandler {
             break;
          case 6: // small dot
             this.x0 = -1;
-            this.marker = "a1,1,0,1,0,2,0a1,1,0,1,0,-2,0z";
+            this.marker = 'a1,1,0,1,0,2,0a1,1,0,1,0,-2,0z';
             break;
          case 7: // medium dot
             this.x0 = -1.5;
-            this.marker = "a1.5,1.5,0,1,0,3,0a1.5,1.5,0,1,0,-3,0z";
+            this.marker = 'a1.5,1.5,0,1,0,3,0a1.5,1.5,0,1,0,-3,0z';
             break;
          case 25: // square
             this.x0 = this.y0 = -size / 2;
@@ -10167,9 +10167,7 @@ class TAttMarkerHandler {
    getFillColor() { return this.fill ? this.color : 'none'; }
 
    /** @summary returns true if marker attributes will produce empty (invisible) output */
-   empty() {
-      return (this.color === 'none') || (!this.fill && !this.stroke);
-   }
+   empty() { return (this.color === 'none') || (!this.fill && !this.stroke); }
 
    /** @summary Apply marker styles to created element */
    apply(selection) {
@@ -10191,7 +10189,7 @@ class TAttMarkerHandler {
    createSample(svg, width, height, plain) {
       if (plain) svg = select(svg);
       this.resetPos();
-      svg.append("path")
+      svg.append('path')
          .attr('d', this.create(width / 2, height / 2))
          .call(this.func);
    }
@@ -10359,7 +10357,7 @@ class TAttFillHandler {
          defs = svg.select('.canvas_defs');
 
       if (defs.empty())
-         defs = svg.insert("svg:defs", ":first-child").attr('class', "canvas_defs");
+         defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
 
       this.pattern_url = `url(#${id})`;
       this.antialias = false;
@@ -10367,47 +10365,46 @@ class TAttFillHandler {
       if (!defs.select('.' + id).empty())
          return true;
 
-      let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
+      let lines = '', lfill = null, fills = '', fills2 = '', w = 2, h = 2;
 
       switch (this.pattern) {
-         case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
-         case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
-         case 3003: w = h = 4; fills = "M2,1h1v1h-1zM0,3h1v1h-1z"; break;
-         case 3004: w = h = 8; lines = "M8,0L0,8"; break;
-         case 3005: w = h = 8; lines = "M0,0L8,8"; break;
-         case 3006: w = h = 4; lines = "M1,0v4"; break;
-         case 3007: w = h = 4; lines = "M0,1h4"; break;
+         case 3001: w = h = 2; fills = 'M0,0h1v1h-1zM1,1h1v1h-1z'; break;
+         case 3002: w = 4; h = 2; fills = 'M1,0h1v1h-1zM3,1h1v1h-1z'; break;
+         case 3003: w = h = 4; fills = 'M2,1h1v1h-1zM0,3h1v1h-1z'; break;
+         case 3004: w = h = 8; lines = 'M8,0L0,8'; break;
+         case 3005: w = h = 8; lines = 'M0,0L8,8'; break;
+         case 3006: w = h = 4; lines = 'M1,0v4'; break;
+         case 3007: w = h = 4; lines = 'M0,1h4'; break;
          case 3008:
             w = h = 10;
-            fills = "M0,3v-3h3ZM7,0h3v3ZM0,7v3h3ZM7,10h3v-3ZM5,2l3,3l-3,3l-3,-3Z";
-            lines = "M0,3l5,5M3,10l5,-5M10,7l-5,-5M7,0l-5,5";
+            fills = 'M0,3v-3h3ZM7,0h3v3ZM0,7v3h3ZM7,10h3v-3ZM5,2l3,3l-3,3l-3,-3Z';
+            lines = 'M0,3l5,5M3,10l5,-5M10,7l-5,-5M7,0l-5,5';
             break;
-         case 3009: w = 12; h = 12; lines = "M0,0A6,6,0,0,0,12,0M6,6A6,6,0,0,0,12,12M6,6A6,6,0,0,1,0,12"; lfill = 'none'; break;
-         case 3010: w = h = 10; lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"; break; // bricks
-         case 3011: w = 9; h = 18; lines = "M5,0v8M2,1l6,6M8,1l-6,6M9,9v8M6,10l3,3l-3,3M0,9v8M3,10l-3,3l3,3"; lfill = 'none'; break;
-         case 3012: w = 10; h = 20; lines = "M5,1A4,4,0,0,0,5,9A4,4,0,0,0,5,1M0,11A4,4,0,0,1,0,19M10,11A4,4,0,0,0,10,19"; lfill = 'none'; break;
-         case 3013: w = h = 7; lines = "M0,0L7,7M7,0L0,7"; lfill = 'none'; break;
-         case 3014: w = h = 16; lines = "M0,0h16v16h-16v-16M0,12h16M12,0v16M4,0v8M4,4h8M0,8h8M8,4v8"; lfill = 'none'; break;
-         case 3015: w = 6; h = 12; lines = "M2,1A2,2,0,0,0,2,5A2,2,0,0,0,2,1M0,7A2,2,0,0,1,0,11M6,7A2,2,0,0,0,6,11"; lfill = 'none'; break;
-         case 3016: w = 12; h = 7; lines = "M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1"; lfill = 'none'; break;
-         case 3017: w = h = 4; lines = "M3,1l-2,2"; break;
-         case 3018: w = h = 4; lines = "M1,1l2,2"; break;
+         case 3009: w = 12; h = 12; lines = 'M0,0A6,6,0,0,0,12,0M6,6A6,6,0,0,0,12,12M6,6A6,6,0,0,1,0,12'; lfill = 'none'; break;
+         case 3010: w = h = 10; lines = 'M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3'; break; // bricks
+         case 3011: w = 9; h = 18; lines = 'M5,0v8M2,1l6,6M8,1l-6,6M9,9v8M6,10l3,3l-3,3M0,9v8M3,10l-3,3l3,3'; lfill = 'none'; break;
+         case 3012: w = 10; h = 20; lines = 'M5,1A4,4,0,0,0,5,9A4,4,0,0,0,5,1M0,11A4,4,0,0,1,0,19M10,11A4,4,0,0,0,10,19'; lfill = 'none'; break;
+         case 3013: w = h = 7; lines = 'M0,0L7,7M7,0L0,7'; lfill = 'none'; break;
+         case 3014: w = h = 16; lines = 'M0,0h16v16h-16v-16M0,12h16M12,0v16M4,0v8M4,4h8M0,8h8M8,4v8'; lfill = 'none'; break;
+         case 3015: w = 6; h = 12; lines = 'M2,1A2,2,0,0,0,2,5A2,2,0,0,0,2,1M0,7A2,2,0,0,1,0,11M6,7A2,2,0,0,0,6,11'; lfill = 'none'; break;
+         case 3016: w = 12; h = 7; lines = 'M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1'; lfill = 'none'; break;
+         case 3017: w = h = 4; lines = 'M3,1l-2,2'; break;
+         case 3018: w = h = 4; lines = 'M1,1l2,2'; break;
          case 3019:
             w = h = 12;
-            lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" +
-               "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
+            lines = 'M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6';
             lfill = 'none';
             break;
-         case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = 'none'; break;
-         case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = 'none'; break; // left stairs
-         case 3022: w = h = 8; lines = "M0,2h2v4h4v2M6,0v2h2"; lfill = 'none'; break; // right stairs
-         case 3023: w = h = 8; fills = "M4,0h4v4zM8,4v4h-4z"; fills2 = "M4,0L0,4L4,8L8,4Z"; break;
-         case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
-         case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
+         case 3020: w = 7; h = 12; lines = 'M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12'; lfill = 'none'; break;
+         case 3021: w = h = 8; lines = 'M8,2h-2v4h-4v2M2,0v2h-2'; lfill = 'none'; break; // left stairs
+         case 3022: w = h = 8; lines = 'M0,2h2v4h4v2M6,0v2h2'; lfill = 'none'; break; // right stairs
+         case 3023: w = h = 8; fills = 'M4,0h4v4zM8,4v4h-4z'; fills2 = 'M4,0L0,4L4,8L8,4Z'; break;
+         case 3024: w = h = 16; fills = 'M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z'; fills2 = 'M0,2h8v6h4v-6h4v12h-12v-6h-4z'; break;
+         case 3025: w = h = 18; fills = 'M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z'; break;
          default:
             if ((this.pattern > 3025) && (this.pattern < 3100)) {
                // same as 3002, see TGX11.cxx, line 2234
-               w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
+               w = 4; h = 2; fills = 'M1,0h1v1h-1zM3,1h1v1h-1z'; break;
             }
 
             let code = this.pattern % 1000,
@@ -10494,7 +10491,7 @@ class TAttFillHandler {
       if (!fills && !lines) return false;
 
       let patt = defs.append('svg:pattern')
-                     .attr('id', id).attr('class', id).attr("patternUnits", "userSpaceOnUse")
+                     .attr('id', id).attr('class', id).attr('patternUnits', 'userSpaceOnUse')
                      .attr('width', w).attr('height', h);
 
       if (fills2) {
@@ -10516,7 +10513,7 @@ class TAttFillHandler {
 
       const sample = new TAttFillHandler({ svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
-      svg.append("path")
+      svg.append('path')
          .attr('d', `M0,0h${width}v${height}h${-width}z`)
          .call(sample.func);
    }
@@ -10535,9 +10532,9 @@ class TAttFillHandler {
 } // class TAttFillHandler
 
 const root_line_styles = [
-      "", "", "3,3", "1,2",
-      "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
-      "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"];
+      '', '', '3,3', '1,2',
+      '3,4,1,4', '5,3,1,3', '5,3,1,3,1,3,1,3', '5,5',
+      '5,3,1,3,1,3', '20,5', '20,10,1,10', '1,3'];
 
 /**
   * @summary Handle for line attributes
@@ -10558,7 +10555,7 @@ class TAttLineHandler {
    /** @summary Set line attributes.
      * @param {object} args - specify attributes by different ways
      * @param {object} args.attr - TAttLine object with appropriate data members or
-     * @param {string} args.color - color in html like rgb(255,0,0) or "red" or "#ff0000"
+     * @param {string} args.color - color in html like rgb(255,0,0) or 'red' or '#ff0000'
      * @param {number} args.style - line style number
      * @param {number} args.width - line width */
    setArgs(args) {
@@ -10640,12 +10637,12 @@ class TAttLineHandler {
          selection.style('stroke', null)
                   .style('stroke-width', null)
                   .style('stroke-dasharray', null)
-                  .attr("rx", null).attr("ry", null);
+                  .attr('rx', null).attr('ry', null);
       else
          selection.style('stroke', this.color)
                   .style('stroke-width', this.width)
                   .style('stroke-dasharray', this.pattern)
-                  .attr("rx", this.rx || null).attr("ry", this.ry || null);
+                  .attr('rx', this.rx || null).attr('ry', this.ry || null);
    }
 
    /** @summary Change line attributes */
@@ -10667,7 +10664,7 @@ class TAttLineHandler {
    /** @summary Create sample element inside primitive SVG - used in context menu */
    createSample(svg, width, height, plain) {
       if (plain) svg = select(svg);
-      svg.append("path")
+      svg.append('path')
          .attr('d', `M0,${height/2}h${width}`)
          .call(this.func);
    }
@@ -10813,8 +10810,8 @@ class ObjectPainter extends BasePainter {
      * @private */
    storeDrawOpt(original) {
       if (!this.options) return;
-      if (!original) original = "";
-      let pp = original.indexOf(";;");
+      if (!original) original = '';
+      let pp = original.indexOf(';;');
       if (pp >= 0) original = original.slice(0, pp);
       this.options.original = original;
       this.options_store = Object.assign({}, this.options);
@@ -10891,7 +10888,7 @@ class ObjectPainter extends BasePainter {
       let res = this.getItemName(), obj = this.getObject();
       if (!res) res = obj && obj.fName ? obj.fName : '';
       if (!res) res = this.getClassName();
-      if (res.length > 20) res = res.slice(0, 17) + "...";
+      if (res.length > 20) res = res.slice(0, 17) + '...';
       return res;
    }
 
@@ -10934,7 +10931,7 @@ class ObjectPainter extends BasePainter {
    setTooltipAllowed(on) {
       if (on === undefined) on = true;
       let src = this.getCanvPainter() || this;
-      src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
+      src.tooltip_allowed = (on == 'toggle') ? !src.tooltip_allowed : on;
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated.
@@ -10965,7 +10962,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad primitives (default)
-     * or svg:g element created in specified frame layer ("main_layer" will be used when true specified)
+     * or svg:g element created in specified frame layer ('main_layer' will be used when true specified)
      * @param {boolean|string} [frame_layer] - when specified, <g> element will be created inside frame layer, otherwise in the pad
      * @protected */
    createG(frame_layer) {
@@ -10978,10 +10975,10 @@ class ObjectPainter extends BasePainter {
             console.error('Not found frame to create g element inside');
             return frame;
          }
-         if (typeof frame_layer != 'string') frame_layer = "main_layer";
+         if (typeof frame_layer != 'string') frame_layer = 'main_layer';
          layer = frame.select('.' + frame_layer);
       } else {
-         layer = this.getLayerSvg("primitives_layer");
+         layer = this.getLayerSvg('primitives_layer');
       }
 
       if (this.draw_g && this.draw_g.node().parentNode !== layer.node()) {
@@ -10996,12 +10993,12 @@ class ObjectPainter extends BasePainter {
          this.draw_g = layer.append('svg:g');
 
          if (!frame_layer)
-            layer.selectChildren(".most_upper_primitives").raise();
+            layer.selectChildren('.most_upper_primitives').raise();
       }
 
       // set attributes for debugging
       if (this.draw_object) {
-         this.draw_g.attr('objname', (this.draw_object.fName || "name").replace(/[^\w]/g, '_'));
+         this.draw_g.attr('objname', (this.draw_object.fName || 'name').replace(/[^\w]/g, '_'));
          this.draw_g.attr('objtype', (this.draw_object._typename || 'type').replace(/[^\w]/g, '_'));
       }
 
@@ -11013,7 +11010,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Canvas main svg element
      * @return {object} d3 selection with canvas svg
      * @protected */
-   getCanvSvg() { return this.selectDom().select(".root_canvas"); }
+   getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
    /** @summary Pad svg element
      * @param {string} [pad_name] - pad name to select, if not specified - pad where object is drawn
@@ -11030,7 +11027,7 @@ class ObjectPainter extends BasePainter {
       if (cp && cp.pads_cache && cp.pads_cache[pad_name])
          return select(cp.pads_cache[pad_name]);
 
-      c = c.select(".primitives_layer .__root_pad_" + pad_name);
+      c = c.select('.primitives_layer .__root_pad_' + pad_name);
       if (cp) {
          if (!cp.pads_cache) cp.pads_cache = {};
          cp.pads_cache[pad_name] = c.node();
@@ -11039,14 +11036,14 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
-     * @param {string} name - layer name, exits "primitives_layer", "btns_layer", "info_layer"
+     * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
      * @param {string} [pad_name] - pad name; current pad name  used by default
      * @protected */
    getLayerSvg(name, pad_name) {
       let svg = this.getPadSvg(pad_name);
       if (svg.empty()) return svg;
 
-      if (name.indexOf("prim#") == 0) {
+      if (name.indexOf('prim#') == 0) {
          svg = svg.select('.primitives_layer');
          name = name.slice(5);
       }
@@ -11186,12 +11183,12 @@ class ObjectPainter extends BasePainter {
    /** @summary Returns svg element for the frame in current pad
      * @protected */
    getFrameSvg(pad_name) {
-      let layer = this.getLayerSvg("primitives_layer", pad_name);
+      let layer = this.getLayerSvg('primitives_layer', pad_name);
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
          let elem = select(node);
-         if (elem.classed("root_frame")) return elem;
+         if (elem.classed('root_frame')) return elem;
          node = node.nextSibling;
       }
       return select(null);
@@ -11367,7 +11364,7 @@ class ObjectPainter extends BasePainter {
          pp.forEachPainterInPad(userfunc, kind);
       } else {
          let painter = this.getTopPainter();
-         if (painter && (kind !== "pads")) userfunc(painter);
+         if (painter && (kind !== 'pads')) userfunc(painter);
       }
    }
 
@@ -11378,7 +11375,7 @@ class ObjectPainter extends BasePainter {
    async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == 'string') && (info.indexOf("exec:") != 0))
+      if ((typeof info == 'string') && (info.indexOf('exec:') != 0))
          reason = info;
 
       if (arg == 'pad')
@@ -11394,7 +11391,7 @@ class ObjectPainter extends BasePainter {
          let canp = this.getCanvPainter();
 
          if (typeof canp?.producePadEvent == 'function')
-            canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
+            canp.producePadEvent('redraw', this.getPadPainter(), this, null, subelem);
 
          // inform server that drawopt changes
          if (typeof canp?.processChanges == 'function')
@@ -11417,7 +11414,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    executeMenuCommand(method) {
 
-      if (method.fName == "Inspect")
+      if (method.fName == 'Inspect')
          // primitve inspector, keep it here
          return this.showInspector();
 
@@ -11427,8 +11424,8 @@ class ObjectPainter extends BasePainter {
    /** @summary Invoke method for object via WebCanvas functionality
      * @desc Requires that painter marked with object identifier (this.snapid) or identifier provided as second argument
      * Canvas painter should exists and in non-readonly mode
-     * Execution string can look like "Print()".
-     * Many methods call can be chained with "Print();;Update();;Clear()"
+     * Execution string can look like 'Print()'.
+     * Many methods call can be chained with 'Print();;Update();;Clear()'
      * @private */
    submitCanvExec(exec, snapid) {
       if (!exec || (typeof exec != 'string')) return;
@@ -11457,9 +11454,9 @@ class ObjectPainter extends BasePainter {
    fillContextMenu(menu) {
       let title = this.getObjectHint();
       if (this.getObject() && ('_typename' in this.getObject()))
-         title = this.getObject()._typename + "::" + title;
+         title = this.getObject()._typename + '::' + title;
 
-      menu.add("header:" + title);
+      menu.add('header:' + title);
 
       menu.addAttributesMenu(this);
 
@@ -11526,10 +11523,10 @@ class ObjectPainter extends BasePainter {
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size)
-            .property("_fast_drawing", pp?._fast_drawing || false);
+            .property('_fast_drawing', pp?._fast_drawing || false);
 
-      if (draw_g.property("_fast_drawing"))
-         draw_g.property("_font_too_small", (max_font_size && (max_font_size < 5)) || (font.size < 4));
+      if (draw_g.property('_fast_drawing'))
+         draw_g.property('_font_too_small', (max_font_size && (max_font_size < 5)) || (font.size < 4));
    }
 
    /** @summary Apply scaling factor to all drawn text in the <g> element
@@ -11625,9 +11622,9 @@ class ObjectPainter extends BasePainter {
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
-            if (arg.align[0] == "middle")
+            if (arg.align[0] == 'middle')
                arg.x += arg.width / 2;
-             else if (arg.align[0] == "end")
+             else if (arg.align[0] == 'end')
                 arg.x += arg.width;
          }
 
@@ -11652,15 +11649,15 @@ class ObjectPainter extends BasePainter {
             }
 
             if (arg.plain) {
-               txt.attr("text-anchor", arg.align[0]);
+               txt.attr('text-anchor', arg.align[0]);
                if (arg.align[1] == 'top')
-                  txt.attr("dy", ".8em");
+                  txt.attr('dy', '.8em');
                else if (arg.align[1] == 'middle') {
-                  if (isNodeJs()) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+                  if (isNodeJs()) txt.attr('dy', '.4em'); else txt.attr('dominant-baseline', 'middle');
                }
             } else {
-               txt.attr("text-anchor", "start");
-               arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
+               txt.attr('text-anchor', 'start');
+               arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
                arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
 
@@ -11671,7 +11668,7 @@ class ObjectPainter extends BasePainter {
 
             scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
-            arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
+            arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
 
             if (arg.align[1] == 'top')
                arg.dy = -box.y1*scale;
@@ -11686,7 +11683,7 @@ class ObjectPainter extends BasePainter {
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = "";
+         let trans = '';
          if (arg.y)
             trans = `translate(${Math.round(arg.x)},${Math.round(arg.y)})`;
          else if (arg.x)
@@ -11708,7 +11705,7 @@ class ObjectPainter extends BasePainter {
          font.clearFont(draw_g);
 
       if ((optimize_arr !== null) && (optimize_arr.length > 1))
-         ['fill', "text-anchor"].forEach(name => {
+         ['fill', 'text-anchor'].forEach(name => {
             let first = optimize_arr[0].attr(name);
             optimize_arr.forEach(txt_node => {
                let value = txt_node.attr(name);
@@ -11767,7 +11764,7 @@ class ObjectPainter extends BasePainter {
    drawText(arg) {
 
       if (!arg.text)
-         arg.text = "";
+         arg.text = '';
 
       arg.draw_g = arg.draw_g || this.draw_g;
       if (!arg.draw_g || arg.draw_g.empty()) return;
@@ -11809,14 +11806,14 @@ class ObjectPainter extends BasePainter {
       arg.width = arg.width || 0;
       arg.height = arg.height || 0;
 
-      if (arg.draw_g.property("_fast_drawing")) {
+      if (arg.draw_g.property('_fast_drawing')) {
          if (arg.scale) {
             // area too small - ignore such drawing
             if (arg.height < 4) return 0;
          } else if (arg.font_size) {
             // font size too small
             if (arg.font_size < 4) return 0;
-         } else if (arg.draw_g.property("_font_too_small")) {
+         } else if (arg.draw_g.property('_font_too_small')) {
             // configure font is too small - ignore drawing
             return 0;
          }
@@ -11835,11 +11832,11 @@ class ObjectPainter extends BasePainter {
 
       if (!use_mathjax || arg.nomathjax) {
 
-         arg.txt_node = arg.draw_g.append("svg:text");
+         arg.txt_node = arg.draw_g.append('svg:text');
 
          if (arg.color) arg.txt_node.attr('fill', arg.color);
 
-         if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
+         if (arg.font_size) arg.txt_node.attr('font-size', arg.font_size);
                        else arg.font_size = font.size;
 
          arg.plain = !arg.latex || (settings.Latex == constants$1.Latex.Off) || (settings.Latex == constants$1.Latex.Symbols);
@@ -11933,7 +11930,7 @@ class ObjectPainter extends BasePainter {
          if (!item || !item.fName) return;
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
-         if (item.fExec == "Show:Editor") {
+         if (item.fExec == 'Show:Editor') {
             if (typeof cp?.activateGed == 'function')
                cp.activateGed(execp);
             return;
@@ -11953,8 +11950,8 @@ class ObjectPainter extends BasePainter {
                 return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0))
-            item.fClassName = "TAxis";
+         if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
+            item.fClassName = 'TAxis';
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
@@ -11964,7 +11961,7 @@ class ObjectPainter extends BasePainter {
              if (cp?.v7canvas)
                 cp.submitExec(execp, exec, kind);
              else if (cp)
-                cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
+                cp.sendWebsocket(`OBJEXEC:${execp.args_menu_id}:${exec}`);
          });
       }
 
@@ -11981,7 +11978,7 @@ class ObjectPainter extends BasePainter {
 
          if (items && items.length) {
             if (_menu.size() > 0)
-               _menu.add("separator");
+               _menu.add('separator');
 
             this.args_menu_items = items;
             this.args_menu_id = reply.fId;
@@ -11992,15 +11989,15 @@ class ObjectPainter extends BasePainter {
                let item = items[n];
 
                if (item.fClassName && lastclname && (lastclname != item.fClassName)) {
-                  _menu.add("endsub:");
-                  lastclname = "";
+                  _menu.add('endsub:');
+                  lastclname = '';
                }
                if (lastclname != item.fClassName) {
                   lastclname = item.fClassName;
-                  let p = lastclname.lastIndexOf("::"),
+                  let p = lastclname.lastIndexOf('::'),
                       shortname = (p > 0) ? lastclname.slice(p+2) : lastclname;
 
-                  _menu.add("sub:" + shortname.replace(/[<>]/g,"_"));
+                  _menu.add('sub:' + shortname.replace(/[<>]/g, '_'));
                }
 
                if ((item.fChecked === undefined) || (item.fChecked < 0))
@@ -12009,14 +12006,14 @@ class ObjectPainter extends BasePainter {
                   _menu.addchk(item.fChecked, item.fName, n, DoExecMenu);
             }
 
-            if (lastclname) _menu.add("endsub:");
+            if (lastclname) _menu.add('endsub:');
          }
 
          _resolveFunc(_menu);
       };
 
       let reqid = this.snapid;
-      if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
+      if (kind) reqid += '#' + kind; // use # to separate object id from member specifier like 'x' or 'z'
 
       this._got_menu = false;
 
@@ -12105,7 +12102,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param kind - "X", "Y" or ""
+     * @param kind - 'X', 'Y' or ''
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind == this._special_draw_area)
@@ -12118,7 +12115,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param kind - "X", "Y" or ""
+     * @param kind - 'X', 'Y' or ''
      * @private */
    async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
@@ -12136,7 +12133,7 @@ class ObjectPainter extends BasePainter {
 
       let frame = this.getFrameSvg();
       if (frame.empty()) return null;
-      let layer = frame.select(".main_layer");
+      let layer = frame.select('.main_layer');
       if (layer.empty()) return null;
 
       let pos = pointer(evnt, layer.node()),
@@ -12170,14 +12167,14 @@ function drawRawText(dom, txt /*, opt*/) {
 
    painter.drawText = async function() {
       let txt = (this.txt._typename && (this.txt._typename == 'TObjString')) ? this.txt.fString : this.txt.value;
-      if (typeof txt != 'string') txt = "<undefined>";
+      if (typeof txt != 'string') txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants$1.Latex.AlwaysMathJax);
 
       if (!mathjax && !('as_is' in this.txt)) {
-         let arr = txt.split("\n"); txt = "";
+         let arr = txt.split('\n'); txt = '';
          for (let i = 0; i < arr.length; ++i)
-            txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
+            txt += `<pre style='margin:0'>${arr[i]}</pre>`;
       }
 
       let frame = this.selectDom(),
@@ -12259,8 +12256,8 @@ function getActivePad() {
   * the element even after minimal resize
   * Or one just supply object with exact sizes like { width:300, height:200, force:true };
   * @example
-  * resize("drawing", { width: 500, height: 200 } );
-  * resize(document.querySelector("#drawing"), true); */
+  * resize('drawing', { width: 500, height: 200 } );
+  * resize(document.querySelector('#drawing'), true); */
 function resize(dom, arg) {
    if (arg === true)
       arg = { force: true };
@@ -12279,13 +12276,13 @@ function resize(dom, arg) {
   * @param {string|object} dom - id or DOM element
   * @public
   * @example
-  * cleanup("drawing");
-  * cleanup(document.querySelector("#drawing")); */
+  * cleanup('drawing');
+  * cleanup(document.querySelector('#drawing')); */
 function cleanup(dom) {
    let dummy = new ObjectPainter(dom), lst = [];
    dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
    lst.forEach(p => p.cleanup());
-   dummy.selectDom().html("");
+   dummy.selectDom().html('');
    return lst;
 }
 
@@ -46607,7 +46604,7 @@ function getTimeOffset(axis) {
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
    // special case, used from DABC painters
-   if ((sof == "0") || (sof == '')) return 0;
+   if ((sof == '0') || (sof == '')) return 0;
 
    // decode time from ROOT string
    const next = (separ, min, max) => {
@@ -46617,13 +46614,13 @@ function getTimeOffset(axis) {
       sof = sof.slice(pos + 1);
       if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
       return val;
-   }, year = next("-", 1970, 2300),
-      month = next("-", 1, 12) - 1,
-      day = next(" ", 1, 31),
-      hour = next(":", 0, 23),
-      min = next(":", 0, 59),
-      sec = next("s", 0, 59),
-      msec = next(" ", 0, 999),
+   }, year = next('-', 1970, 2300),
+      month = next('-', 1, 12) - 1,
+      day = next(' ', 1, 31),
+      hour = next(':', 0, 23),
+      min = next(':', 0, 59),
+      sec = next('s', 0, 59),
+      msec = next(' ', 0, 999),
       dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
 
    let offset = dt.getTime();
@@ -46648,14 +46645,14 @@ function getTimeOffset(axis) {
 /** @summary Tries to choose time format for provided time interval
   * @private */
 function chooseTimeFormat(awidth, ticks) {
-   if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
-   if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
-   awidth /= 60; if (awidth < 30) return ticks ? "%Hh%M" : "%d/%m %H:%M";
-   awidth /= 60; if (awidth < 12) return ticks ? "%d-%Hh" : "%d/%m/%y %Hh";
-   awidth /= 24; if (awidth < 15.218425) return ticks ? "%d/%m" : "%d/%m/%y";
-   awidth /= 30.43685; if (awidth < 6) return "%d/%m/%y";
-   awidth /= 12; if (awidth < 2) return ticks ? "%m/%y" : "%d/%m/%y";
-   return "%Y";
+   if (awidth < .5) return ticks ? '%S.%L' : '%H:%M:%S.%L';
+   if (awidth < 30) return ticks ? '%Mm%S' : '%H:%M:%S';
+   awidth /= 60; if (awidth < 30) return ticks ? '%Hh%M' : '%d/%m %H:%M';
+   awidth /= 60; if (awidth < 12) return ticks ? '%d-%Hh' : '%d/%m/%y %Hh';
+   awidth /= 24; if (awidth < 15.218425) return ticks ? '%d/%m' : '%d/%m/%y';
+   awidth /= 30.43685; if (awidth < 6) return '%d/%m/%y';
+   awidth /= 12; if (awidth < 2) return ticks ? '%m/%y' : '%d/%m/%y';
+   return '%Y';
 }
 
 /**
@@ -46668,7 +46665,7 @@ const AxisPainterMethods = {
 
    initAxisPainter() {
       this.name = 'yaxis';
-      this.kind = "normal";
+      this.kind = 'normal';
       this.func = null;
       this.order = 0; // scaling order for axis labels
 
@@ -46691,10 +46688,10 @@ const AxisPainterMethods = {
 
    /** @summary Assign often used members of frame painter */
    assignFrameMembers(fp, axis) {
-      fp["gr"+axis] = this.gr;                    // fp.grx
-      fp["log"+axis] = this.log;                  // fp.logx
-      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
-      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+      fp['gr'+axis] = this.gr;                    // fp.grx
+      fp['log'+axis] = this.log;                  // fp.logx
+      fp[`scale_${axis}min`] = this.scale_min;   // fp.scale_xmin
+      fp[`scale_${axis}max`] = this.scale_max;   // fp.scale_xmax
    },
 
    /** @summary Convert axis value into the Date object */
@@ -46705,7 +46702,7 @@ const AxisPainterMethods = {
    /** @summary Convert graphical point back into axis value */
    revertPoint(pnt) {
       let value = this.func.invert(pnt);
-      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
+      return (this.kind == 'time') ?  (value - this.timeoffset) / 1000 : value;
    },
 
    /** @summary Provide label for time axis */
@@ -46745,17 +46742,17 @@ const AxisPainterMethods = {
 
    /** @summary Provide label for exponential form */
    formatExp(base, order, value) {
-      let res = "";
+      let res = '';
       if (value) {
          value = Math.round(value/Math.pow(base,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? "#times" : 'x');
+         if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? '#times' : 'x');
       }
       if (Math.abs(base-Math.exp(1)) < 0.001)
-         res += "e";
+         res += 'e';
       else
          res += base.toString();
       if (settings.Latex > constants$1.Latex.Symbols)
-         return res + "^{" + order + "}";
+         return res + `^{${order}}`;
       const superscript_symbols = {
             '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
             '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
@@ -46766,7 +46763,7 @@ const AxisPainterMethods = {
       return res;
    },
 
-   /** @summary Convert "raw" axis value into text */
+   /** @summary Convert 'raw' axis value into text */
    axisAsText(value, fmt) {
       if (this.kind == 'time')
          value = this.convertDate(value);
@@ -46800,7 +46797,7 @@ const AxisPainterMethods = {
          arr = func.ticks(number);
       }
 
-      // if still linear array, try to sort out "bad" ticks
+      // if still linear array, try to sort out 'bad' ticks
       if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
          let arr2 = [];
          arr.forEach(val => {
@@ -46962,7 +46959,7 @@ class TAxisPainter extends ObjectPainter {
    }
 
    /** @summary Use in GED to identify kind of axis */
-   getAxisType() { return "TAxis"; }
+   getAxisType() { return 'TAxis'; }
 
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
@@ -46972,7 +46969,7 @@ class TAxisPainter extends ObjectPainter {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
-      this.kind = "normal";
+      this.kind = 'normal';
       this.vertical = vertical;
       this.log = opts.log || 0;
       this.symlog = opts.symlog || false;
@@ -47136,7 +47133,7 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Creates array with minor/middle/major ticks */
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
 
-      if (optionNoopt && this.nticks && (this.kind == "normal"))
+      if (optionNoopt && this.nticks && (this.kind == 'normal'))
          this.noticksopt = true;
 
       let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks;
@@ -47223,7 +47220,7 @@ class TAxisPainter extends ObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == "normal") && !this.log && (handle.major.length > 0)) {
+      if ((this.kind == 'normal') && !this.log && (handle.major.length > 0)) {
 
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
@@ -47262,7 +47259,7 @@ class TAxisPainter extends ObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order == 0 we should virtually remove "0." and extra label on top
+            // for order == 0 we should virtually remove '0.' and extra label on top
             if (!order && (this.ndig < 4))
                totallen -= handle.major.length * 2 + 3;
 
@@ -47304,7 +47301,7 @@ class TAxisPainter extends ObjectPainter {
           drag_move = drag().subject(Object);
 
       drag_move
-         .on("start", evnt => {
+         .on('start', evnt => {
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -47319,10 +47316,10 @@ class TAxisPainter extends ObjectPainter {
 
             alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
             let off = vertical ? -title_length/2 : title_length/2;
-            if (this.title_align == "middle") {
+            if (this.title_align == 'middle') {
                alt_pos[0] +=  off;
                alt_pos[2] -=  off;
-            } else if (this.title_align == "begin") {
+            } else if (this.title_align == 'begin') {
                alt_pos[1] -= off;
                alt_pos[2] -= 2*off;
             } else { // end
@@ -47339,15 +47336,15 @@ class TAxisPainter extends ObjectPainter {
 
             alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
-            drag_rect = title_g.append("rect")
+            drag_rect = title_g.append('rect')
                  .classed('zoom', true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style("cursor", "move");
-//                 .style("pointer-events",'none'); // let forward double click to underlying elements
-          }).on("drag", evnt => {
+                 .style('cursor', 'move');
+//                 .style('pointer-events','none'); // let forward double click to underlying elements
+          }).on('drag', evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -47375,7 +47372,7 @@ class TAxisPainter extends ObjectPainter {
                   title_g.attr('transform', `translate(${new_x},${new_y})`);
                }
 
-          }).on("end", evnt => {
+          }).on('end', evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -47406,12 +47403,12 @@ class TAxisPainter extends ObjectPainter {
                drag_rect = null;
             });
 
-      title_g.style("cursor", "move").call(drag_move);
+      title_g.style('cursor', 'move').call(drag_move);
    }
 
    /** @summary Produce svg path for axis ticks */
    produceTicksPath(handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
-      let path1 = "", path2 = "";
+      let path1 = '', path2 = '';
       this.ticks = [];
 
       while (handle.next(true)) {
@@ -47424,7 +47421,7 @@ class TAxisPainter extends ObjectPainter {
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
             // FIXME: for labels last tick is smaller,
-            if (/*(this.kind == "labels") || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
+            if (/*(this.kind == 'labels') || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
@@ -47460,11 +47457,11 @@ class TAxisPainter extends ObjectPainter {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
-          label_g = [ axis_g.append('svg:g').attr('class',"axis_labels") ],
+          label_g = [ axis_g.append('svg:g').attr('class','axis_labels') ],
           lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
 
       if (this.lbls_both_sides)
-         label_g.push(axis_g.append('svg:g').attr('class',"axis_labels").attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
+         label_g.push(axis_g.append('svg:g').attr('class','axis_labels').attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       // must be function to correctly handle 'this' argument
@@ -47576,7 +47573,7 @@ class TAxisPainter extends ObjectPainter {
          if (lbl_tilt)
             label_g[0].selectAll('text').each(function() {
                let txt = select(this), tr = txt.attr('transform');
-               txt.attr('transform', tr + " rotate(25)").style("text-anchor", "start");
+               txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
             });
 
          return max_textwidth;
@@ -47596,12 +47593,12 @@ class TAxisPainter extends ObjectPainter {
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
       if (is_gaxis) {
-         let optionSize = axis.fChopt.indexOf("S") >= 0;
-         this.optionUnlab = axis.fChopt.indexOf("U") >= 0;
-         this.optionMinus = (axis.fChopt.indexOf("-") >= 0) || axis.TestBit(EAxisBits.kTickMinus);
-         this.optionPlus = (axis.fChopt.indexOf("+") >= 0) || axis.TestBit(EAxisBits.kTickPlus);
-         this.optionNoopt = (axis.fChopt.indexOf("N") >= 0);  // no ticks position optimization
-         this.optionInt = (axis.fChopt.indexOf("I") >= 0);  // integer labels
+         let optionSize = axis.fChopt.indexOf('S') >= 0;
+         this.optionUnlab = axis.fChopt.indexOf('U') >= 0;
+         this.optionMinus = (axis.fChopt.indexOf('-') >= 0) || axis.TestBit(EAxisBits.kTickMinus);
+         this.optionPlus = (axis.fChopt.indexOf('+') >= 0) || axis.TestBit(EAxisBits.kTickPlus);
+         this.optionNoopt = (axis.fChopt.indexOf('N') >= 0);  // no ticks position optimization
+         this.optionInt = (axis.fChopt.indexOf('I') >= 0);  // integer labels
 
          this.createAttLine({ attr: axis });
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
@@ -47684,16 +47681,16 @@ class TAxisPainter extends ObjectPainter {
       this.lineatt.not_standard = true;
 
       if (!is_gaxis || (this.name === 'zaxis')) {
-         axis_g = layer.select('.' + this.name + "_container");
+         axis_g = layer.select('.' + this.name + '_container');
          if (axis_g.empty())
-            axis_g = layer.append('svg:g').attr('class',this.name + "_container");
+            axis_g = layer.append('svg:g').attr('class',this.name + '_container');
          else
-            axis_g.selectAll("*").remove();
+            axis_g.selectAll('*').remove();
       }
 
-      let axis_lines = "";
+      let axis_lines = '';
       if (draw_lines) {
-         axis_lines = "M0,0" + (this.vertical ? `v${h}` : `h${w}`);
+         axis_lines = 'M0,0' + (this.vertical ? `v${h}` : `h${w}`);
          if (secondShift)
             axis_lines += this.vertical ? `M${secondShift},0v${h}` : `M0,${secondShift}h${w}`;
       }
@@ -47732,10 +47729,10 @@ class TAxisPainter extends ObjectPainter {
 
          if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
             let labelSize = Math.max(this.labelsFont.size, 5),
-                r = axis_g.append("svg:rect")
-                          .attr('class', "axis_zoom")
-                          .style("opacity", "0")
-                          .style("cursor", "crosshair");
+                r = axis_g.append('svg:rect')
+                          .attr('class', 'axis_zoom')
+                          .style('opacity', '0')
+                          .style('cursor', 'crosshair');
 
             if (this.vertical) {
                let rw = (labelsMaxWidth || 2*labelSize) + 3;
@@ -47758,12 +47755,12 @@ class TAxisPainter extends ObjectPainter {
                this.position = rect1.left - rect2.left; // use to control left position of Y scale
             }
             if (node1 && !node2)
-               console.warn("Why PAD element missing when search for position");
+               console.warn('Why PAD element missing when search for position');
          }
 
          if (!this.fTitle || disable_axis_drawing) return true;
 
-         title_g = axis_g.append('svg:g').attr('class', "axis_title");
+         title_g = axis_g.append('svg:g').attr('class', 'axis_title');
 
          let title_offest_k = 1.6 / this.scalingSize,
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
@@ -47772,7 +47769,7 @@ class TAxisPainter extends ObjectPainter {
 
          let xor_reverse = swap_side ^ this.titleOpposite, myxor = (rotate < 0) ^ xor_reverse;
 
-         this.title_align = this.titleCenter ? "middle" : (myxor ? "begin" : "end");
+         this.title_align = this.titleCenter ? 'middle' : (myxor ? 'begin' : 'end');
 
          if (this.vertical) {
             title_offest_k *= -side*pad_w;
@@ -47788,7 +47785,7 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
-            this.drawText({ align: this.title_align+";middle",
+            this.drawText({ align: this.title_align+';middle',
                             rotate: (rotate < 0) ? 90 : 270,
                             text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          } else {
@@ -47796,7 +47793,7 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k * this.titleOffset);
-            this.drawText({ align: this.title_align+";middle",
+            this.drawText({ align: this.title_align+';middle',
                             rotate: (rotate < 0) ? 180 : 0,
                             text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          }
@@ -47836,7 +47833,7 @@ class TAxisPainter extends ObjectPainter {
           x2 = this.axisToSvg('x', gaxis.fX2),
           y2 = this.axisToSvg('y', gaxis.fY2);
 
-      if (opt == "ndc") {
+      if (opt == 'ndc') {
           let pw = this.getPadPainter().getPadWidth(),
               ph = this.getPadPainter().getPadHeight();
 
@@ -47885,8 +47882,8 @@ class TAxisPainter extends ObjectPainter {
       }
 
       this.configureAxis(vertical ? 'yaxis' : 'xaxis', min, max, min, max, vertical, [0, sz], {
-         time_scale: gaxis.fChopt.indexOf("t") >= 0,
-         log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0,
+         time_scale: gaxis.fChopt.indexOf('t') >= 0,
+         log: (gaxis.fChopt.indexOf('G') >= 0) ? 1 : 0,
          reverse,
          swap_side: reverse
       });
@@ -48513,7 +48510,7 @@ function igam(a, x) {
 function igami(a, y0) {
    // check the domain
    if (a <= 0) {
-      console.error("igami : Wrong domain for parameter a (must be > 0)");
+      console.error('igami : Wrong domain for parameter a (must be > 0)');
       return 0;
    }
    if (y0 <= 0) {
@@ -49045,11 +49042,11 @@ function incbi(aa,bb,yy0) {
 
    // check the domain
    if (aa <= 0) {
-      // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter a (must be > 0)");
+      // MATH_ERROR_MSG('Cephes::incbi','Wrong domain for parameter a (must be > 0)');
       return 0;
    }
    if (bb <= 0) {
-      // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter b (must be > 0)");
+      // MATH_ERROR_MSG('Cephes::incbi','Wrong domain for parameter b (must be > 0)');
       return 0;
    }
 
@@ -49225,13 +49222,13 @@ function incbi(aa,bb,yy0) {
                dir -= 1;
             }
          }
-         //math_error( "incbi", PLOSS );
+         //math_error( 'incbi', PLOSS );
          if( x0 >= 1.0 ) {
             x = 1.0 - kMACHEP;
             return process_done(); //goto done;
          }
          if( x <= 0.0 ) {
-            //math_error( "incbi", UNDERFLOW );
+            //math_error( 'incbi', UNDERFLOW );
             x = 0.0;
             return process_done(); //goto done;
          }
@@ -50032,36 +50029,36 @@ getTEfficiencyBoundaryFunc: getTEfficiencyBoundaryFunc
   * @private */
 function showProgress(msg, tmout) {
    if (isBatchMode() || (typeof document === 'undefined')) return;
-   let id = "jsroot_progressbox",
-       box = select("#" + id);
+   let id = 'jsroot_progressbox',
+       box = select('#' + id);
 
    if (!settings.ProgressBox)
       return box.remove();
 
    if ((arguments.length == 0) || !msg) {
-      if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
+      if ((tmout !== -1) || (!box.empty() && box.property('with_timeout'))) box.remove();
       return;
    }
 
    if (box.empty()) {
       box = select(document.body)
               .append('div').attr('id', id)
-              .attr('style', "position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;");
-      box.append("p");
+              .attr('style', 'position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;');
+      box.append('p');
    }
 
-   box.property("with_timeout", false);
+   box.property('with_timeout', false);
 
    if (typeof msg === 'string') {
-      box.select("p").html(msg);
+      box.select('p').html(msg);
    } else {
-      box.html("");
+      box.html('');
       box.node().appendChild(msg);
    }
-   injectStyle("#jsroot_progressbox p { font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px; }", box.node());
+   injectStyle('#jsroot_progressbox p { font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px; }', box.node());
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
-      box.property("with_timeout", true);
+      box.property('with_timeout', true);
       setTimeout(() => showProgress('', -1), tmout);
    }
 }
@@ -50080,7 +50077,7 @@ function closeCurrentWindow() {
 function tryOpenOpenUI(sources, args) {
    if (!sources || (sources.length == 0)) {
       if (args.rejectFunc) {
-         args.rejectFunc(Error("openui5 was not possible to load"));
+         args.rejectFunc(Error('openui5 was not possible to load'));
          args.rejectFunc = null;
       }
       return;
@@ -50089,18 +50086,18 @@ function tryOpenOpenUI(sources, args) {
    // where to take openui5 sources
    let src = sources.shift();
 
-   if ((src.indexOf("roothandler") == 0) && (src.indexOf("://") < 0))
-      src = src.replace(/\:\//g,"://");
+   if ((src.indexOf('roothandler') == 0) && (src.indexOf('://') < 0))
+      src = src.replace(/\:\//g, '://');
 
-   let element = document.createElement("script");
-   element.setAttribute('type', "text/javascript");
-   element.setAttribute('id', "sap-ui-bootstrap");
+   let element = document.createElement('script');
+   element.setAttribute('type', 'text/javascript');
+   element.setAttribute('id', 'sap-ui-bootstrap');
    // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js
 
    // this is location of openui5 scripts when working with THttpServer or when scripts are installed inside JSROOT
-   element.setAttribute('src', src + "resources/sap-ui-core.js"); // latest openui5 version
+   element.setAttribute('src', src + 'resources/sap-ui-core.js'); // latest openui5 version
 
-   element.setAttribute('data-sap-ui-libs', args.openui5libs ?? "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
+   element.setAttribute('data-sap-ui-libs', args.openui5libs ?? 'sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons');
 
    element.setAttribute('data-sap-ui-theme', args.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
@@ -50108,7 +50105,7 @@ function tryOpenOpenUI(sources, args) {
 
    element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
 
-   element.setAttribute('data-sap-ui-evt-oninit', "completeUI5Loading()");
+   element.setAttribute('data-sap-ui-evt-oninit', 'completeUI5Loading()');
 
    element.onerror = function() {
       // remove failed element
@@ -50134,26 +50131,26 @@ async function loadOpenui5(args) {
 
    if (!args) args = {};
 
-   let rootui5sys = exports.source_dir.replace(/jsrootsys/g, "rootui5sys");
+   let rootui5sys = exports.source_dir.replace(/jsrootsys/g, 'rootui5sys');
 
    if (rootui5sys == exports.source_dir) {
       // if jsrootsys location not detected, try to guess it
-      if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!args.openui5src || args.openui5src == 'nojsroot' || args.openui5src == 'jsroot'))
-         rootui5sys = window.location.origin + window.location.pathname + "../rootui5sys/";
+      if (window.location.port && (window.location.pathname.indexOf('/win') >= 0) && (!args.openui5src || args.openui5src == 'nojsroot' || args.openui5src == 'jsroot'))
+         rootui5sys = window.location.origin + window.location.pathname + '../rootui5sys/';
       else
          rootui5sys = undefined;
    }
 
    let openui5_sources = [],
-       openui5_dflt = "https://openui5.hana.ondemand.com/1.98.0/",
-       openui5_root = rootui5sys ? rootui5sys + "distribution/" : '';
+       openui5_dflt = 'https://openui5.hana.ondemand.com/1.98.0/',
+       openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
    if (typeof args.openui5src == 'string') {
       switch (args.openui5src) {
-         case "nodefault": openui5_dflt = ""; break;
-         case "default": openui5_sources.push(openui5_dflt); openui5_dflt = ""; break;
-         case "nojsroot": /* openui5_root = ""; */ break;
-         case "jsroot": openui5_sources.push(openui5_root); openui5_root = ""; break;
+         case 'nodefault': openui5_dflt = ''; break;
+         case 'default': openui5_sources.push(openui5_dflt); openui5_dflt = ''; break;
+         case 'nojsroot': /* openui5_root = ''; */ break;
+         case 'jsroot': openui5_sources.push(openui5_root); openui5_root = ''; break;
          default: openui5_sources.push(args.openui5src); break;
       }
    }
@@ -50201,29 +50198,29 @@ const ToolbarIcons = {
          'M483.885,273.275H28.782c-15.708,0-28.451,12.731-28.451,28.452c0,15.707,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.744,28.451-28.451C512.337,286.007,499.599,273.275,483.885,273.275z' +
          'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
    },
-   circle: { path: "M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0" },
-   three_circles: { path: "M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 " },
-   diamand: { path: "M256,0L384,256L256,511L128,256z" },
-   rect: { path: "M80,80h352v352h-352z" },
-   cross: { path: "M80,40l176,176l176,-176l40,40l-176,176l176,176l-40,40l-176,-176l-176,176l-40,-40l176,-176l-176,-176z" },
-   vrgoggles: { size: "245.82 141.73", path: 'M175.56,111.37c-22.52,0-40.77-18.84-40.77-42.07S153,27.24,175.56,27.24s40.77,18.84,40.77,42.07S198.08,111.37,175.56,111.37ZM26.84,69.31c0-23.23,18.25-42.07,40.77-42.07s40.77,18.84,40.77,42.07-18.26,42.07-40.77,42.07S26.84,92.54,26.84,69.31ZM27.27,0C11.54,0,0,12.34,0,28.58V110.9c0,16.24,11.54,30.83,27.27,30.83H99.57c2.17,0,4.19-1.83,5.4-3.7L116.47,118a8,8,0,0,1,12.52-.18l11.51,20.34c1.2,1.86,3.22,3.61,5.39,3.61h72.29c15.74,0,27.63-14.6,27.63-30.83V28.58C245.82,12.34,233.93,0,218.19,0H27.27Z' },
+   circle: { path: 'M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0' },
+   three_circles: { path: 'M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 ' },
+   diamand: { path: 'M256,0L384,256L256,511L128,256z' },
+   rect: { path: 'M80,80h352v352h-352z' },
+   cross: { path: 'M80,40l176,176l176,-176l40,40l-176,176l176,176l-40,40l-176,-176l-176,176l-40,-40l176,-176l-176,-176z' },
+   vrgoggles: { size: '245.82 141.73', path: 'M175.56,111.37c-22.52,0-40.77-18.84-40.77-42.07S153,27.24,175.56,27.24s40.77,18.84,40.77,42.07S198.08,111.37,175.56,111.37ZM26.84,69.31c0-23.23,18.25-42.07,40.77-42.07s40.77,18.84,40.77,42.07-18.26,42.07-40.77,42.07S26.84,92.54,26.84,69.31ZM27.27,0C11.54,0,0,12.34,0,28.58V110.9c0,16.24,11.54,30.83,27.27,30.83H99.57c2.17,0,4.19-1.83,5.4-3.7L116.47,118a8,8,0,0,1,12.52-.18l11.51,20.34c1.2,1.86,3.22,3.61,5.39,3.61h72.29c15.74,0,27.63-14.6,27.63-30.83V28.58C245.82,12.34,233.93,0,218.19,0H27.27Z' },
    th2colorz: { recs: [{ x: 128, y: 486, w: 256, h: 26, f: 'rgb(38,62,168)' }, { y: 461, f: 'rgb(22,82,205)' }, { y: 435, f: 'rgb(16,100,220)' }, { y: 410, f: 'rgb(18,114,217)' }, { y: 384, f: 'rgb(20,129,214)' }, { y: 358, f: 'rgb(14,143,209)' }, { y: 333, f: 'rgb(9,157,204)' }, { y: 307, f: 'rgb(13,167,195)' }, { y: 282, f: 'rgb(30,175,179)' }, { y: 256, f: 'rgb(46,183,164)' }, { y: 230, f: 'rgb(82,186,146)' }, { y: 205, f: 'rgb(116,189,129)' }, { y: 179, f: 'rgb(149,190,113)' }, { y: 154, f: 'rgb(179,189,101)' }, { y: 128, f: 'rgb(209,187,89)' }, { y: 102, f: 'rgb(226,192,75)' }, { y: 77, f: 'rgb(244,198,59)' }, { y: 51, f: 'rgb(253,210,43)' }, { y: 26, f: 'rgb(251,230,29)' }, { y: 0, f: 'rgb(249,249,15)' }] },
    th2color: { recs: [{x:0,y:256,w:13,h:39,f:'rgb(38,62,168)'},{x:13,y:371,w:39,h:39},{y:294,h:39},{y:256,h:39},{y:218,h:39},{x:51,y:410,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:90,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294},{y:256,h:39,f:'rgb(16,100,220)'},{y:218,h:39},{y:179,h:39,f:'rgb(22,82,205)'},{y:141,h:39},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:0,h:27},{x:128,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294,f:'rgb(20,129,214)'},{y:256,h:39,f:'rgb(9,157,204)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(20,129,214)'},{y:141,h:39,f:'rgb(16,100,220)'},{y:102,h:39,f:'rgb(22,82,205)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{y:0,h:27},{x:166,y:486,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(82,186,146)'},{y:256,h:39,f:'rgb(179,189,101)'},{y:218,h:39,f:'rgb(116,189,129)'},{y:179,h:39,f:'rgb(82,186,146)'},{y:141,h:39,f:'rgb(14,143,209)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:205,y:486,w:39,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(16,100,220)'},{y:333,h:39,f:'rgb(9,157,204)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(244,198,59)'},{y:218,h:39},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(13,167,195)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(22,82,205)'},{y:26,h:39,f:'rgb(38,62,168)'},{x:243,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(30,175,179)'},{y:294,f:'rgb(209,187,89)'},{y:256,h:39,f:'rgb(251,230,29)'},{y:218,h:39,f:'rgb(249,249,15)'},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(30,175,179)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:282,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(14,143,209)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(226,192,75)'},{y:218,h:39,f:'rgb(244,198,59)'},{y:179,h:39,f:'rgb(149,190,113)'},{y:141,h:39,f:'rgb(9,157,204)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:320,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(46,183,164)'},{y:256,h:39},{y:218,h:39,f:'rgb(82,186,146)'},{y:179,h:39,f:'rgb(9,157,204)'},{y:141,h:39,f:'rgb(20,129,214)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:358,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39},{y:294,f:'rgb(16,100,220)'},{y:256,h:39,f:'rgb(20,129,214)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(18,114,217)'},{y:141,h:39,f:'rgb(22,82,205)'},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:26,h:39},{x:397,y:448,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294,f:'rgb(22,82,205)'},{y:256,h:39},{y:218,h:39},{y:179,h:39,f:'rgb(38,62,168)'},{y:141,h:39},{y:102,h:39},{y:64},{y:26,h:39},{x:435,y:410,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:474,y:256,h:39},{y:179,h:39}] },
    th2draw3d: {
-      path: "M172.768,0H51.726C23.202,0,0.002,23.194,0.002,51.712v89.918c0,28.512,23.2,51.718,51.724,51.718h121.042   c28.518,0,51.724-23.2,51.724-51.718V51.712C224.486,23.194,201.286,0,172.768,0z M177.512,141.63c0,2.611-2.124,4.745-4.75,4.745   H51.726c-2.626,0-4.751-2.134-4.751-4.745V51.712c0-2.614,2.125-4.739,4.751-4.739h121.042c2.62,0,4.75,2.125,4.75,4.739 L177.512,141.63L177.512,141.63z "+
-            "M460.293,0H339.237c-28.521,0-51.721,23.194-51.721,51.712v89.918c0,28.512,23.2,51.718,51.721,51.718h121.045   c28.521,0,51.721-23.2,51.721-51.718V51.712C512.002,23.194,488.802,0,460.293,0z M465.03,141.63c0,2.611-2.122,4.745-4.748,4.745   H339.237c-2.614,0-4.747-2.128-4.747-4.745V51.712c0-2.614,2.133-4.739,4.747-4.739h121.045c2.626,0,4.748,2.125,4.748,4.739 V141.63z "+
-            "M172.768,256.149H51.726c-28.524,0-51.724,23.205-51.724,51.726v89.915c0,28.504,23.2,51.715,51.724,51.715h121.042   c28.518,0,51.724-23.199,51.724-51.715v-89.915C224.486,279.354,201.286,256.149,172.768,256.149z M177.512,397.784   c0,2.615-2.124,4.736-4.75,4.736H51.726c-2.626-0.006-4.751-2.121-4.751-4.736v-89.909c0-2.626,2.125-4.753,4.751-4.753h121.042 c2.62,0,4.75,2.116,4.75,4.753L177.512,397.784L177.512,397.784z "+
-            "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
+      path: 'M172.768,0H51.726C23.202,0,0.002,23.194,0.002,51.712v89.918c0,28.512,23.2,51.718,51.724,51.718h121.042   c28.518,0,51.724-23.2,51.724-51.718V51.712C224.486,23.194,201.286,0,172.768,0z M177.512,141.63c0,2.611-2.124,4.745-4.75,4.745   H51.726c-2.626,0-4.751-2.134-4.751-4.745V51.712c0-2.614,2.125-4.739,4.751-4.739h121.042c2.62,0,4.75,2.125,4.75,4.739 L177.512,141.63L177.512,141.63z '+
+            'M460.293,0H339.237c-28.521,0-51.721,23.194-51.721,51.712v89.918c0,28.512,23.2,51.718,51.721,51.718h121.045   c28.521,0,51.721-23.2,51.721-51.718V51.712C512.002,23.194,488.802,0,460.293,0z M465.03,141.63c0,2.611-2.122,4.745-4.748,4.745   H339.237c-2.614,0-4.747-2.128-4.747-4.745V51.712c0-2.614,2.133-4.739,4.747-4.739h121.045c2.626,0,4.748,2.125,4.748,4.739 V141.63z '+
+            'M172.768,256.149H51.726c-28.524,0-51.724,23.205-51.724,51.726v89.915c0,28.504,23.2,51.715,51.724,51.715h121.042   c28.518,0,51.724-23.199,51.724-51.715v-89.915C224.486,279.354,201.286,256.149,172.768,256.149z M177.512,397.784   c0,2.615-2.124,4.736-4.75,4.736H51.726c-2.626-0.006-4.751-2.121-4.751-4.736v-89.909c0-2.626,2.125-4.753,4.751-4.753h121.042 c2.62,0,4.75,2.116,4.75,4.753L177.512,397.784L177.512,397.784z '+
+            'M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z'
    },
 
    createSVG(group, btn, size, title) {
       injectStyle('.jsroot_svg_toolbar_btn { fill: steelblue; cursor: pointer; opacity: 0.3; } .jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node());
 
-      let svg = group.append("svg:svg")
-                     .attr('class', "jsroot_svg_toolbar_btn")
+      let svg = group.append('svg:svg')
+                     .attr('class', 'jsroot_svg_toolbar_btn')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
-                     .attr("viewBox", "0 0 512 512")
+                     .attr('viewBox', '0 0 512 512')
                      .style('overflow', 'hidden');
 
       if ('recs' in btn) {
@@ -50239,9 +50236,9 @@ const ToolbarIcons = {
       }
 
       //  special rect to correctly get mouse events for whole button area
-      svg.append("svg:rect").attr('x', 0).attr('y', 0).attr('width', 512).attr('height', 512)
-         .style('opacity', 0).style('fill', 'none').style("pointer-events", "visibleFill")
-         .append("svg:title").text(title);
+      svg.append('svg:rect').attr('x', 0).attr('y', 0).attr('width', 512).attr('height', 512)
+         .style('opacity', 0).style('fill', 'none').style('pointer-events', 'visibleFill')
+         .append('svg:title').text(title);
 
       return svg;
    }
@@ -50308,24 +50305,24 @@ function addMoveHandler(painter, enabled) {
    if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
 
    if (!enabled) {
-      if (painter.draw_g.property("assigned_move")) {
+      if (painter.draw_g.property('assigned_move')) {
          let drag_move = drag().subject(Object);
-         drag_move.on("start", null).on("drag", null).on("end", null);
+         drag_move.on('start', null).on('drag', null).on('end', null);
          painter.draw_g
-               .style("cursor", null)
-               .property("assigned_move", null)
+               .style('cursor', null)
+               .property('assigned_move', null)
                .call(drag_move);
       }
       return;
    }
 
-   if (painter.draw_g.property("assigned_move")) return;
+   if (painter.draw_g.property('assigned_move')) return;
 
    let drag_move = drag().subject(Object),
       not_changed = true, move_disabled = false;
 
    drag_move
-      .on("start", function(evnt) {
+      .on('start', function(evnt) {
          move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
          if (move_disabled) return;
          if (detectRightButton(evnt.sourceEvent)) return;
@@ -50335,14 +50332,14 @@ function addMoveHandler(painter, enabled) {
          not_changed = true;
          if (this.moveStart)
             this.moveStart(pos[0], pos[1]);
-      }.bind(painter)).on("drag", function(evnt) {
+      }.bind(painter)).on('drag', function(evnt) {
          if (move_disabled) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          not_changed = false;
          if (this.moveDrag)
             this.moveDrag(evnt.dx, evnt.dy);
-      }.bind(painter)).on("end", function(evnt) {
+      }.bind(painter)).on('end', function(evnt) {
          if (move_disabled) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -50352,8 +50349,8 @@ function addMoveHandler(painter, enabled) {
       }.bind(painter));
 
    painter.draw_g
-          .style("cursor", "move")
-          .property("assigned_move", true)
+          .style('cursor', 'move')
+          .property('assigned_move', true)
           .call(drag_move);
 }
 
@@ -50366,7 +50363,7 @@ function injectStyle(code, node, tag) {
 
    let styles = (node || document).getElementsByTagName('style');
    for (let n = 0; n < styles.length; ++n) {
-      if (tag && styles[n].getAttribute("tag") == tag) {
+      if (tag && styles[n].getAttribute('tag') == tag) {
          styles[n].innerHTML = code;
          return true;
       }
@@ -50376,7 +50373,7 @@ function injectStyle(code, node, tag) {
    }
 
    let element = document.createElement('style');
-   if (tag) element.setAttribute("tag", tag);
+   if (tag) element.setAttribute('tag', tag);
    element.innerHTML = code;
    (node || document.head).appendChild(element);
    return true;
@@ -50387,17 +50384,17 @@ function injectStyle(code, node, tag) {
 function selectgStyle(name) {
    gStyle.fName = name;
    switch (name) {
-      case "Modern": Object.assign(gStyle, {
+      case 'Modern': Object.assign(gStyle, {
          fFrameBorderMode: 0, fFrameFillColor: 0, fCanvasBorderMode: 0,
          fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
          fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
          fOptStat: 1111, fStatY: 0.935,
          fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 }); break;
-      case "Plain": Object.assign(gStyle, {
+      case 'Plain': Object.assign(gStyle, {
          fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
          fPadColor: 0, fCanvasColor: 0,
          fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 }); break;
-      case "Bold": Object.assign(gStyle, {
+      case 'Bold': Object.assign(gStyle, {
          fCanvasColor: 10, fCanvasBorderMode: 0,
          fFrameLineWidth: 3, fFrameFillColor: 10,
          fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
@@ -50406,7 +50403,7 @@ function selectgStyle(name) {
 }
 
 function saveCookie(obj, expires, name) {
-   let arg = (expires <= 0) ? "" : btoa_func(JSON.stringify(obj)),
+   let arg = (expires <= 0) ? '' : btoa_func(JSON.stringify(obj)),
        d = new Date();
    d.setTime((expires <= 0) ? 0 : d.getTime() + expires*24*60*60*1000);
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
@@ -50416,7 +50413,7 @@ function readCookie(name) {
    if (typeof document == 'undefined') return null;
    let decodedCookie = decodeURIComponent(document.cookie),
        ca = decodedCookie.split(';');
-   name += "=";
+   name += '=';
    for(let i = 0; i < ca.length; i++) {
       let c = ca[i];
       while (c.charAt(0) == ' ')
@@ -50434,7 +50431,7 @@ function readCookie(name) {
   * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
   * @param {String} name - cookie parameter name
   * @private */
-function saveSettings(expires = 365, name = "jsroot_settings") {
+function saveSettings(expires = 365, name = 'jsroot_settings') {
    saveCookie(settings, expires, name);
 }
 
@@ -50442,7 +50439,7 @@ function saveSettings(expires = 365, name = "jsroot_settings") {
   * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
   * @param {String} name - cookie parameter name
   * @private */
-function readSettings(only_check = false, name = "jsroot_settings") {
+function readSettings(only_check = false, name = 'jsroot_settings') {
    let s = readCookie(name);
    if (!s) return false;
    if (!only_check)
@@ -50454,7 +50451,7 @@ function readSettings(only_check = false, name = "jsroot_settings") {
   * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
   * @param {String} name - cookie parameter name
   * @private */
-function saveStyle(expires = 365, name = "jsroot_style") {
+function saveStyle(expires = 365, name = 'jsroot_style') {
    saveCookie(gStyle, expires, name);
 }
 
@@ -50462,7 +50459,7 @@ function saveStyle(expires = 365, name = "jsroot_style") {
   * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
   * @param {String} name - cookie parameter name
   * @private */
-function readStyle(only_check = false, name = "jsroot_style") {
+function readStyle(only_check = false, name = 'jsroot_style') {
    let s = readCookie(name);
    if (!s) return false;
    if (!only_check)
@@ -50478,7 +50475,7 @@ let _saveFileFunc = null;
   * @private */
 
 function getBinFileContent(content) {
-   const svg_prefix = "data:image/svg+xml;charset=utf-8,";
+   const svg_prefix = 'data:image/svg+xml;charset=utf-8,';
 
    if (content.indexOf(svg_prefix) == 0)
       return decodeURIComponent(content.slice(svg_prefix.length));
@@ -50511,7 +50508,7 @@ async function saveFile(filename, content) {
       document.body.appendChild(a);
 
       return new Promise(resolve => {
-         a.addEventListener("click", () => { a.parentNode.removeChild(a); resolve(true); });
+         a.addEventListener('click', () => { a.parentNode.removeChild(a); resolve(true); });
          a.click();
       });
    }
@@ -50534,7 +50531,7 @@ function getColorExec(col, method) {
       if (!col || (col == 'none')) id = 0; else
          for (let k = 1; k < arr.length; ++k)
             if (arr[k] == col) { id = k; break; }
-      if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
+      if ((id < 0) && (col.indexOf('rgb') == 0)) id = 9999;
    } else if (Number.isInteger(col) && arr[col]) {
       id = col;
       col = arr[id];
@@ -50576,11 +50573,11 @@ class JSRootMenu {
    async load() { return this; }
 
    /** @summary Returns object with mouse event position when context menu was actiavted
-     * @desc Return object will have members "clientX" and "clientY" */
+     * @desc Return object will have members 'clientX' and 'clientY' */
    getEventPosition() { return this.show_evnt; }
 
    add(/*name, arg, func, title*/) {
-      throw Error("add() method has to be implemented in the menu");
+      throw Error('add() method has to be implemented in the menu');
    }
 
    /** @summary Returns menu size */
@@ -50600,7 +50597,7 @@ class JSRootMenu {
    }
 
    show(/*event*/) {
-      throw Error("show() method has to be implemented in the menu class");
+      throw Error('show() method has to be implemented in the menu class');
    }
 
    /** @summary Add checked menu item
@@ -50612,10 +50609,10 @@ class JSRootMenu {
       if (typeof arg == 'function') {
          title = func;
          func = arg;
-         handler = res => func(res == "1");
-         arg = flag ? "0" : "1";
+         handler = res => func(res == '1');
+         arg = flag ? '0' : '1';
       }
-      this.add((flag ? "chk:" : "unk:") + name, arg, handler, title);
+      this.add((flag ? 'chk:' : 'unk:') + name, arg, handler, title);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -50625,19 +50622,19 @@ class JSRootMenu {
          return;
 
       let without_sub = false;
-      if (top_name.indexOf("nosub:") == 0) {
+      if (top_name.indexOf('nosub:') == 0) {
          without_sub = true;
          top_name = top_name.slice(6);
       }
 
       if (opts.length === 1) {
          if (opts[0] === 'inspect')
-            top_name = top_name.replace("Draw", "Inspect");
+            top_name = top_name.replace('Draw', 'Inspect');
          this.add(top_name, opts[0], call_back);
          return;
       }
 
-      if (!without_sub) this.add("sub:" + top_name, opts[0], call_back);
+      if (!without_sub) this.add('sub:' + top_name, opts[0], call_back);
 
       for (let i = 0; i < opts.length; ++i) {
          let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;');
@@ -50648,19 +50645,19 @@ class JSRootMenu {
             while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }
 
-         if (without_sub) name = top_name + " " + name;
+         if (without_sub) name = top_name + ' ' + name;
 
          if (group < i+2) {
             this.add(name, opts[i], call_back);
          } else {
-            this.add("sub:" + name, opts[i], call_back);
+            this.add('sub:' + name, opts[i], call_back);
             for (let k = i+1; k < group; ++k)
                this.add(opts[k], opts[k], call_back);
-            this.add("endsub:");
+            this.add('endsub:');
             i = group-1;
          }
       }
-      if (!without_sub) this.add("endsub:");
+      if (!without_sub) this.add('endsub:');
    }
 
    /** @summary Add color selection menu entries
@@ -50668,8 +50665,8 @@ class JSRootMenu {
    addColorMenu(name, value, set_func, fill_kind) {
       if (value === undefined) return;
       let useid = (typeof value !== 'string');
-      this.add("sub:" + name, () => {
-         this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
+      this.add('sub:' + name, () => {
+         this.input('Enter color ' + (useid ? '(only id number)' : '(name or id)'), value, useid ? 'int' : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             let id = parseInt(col);
             if (Number.isInteger(id) && getColor(id)) {
                col = getColor(id);
@@ -50681,7 +50678,7 @@ class JSRootMenu {
       });
 
       for(let ncolumn = 0; ncolumn < 5; ++ncolumn) {
-         this.add("column:");
+         this.add('column:');
 
          for (let nrow = 0; nrow < 10; nrow++) {
             let n = ncolumn*10 + nrow;
@@ -50690,19 +50687,19 @@ class JSRootMenu {
             let col = (n < 0) ? 'none' : getColor(n);
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let lbl = (n <= 0) || (col[0] != '#') ? col : `col ${n}`,
-                fill = (n == 1) ? "white" : 'black',
-                stroke = (n == 1) ? "red" : 'black',
+                fill = (n == 1) ? 'white' : 'black',
+                stroke = (n == 1) ? 'red' : 'black',
                 rect = (value == (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
                 svg = `<svg width="50" height="18" style="margin:0px;background-color:${col}">${rect}<text x="4" y="12" style='font-size:12px' fill="${fill}">${lbl}</text></svg>`;
 
-            this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), "Select color " + col);
+            this.add(svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res), 'Select color ' + col);
          }
 
-         this.add("endcolumn:");
+         this.add('endcolumn:');
          if (!this.native()) break;
       }
 
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add size selection menu entries
@@ -50731,9 +50728,9 @@ class JSRootMenu {
          values = values.sort((a,b) => a > b);
       }
 
-      this.add("sub:" + name, () => this.input("Enter value of " + name, conv(size_value, true), (step >= 1) ? "int" : "float").then(set_func), title);
+      this.add('sub:' + name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
       values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res))));
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add palette menu entries
@@ -50748,108 +50745,108 @@ class JSRootMenu {
          this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
       };
 
-      this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
+      this.add('sub:Palette', () => this.input('Enter palette code [1..113]', curr, 'int', 1, 113).then(set_func));
 
-      this.add("column:");
+      this.add('column:');
 
-      add(57, "Bird", "Default color palette", (curr > 113));
-      add(55, "Rainbow");
-      add(51, "Deep Sea");
-      add(52, "Grayscale", "New gray scale");
-      add(1,  "", "Old gray scale", (curr > 0) && (curr < 10));
-      add(50, "ROOT 5", "Default color palette in ROOT 5", (curr >= 10) && (curr < 51));
-      add(53, "", "Dark body radiator");
-      add(54, "", "Two-color hue");
-      add(56, "", "Inverted dark body radiator");
-      add(58, "Cubehelix");
-      add(59, "", "Green Red Violet");
-      add(60, "", "Blue Red Yellow");
-      add(61, "Ocean");
+      add(57, 'Bird', 'Default color palette', (curr > 113));
+      add(55, 'Rainbow');
+      add(51, 'Deep Sea');
+      add(52, 'Grayscale', 'New gray scale');
+      add(1,  '', 'Old gray scale', (curr > 0) && (curr < 10));
+      add(50, 'ROOT 5', 'Default color palette in ROOT 5', (curr >= 10) && (curr < 51));
+      add(53, '', 'Dark body radiator');
+      add(54, '', 'Two-color hue');
+      add(56, '', 'Inverted dark body radiator');
+      add(58, 'Cubehelix');
+      add(59, '', 'Green Red Violet');
+      add(60, '', 'Blue Red Yellow');
+      add(61, 'Ocean');
 
-      this.add("endcolumn:");
+      this.add('endcolumn:');
 
       if (!this.native())
-         return this.add("endsub:");
+         return this.add('endsub:');
 
-      this.add("column:");
+      this.add('column:');
 
-      add(62, "", "Color Printable On Grey");
-      add(63, "Alpine");
-      add(64, "Aquamarine");
-      add(65, "Army");
-      add(66, "Atlantic");
-      add(67, "Aurora");
-      add(68, "Avocado");
-      add(69, "Beach");
-      add(70, "Black Body");
-      add(71, "", "Blue Green Yellow");
-      add(72, "Brown Cyan");
-      add(73, "CMYK");
-      add(74, "Candy");
+      add(62, '', 'Color Printable On Grey');
+      add(63, 'Alpine');
+      add(64, 'Aquamarine');
+      add(65, 'Army');
+      add(66, 'Atlantic');
+      add(67, 'Aurora');
+      add(68, 'Avocado');
+      add(69, 'Beach');
+      add(70, 'Black Body');
+      add(71, '', 'Blue Green Yellow');
+      add(72, 'Brown Cyan');
+      add(73, 'CMYK');
+      add(74, 'Candy');
 
-      this.add("endcolumn:");
-      this.add("column:");
+      this.add('endcolumn:');
+      this.add('column:');
 
-      add(75, "Cherry");
-      add(76, "Coffee");
-      add(77, "", "Dark Rain Bow");
-      add(78, "", "Dark Terrain");
-      add(79, "Fall");
-      add(80, "Fruit Punch");
-      add(81, "Fuchsia");
-      add(82, "Grey Yellow");
-      add(83, "", "Green Brown Terrain");
-      add(84, "Green Pink");
-      add(85, "Island");
-      add(86, "Lake");
-      add(87, "", "Light Temperature");
+      add(75, 'Cherry');
+      add(76, 'Coffee');
+      add(77, '', 'Dark Rain Bow');
+      add(78, '', 'Dark Terrain');
+      add(79, 'Fall');
+      add(80, 'Fruit Punch');
+      add(81, 'Fuchsia');
+      add(82, 'Grey Yellow');
+      add(83, '', 'Green Brown Terrain');
+      add(84, 'Green Pink');
+      add(85, 'Island');
+      add(86, 'Lake');
+      add(87, '', 'Light Temperature');
 
-      this.add("endcolumn:");
-      this.add("column:");
+      this.add('endcolumn:');
+      this.add('column:');
 
-      add(88, "", "Light Terrain");
-      add(89, "Mint");
-      add(90, "Neon");
-      add(91, "Pastel");
-      add(92, "Pearl");
-      add(93, "Pigeon");
-      add(94, "Plum");
-      add(95, "Red Blue");
-      add(96, "Rose");
-      add(97, "Rust");
-      add(98, "", "Sandy Terrain");
-      add(99, "Sienna");
-      add(100, "Solar");
+      add(88, '', 'Light Terrain');
+      add(89, 'Mint');
+      add(90, 'Neon');
+      add(91, 'Pastel');
+      add(92, 'Pearl');
+      add(93, 'Pigeon');
+      add(94, 'Plum');
+      add(95, 'Red Blue');
+      add(96, 'Rose');
+      add(97, 'Rust');
+      add(98, '', 'Sandy Terrain');
+      add(99, 'Sienna');
+      add(100, 'Solar');
 
-      this.add("endcolumn:");
-      this.add("column:");
+      this.add('endcolumn:');
+      this.add('column:');
 
-      add(101, "", "South West");
-      add(102, "", "Starry Night");
-      add(103, "", "Sunset");
-      add(104, "", "Temperature Map");
-      add(105, "", "Thermometer");
-      add(106, "Valentine");
-      add(107, "", "Visible Spectrum");
-      add(108, "", "Water Melon");
-      add(109, "Cool");
-      add(110, "Copper");
-      add(111, "", "Gist Earth");
-      add(112, "Viridis");
-      add(113, "Cividis");
+      add(101, '', 'South West');
+      add(102, '', 'Starry Night');
+      add(103, '', 'Sunset');
+      add(104, '', 'Temperature Map');
+      add(105, '', 'Thermometer');
+      add(106, 'Valentine');
+      add(107, '', 'Visible Spectrum');
+      add(108, '', 'Water Melon');
+      add(109, 'Cool');
+      add(110, 'Copper');
+      add(111, '', 'Gist Earth');
+      add(112, 'Viridis');
+      add(113, 'Cividis');
 
-      this.add("endcolumn:");
+      this.add('endcolumn:');
 
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add rebin menu entries
      * @protected */
    addRebinMenu(rebin_func) {
-      this.add("sub:Rebin", () => this.input("Enter rebin value", 2, "int", 2).then(rebin_func));
+      this.add('sub:Rebin', () => this.input('Enter rebin value', 2, 'int', 2).then(rebin_func));
       for (let sz = 2; sz <= 7; sz++)
          this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add selection menu entries
@@ -50860,10 +50857,10 @@ class JSRootMenu {
      * @protected */
    addSelectMenu(name, values, value, set_func) {
       let use_number = (typeof value == 'number');
-      this.add("sub:" + name);
+      this.add('sub:' + name);
       for (let n = 0; n < values.length; ++n)
          this.addchk(use_number ? (n == value) : (values[n] == value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add RColor selection menu entries
@@ -50872,14 +50869,14 @@ class JSRootMenu {
       // if (value === undefined) return;
       let colors = ['default', 'black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
-      this.add("sub:" + name, () => {
-         this.input("Enter color name - empty string will reset color", value).then(set_func);
+      this.add('sub:' + name, () => {
+         this.input('Enter color name - empty string will reset color', value).then(set_func);
       });
       let fillcol = 'black';
       for (let n = 0; n < colors.length; ++n) {
          let coltxt = colors[n], match = false, bkgr = '';
          if (n > 0) {
-            bkgr = "background-color:" + coltxt;
+            bkgr = 'background-color:' + coltxt;
             fillcol = (coltxt == 'white') ? 'black' : 'white';
 
             if ((typeof value === 'string') && value && (value != 'auto') && (value[0] != '['))
@@ -50890,7 +50887,7 @@ class JSRootMenu {
          let svg = `<svg width='100' height='18' style='margin:0px;${bkgr}'><text x='4' y='12' style='font-size:12px' fill='${fillcol}'>${coltxt}</text></svg>`;
          this.addchk(match, svg, coltxt, res => set_func(res == 'default' ? null : res));
       }
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add items to change RAttrText
@@ -50899,20 +50896,20 @@ class JSRootMenu {
       if (!opts) opts = {};
       this.addRColorMenu('color', fontHandler.color, sel => set_func({ name: 'color', value: sel }));
       if (fontHandler.scaled)
-         this.addSizeMenu("size", 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: "size", value: sz }));
+         this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: 'size', value: sz }));
       else
-         this.addSizeMenu("size", 6, 20, 2, fontHandler.size, sz => set_func({ name: "size", value: sz }));
+         this.addSizeMenu('size', 6, 20, 2, fontHandler.size, sz => set_func({ name: 'size', value: sz }));
 
-      this.addSelectMenu("family", ["Arial", "Times New Roman", "Courier New", "Symbol"], fontHandler.name, res => set_func( {name: "font_family", value: res }));
+      this.addSelectMenu('family', ['Arial', 'Times New Roman', 'Courier New', 'Symbol'], fontHandler.name, res => set_func( {name: 'font_family', value: res }));
 
-      this.addSelectMenu('style', ["normal", "italic", "oblique"], fontHandler.style || "normal", res => set_func( {name: "font_style", value: res == "normal" ? null : res }));
+      this.addSelectMenu('style', ['normal', 'italic', 'oblique'], fontHandler.style || 'normal', res => set_func( {name: 'font_style', value: res == 'normal' ? null : res }));
 
-      this.addSelectMenu("weight", ["normal", "lighter", "bold", "bolder"], fontHandler.weight || "normal", res => set_func( {name: "font_weight", value: res == "normal" ? null : res }));
+      this.addSelectMenu('weight', ['normal', 'lighter', 'bold', 'bolder'], fontHandler.weight || 'normal', res => set_func( {name: 'font_weight', value: res == 'normal' ? null : res }));
 
       if (!opts.noalign)
-         this.add("align");
+         this.add('align');
       if (!opts.noangle)
-         this.add("angle");
+         this.add('angle');
    }
 
    /** @summary Fill context menu for text attributes
@@ -50923,48 +50920,48 @@ class JSRootMenu {
       let obj = painter.getObject();
       if ((obj?.fTextColor === undefined) || (obj?.fTextAlign == undefined)) return;
 
-      this.add("sub:" + (prefix ? prefix : "Text"));
+      this.add('sub:' + (prefix || 'Text'));
       this.addColorMenu('color', obj.fTextColor,
-         arg => { obj.fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, "SetTextColor")); });
+         arg => { obj.fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
 
       let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
-      this.add("sub:align");
+      this.add('sub:align');
       for (let n = 0; n < align.length; ++n) {
          this.addchk(align[n] == obj.fTextAlign,
             align[n], align[n],
-            // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
-            function(arg) { this.getObject().fTextAlign = parseInt(arg); this.interactiveRedraw(true, "exec:SetTextAlign(" + arg + ")"); }.bind(painter));
+            // align[n].toString() + '_h:' + hnames[Math.floor(align[n]/10) - 1] + '_v:' + vnames[align[n]%10-1], align[n],
+            function(arg) { this.getObject().fTextAlign = parseInt(arg); this.interactiveRedraw(true, `exec:SetTextAlign(${arg})`); }.bind(painter));
       }
-      this.add("endsub:");
+      this.add('endsub:');
 
-      this.addFontMenu("font", obj.fTextFont, function(fnt) {
+      this.addFontMenu('font', obj.fTextFont, function(fnt) {
          this.getObject().fTextFont = fnt; this.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); }.bind(painter)
       );
 
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add line style menu
      * @private */
    addLineStyleMenu(name, value, set_func) {
-      this.add("sub:"+name, () => this.input("Enter line style id (1-solid)", value, "int", 1, 11).then(val => {
+      this.add('sub:'+name, () => this.input('Enter line style id (1-solid)', value, 'int', 1, 11).then(val => {
          if (getSvgLineStyle(val)) set_func(val);
       }));
       for (let n = 1; n < 11; ++n) {
          let dash = getSvgLineStyle(n),
-             svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
+             svg = `<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>${n}</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
 
          this.addchk((value == n), svg, n, arg => set_func(parseInt(arg)));
       }
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add fill style menu
      * @private */
    addFillStyleMenu(name, value, color_index, painter, set_func) {
-      this.add("sub:" + name, () => {
-         this.input("Enter fill style id (1001-solid, 3000..3010)", value, "int", 0, 4000).then(id => {
+      this.add('sub:' + name, () => {
+         this.input('Enter fill style id (1001-solid, 3000..3010)', value, 'int', 0, 4000).then(id => {
             if ((id >= 0) && (id <= 4000)) set_func(id);
          });
       });
@@ -50975,46 +50972,46 @@ class JSRootMenu {
          let svg = supported[n];
          if (painter) {
             let sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
-            svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
+            svg = `<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='${sample.getFillColor()}'></rect></svg>`;
          }
          this.addchk(value == supported[n], svg, supported[n], arg => set_func(parseInt(arg)));
       }
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Add font selection menu
      * @private */
    addFontMenu(name, value, set_func) {
-      this.add("sub:" + name, () => {
-         this.input("Enter font id from [0..20]", Math.floor(value/10), "int", 0, 20).then(id => {
+      this.add('sub:' + name, () => {
+         this.input('Enter font id from [0..20]', Math.floor(value/10), 'int', 0, 20).then(id => {
             if ((id >= 0) && (id <= 20)) set_func(id*10 + 2);
          });
       });
 
-      this.add("column:");
+      this.add('column:');
 
       for (let n = 1; n < 20; ++n) {
          let handler = new FontHandler(n*10+2, 14),
-             txt = select(document.createElementNS("http://www.w3.org/2000/svg", 'text')),
+             txt = select(document.createElementNS('http://www.w3.org/2000/svg', 'text')),
              fullname = handler.getFontName(),
-             name = " " + fullname.split(" ")[0] + " ";
-         if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
-         if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
+             name = ' ' + fullname.split(' ')[0] + ' ';
+         if (handler.weight) { name = 'b' + name; fullname += ' ' + handler.weight; }
+         if (handler.style) { name = handler.style[0] + name; fullname += ' ' + handler.style; }
          txt.attr('x', 1).attr('y',15).text(name);
          handler.setFont(txt);
 
-         let rect = (value != n*10+2) ? "" : "<rect width='90' height='18' style='fill:none;stroke:black'></rect>",
-             svg = "<svg width='90' height='18'>" + txt.node().outerHTML + rect + "</svg>";
+         let rect = (value != n*10+2) ? '' : `<rect width='90' height='18' style='fill:none;stroke:black'></rect>`,
+             svg = `<svg width='90' height='18'>${txt.node().outerHTML}${rect}</svg>`;
          this.add(svg, n, arg => set_func(parseInt(arg)*10+2), fullname);
 
          if (n == 10) {
-            this.add("endcolumn:");
-            this.add("column:");
+            this.add('endcolumn:');
+            this.add('column:');
          }
       }
 
-      this.add("endcolumn:");
-      this.add("endsub:");
+      this.add('endcolumn:');
+      this.add('endsub:');
    }
 
    /** @summary Fill context menu for graphical attributes in painter
@@ -51024,323 +51021,323 @@ class JSRootMenu {
       // like TAttFill, TAttLine, ....
       // all menu call-backs need to be rebind, while menu can be used from other painter
 
-      if (!preffix) preffix = "";
+      if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
-         this.add("sub:" + preffix + "Line att");
+         this.add('sub:' + preffix + 'Line att');
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
          this.addColorMenu('color', painter.lineatt.color,
-            arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
+            arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor')); });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
          });
-         this.add("endsub:");
+         this.add('endsub:');
 
          if (painter.lineatt?.excl_side) {
-            this.add("sub:Exclusion");
-            this.add("sub:side");
+            this.add('sub:Exclusion');
+            this.add('sub:side');
             for (let side = -1; side <= 1; ++side)
                this.addchk((painter.lineatt.excl_side == side), side, side, function(arg) {
                   this.lineatt.changeExcl(parseInt(arg));
                   this.interactiveRedraw();
                }.bind(painter));
-            this.add("endsub:");
+            this.add('endsub:');
 
             this.addSizeMenu('width', 10, 100, 10, painter.lineatt.excl_width,
                arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
 
-            this.add("endsub:");
+            this.add('endsub:');
          }
       }
 
       if (painter.fillatt?.used) {
-         this.add("sub:" + preffix + "Fill att");
+         this.add('sub:' + preffix + 'Fill att');
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
-            painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor"));
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
-         this.add("endsub:");
+         this.add('endsub:');
       }
 
       if (painter.markeratt?.used) {
-         this.add("sub:" + preffix + "Marker att");
+         this.add('sub:' + preffix + 'Marker att');
          this.addColorMenu('color', painter.markeratt.color,
-            arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
-         this.addSizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
+            arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));});
+         this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size,
             arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`); });
 
-         this.add("sub:style");
+         this.add('sub:style');
          let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
 
          for (let n = 0; n < supported.length; ++n) {
 
             let clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
-                svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? 'black' : 'none') + "' d='" + clone.create(40, 8) + "'></path></svg>";
+                svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style == supported[n], svg, supported[n],
-               function(arg) { this.markeratt.change(undefined, parseInt(arg)); this.interactiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(painter));
+               function(arg) { this.markeratt.change(undefined, parseInt(arg)); this.interactiveRedraw(true, `exec:SetMarkerStyle(${arg})`); }.bind(painter));
          }
-         this.add("endsub:");
-         this.add("endsub:");
+         this.add('endsub:');
+         this.add('endsub:');
       }
    }
 
    /** @summary Fill context menu for axis
      * @private */
    addTAxisMenu(EAxisBits, painter, faxis, kind) {
-      this.add("Divisions", () => this.input("Set Ndivisions", faxis.fNdivisions, "int", 0).then(val => {
+      this.add('Divisions', () => this.input('Set Ndivisions', faxis.fNdivisions, 'int', 0).then(val => {
          faxis.fNdivisions = val;
          painter.interactiveRedraw('pad', `exec:SetNdivisions(${val})`, kind);
       }));
 
-      this.add("sub:Labels");
-      this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), "Center",
+      this.add('sub:Labels');
+      this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), 'Center',
             arg => { faxis.InvertBit(EAxisBits.kCenterLabels); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
-      this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), "Rotate",
+      this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), 'Rotate',
             arg => { faxis.InvertBit(EAxisBits.kLabelsVert); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
-      this.addColorMenu("Color", faxis.fLabelColor,
-            arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetLabelColor"), kind); });
-      this.addSizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
+      this.addColorMenu('Color', faxis.fLabelColor,
+            arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
+      this.addSizeMenu('Offset', 0, 0.1, 0.01, faxis.fLabelOffset,
             arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); } );
-      this.addSizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
+      this.addSizeMenu('Size', 0.02, 0.11, 0.01, faxis.fLabelSize,
             arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); } );
-      this.add("endsub:");
-      this.add("sub:Title");
-      this.add("SetTitle", () => {
-         this.input("Enter axis title", faxis.fTitle).then(t => {
+      this.add('endsub:');
+      this.add('sub:Title');
+      this.add('SetTitle', () => {
+         this.input('Enter axis title', faxis.fTitle).then(t => {
             faxis.fTitle = t;
             painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
          });
       });
-      this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), "Center",
+      this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), 'Center',
             arg => { faxis.InvertBit(EAxisBits.kCenterTitle); painter.interactiveRedraw('pad', `exec:CenterTitle(${arg})`, kind); });
-      this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), "Opposite",
+      this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), 'Opposite',
              () => { faxis.InvertBit(EAxisBits.kOppositeTitle); painter.redrawPad(); });
-      this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), "Rotate",
+      this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), 'Rotate',
             arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw('pad', `exec:RotateTitle(${arg})`, kind); });
-      this.addColorMenu("Color", faxis.fTitleColor,
-            arg => { faxis.fTitleColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetTitleColor"), kind); });
-      this.addSizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
+      this.addColorMenu('Color', faxis.fTitleColor,
+            arg => { faxis.fTitleColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetTitleColor'), kind); });
+      this.addSizeMenu('Offset', 0, 3, 0.2, faxis.fTitleOffset,
                       arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
-      this.addSizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
+      this.addSizeMenu('Size', 0.02, 0.11, 0.01, faxis.fTitleSize,
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
-      this.add("endsub:");
-      this.add("sub:Ticks");
-      if (faxis._typename == "TGaxis") {
-         this.addColorMenu("Color", faxis.fLineColor,
+      this.add('endsub:');
+      this.add('sub:Ticks');
+      if (faxis._typename == 'TGaxis') {
+         this.addColorMenu('Color', faxis.fLineColor,
                   arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad'); });
-         this.addSizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickSize,
+         this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickSize,
                   arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad'); } );
       } else {
-         this.addColorMenu("Color", faxis.fAxisColor,
-                  arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetAxisColor"), kind); });
-         this.addSizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+         this.addColorMenu('Color', faxis.fAxisColor,
+                  arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetAxisColor'), kind); });
+         this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickLength,
                   arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       }
-      this.add("endsub:");
+      this.add('endsub:');
    }
 
    /** @summary Fill menu to edit settings properties
      * @private */
    addSettingsMenu(with_hierarchy, alone, handle_func) {
       if (alone)
-         this.add("header:Settings");
+         this.add('header:Settings');
       else
-         this.add("sub:Settings");
+         this.add('sub:Settings');
 
-      this.add("sub:Files");
+      this.add('sub:Files');
 
       if (with_hierarchy) {
-         this.addchk(settings.OnlyLastCycle, "Last cycle", flag => {
+         this.addchk(settings.OnlyLastCycle, 'Last cycle', flag => {
             settings.OnlyLastCycle = flag;
-            if (handle_func) handle_func("refresh");
+            if (handle_func) handle_func('refresh');
          });
 
-         this.addchk(!settings.SkipStreamerInfos, "Streamer infos", flag => {
+         this.addchk(!settings.SkipStreamerInfos, 'Streamer infos', flag => {
             settings.SkipStreamerInfos = !flag;
-            if (handle_func) handle_func("refresh");
+            if (handle_func) handle_func('refresh');
          });
       }
 
-      this.addchk(settings.UseStamp, "Use stamp arg", flag => { settings.UseStamp = flag; });
-      this.addSizeMenu("Max ranges", 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, "Maximal number of ranges in single http request");
+      this.addchk(settings.UseStamp, 'Use stamp arg', flag => { settings.UseStamp = flag; });
+      this.addSizeMenu('Max ranges', 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, 'Maximal number of ranges in single http request');
 
-      this.addchk(settings.HandleWrongHttpResponse, "Handle wrong http response", flag => { settings.HandleWrongHttpResponse = flag; });
+      this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; });
 
-      this.add("endsub:");
+      this.add('endsub:');
 
-      this.add("sub:Toolbar");
-      this.addchk(settings.ToolBar === false, "Off", flag => { settings.ToolBar = !flag; });
-      this.addchk(settings.ToolBar === true, "On", flag => { settings.ToolBar = flag; });
-      this.addchk(settings.ToolBar === "popup", "Popup", flag => { settings.ToolBar = flag ? "popup" : false; });
-      this.add("separator");
-      this.addchk(settings.ToolBarSide == "left", "Left side", flag => { settings.ToolBarSide = flag ? "left" : "right"; });
-      this.addchk(settings.ToolBarVert, "Vertical", flag => { settings.ToolBarVert = flag; });
-      this.add("endsub:");
+      this.add('sub:Toolbar');
+      this.addchk(settings.ToolBar === false, 'Off', flag => { settings.ToolBar = !flag; });
+      this.addchk(settings.ToolBar === true, 'On', flag => { settings.ToolBar = flag; });
+      this.addchk(settings.ToolBar === 'popup', 'Popup', flag => { settings.ToolBar = flag ? 'popup' : false; });
+      this.add('separator');
+      this.addchk(settings.ToolBarSide == 'left', 'Left side', flag => { settings.ToolBarSide = flag ? 'left' : 'right'; });
+      this.addchk(settings.ToolBarVert, 'Vertical', flag => { settings.ToolBarVert = flag; });
+      this.add('endsub:');
 
-      this.add("sub:Interactive");
-      this.addchk(settings.Tooltip, "Tooltip", flag => { settings.Tooltip = flag; });
-      this.addchk(settings.ContextMenu, "Context menus", flag => { settings.ContextMenu = flag; });
-      this.add("sub:Zooming");
-      this.addchk(settings.Zooming, "Global", flag => { settings.Zooming = flag; });
-      this.addchk(settings.ZoomMouse, "Mouse", flag => { settings.ZoomMouse = flag; });
-      this.addchk(settings.ZoomWheel, "Wheel", flag => { settings.ZoomWheel = flag; });
-      this.addchk(settings.ZoomTouch, "Touch", flag => { settings.ZoomTouch = flag; });
-      this.add("endsub:");
-      this.addchk(settings.HandleKeys, "Keypress handling", flag => { settings.HandleKeys = flag; });
-      this.addchk(settings.MoveResize, "Move and resize", flag => { settings.MoveResize = flag; });
-      this.addchk(settings.DragAndDrop, "Drag and drop", flag => { settings.DragAndDrop = flag; });
-      this.addchk(settings.DragGraphs, "Drag graph points", flag => { settings.DragGraphs = flag; });
-      this.addchk(settings.ProgressBox, "Progress box", flag => { settings.ProgressBox = flag; });
-      this.add("endsub:");
+      this.add('sub:Interactive');
+      this.addchk(settings.Tooltip, 'Tooltip', flag => { settings.Tooltip = flag; });
+      this.addchk(settings.ContextMenu, 'Context menus', flag => { settings.ContextMenu = flag; });
+      this.add('sub:Zooming');
+      this.addchk(settings.Zooming, 'Global', flag => { settings.Zooming = flag; });
+      this.addchk(settings.ZoomMouse, 'Mouse', flag => { settings.ZoomMouse = flag; });
+      this.addchk(settings.ZoomWheel, 'Wheel', flag => { settings.ZoomWheel = flag; });
+      this.addchk(settings.ZoomTouch, 'Touch', flag => { settings.ZoomTouch = flag; });
+      this.add('endsub:');
+      this.addchk(settings.HandleKeys, 'Keypress handling', flag => { settings.HandleKeys = flag; });
+      this.addchk(settings.MoveResize, 'Move and resize', flag => { settings.MoveResize = flag; });
+      this.addchk(settings.DragAndDrop, 'Drag and drop', flag => { settings.DragAndDrop = flag; });
+      this.addchk(settings.DragGraphs, 'Drag graph points', flag => { settings.DragGraphs = flag; });
+      this.addchk(settings.ProgressBox, 'Progress box', flag => { settings.ProgressBox = flag; });
+      this.add('endsub:');
 
-      this.add("sub:Drawing");
-      this.addSelectMenu("Optimize", ["None", "Smart", "Always"], settings.OptimizeDraw, value => { settings.OptimizeDraw = value; });
+      this.add('sub:Drawing');
+      this.addSelectMenu('Optimize', ['None', 'Smart', 'Always'], settings.OptimizeDraw, value => { settings.OptimizeDraw = value; });
       this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
-      this.addchk(settings.AutoStat, "Auto stat box", flag => { settings.AutoStat = flag; });
-      this.addSelectMenu("Latex", ["Off", "Symbols", "Normal", "MathJax", "Force MathJax"], settings.Latex, value => { settings.Latex = value; });
-      this.addSelectMenu("3D rendering", ["Default", "WebGL", "Image"], settings.Render3D, value => { settings.Render3D = value; });
-      this.addSelectMenu("WebGL embeding", ["Default", "Overlay", "Embed"], settings.Embed3D, value => { settings.Embed3D = value; });
+      this.addchk(settings.AutoStat, 'Auto stat box', flag => { settings.AutoStat = flag; });
+      this.addSelectMenu('Latex', ['Off', 'Symbols', 'Normal', 'MathJax', 'Force MathJax'], settings.Latex, value => { settings.Latex = value; });
+      this.addSelectMenu('3D rendering', ['Default', 'WebGL', 'Image'], settings.Render3D, value => { settings.Render3D = value; });
+      this.addSelectMenu('WebGL embeding', ['Default', 'Overlay', 'Embed'], settings.Embed3D, value => { settings.Embed3D = value; });
 
-      this.add("endsub:");
+      this.add('endsub:');
 
-      this.add("sub:Geometry");
-      this.add("Grad per segment:  " + settings.GeoGradPerSegm, () => this.input("Grad per segment in geometry", settings.GeoGradPerSegm, "int", 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
-      this.addchk(settings.GeoCompressComp, "Compress composites", flag => { settings.GeoCompressComp = flag; });
-      this.add("endsub:");
+      this.add('sub:Geometry');
+      this.add('Grad per segment:  ' + settings.GeoGradPerSegm, () => this.input('Grad per segment in geometry', settings.GeoGradPerSegm, 'int', 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
+      this.addchk(settings.GeoCompressComp, 'Compress composites', flag => { settings.GeoCompressComp = flag; });
+      this.add('endsub:');
 
       if (with_hierarchy)
-         this.add("Hierarchy limit:  " + settings.HierarchyLimit, () => this.input("Max number of items in hierarchy", settings.HierarchyLimit, "int", 10, 100000).then(val => {
+         this.add('Hierarchy limit:  ' + settings.HierarchyLimit, () => this.input('Max number of items in hierarchy', settings.HierarchyLimit, 'int', 10, 100000).then(val => {
             settings.HierarchyLimit = val;
-            if (handle_func) handle_func("refresh");
+            if (handle_func) handle_func('refresh');
          }));
 
-      this.add("Dark mode: " + (settings.DarkMode ? "On" : "Off"), () => {
+      this.add('Dark mode: ' + (settings.DarkMode ? 'On' : 'Off'), () => {
          settings.DarkMode = !settings.DarkMode;
-         if (handle_func) handle_func("dark");
+         if (handle_func) handle_func('dark');
       });
 
       const setStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); },
             addStyleIntField = (name, field, arr) => {
-         this.add("sub:" + name);
+         this.add('sub:' + name);
          for (let v = 0; v < arr.length; ++v)
             this.addchk(gStyle[field] == v, arr[v], `${v}${field}`, setStyleField);
-         this.add("endsub:");
+         this.add('endsub:');
       };
 
-      this.add("sub:gStyle");
+      this.add('sub:gStyle');
 
-      this.add("sub:Canvas");
-      this.addColorMenu("Color", gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
-      this.addchk(gStyle.fOptDate, "Draw date", flag => { gStyle.fOptDate = flag ? 1 : 0; });
-      this.addchk(gStyle.fOptFile, "Draw item", flag => { gStyle.fOptFile = flag ? 1 : 0; });
-      this.addSizeMenu("Date X", 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, "configure gStyle.fDateX for date/item name drawings");
-      this.addSizeMenu("Date Y", 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, "configure gStyle.fDateY for date/item name drawings");
-      this.add("endsub:");
+      this.add('sub:Canvas');
+      this.addColorMenu('Color', gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
+      this.addchk(gStyle.fOptDate, 'Draw date', flag => { gStyle.fOptDate = flag ? 1 : 0; });
+      this.addchk(gStyle.fOptFile, 'Draw item', flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      this.addSizeMenu('Date X', 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, 'configure gStyle.fDateX for date/item name drawings');
+      this.addSizeMenu('Date Y', 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, 'configure gStyle.fDateY for date/item name drawings');
+      this.add('endsub:');
 
-      this.add("sub:Pad");
-      this.addColorMenu("Color", gStyle.fPadColor, col => { gStyle.fPadColor = col; });
-      this.add("sub:Grid");
-      this.addchk(gStyle.fPadGridX, "X", flag => { gStyle.fPadGridX = flag; });
-      this.addchk(gStyle.fPadGridY, "Y", flag => { gStyle.fPadGridY = flag; });
-      this.addColorMenu("Color", gStyle.fGridColor, col => { gStyle.fGridColor = col; });
-      this.addSizeMenu("Width", 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
-      this.addLineStyleMenu("Style", gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
-      this.add("endsub:");
-      addStyleIntField("Ticks X", "fPadTickX", ["normal", "ticks on both sides", "labels on both sides"]);
-      addStyleIntField("Ticks Y", "fPadTickY", ["normal", "ticks on both sides", "labels on both sides"]);
-      addStyleIntField("Log X", "fOptLogx", ['off', 'on', "log 2"]);
-      addStyleIntField("Log Y", "fOptLogy", ['off', 'on', "log 2"]);
-      addStyleIntField("Log Z", "fOptLogz", ['off', 'on', "log 2"]);
-      this.addchk(gStyle.fOptTitle == 1, "Hist title", flag => { gStyle.fOptTitle = flag ? 1 : 0; });
-      this.add("endsub:");
+      this.add('sub:Pad');
+      this.addColorMenu('Color', gStyle.fPadColor, col => { gStyle.fPadColor = col; });
+      this.add('sub:Grid');
+      this.addchk(gStyle.fPadGridX, 'X', flag => { gStyle.fPadGridX = flag; });
+      this.addchk(gStyle.fPadGridY, 'Y', flag => { gStyle.fPadGridY = flag; });
+      this.addColorMenu('Color', gStyle.fGridColor, col => { gStyle.fGridColor = col; });
+      this.addSizeMenu('Width', 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
+      this.addLineStyleMenu('Style', gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
+      this.add('endsub:');
+      addStyleIntField('Ticks X', 'fPadTickX', ['normal', 'ticks on both sides', 'labels on both sides']);
+      addStyleIntField('Ticks Y', 'fPadTickY', ['normal', 'ticks on both sides', 'labels on both sides']);
+      addStyleIntField('Log X', 'fOptLogx', ['off', 'on', 'log 2']);
+      addStyleIntField('Log Y', 'fOptLogy', ['off', 'on', 'log 2']);
+      addStyleIntField('Log Z', 'fOptLogz', ['off', 'on', 'log 2']);
+      this.addchk(gStyle.fOptTitle == 1, 'Hist title', flag => { gStyle.fOptTitle = flag ? 1 : 0; });
+      this.add('endsub:');
 
-      this.add("sub:Frame");
-      this.addColorMenu("Fill color", gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
-      this.addFillStyleMenu("Fill style", gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
-      this.addColorMenu("Line color", gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
-      this.addSizeMenu("Line width", 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
-      this.addLineStyleMenu("Line style", gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
-      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
+      this.add('sub:Frame');
+      this.addColorMenu('Fill color', gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
+      this.addFillStyleMenu('Fill style', gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
+      this.addColorMenu('Line color', gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
+      this.addSizeMenu('Line width', 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
+      this.addLineStyleMenu('Line style', gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
+      this.addSizeMenu('Border size', 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
       // fFrameBorderMode: 0,
-      this.add("sub:Margins");
-      this.addSizeMenu("Bottom", 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
-      this.addSizeMenu("Top", 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
-      this.addSizeMenu("Left", 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
-      this.addSizeMenu("Right", 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
-      this.add("endsub:");
-      this.add("endsub:");
+      this.add('sub:Margins');
+      this.addSizeMenu('Bottom', 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
+      this.addSizeMenu('Top', 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
+      this.addSizeMenu('Left', 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
+      this.addSizeMenu('Right', 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
+      this.add('endsub:');
+      this.add('endsub:');
 
-      this.add("sub:Title");
-      this.addColorMenu("Fill color", gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
-      this.addFillStyleMenu("Fill style", gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
-      this.addColorMenu("Text color", gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
-      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
-      this.addSizeMenu("Font size", 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
-      this.addFontMenu("Font", gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
-      this.addSizeMenu("X: " + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
-      this.addSizeMenu("Y: " + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
-      this.addSizeMenu("W: " + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
-      this.addSizeMenu("H: " + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
-      this.add("endsub:");
+      this.add('sub:Title');
+      this.addColorMenu('Fill color', gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
+      this.addFillStyleMenu('Fill style', gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
+      this.addColorMenu('Text color', gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
+      this.addSizeMenu('Border size', 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
+      this.addSizeMenu('Font size', 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
+      this.addFontMenu('Font', gStyle.fTitleFont, fnt => { gStyle.fTitleFont = fnt; });
+      this.addSizeMenu('X: ' + gStyle.fTitleX.toFixed(2), 0., 1., 0.1, gStyle.fTitleX, v => { gStyle.fTitleX = v; });
+      this.addSizeMenu('Y: ' + gStyle.fTitleY.toFixed(2), 0., 1., 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
+      this.addSizeMenu('W: ' + gStyle.fTitleW.toFixed(2), 0., 1., 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
+      this.addSizeMenu('H: ' + gStyle.fTitleH.toFixed(2), 0., 1., 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
+      this.add('endsub:');
 
-      this.add("sub:Stat box");
-      this.addColorMenu("Fill color", gStyle.fStatColor, col => { gStyle.fStatColor = col; });
-      this.addFillStyleMenu("Fill style", gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
-      this.addColorMenu("Text color", gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
-      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
-      this.addSizeMenu("Font size", 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
-      this.addFontMenu("Font", gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
-      this.add("Stat format", () => this.input("Stat format", gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
-      this.addSizeMenu("X: " + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
-      this.addSizeMenu("Y: " + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
-      this.addSizeMenu("Width: " + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
-      this.addSizeMenu("Height: " + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
-      this.add("endsub:");
+      this.add('sub:Stat box');
+      this.addColorMenu('Fill color', gStyle.fStatColor, col => { gStyle.fStatColor = col; });
+      this.addFillStyleMenu('Fill style', gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
+      this.addColorMenu('Text color', gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
+      this.addSizeMenu('Border size', 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
+      this.addSizeMenu('Font size', 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
+      this.addFontMenu('Font', gStyle.fStatFont, fnt => { gStyle.fStatFont = fnt; });
+      this.add('Stat format', () => this.input('Stat format', gStyle.fStatFormat).then(fmt => { gStyle.fStatFormat = fmt; }));
+      this.addSizeMenu('X: ' + gStyle.fStatX.toFixed(2), 0.2, 1., 0.1, gStyle.fStatX, v => { gStyle.fStatX = v; });
+      this.addSizeMenu('Y: ' + gStyle.fStatY.toFixed(2), 0.2, 1., 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
+      this.addSizeMenu('Width: ' + gStyle.fStatW.toFixed(2), 0.1, 1., 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
+      this.addSizeMenu('Height: ' + gStyle.fStatH.toFixed(2), 0.1, 1., 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
+      this.add('endsub:');
 
-      this.add("sub:Legend");
-      this.addColorMenu("Fill color", gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
-      this.addSizeMenu("Border size", 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
-      this.addFontMenu("Font", gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
-      this.addSizeMenu("Text size", 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, "legend text size, when 0 - auto adjustment is used");
-      this.add("endsub:");
+      this.add('sub:Legend');
+      this.addColorMenu('Fill color', gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
+      this.addSizeMenu('Border size', 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
+      this.addFontMenu('Font', gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
+      this.addSizeMenu('Text size', 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, 'legend text size, when 0 - auto adjustment is used');
+      this.add('endsub:');
 
-      this.add("sub:Histogram");
-      this.addchk(gStyle.fHistMinimumZero, "Base0", flag => { gStyle.fHistMinimumZero = flag; }, "when true, BAR and LEGO drawing using base = 0");
-      this.add("Text format", () => this.input("Paint text format", gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
-      this.add("Time offset", () => this.input("Time offset in seconds, default is 788918400 for 1/1/1995", gStyle.fTimeOffset, "int").then(ofset => { gStyle.fTimeOffset = ofset; }));
-      this.addSizeMenu("ErrorX: " + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
-      this.addSizeMenu("End error", 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, "size in pixels of end error for E1 draw options, gStyle.fEndErrorSize");
-      this.addSizeMenu("Top margin", 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, "Margin between histogram's top and frame's top");
-      this.addColorMenu("Fill color", gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
-      this.addFillStyleMenu("Fill style", gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
-      this.addColorMenu("Line color", gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
-      this.addSizeMenu("Line width", 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
-      this.addLineStyleMenu("Line style", gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
-      this.add("endsub:");
+      this.add('sub:Histogram');
+      this.addchk(gStyle.fHistMinimumZero, 'Base0', flag => { gStyle.fHistMinimumZero = flag; }, 'when true, BAR and LEGO drawing using base = 0');
+      this.add('Text format', () => this.input('Paint text format', gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
+      this.add('Time offset', () => this.input('Time offset in seconds, default is 788918400 for 1/1/1995', gStyle.fTimeOffset, 'int').then(ofset => { gStyle.fTimeOffset = ofset; }));
+      this.addSizeMenu('ErrorX: ' + gStyle.fErrorX.toFixed(2), 0., 1., 0.1, gStyle.fErrorX, v => { gStyle.fErrorX = v; });
+      this.addSizeMenu('End error', 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, 'size in pixels of end error for E1 draw options, gStyle.fEndErrorSize');
+      this.addSizeMenu('Top margin', 0., 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, 'Margin between histogram top and frame top');
+      this.addColorMenu('Fill color', gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
+      this.addFillStyleMenu('Fill style', gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
+      this.addColorMenu('Line color', gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
+      this.addSizeMenu('Line width', 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
+      this.addLineStyleMenu('Line style', gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
+      this.add('endsub:');
 
-      this.add("separator");
-      this.add("sub:Predefined");
-      ["Modern", "Plain", "Bold"].forEach(name => this.addchk((gStyle.fName == name), name, name, selectgStyle));
-      this.add("endsub:");
+      this.add('separator');
+      this.add('sub:Predefined');
+      ['Modern', 'Plain', 'Bold'].forEach(name => this.addchk((gStyle.fName == name), name, name, selectgStyle));
+      this.add('endsub:');
 
-      this.add("endsub:"); // gStyle
+      this.add('endsub:'); // gStyle
 
-      this.add("separator");
+      this.add('separator');
 
-      this.add("Save settings", () => {
-         let promise = readSettings(true) ? Promise.resolve(true) : this.confirm("Save settings", "Pressing OK one agreess that JSROOT will store settings as browser cookies");
+      this.add('Save settings', () => {
+         let promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings as browser cookies');
          promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
-      }, "Store settings and gStyle as cookies");
-      this.add("Delete settings", () => { saveSettings(-1); saveStyle(-1); }, "Delete settings and gStyle from cookies");
+      }, 'Store settings and gStyle as cookies');
+      this.add('Delete settings', () => { saveSettings(-1); saveStyle(-1); }, 'Delete settings and gStyle from cookies');
 
-      if (!alone) this.add("endsub:");
+      if (!alone) this.add('endsub:');
    }
 
    /** @summary Run modal dialog
@@ -51361,7 +51358,7 @@ class JSRootMenu {
    /** @summary Show confirm dialog
      * @param {String} title - title
      * @param {String} message - message
-     * @return {Promise} with true when "Ok" pressed or false when "Cancel" pressed
+     * @return {Promise} with true when 'Ok' pressed or false when 'Cancel' pressed
      * @protected */
    async confirm(title, message) {
       return this.runModal(title, message, { btns: true, height: 120, width: 400 }).then(elem => { return !!elem; });
@@ -51371,14 +51368,14 @@ class JSRootMenu {
      * @return {Promise} with input value
      * @param {string} title - input dialog title
      * @param value - initial value
-     * @param {string} [kind] - use 'text' (default), 'number', "float" or "int"
+     * @param {string} [kind] - use 'text' (default), 'number', 'float' or 'int'
      * @protected */
    async input(title, value, kind, min, max) {
 
       if (!kind) kind = 'text';
-      let inp_type = (kind == "int") ? 'number' : 'text', ranges = "";
-      if ((value === undefined) || (value === null)) value = "";
-      if (kind == "int") {
+      let inp_type = (kind == 'int') ? 'number' : 'text', ranges = '';
+      if ((value === undefined) || (value === null)) value = '';
+      if (kind == 'int') {
           if (min !== undefined) ranges += ` min="${min}"`;
           if (max !== undefined) ranges += ` max="${max}"`;
        }
@@ -51393,11 +51390,11 @@ class JSRootMenu {
          this.runModal(title, main_content, { btns: true, height: 150, width: 400 }).then(element => {
             if (!element) return;
             let val = element.querySelector(`.jsroot_dlginp`).value;
-            if (kind == "float") {
+            if (kind == 'float') {
                val = parseFloat(val);
                if (Number.isFinite(val))
                   resolveFunc(val);
-            } else if (kind == "int") {
+            } else if (kind == 'int') {
                val = parseInt(val);
                if (Number.isInteger(val))
                   resolveFunc(val);
@@ -51412,13 +51409,13 @@ class JSRootMenu {
    /** @summary Let input arguments from the method
      * @return {Promise} with method argument */
    async showMethodArgsDialog(method) {
-      let dlg_id = this.menuname + "_dialog",
+      let dlg_id = this.menuname + '_dialog',
           main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < method.fArgs.length; ++n) {
          let arg = method.fArgs[n];
          arg.fValue = arg.fDefault;
-         if (arg.fValue == '\"\"') arg.fValue = "";
+         if (arg.fValue == '\"\"') arg.fValue = '';
          main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
                           <input type='text' tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
       }
@@ -51429,13 +51426,13 @@ class JSRootMenu {
 
          this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true }).then(element => {
             if (!element) return;
-            let args = "";
+            let args = '';
 
             for (let k = 0; k < method.fArgs.length; ++k) {
                let arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
                if (value === '') value = arg.fDefault;
-               if ((arg.fTitle == "Option_t*") || (arg.fTitle == "const char*")) {
+               if ((arg.fTitle == 'Option_t*') || (arg.fTitle == 'const char*')) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters
                   if (!value) value = '""';
@@ -51443,7 +51440,7 @@ class JSRootMenu {
                   if (value[value.length-1] != '"') value += '"';
                }
 
-               args += (k > 0 ? "," : '') + value;
+               args += (k > 0 ? ',' : '') + value;
             }
 
             resolveFunc(args);
@@ -51454,7 +51451,7 @@ class JSRootMenu {
    /** @summary Let input arguments from the Command
      * @return {Promise} with command argument */
    async showCommandArgsDialog(cmdname, args) {
-      let dlg_id = this.menuname + "_dialog",
+      let dlg_id = this.menuname + '_dialog',
           main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < args.length; ++n)
@@ -51465,7 +51462,7 @@ class JSRootMenu {
 
       return new Promise(resolveFunc => {
 
-         this.runModal("Arguments for command " + cmdname, main_content, { btns: true, height: 110 + args.length*60, width: 400, resizable: true}).then(element => {
+         this.runModal('Arguments for command ' + cmdname, main_content, { btns: true, height: 110 + args.length*60, width: 400, resizable: true}).then(element => {
             if (!element)
                return resolveFunc(null);
 
@@ -51508,13 +51505,13 @@ class StandaloneMenu extends JSRootMenu {
    add(name, arg, func, title) {
       let curr = this.stack[this.stack.length-1];
 
-      if (name == "separator")
+      if (name == 'separator')
          return curr.push({ divider: true });
 
-      if (name.indexOf("header:") == 0)
+      if (name.indexOf('header:') == 0)
          return curr.push({ text: name.slice(7), header: true });
 
-      if ((name == "endsub:") || (name == "endcolumn:"))
+      if ((name == 'endsub:') || (name == 'endcolumn:'))
          return this.stack.pop();
 
       if (typeof arg == 'function') { title = func; func = arg; arg = name; }
@@ -51522,21 +51519,26 @@ class StandaloneMenu extends JSRootMenu {
       let elem = {};
       curr.push(elem);
 
-      if (name == "column:") {
+      if (name == 'column:') {
          elem.column = true;
          elem.sub = [];
          this.stack.push(elem.sub);
          return;
       }
 
-      if (name.indexOf("sub:") == 0) {
+      if (name.indexOf('sub:') == 0) {
          name = name.slice(4);
          elem.sub = [];
          this.stack.push(elem.sub);
       }
 
-      if (name.indexOf("chk:") == 0) { elem.checked = true; name = name.slice(4); } else
-      if (name.indexOf("unk:") == 0) { elem.checked = false; name = name.slice(4); }
+      if (name.indexOf('chk:') == 0) {
+         elem.checked = true;
+         name = name.slice(4);
+      } else if (name.indexOf('unk:') == 0) {
+         elem.checked = false;
+         name = name.slice(4);
+      }
 
       elem.text = name;
       elem.title = title;
@@ -51552,7 +51554,7 @@ class StandaloneMenu extends JSRootMenu {
    _buildContextmenu(menu, left, top, loc) {
 
       let outer = document.createElement('div');
-      outer.className = "jsroot_ctxt_container";
+      outer.className = 'jsroot_ctxt_container';
 
       //if loc !== document.body then its a submenu, so it needs to have position: relative;
       if (loc === document.body) {
@@ -51580,8 +51582,8 @@ class StandaloneMenu extends JSRootMenu {
              .jsroot_ctxt_item:hover { background-color: rgb(235, 235, 235); }`, this.element);
       } else if ((left < 0) && (top == left)) {
          // column
-         outer.className = "jsroot_ctxt_column";
-         outer.style.width = (100/-left).toFixed(1) + "%";
+         outer.className = 'jsroot_ctxt_column';
+         outer.style.width = (100/-left).toFixed(1) + '%';
       } else {
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
@@ -51594,14 +51596,14 @@ class StandaloneMenu extends JSRootMenu {
 
       menu.forEach(d => {
          if (ncols > 0) {
-            outer.style.display = "flex";
+            outer.style.display = 'flex';
             if (d.column) this._buildContextmenu(d.sub, -ncols, -ncols, outer);
             return;
          }
 
          if (d.divider) {
             let hr = document.createElement('hr');
-            hr.className = "jsroot_ctxt_divider";
+            hr.className = 'jsroot_ctxt_divider';
             outer.appendChild(hr);
             return;
          }
@@ -51611,7 +51613,7 @@ class StandaloneMenu extends JSRootMenu {
          outer.appendChild(item);
 
          if (d.header) {
-            item.className = "jsroot_ctxt_header";
+            item.className = 'jsroot_ctxt_header';
             item.innerHTML = d.text;
             return;
          }
@@ -51619,26 +51621,26 @@ class StandaloneMenu extends JSRootMenu {
          let hovArea = document.createElement('div');
          hovArea.style.width = '100%';
          hovArea.style.height = '100%';
-         hovArea.className = "jsroot_ctxt_item";
+         hovArea.className = 'jsroot_ctxt_item';
          hovArea.style.display = 'flex';
          hovArea.style.justifyContent = 'space-between';
          hovArea.style.cursor = 'pointer';
          if (d.title) hovArea.setAttribute('title', d.title);
 
          item.appendChild(hovArea);
-         if (!d.text) d.text = "item";
+         if (!d.text) d.text = 'item';
 
          let text = document.createElement('div');
-         text.className = "jsroot_ctxt_text";
+         text.className = 'jsroot_ctxt_text';
 
-         if (d.text.indexOf("<svg") >= 0) {
+         if (d.text.indexOf('<svg') >= 0) {
             if (need_check_area) {
                text.style.display = 'flex';
 
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : '';
-               chk.style.display = "inline-block";
-               chk.style.width = "1em";
+               chk.innerHTML = d.checked ? '\u2713' : '';
+               chk.style.display = 'inline-block';
+               chk.style.width = '1em';
                text.appendChild(chk);
 
                let sub = document.createElement('div');
@@ -51651,14 +51653,14 @@ class StandaloneMenu extends JSRootMenu {
          } else {
             if (need_check_area) {
                let chk = document.createElement('span');
-               chk.innerHTML = d.checked ? "\u2713" : '';
-               chk.style.display = "inline-block";
-               chk.style.width = "1em";
+               chk.innerHTML = d.checked ? '\u2713' : '';
+               chk.style.display = 'inline-block';
+               chk.style.width = '1em';
                text.appendChild(chk);
             }
 
             let sub = document.createElement('span');
-            if (d.text.indexOf("<nobr>") == 0)
+            if (d.text.indexOf('<nobr>') == 0)
                sub.textContent = d.text.slice(6, d.text.length-7);
             else
                sub.textContent = d.text;
@@ -51670,8 +51672,8 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
-            extraText.className = "jsroot_ctxt_extraText jsroot_ctxt_text";
-            extraText.textContent = d.sub ? "\u25B6" : d.extraText;
+            extraText.className = 'jsroot_ctxt_extraText jsroot_ctxt_text';
+            extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
          }
 
@@ -51722,7 +51724,7 @@ class StandaloneMenu extends JSRootMenu {
             outer.style.top = (docHeight - outer.offsetHeight) + 'px';
          }
 
-      } else if (outer.className != "jsroot_ctxt_column") {
+      } else if (outer.className != 'jsroot_ctxt_column') {
 
          //if its sub-contextmenu
          let dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
@@ -51774,17 +51776,17 @@ class StandaloneMenu extends JSRootMenu {
    /** @summary Run modal elements with standalone code */
    async runModal(title, main_content, args) {
       if (!args) args = {};
-      let dlg_id = this.menuname + "_dialog";
-      select("#" + dlg_id).remove();
-      select("#" + dlg_id+"_block").remove();
+      let dlg_id = this.menuname + '_dialog';
+      select('#' + dlg_id).remove();
+      select('#' + dlg_id+'_block').remove();
 
-      let block = select('body').append('div').attr('id', dlg_id+"_block").attr('class', "jsroot_dialog_block");
+      let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block');
 
       let element = select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class',"jsroot_dialog").style('width',(args.width || 450) + 'px')
-                      .attr("tabindex", "0")
+                      .attr('class','jsroot_dialog').style('width',(args.width || 450) + 'px')
+                      .attr('tabindex', '0')
                       .html(
          `<div class="jsroot_dialog_body">
             <div class="jsroot_dialog_header">${title}</div>
@@ -51805,7 +51807,7 @@ class StandaloneMenu extends JSRootMenu {
           .jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
 
       return new Promise(resolveFunc => {
-         element.on("keyup", evnt => {
+         element.on('keyup', evnt => {
             if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
@@ -51814,14 +51816,14 @@ class StandaloneMenu extends JSRootMenu {
                block.remove();
             }
          });
-         element.on("keydown", evnt => {
+         element.on('keydown', evnt => {
             if ((evnt.code == 'Enter') || (evnt.code == 'Escape')) {
                evnt.preventDefault();
                evnt.stopPropagation();
             }
          });
-         element.selectAll('.jsroot_dialog_button').on("click", evnt => {
-            resolveFunc(args.btns && (select(evnt.target).text() == "Ok") ? element.node() : null);
+         element.selectAll('.jsroot_dialog_button').on('click', evnt => {
+            resolveFunc(args.btns && (select(evnt.target).text() == 'Ok') ? element.node() : null);
             element.remove();
             block.remove();
          });
@@ -51846,7 +51848,7 @@ class BootstrapMenu extends JSRootMenu {
    constructor(painter, menuname, show_event) {
       super(painter, menuname, show_event);
 
-      this.code = "";
+      this.code = '';
       this.funcs = {};
       this.lvl = 0;
    }
@@ -51859,7 +51861,7 @@ class BootstrapMenu extends JSRootMenu {
       let promise = internals.bs_path ? Promise.resolve(true) :
                       loadScript(exports.source_dir + 'style/bootstrap.min.css')
                             .then(() => { internals.bs_path = exports.source_dir + 'scripts/'; })
-                            .catch(() => { internals.bs_path = ext + "js/"; return loadScript(ext + 'css/bootstrap.min.css'); });
+                            .catch(() => { internals.bs_path = ext + 'js/'; return loadScript(ext + 'css/bootstrap.min.css'); });
       return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(internals.bs_path + 'bootstrap.bundle.min.js'));
    }
 
@@ -51870,46 +51872,46 @@ class BootstrapMenu extends JSRootMenu {
      * @param {string} name - item name
      * @param {function} func - func called when item is selected */
    add(name, arg, func, title) {
-      if (name == "separator") {
+      if (name == 'separator') {
          this.code += '<hr class="dropdown-divider">';
          return;
       }
 
-      if ((name == "column:") || (name == "endcolumn:"))
+      if ((name == 'column:') || (name == 'endcolumn:'))
          return;
 
-      if (name.indexOf("header:") == 0) {
+      if (name.indexOf('header:') == 0) {
          this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
          return;
       }
 
-      let newlevel = false, extras = "", cl = "dropdown-item btn-sm", checked = "";
+      let newlevel = false, extras = '', cl = 'dropdown-item btn-sm', checked = '';
 
-      if (name == "endsub:") {
+      if (name == 'endsub:') {
          this.lvl--;
-         this.code += "</li>";
-         this.code += "</ul>";
+         this.code += '</li>';
+         this.code += '</ul>';
          return;
       }
-      if (name.indexOf("sub:") == 0) { name = name.slice(4); newlevel = true; }
+      if (name.indexOf('sub:') == 0) { name = name.slice(4); newlevel = true; }
 
       if (typeof arg == 'function') { func = arg; arg = name; }
 
-      if (name.indexOf("chk:") == 0) {
+      if (name.indexOf('chk:') == 0) {
          checked = '\u2713';
          name  = name.slice(4);
-      } else if (name.indexOf("unk:") == 0) {
+      } else if (name.indexOf('unk:') == 0) {
          name = name.slice(4);
       }
 
       if (title) extras += ` title="${title}"`;
       if (arg !== undefined) extras += ` arg="${arg}"`;
-      if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded='false'`; cl += " dropdown-toggle"; }
+      if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded='false'`; cl += ' dropdown-toggle'; }
 
       let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
 
-      if (newlevel) item = '<li class="dropend">' + item;
-               else item = "<li>" + item + "</li>";
+      if (newlevel) item = `<li class="dropend">${item}`;
+               else item = `<li>${item}</li>`;
 
       this.code += item;
 
@@ -51940,7 +51942,7 @@ class BootstrapMenu extends JSRootMenu {
 
          this.element = document.createElement('div');
          this.element.id = this.menuname;
-         this.element.setAttribute('class', "dropdown");
+         this.element.setAttribute('class', 'dropdown');
          this.element.innerHTML = `<ul class="dropdown-menu dropend" style="display:block">${this.code}</ul>`;
 
          document.body.appendChild(this.element);
@@ -52011,7 +52013,7 @@ class BootstrapMenu extends JSRootMenu {
    async runModal(title, main_content, args) {
       if (!args) args = {};
 
-      let dlg_id = this.menuname + "_dialog",
+      let dlg_id = this.menuname + '_dialog',
           old_dlg = document.getElementById(dlg_id);
       if (old_dlg) old_dlg.remove();
 
@@ -52020,8 +52022,8 @@ class BootstrapMenu extends JSRootMenu {
          let myModalEl = document.createElement('div');
          myModalEl.setAttribute('id', dlg_id);
          myModalEl.setAttribute('class', 'modal fade');
-         myModalEl.setAttribute('role', "dialog");
-         myModalEl.setAttribute('tabindex', "-1");
+         myModalEl.setAttribute('role', 'dialog');
+         myModalEl.setAttribute('tabindex', '-1');
          myModalEl.setAttribute('aria-hidden', 'true');
          let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
 
@@ -52069,9 +52071,9 @@ class BootstrapMenu extends JSRootMenu {
   * @example
   * import { createMenu } from 'path_to_jsroot/modules/gui/menu.mjs';
   * let menu = await createMenu());
-  * menu.add("First", () => console.log('Click first'));
+  * menu.add('First', () => console.log('Click first'));
   * let flag = true;
-  * menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
+  * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
 function createMenu$1(evnt, handler, menuname) {
    let menu = settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
@@ -54492,7 +54494,7 @@ class TFramePainter extends ObjectPainter {
             menu.addchk(pad["fLog" + kind[0]] == 0, "linear", () => this.changeAxisLog(kind[0], 0));
             menu.addchk(pad["fLog" + kind[0]] == 1, "log", () => this.changeAxisLog(kind[0], 1));
             menu.addchk(pad["fLog" + kind[0]] == 2, "log2", () => this.changeAxisLog(kind[0], 2));
-            menu.add("endsub:");
+            menu.add('endsub:');
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), "More log",
                () => { faxis.InvertBit(EAxisBits.kMoreLogLabels); this.redrawPad(); });
@@ -54882,12 +54884,12 @@ class MDIDisplay extends BasePainter {
    constructor(frameid) {
       super();
       this.frameid = frameid;
-      if (frameid != "$batch$") {
+      if (frameid != '$batch$') {
          this.setDom(frameid);
          this.selectDom().property('mdi', this);
       }
       this.cleanupFrame = cleanup; // use standard cleanup function by default
-      this.active_frame_title = ""; // keep title of active frame
+      this.active_frame_title = ''; // keep title of active frame
    }
 
    /** @summary Assign func which called for each newly created frame */
@@ -54972,11 +54974,11 @@ class MDIDisplay extends BasePainter {
 
    /** @summary Cleanup all drawings */
    cleanup() {
-      this.active_frame_title = "";
+      this.active_frame_title = '';
 
       this.forEachFrame(this.cleanupFrame);
 
-      this.selectDom().html("").property('mdi', null);
+      this.selectDom().html('').property('mdi', null);
    }
 
 } // class MDIDisplay
@@ -54991,7 +54993,7 @@ class MDIDisplay extends BasePainter {
 
 class CustomDisplay extends MDIDisplay {
    constructor() {
-      super("dummy");
+      super('dummy');
       this.frames = {}; // array of configured frames
    }
 
@@ -55003,7 +55005,7 @@ class CustomDisplay extends MDIDisplay {
    forEachFrame(userfunc) {
       let ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
-         let node = select("#"+ks[k]);
+         let node = select('#'+ks[k]);
          if (!node.empty())
             userfunc(node.node());
       }
@@ -55016,14 +55018,14 @@ class CustomDisplay extends MDIDisplay {
       for (let k = 0; k < ks.length; ++k) {
          let items = this.frames[ks[k]];
          if (items.indexOf(title+';') >= 0)
-            return select("#"+ks[k]).node();
+            return select('#'+ks[k]).node();
       }
       return null;
    }
 
    cleanup() {
       super.cleanup();
-      this.forEachFrame(frame => select(frame).html(""));
+      this.forEachFrame(frame => select(frame).html(''));
    }
 
 } // class CustomDisplay
@@ -55062,7 +55064,7 @@ class GridDisplay extends MDIDisplay {
       let dom = this.selectDom();
       dom.style('overflow','hidden');
 
-      if (kind === "simple") {
+      if (kind === 'simple') {
          this.simple_layout = true;
          this.use_separarators = false;
          this.framecnt = 1;
@@ -55071,11 +55073,11 @@ class GridDisplay extends MDIDisplay {
 
       let num = 2, arr = undefined, sizes = undefined;
 
-      if ((kind.indexOf("grid") == 0) || kind2) {
+      if ((kind.indexOf('grid') == 0) || kind2) {
          if (kind2) kind = kind + 'x' + kind2;
                else kind = kind.slice(4).trim();
          this.use_separarators = false;
-         if (kind[0] === "i") {
+         if (kind[0] === 'i') {
             this.use_separarators = true;
             kind = kind.slice(1);
          }
@@ -55106,13 +55108,13 @@ class GridDisplay extends MDIDisplay {
             this.framecnt = 1;
             return;
          }
-         kind = "";
+         kind = '';
       }
 
-      if (kind && kind.indexOf("_") > 0) {
-         let arg = parseInt(kind.slice(kind.indexOf("_")+1), 10);
+      if (kind && kind.indexOf('_') > 0) {
+         let arg = parseInt(kind.slice(kind.indexOf('_')+1), 10);
          if (Number.isInteger(arg) && (arg > 10)) {
-            kind = kind.slice(0, kind.indexOf("_"));
+            kind = kind.slice(0, kind.indexOf('_'));
             sizes = [];
             while (arg > 0) {
                sizes.unshift(Math.max(arg % 10, 1));
@@ -55181,9 +55183,9 @@ class GridDisplay extends MDIDisplay {
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
             if (typeof this.frameid === 'string')
-               elem.attr('id', this.frameid + "_" + group.drawid);
+               elem.attr('id', `${this.frameid}_${group.drawid}`);
          } else {
-            elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
+            elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
          }
 
          if (childs && (childs[cnt]>1)) {
@@ -55211,7 +55213,7 @@ class GridDisplay extends MDIDisplay {
        const findGroup = grid => {
          let chld = parent.firstChild;
          while (chld) {
-            if (chld.getAttribute("groupid") == grid)
+            if (chld.getAttribute('groupid') == grid)
                return select(chld);
             chld = chld.nextSibling;
          }
@@ -55221,20 +55223,20 @@ class GridDisplay extends MDIDisplay {
           let name = handle.vertical ? 'height' : 'width',
               size = handle.groups[grid].size+'%';
           findGroup(grid).style(name, size)
-                         .selectAll(".jsroot_separator").style(name, size);
+                         .selectAll('.jsroot_separator').style(name, size);
        }, resizeGroup = grid => {
           let sel = findGroup(grid);
-          if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
+          if (!sel.classed('jsroot_newgrid')) sel = sel.select('.jsroot_newgrid');
           sel.each(function() { resize(this); });
        };
 
-      if (action == "start") {
+      if (action == 'start') {
          group.startpos = group.position;
          group.acc_drag = 0;
          return;
       }
 
-      if (action == "end") {
+      if (action == 'end') {
          if (Math.abs(group.startpos - group.position) >= 0.5) {
             resizeGroup(id-1);
             resizeGroup(id);
@@ -55243,7 +55245,7 @@ class GridDisplay extends MDIDisplay {
       }
 
       let pos;
-      if (action == "restore") {
+      if (action == 'restore') {
           pos = group.position0;
       } else if (handle.vertical) {
           group.acc_drag += action.dy;
@@ -55269,11 +55271,10 @@ class GridDisplay extends MDIDisplay {
       setGroupSize(id-1);
       setGroupSize(id);
 
-      if (action == "restore") {
+      if (action == 'restore') {
           resizeGroup(id-1);
           resizeGroup(id);
       }
-
    }
 
    /** @summary Create group separator
@@ -55287,20 +55288,20 @@ class GridDisplay extends MDIDisplay {
            .property('separator_id', group.id)
            .style('position', 'absolute')
            .style(handle.vertical ? 'top' : 'left', `calc(${group.position}% - 2px)`)
-           .style(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
+           .style(handle.vertical ? 'width' : 'height', (handle.size || 100)+'%')
            .style(handle.vertical ? 'height' : 'width', '5px')
-           .style('cursor', handle.vertical ? "ns-resize" : "ew-resize");
+           .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize');
 
       let pthis = this, drag_move =
-        drag().on("start", function() { pthis.handleSeparator(this, "start"); })
-                 .on("drag", function(evnt) { pthis.handleSeparator(this, evnt); })
-                 .on("end", function() { pthis.handleSeparator(this, "end"); });
+        drag().on('start', function() { pthis.handleSeparator(this, 'start'); })
+                 .on('drag', function(evnt) { pthis.handleSeparator(this, evnt); })
+                 .on('end', function() { pthis.handleSeparator(this, 'end'); });
 
-      separ.call(drag_move).on("dblclick", function() { pthis.handleSeparator(this, "restore"); });
+      separ.call(drag_move).on('dblclick', function() { pthis.handleSeparator(this, 'restore'); });
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on("touchmove"))
-         main.on("touchmove", function() { });
+      if (browser$1.touches && !main.on('touchmove'))
+         main.on('touchmove', function() { });
    }
 
 
@@ -55352,7 +55353,7 @@ class GridDisplay extends MDIDisplay {
          if (!this.simple_layout && this.framecnt)
             this.getcnt = (this.getcnt+1) % this.framecnt;
 
-         if (select(frame).classed("jsroot_fixed_frame")) frame = null;
+         if (select(frame).classed('jsroot_fixed_frame')) frame = null;
       }
 
       if (frame) {
@@ -55402,29 +55403,29 @@ class TabsDisplay extends MDIDisplay {
 
       let main = this.selectDom().select('.jsroot_tabs_main');
 
-      main.selectAll(".jsroot_tabs_draw").each(function() {
+      main.selectAll('.jsroot_tabs_draw').each(function() {
          userfunc(this);
       });
    }
 
    /** @summary modify tab state by id */
    modifyTabsFrame(frame_id, action) {
-      let top = this.selectDom().select(".jsroot_tabs"),
-          labels = top.select(".jsroot_tabs_labels"),
-          main = top.select(".jsroot_tabs_main");
+      let top = this.selectDom().select('.jsroot_tabs'),
+          labels = top.select('.jsroot_tabs_labels'),
+          main = top.select('.jsroot_tabs_main');
 
-      labels.selectAll(".jsroot_tabs_label").each(function() {
+      labels.selectAll('.jsroot_tabs_label').each(function() {
          let id = select(this).property('frame_id'),
              is_same = (id == frame_id);
-         if (action == "activate")
-            select(this).style("background", is_same ? (settings.DarkMode ? 'black' : "white") : null);
-         else if ((action == "close") && is_same)
+         if (action == 'activate')
+            select(this).style('background', is_same ? (settings.DarkMode ? 'black' : 'white') : null);
+         else if ((action == 'close') && is_same)
             this.parentNode.remove();
       });
 
       let selected_frame, other_frame;
 
-      main.selectAll(".jsroot_tabs_draw").each(function() {
+      main.selectAll('.jsroot_tabs_draw').each(function() {
          if (select(this).property('frame_id') === frame_id)
             selected_frame = this;
          else
@@ -55433,10 +55434,10 @@ class TabsDisplay extends MDIDisplay {
 
       if (!selected_frame) return;
 
-      if (action == "activate") {
+      if (action == 'activate') {
          selected_frame.parentNode.appendChild(selected_frame);
          // super.activateFrame(selected_frame);
-      } else if (action == "close") {
+      } else if (action == 'close') {
          let was_active = (selected_frame === this.getActiveFrame());
          cleanup(selected_frame);
          selected_frame.remove();
@@ -55449,7 +55450,7 @@ class TabsDisplay extends MDIDisplay {
    /** @summary actiavte frame */
    activateFrame(frame) {
       if (frame)
-         this.modifyTabsFrame(select(frame).property('frame_id'), "activate");
+         this.modifyTabsFrame(select(frame).property('frame_id'), 'activate');
       super.activateFrame(frame);
    }
 
@@ -55459,21 +55460,21 @@ class TabsDisplay extends MDIDisplay {
       this.beforeCreateFrame(title);
 
       let dom = this.selectDom(),
-          top = dom.select(".jsroot_tabs"), labels, main;
+          top = dom.select('.jsroot_tabs'), labels, main;
 
       if (top.empty()) {
-         top = dom.append('div').classed("jsroot_tabs", true);
-         labels = top.append('div').classed("jsroot_tabs_labels", true);
-         main = top.append('div').classed("jsroot_tabs_main", true);
+         top = dom.append('div').classed('jsroot_tabs', true);
+         labels = top.append('div').classed('jsroot_tabs_labels', true);
+         main = top.append('div').classed('jsroot_tabs_main', true);
       } else {
-         labels = top.select(".jsroot_tabs_labels");
-         main = top.select(".jsroot_tabs_main");
+         labels = top.select('.jsroot_tabs_labels');
+         main = top.select('.jsroot_tabs_main');
       }
 
       let bkgr_color = settings.DarkMode ? 'black' : 'white',
           lbl_color = settings.DarkMode ? '#111': '#eee',
-          lbl_border = settings.DarkMode ? '#333' : "#ccc",
-          text_color = settings.DarkMode ? '#ddd' : "inherit";
+          lbl_border = settings.DarkMode ? '#333' : '#ccc',
+          text_color = settings.DarkMode ? '#ddd' : 'inherit';
 
       injectStyle(
          `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
@@ -55491,31 +55492,31 @@ class TabsDisplay extends MDIDisplay {
       if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
 
       if (lbl.length > 15) {
-         let p = lbl.lastIndexOf("/");
-         if (p == lbl.length-1) p = lbl.lastIndexOf("/", p-1);
+         let p = lbl.lastIndexOf('/');
+         if (p == lbl.length-1) p = lbl.lastIndexOf('/', p-1);
          if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
             lbl = lbl.slice(p+1);
          else
-            lbl = "..." + lbl.slice(lbl.length-17);
+            lbl = '...' + lbl.slice(lbl.length-17);
       }
 
       labels.append('span')
          .attr('tabindex', 0)
-         .append("label")
-         .attr('class', "jsroot_tabs_label")
-         .style("background", "white")
+         .append('label')
+         .attr('class', 'jsroot_tabs_label')
+         .style('background', 'white')
          .property('frame_id', frame_id)
          .text(lbl)
          .attr('title', title)
-         .on("click", function(evnt) {
+         .on('click', function(evnt) {
             evnt.preventDefault(); // prevent handling in close button
-            mdi.modifyTabsFrame(select(this).property('frame_id'), "activate");
-         }).append("button")
-         .attr('title', "close")
+            mdi.modifyTabsFrame(select(this).property('frame_id'), 'activate');
+         }).append('button')
+         .attr('title', 'close')
          .attr('style', 'margin-left: .5em; padding: 0; font-size: 0.5em; width: 1.8em; height: 1.8em; vertical-align: center;')
          .html('&#x2715;')
-         .on("click", function() {
-            mdi.modifyTabsFrame(select(this.parentNode).property('frame_id'), "close");
+         .on('click', function() {
+            mdi.modifyTabsFrame(select(this.parentNode).property('frame_id'), 'close');
          });
 
       let draw_frame = main.append('div')
@@ -55523,7 +55524,7 @@ class TabsDisplay extends MDIDisplay {
                            .attr('class', 'jsroot_tabs_draw')
                            .property('frame_id', frame_id);
 
-      this.modifyTabsFrame(frame_id, "activate");
+      this.modifyTabsFrame(frame_id, 'activate');
 
       return this.afterCreateFrame(draw_frame.node());
    }
@@ -55560,9 +55561,9 @@ class FlexibleDisplay extends MDIDisplay {
 
       let mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
-      top.selectAll(".jsroot_flex_draw").each(function() {
+      top.selectAll('.jsroot_flex_draw').each(function() {
          // check if only visible specified
-         if (only_visible && (mdi.getFrameState(this) == "min")) return;
+         if (only_visible && (mdi.getFrameState(this) == 'min')) return;
 
          userfunc(this);
       });
@@ -55571,7 +55572,7 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary return active frame */
    getActiveFrame() {
       let found = super.getActiveFrame();
-      if (found && select(found.parentNode).property("state") != "min") return found;
+      if (found && select(found.parentNode).property('state') != 'min') return found;
 
       found = null;
       this.forEachFrame(frame => { found = frame; }, true);
@@ -55586,7 +55587,7 @@ class FlexibleDisplay extends MDIDisplay {
          frame = res;
       }
       if (!frame) return;
-      if (frame.getAttribute('class') != "jsroot_flex_draw") return;
+      if (frame.getAttribute('class') != 'jsroot_flex_draw') return;
 
       if (this.getActiveFrame() === frame) return;
 
@@ -55595,7 +55596,7 @@ class FlexibleDisplay extends MDIDisplay {
       let main = frame.parentNode;
       main.parentNode.append(main);
 
-      if (this.getFrameState(frame) != "min") {
+      if (this.getFrameState(frame) != 'min') {
          selectActivePad({ pp: getElementCanvPainter(frame), active: true });
          resize(frame);
       }
@@ -55604,12 +55605,12 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary get frame state */
    getFrameState(frame) {
       let main = select(frame.parentNode);
-      return main.property("state");
+      return main.property('state');
    }
 
    /** @summary returns frame rect */
    getFrameRect(frame) {
-      if (this.getFrameState(frame) == "max") {
+      if (this.getFrameState(frame) == 'max') {
          let top = this.selectDom().select('.jsroot_flex_top');
          return { x: 0, y: 0, w: top.node().clientWidth, h: top.node().clientHeight };
       }
@@ -55623,47 +55624,47 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary change frame state */
    changeFrameState(frame, newstate,no_redraw) {
       let main = select(frame.parentNode),
-          state = main.property("state"),
+          state = main.property('state'),
           top = this.selectDom().select('.jsroot_flex_top');
 
       if (state == newstate)
          return false;
 
-      if (state == "normal")
+      if (state == 'normal')
           main.property('original_style', main.attr('style'));
 
       // clear any previous settings
       top.style('overflow', null);
 
       switch (newstate) {
-         case "min":
-            main.style('height',"auto").style('width', "auto");
-            main.select(".jsroot_flex_draw").style("display",'none');
+         case 'min':
+            main.style('height','auto').style('width', 'auto');
+            main.select('.jsroot_flex_draw').style('display','none');
             break;
-         case "max":
+         case 'max':
             main.style('height','100%').style('width', '100%').style('left','').style('top','');
-            main.select(".jsroot_flex_draw").style("display", null);
+            main.select('.jsroot_flex_draw').style('display', null);
             top.style('overflow', 'hidden');
             break;
          default:
-            main.select(".jsroot_flex_draw").style("display", null);
-            main.attr('style', main.property("original_style"));
+            main.select('.jsroot_flex_draw').style('display', null);
+            main.attr('style', main.property('original_style'));
       }
 
-      main.select(".jsroot_flex_header").selectAll("button").each(function(d) {
+      main.select('.jsroot_flex_header').selectAll('button').each(function(d) {
          let btn = select(this);
-         if (((d.t == "minimize") && (newstate == "min")) ||
-             ((d.t == "maximize") && (newstate == "max")))
-               btn.html("&#x259E;").attr('title', "restore");
+         if (((d.t == 'minimize') && (newstate == 'min')) ||
+             ((d.t == 'maximize') && (newstate == 'max')))
+               btn.html('&#x259E;').attr('title', 'restore');
          else
             btn.html(d.n).attr('title', d.t);
       });
 
-      main.property("state", newstate);
-      main.select(".jsroot_flex_resize").style("display", (newstate == "normal") ? null : 'none');
+      main.property('state', newstate);
+      main.select('.jsroot_flex_resize').style('display', (newstate == 'normal') ? null : 'none');
 
       // adjust position of new minified rect
-      if (newstate == "min") {
+      if (newstate == 'min') {
          const rect = this.getFrameRect(frame),
                top = this.selectDom().select('.jsroot_flex_top'),
                ww = top.node().clientWidth,
@@ -55672,7 +55673,7 @@ class FlexibleDisplay extends MDIDisplay {
                crossX = (r1,r2) => ((r1.x <= r2.x) && (r1.x + r1.w >= r2.x)) || ((r2.x <= r1.x) && (r2.x + r2.w >= r1.x)),
                crossY = (r1,r2) => ((r1.y <= r2.y) && (r1.y + r1.h >= r2.y)) || ((r2.y <= r1.y) && (r2.y + r2.h >= r1.y));
 
-         this.forEachFrame(f => { if ((f!==frame) && (this.getFrameState(f) == "min")) arr.push(this.getFrameRect(f)); });
+         this.forEachFrame(f => { if ((f!==frame) && (this.getFrameState(f) == 'min')) arr.push(this.getFrameRect(f)); });
 
          rect.y = hh;
          do {
@@ -55689,7 +55690,7 @@ class FlexibleDisplay extends MDIDisplay {
          } while ((rect.x + rect.w > ww - step) && (rect.y > 0));
          if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
 
-         main.style("left", rect.x + 'px').style("top", rect.y + 'px');
+         main.style('left', rect.x + 'px').style('top', rect.y + 'px');
       } else if (!no_redraw) {
          resize(frame);
       }
@@ -55702,23 +55703,23 @@ class FlexibleDisplay extends MDIDisplay {
    _clickButton(btn) {
       let kind = select(btn).datum(),
           main = select(btn.parentNode.parentNode),
-          frame = main.select(".jsroot_flex_draw").node();
+          frame = main.select('.jsroot_flex_draw').node();
 
-      if (kind.t == "close") {
+      if (kind.t == 'close') {
          this.cleanupFrame(frame);
          main.remove();
          this.activateFrame('last'); // set active as last non-minfied window
          return;
       }
 
-      let state = main.property("state"), newstate;
-      if (kind.t == "maximize")
-         newstate = (state == "max") ? "normal" : "max";
+      let state = main.property('state'), newstate;
+      if (kind.t == 'maximize')
+         newstate = (state == 'max') ? 'normal' : 'max';
       else
-         newstate = (state == "min") ? "normal" : "min";
+         newstate = (state == 'min') ? 'normal' : 'min';
 
       if (this.changeFrameState(frame, newstate))
-         this.activateFrame(newstate != "min" ? frame : 'last');
+         this.activateFrame(newstate != 'min' ? frame : 'last');
    }
 
    /** @summary create new frame */
@@ -55728,7 +55729,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       let mdi = this,
           dom = this.selectDom(),
-          top = dom.select(".jsroot_flex_top");
+          top = dom.select('.jsroot_flex_top');
 
       injectStyle(
          `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
@@ -55741,56 +55742,56 @@ class FlexibleDisplay extends MDIDisplay {
           .jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
 
       if (top.empty())
-         top = dom.append('div').classed("jsroot_flex_top", true);
+         top = dom.append('div').classed('jsroot_flex_top', true);
 
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
 
-      main.html(`<div class="jsroot_flex_header"><p>${title}</p></div>
-                 <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
-                 <div class="jsroot_flex_resize">&#x25FF;</div>`);
+      main.html(`<div class='jsroot_flex_header'><p>${title}</p></div>`+
+                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw'></div>`+
+                `<div class='jsroot_flex_resize'>&#x25FF;</div>`);
 
-      main.attr('class', "jsroot_flex_frame")
+      main.attr('class', 'jsroot_flex_frame')
          .style('position', 'absolute')
          .style('left', Math.round(w * (this.cnt % 5)/10) + 'px')
          .style('top', Math.round(h * (this.cnt % 5)/10) + 'px')
          .style('width', Math.round(w * 0.58) + 'px')
          .style('height', Math.round(h * 0.58) + 'px')
-         .property("state", "normal")
-         .select(".jsroot_flex_header")
-         .on("click", function() { mdi.activateFrame(select(this.parentNode).select(".jsroot_flex_draw").node()); })
-         .selectAll("button")
-         .data([{ n: '&#x2715;', t: "close" }, { n: '&#x2594;', t: "maximize" }, { n: '&#x2581;', t: "minimize" }])
+         .property('state', 'normal')
+         .select('.jsroot_flex_header')
+         .on('click', function() { mdi.activateFrame(select(this.parentNode).select('.jsroot_flex_draw').node()); })
+         .selectAll('button')
+         .data([{ n: '&#x2715;', t: 'close' }, { n: '&#x2594;', t: 'maximize' }, { n: '&#x2581;', t: 'minimize' }])
          .enter()
-         .append("button")
-         .attr('type', "button")
-         .attr('class', "jsroot_flex_btn")
+         .append('button')
+         .attr('type', 'button')
+         .attr('class', 'jsroot_flex_btn')
          .attr('title', d => d.t)
          .html(d => d.n)
-         .on("click", function() { mdi._clickButton(this); });
+         .on('click', function() { mdi._clickButton(this); });
 
       let moving_frame = null, moving_div = null, doing_move = false,
           drag_object = drag().subject(Object), current = [];
-      drag_object.on("start", function(evnt) {
-         if (evnt.sourceEvent.target.type == "button")
+      drag_object.on('start', function(evnt) {
+         if (evnt.sourceEvent.target.type == 'button')
             return mdi._clickButton(evnt.sourceEvent.target);
 
          if (detectRightButton(evnt.sourceEvent)) return;
 
          let main = select(this.parentNode);
-         if(!main.classed("jsroot_flex_frame") || (main.property("state") == "max")) return;
+         if(!main.classed('jsroot_flex_frame') || (main.property('state') == 'max')) return;
 
-         doing_move = !select(this).classed("jsroot_flex_resize");
-         if (!doing_move && (main.property("state") == "min")) return;
+         doing_move = !select(this).classed('jsroot_flex_resize');
+         if (!doing_move && (main.property('state') == 'min')) return;
 
-         mdi.activateFrame(main.select(".jsroot_flex_draw").node());
+         mdi.activateFrame(main.select('.jsroot_flex_draw').node());
 
-         moving_div = top.append('div').classed("jsroot_flex_resizable_helper", true);
+         moving_div = top.append('div').classed('jsroot_flex_resizable_helper', true);
 
          moving_div.attr('style', main.attr('style'));
 
-         if (main.property("state") == "min")
+         if (main.property('state') == 'min')
             moving_div.style('width', main.node().clientWidth + 'px')
                       .style('height', main.node().clientHeight + 'px');
 
@@ -55800,7 +55801,7 @@ class FlexibleDisplay extends MDIDisplay {
          moving_frame = main;
          current = [];
 
-      }).on("drag", function(evnt) {
+      }).on('drag', function(evnt) {
          if (!moving_div) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -55813,19 +55814,19 @@ class FlexibleDisplay extends MDIDisplay {
             moving_div.style(name, Math.max(0, current[i])+'px');
          };
          if (doing_move) {
-            changeProp(0, "left", evnt.dx);
-            changeProp(1, "top", evnt.dy);
+            changeProp(0, 'left', evnt.dx);
+            changeProp(1, 'top', evnt.dy);
          } else {
             changeProp(0, 'width', evnt.dx);
             changeProp(1, 'height', evnt.dy);
          }
-      }).on("end", function(evnt) {
+      }).on('end', function(evnt) {
          if (!moving_div) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          if (doing_move) {
-            moving_frame.style("left", moving_div.style("left"));
-            moving_frame.style("top", moving_div.style("top"));
+            moving_frame.style('left', moving_div.style('left'));
+            moving_frame.style('top', moving_div.style('top'));
          } else {
             moving_frame.style('width', moving_div.style('width'));
             moving_frame.style('height', moving_div.style('height'));
@@ -55833,11 +55834,11 @@ class FlexibleDisplay extends MDIDisplay {
          moving_div.remove();
          moving_div = null;
          if (!doing_move)
-            resize(moving_frame.select(".jsroot_flex_draw").node());
+            resize(moving_frame.select('.jsroot_flex_draw').node());
       });
 
-      main.select(".jsroot_flex_header").call(drag_object);
-      main.select(".jsroot_flex_resize").call(drag_object);
+      main.select('.jsroot_flex_header').call(drag_object);
+      main.select('.jsroot_flex_resize').call(drag_object);
 
       let draw_frame = main.select('.jsroot_flex_draw')
                            .attr('frame_title', title)
@@ -55849,14 +55850,14 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary minimize all frames */
    minimizeAll() {
-      this.forEachFrame(frame => this.changeFrameState(frame, "min"));
+      this.forEachFrame(frame => this.changeFrameState(frame, 'min'));
    }
 
    /** @summary show all frames which are minimized */
    showAll() {
       this.forEachFrame(frame => {
-         if (this.getFrameState(frame) == "min")
-            this.changeFrameState(frame, "normal");
+         if (this.getFrameState(frame) == 'min')
+            this.changeFrameState(frame, 'normal');
       });
    }
 
@@ -55875,8 +55876,8 @@ class FlexibleDisplay extends MDIDisplay {
       let arr = [];
       this.forEachFrame(frame => {
          let state = this.getFrameState(frame);
-         if (state == "min") return;
-         if (state == "max") this.changeFrameState(frame, "normal", true);
+         if (state == 'min') return;
+         if (state == 'max') this.changeFrameState(frame, 'normal', true);
          arr.push(frame);
       });
 
@@ -55889,13 +55890,13 @@ class FlexibleDisplay extends MDIDisplay {
           dy = Math.min(40, Math.round(h*0.4/arr.length)),
           nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
 
-      // calculate number of divisions for "tile" sorting
+      // calculate number of divisions for 'tile' sorting
       if ((nx > 1) && (nx*(nx-1) >= arr.length))
         if (w > h) ny--; else nx--;
 
       arr.forEach((frame,i) => {
          let main = select(frame.parentNode);
-         if (kind == "cascade")
+         if (kind == 'cascade')
             main.style('left', (i*dx) + 'px')
                 .style('top', (i*dy) + 'px')
                 .style('width', Math.round(w * 0.58) + 'px')
@@ -55912,35 +55913,35 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary context menu */
    showContextMenu(evnt) {
       // handle context menu only for MDI area
-      if ((evnt.target.getAttribute('class') != "jsroot_flex_top") || (this.numDraw() == 0)) return;
+      if ((evnt.target.getAttribute('class') != 'jsroot_flex_top') || (this.numDraw() == 0)) return;
 
       evnt.preventDefault();
 
       let arr = [], nummin = 0;
       this.forEachFrame(f => {
          arr.push(f);
-         if (this.getFrameState(f) == "min") nummin++;
+         if (this.getFrameState(f) == 'min') nummin++;
       });
       let active = this.getActiveFrame();
 
       arr.sort((f1,f2) => (select(f1).property('frame_cnt') < select(f2).property('frame_cnt') ? -1 : 1));
 
       createMenu$1(evnt, this).then(menu => {
-         menu.add("header:Flex");
-         menu.add("Cascade", () => this.sortFrames("cascade"), "Cascade frames");
-         menu.add("Tile", () => this.sortFrames("tile"), "Tile all frames");
+         menu.add('header:Flex');
+         menu.add('Cascade', () => this.sortFrames('cascade'), 'Cascade frames');
+         menu.add('Tile', () => this.sortFrames('tile'), 'Tile all frames');
          if (nummin < arr.length)
-            menu.add("Minimize all", () => this.minimizeAll(), "Minimize all frames");
+            menu.add('Minimize all', () => this.minimizeAll(), 'Minimize all frames');
          if (nummin > 0)
-            menu.add("Show all", () => this.showAll(), "Restore minimized frames");
-         menu.add("Close all", () => this.closeAllFrames());
-         menu.add("separator");
+            menu.add('Show all', () => this.showAll(), 'Restore minimized frames');
+         menu.add('Close all', () => this.closeAllFrames());
+         menu.add('separator');
 
-         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : '') + select(f).attr("frame_title"), i,
+         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == 'min') ? '[min] ' : '') + select(f).attr('frame_title'), i,
                       arg => {
                         let frame = arr[arg];
-                        if (this.getFrameState(frame) == "min")
-                           this.changeFrameState(frame, "normal");
+                        if (this.getFrameState(frame) == 'min')
+                           this.changeFrameState(frame, 'normal');
                         this.activateFrame(frame);
                       }));
 
@@ -55961,7 +55962,7 @@ class FlexibleDisplay extends MDIDisplay {
 class BatchDisplay extends MDIDisplay {
 
    constructor(width, height, jsdom_body) {
-      super("$batch$");
+      super('$batch$');
       this.frames = []; // array of configured frames
       this.width = width || 1200;
       this.height = height || 800;
@@ -55977,11 +55978,11 @@ class BatchDisplay extends MDIDisplay {
 
       let frame =
          this.jsdom_body.append('div')
-             .style("visible", 'hidden')
+             .style('visible', 'hidden')
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
-             .attr('id',"jsroot_batch_" + this.frames.length)
-             .attr("frame_title", title);
+             .attr('id','jsroot_batch_' + this.frames.length)
+             .attr('frame_title', title);
 
       if (this.frames.length == 0)
          internals.svg_3ds = undefined;
@@ -56013,8 +56014,8 @@ class BatchDisplay extends MDIDisplay {
       let main = select(frame);
       let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
       main.select('svg')
-          .attr("xmlns", "http://www.w3.org/2000/svg")
-          .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+          .attr('xmlns', 'http://www.w3.org/2000/svg')
+          .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
@@ -56051,14 +56052,19 @@ class BrowserLayout {
    }
 
    /** @summary Selects main element */
-   main() {
-      return select("#" + this.gui_div);
-   }
+   main() { return select('#' + this.gui_div); }
+
+   /** @summary Selects browser div */
+   browser() { return this.main().select('.jsroot_browser'); }
+
+   /** @summary Selects drawing div */
+   drawing() { return select(`#${this.gui_div}_drawing`); }
+
+   /** @summary Selects drawing div */
+   status() { return select(`#${this.gui_div}_status`); }
 
    /** @summary Returns drawing divid */
-   drawing_divid() {
-      return this.gui_div + "_drawing";
-   }
+   drawing_divid() { return this.gui_div + '_drawing'; }
 
    /** @summary Check resize action */
    checkResize() {
@@ -56071,9 +56077,9 @@ class BrowserLayout {
 
    /** @summary Create or update CSS style */
    createStyle() {
-      let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
-          title_color = settings.DarkMode ? '#ccc' : "inherit",
-          text_color = settings.DarkMode ? '#ddd' : "inherit",
+      let bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
+          title_color = settings.DarkMode ? '#ccc' : 'inherit',
+          text_color = settings.DarkMode ? '#ddd' : 'inherit',
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
@@ -56093,7 +56099,7 @@ class BrowserLayout {
           .jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }
           .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }
           .jsroot_h_separator { cursor: ns-resize; background-color: azure; }
-          .jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), "browser_layout_style");
+          .jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
@@ -56102,59 +56108,58 @@ class BrowserLayout {
       let main = this.main();
 
       main.append('div').attr('id', this.drawing_divid())
-                        .classed("jsroot_draw_area", true)
+                        .classed('jsroot_draw_area', true)
                         .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      if (with_browser) main.append('div').classed("jsroot_browser", true);
+      if (with_browser) main.append('div').classed('jsroot_browser', true);
 
       this.createStyle();
    }
 
    /** @summary Create buttons in the layout */
    createBrowserBtns() {
-      let br = this.main().select(".jsroot_browser");
+      let br = this.browser();
       if (br.empty()) return;
-      let btns = br.append('div').classed("jsroot_browser_btns", true).classed("jsroot", true);
-      btns.style('position','absolute').style("left","7px").style("top","7px");
+      let btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
+      btns.style('position','absolute').style('left','7px').style('top','7px');
       if (browser$1.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
    }
 
    /** @summary Remove browser buttons */
    removeBrowserBtns() {
-      this.main().select(".jsroot_browser").select(".jsroot_browser_btns").remove();
+      this.browser().select('.jsroot_browser_btns').remove();
    }
 
    /** @summary Set browser content */
    setBrowserContent(guiCode) {
-      let main = select("#" + this.gui_div + " .jsroot_browser");
+      let main = this.browser();
       if (main.empty()) return;
 
-      main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
+      main.insert('div', '.jsroot_browser_btns').classed('jsroot_browser_area', true)
           .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('width','250px')
           .style('overflow', 'hidden')
           .style('padding-left','5px')
           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
-          .html("<p class='jsroot_browser_title'>title</p><div class='jsroot_browser_resize' style='display:none'>&#9727</div>" + guiCode);
+          .html(`<p class='jsroot_browser_title'>title</p><div class='jsroot_browser_resize' style='display:none'>&#9727</div>${guiCode}`);
    }
 
    /** @summary Check if there is browser content */
    hasContent() {
-      let main = select("#" + this.gui_div + " .jsroot_browser");
-      if (main.empty()) return false;
-      return !main.select(".jsroot_browser_area").empty();
+      let main = this.browser();
+      return main.empty() ? false : !main.select('.jsroot_browser_area').empty();
    }
 
    /** @summary Delete content */
    deleteContent() {
-      let main = select("#" + this.gui_div + " .jsroot_browser");
+      let main = this.browser();
       if (main.empty()) return;
 
-      this.createStatusLine(0, "delete");
+      this.createStatusLine(0, 'delete');
 
       this.toggleBrowserVisisbility(true);
 
-      main.selectAll("*").remove();
+      main.selectAll('*').remove();
       delete this.browser_visible;
       delete this.browser_kind;
 
@@ -56163,21 +56168,18 @@ class BrowserLayout {
 
    /** @summary Returns true when status line exists */
    hasStatus() {
-      let main = select("#"+this.gui_div+" .jsroot_browser");
+      let main = this.browser();
       if (main.empty()) return false;
 
-      let id = this.gui_div + "_status",
-          line = select("#"+id);
-
-      return !line.empty();
+      return !this.status().empty();
    }
 
    /** @summary Set browser title text
      * @desc Title also used for dragging of the float browser */
    setBrowserTitle(title) {
-      let main = select("#" + this.gui_div + " .jsroot_browser");
-      let elem = !main.empty() ? main.select(".jsroot_browser_title") : null;
-      if (elem) elem.text(title).style('cursor',this.browser_kind == 'flex' ? "move" : null);
+      let main = this.browser(),
+          elem = !main.empty() ? main.select('.jsroot_browser_title') : null;
+      if (elem) elem.text(title).style('cursor',this.browser_kind == 'flex' ? 'move' : null);
       return elem;
    }
 
@@ -56193,32 +56195,32 @@ class BrowserLayout {
    /** @summary Creates status line */
    async createStatusLine(height, mode) {
 
-      let main = select("#"+this.gui_div+" .jsroot_browser");
+      let main = this.browser();
       if (main.empty())
          return '';
 
-      let id = this.gui_div + "_status",
-          line = select("#"+id),
+      let id = this.gui_div + '_status',
+          line = select('#'+id),
           is_visible = !line.empty();
 
-      if (mode === "toggle") {
+      if (mode === 'toggle') {
          mode = !is_visible;
-      } else if (mode === "delete") {
+      } else if (mode === 'delete') {
          mode = false; height = 0; delete this.status_layout;
       } else if (mode === undefined) {
-         mode = true; this.status_layout = "app";
+         mode = true; this.status_layout = 'app';
       }
 
       if (is_visible) {
          if (mode === true)
             return id;
 
-         let hsepar = main.select(".jsroot_h_separator");
+         let hsepar = main.select('.jsroot_h_separator');
 
          hsepar.remove();
          line.remove();
 
-         if (this.status_layout !== "app")
+         if (this.status_layout !== 'app')
             delete this.status_layout;
 
          if (this.status_handler && (internals.showStatus === this.status_handler)) {
@@ -56233,25 +56235,25 @@ class BrowserLayout {
       if (mode === false)
          return '';
 
-      let left_pos = select("#" + this.gui_div + "_drawing").style('left');
+      let left_pos = this.drawing().style('left');
 
-      main.insert('div',".jsroot_browser_area")
+      main.insert('div','.jsroot_browser_area')
           .attr('id',id)
-          .classed("jsroot_status_area", true)
-          .style('position','absolute').style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
+          .classed('jsroot_status_area', true)
+          .style('position','absolute').style('left',left_pos).style('height','20px').style('bottom',0).style('right',0)
           .style('margin',0).style('border',0);
 
-      let hsepar = main.insert('div',".jsroot_browser_area")
-                       .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
+      let hsepar = main.insert('div','.jsroot_browser_area')
+                       .classed('jsroot_separator', true).classed('jsroot_h_separator', true)
                        .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
-      let drag_move = drag().on("start", () => {
+      let drag_move = drag().on('start', () => {
           this._hsepar_move = this._hsepar_position;
           hsepar.style('background-color', 'grey');
-      }).on("drag", evnt => {
+      }).on('drag', evnt => {
           this._hsepar_move -= evnt.dy; // hsepar is position from bottom
           this.adjustSeparators(null, Math.max(5, Math.round(this._hsepar_move)));
-      }).on("end", () => {
+      }).on('end', () => {
           delete this._hsepar_move;
           hsepar.style('background-color', null);
           this.checkResize();
@@ -56260,23 +56262,23 @@ class BrowserLayout {
       hsepar.call(drag_move);
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on("touchmove"))
-         main.on("touchmove", function() { });
+      if (browser$1.touches && !main.on('touchmove'))
+         main.on('touchmove', function() { });
 
       if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
 
       this.adjustSeparators(null, height, true);
 
-      if (this.status_layout == "app")
+      if (this.status_layout == 'app')
          return id;
 
       this.status_layout = new GridDisplay(id, 'horizx4_1213');
 
-      let frame_titles = ['object name','object title','mouse coordinates','object info'];
+      let frame_titles = ['object name', 'object title', 'mouse coordinates', 'object info'];
       for (let k = 0; k < 4; ++k)
          select(this.status_layout.getGridFrame(k))
-           .attr('title', frame_titles[k]).style('overflow','hidden')
-           .append("label").attr('class',"jsroot_status_label");
+           .attr('title', frame_titles[k]).style('overflow', 'hidden')
+           .append('label').attr('class', 'jsroot_status_label');
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
@@ -56288,11 +56290,11 @@ class BrowserLayout {
 
       if (!this.gui_div) return;
 
-      let main = select("#" + this.gui_div + " .jsroot_browser"), w = 5;
+      let main = this.browser(), w = 5;
 
-      if ((hsepar === null) && first_time && !main.select(".jsroot_h_separator").empty()) {
+      if ((hsepar === null) && first_time && !main.select('.jsroot_h_separator').empty()) {
          // if separator set for the first time, check if status line present
-         hsepar = main.select(".jsroot_h_separator").style('bottom');
+         hsepar = main.select('.jsroot_h_separator').style('bottom');
          if ((typeof hsepar == 'string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
             hsepar = hsepar.slice(0,hsepar.length-2);
          else
@@ -56301,7 +56303,7 @@ class BrowserLayout {
 
       if (hsepar !== null) {
          hsepar = parseInt(hsepar);
-         let elem = main.select(".jsroot_h_separator"), hlimit = 0;
+         let elem = main.select('.jsroot_h_separator'), hlimit = 0;
 
          if (!elem.empty()) {
             if (hsepar < 5) hsepar = 5;
@@ -56314,24 +56316,24 @@ class BrowserLayout {
 
             this.last_hsepar_height = hsepar;
             elem.style('bottom', hsepar+'px').style('height', w+'px');
-            select("#" + this.gui_div + "_status").style('height', hsepar+'px');
+            this.status().style('height', hsepar+'px');
             hlimit = (hsepar+w) + 'px';
          }
 
          this._hsepar_position = hsepar;
 
-         select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
+         this.drawing().style('bottom', hlimit);
       }
 
       if (vsepar !== null) {
          vsepar = parseInt(vsepar);
          if (vsepar < 50) vsepar = 50;
          this._vsepar_position = vsepar;
-         main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
-         select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
-         main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
-         select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
-         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+'px');
+         main.select('.jsroot_browser_area').style('width', (vsepar-5)+'px');
+         this.drawing().style('left', (vsepar+w)+'px');
+         main.select('.jsroot_h_separator').style('left', (vsepar+w)+'px');
+         this.status().style('left', (vsepar+w)+'px');
+         main.select('.jsroot_v_separator').style('left', vsepar+'px').style('width', w+'px');
       }
 
       if (redraw) this.checkResize();
@@ -56359,13 +56361,12 @@ class BrowserLayout {
    toggleBrowserVisisbility(fast_close) {
       if (!this.gui_div || (typeof this.browser_visible === 'string')) return;
 
-      let main = select("#" + this.gui_div + " .jsroot_browser"),
-          area = main.select('.jsroot_browser_area');
+      let main = this.browser(), area = main.select('.jsroot_browser_area');
 
       if (area.empty()) return;
 
-      let vsepar = main.select(".jsroot_v_separator"),
-          drawing = select("#" + this.gui_div + "_drawing"),
+      let vsepar = main.select('.jsroot_v_separator'),
+          drawing = select(`#${this.gui_div}_drawing`),
           tgt = area.property('last_left'),
           tgt_separ = area.property('last_vsepar'),
           tgt_drawing = area.property('last_drawing');
@@ -56386,43 +56387,43 @@ class BrowserLayout {
          if (vsepar.empty() && (area.node().offsetLeft > mainw/2))
             tgt = (mainw+10) + 'px';
 
-         tgt_separ = "-10px";
-         tgt_drawing = "0px";
+         tgt_separ = '-10px';
+         tgt_drawing = '0px';
       }
 
       let visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
 
       this.browser_visible = 'changing';
 
-      area.transition().style('left', tgt).duration(_duration).on("end", () => {
+      area.transition().style('left', tgt).duration(_duration).on('end', () => {
          if (fast_close) return;
          this.browser_visible = visible_at_the_end;
          if (visible_at_the_end) this.setButtonsPosition();
       });
 
       if (!visible_at_the_end)
-         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(_duration);
+         main.select('.jsroot_browser_btns').transition().style('left', '7px').style('top', '7px').duration(_duration);
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(_duration);
-         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.checkResize.bind(this));
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on('end', this.checkResize.bind(this));
       }
 
       if (this.status_layout && (this.browser_kind == 'fix')) {
-         main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
-         main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
+         main.select('.jsroot_h_separator').transition().style('left', tgt_drawing).duration(_duration);
+         main.select('.jsroot_status_area').transition().style('left', tgt_drawing).duration(_duration);
       }
    }
 
    /** @summary Adjust browser size */
    adjustBrowserSize(onlycheckmax) {
-      if (!this.gui_div || (this.browser_kind !== "float")) return;
+      if (!this.gui_div || (this.browser_kind !== 'float')) return;
 
-      let main = select("#" + this.gui_div + " .jsroot_browser");
+      let main = this.browser();
       if (main.empty()) return;
 
-      let area = main.select(".jsroot_browser_area"),
-          cont = main.select(".jsroot_browser_hierarchy"),
+      let area = main.select('.jsroot_browser_area'),
+          cont = main.select('.jsroot_browser_hierarchy'),
           chld = select(cont.node().firstChild);
 
       if (onlycheckmax) {
@@ -56442,14 +56443,14 @@ class BrowserLayout {
    setButtonsPosition() {
       if (!this.gui_div) return;
 
-      let main = select("#"+this.gui_div+" .jsroot_browser"),
-          btns = main.select(".jsroot_browser_btns"),
+      let main = this.browser(),
+          btns = main.select('.jsroot_browser_btns'),
           top = 7, left = 7;
 
       if (btns.empty()) return;
 
       if (this.browser_visible) {
-         let area = main.select(".jsroot_browser_area");
+         let area = main.select('.jsroot_browser_area');
 
          top = area.node().offsetTop + 7;
 
@@ -56468,38 +56469,38 @@ class BrowserLayout {
       if (!kind) {
          if (!this.browser_kind)
             return null;
-         kind = (this.browser_kind === "float") ? "fix" : "float";
+         kind = (this.browser_kind === 'float') ? 'fix' : 'float';
       }
 
-      let main = select("#"+this.gui_div+" .jsroot_browser"),
-          area = main.select(".jsroot_browser_area");
+      let main = this.browser(),
+          area = main.select('.jsroot_browser_area');
 
-      if (this.browser_kind === "float") {
+      if (this.browser_kind === 'float') {
           area.style('bottom', '0px')
               .style('top', '0px')
               .style('width','').style('height','')
               .classed('jsroot_float_browser', false);
 
-           //jarea.resizable("destroy")
-           //     .draggable("destroy");
-      } else if (this.browser_kind === "fix") {
-         main.select(".jsroot_v_separator").remove();
+           //jarea.resizable('destroy')
+           //     .draggable('destroy');
+      } else if (this.browser_kind === 'fix') {
+         main.select('.jsroot_v_separator').remove();
          area.style('left', '0px');
-         select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
-         main.select(".jsroot_h_separator").style('left','0px');
-         select("#"+this.gui_div+"_status").style('left','0px'); // reset left
+         this.drawing().style('left','0px'); // reset size
+         main.select('.jsroot_h_separator').style('left','0px');
+         this.status().style('left','0px'); // reset left
          this.checkResize();
       }
 
       this.browser_kind = kind;
       this.browser_visible = true;
 
-      main.select(".jsroot_browser_resize").style("display", (kind === "float") ? null : 'none');
-      main.select(".jsroot_browser_title").style("cursor", (kind === "float") ? "move" : null);
+      main.select('.jsroot_browser_resize').style('display', (kind === 'float') ? null : 'none');
+      main.select('.jsroot_browser_title').style('cursor', (kind === 'float') ? 'move' : null);
 
-      if (kind === "float") {
+      if (kind === 'float') {
          area.style('bottom', '40px').classed('jsroot_float_browser', true);
-        let drag_move = drag().on("start", () => {
+        let drag_move = drag().on('start', () => {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.slice(0,sl.length-2));
            this._float_top = parseInt(st.slice(0,st.length-2));
@@ -56507,8 +56508,8 @@ class BrowserLayout {
            this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
 
         }).filter(evnt => {
-            return main.select(".jsroot_browser_title").node() === evnt.target;
-        }).on("drag", evnt => {
+            return main.select('.jsroot_browser_title').node() === evnt.target;
+        }).on('drag', evnt => {
            this._float_left += evnt.dx;
            this._float_top += evnt.dy;
 
@@ -56518,14 +56519,14 @@ class BrowserLayout {
            this.setButtonsPosition();
         });
 
-        let drag_resize = drag().on("start", () => {
+        let drag_resize = drag().on('start', () => {
            let sw = area.style('width');
            this._float_width = parseInt(sw.slice(0,sw.length-2));
            this._float_height = area.node().clientHeight;
            this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
            this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
 
-        }).on("drag", evnt => {
+        }).on('drag', evnt => {
            this._float_width += evnt.dx;
            this._float_height += evnt.dy;
 
@@ -56536,7 +56537,7 @@ class BrowserLayout {
         });
 
         main.call(drag_move);
-        main.select(".jsroot_browser_resize").call(drag_resize);
+        main.select('.jsroot_browser_resize').call(drag_resize);
 
         this.adjustBrowserSize();
 
@@ -56546,17 +56547,17 @@ class BrowserLayout {
 
         let vsepar =
            main.append('div')
-               .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
+               .classed('jsroot_separator', true).classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
 
-        let drag_move = drag().on("start", () => {
+        let drag_move = drag().on('start', () => {
             this._vsepar_move = this._vsepar_position;
             vsepar.style('background-color', 'grey');
-        }).on("drag", evnt => {
+        }).on('drag', evnt => {
             this._vsepar_move += evnt.dx;
             this.setButtonsPosition();
             this.adjustSeparators(Math.round(this._vsepar_move), null);
-        }).on("end", () => {
+        }).on('end', () => {
             delete this._vsepar_move;
             vsepar.style('background-color', null);
             this.checkResize();
@@ -56565,8 +56566,8 @@ class BrowserLayout {
         vsepar.call(drag_move);
 
         // need to get touches events handling in drag
-        if (browser$1.touches && !main.on("touchmove"))
-           main.on("touchmove", function() { });
+        if (browser$1.touches && !main.on('touchmove'))
+           main.on('touchmove', function() { });
 
         this.adjustSeparators(250, null, true, true);
      }
@@ -57570,12 +57571,12 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad.fTickx == 0, "normal", "0fTickx", SetPadField);
          menu.addchk(this.pad.fTickx == 1, "ticks on both sides", "1fTickx", SetPadField);
          menu.addchk(this.pad.fTickx == 2, "labels on both sides", "2fTickx", SetPadField);
-         menu.add("endsub:");
+         menu.add('endsub:');
          menu.add("sub:Ticks y");
          menu.addchk(this.pad.fTicky == 0, "normal", "0fTicky", SetPadField);
          menu.addchk(this.pad.fTicky == 1, "ticks on both sides", "1fTicky", SetPadField);
          menu.addchk(this.pad.fTicky == 2, "labels on both sides", "2fTicky", SetPadField);
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.addAttributesMenu(this);
          menu.add("Save to gStyle", function() {
@@ -60319,7 +60320,7 @@ class TPavePainter extends ObjectPainter {
          AddStatOpt(6, "Integral");
          AddStatOpt(7, "Skewness");
          AddStatOpt(8, "Kurtosis");
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("sub:SetOptFit", () => {
             menu.input("Enter OptStat", pave.fOptFit, "int").then(fmt => {
@@ -60331,7 +60332,7 @@ class TPavePainter extends ObjectPainter {
          AddStatOpt(11, "Par errors");
          AddStatOpt(12, "Chi square / NDF");
          AddStatOpt(13, "Probability");
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("separator");
       } else if (pave.fName === 'title') {
@@ -62304,7 +62305,7 @@ class THistPainter extends ObjectPainter {
                menu.add("Z", () => this.changeUserRange(menu, "Z"));
             else
                menu.add("Values", () => this.changeValuesRange(menu));
-            menu.add("endsub:");
+            menu.add('endsub:');
          }
 
          if (typeof this.fillHistContextMenu == 'function')
@@ -64313,7 +64314,7 @@ class TH2Painter$2 extends THistPainter {
          if (this.is_projection) kinds.push("Off");
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-         menu.add("endsub:");
+         menu.add('endsub:');
 
          menu.add("Auto zoom-in", () => this.autoZoom());
       }
@@ -68475,7 +68476,7 @@ function drawRooPlot(dom, plot) {
 /// I/O methods of JavaScript ROOT
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
-      clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
+      clTList = 'TList', clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
       kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
@@ -68506,11 +68507,11 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
       // kSTLunorderedmultimap = 13, kSTLend = 14
 
       // name of base IO types
-      BasicTypeNames = ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
-                        "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
+      BasicTypeNames = ['BASE', 'char', 'short', 'int', 'long', 'float', 'int', 'const char*', 'double', 'Double32_t',
+                        'char', 'unsigned  char', 'unsigned short', 'unsigned', 'unsigned long', 'unsigned', 'Long64_t', 'ULong64_t', 'bool', 'Float16_t'],
 
       // names of STL containers
-      StlNames = ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
+      StlNames = ['', 'vector', 'list', 'deque', 'map', 'multimap', 'set', 'multiset', 'bitset'],
 
       // TObject bits
       kIsReferenced = BIT(4), kHasUUID = BIT(5);
@@ -68548,9 +68549,9 @@ const CustomStreamers = {
    ],
 
    TClonesArray(buf, list) {
-      if (!list._typename) list._typename = "TClonesArray";
-      list.$kind = "TClonesArray";
-      list.name = "";
+      if (!list._typename) list._typename = 'TClonesArray';
+      list.$kind = 'TClonesArray';
+      list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2) buf.classStreamer(list, clTObject);
       if (ver > 1) list.name = buf.readTString();
@@ -68587,8 +68588,8 @@ const CustomStreamers = {
    },
 
    TMap(buf, map) {
-      if (!map._typename) map._typename = "TMap";
-      map.name = "";
+      if (!map._typename) map._typename = 'TMap';
+      map.name = '';
       map.arr = [];
       const ver = buf.last_read_version;
       if (ver > 2) buf.classStreamer(map, clTObject);
@@ -68597,7 +68598,7 @@ const CustomStreamers = {
       const nobjects = buf.ntou4();
       // create objects
       for (let n = 0; n < nobjects; ++n) {
-         let obj = { _typename: "TPair" };
+         let obj = { _typename: 'TPair' };
          obj.first = buf.readObjectAny();
          obj.second = buf.readObjectAny();
          if (obj.first) map.arr.push(obj);
@@ -68606,8 +68607,8 @@ const CustomStreamers = {
 
    TTreeIndex(buf, obj) {
       const ver = buf.last_read_version;
-      obj._typename = "TTreeIndex";
-      buf.classStreamer(obj, "TVirtualIndex");
+      obj._typename = 'TTreeIndex';
+      buf.classStreamer(obj, 'TVirtualIndex');
       obj.fMajorName = buf.readTString();
       obj.fMinorName = buf.readTString();
       obj.fN = buf.ntoi8();
@@ -68617,7 +68618,7 @@ const CustomStreamers = {
    },
 
    TRefArray(buf, obj) {
-      obj._typename = "TRefArray";
+      obj._typename = 'TRefArray';
       buf.classStreamer(obj, clTObject);
       obj.name = buf.readTString();
       const nobj = buf.ntoi4();
@@ -68628,8 +68629,8 @@ const CustomStreamers = {
    },
 
    TCanvas(buf, obj) {
-      obj._typename = "TCanvas";
-      buf.classStreamer(obj, "TPad");
+      obj._typename = 'TCanvas';
+      buf.classStreamer(obj, 'TPad');
       obj.fDISPLAY = buf.readTString();
       obj.fDoubleBuffer = buf.ntoi4();
       obj.fRetained = (buf.ntou1() !== 0);
@@ -68643,7 +68644,7 @@ const CustomStreamers = {
       obj.fWindowHeight = buf.ntoi4();
       obj.fCw = buf.ntou4();
       obj.fCh = buf.ntou4();
-      obj.fCatt = buf.classStreamer({}, "TAttCanvas");
+      obj.fCatt = buf.classStreamer({}, 'TAttCanvas');
       buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
       buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
       obj.fHighLightColor = buf.ntoi2();
@@ -68654,9 +68655,9 @@ const CustomStreamers = {
    },
 
    TObjArray(buf, list) {
-      if (!list._typename) list._typename = "TObjArray";
-      list.$kind = "TObjArray";
-      list.name = "";
+      if (!list._typename) list._typename = 'TObjArray';
+      list.$kind = 'TObjArray';
+      list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2)
          buf.classStreamer(list, clTObject);
@@ -68674,16 +68675,16 @@ const CustomStreamers = {
    TPolyMarker3D(buf, marker) {
       const ver = buf.last_read_version;
       buf.classStreamer(marker, clTObject);
-      buf.classStreamer(marker, "TAttMarker");
+      buf.classStreamer(marker, 'TAttMarker');
       marker.fN = buf.ntoi4();
       marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
       marker.fOption = buf.readTString();
-      marker.fName = (ver > 1) ? buf.readTString() : "TPolyMarker3D";
+      marker.fName = (ver > 1) ? buf.readTString() : 'TPolyMarker3D';
    },
 
    TPolyLine3D(buf, obj) {
       buf.classStreamer(obj, clTObject);
-      buf.classStreamer(obj, "TAttLine");
+      buf.classStreamer(obj, 'TAttLine');
       obj.fN = buf.ntoi4();
       obj.fP = buf.readFastArray(obj.fN * 3, kFloat);
       obj.fOption = buf.readTString();
@@ -68706,7 +68707,7 @@ const CustomStreamers = {
       element.fMaxIndex = buf.readFastArray((ver == 1) ? buf.ntou4() : 5, kUInt);
       element.fTypeName = buf.readTString();
 
-      if ((element.fType === kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
+      if ((element.fType === kUChar) && ((element.fTypeName == 'Bool_t') || (element.fTypeName == 'bool')))
          element.fType = kBool;
 
       element.fXmin = element.fXmax = element.fFactor = 0;
@@ -68716,9 +68717,9 @@ const CustomStreamers = {
          element.fFactor = buf.ntod();
       } else if ((ver > 3) && (element.fBits & BIT(6))) { // kHasRange
 
-         let p1 = element.fTitle.indexOf("[");
-         if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
-         let p2 = element.fTitle.indexOf("]", p1 + 1);
+         let p1 = element.fTitle.indexOf('[');
+         if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf('[', p1 + 1);
+         let p2 = element.fTitle.indexOf(']', p1 + 1);
 
          if ((p1 >= 0) && (p2 >= p1 + 2)) {
 
@@ -68731,16 +68732,16 @@ const CustomStreamers = {
 
             let parse_range = val => {
                if (!val) return 0;
-               if (val.indexOf("pi") < 0) return parseFloat(val);
+               if (val.indexOf('pi') < 0) return parseFloat(val);
                val = val.trim();
                let sign = 1.;
-               if (val[0] == "-") { sign = -1; val = val.slice(1); }
+               if (val[0] == '-') { sign = -1; val = val.slice(1); }
                switch (val) {
-                  case "2pi":
-                  case "2*pi":
-                  case "twopi": return sign * 2 * Math.PI;
-                  case "pi/2": return sign * Math.PI / 2;
-                  case "pi/4": return sign * Math.PI / 4;
+                  case '2pi':
+                  case '2*pi':
+                  case 'twopi': return sign * 2 * Math.PI;
+                  case 'pi/2': return sign * Math.PI / 2;
+                  case 'pi/4': return sign * Math.PI / 4;
                }
                return sign * Math.PI;
             };
@@ -68770,17 +68771,17 @@ const CustomStreamers = {
       elem.fCtype = buf.ntou4();
 
       if ((elem.fSTLtype === kSTLmultimap) &&
-         ((elem.fTypeName.indexOf("std::set") === 0) ||
-            (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = kSTLset;
+         ((elem.fTypeName.indexOf('std::set') === 0) ||
+            (elem.fTypeName.indexOf('set') === 0))) elem.fSTLtype = kSTLset;
 
       if ((elem.fSTLtype === kSTLset) &&
-         ((elem.fTypeName.indexOf("std::multimap") === 0) ||
-            (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = kSTLmultimap;
+         ((elem.fTypeName.indexOf('std::multimap') === 0) ||
+            (elem.fTypeName.indexOf('multimap') === 0))) elem.fSTLtype = kSTLmultimap;
    },
 
    TStreamerSTLstring(buf, elem) {
       if (buf.last_read_version > 0)
-         buf.classStreamer(elem, "TStreamerSTL");
+         buf.classStreamer(elem, 'TStreamerSTL');
    },
 
    TList(buf, obj) {
@@ -68798,7 +68799,7 @@ const CustomStreamers = {
             obj.opt[i] = buf.readTString();
          }
       } else {
-         obj.name = "";
+         obj.name = '';
          obj.arr = [];
          obj.opt = [];
       }
@@ -68834,30 +68835,30 @@ const CustomStreamers = {
 
    TTree: {
       name: '$file',
-      func(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; }
+      func(buf, obj) { obj.$kind = 'TTree'; obj.$file = buf.fFile; }
    },
 
    RooRealVar(buf, obj) {
       const v = buf.last_read_version;
-      buf.classStreamer(obj, "RooAbsRealLValue");
+      buf.classStreamer(obj, 'RooAbsRealLValue');
       if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
       obj._error = buf.ntod();
       obj._asymErrLo = buf.ntod();
       obj._asymErrHi = buf.ntod();
       if (v >= 2) obj._binning = buf.readObjectAny();
       if (v == 3) obj._sharedProp = buf.readObjectAny();
-      if (v >= 4) obj._sharedProp = buf.classStreamer({}, "RooRealVarSharedProperties");
+      if (v >= 4) obj._sharedProp = buf.classStreamer({}, 'RooRealVarSharedProperties');
    },
 
    RooAbsBinning(buf, obj) {
       buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
-      buf.classStreamer(obj, "RooPrintable");
+      buf.classStreamer(obj, 'RooPrintable');
    },
 
    RooCategory(buf, obj) {
       const v = buf.last_read_version;
-      buf.classStreamer(obj, "RooAbsCategoryLValue");
-      obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, "RooCategorySharedProperties");
+      buf.classStreamer(obj, 'RooAbsCategoryLValue');
+      obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, 'RooCategorySharedProperties');
    },
 
    'RooWorkspace::CodeRepo': (buf /*, obj*/) => {
@@ -68897,12 +68898,12 @@ const CustomStreamers = {
       { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
       { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
       { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
-      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
+      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, 'TImagePalette'); } }
    ],
 
    TASImage(buf, obj) {
       if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
-         return console.warn("old TASImage version - not yet supported");
+         return console.warn('old TASImage version - not yet supported');
 
       buf.classStreamer(obj, clTNamed);
 
@@ -68910,7 +68911,7 @@ const CustomStreamers = {
          const size = buf.ntoi4();
          obj.fPngBuf = buf.readFastArray(size, kUChar);
       } else {
-         buf.classStreamer(obj, "TAttImage");
+         buf.classStreamer(obj, 'TAttImage');
          obj.fWidth = buf.ntoi4();
          obj.fHeight = buf.ntoi4();
          obj.fImgBuf = buf.readFastArray(obj.fWidth * obj.fHeight, kDouble);
@@ -68925,7 +68926,7 @@ const CustomStreamers = {
       obj.fZ = buf.ntof();
       obj.fDensity = buf.ntof();
       if (v > 2) {
-         buf.classStreamer(obj, "TAttFill");
+         buf.classStreamer(obj, 'TAttFill');
          obj.fRadLength = buf.ntof();
          obj.fInterLength = buf.ntof();
       } else {
@@ -68934,7 +68935,7 @@ const CustomStreamers = {
    },
 
    TMixture(buf, obj) {
-      buf.classStreamer(obj, "TMaterial");
+      buf.classStreamer(obj, 'TMaterial');
       obj.fNmixt = buf.ntoi4();
       obj.fAmixt = buf.readFastArray(buf.ntoi4(), kFloat);
       obj.fZmixt = buf.readFastArray(buf.ntoi4(), kFloat);
@@ -69052,7 +69053,7 @@ const DirectStreamers = {
    },
 
    'TMatrixTSym<float>': (buf, obj) => {
-      buf.classStreamer(obj, "TMatrixTBase<float>");
+      buf.classStreamer(obj, 'TMatrixTBase<float>');
       obj.fElements = new Float32Array(obj.fNelems);
       let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kFloat), cnt = 0;
       for (let i = 0; i < obj.fNrows; ++i)
@@ -69061,7 +69062,7 @@ const DirectStreamers = {
    },
 
    'TMatrixTSym<double>': (buf, obj) => {
-      buf.classStreamer(obj, "TMatrixTBase<double>");
+      buf.classStreamer(obj, 'TMatrixTBase<double>');
       obj.fElements = new Float64Array(obj.fNelems);
       let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kDouble), cnt = 0;
       for (let i = 0; i < obj.fNrows; ++i)
@@ -69075,45 +69076,45 @@ const DirectStreamers = {
   * @private */
 function getTypeId(typname, norecursion) {
    switch (typname) {
-      case "bool":
-      case "Bool_t": return kBool;
-      case "char":
-      case "signed char":
-      case "Char_t": return kChar;
-      case "Color_t":
-      case "Style_t":
-      case "Width_t":
-      case "short":
-      case "Short_t": return kShort;
-      case "int":
-      case "EErrorType":
-      case "Int_t": return kInt;
-      case "long":
-      case "Long_t": return kLong;
-      case "float":
-      case "Float_t": return kFloat;
-      case "double":
-      case "Double_t": return kDouble;
-      case "unsigned char":
-      case "UChar_t": return kUChar;
-      case "unsigned short":
-      case "UShort_t": return kUShort;
-      case "unsigned":
-      case "unsigned int":
-      case "UInt_t": return kUInt;
-      case "unsigned long":
-      case "ULong_t": return kULong;
-      case "int64_t":
-      case "long long":
-      case "Long64_t": return kLong64;
-      case "uint64_t":
-      case "unsigned long long":
-      case "ULong64_t": return kULong64;
-      case "Double32_t": return kDouble32;
-      case "Float16_t": return kFloat16;
-      case "char*":
-      case "const char*":
-      case "const Char_t*": return kCharStar;
+      case 'bool':
+      case 'Bool_t': return kBool;
+      case 'char':
+      case 'signed char':
+      case 'Char_t': return kChar;
+      case 'Color_t':
+      case 'Style_t':
+      case 'Width_t':
+      case 'short':
+      case 'Short_t': return kShort;
+      case 'int':
+      case 'EErrorType':
+      case 'Int_t': return kInt;
+      case 'long':
+      case 'Long_t': return kLong;
+      case 'float':
+      case 'Float_t': return kFloat;
+      case 'double':
+      case 'Double_t': return kDouble;
+      case 'unsigned char':
+      case 'UChar_t': return kUChar;
+      case 'unsigned short':
+      case 'UShort_t': return kUShort;
+      case 'unsigned':
+      case 'unsigned int':
+      case 'UInt_t': return kUInt;
+      case 'unsigned long':
+      case 'ULong_t': return kULong;
+      case 'int64_t':
+      case 'long long':
+      case 'Long64_t': return kLong64;
+      case 'uint64_t':
+      case 'unsigned long long':
+      case 'ULong64_t': return kULong64;
+      case 'Double32_t': return kDouble32;
+      case 'Float16_t': return kFloat16;
+      case 'char*':
+      case 'const char*':
+      case 'const Char_t*': return kCharStar;
    }
 
    if (!norecursion) {
@@ -69139,14 +69140,14 @@ function createStreamerElement(name, typename, file) {
          elem.fType = file.fBasicTypes[typename];
    } else {
       elem.fType = typename;
-      typename = elem.fTypeName = BasicTypeNames[elem.fType] || "int";
+      typename = elem.fTypeName = BasicTypeNames[elem.fType] || 'int';
    }
 
    if (elem.fType > 0) return elem; // basic type
 
    // check if there are STL containers
-   let stltype = kNotSTL, pos = typename.indexOf("<");
-   if ((pos > 0) && (typename.indexOf(">") > pos + 2))
+   let stltype = kNotSTL, pos = typename.indexOf('<');
+   if ((pos > 0) && (typename.indexOf('>') > pos + 2))
       for (let stl = 1; stl < StlNames.length; ++stl)
          if (typename.slice(0, pos) === StlNames[stl]) {
             stltype = stl; break;
@@ -69160,7 +69161,7 @@ function createStreamerElement(name, typename, file) {
       return elem;
    }
 
-   const isptr = (typename.lastIndexOf("*") === typename.length - 1);
+   const isptr = (typename.lastIndexOf('*') === typename.length - 1);
 
    if (isptr)
       elem.fTypeName = typename = typename.slice(0, typename.length - 1);
@@ -69180,19 +69181,19 @@ function createStreamerElement(name, typename, file) {
   * @private */
 function getPairStreamer(si, typname, file) {
    if (!si) {
-      if (typname.indexOf("pair") !== 0) return null;
+      if (typname.indexOf('pair') !== 0) return null;
 
       si = file.findStreamerInfo(typname);
 
       if (!si) {
-         let p1 = typname.indexOf("<"), p2 = typname.lastIndexOf(">");
+         let p1 = typname.indexOf('<'), p2 = typname.lastIndexOf('>');
          function GetNextName() {
-            let res = "", p = p1 + 1, cnt = 0;
+            let res = '', p = p1 + 1, cnt = 0;
             while ((p < p2) && (cnt >= 0)) {
                switch (typname[p]) {
-                  case "<": cnt++; break;
-                  case ",": if (cnt === 0) cnt--; break;
-                  case ">": cnt--; break;
+                  case '<': cnt++; break;
+                  case ',': if (cnt === 0) cnt--; break;
+                  case '>': cnt--; break;
                }
                if (cnt >= 0) res += typname[p];
                p++;
@@ -69201,8 +69202,8 @@ function getPairStreamer(si, typname, file) {
             return res.trim();
          }
          si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create$1(clTList) };
-         si.fElements.Add(createStreamerElement("first", GetNextName(), file));
-         si.fElements.Add(createStreamerElement("second", GetNextName(), file));
+         si.fElements.Add(createStreamerElement('first', GetNextName(), file));
+         si.fElements.Add(createStreamerElement('second', GetNextName(), file));
       }
    }
 
@@ -69217,7 +69218,7 @@ function getPairStreamer(si, typname, file) {
 
    for (let nn = 0; nn < 2; ++nn)
       if (streamer[nn].readelem && !streamer[nn].pair_name) {
-         streamer[nn].pair_name = (nn == 0) ? "first" : "second";
+         streamer[nn].pair_name = (nn == 0) ? 'first' : 'second';
          streamer[nn].func = function(buf, obj) {
             obj[this.pair_name] = this.readelem(buf);
          };
@@ -69413,7 +69414,7 @@ function createMemberStreamer(element, file) {
       case kObjectp:
       case kObject: {
          let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
-         if (classname[classname.length - 1] == "*")
+         if (classname[classname.length - 1] == '*')
             classname = classname.slice(0, classname.length - 1);
 
          const arrkind = getArrayKind(classname);
@@ -69443,7 +69444,7 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kAnyp:
       case kOffsetL + kObjectp: {
          let classname = element.fTypeName;
-         if (classname[classname.length - 1] == "*")
+         if (classname[classname.length - 1] == '*')
             classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
@@ -69484,7 +69485,7 @@ function createMemberStreamer(element, file) {
                if (handle.typename === clTString) return buf.readTString();
                return buf.classStreamer({}, handle.typename);
             });
-            buf.checkByteCount(ver, this.typename + "[]");
+            buf.checkByteCount(ver, this.typename + '[]');
          };
          break;
       case kStreamLoop:
@@ -69492,11 +69493,11 @@ function createMemberStreamer(element, file) {
          member.typename = element.fTypeName;
          member.cntname = element.fCountName;
 
-         if (member.typename.lastIndexOf("**") > 0) {
-            member.typename = member.typename.slice(0, member.typename.lastIndexOf("**"));
+         if (member.typename.lastIndexOf('**') > 0) {
+            member.typename = member.typename.slice(0, member.typename.lastIndexOf('**'));
             member.isptrptr = true;
          } else {
-            member.typename = member.typename.slice(0, member.typename.lastIndexOf("*"));
+            member.typename = member.typename.slice(0, member.typename.lastIndexOf('*'));
             member.isptrptr = false;
          }
 
@@ -69575,12 +69576,12 @@ function createMemberStreamer(element, file) {
          let stl = (element.fSTLtype || 0) % 40;
 
          if ((element._typename === 'TStreamerSTLstring') ||
-            (member.typename == 'string') || (member.typename == "string*")) {
+            (member.typename == 'string') || (member.typename == 'string*')) {
             member.readelem = buf => buf.readTString();
          } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
-            let p1 = member.typename.indexOf("<"),
-               p2 = member.typename.lastIndexOf(">");
+            let p1 = member.typename.indexOf('<'),
+               p2 = member.typename.lastIndexOf('>');
 
             member.conttype = member.typename.slice(p1 + 1, p2).trim();
 
@@ -69603,7 +69604,7 @@ function createMemberStreamer(element, file) {
             } else {
                member.isptr = false;
 
-               if (member.conttype.lastIndexOf("*") === member.conttype.length - 1) {
+               if (member.conttype.lastIndexOf('*') === member.conttype.length - 1) {
                   member.isptr = true;
                   member.conttype = member.conttype.slice(0, member.conttype.length - 1);
                }
@@ -69616,7 +69617,7 @@ function createMemberStreamer(element, file) {
 
                if (!member.isptr && (member.arrkind < 0)) {
 
-                  let subelem = createStreamerElement("temp", member.conttype);
+                  let subelem = createStreamerElement('temp', member.conttype);
 
                   if (subelem.fType === kStreamer) {
                      subelem.$fictional = true;
@@ -69625,10 +69626,10 @@ function createMemberStreamer(element, file) {
                }
             }
          } else if ((stl === kSTLmap) || (stl === kSTLmultimap)) {
-            const p1 = member.typename.indexOf("<"),
-                  p2 = member.typename.lastIndexOf(">");
+            const p1 = member.typename.indexOf('<'),
+                  p2 = member.typename.lastIndexOf('>');
 
-            member.pairtype = "pair<" + member.typename.slice(p1 + 1, p2) + ">";
+            member.pairtype = 'pair<' + member.typename.slice(p1 + 1, p2) + '>';
 
             // remember found streamer info from the file -
             // most probably it is the only one which should be used
@@ -69688,7 +69689,7 @@ function createMemberStreamer(element, file) {
                   for (let n = 0; n < cnt; ++n)
                      arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
-                  if (ver) buf.checkByteCount(ver, "branch " + this.typename);
+                  if (ver) buf.checkByteCount(ver, 'branch ' + this.typename);
 
                   obj[this.name] = arr;
                };
@@ -69713,7 +69714,7 @@ function createMemberStreamer(element, file) {
                      obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                   }
 
-                  if (ver) buf.checkByteCount(ver, "branch " + this.typename);
+                  if (ver) buf.checkByteCount(ver, 'branch ' + this.typename);
                };
             }
          break;
@@ -69735,7 +69736,7 @@ function createMemberStreamer(element, file) {
 function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === 'string') ||
       (CustomStreamers[type_name] === clTString)) return 0;
-   if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
+   if ((type_name.length < 7) || (type_name.indexOf('TArray') !== 0)) return -1;
    if (type_name.length == 7)
       switch (type_name[6]) {
          case 'I': return kInt;
@@ -69747,7 +69748,7 @@ function getArrayKind(type_name) {
          default: return -1;
       }
 
-   return type_name == "TArrayL64" ? kLong64 : -1;
+   return type_name == 'TArrayL64' ? kLong64 : -1;
 }
 
 /** @summary Let directly assign methods when doing I/O
@@ -69759,7 +69760,7 @@ function addClassMethods(clname, streamer) {
 
    if (methods)
       for (let key in methods)
-         if ((typeof methods[key] === 'function') || (key.indexOf("_") == 0))
+         if ((typeof methods[key] === 'function') || (key.indexOf('_') == 0))
             streamer.push({
                name: key,
                method: methods[key],
@@ -70150,7 +70151,7 @@ function ZIP_inflate(arr, tgt) {
    }
 
    function zip_inflate_stored(buff, off, size) {
-      /* "decompress" an inflated type 0 (stored) block. */
+      /* 'decompress' an inflated type 0 (stored) block. */
 
       // go to byte boundary
       let n = zip_bit_len & 7;
@@ -70197,7 +70198,7 @@ function ZIP_inflate(arr, tgt) {
 
          let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
          if (h.status != 0)
-            throw new Error("HufBuild error: " + h.status);
+            throw new Error('HufBuild error: ' + h.status);
          zip_fixed_tl = h.root;
          zip_fixed_bl = h.m;
 
@@ -70208,7 +70209,7 @@ function ZIP_inflate(arr, tgt) {
          h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
          if (h.status > 1) {
             zip_fixed_tl = null;
-            throw new Error("HufBuild error: "+h.status);
+            throw new Error('HufBuild error: '+h.status);
          }
          zip_fixed_td = h.root;
          zip_fixed_bd = h.m;
@@ -70506,21 +70507,21 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
       while (fullres < tgtsize) {
 
-         let fmt = "unknown", off = 0, CHKSUM = 0;
+         let fmt = 'unknown', off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
             if (!noalert) console.error('Error R__unzip: header size exceeds buffer size');
             return Promise.resolve(null);
          }
 
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = "LZMA"; else
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = "ZSTD"; else
-         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
+         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = 'new'; off = 2; } else
+         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = 'old'; off = 0; } else
+         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = 'LZMA'; else
+         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = 'ZSTD'; else
+         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
          /*   C H E C K   H E A D E R   */
-         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
+         if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD')) {
             if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
             return Promise.resolve(null);
          }
@@ -70529,7 +70530,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          const uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
-         if (fmt === "ZSTD")  {
+         if (fmt === 'ZSTD')  {
             const handleZsdt = ZstdCodec => {
 
                return new Promise((resolveFunc, rejectFunc) => {
@@ -70546,7 +70547,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                      const reslen = data2.length;
 
                      if (data2.byteOffset !== 0)
-                        return rejectFunc(Error("ZSTD result with byteOffset != 0"));
+                        return rejectFunc(Error('ZSTD result with byteOffset != 0'));
 
                      // shortcut when exactly required data unpacked
                      //if ((tgtsize == reslen) && data2.buffer)
@@ -70578,7 +70579,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          let tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-         const reslen = (fmt === "LZ4") ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
+         const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
          if (reslen <= 0) break;
 
          fullres += reslen;
@@ -70605,7 +70606,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
 class TBuffer {
    constructor(arr, pos, file, length) {
-      this._typename = "TBuffer";
+      this._typename = 'TBuffer';
       this.arr = arr;
       this.o = pos || 0;
       this.fFile = file;
@@ -70698,7 +70699,7 @@ class TBuffer {
     /** @summary read Char_t array as string
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
-      let res = "", code, closed = false;
+      let res = '', code, closed = false;
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
          if (code == 0) { closed = true; if (n < 0) break; }
@@ -70870,7 +70871,7 @@ class TBuffer {
 
    /** @summary Get part of buffer as string */
    substring(beg, end) {
-      let res = "";
+      let res = '';
       for (let n = beg; n < end; ++n)
          res += String.fromCharCode(this.arr.getUint8(n));
       return res;
@@ -70920,7 +70921,7 @@ class TBuffer {
    readTKey(key) {
       if (!key) key = {};
       this.classStreamer(key, 'TKey');
-      let name = key.fName.replace(/['"]/g, '');
+      let name = key.fName.replace(/['']/g, '');
       if (name !== key.fName) {
          key.fRealName = key.fName;
          key.fName = name;
@@ -71070,7 +71071,7 @@ class TDirectory {
    /** @summary constructor */
    constructor(file, dirname, cycle) {
       this.fFile = file;
-      this._typename = "TDirectory";
+      this._typename = 'TDirectory';
       this.dir_name = dirname;
       this.dir_cycle = cycle;
       this.fKeys = [];
@@ -71090,21 +71091,21 @@ class TDirectory {
       if (bestkey)
          return only_direct ? bestkey : Promise.resolve(bestkey);
 
-      let pos = keyname.lastIndexOf("/");
+      let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
          let dirname = keyname.slice(0, pos),
              subname = keyname.slice(pos+1),
              dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
-            return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf('TDirectory') == 0))
+            return this.fFile.readObject(this.dir_name + '/' + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
 
-         pos = keyname.lastIndexOf("/", pos-1);
+         pos = keyname.lastIndexOf('/', pos-1);
       }
 
-      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
+      return only_direct ? null : Promise.reject(Error('Key not found ' + keyname));
    }
 
    /** @summary Read object from the directory
@@ -71112,7 +71113,7 @@ class TDirectory {
      * @param {number} [cycle] - cycle number
      * @return {Promise} with read object */
    readObject(obj_name, cycle) {
-      return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
+      return this.fFile.readObject(this.dir_name + '/' + obj_name, cycle);
    }
 
    /** @summary Read list of keys in directory
@@ -71152,14 +71153,14 @@ class TDirectory {
 class TFile {
 
    constructor(url) {
-      this._typename = "TFile";
+      this._typename = 'TFile';
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
       // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fAcceptRanges = true;
       // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fUseStampPar = settings.UseStamp ? "stamp=" + (new Date).getTime() : false;
+      this.fUseStampPar = settings.UseStamp ? 'stamp=' + (new Date).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
       this.fMaxRanges = settings.MaxRanges || 200; // maximal number of file ranges requested at once
@@ -71170,33 +71171,33 @@ class TFile {
       this.fTagOffset = 0;
       this.fStreamers = 0;
       this.fStreamerInfos = null;
-      this.fFileName = "";
+      this.fFileName = '';
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
       if (typeof this.fURL != 'string') return this;
 
-      if (this.fURL[this.fURL.length - 1] === "+") {
+      if (this.fURL[this.fURL.length - 1] === '+') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fAcceptRanges = false;
       }
 
-      if (this.fURL[this.fURL.length - 1] === "^") {
+      if (this.fURL[this.fURL.length - 1] === '^') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fSkipHeadRequest = true;
       }
 
-      if (this.fURL[this.fURL.length - 1] === "-") {
+      if (this.fURL[this.fURL.length - 1] === '-') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fUseStampPar = false;
       }
 
-      if (this.fURL.indexOf("file://") == 0) {
+      if (this.fURL.indexOf('file://') == 0) {
          this.fUseStampPar = false;
          this.fAcceptRanges = false;
       }
 
-      const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
+      const pos = Math.max(this.fURL.lastIndexOf('/'), this.fURL.lastIndexOf('\\'));
       this.fFileName = pos >= 0 ? this.fURL.slice(pos + 1) : this.fURL;
    }
 
@@ -71216,10 +71217,10 @@ class TFile {
       if (!this.fAcceptRanges || this.fSkipHeadRequest)
          return this.readKeys();
 
-      return httpRequest(this.fURL, "head").then(res => {
-         const accept_ranges = res.getResponseHeader("Accept-Ranges");
+      return httpRequest(this.fURL, 'head').then(res => {
+         const accept_ranges = res.getResponseHeader('Accept-Ranges');
          if (!accept_ranges) this.fAcceptRanges = false;
-         const len = res.getResponseHeader("Content-Length");
+         const len = res.getResponseHeader('Content-Length');
          if (len) this.fEND = parseInt(len);
              else this.fAcceptRanges = false;
          return this.readKeys();
@@ -71239,7 +71240,7 @@ class TFile {
           first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
       if (filename && (typeof filename === 'string') && (filename.length > 0)) {
-         const pos = fileurl.lastIndexOf("/");
+         const pos = fileurl.lastIndexOf('/');
          fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
       }
 
@@ -71251,21 +71252,21 @@ class TFile {
             if (first >= place.length) return resolveFunc(blobs);
          }
 
-         let fullurl = fileurl, ranges = "bytes", totalsz = 0;
+         let fullurl = fileurl, ranges = 'bytes', totalsz = 0;
          // try to avoid browser caching by adding stamp parameter to URL
-         if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? "?" : "&") + file.fUseStampPar;
+         if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? '?' : '&') + file.fUseStampPar;
 
          for (let n = first; n < last; n += 2) {
-            ranges += (n > first ? "," : "=") + (place[n] + "-" + (place[n] + place[n + 1] - 1));
+            ranges += (n > first ? ',' : '=') + (place[n] + '-' + (place[n] + place[n + 1] - 1));
             totalsz += place[n + 1]; // accumulated total size
          }
          if (last - first > 2)
             totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
 
-         return createHttpRequest(fullurl, "buf", read_callback, undefined, true).then(xhr => {
+         return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
 
             if (file.fAcceptRanges) {
-               xhr.setRequestHeader("Range", ranges);
+               xhr.setRequestHeader('Range', ranges);
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
 
@@ -71279,7 +71280,7 @@ class TFile {
                if (!sum_total) sum_total = 1;
 
                let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
-               xhr.addEventListener("progress", function(oEvent) {
+               xhr.addEventListener('progress', function(oEvent) {
                   if (oEvent.lengthComputable)
                      progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
                });
@@ -71348,8 +71349,8 @@ class TFile {
 
             let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
-            if (hdr_range && hdr_range.indexOf("bytes") >= 0) {
-               let parts = hdr_range.slice(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
+            if (hdr_range && hdr_range.indexOf('bytes') >= 0) {
+               let parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-\/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
                   segm_last = parseInt(parts[1]);
@@ -71381,17 +71382,17 @@ class TFile {
 
          // multipart messages requires special handling
 
-         let indx = hdr.indexOf("boundary="), boundary = "", n = first, o = 0;
+         let indx = hdr.indexOf('boundary='), boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
             if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
                boundary = boundary.slice(1, boundary.length - 1);
-            boundary = "--" + boundary;
+            boundary = '--' + boundary;
          } else console.error('Did not found boundary id in the response header');
 
          while (n < last) {
 
-            let code1, code2 = view.getUint8(o), nline = 0, line = "",
+            let code1, code2 = view.getUint8(o), nline = 0, line = '',
                finish_header = false, segm_start = 0, segm_last = -1;
 
             while ((o < view.byteLength - 1) && !finish_header && (nline < 5)) {
@@ -71400,12 +71401,12 @@ class TFile {
 
                if ((code1 == 13) && (code2 == 10)) {
                   if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
-                     return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
+                     return rejectFunc(Error(`Decode multipart message, expect boundary ${boundary} got ${line}`));
 
                   line = line.toLowerCase();
 
-                  if ((line.indexOf("content-range") >= 0) && (line.indexOf("bytes") > 0)) {
-                     let parts = line.slice(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
+                  if ((line.indexOf('content-range') >= 0) && (line.indexOf('bytes') > 0)) {
+                     let parts = line.slice(line.indexOf('bytes') + 6).split(/[\s-\/]+/);
                      if (parts.length === 3) {
                         segm_start = parseInt(parts[0]);
                         segm_last = parseInt(parts[1]);
@@ -71413,13 +71414,13 @@ class TFile {
                            segm_start = 0; segm_last = -1;
                         }
                      } else {
-                        console.error('Fail to decode content-range', line, parts);
+                        console.error(`Fail to decode content-range ${line} ${parts}`);
                      }
                   }
 
                   if ((nline > 1) && (line.length === 0)) finish_header = true;
 
-                  o++; nline++; line = "";
+                  o++; nline++; line = '';
                   code2 = view.getUint8(o + 1);
                } else {
                   line += String.fromCharCode(code1);
@@ -71489,7 +71490,7 @@ class TFile {
       if (bestkey)
          return only_direct ? bestkey : Promise.resolve(bestkey);
 
-      let pos = keyname.lastIndexOf("/");
+      let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashes (bad practice anyway)
       while (pos > 0) {
          let dirname = keyname.slice(0, pos),
@@ -71499,18 +71500,18 @@ class TFile {
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
          let dirkey = this.getKey(dirname, undefined, true);
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf('TDirectory') == 0))
             return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
-         pos = keyname.lastIndexOf("/", pos - 1);
+         pos = keyname.lastIndexOf('/', pos - 1);
       }
 
-      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
+      return only_direct ? null : Promise.reject(Error('Key not found ' + keyname));
    }
 
    /** @summary Read and inflate object buffer described by its key
     * @private */
-   readObjBuffer(key) {
+   async readObjBuffer(key) {
 
       return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
@@ -71521,7 +71522,7 @@ class TFile {
          }
 
          return R__unzip(blob1, key.fObjlen).then(objbuf => {
-            if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
+            if (!objbuf) return Promise.reject(Error('Fail to UNZIP buffer'));
             let buf = new TBuffer(objbuf, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
@@ -71532,12 +71533,12 @@ class TFile {
 
    /** @summary Read any object from a root file
      * @desc One could specify cycle number in the object name or as separate argument
-     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
+     * @param {string} obj_name - name of object, may include cycle number like 'hpxpy;1'
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @return {Promise} promise with object read
      * @example
-     * let f = await openFile("https://root.cern/js/files/hsimple.root");
-     * let obj = await f.readObject("hpxpy;1");
+     * let f = await openFile('https://root.cern/js/files/hsimple.root');
+     * let obj = await f.readObject('hpxpy;1');
      * console.log(`Read object of type ${obj._typename}`); */
    async readObject(obj_name, cycle, only_dir) {
 
@@ -71549,14 +71550,14 @@ class TFile {
 
       if (typeof cycle != 'number') cycle = -1;
       // remove leading slashes
-      while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.slice(1);
+      while (obj_name.length && (obj_name[0] == '/')) obj_name = obj_name.slice(1);
 
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
       return this.getKey(obj_name, cycle).then(key => {
 
-         if ((obj_name == "StreamerInfo") && (key.fClassName == clTList))
+         if ((obj_name == 'StreamerInfo') && (key.fClassName == clTList))
             return this.fStreamerInfos;
 
          let isdir = false;
@@ -71615,7 +71616,7 @@ class TFile {
       buf.mapObject(1, lst);
       buf.classStreamer(lst, clTList);
 
-      lst._typename = "TStreamerInfoList";
+      lst._typename = 'TStreamerInfoList';
 
       this.fStreamerInfos = lst;
 
@@ -71633,9 +71634,9 @@ class TFile {
             let typ = elem.fType, typname = elem.fTypeName;
 
             if (typ >= 60) {
-               if ((typ === kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                  let prefix = (StlNames[elem.fSTLtype] || "undef") + "<";
-                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
+               if ((typ === kStreamer) && (elem._typename == 'TStreamerSTL') && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                  let prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
+                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == '>')) {
                      typ = elem.fCtype;
                      typname = typname.slice(prefix.length, typname.length - 1).trim();
 
@@ -71646,7 +71647,7 @@ class TFile {
                }
                if (typ >= 60) continue;
             } else {
-               if ((typ > 20) && (typname[typname.length - 1] == "*")) typname = typname.slice(0, typname.length - 1);
+               if ((typ > 20) && (typname[typname.length - 1] == '*')) typname = typname.slice(0, typname.length - 1);
                typ = typ % 20;
             }
 
@@ -71804,12 +71805,12 @@ class TFile {
    getStreamer(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == "TBasket") return null;
+      if (clname == 'TQObject' || clname == 'TBasket') return null;
 
       let streamer, fullname = clname;
 
       if (ver) {
-         fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+         fullname += (ver.checksum ? ('$chksum' + ver.checksum) : ('$ver' + ver.val));
          streamer = this.fStreamers[fullname];
          if (streamer !== undefined) return streamer;
       }
@@ -71844,9 +71845,9 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == "TStyle") && s_i.fElements)
+      if ((s_i.fName == 'TStyle') && s_i.fElements)
          s_i.fElements.arr.forEach(elem => {
-            if (elem.fName == "fLineStyle") elem.fName = "fLineStyles"; // like in ROOT JSON now
+            if (elem.fName == 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
 
       // for each entry in streamer info produce member function
@@ -71925,7 +71926,7 @@ function readVectorElement(buf) {
       if (n === 0) return []; // for empty vector no need to search split streamers
 
       if (n > 1000000) {
-         throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
+         throw new Error(`member-wise streaming of ${this.conttype} num ${n} member ${this.name}`);
          // return [];
       }
 
@@ -72199,7 +72200,7 @@ class TProxyFile extends TFile {
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
          if (typeof this.fFileName == 'string') {
-            let p = this.fFileName.lastIndexOf("/");
+            let p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
                this.fFileName = this.fFileName.slice(p+1);
          }
@@ -72231,7 +72232,7 @@ class TProxyFile extends TFile {
 /** @summary Open ROOT file for reading
   * @desc Generic method to open ROOT file for reading
   * Following kind of arguments can be provided:
-  *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
+  *  - string with file URL (see example). In node.js environment local file like 'file://hsimple.root' can be specified
   *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
@@ -72240,16 +72241,16 @@ class TProxyFile extends TFile {
   * @example
   *
   * import { openFile } from '/path_to_jsroot/modules/io.mjs';
-  * let f = await openFile("https://root.cern/js/files/hsimple.root");
+  * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {
 
    let file;
 
    if (isNodeJs() && (typeof arg == 'string')) {
-      if (arg.indexOf("file://") == 0)
+      if (arg.indexOf('file://') == 0)
          file = new TNodejsFile(arg.slice(7));
-      else if (arg.indexOf("http") !== 0)
+      else if (arg.indexOf('http') !== 0)
          file = new TNodejsFile(arg);
    }
 
@@ -72257,7 +72258,7 @@ function openFile(arg) {
       file = new TProxyFile(arg);
 
    if (!file && (typeof arg === 'object') && (arg instanceof ArrayBuffer)) {
-      file = new TFile("localfile.root");
+      file = new TFile('localfile.root');
       file.assignFileContent(arg);
    }
 
@@ -72280,7 +72281,7 @@ function injectHStyle(node) {
       return `.jsroot .img_${name} { display: inline-block; height: ${sz}px; width: ${sz}px; background-image: url("data:image/${fmt};base64,${code}"); }`;
    }
 
-   let bkgr_color = settings.DarkMode ? 'black' : "#E6E6FA",
+   let bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
        border_color = settings.DarkMode ? 'green' : 'black',
        shadow_color = settings.DarkMode ? '#555' : '#aaa';
 
@@ -72301,45 +72302,45 @@ function injectHStyle(node) {
                       background-repeat: no-repeat; background-size: 24px 24px; border-color: inherit; }
 .jsroot_inspector { border: 1px solid ${border_color}; box-shadow: 1px 1px 2px 2px ${shadow_color}; opacity: 0.95; background-color: ${bkgr_color}; }
 .jsroot_drag_area { background-color: #007fff; }
-${img("minus",18,"gif","R0lGODlhEgASAJEDAIKCgoCAgAAAAP///yH5BAEAAAMALAAAAAASABIAAAInnD+By+2rnpyhWvsizE0zf4CIIpRlgiqaiDosa7zZdU22A9y6u98FADs=")}
-${img("minusbottom",18,"gif","R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAImlC+Ay+2rnpygWvsizE0zf4CIEpRlgiqaiDosa7zZdU32jed6XgAAOw==")}
-${img("plus",18,"gif","R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIqlC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU06vfe8rysAADs=")}
-${img("plusbottom",18,"gif","R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIplC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU36zvd+XwAAOw==")}
-${img("empty",18,"gif","R0lGODlhEgASAJEAAAAAAP///4CAgP///yH5BAEAAAMALAAAAAASABIAAAIPnI+py+0Po5y02ouz3pwXADs=")}
-${img('line',18,"gif","R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIZjB+Ay+2rnpwo0uss3kfz7X1XKE5k+ZxoAQA7")}
-${img("join",18,"gif","R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIcjB+Ay+2rnpwo0uss3kf5BGocNJZiSZ2opK5BAQA7")}
-${img("joinbottom",18,"gif","R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIZjB+Ay+2rnpwo0uss3kf5BGrcSJbmiaZGAQA7")}
-${img("base",18,"gif","R0lGODlhEwASAPcAAPv6/Pn4+mnN/4zf/764x2vO//Dv84HZ/5jl/0ZGmfTz9vLy8lHB/+zr70u+/7S03IODtd7d6c/P0ndqiq/w/4Pb/5SKo/Py9fPy9tTU121kjd/f4MzM062tx5+zy5rO67GwxNDM14d8mJzn/7awwry713zX/9bW27u71lFRmW5uoZ+fxjOy/zm1/9HQ2o3g/2xfgZeMplav7sn9/6Cgv37X/6Dp/3jU/2uJ2M7J1JC63vn5+v38/d7e38PD0Z7o/9LR4LS01cPDzPb1+Nzb5IJ2lHCEv5bk/53C3MrJ3X56t+np6YF7o3JsndTU5Wtgh5GHoKaesuLi4mrO/19RdnnV/4WBqF5QdWPK/4+PvW5uu4+PuuHh4q7w/97e68C9z63w/9PT0+zs7FtbmWVXerS0yaqitpuSqWVlpcL6/8jD0H/C9mVajqWu3nFwpYqHtFfE/42DnaWl0bTz/5OPt+7u7tra5Y+Yz+Tk56fM6Gek5pG50LGpvOHh72LJ/9XU5lbD/6GnwHpujfDu8mxpntzb45qav7PH41+n6JeXyUZGopyYsWeGyDu2/6LQ44re/1yV41TD/8LC1zix/sS/zdTU4Y+gsd/c5L7z+a6uzE+3+XG89L6+087O1sTD3K2twoGBtWVbgomo4P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKMALAAAAAATABIAAAjtAEcJFLgDTyE7SVCsAAJgoMNRYTII8fEpkAckOpiEaPhwlARLexxhmpEGzJEmBAJ0HMXhw6MfXeZQsDHADZ8hK13kMTEAwQgEL2oYiaJgJZFDU24cqHCgSgFGFgysBJAJkB8BBQRggQNJxKCVo0rIcMAgEgMHmnBMaADWEyIWLRptEqWETRG2K//ombSmjRZFoaCo4djRyZ0HchIlSECIRNGVXur0WcAlCJoUoOhcAltpyQIxPSRtGQPhjRkMKyN0krLhBCcaKrJoOCO1I48vi0CU6WDIyhNBKcEGyBEDBpUrZOJQugC2ufPnDwMCADs=")}
-${img("folder",18,"gif","R0lGODlhEgASANUAAPv7++/v79u3UsyZNOTk5MHBwaNxC8KPKre3t55sBrqHIpxqBMmWMb2KJbOBG5lnAdu3cbWCHaBuCMuYM///urB+GMWSLad1D8eUL6ampqVzDbeEH6t5E8iVMMCNKMbGxq58FppoAqh2EKx6FP/Ub//4k+vr6///nP/bdf/kf//viba2tv//////mQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAC4ALAAAAAASABIAAAaRQJdwSCwaj8ik0jUYTBidAEA5YFkplANhehxABGAwpKHYRByVwHBibbvbo8+Q0TrZ7/jWBTHEtP6AgX8GK0MWLSWJiostEoVCBy0qk5SVLQmPLh4tKZ2eny0LmQ0tKKanqC0hmQotJK+wsS0PfEIBZxUgHCIaBhIJCw8ZBUMABAUrycrLBQREAAEm0tPUUktKQQA7")}
-${img("folderopen",18,"gif","R0lGODlhEgASANUAAO/v76VzDfv7+8yZNMHBweTk5JpoAqBuCMuYM8mWMZ5sBpxqBPr7/Le3t///pcaaGvDker2KJc+iJqd1D7B+GOKzQ8KPKqJwCrOBG7WCHbeEH9e4QNq/bP/rhJlnAffwiaampuLBUMmgIf3VcKRyDP/XhLqHIqNxC8iVMMbGxqx6FP/kf//bdf/vievr67a2tv/4k8aaGf//nP//mf///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAADUALAAAAAASABIAAAaVwJpwSCwaj8ikUjgYIBIogEA5oFkZDEtheqzKvl9axKTJYCiAIYIGblutqtQwQYPZ73jZpCGM+f+AfiEdJy99M21tMxwxJQeGNTGIeHcyHzEjCpAAki2en54OIhULkAKSMiuqqysOGxIGkDWcMyy2t7YQDx58QqcBwMAkFwcKCwYgBEQFBC/Oz9AEBUUALtbX2FJLSUEAOw==")}
-${img("page",18,"gif","R0lGODlhEgASAOYAAPv7++/v7/j7/+32/8HBweTk5P39/djr/8Df//7///P5/8Ph//T09fn5+YGVw2t0pc7n/15hkFWn7ZOq0nqDsMDA/9nh7YSbyoqo2eTx/5G46pK873N+sPX6//f395Cjy83m/7rd/9jl9m13qGVqmoeh0n+OvI+z5Yyu387T//b6/2dtnvz9/32JtpS/8sbGxv7+/tvn92lwom96rHJ8rnSAsoep3NHp/8nk/7e3t+vr67a2tun1/3V4o+Hw/9vt/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAEEALAAAAAASABIAAAejgEGCg4SFhoeILjaLjDY1AQCHG0AGAA0eDBY1E5CGGjBAoQkCMTUSHwGGJwaiAh0iNbEvhiihAgIDPDwpFRw5hhgsuLk8Pz8HNL+FJSoKuT4+xzczyoQXzjzQxjcgI9WDDrraPzc4OA/fgibZ0eTmCzLpQS0Z7TflCwgr8hT2EOYIQpCQ16OgwYMRCBgqQGCHw4cOCRQwBCCAjosYL3ZCxNFQIAA7")}
-${img("question",18,"gif","R0lGODlhEgASAPelAOP0//7//9bs//n///j//9Ls/8Pn//r//6rB1t3f5crO2N7g5k1livT4+7PW9dXt/+v4/+Xl5LHW9Ov6/+j1/6CyxrfCz9rd5Nzj6un1/Z6ouwcvj8HBzO7+/+3//+Ln7BUuXNHv/6K4y+/9/wEBZvX08snn/19qhufs8fP7/87n/+/t7czr/5q1yk55q97v/3Cfztnu//z//+X6/ypIdMHY7rPc/7fX9cbl/9/h52WHr2yKrd/0/9fw/4KTs9rm75Svzb2+ya690pu92mWJrcT3//H//+Dv/Xym35S216Ouwsvt/3N/mMnZ5gEBcMnq/wEBXs/o/wEBetzw/zdYpTdZpsvP2ClGml2N3b3H0Nzu/2Z2lF1ricrl/93w/97h6JqluktojM/u/+/z9g8pVff4+ebu9q+1xa6/zzdFaIiXr5Wyz0xslrTK4uL//2uIp11rh8Xj/NXn+Oz2/9bf6bG2xAEBePP//1xwkK/K5Nbr/8fp/2OBtG53kai3ykVCYwEBde/6/7O4xabI+fD//+by/x8+jDhZpM/q/6jK58nO19ny/7jV7ZO42NHr/9H4/2ZwimSV6VBxwMDX7Nvf5hYwX5m20sfb6Ieqyk9Yjr/k/cPM2NDp/+/098Tl9yQ9jLfW+Mne8sjU30JklP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKUALAAAAAASABIAAAjxAEsJHEiwoMEyGMaQWthg0xeDAlGUWKjoz5mFAegY/LBiIalMUK54JCWEoJkIpA6kSDmoAykKgRaqGSiq04A5A5r4AKOEAAAtE2S0USAwSwYIhUb8METiUwAvemLMCMVEoIUjAF5MIYXAThUCDzgVWDQJjkA0cngIEHAHCCAqRqJ0QeQoDxeBFS71KKDCwxonhwiZwPEkzo4+AimJqBFCjBs+UjZ4WmLgxhAQVgb6acGIBShJkbAgMSAhCQ1IBTW8sZRI055HDhoRqXQCYo4tDMJgsqGDTJo6EAlyYFNkVJDgBgXBcJEAucEFeC44n04wIAA7")}
-${img("histo1d",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEW9vb2np6empqanpqenpqivr6//AAD3+fn09vb19vf3+Pv8+v//+//29/v3+fr19vbZ3Nza3d7X0+Lb3t7b3N3AwMP2+PimpqXe4+Th6uvQ0dTi6uzg5ebFx8nt6vb////r5/T2+fnl4e3a3uDN0NT7/P6lpqX3+vvn9vhcVVHu+//W1uH48//29P///f+mpqelpqb4/v/t/f9oY2H6///59v/x8fXw9fny9/78/v+lpqf7//9iXl12dHPW2t/R1tdtaGbT2dpoZmT6/v9ycnKCgoJpZGJ6dnT3///2///0//95entpa2t+gIKLjI55d3aDgYBvcXL1+/z9/v6lpaWGiIt7fH6Ji42SlJeEhIZubGyMjI17fYD+//+kpKSmpaaRk5WIioyRk5aYmp2OkJJ+f4KTlZilpKWcnqGVl5qcnqCfoaOYmp6PkZOdn6GsrrGoqq6qrK+rrbGpq66lp6uqrbCoqq20tLSsrKzc3NzMzMzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB6enrU4/9iYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmLU4/9KSkoAAAAAAAAAAAB6enrU4//m5uZiYmLm5uZiYmLm5uZiYmLm5uZiYmLm5ubU4/9KSkoAAAAAAAAAAAB6enrU4/9KSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkrU4/9KSkoAAAAAAAAAAABubm7U4//U4//U4//U4//U4//U4//U4//U4//U4//U4//U4/9KSkoAAAAAAAAAAABubm5KSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt6dBwBYjWHVG2AAAAB3RSTlP///////8AGksDRgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOxJREFUeNpjYGBkggBmFmYmRlY2BkZ2DhDg5OLm4eblY2RjYOIXEBQSFhEFkgKCYkxsDOKcEpJS0jKycvJS8gpcIAFFJWUVGFIFCqipa8hrymtpy+sI6crr6bMxGBgayRvLm8iamkmZW1gCBayslWxs7ewd7OwdlZStrYC2ODm7uLrJu3t4usl7mRiwMeh7+/j6+VsHBMr7+wQFhwAFQsPCIyKjomOiIsOiYuPYGOITEpOSU1LTElNTElPlgQLpGZlZ2Tm5eZm5OZm5IAGm/ILCouKS0rKS4oISeaDDypniEICpgo2hsgoZVLMBAHIaNxuoIXy2AAAAAElFTkSuQmCC")}
-${img("histo2d",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAsSAAALEgHS3X78AAABUUlEQVR42o1R0U7CQBDkU/w/v8qk1/OhCS+88miMiQYMBMNRTqiisQiRhF6h13adsuVKDEYvm81kdmdv9q7V7XallP65I30UrpErLGW73SaiFtDF5dXWmNNITJrubJ4RWUI2qU33GTorAdSJMeMwhOxpEE20noRTYISaajBcMrsdOlkgME+/vILtPw6j+BPg5vZuFRuUgZGX71tc2AjALuYrpWcP/WE1+ADAADMAY/OyFghfpJnlSTCAvLb1YDbJmArC5izwQa0K4g5EdgSbTQKTX8keOC8bgXSWAEbqmbs5BmPF3iyR8I+vdNrhIj3ewzdnlaBeWroCDHBZxWtm9DzaEyU2L8pSCNEI+N76+fVs8rE8fbeRUiWR53kHgWgs6cXbD2OOIScQnji7g7OE2UVZNILflnbrulx/XKfTAfL+OugJgqAShGF4/7/T6/Ug+AYZrx7y3UV8agAAAABJRU5ErkJggg==")}
-${img("histo3d",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX////48OjIgTrHfjjKgTr78+yixH9HiQBHiACiw37jvJXfpVP6wzT7zTn7yj3lp1qOhyJzvgCa3wCa3gB2ugBinQ6Pt2D4+vfOjEr96p3986z83mT99rD99a3WhEvC0kaU3gCV3ADG71zo/KORzw1gowBonS3Z5snHfTb6uyD6tzD+/Nb7z0/70D3KdTXI1l3h+qTi+KXD7luU3ACY3gCc4QCi3g1QjwXHfjr710T6xi/+9sn70UH73E/MdDqhvQCi1BKkug2XxACU1wCS2ADD51rr9aJXkw/MpYDgpkb71U7+9MP7007hnEO3niOj0hGq3SCZtQCbtQCjtwj//+7F4Vui0wBDhgDk5eTMxcGxfi3TfTq+fyPPz4ak3xux5TG87kmZuwCZvACWtgDf8a+c0gCy3yNLiwD7/Ps1iwCiyAPF3F7j7bG67EW77kmq5yWYzwCZwwCTugDc8KTE51ve9YZCigCgwgCVuQDa5p7U9YSq4yWT2gCV2wCT2wCp2h/y+9HC6lW87DlChQBGigCixgCYvgDK3nyXvgC72UjG7mSj3xXL7XDK7W7b9J+36TrG9lBDhQBHigClywCbxQDJ33SXvwCYvQCcwADq+8S77Ei460Hd+KDD9VHU/2VEhgBdlR1rowCXwwDK4W6bxgCaxQCVvQDp/L+/8k7F91fn/6zC9V18tiNbkx/U1dSyv6RglihnoQCYwwChyQDs/7/P/2fE92F5tCBdkib19vXW1taoupVLiwNooQCWwADo/7h5tSBFhgaouZXx8vHOz86ftYVJiQBNjQKetIXt7u3Nzs0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBfAAAAAAAAAA2tmA2tmAAACQAAAAAAAAAAAAAAAAAAAAAATgAABNBfMAAAAAAAAA2tpQ2tpQAACQAAAAAAAAAAAAAAAAAAAAAAdQAABNBfMAAAAAAAAA2tsg2tsgAACQAAAAAAAAAAAAAAAAAAAAAAggAABNBfMCaVmCSAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAQVJREFUeNpjYGBkYmZhZWBj5+BkAAMubh5ePn4BQSFhEVExcaCAhKSUtIysnLyCopKyiqqaOoOGppa2jq6evoGhkbGJqZk5g4WllbWNrZ29g6OTs4urmzuDh6eXt4+vn39AYFBwSGhYOENEZFR0TGxcfEJiUnJKalo6A0NGZlZ2Tm5efkFhUXFJqTnQnrLyisqq6prauvqGxqZmoEBLa1t7R2dXd09vX/+EiUCBSZOnTJ02fcbMWbPnzJ03HyiwYOGixUuWLlu+YuWq1WvWAgXWrd+wcdPmTVu2btu+Y/06kHd27tq9Z+++/QcOHtq1E+JBhsNHjh47fuLIYQYEOHnq1EkwAwCuO1brXBOTOwAAAABJRU5ErkJggg==")}
-${img("graph",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEFCgohaz8VogAAAT9JREFUOMulkz1LQlEYx39XmrIhcLa5i4mD4JBQrtHieDbb+gx3dbl9hca7tLi4VOsRMkKQVO7LLAQNNdSQgyJPg903tDT8w4HzPDznd56Xc1BKCVsokzTGjhPBXDcQAAEZDgPZCHDQaESH5/PYXyqZxp8A349vGHkjOXo3uXtp035sy79KABi8DQCwshb7x3U6gIYU6KNej+1kEwUEjbQeWtIb9mTsOCIgN1eXgiYd96OdcKNBOoCuQc47pFgoGmHw7skZTK9X16CUku5zV9BIkhz4vgSuG/nsWzvKIhmXAah+VpfJsxnGZMKkUln05NwykqOORq6UWkn+TRokXFEG/Vx/45c3fbrnFKjpRVkZgHKxbAC8NptrAfm9PAD2l42VtdJjDDwv2CSLpSaGMgsFc91hpdRFKtNtf6OxLeAbVYSb7ipFh3AAAAAASUVORK5CYII=")}
-${img("mgraph",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEW9vb2np6empqanpqenpqivr68AAAD3+fn09vb19vf3+Pv8+v//+//29/v3+fr19vbZ3Nza3d6/wcLb3t7b3N3AwMPi4et2oz0yfwDh3+n2+PimpqXe4+Th6uvD0NHi6uzg5ebFx8nt6vY2ggDs/881gQDr5/T2+fnFz9DDZVrAIhDEZVvJ0tTN0NTX0+IvZAA4hAAuYgDT0N77/P6lpqX3+vvn9vi/JRL81cHBJhTu+//W1uEkXgD48//29P8fWwD//f+mpqelpqb4/v/t/f+yCwDBKBi3CgD6//8kYAD59v/x8fXQ0dTw9fny9/78/v+lpqf7//+wAADV5ezZ5e7g6PQjZQDf4+/W2t/R1tfT2drT3+OvAAD9///6/v/////k4vIiXwC1AAD3///2///X6Oz0//9+rUgzfwAwdADa6u6xCwDAJxb5///1+/z9/v6lpaUwfADo/8vl4e3a3uDb6eu+IxL808C+IhDZ5+nW2tr+//+kpKSmpaaArUgvewB1oj39/v/e5ebVd227HgvJa2H8///6/PylpKXn4+ze4eLg5+j9/v20tLSsrKzc3NzMzMzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAPAAAAAAEAAAEAAABzL1z/CSMAAAAAAAAAAAAAAAMAAAAmCTsAAAAAAAAAAAAAAAAAAAQAAQEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA7op0gAAAAB3RSTlP///////8AGksDRgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOhJREFUeNpjYGBkggBmFmYmRlY2BkZ2DhDg5OLm4eblY2RjYOIXEBQSFhEVE5cQl5RiYmOQ5pSRlZNXUFRSVlFV4wIJqGtoamnr6OrpGxgaGQMFTEzNzC0sraxtbPXs7B0c2RicnF1c3dw9PL28fXz9/IECAYFBwSGhYeERkVHRMYEBQFti4+ITEuOTklNSg9I8nNgYHOPTMzLjA7Oyc7Jz8/ILQAKFRRnFJaVl5RWVVdU1bAy18XX1DfGNTc0trW3t8UCBjvj4+M746q74+O7qHpAAUzwyADqsl6kGAZj62Bj6JyCDiWwAyPNF46u5fYIAAAAASUVORK5CYII=")}
-${img("tree",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAACjklEQVQ4y4WTy49LcRzFP+2tzmVUr9dIDJOWGGVBicgEyTQTCzIetUFssDKJSFhY2SARCYvBbGrj8QcIkYglk8xCmEQ9xqNexbQVY2Zub3un9/W7PwstHZH4Jie/7+Kc8/suzgnwr+kjBqSBbm2lkm6bHyH3XM9SZQ8Z8s3UQJPo0IJVof5EZ7v2faxMrKONlhmQWN5GSFEwLbhybjBPhDwVsmQ4AaA09Mou+k8d702EAzXiS6KEgzahoIthGOi6DtKlN71GS+/cEPs0WewaX2R9ZphssP776UhESY0WSpQNg7Jh4Anx+zgJVKpV3uZyvHjzir27NwGs/XVBH8c7N2nnjx7eSqlYxPM8JCCkxBU+rhA4dVhCYJgmyc4Ej96/7rLi8nNAPc/k2ZNp7cnTpziuiy8lvpSI+tvYhS/xpY8vJXMiEbZv3MzFq3cJqaqiPX72jnKt9kfQRPZ9f5qZ70sMawyAas1GseIy1rNtVXK8Mkm1VsP2PBzhYQuB5Qns+t6AJQSqqlIcrTAy+ONGENBWLF3MN71MxXGo1mE6DqbrYLou8z/a7L3uMKvgUnU8xk2T3u71ADGFDdgvCx/3TwkLEfKxhWDHbY+eYZ+Obz6tJcmRApRsuJ8Ex4Po7Jl8/TDBl7flm4Gm5F1vSZKaFQUh4cB9OLgaDB3UVrjwA+6tBnKAis4El8lwujmJSVQeoKAxFzqDcG0KWhZC6R30tUJRQD3Odxqy4G+DDFks4pisY5RLgRx5pZ5T4cKy95yhSrxZDBCaVqIMOpAd2EIeSEW7wLQh3Ar7RtCHbk0v0vQy1WdgCymgf147Sa0dhAOVMZgoALDu2BDZ/xloQAzQgIOhMCnPYQ+gHRvi4d/8n00kYDRVLifLAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDEwLTAyLTExVDE0OjUxOjE3LTA2OjAwHh/NoQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAwNC0wOS0yMFQxNzoxMDoyNi0wNTowMCcJijsAAAAASUVORK5CYII=")}
-${img("branch",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX///99plFAfADL27hpmyfP8YxyoilSiRiv0XGGygK02VtRiBmVwjh8xQCcziFZkhLz9+9BfQB2rwaCyACRygFQigXw9Ox0mkpXkQCJzwBblgBmkzP8/fxEgQBCfwBEgQejwITe3t5hkC1CfgBfjynZ2tmSq3eArDu72oNvoDJajyTY2dhFgQDCzLqhvn9EgAazx55XkwCVzC2824GMs1J0oUTY48xajiK72YR9qj2Tq3dhkix+th99xAB3uADA3oQ+fABEgABIgwW82oOUyi5VkgCf0CaEygB+wwCbzjN1mkrA3YZ1tAB7wAB+uB1vl0JdmgCJwwCKzwBoqAB4nVBikiuayzZ8wQCFywCg0Sjd3t1lkjFBfABLgwhKgwlmpgCK0QCJxQBclwDMzMzPz89GggCDpFxDfgCIpmPl5eUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAABQEABuZQBjYQBvcgAIZABiYQBlZAAABQDU/wCx/wCO/wBr/wBI/wAl/wAA/wAA3AAAuQAAlgAAcwAAUADU/wCx/wCO/wBr/wBI/wAl/wAA/gAA3AAAuQAAlgAAcwAAUADj/wDH/wCr/wCP/wBz/wBX/wBV/wBJ3AA9uQAxlgAlcwAZUADw/wDi/wDU/wDG/wC4/wCq/wCq/wCS3AB6uQBilgBKcwAyUAD//wD//wD//wD//wD//wD//wD+/gDc3AC5uQCWlgBzcwBQUAD/8AD/4gD/1AD/xgD/uAD/qgD/qgDckgC5egCWYgBzSgBQMgD/4wD/xwD/qwD/jwD/cwD/VwD/VQDcSQC5PQCWMQBzJQBQGQD/1AD/sQD/jgD/awD/SAD/JQD+AADcAAC5AACWAABzAABQAAD/1AD/sQD/jgD/awD/SAD/JQD/AADcAACwULzWAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAALZJREFUeNpjYAADRiZGBmTAzMLKxowswM7BycWNLMDEw8vHL4AkICgkLCIqhiQgLiEpJS0D5cjKySsoKimrqMJk1dQ1NLW0dXQZ9PTlZEECBoZGxiamOmbmmhaWViABaxtbO3sHRycTZxdXA7ANbu4enkxeDt4+vn7WIAH/gMCg4JBQprDwiEhBkEBUtGBMrI5OXHxCYpI/2BrV5OSU5NS09BjB6CiE01JTM5KTVZHcmpycCWEAANfrHJleKislAAAAAElFTkSuQmCC")}
-${img("leaf",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX////M27mQs2tilDA9eQA7egBbkhVTjAxJgwWBqVdGgQBrnySdxViu0WrE4oaYv2PC35NtoCqxvaSevX5FgAB7qje73nDK6neu109vpyVupCGo2kJ9xwBQhBtilC9pnx7G63PM6olgnAB/vQBDigCVv0yb1CaDzAB8uBJwmkNnnBnB52ui2Ca94WZopAE/hgCtz2ue2CmDywCByACKujtdjyqdvHpdlhLV9YdkowCFxwCw1lFXmAJvpC5jng1coABlpwBprAB8sitAfABDfgKx31Gr3TuCsi5sqABtqgBUkxTV85zL7I213mef0j+OxyKk00k/ewCp3TCSyhCw0mRRjQC23HmU0h55wQB5vQB4uQB1tgCIwBeJxgCBvQDC3ndCjACYx1204Fx6wwB7vQB1tABzsQBBfQBpkzdtpQB9tQA/iQCMu1SMukNUlQBYmQBsqAd4rh11rwZyrQBvqgBDfwCqvZVWkQBUnACp0Hq/43K733C+4X+w12eZyT2IvSN5sgpZkwBxmUSDqFlbnACJzQy742p/wwB2ugBysgBwrwBvqwBwqQBhmgBCfwDV2NN8pk1foACO1QBZmABRkABpqwB3uQB0sgB0rgBnogBUjgC7w7NymkFdnQBUhxmis41okjdCfgBGgQWHpWPMzMzb3NtumD5NhQzT09Pv8O/a2trOz87l5eXc3NzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABtHAA4HXQAAEgAAB9CTigAAABCfCQ4HTxy6Kw4HXRy+8xy+8wAAMwAAAAAAAAAAAAAAAAAAAAAAAgAAAgAABgYAAG7AAAAACgAAAgAAAgYAAEAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4Hnw4HnwAAFRpRiYmO2V0aWRtSSY7ZWdsZVNpdGNBO251amRGO3R0bCYmO3J3ZWlvVCY7c2xuaVc7d28ABCwBG8q3AAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOtJREFUeNpjYIACRiZmFlY2dg4ol5OLm4eXj19AUAjMFRYRFROXkJSSlpEF8+XkFRSVlFVU1dQ1NMF8LW0dXT19A0MjYxNTIN/M3MLSytrG1s7ewdHJGSjg4urm7uHp5e3j6+cfABIIDAoOCVUJC4+IjIqOAQk4x8bFJyQmJadEpaalpQMFMjKzsnNy8/ILCouKS0qBAmXlFZVV1TW1dfUNJY1NQIHmlta29o7ozq7unt6+fgaGCRMnTZ4ydVrU9BkzZ5XOBiqYM3HuvPkL0tPTFy5avATkzqXLlq9YuWoJEKxeA/Ho2nUMyAAA9OtDOfv2TiUAAAAASUVORK5CYII=")}
-${img("leaf_method",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAKlBMVEUAAAAAgADzExMAgIAAAADAwMCAgADxGRnuFxLnHhHuIyPKJQ/rLi7////aW8ZOAAAAAXRSTlMAQObYZgAAAAFiS0dEDfa0YfUAAAAHdElNRQfgCxIPFR/msbP7AAAAaUlEQVQI12NggANBBiYFMMNQxAjCYA4UUoZIBRpBGMyiQorGIIaxWRCEwSYo3igiCNJlaLkwGSwkJn1QGMhgNDQ0TDU2dACqERYTDksGG5SkmGoApBnFhBRTBUAiaYJpDIJgs10cGBgdACxbDamu76Z5AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE3LTAxLTE3VDA5OjMwOjM1KzAxOjAwyGHxKQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xOFQxNToyMTozMSswMTowMJgvuUkAAAAASUVORK5CYII=")}
-${img("globe",18,"gif","R0lGODlhEwASAPcAAPr7/AFyAQFCpwGD6jy3/wE9on7N0AE+pAFjyMLI0AE2mwF94wGP9QFpzgU3nISSopWgrmJsfTNLfgFHqAFuBilNiTp4sLnGzwWb/0xYb/P09mRygGl0hRlnMgR12V2Pr6e4xF9peS2Cyh5FpBdSfgF84YmisdPa30hjvw+foQFYvlWj4HWIlkWb5gk5n/b4+gw+kgFMscXb6ylmieDj5ju2pylTsniElgqd/u/x8wGW/O7v8SVMsUq+JSSJXQFiwfv+/AFqvB9ntobZeKbc/9vt+B+YmW2rvKruzQGPkm3PPrjmxQFIklrFLVbD4QGMYaXkoIPD13LC+nGw5AGFQHG66gF2eBaJxket9sLf84HI+wF7axBdbg2c0CR+1QFsEIfJ7yqoUIbH41tldgF+KzVTjn3QfitZgTJZkaDR8gKDsXeWrE+zogE3nCeKzQFtJ0tknjdnbQGB6EJgxQFqAcLJ0WC//yKm/wE+o7vI0ARozEOz/4/g/4KToyaX4/D09pCpuNHV24HA6gw7oAF/AXWKnEVSb5TI6VzDTrPprxBQts7e6FNdcBA9oySd9RRjPAhnD2NvgIydrF+6wdLo9v7//2K+twKSdDmKyeD56wGCyHq12VnF+ZXXsARdTjZWthShoo7gtilDlAFw1RCXvF+z6p/R8kqZzAF0Oj5jjFuJqgFoAkRgxtzr9YmcrJKsugFlylfBgxJGhjJIeFnFuhmi/+bo65ipt8Hn+UhVco7B5SZowAGBKoaZqAGGAVHBUwF8Qq7Y819qe4DEoVyYwrnb8QGN9GCy6QFTuHB9jgGY/gFRtuTu9ZOhr150iwFbwTFiwFus4h9mYt/y+kWZ35vM7hGfccz43Xy/6m3BuS1GiYveqDRfwnbUV4rdu////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAN8ALAAAAAATABIAAAj/AL8JHEiwVTVspar8ITiwiJhswyaBibJJUq9Trxh+S2OAVihvSzqRcoTpmy5ADIPFqrHtGpBETbrIuXJEBgiGbHoogTItExJOoAbw8rHmAkFTC8KYwTWkGx8COp4AozAjD8Epo4wQQfTLCQEcxqigoiONBUFqerRYspYCgzIGmgi98cRlA8EVLaR4UJPk0oASVgKs6kAiBMFDdrzAarDFF5kgCJA9ilNBGMFjWAQse/YjwBcVMfCcgTMr2UBKe0QIaHNgAiQmBRS4+CSKEYSBWe44E6JoEAxZDhrxmDPCEAcaA4vVinTCwi5uKFhBs6EtQ4QEOQYy8+NGUDRiqdCUJJGQa8yNQDsADHyxSNUHE4Vc3erzoFkdWxoAVNLIv7///98EBAA7")}
-${img("canvas",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX/AAC1t7etsLCsrq6rrq6rrq2tr6+0tratsK/////p6enIysrl5OTn5uXo5+ajpaXo5+dhhKdliKlmialgg6elp6f6+/vIycnr7Ozw7u7x7u7x7u3t6+vLzMvp7vbs7/bz8PD17+3z7u2rrq/6xS76xy13zv9+z/+EwLF4zP/38/NfgqWAoL36uCj6vCmR2f+TxamSrBmNvoj++fz8+Pf69/WZ3f+g4P+n4/+Cnw2Dox16nQ3//f9hg6eBob6x5/+46f+77P+p2NKSZhOi1s////7//fusrq98sB6CsyWDtSmFuC9+dBl/tilfgqasr6+sr7DbAADcAABcgqWAoLyusLC4urqssLCssLGrsLCrr7Ctr67c3NzMzMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoAAAKAgJldmV0dU8GB3JvTnZDBWVyb2xsYwdjYWxhUBB0bmVrY2F1b3IICGRPYmFyZWQAAAXj1P/Hsf+rjv+Pa/9zSP9XJf9VAP9JANw9ALkxAJYlAHMZAFDU1P+xsf+Ojv9ra/9ISP8lJf8AAP4AANwAALkAAJYAAHMAAFDU4/+xx/+Oq/9rj/9Ic/8lV/8AVf8ASdwAPbkAMZYAJXMAGVDU8P+x4v+O1P9rxv9IuP8lqv8Aqv8AktwAerkAYpYASnMAMlDU//+x//+O//9r//9I//8l//8A/v4A3NwAubkAlpYAc3MAUFDU//Cx/+KO/9Rr/8ZI/7gl/6oA/6oA3JIAuXoAlmIAc0oAUDLU/+Ox/8eO/6tr/49I/3Ml/1cA/1UA3EkAuT0AljEAcyUAUBnU/9Sx/7GO/45r/2tI/0gl/yUA/gAA3AAAuQAAlgAAcwAAUADj/9TH/7Gr/46P/2tz/0hX/yVV/wBJ3AAQ+AFLAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAALpJREFUeNpjYGBkYmZhYWFlYWNngAAOTijg4oYIMHPy8PLx8nDycwpwQwUEhYSFRDhFxTi5xCECEpJS0jKcsqL8nGwgARZOOXkFRSWwMcwgAWVOFVU1dQ1NLW0dmICunr6BoZGxiSlEgJnTzNzC0sraxtYOJmDv4Ojk7MLp6gYRcOf08PTy9vHl9IOa4c+JAGCBAM7AoEDOwEDO4BCIABOSilCQQBhTeERkVGS4f3R0aBhIICYWAWIYGAClIBsa7hXG7gAAAABJRU5ErkJggg==")}
-${img("profile",16,"gif","iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAsSAAALEgHS3X78AAABZElEQVR42o1R22rCQBD1U/p//apCNtsHwRdfBaFIKbRoUVKMMTWBWIxVCq2b+07POrn4UKjDMpw9O2fm7G5vNBpJKe2/Qto4uEc2WMrBYEBEPaAky36UulwnlSRpUeZEBSGrpEiyHJVGAPVJqZvbO3ftv83Dle+vvPV4/LD0PGYAcKrSFJUsEOgHKoj3s9dFGH9uou3k8ekQKxyDQcYpBnYC7Hm9zBZmlL8BiIJDC0AWpa4FwhZJXoDCBgYAjgU5ToBt+k1tL14ssFNNvIEBAFwVljJlSDBfpwyg1ISnYoEsiHju5XLcd+T50q0tEQm7eaWKKNfUWgKApUsbPFY0lzY6DraEZm585Do/CLMzqLQWQnSC9k34lVa7PTsBs/zYOa4LB5ZlnQXCbif40Ra50jUwE6JtCcMlUiMQlugEQYisG8CWtGlRdQL+jmui/rjhcAhk/Reo6ff7RuB53vN1MZ1OIfgFQC1cuR3Y6lIAAAAASUVORK5CYII=")}
-${img("execute",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEXAwMAAxwCvbOAvAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAACBJREFUCFtjYIABHgYGfiA6wMD/gYH/B5g8ABLhYUAGAHniBNrUPuoHAAAAAElFTkSuQmCC")}
-${img("file",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABmJLR0T///////8JWPfcAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAAA2klEQVRIx61VURbDIAgTX+9ljg4n2z5sNouj1ml+LE9rQkSU5PA6kTZBToTznj5aqKqq+py4lFJKScnMzCwlAAB6IbnNuyXycd1g3oHrf32CmR9mZqpVOdDHs2DmI+c+AiJixu1RAN9xFUcdWCjVIr8xCX8Jubc8Ao9CJF8nRFgNJBxZSCEkjmrIxxSS0yIAoBU4OkpfU8sCPEbEvqaOXcR31zWORbYJ8EI8rsK+DWm7gMVb8F/GK7eg6818jNjJZjMn0agY7x6oxqL5sWbIbhLHoQN78PQ5F3kDgX8u9tphBfoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMDItMDZUMTA6Mjc6MzErMDE6MDChLu/mAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjIwKzAxOjAwIGvf8wAAAABJRU5ErkJggg==")}
-${img('text',16,"gif","R0lGODlhEgASALMAAP/////MzP+Zmf9mZv8zM/8AAMzM/8zMzJmZ/5mZmWZm/2ZmZjMz/zMzMwAA/////yH5BAUUAA8ALAAAAAASABIAAARo8MlJq73SKGSwdSDjUQoIjhNYOujDnGAnFXRBZKoBIpMw1ICHaaigBAq/AUK1CVEIhcfPNFlRbAEBEvWr0VDYQLYgkCQWh8XiAfgRymPyoTFRa2uPO009maP8ZmsjAHxnBygLDQ1zihEAOw==")}
-${img("task",18,'png',"iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAAAAACMfPpKAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAATklEQVQY05XQUQoAIAgD0N3JY3fIChWttKR9xYvBCj0J0FsI3VVKQflwV22J0oyo3LOCc6pHW4dqi56v2CebbpMLtcmr+uTizz6UYpBnADSS8gvhaL5WAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA0LTA3VDA5OjQyOjQ4KzAyOjAwMgzRmQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOCswMTowMJ0LlncAAAAASUVORK5CYII=")}
-${img("pavetext",18,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAsSURBVBjTY2CgCuBAAt1gASS5KKgARBpJACSEooIsARRbkABYoDsKCRDhEQBA2Am/6OrPewAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNi0wMS0wNFQxMDoxODoyNyswMTowMHsz6UQAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MjArMDE6MDAga9/zAAAAAElFTkSuQmCC")}
-${img("pavelabel",18,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAApSURBVBjTY2CgCuBAAt1gASS5KJgABzUEgABFANUWJAAWYIhCAkR4BAAHoAkEyi2U3wAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNi0wMS0wNFQxMDoxODoyNyswMTowMHsz6UQAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MjArMDE6MDAga9/zAAAAAElFTkSuQmCC")}
-${img("list",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEECTc01vBgywAAAE9JREFUOMu1k8ERwDAMwqRc9l/Z/eeRpKZlABkOLFD0JQGgAAah5kp8Y30F2HEwDhGTCG6tX5yqtAV/acEdwHQHl0Y8RbA7pLIxRPziGyM9xLEOKSpp/5AAAAAASUVORK5CYII=")}
-${img('color',16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAAAA4xcavGZGS1xZT79lW+9wdvFz/3N6fo3RISTZwXbyniXz80v/AAD/zAD/66v//6vGWiYeAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADswAAA7MAbGhBn4AAAAHdElNRQfgAQQLLBhOmhPcAAAAIklEQVQY02NgRgEMDAzMnLzcfDwC7IxMbKwsQ10A3XMEAQA3JQVNowlkTAAAAABJRU5ErkJggg==")}
-${img("colz",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEV6fo0A4xcavGZGS1xZT79lW+9wdvFz/3PRISTZwXbyniXz80v/AAD/zAD/66v//6t1AkcGAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADswAAA7MAbGhBn4AAAAHdElNRQfgAQQLNwdqpNWzAAAAT0lEQVQI12NgYGAwNjZmAAOLjmY0hs2ZwxCG1arFEIbt3csQhvXuzRCG/f/PEIZ5eTGEYSgoDGEYKSlDGGZpyRCGaWgwhGHi4gxhwG0HAwCr3BFWzqCkcAAAAABJRU5ErkJggg==")}
-${img('frame',16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfgAQQLOwq4oOYCAAAAcUlEQVQoz7WQMQqAMAxFX0Uk4OLgIbp4oZ7BA/cOXR0KDnGpRbGayT+EQF74nw+GHIBo+5hdWdqAaFDoLIsegCSeWE0VcMxXYM6xvmiZSYDTooSR4WlxzzBZwGYBuwWs4mWUpVHJe1H9F1J7yC4ov+kAkTYXFCNzDrEAAAAASUVORK5CYII=")}
-${img('class',16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAvQC9AL1pQtWoAAAAjUlEQVR42p2T2wnAIAxFM0g/O6jDdBBHcAyHKKQYjfiI0UY4P8I9BG4CID8smB4+8SUsohpO3CFzKqmBFrhCO4kqQnCR6MJF4BEJTVQFhBAmASNIZkH6a0OMc8oUDAu8z7RhTTBVyIIEhxeCdYWjQApvK2TBrgGpwpP1livsBXC0ROMO/LqDKjKEzaf8AZWbJP6pTT9BAAAATHpUWHRTb2Z0d2FyZQAAeNpz0FDW9MxNTE/1TUzPTM5WMNEz0jNQsLTUNzDWNzBUSC7KLC6pdMitLC7JTNZLLdZLKS3IzyvRS87PBQDzvxJ8u4pLSgAAADN6VFh0U2lnbmF0dXJlAAB42ktKs0hLMkk2MzJKNEuzMLKwtEizSElMMbNITUw0NUtNAQCc7Qma0Goe1QAAAABJRU5ErkJggg==")}
-${img("member",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAvQC9AL1pQtWoAAAAX0lEQVR42mNgAAIVBob/+DADPgBS8GCPBV6M1xCKDcDnBRcoZhgW4D8DBV75v2bLATAmxyC4ZmRMrCFYNfeU9BBvwJwpS8AYWTNZBoAwTDPFBpAciDCDyNFMtXSAFwAAUyq0GRPbbz4AAABMelRYdFNvZnR3YXJlAAB42nPQUNb0zE1MT/VNTM9MzlYw0TPSM1CwtNQ3MNY3MFRILsosLql0yK0sLslM1kst1kspLcjPK9FLzs8FAPO/Eny7iktKAAAAM3pUWHRTaWduYXR1cmUAAHjaS01JNrE0S00zSbU0NEsxMbMwM0xOSjYwNzY3NLRIMjUCAJcdCJ2BHe6SAAAAAElFTkSuQmCC")}
-${img("tf1",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8/SMz///+Cf5VqAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4QHgSCla+2AAAAL0lEQVQI12MQYAACrAQXiFBoABINCgwMQgwcDAwSDEwMDKmhodMYJjAwaKDrAAEAoRAEjHDJ/uQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTEtMTRUMTc6Mjk6MjErMDE6MDDxcSccAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTExLTE0VDE3OjI5OjA1KzAxOjAwNka8zgAAAABJRU5ErkJggg==")}
-${img("tf2",16,'png',"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8A/wD////pL6WoAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4PNgzGaW1jAAAARUlEQVQI12NgEGDQZAASKkBigQKQ6GhgYBDiYgASIiAigIGBS8iBgUFhEpCnoAEkUkNDQxkagUIMrUDMMAVETAARQI0MAD5GCJ7tAr1aAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTExLTE0VDE2OjUxOjUzKzAxOjAwi1Gz3gAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xNFQxNjo1MTozNiswMTowMG5bLUIAAAAASUVORK5CYII=")}
+${img('minus',18,'gif','R0lGODlhEgASAJEDAIKCgoCAgAAAAP///yH5BAEAAAMALAAAAAASABIAAAInnD+By+2rnpyhWvsizE0zf4CIIpRlgiqaiDosa7zZdU22A9y6u98FADs=')}
+${img('minusbottom',18,'gif','R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAImlC+Ay+2rnpygWvsizE0zf4CIEpRlgiqaiDosa7zZdU32jed6XgAAOw==')}
+${img('plus',18,'gif','R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIqlC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU06vfe8rysAADs=')}
+${img('plusbottom',18,'gif','R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIplC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU36zvd+XwAAOw==')}
+${img('empty',18,'gif','R0lGODlhEgASAJEAAAAAAP///4CAgP///yH5BAEAAAMALAAAAAASABIAAAIPnI+py+0Po5y02ouz3pwXADs=')}
+${img('line',18,'gif','R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIZjB+Ay+2rnpwo0uss3kfz7X1XKE5k+ZxoAQA7')}
+${img('join',18,'gif','R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIcjB+Ay+2rnpwo0uss3kf5BGocNJZiSZ2opK5BAQA7')}
+${img('joinbottom',18,'gif','R0lGODlhEgASAIABAICAgP///yH5BAEAAAEALAAAAAASABIAAAIZjB+Ay+2rnpwo0uss3kf5BGrcSJbmiaZGAQA7')}
+${img('base',18,'gif','R0lGODlhEwASAPcAAPv6/Pn4+mnN/4zf/764x2vO//Dv84HZ/5jl/0ZGmfTz9vLy8lHB/+zr70u+/7S03IODtd7d6c/P0ndqiq/w/4Pb/5SKo/Py9fPy9tTU121kjd/f4MzM062tx5+zy5rO67GwxNDM14d8mJzn/7awwry713zX/9bW27u71lFRmW5uoZ+fxjOy/zm1/9HQ2o3g/2xfgZeMplav7sn9/6Cgv37X/6Dp/3jU/2uJ2M7J1JC63vn5+v38/d7e38PD0Z7o/9LR4LS01cPDzPb1+Nzb5IJ2lHCEv5bk/53C3MrJ3X56t+np6YF7o3JsndTU5Wtgh5GHoKaesuLi4mrO/19RdnnV/4WBqF5QdWPK/4+PvW5uu4+PuuHh4q7w/97e68C9z63w/9PT0+zs7FtbmWVXerS0yaqitpuSqWVlpcL6/8jD0H/C9mVajqWu3nFwpYqHtFfE/42DnaWl0bTz/5OPt+7u7tra5Y+Yz+Tk56fM6Gek5pG50LGpvOHh72LJ/9XU5lbD/6GnwHpujfDu8mxpntzb45qav7PH41+n6JeXyUZGopyYsWeGyDu2/6LQ44re/1yV41TD/8LC1zix/sS/zdTU4Y+gsd/c5L7z+a6uzE+3+XG89L6+087O1sTD3K2twoGBtWVbgomo4P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKMALAAAAAATABIAAAjtAEcJFLgDTyE7SVCsAAJgoMNRYTII8fEpkAckOpiEaPhwlARLexxhmpEGzJEmBAJ0HMXhw6MfXeZQsDHADZ8hK13kMTEAwQgEL2oYiaJgJZFDU24cqHCgSgFGFgysBJAJkB8BBQRggQNJxKCVo0rIcMAgEgMHmnBMaADWEyIWLRptEqWETRG2K//ombSmjRZFoaCo4djRyZ0HchIlSECIRNGVXur0WcAlCJoUoOhcAltpyQIxPSRtGQPhjRkMKyN0krLhBCcaKrJoOCO1I48vi0CU6WDIyhNBKcEGyBEDBpUrZOJQugC2ufPnDwMCADs=')}
+${img('folder',18,'gif','R0lGODlhEgASANUAAPv7++/v79u3UsyZNOTk5MHBwaNxC8KPKre3t55sBrqHIpxqBMmWMb2KJbOBG5lnAdu3cbWCHaBuCMuYM///urB+GMWSLad1D8eUL6ampqVzDbeEH6t5E8iVMMCNKMbGxq58FppoAqh2EKx6FP/Ub//4k+vr6///nP/bdf/kf//viba2tv//////mQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAC4ALAAAAAASABIAAAaRQJdwSCwaj8ik0jUYTBidAEA5YFkplANhehxABGAwpKHYRByVwHBibbvbo8+Q0TrZ7/jWBTHEtP6AgX8GK0MWLSWJiostEoVCBy0qk5SVLQmPLh4tKZ2eny0LmQ0tKKanqC0hmQotJK+wsS0PfEIBZxUgHCIaBhIJCw8ZBUMABAUrycrLBQREAAEm0tPUUktKQQA7')}
+${img('folderopen',18,'gif','R0lGODlhEgASANUAAO/v76VzDfv7+8yZNMHBweTk5JpoAqBuCMuYM8mWMZ5sBpxqBPr7/Le3t///pcaaGvDker2KJc+iJqd1D7B+GOKzQ8KPKqJwCrOBG7WCHbeEH9e4QNq/bP/rhJlnAffwiaampuLBUMmgIf3VcKRyDP/XhLqHIqNxC8iVMMbGxqx6FP/kf//bdf/vievr67a2tv/4k8aaGf//nP//mf///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAADUALAAAAAASABIAAAaVwJpwSCwaj8ikUjgYIBIogEA5oFkZDEtheqzKvl9axKTJYCiAIYIGblutqtQwQYPZ73jZpCGM+f+AfiEdJy99M21tMxwxJQeGNTGIeHcyHzEjCpAAki2en54OIhULkAKSMiuqqysOGxIGkDWcMyy2t7YQDx58QqcBwMAkFwcKCwYgBEQFBC/Oz9AEBUUALtbX2FJLSUEAOw==')}
+${img('page',18,'gif','R0lGODlhEgASAOYAAPv7++/v7/j7/+32/8HBweTk5P39/djr/8Df//7///P5/8Ph//T09fn5+YGVw2t0pc7n/15hkFWn7ZOq0nqDsMDA/9nh7YSbyoqo2eTx/5G46pK873N+sPX6//f395Cjy83m/7rd/9jl9m13qGVqmoeh0n+OvI+z5Yyu387T//b6/2dtnvz9/32JtpS/8sbGxv7+/tvn92lwom96rHJ8rnSAsoep3NHp/8nk/7e3t+vr67a2tun1/3V4o+Hw/9vt/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAEEALAAAAAASABIAAAejgEGCg4SFhoeILjaLjDY1AQCHG0AGAA0eDBY1E5CGGjBAoQkCMTUSHwGGJwaiAh0iNbEvhiihAgIDPDwpFRw5hhgsuLk8Pz8HNL+FJSoKuT4+xzczyoQXzjzQxjcgI9WDDrraPzc4OA/fgibZ0eTmCzLpQS0Z7TflCwgr8hT2EOYIQpCQ16OgwYMRCBgqQGCHw4cOCRQwBCCAjosYL3ZCxNFQIAA7')}
+${img('question',18,'gif','R0lGODlhEgASAPelAOP0//7//9bs//n///j//9Ls/8Pn//r//6rB1t3f5crO2N7g5k1livT4+7PW9dXt/+v4/+Xl5LHW9Ov6/+j1/6CyxrfCz9rd5Nzj6un1/Z6ouwcvj8HBzO7+/+3//+Ln7BUuXNHv/6K4y+/9/wEBZvX08snn/19qhufs8fP7/87n/+/t7czr/5q1yk55q97v/3Cfztnu//z//+X6/ypIdMHY7rPc/7fX9cbl/9/h52WHr2yKrd/0/9fw/4KTs9rm75Svzb2+ya690pu92mWJrcT3//H//+Dv/Xym35S216Ouwsvt/3N/mMnZ5gEBcMnq/wEBXs/o/wEBetzw/zdYpTdZpsvP2ClGml2N3b3H0Nzu/2Z2lF1ricrl/93w/97h6JqluktojM/u/+/z9g8pVff4+ebu9q+1xa6/zzdFaIiXr5Wyz0xslrTK4uL//2uIp11rh8Xj/NXn+Oz2/9bf6bG2xAEBePP//1xwkK/K5Nbr/8fp/2OBtG53kai3ykVCYwEBde/6/7O4xabI+fD//+by/x8+jDhZpM/q/6jK58nO19ny/7jV7ZO42NHr/9H4/2ZwimSV6VBxwMDX7Nvf5hYwX5m20sfb6Ieqyk9Yjr/k/cPM2NDp/+/098Tl9yQ9jLfW+Mne8sjU30JklP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKUALAAAAAASABIAAAjxAEsJHEiwoMEyGMaQWthg0xeDAlGUWKjoz5mFAegY/LBiIalMUK54JCWEoJkIpA6kSDmoAykKgRaqGSiq04A5A5r4AKOEAAAtE2S0USAwSwYIhUb8METiUwAvemLMCMVEoIUjAF5MIYXAThUCDzgVWDQJjkA0cngIEHAHCCAqRqJ0QeQoDxeBFS71KKDCwxonhwiZwPEkzo4+AimJqBFCjBs+UjZ4WmLgxhAQVgb6acGIBShJkbAgMSAhCQ1IBTW8sZRI055HDhoRqXQCYo4tDMJgsqGDTJo6EAlyYFNkVJDgBgXBcJEAucEFeC44n04wIAA7')}
+${img('histo1d',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEW9vb2np6empqanpqenpqivr6//AAD3+fn09vb19vf3+Pv8+v//+//29/v3+fr19vbZ3Nza3d7X0+Lb3t7b3N3AwMP2+PimpqXe4+Th6uvQ0dTi6uzg5ebFx8nt6vb////r5/T2+fnl4e3a3uDN0NT7/P6lpqX3+vvn9vhcVVHu+//W1uH48//29P///f+mpqelpqb4/v/t/f9oY2H6///59v/x8fXw9fny9/78/v+lpqf7//9iXl12dHPW2t/R1tdtaGbT2dpoZmT6/v9ycnKCgoJpZGJ6dnT3///2///0//95entpa2t+gIKLjI55d3aDgYBvcXL1+/z9/v6lpaWGiIt7fH6Ji42SlJeEhIZubGyMjI17fYD+//+kpKSmpaaRk5WIioyRk5aYmp2OkJJ+f4KTlZilpKWcnqGVl5qcnqCfoaOYmp6PkZOdn6GsrrGoqq6qrK+rrbGpq66lp6uqrbCoqq20tLSsrKzc3NzMzMzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB6enrU4/9iYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmLU4/9KSkoAAAAAAAAAAAB6enrU4//m5uZiYmLm5uZiYmLm5uZiYmLm5uZiYmLm5ubU4/9KSkoAAAAAAAAAAAB6enrU4/9KSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkrU4/9KSkoAAAAAAAAAAABubm7U4//U4//U4//U4//U4//U4//U4//U4//U4//U4//U4/9KSkoAAAAAAAAAAABubm5KSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt6dBwBYjWHVG2AAAAB3RSTlP///////8AGksDRgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOxJREFUeNpjYGBkggBmFmYmRlY2BkZ2DhDg5OLm4eblY2RjYOIXEBQSFhEFkgKCYkxsDOKcEpJS0jKycvJS8gpcIAFFJWUVGFIFCqipa8hrymtpy+sI6crr6bMxGBgayRvLm8iamkmZW1gCBayslWxs7ewd7OwdlZStrYC2ODm7uLrJu3t4usl7mRiwMeh7+/j6+VsHBMr7+wQFhwAFQsPCIyKjomOiIsOiYuPYGOITEpOSU1LTElNTElPlgQLpGZlZ2Tm5eZm5OZm5IAGm/ILCouKS0rKS4oISeaDDypniEICpgo2hsgoZVLMBAHIaNxuoIXy2AAAAAElFTkSuQmCC')}
+${img('histo2d',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAsSAAALEgHS3X78AAABUUlEQVR42o1R0U7CQBDkU/w/v8qk1/OhCS+88miMiQYMBMNRTqiisQiRhF6h13adsuVKDEYvm81kdmdv9q7V7XallP65I30UrpErLGW73SaiFtDF5dXWmNNITJrubJ4RWUI2qU33GTorAdSJMeMwhOxpEE20noRTYISaajBcMrsdOlkgME+/vILtPw6j+BPg5vZuFRuUgZGX71tc2AjALuYrpWcP/WE1+ADAADMAY/OyFghfpJnlSTCAvLb1YDbJmArC5izwQa0K4g5EdgSbTQKTX8keOC8bgXSWAEbqmbs5BmPF3iyR8I+vdNrhIj3ewzdnlaBeWroCDHBZxWtm9DzaEyU2L8pSCNEI+N76+fVs8rE8fbeRUiWR53kHgWgs6cXbD2OOIScQnji7g7OE2UVZNILflnbrulx/XKfTAfL+OugJgqAShGF4/7/T6/Ug+AYZrx7y3UV8agAAAABJRU5ErkJggg==')}
+${img('histo3d',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX////48OjIgTrHfjjKgTr78+yixH9HiQBHiACiw37jvJXfpVP6wzT7zTn7yj3lp1qOhyJzvgCa3wCa3gB2ugBinQ6Pt2D4+vfOjEr96p3986z83mT99rD99a3WhEvC0kaU3gCV3ADG71zo/KORzw1gowBonS3Z5snHfTb6uyD6tzD+/Nb7z0/70D3KdTXI1l3h+qTi+KXD7luU3ACY3gCc4QCi3g1QjwXHfjr710T6xi/+9sn70UH73E/MdDqhvQCi1BKkug2XxACU1wCS2ADD51rr9aJXkw/MpYDgpkb71U7+9MP7007hnEO3niOj0hGq3SCZtQCbtQCjtwj//+7F4Vui0wBDhgDk5eTMxcGxfi3TfTq+fyPPz4ak3xux5TG87kmZuwCZvACWtgDf8a+c0gCy3yNLiwD7/Ps1iwCiyAPF3F7j7bG67EW77kmq5yWYzwCZwwCTugDc8KTE51ve9YZCigCgwgCVuQDa5p7U9YSq4yWT2gCV2wCT2wCp2h/y+9HC6lW87DlChQBGigCixgCYvgDK3nyXvgC72UjG7mSj3xXL7XDK7W7b9J+36TrG9lBDhQBHigClywCbxQDJ33SXvwCYvQCcwADq+8S77Ei460Hd+KDD9VHU/2VEhgBdlR1rowCXwwDK4W6bxgCaxQCVvQDp/L+/8k7F91fn/6zC9V18tiNbkx/U1dSyv6RglihnoQCYwwChyQDs/7/P/2fE92F5tCBdkib19vXW1taoupVLiwNooQCWwADo/7h5tSBFhgaouZXx8vHOz86ftYVJiQBNjQKetIXt7u3Nzs0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBfAAAAAAAAAA2tmA2tmAAACQAAAAAAAAAAAAAAAAAAAAAATgAABNBfMAAAAAAAAA2tpQ2tpQAACQAAAAAAAAAAAAAAAAAAAAAAdQAABNBfMAAAAAAAAA2tsg2tsgAACQAAAAAAAAAAAAAAAAAAAAAAggAABNBfMCaVmCSAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAQVJREFUeNpjYGBkYmZhZWBj5+BkAAMubh5ePn4BQSFhEVExcaCAhKSUtIysnLyCopKyiqqaOoOGppa2jq6evoGhkbGJqZk5g4WllbWNrZ29g6OTs4urmzuDh6eXt4+vn39AYFBwSGhYOENEZFR0TGxcfEJiUnJKalo6A0NGZlZ2Tm5efkFhUXFJqTnQnrLyisqq6prauvqGxqZmoEBLa1t7R2dXd09vX/+EiUCBSZOnTJ02fcbMWbPnzJ03HyiwYOGixUuWLlu+YuWq1WvWAgXWrd+wcdPmTVu2btu+Y/06kHd27tq9Z+++/QcOHtq1E+JBhsNHjh47fuLIYQYEOHnq1EkwAwCuO1brXBOTOwAAAABJRU5ErkJggg==')}
+${img('graph',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEFCgohaz8VogAAAT9JREFUOMulkz1LQlEYx39XmrIhcLa5i4mD4JBQrtHieDbb+gx3dbl9hca7tLi4VOsRMkKQVO7LLAQNNdSQgyJPg903tDT8w4HzPDznd56Xc1BKCVsokzTGjhPBXDcQAAEZDgPZCHDQaESH5/PYXyqZxp8A349vGHkjOXo3uXtp035sy79KABi8DQCwshb7x3U6gIYU6KNej+1kEwUEjbQeWtIb9mTsOCIgN1eXgiYd96OdcKNBOoCuQc47pFgoGmHw7skZTK9X16CUku5zV9BIkhz4vgSuG/nsWzvKIhmXAah+VpfJsxnGZMKkUln05NwykqOORq6UWkn+TRokXFEG/Vx/45c3fbrnFKjpRVkZgHKxbAC8NptrAfm9PAD2l42VtdJjDDwv2CSLpSaGMgsFc91hpdRFKtNtf6OxLeAbVYSb7ipFh3AAAAAASUVORK5CYII=')}
+${img('mgraph',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEW9vb2np6empqanpqenpqivr68AAAD3+fn09vb19vf3+Pv8+v//+//29/v3+fr19vbZ3Nza3d6/wcLb3t7b3N3AwMPi4et2oz0yfwDh3+n2+PimpqXe4+Th6uvD0NHi6uzg5ebFx8nt6vY2ggDs/881gQDr5/T2+fnFz9DDZVrAIhDEZVvJ0tTN0NTX0+IvZAA4hAAuYgDT0N77/P6lpqX3+vvn9vi/JRL81cHBJhTu+//W1uEkXgD48//29P8fWwD//f+mpqelpqb4/v/t/f+yCwDBKBi3CgD6//8kYAD59v/x8fXQ0dTw9fny9/78/v+lpqf7//+wAADV5ezZ5e7g6PQjZQDf4+/W2t/R1tfT2drT3+OvAAD9///6/v/////k4vIiXwC1AAD3///2///X6Oz0//9+rUgzfwAwdADa6u6xCwDAJxb5///1+/z9/v6lpaUwfADo/8vl4e3a3uDb6eu+IxL808C+IhDZ5+nW2tr+//+kpKSmpaaArUgvewB1oj39/v/e5ebVd227HgvJa2H8///6/PylpKXn4+ze4eLg5+j9/v20tLSsrKzc3NzMzMzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAPAAAAAAEAAAEAAABzL1z/CSMAAAAAAAAAAAAAAAMAAAAmCTsAAAAAAAAAAAAAAAAAAAQAAQEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA7op0gAAAAB3RSTlP///////8AGksDRgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOhJREFUeNpjYGBkggBmFmYmRlY2BkZ2DhDg5OLm4eblY2RjYOIXEBQSFhEVE5cQl5RiYmOQ5pSRlZNXUFRSVlFV4wIJqGtoamnr6OrpGxgaGQMFTEzNzC0sraxtbPXs7B0c2RicnF1c3dw9PL28fXz9/IECAYFBwSGhYeERkVHRMYEBQFti4+ITEuOTklNSg9I8nNgYHOPTMzLjA7Oyc7Jz8/ILQAKFRRnFJaVl5RWVVdU1bAy18XX1DfGNTc0trW3t8UCBjvj4+M746q74+O7qHpAAUzwyADqsl6kGAZj62Bj6JyCDiWwAyPNF46u5fYIAAAAASUVORK5CYII=')}
+${img('tree',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAACjklEQVQ4y4WTy49LcRzFP+2tzmVUr9dIDJOWGGVBicgEyTQTCzIetUFssDKJSFhY2SARCYvBbGrj8QcIkYglk8xCmEQ9xqNexbQVY2Zub3un9/W7PwstHZH4Jie/7+Kc8/suzgnwr+kjBqSBbm2lkm6bHyH3XM9SZQ8Z8s3UQJPo0IJVof5EZ7v2faxMrKONlhmQWN5GSFEwLbhybjBPhDwVsmQ4AaA09Mou+k8d702EAzXiS6KEgzahoIthGOi6DtKlN71GS+/cEPs0WewaX2R9ZphssP776UhESY0WSpQNg7Jh4Anx+zgJVKpV3uZyvHjzir27NwGs/XVBH8c7N2nnjx7eSqlYxPM8JCCkxBU+rhA4dVhCYJgmyc4Ej96/7rLi8nNAPc/k2ZNp7cnTpziuiy8lvpSI+tvYhS/xpY8vJXMiEbZv3MzFq3cJqaqiPX72jnKt9kfQRPZ9f5qZ70sMawyAas1GseIy1rNtVXK8Mkm1VsP2PBzhYQuB5Qns+t6AJQSqqlIcrTAy+ONGENBWLF3MN71MxXGo1mE6DqbrYLou8z/a7L3uMKvgUnU8xk2T3u71ADGFDdgvCx/3TwkLEfKxhWDHbY+eYZ+Obz6tJcmRApRsuJ8Ex4Po7Jl8/TDBl7flm4Gm5F1vSZKaFQUh4cB9OLgaDB3UVrjwA+6tBnKAis4El8lwujmJSVQeoKAxFzqDcG0KWhZC6R30tUJRQD3Odxqy4G+DDFks4pisY5RLgRx5pZ5T4cKy95yhSrxZDBCaVqIMOpAd2EIeSEW7wLQh3Ar7RtCHbk0v0vQy1WdgCymgf147Sa0dhAOVMZgoALDu2BDZ/xloQAzQgIOhMCnPYQ+gHRvi4d/8n00kYDRVLifLAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDEwLTAyLTExVDE0OjUxOjE3LTA2OjAwHh/NoQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAwNC0wOS0yMFQxNzoxMDoyNi0wNTowMCcJijsAAAAASUVORK5CYII=')}
+${img('branch',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX///99plFAfADL27hpmyfP8YxyoilSiRiv0XGGygK02VtRiBmVwjh8xQCcziFZkhLz9+9BfQB2rwaCyACRygFQigXw9Ox0mkpXkQCJzwBblgBmkzP8/fxEgQBCfwBEgQejwITe3t5hkC1CfgBfjynZ2tmSq3eArDu72oNvoDJajyTY2dhFgQDCzLqhvn9EgAazx55XkwCVzC2824GMs1J0oUTY48xajiK72YR9qj2Tq3dhkix+th99xAB3uADA3oQ+fABEgABIgwW82oOUyi5VkgCf0CaEygB+wwCbzjN1mkrA3YZ1tAB7wAB+uB1vl0JdmgCJwwCKzwBoqAB4nVBikiuayzZ8wQCFywCg0Sjd3t1lkjFBfABLgwhKgwlmpgCK0QCJxQBclwDMzMzPz89GggCDpFxDfgCIpmPl5eUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhAABQEABuZQBjYQBvcgAIZABiYQBlZAAABQDU/wCx/wCO/wBr/wBI/wAl/wAA/wAA3AAAuQAAlgAAcwAAUADU/wCx/wCO/wBr/wBI/wAl/wAA/gAA3AAAuQAAlgAAcwAAUADj/wDH/wCr/wCP/wBz/wBX/wBV/wBJ3AA9uQAxlgAlcwAZUADw/wDi/wDU/wDG/wC4/wCq/wCq/wCS3AB6uQBilgBKcwAyUAD//wD//wD//wD//wD//wD//wD+/gDc3AC5uQCWlgBzcwBQUAD/8AD/4gD/1AD/xgD/uAD/qgD/qgDckgC5egCWYgBzSgBQMgD/4wD/xwD/qwD/jwD/cwD/VwD/VQDcSQC5PQCWMQBzJQBQGQD/1AD/sQD/jgD/awD/SAD/JQD+AADcAAC5AACWAABzAABQAAD/1AD/sQD/jgD/awD/SAD/JQD/AADcAACwULzWAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAALZJREFUeNpjYAADRiZGBmTAzMLKxowswM7BycWNLMDEw8vHL4AkICgkLCIqhiQgLiEpJS0D5cjKySsoKimrqMJk1dQ1NLW0dXQZ9PTlZEECBoZGxiamOmbmmhaWViABaxtbO3sHRycTZxdXA7ANbu4enkxeDt4+vn7WIAH/gMCg4JBQprDwiEhBkEBUtGBMrI5OXHxCYpI/2BrV5OSU5NS09BjB6CiE01JTM5KTVZHcmpycCWEAANfrHJleKislAAAAAElFTkSuQmCC')}
+${img('leaf',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX////M27mQs2tilDA9eQA7egBbkhVTjAxJgwWBqVdGgQBrnySdxViu0WrE4oaYv2PC35NtoCqxvaSevX5FgAB7qje73nDK6neu109vpyVupCGo2kJ9xwBQhBtilC9pnx7G63PM6olgnAB/vQBDigCVv0yb1CaDzAB8uBJwmkNnnBnB52ui2Ca94WZopAE/hgCtz2ue2CmDywCByACKujtdjyqdvHpdlhLV9YdkowCFxwCw1lFXmAJvpC5jng1coABlpwBprAB8sitAfABDfgKx31Gr3TuCsi5sqABtqgBUkxTV85zL7I213mef0j+OxyKk00k/ewCp3TCSyhCw0mRRjQC23HmU0h55wQB5vQB4uQB1tgCIwBeJxgCBvQDC3ndCjACYx1204Fx6wwB7vQB1tABzsQBBfQBpkzdtpQB9tQA/iQCMu1SMukNUlQBYmQBsqAd4rh11rwZyrQBvqgBDfwCqvZVWkQBUnACp0Hq/43K733C+4X+w12eZyT2IvSN5sgpZkwBxmUSDqFlbnACJzQy742p/wwB2ugBysgBwrwBvqwBwqQBhmgBCfwDV2NN8pk1foACO1QBZmABRkABpqwB3uQB0sgB0rgBnogBUjgC7w7NymkFdnQBUhxmis41okjdCfgBGgQWHpWPMzMzb3NtumD5NhQzT09Pv8O/a2trOz87l5eXc3NzPz88AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABtHAA4HXQAAEgAAB9CTigAAABCfCQ4HTxy6Kw4HXRy+8xy+8wAAMwAAAAAAAAAAAAAAAAAAAAAAAgAAAgAABgYAAG7AAAAACgAAAgAAAgYAAEAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4Hnw4HnwAAFRpRiYmO2V0aWRtSSY7ZWdsZVNpdGNBO251amRGO3R0bCYmO3J3ZWlvVCY7c2xuaVc7d28ABCwBG8q3AAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAAOtJREFUeNpjYIACRiZmFlY2dg4ol5OLm4eXj19AUAjMFRYRFROXkJSSlpEF8+XkFRSVlFVU1dQ1NMF8LW0dXT19A0MjYxNTIN/M3MLSytrG1s7ewdHJGSjg4urm7uHp5e3j6+cfABIIDAoOCVUJC4+IjIqOAQk4x8bFJyQmJadEpaalpQMFMjKzsnNy8/ILCouKS0qBAmXlFZVV1TW1dfUNJY1NQIHmlta29o7ozq7unt6+fgaGCRMnTZ4ydVrU9BkzZ5XOBiqYM3HuvPkL0tPTFy5avATkzqXLlq9YuWoJEKxeA/Ho2nUMyAAA9OtDOfv2TiUAAAAASUVORK5CYII=')}
+${img('leaf_method',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAKlBMVEUAAAAAgADzExMAgIAAAADAwMCAgADxGRnuFxLnHhHuIyPKJQ/rLi7////aW8ZOAAAAAXRSTlMAQObYZgAAAAFiS0dEDfa0YfUAAAAHdElNRQfgCxIPFR/msbP7AAAAaUlEQVQI12NggANBBiYFMMNQxAjCYA4UUoZIBRpBGMyiQorGIIaxWRCEwSYo3igiCNJlaLkwGSwkJn1QGMhgNDQ0TDU2dACqERYTDksGG5SkmGoApBnFhBRTBUAiaYJpDIJgs10cGBgdACxbDamu76Z5AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE3LTAxLTE3VDA5OjMwOjM1KzAxOjAwyGHxKQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xOFQxNToyMTozMSswMTowMJgvuUkAAAAASUVORK5CYII=')}
+${img('globe',18,'gif','R0lGODlhEwASAPcAAPr7/AFyAQFCpwGD6jy3/wE9on7N0AE+pAFjyMLI0AE2mwF94wGP9QFpzgU3nISSopWgrmJsfTNLfgFHqAFuBilNiTp4sLnGzwWb/0xYb/P09mRygGl0hRlnMgR12V2Pr6e4xF9peS2Cyh5FpBdSfgF84YmisdPa30hjvw+foQFYvlWj4HWIlkWb5gk5n/b4+gw+kgFMscXb6ylmieDj5ju2pylTsniElgqd/u/x8wGW/O7v8SVMsUq+JSSJXQFiwfv+/AFqvB9ntobZeKbc/9vt+B+YmW2rvKruzQGPkm3PPrjmxQFIklrFLVbD4QGMYaXkoIPD13LC+nGw5AGFQHG66gF2eBaJxket9sLf84HI+wF7axBdbg2c0CR+1QFsEIfJ7yqoUIbH41tldgF+KzVTjn3QfitZgTJZkaDR8gKDsXeWrE+zogE3nCeKzQFtJ0tknjdnbQGB6EJgxQFqAcLJ0WC//yKm/wE+o7vI0ARozEOz/4/g/4KToyaX4/D09pCpuNHV24HA6gw7oAF/AXWKnEVSb5TI6VzDTrPprxBQts7e6FNdcBA9oySd9RRjPAhnD2NvgIydrF+6wdLo9v7//2K+twKSdDmKyeD56wGCyHq12VnF+ZXXsARdTjZWthShoo7gtilDlAFw1RCXvF+z6p/R8kqZzAF0Oj5jjFuJqgFoAkRgxtzr9YmcrJKsugFlylfBgxJGhjJIeFnFuhmi/+bo65ipt8Hn+UhVco7B5SZowAGBKoaZqAGGAVHBUwF8Qq7Y819qe4DEoVyYwrnb8QGN9GCy6QFTuHB9jgGY/gFRtuTu9ZOhr150iwFbwTFiwFus4h9mYt/y+kWZ35vM7hGfccz43Xy/6m3BuS1GiYveqDRfwnbUV4rdu////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAN8ALAAAAAATABIAAAj/AL8JHEiwVTVspar8ITiwiJhswyaBibJJUq9Trxh+S2OAVihvSzqRcoTpmy5ADIPFqrHtGpBETbrIuXJEBgiGbHoogTItExJOoAbw8rHmAkFTC8KYwTWkGx8COp4AozAjD8Epo4wQQfTLCQEcxqigoiONBUFqerRYspYCgzIGmgi98cRlA8EVLaR4UJPk0oASVgKs6kAiBMFDdrzAarDFF5kgCJA9ilNBGMFjWAQse/YjwBcVMfCcgTMr2UBKe0QIaHNgAiQmBRS4+CSKEYSBWe44E6JoEAxZDhrxmDPCEAcaA4vVinTCwi5uKFhBs6EtQ4QEOQYy8+NGUDRiqdCUJJGQa8yNQDsADHyxSNUHE4Vc3erzoFkdWxoAVNLIv7///98EBAA7')}
+${img('canvas',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAADAFBMVEX/AAC1t7etsLCsrq6rrq6rrq2tr6+0tratsK/////p6enIysrl5OTn5uXo5+ajpaXo5+dhhKdliKlmialgg6elp6f6+/vIycnr7Ozw7u7x7u7x7u3t6+vLzMvp7vbs7/bz8PD17+3z7u2rrq/6xS76xy13zv9+z/+EwLF4zP/38/NfgqWAoL36uCj6vCmR2f+TxamSrBmNvoj++fz8+Pf69/WZ3f+g4P+n4/+Cnw2Dox16nQ3//f9hg6eBob6x5/+46f+77P+p2NKSZhOi1s////7//fusrq98sB6CsyWDtSmFuC9+dBl/tilfgqasr6+sr7DbAADcAABcgqWAoLyusLC4urqssLCssLGrsLCrr7Ctr67c3NzMzMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoAAAKAgJldmV0dU8GB3JvTnZDBWVyb2xsYwdjYWxhUBB0bmVrY2F1b3IICGRPYmFyZWQAAAXj1P/Hsf+rjv+Pa/9zSP9XJf9VAP9JANw9ALkxAJYlAHMZAFDU1P+xsf+Ojv9ra/9ISP8lJf8AAP4AANwAALkAAJYAAHMAAFDU4/+xx/+Oq/9rj/9Ic/8lV/8AVf8ASdwAPbkAMZYAJXMAGVDU8P+x4v+O1P9rxv9IuP8lqv8Aqv8AktwAerkAYpYASnMAMlDU//+x//+O//9r//9I//8l//8A/v4A3NwAubkAlpYAc3MAUFDU//Cx/+KO/9Rr/8ZI/7gl/6oA/6oA3JIAuXoAlmIAc0oAUDLU/+Ox/8eO/6tr/49I/3Ml/1cA/1UA3EkAuT0AljEAcyUAUBnU/9Sx/7GO/45r/2tI/0gl/yUA/gAA3AAAuQAAlgAAcwAAUADj/9TH/7Gr/46P/2tz/0hX/yVV/wBJ3AAQ+AFLAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAALpJREFUeNpjYGBkYmZhYWFlYWNngAAOTijg4oYIMHPy8PLx8nDycwpwQwUEhYSFRDhFxTi5xCECEpJS0jKcsqL8nGwgARZOOXkFRSWwMcwgAWVOFVU1dQ1NLW0dmICunr6BoZGxiSlEgJnTzNzC0sraxtYOJmDv4Ojk7MLp6gYRcOf08PTy9vHl9IOa4c+JAGCBAM7AoEDOwEDO4BCIABOSilCQQBhTeERkVGS4f3R0aBhIICYWAWIYGAClIBsa7hXG7gAAAABJRU5ErkJggg==')}
+${img('profile',16,'gif','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAsSAAALEgHS3X78AAABZElEQVR42o1R22rCQBD1U/p//apCNtsHwRdfBaFIKbRoUVKMMTWBWIxVCq2b+07POrn4UKjDMpw9O2fm7G5vNBpJKe2/Qto4uEc2WMrBYEBEPaAky36UulwnlSRpUeZEBSGrpEiyHJVGAPVJqZvbO3ftv83Dle+vvPV4/LD0PGYAcKrSFJUsEOgHKoj3s9dFGH9uou3k8ekQKxyDQcYpBnYC7Hm9zBZmlL8BiIJDC0AWpa4FwhZJXoDCBgYAjgU5ToBt+k1tL14ssFNNvIEBAFwVljJlSDBfpwyg1ISnYoEsiHju5XLcd+T50q0tEQm7eaWKKNfUWgKApUsbPFY0lzY6DraEZm585Do/CLMzqLQWQnSC9k34lVa7PTsBs/zYOa4LB5ZlnQXCbif40Ra50jUwE6JtCcMlUiMQlugEQYisG8CWtGlRdQL+jmui/rjhcAhk/Reo6ff7RuB53vN1MZ1OIfgFQC1cuR3Y6lIAAAAASUVORK5CYII=')}
+${img('execute',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEXAwMAAxwCvbOAvAAAAAXRSTlMAQObYZgAAAAlwSFlzAAALEgAACxIB0t1+/AAAACBJREFUCFtjYIABHgYGfiA6wMD/gYH/B5g8ABLhYUAGAHniBNrUPuoHAAAAAElFTkSuQmCC')}
+${img('file',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQEAYAAABPYyMiAAAABmJLR0T///////8JWPfcAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAAA2klEQVRIx61VURbDIAgTX+9ljg4n2z5sNouj1ml+LE9rQkSU5PA6kTZBToTznj5aqKqq+py4lFJKScnMzCwlAAB6IbnNuyXycd1g3oHrf32CmR9mZqpVOdDHs2DmI+c+AiJixu1RAN9xFUcdWCjVIr8xCX8Jubc8Ao9CJF8nRFgNJBxZSCEkjmrIxxSS0yIAoBU4OkpfU8sCPEbEvqaOXcR31zWORbYJ8EI8rsK+DWm7gMVb8F/GK7eg6818jNjJZjMn0agY7x6oxqL5sWbIbhLHoQN78PQ5F3kDgX8u9tphBfoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMDItMDZUMTA6Mjc6MzErMDE6MDChLu/mAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjIwKzAxOjAwIGvf8wAAAABJRU5ErkJggg==')}
+${img('text',16,'gif','R0lGODlhEgASALMAAP/////MzP+Zmf9mZv8zM/8AAMzM/8zMzJmZ/5mZmWZm/2ZmZjMz/zMzMwAA/////yH5BAUUAA8ALAAAAAASABIAAARo8MlJq73SKGSwdSDjUQoIjhNYOujDnGAnFXRBZKoBIpMw1ICHaaigBAq/AUK1CVEIhcfPNFlRbAEBEvWr0VDYQLYgkCQWh8XiAfgRymPyoTFRa2uPO009maP8ZmsjAHxnBygLDQ1zihEAOw==')}
+${img('task',18,'png','iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAAAAACMfPpKAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAATklEQVQY05XQUQoAIAgD0N3JY3fIChWttKR9xYvBCj0J0FsI3VVKQflwV22J0oyo3LOCc6pHW4dqi56v2CebbpMLtcmr+uTizz6UYpBnADSS8gvhaL5WAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA0LTA3VDA5OjQyOjQ4KzAyOjAwMgzRmQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOCswMTowMJ0LlncAAAAASUVORK5CYII=')}
+${img('pavetext',18,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAsSURBVBjTY2CgCuBAAt1gASS5KKgARBpJACSEooIsARRbkABYoDsKCRDhEQBA2Am/6OrPewAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNi0wMS0wNFQxMDoxODoyNyswMTowMHsz6UQAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MjArMDE6MDAga9/zAAAAAElFTkSuQmCC')}
+${img('pavelabel',18,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAApSURBVBjTY2CgCuBAAt1gASS5KJgABzUEgABFANUWJAAWYIhCAkR4BAAHoAkEyi2U3wAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNi0wMS0wNFQxMDoxODoyNyswMTowMHsz6UQAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MjArMDE6MDAga9/zAAAAAElFTkSuQmCC')}
+${img('list',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEECTc01vBgywAAAE9JREFUOMu1k8ERwDAMwqRc9l/Z/eeRpKZlABkOLFD0JQGgAAah5kp8Y30F2HEwDhGTCG6tX5yqtAV/acEdwHQHl0Y8RbA7pLIxRPziGyM9xLEOKSpp/5AAAAAASUVORK5CYII=')}
+${img('color',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAAAA4xcavGZGS1xZT79lW+9wdvFz/3N6fo3RISTZwXbyniXz80v/AAD/zAD/66v//6vGWiYeAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADswAAA7MAbGhBn4AAAAHdElNRQfgAQQLLBhOmhPcAAAAIklEQVQY02NgRgEMDAzMnLzcfDwC7IxMbKwsQ10A3XMEAQA3JQVNowlkTAAAAABJRU5ErkJggg==')}
+${img('colz',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEV6fo0A4xcavGZGS1xZT79lW+9wdvFz/3PRISTZwXbyniXz80v/AAD/zAD/66v//6t1AkcGAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADswAAA7MAbGhBn4AAAAHdElNRQfgAQQLNwdqpNWzAAAAT0lEQVQI12NgYGAwNjZmAAOLjmY0hs2ZwxCG1arFEIbt3csQhvXuzRCG/f/PEIZ5eTGEYSgoDGEYKSlDGGZpyRCGaWgwhGHi4gxhwG0HAwCr3BFWzqCkcAAAAABJRU5ErkJggg==')}
+${img('frame',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfgAQQLOwq4oOYCAAAAcUlEQVQoz7WQMQqAMAxFX0Uk4OLgIbp4oZ7BA/cOXR0KDnGpRbGayT+EQF74nw+GHIBo+5hdWdqAaFDoLIsegCSeWE0VcMxXYM6xvmiZSYDTooSR4WlxzzBZwGYBuwWs4mWUpVHJe1H9F1J7yC4ov+kAkTYXFCNzDrEAAAAASUVORK5CYII=')}
+${img('class',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAvQC9AL1pQtWoAAAAjUlEQVR42p2T2wnAIAxFM0g/O6jDdBBHcAyHKKQYjfiI0UY4P8I9BG4CID8smB4+8SUsohpO3CFzKqmBFrhCO4kqQnCR6MJF4BEJTVQFhBAmASNIZkH6a0OMc8oUDAu8z7RhTTBVyIIEhxeCdYWjQApvK2TBrgGpwpP1livsBXC0ROMO/LqDKjKEzaf8AZWbJP6pTT9BAAAATHpUWHRTb2Z0d2FyZQAAeNpz0FDW9MxNTE/1TUzPTM5WMNEz0jNQsLTUNzDWNzBUSC7KLC6pdMitLC7JTNZLLdZLKS3IzyvRS87PBQDzvxJ8u4pLSgAAADN6VFh0U2lnbmF0dXJlAAB42ktKs0hLMkk2MzJKNEuzMLKwtEizSElMMbNITUw0NUtNAQCc7Qma0Goe1QAAAABJRU5ErkJggg==')}
+${img('member',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAvQC9AL1pQtWoAAAAX0lEQVR42mNgAAIVBob/+DADPgBS8GCPBV6M1xCKDcDnBRcoZhgW4D8DBV75v2bLATAmxyC4ZmRMrCFYNfeU9BBvwJwpS8AYWTNZBoAwTDPFBpAciDCDyNFMtXSAFwAAUyq0GRPbbz4AAABMelRYdFNvZnR3YXJlAAB42nPQUNb0zE1MT/VNTM9MzlYw0TPSM1CwtNQ3MNY3MFRILsosLql0yK0sLslM1kst1kspLcjPK9FLzs8FAPO/Eny7iktKAAAAM3pUWHRTaWduYXR1cmUAAHjaS01JNrE0S00zSbU0NEsxMbMwM0xOSjYwNzY3NLRIMjUCAJcdCJ2BHe6SAAAAAElFTkSuQmCC')}
+${img('tf1',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8/SMz///+Cf5VqAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4QHgSCla+2AAAAL0lEQVQI12MQYAACrAQXiFBoABINCgwMQgwcDAwSDEwMDKmhodMYJjAwaKDrAAEAoRAEjHDJ/uQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTEtMTRUMTc6Mjk6MjErMDE6MDDxcSccAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTExLTE0VDE3OjI5OjA1KzAxOjAwNka8zgAAAABJRU5ErkJggg==')}
+${img('tf2',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8A/wD////pL6WoAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4PNgzGaW1jAAAARUlEQVQI12NgEGDQZAASKkBigQKQ6GhgYBDiYgASIiAigIGBS8iBgUFhEpCnoAEkUkNDQxkagUIMrUDMMAVETAARQI0MAD5GCJ7tAr1aAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTExLTE0VDE2OjUxOjUzKzAxOjAwi1Gz3gAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xNFQxNjo1MTozNiswMTowMG5bLUIAAAAASUVORK5CYII=')}
 `, node);
 }
 
@@ -72390,7 +72391,7 @@ function folderHierarchy(item, obj) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
          _name: chld.fName,
-         _kind: "ROOT." + chld._typename,
+         _kind: 'ROOT.' + chld._typename,
          _obj: chld
       });
    }
@@ -72414,11 +72415,11 @@ function taskHierarchy(item, obj) {
 
    // item._childs = [];
 
-   for ( let i = 0; i < obj.fTasks.arr.length; ++i) {
+   for (let i = 0; i < obj.fTasks.arr.length; ++i) {
       let chld = obj.fTasks.arr[i];
       item._childs.push({
          _name: chld.fName,
-         _kind: "ROOT." + chld._typename,
+         _kind: 'ROOT.' + chld._typename,
          _obj: chld
       });
    }
@@ -72464,14 +72465,14 @@ function listHierarchy(folder, lst) {
           item = !obj?._typename ?
            {
             _name: i.toString(),
-            _kind: "ROOT.NULL",
-            _title: "NULL",
-            _value: "null",
+            _kind: 'ROOT.NULL',
+            _title: 'NULL',
+            _value: 'null',
             _obj: null
           } : {
             _name: obj.fName || obj.name,
-            _kind: "ROOT." + obj._typename,
-            _title: (obj.fTitle || '') + " type:"  +  obj._typename,
+            _kind: 'ROOT.' + obj._typename,
+            _title: (obj.fTitle || '') + ' type:'  +  obj._typename,
             _obj: obj
         };
 
@@ -72520,7 +72521,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       let item = {
          _name: key.fName + ';' + key.fCycle,
          _cycle: key.fCycle,
-         _kind: "ROOT." + key.fClassName,
+         _kind: 'ROOT.' + key.fClassName,
          _title: key.fTitle,
          _keyname: key.fName,
          _readobj: null,
@@ -72538,7 +72539,7 @@ function keysHierarchy(folder, keys, file, dirname) {
          if (dir) {
             // remove cycle number - we have already directory
             item._name = key.fName;
-            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+            keysHierarchy(item, dir.fKeys, file, dirname + key.fName + '/');
          } else  {
             item._more = true;
             item._expand = function(node, obj) {
@@ -72549,8 +72550,8 @@ function keysHierarchy(folder, keys, file, dirname) {
       } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
          if (settings.SkipStreamerInfos) continue;
          item._name = 'StreamerInfo';
-         item._kind = "ROOT.TStreamerInfoList";
-         item._title = "List of streamer infos for binary I/O";
+         item._kind = 'ROOT.TStreamerInfoList';
+         item._title = 'List of streamer infos for binary I/O';
          item._readobj = file.fStreamerInfos;
       }
 
@@ -72590,14 +72591,14 @@ function objectHierarchy(top, obj, args = undefined) {
               _vclass: 'h_value_num'
             };
             while (item._name.length < namelen)
-               item._name = "0" + item._name;
+               item._name = '0' + item._name;
             top._childs.push(item);
          }
 
          let val = obj.getUint8(k).toString(16);
-         while (val.length < 2) val = "0"+val;
+         while (val.length < 2) val = '0'+val;
          if (item._value.length > 0)
-            item._value += (k%4 === 0) ? " | " : " ";
+            item._value += (k%4 === 0) ? ' | ' : ' ';
 
          item._value += val;
       }
@@ -72615,7 +72616,7 @@ function objectHierarchy(top, obj, args = undefined) {
    let isarray = (isArrayProto(proto) > 0) && obj.length,
        compress = isarray && (obj.length > settings.HierarchyLimit),  arrcompress = false;
 
-   if (isarray && (top._name === "Object") && !top._parent) top._name = "Array";
+   if (isarray && (top._name === 'Object') && !top._parent) top._name = 'Array';
 
    if (compress) {
       arrcompress = true;
@@ -72633,9 +72634,9 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (!top._title) {
       if (obj._typename)
-         top._title = "ROOT." + obj._typename;
+         top._title = 'ROOT.' + obj._typename;
       else if (isarray)
-         top._title = "Array len: " + obj.length;
+         top._title = 'Array len: ' + obj.length;
    }
 
    if (arrcompress) {
@@ -72660,15 +72661,15 @@ function objectHierarchy(top, obj, args = undefined) {
             }
          }
 
-         let item = { _parent: top, _name: k+".."+(nextk-1), _vclass: 'h_value_num' };
+         let item = { _parent: top, _name: k+'..'+(nextk-1), _vclass: 'h_value_num' };
 
          if (allsame) {
             item._value = obj[k].toString();
          } else {
-            item._value = "";
+            item._value = '';
             for (let d = k; d < nextk; ++d)
-               item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
-            item._value += " ]";
+               item._value += ((d===k) ? '[ ' : ', ') + obj[d].toString();
+            item._value += ' ]';
          }
 
          top._childs.push(item);
@@ -72688,7 +72689,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
       if (compress && lastitem) {
          if (lastfield===fld) { ++cnt; lastkey = key; continue; }
-         if (cnt > 0) lastitem._name += ".." + lastkey;
+         if (cnt > 0) lastitem._name += '..' + lastkey;
       }
 
       let item = { _parent: top, _name: key };
@@ -72696,7 +72697,7 @@ function objectHierarchy(top, obj, args = undefined) {
       if (compress) { lastitem = item;  lastkey = key; lastfield = fld; cnt = 0; }
 
       if (fld === null) {
-         item._value = item._title = "null";
+         item._value = item._title = 'null';
          if (!nosimple) top._childs.push(item);
          continue;
       }
@@ -72708,24 +72709,24 @@ function objectHierarchy(top, obj, args = undefined) {
          proto = Object.prototype.toString.apply(fld);
 
          if (isArrayProto(proto) > 0) {
-            item._title = "array len=" + fld.length;
+            item._title = 'array len=' + fld.length;
             simple = (proto != '[object Array]');
             if (fld.length === 0) {
-               item._value = "[ ]";
+               item._value = '[ ]';
                item._more = false; // hpainter will not try to expand again
             } else {
-               item._value = "[...]";
+               item._value = '[...]';
                item._more = true;
                item._expand = objectHierarchy;
                item._obj = fld;
             }
-         } else if (proto === "[object DataView]") {
+         } else if (proto === '[object DataView]') {
             item._title = 'DataView len=' + fld.byteLength;
-            item._value = "[...]";
+            item._value = '[...]';
             item._more = true;
             item._expand = objectHierarchy;
             item._obj = fld;
-         } else if (proto === "[object Date]") {
+         } else if (proto === '[object Date]') {
             item._more = false;
             item._title = 'Date';
             item._value = fld.toString();
@@ -72733,7 +72734,7 @@ function objectHierarchy(top, obj, args = undefined) {
          } else {
 
             if (fld.$kind || fld._typename)
-               item._kind = item._title = "ROOT." + (fld.$kind || fld._typename);
+               item._kind = item._title = 'ROOT.' + (fld.$kind || fld._typename);
 
             if (fld._typename) {
                item._title = fld._typename;
@@ -72748,7 +72749,7 @@ function objectHierarchy(top, obj, args = undefined) {
             }
 
             if (inparent) {
-               item._value = "{ prnt }";
+               item._value = '{ prnt }';
                item._vclass = 'h_value_num';
                item._more = false;
                simple = true;
@@ -72763,12 +72764,12 @@ function objectHierarchy(top, obj, args = undefined) {
                   case 'TObjString': item._value = fld.fString; break;
                   default:
                      if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
-                        item._value = fld.arr.length ? "[...]" : "[]";
-                        item._title += ", size:"  + fld.arr.length;
+                        item._value = fld.arr.length ? '[...]' : '[]';
+                        item._title += ', size:'  + fld.arr.length;
                         if (fld.arr.length > 0) item._more = true;
                      } else {
                         item._more = true;
-                        item._value = "{ }";
+                        item._value = '{ }';
                      }
                }
             }
@@ -72776,7 +72777,7 @@ function objectHierarchy(top, obj, args = undefined) {
       } else if ((typeof fld === 'number') || (typeof fld === 'boolean')) {
          simple = true;
          if (key == 'fBits')
-            item._value = "0x" + fld.toString(16);
+            item._value = '0x' + fld.toString(16);
          else
             item._value = fld.toString();
          item._vclass = 'h_value_num';
@@ -72797,7 +72798,7 @@ function objectHierarchy(top, obj, args = undefined) {
          top._childs.push(item);
    }
 
-   if (compress && lastitem && (cnt > 0)) lastitem._name += ".." + lastkey;
+   if (compress && lastitem && (cnt > 0)) lastitem._name += '..' + lastkey;
 
    return true;
 }
@@ -72805,7 +72806,7 @@ function objectHierarchy(top, obj, args = undefined) {
 /** @summary Create hierarchy for streamer info object
   * @private */
 function createStreamerInfoContent(lst) {
-   let h = { _name : "StreamerInfo", _childs : [] };
+   let h = { _name: 'StreamerInfo', _childs: [] };
 
    for (let i = 0; i < lst.arr.length; ++i) {
       let entry = lst.arr[i];
@@ -72825,27 +72826,27 @@ function createStreamerInfoContent(lst) {
          _childs : []
       };
 
-      if (entry.fTitle != '') item._title += '  ' + entry.fTitle;
+      if (entry.fTitle) item._title += '  ' + entry.fTitle;
 
       h._childs.push(item);
 
       if (typeof entry.fElements == 'undefined') continue;
-      for ( let l = 0; l < entry.fElements.arr.length; ++l) {
+      for (let l = 0; l < entry.fElements.arr.length; ++l) {
          let elem = entry.fElements.arr[l];
          if (!elem || !elem.fName) continue;
-         let info = elem.fTypeName + " " + elem.fName,
-             title = elem.fTypeName + " type:" + elem.fType;
+         let info = elem.fTypeName + ' ' + elem.fName,
+             title = elem.fTypeName + ' type:' + elem.fType;
          if (elem.fArrayDim === 1)
-            info += "[" + elem.fArrayLength + "]";
+            info += '[' + elem.fArrayLength + ']';
          else
             for (let dim = 0; dim < elem.fArrayDim; ++dim)
-               info += "[" + elem.fMaxIndex[dim] + "]";
-         if (elem.fBaseVersion === 4294967295) info += ":-1"; else
-         if (elem.fBaseVersion !== undefined) info += ":" + elem.fBaseVersion;
+               info += '[' + elem.fMaxIndex[dim] + ']';
+         if (elem.fBaseVersion === 4294967295) info += ':-1'; else
+         if (elem.fBaseVersion !== undefined) info += ':' + elem.fBaseVersion;
          info += ';';
-         if (elem.fTitle) info += " // " + elem.fTitle;
+         if (elem.fTitle) info += ' // ' + elem.fTitle;
 
-         item._childs.push({ _name: info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
+         item._childs.push({ _name: info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? 'img_class' : 'img_member' });
       }
       if (!item._childs.length) delete item._childs;
    }
@@ -72866,7 +72867,7 @@ function markAsStreamerInfo(h, item, obj) {
 /** @summary Create hierarchy for object inspector
   * @private */
 function createInspectorContent(obj) {
-   let h = { _name: "Object", _title: '', _click_action: "expand", _nosimple: false, _do_context: true };
+   let h = { _name: 'Object', _title: '', _click_action: 'expand', _nosimple: false, _do_context: true };
 
    if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
       h._name = obj.fName;
@@ -72875,7 +72876,7 @@ function createInspectorContent(obj) {
       h._title = obj.fTitle;
 
    if (obj._typename)
-      h._title += "  type:" + obj._typename;
+      h._title += '  type:' + obj._typename;
 
    if (isRootCollection(obj)) {
       h._name = obj.name || obj._typename;
@@ -72889,7 +72890,7 @@ function createInspectorContent(obj) {
 
 
 /** @summary Parse string value as array.
-  * @desc It could be just simple string:  "value" or
+  * @desc It could be just simple string:  'value' or
   * array with or without string quotes:  [element], ['elem1',elem2]
   * @private */
 function parseAsArray(val) {
@@ -72922,9 +72923,9 @@ function parseAsArray(val) {
       switch (val[indx]) {
          case "'": nquotes++; break;
          case '"': ndouble++; break;
-         case "[": nbr++; break;
-         case "]": if (indx < val.length - 1) { nbr--; break; }
-         case ",":
+         case '[': nbr++; break;
+         case ']': if (indx < val.length - 1) { nbr--; break; }
+         case ',':
             if (nbr === 0) {
                let sub = val.substring(last, indx).trim();
                if ((sub.length > 1) && (sub[0] == sub[sub.length-1]) && ((sub[0] == '"') || (sub[0] == "'")))
@@ -72968,13 +72969,13 @@ function canExpandHandle(handle) {
   * @summary Painter of hierarchical structures
   *
   * @example
-  * // create hierarchy painter in "myTreeDiv"
-  * let h = new HierarchyPainter("example", "myTreeDiv");
-  * // configure 'simple' layout in "myMainDiv"
-  * // one also can specify "grid2x2" or "flex" or "tabs"
-  * h.setDisplay("simple", "myMainDiv");
+  * // create hierarchy painter in 'myTreeDiv'
+  * let h = new HierarchyPainter('example', 'myTreeDiv');
+  * // configure 'simple' layout in 'myMainDiv'
+  * // one also can specify 'grid2x2' or 'flex' or 'tabs'
+  * h.setDisplay('simple', 'myMainDiv');
   * // open file and display element
-  * h.openRootFile("https://root.cern/js/files/hsimple.root").then(() => h.display("hpxpy;1","colz")); */
+  * h.openRootFile('https://root.cern/js/files/hsimple.root').then(() => h.display('hpxpy;1','colz')); */
 
 class HierarchyPainter extends BasePainter {
 
@@ -73020,8 +73021,8 @@ class HierarchyPainter extends BasePainter {
 
       let folder = {
          _name: file.fFileName,
-         _title: (file.fTitle ? (file.fTitle + ", path ") : '')  + file.fFullURL,
-         _kind: "ROOT.TFile",
+         _title: (file.fTitle ? file.fTitle + ', path ' : '')  + file.fFullURL,
+         _kind: 'ROOT.TFile',
          _file: file,
          _fullurl: file.fFullURL,
          _localfile: file.fLocalFile,
@@ -73051,11 +73052,11 @@ class HierarchyPainter extends BasePainter {
                         if (dir) {
                            d.last._name = d.last._keyname;
                            let dirname = painter.itemFullName(d.last, this);
-                           keysHierarchy(d.last, dir.fKeys, file, dirname + "/");
+                           keysHierarchy(d.last, dir.fKeys, file, dirname + '/');
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        keysHierarchy(this, file.fKeys, file, "");
+                        keysHierarchy(this, file.fKeys, file, '');
                      }
                      item = painter.findItem({ name: itemname, top: this });
                   }
@@ -73077,7 +73078,7 @@ class HierarchyPainter extends BasePainter {
          }
       };
 
-      keysHierarchy(folder, file.fKeys, file, "");
+      keysHierarchy(folder, file.fKeys, file, '');
 
       return folder;
    }
@@ -73123,7 +73124,7 @@ class HierarchyPainter extends BasePainter {
             if (fullname === top._name) return top;
 
             let len = top._name.length;
-            if (fullname[len] == "/") {
+            if (fullname[len] == '/') {
                fullname = fullname.slice(len+1);
                pos = fullname.length;
             }
@@ -73181,13 +73182,13 @@ class HierarchyPainter extends BasePainter {
                }
             }
 
-            pos = fullname.lastIndexOf("/", pos - 1);
+            pos = fullname.lastIndexOf('/', pos - 1);
          }
 
          if (arg.force) {
              // if did not found element with given name we just generate it
              if (top._childs === undefined) top._childs = [];
-             pos = fullname.indexOf("/");
+             pos = fullname.indexOf('/');
              let child = { _name: ((pos < 0) ? fullname : fullname.slice(0, pos)) };
              top._childs.push(child);
              return process_child(child);
@@ -73196,16 +73197,16 @@ class HierarchyPainter extends BasePainter {
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
 
-      let top = this.h, itemname = "";
+      let top = this.h, itemname = '';
 
       if (arg === null) return null; else
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
       if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
          return null;
 
-      if (itemname === "__top_folder__") return top;
+      if (itemname === '__top_folder__') return top;
 
-      if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) return null;
+      if ((typeof itemname == 'string') && (itemname.indexOf('img:') == 0)) return null;
 
       return find_in_hierarchy(top, itemname);
    }
@@ -73218,9 +73219,9 @@ class HierarchyPainter extends BasePainter {
      * @private */
    itemFullName(node, uptoparent, compact) {
 
-      if (node && node._kind === 'TopFolder') return "__top_folder__";
+      if (node && node._kind === 'TopFolder') return '__top_folder__';
 
-      let res = "";
+      let res = '';
 
       while (node) {
          // online items never includes top-level folder
@@ -73228,7 +73229,7 @@ class HierarchyPainter extends BasePainter {
 
          if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
-         if (res.length > 0) res = "/" + res;
+         if (res.length > 0) res = '/' + res;
          res = node._name + res;
          node = node._parent;
       }
@@ -73246,7 +73247,7 @@ class HierarchyPainter extends BasePainter {
    async executeCommand(itemname, elem) {
 
       let hitem = this.findItem(itemname),
-          url = this.getOnlineItemUrl(hitem) + "/cmd.json",
+          url = this.getOnlineItemUrl(hitem) + '/cmd.json',
           d3node = select(elem),
           cmdargs = [];
 
@@ -73260,14 +73261,14 @@ class HierarchyPainter extends BasePainter {
       return promise.then(args => {
          if (args === null) return false;
 
-         let urlargs = "";
+         let urlargs = '';
          for (let k = 0; k < args.length; ++k)
-            urlargs += `${k > 0 ?  "&" : "?"}arg${k+1}=${args[k]}`;
+            urlargs += `${k>0?'&':'?'}arg${k+1}=${args[k]}`;
 
         if (!d3node.empty()) {
             d3node.style('background','yellow');
             if (hitem._title)
-               d3node.attr('title', "Executing " + hitem._title);
+               d3node.attr('title', 'Executing ' + hitem._title);
          }
 
          return httpRequest(url + urlargs, 'text').then(res => {
@@ -73275,11 +73276,11 @@ class HierarchyPainter extends BasePainter {
             let col = (res && (res != 'false')) ? 'green' : 'red';
             d3node.style('background', col);
             if (hitem._title)
-               d3node.attr('title', hitem._title + " lastres=" + res);
+               d3node.attr('title', hitem._title + ' lastres=' + res);
             setTimeout(() => {
                d3node.style('background', null);
-               if (hitem._icon && d3node.classed("jsroot_fastcmd_btn"))
-                  d3node.style("background-image", `url("${hitem._icon}")`);
+               if (hitem._icon && d3node.classed('jsroot_fastcmd_btn'))
+                  d3node.style('background-image', `url('${hitem._icon}')`);
             }, 2000);
             if ((col == 'green') && ('_hreload' in hitem))
                this.reload();
@@ -73314,9 +73315,9 @@ class HierarchyPainter extends BasePainter {
          if (arg.item !== undefined) item = arg.item;
       }
 
-      if ((typeof itemname == 'string') && (itemname.indexOf("img:") == 0)) {
+      if ((typeof itemname == 'string') && (itemname.indexOf('img:') == 0)) {
          // artificial class, can be created by users
-         result.obj = { _typename: "TJSImage", fName: itemname.slice(4) };
+         result.obj = { _typename: 'TJSImage', fName: itemname.slice(4) };
          return result;
       }
 
@@ -73338,10 +73339,10 @@ class HierarchyPainter extends BasePainter {
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return result;
 
-         return this.expandItem(parentname, undefined, options != "hierarchy_expand_verbose").then(res => {
+         return this.expandItem(parentname, undefined, options != 'hierarchy_expand_verbose').then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
-            if (newparentname.length > 0) newparentname += "/";
+            if (newparentname.length > 0) newparentname += '/';
             return this.getObject( { name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
@@ -73383,7 +73384,7 @@ class HierarchyPainter extends BasePainter {
       let isroot = (hitem === this.h),
           has_childs = ('_childs' in hitem),
           handle = getDrawHandle(hitem._kind),
-          img1 = "", img2 = "", can_click = false, break_list = false,
+          img1 = '', img2 = '', can_click = false, break_list = false,
           d3cont, itemname = this.itemFullName(hitem);
 
       if (handle) {
@@ -73398,23 +73399,23 @@ class HierarchyPainter extends BasePainter {
       if ('_icon' in hitem) img1 = hitem._icon;
       if ('_icon2' in hitem) img2 = hitem._icon2;
       if ((img1.length == 0) && ('_online' in hitem))
-         hitem._icon = img1 = "img_globe";
+         hitem._icon = img1 = 'img_globe';
       if ((img1.length == 0) && isroot)
-         hitem._icon = img1 = "img_base";
+         hitem._icon = img1 = 'img_base';
 
       if (hitem._more || hitem._expand || hitem._player || hitem._can_draw)
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.") == 0))
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf('ROOT.') == 0))
          can_menu = can_click = true;
 
       if (img2.length == 0) img2 = img1;
-      if (img1.length == 0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
-      if (img2.length == 0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
+      if (img1.length == 0) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
+      if (img2.length == 0) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
 
-      if (arg === "update") {
-         d3prnt.selectAll("*").remove();
+      if (arg === 'update') {
+         d3prnt.selectAll('*').remove();
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append('div');
@@ -73422,7 +73423,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
-      d3cont.attr("item", itemname);
+      d3cont.attr('item', itemname);
 
       // line with all html elements for this item (excluding childs)
       let d3line = d3cont.append('div').attr('class','h_line');
@@ -73430,30 +73431,30 @@ class HierarchyPainter extends BasePainter {
       // build indent
       let prnt = isroot ? null : hitem._parent;
       while (prnt && (prnt !== this.h)) {
-         d3line.insert('div',":first-child")
-               .attr('class', this.isLastSibling(prnt) ? "img_empty" : "img_line");
+         d3line.insert('div',':first-child')
+               .attr('class', this.isLastSibling(prnt) ? 'img_empty' : 'img_line');
          prnt = prnt._parent;
       }
 
-      let icon_class = "", plusminus = false;
+      let icon_class = '', plusminus = false;
 
       if (isroot) ; else if (has_childs && !break_list) {
-         icon_class = hitem._isopen ? "img_minus" : "img_plus";
+         icon_class = hitem._isopen ? 'img_minus' : 'img_plus';
          plusminus = true;
       } else /*if (hitem._more) {
-         icon_class = "img_plus"; // should be special plus ???
+         icon_class = 'img_plus'; // should be special plus ???
          plusminus = true;
       } else */ {
-         icon_class = "img_join";
+         icon_class = 'img_join';
       }
 
       let h = this;
 
       if (icon_class.length > 0) {
-         if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
+         if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
          let d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
-                              .on("click", function(evnt) { h.tree_click(evnt, this, "plusminus"); });
+                              .on('click', function(evnt) { h.tree_click(evnt, this, 'plusminus'); });
       }
 
       // make node icons
@@ -73468,23 +73469,23 @@ class HierarchyPainter extends BasePainter {
          else
             d3img = d3line.append('img')
                           .attr('src', icon_name)
-                          .attr("alt","")
+                          .attr('alt', '')
                           .attr('title', hitem._kind)
                           .style('vertical-align','top').style('width','18px').style('height','18px');
 
          if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
-            d3img.on("click", function(evnt) { h.tree_click(evnt, this, "icon"); });
+            d3img.on('click', function(evnt) { h.tree_click(evnt, this, 'icon'); });
       }
 
-      let d3a = d3line.append("a");
+      let d3a = d3line.append('a');
       if (can_click || has_childs || break_list)
-         d3a.attr('class',"h_item")
-            .on("click", function(evnt) { h.tree_click(evnt, this); });
+         d3a.attr('class', 'h_item')
+            .on('click', function(evnt) { h.tree_click(evnt, this); });
 
       if (break_list) {
          hitem._break_point = true; // indicate that list was broken here
          d3a.attr('title', 'there are ' + (hitem._parent._childs.length-arg) + ' more items')
-            .text("...more...");
+            .text('...more...');
          return false;
       }
 
@@ -73495,12 +73496,12 @@ class HierarchyPainter extends BasePainter {
          if (settings.ContextMenu && can_menu)
             d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
 
-         d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
-            .on("mouseleave", function() { h.tree_mouseover(false, this); });
+         d3a.on('mouseover', function() { h.tree_mouseover(true, this); })
+            .on('mouseleave', function() { h.tree_mouseover(false, this); });
       } else if (hitem._direct_context && settings.ContextMenu)
          d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
 
-      let element_name = hitem._name, element_title = "";
+      let element_name = hitem._name, element_title = '';
 
       if ('_realname' in hitem)
          element_name = hitem._realname;
@@ -73509,24 +73510,24 @@ class HierarchyPainter extends BasePainter {
          element_title = hitem._title;
 
       if ('_fullname' in hitem)
-         element_title += "  fullname: " + hitem._fullname;
+         element_title += '  fullname: ' + hitem._fullname;
 
       if (!element_title)
          element_title = element_name;
 
       d3a.attr('title', element_title)
-         .text(element_name + ('_value' in hitem ? ":" : ''))
+         .text(element_name + ('_value' in hitem ? ':' : ''))
          .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
-         let d3p = d3line.append("p");
+         let d3p = d3line.append('p');
          if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
          if (!hitem._isopen) d3p.html(hitem._value);
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
-         let d3chlds = d3cont.append('div').attr('class', "h_childs");
-         if (this.show_overflow) d3chlds.style('overflow', "initial");
+         let d3chlds = d3cont.append('div').attr('class', 'h_childs');
+         if (this.show_overflow) d3chlds.style('overflow', 'initial');
          for (let i = 0; i < hitem._childs.length; ++i) {
             let chld = hitem._childs[i];
             chld._parent = hitem;
@@ -73538,7 +73539,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Toggle open state of the item
-     * @desc Used with "open all" / "close all" buttons in normal GUI
+     * @desc Used with 'open all' / 'close all' buttons in normal GUI
      * @param {boolean} isopen - if items should be expand or closed
      * @return {boolean} true when any item was changed */
    toggleOpenState(isopen, h) {
@@ -73586,7 +73587,7 @@ class HierarchyPainter extends BasePainter {
       if (d3elem.empty())
          return this;
 
-      d3elem.html("")   // clear html - most simple way
+      d3elem.html('')   // clear html - most simple way
             .style('overflow',this.show_overflow ? 'auto' : 'hidden')
             .style('display','flex')
             .style('flex-direction','column');
@@ -73604,61 +73605,61 @@ class HierarchyPainter extends BasePainter {
          return this;
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append('div').attr('style', "display: inline; vertical-align: middle; white-space: nowrap;");
+         let fastbtns = d3elem.append('div').attr('style', 'display: inline; vertical-align: middle; white-space: nowrap;');
          for (let n = 0; n < factcmds.length; ++n) {
-            let btn = fastbtns.append("button")
-                       .text("")
+            let btn = fastbtns.append('button')
+                       .text('')
                        .attr('class','jsroot_fastcmd_btn')
-                       .attr("item", this.itemFullName(factcmds[n]))
+                       .attr('item', this.itemFullName(factcmds[n]))
                        .attr('title', factcmds[n]._title)
-                       .on("click", function() { h.executeCommand(select(this).attr("item"), this); } );
+                       .on('click', function() { h.executeCommand(select(this).attr('item'), this); } );
 
             if (factcmds[n]._icon)
-               btn.style("background-image", `url("${factcmds[n]._icon}")`);
+               btn.style('background-image', `url('${factcmds[n]._icon}')`);
          }
       }
 
-      let d3btns = d3elem.append("p").attr('class', "jsroot").style("margin-bottom","3px").style("margin-top",0);
-      d3btns.append("a").attr('class', "h_button").text("open all")
-            .attr('title',"open all items in the browser").on("click", () => this.toggleOpenState(true));
-      d3btns.append('text').text(" | ");
-      d3btns.append("a").attr('class', "h_button").text("close all")
-            .attr('title',"close all items in the browser").on("click", () => this.toggleOpenState(false));
+      let d3btns = d3elem.append('p').attr('class', 'jsroot').style('margin-bottom','3px').style('margin-top',0);
+      d3btns.append('a').attr('class', 'h_button').text('open all')
+            .attr('title','open all items in the browser').on('click', () => this.toggleOpenState(true));
+      d3btns.append('text').text(' | ');
+      d3btns.append('a').attr('class', 'h_button').text('close all')
+            .attr('title','close all items in the browser').on('click', () => this.toggleOpenState(false));
 
       if (typeof this.removeInspector == 'function') {
-         d3btns.append('text').text(" | ");
-         d3btns.append("a").attr('class', "h_button").text("remove")
-               .attr('title',"remove inspector").on("click", () => this.removeInspector());
+         d3btns.append('text').text(' | ');
+         d3btns.append('a').attr('class', 'h_button').text('remove')
+               .attr('title','remove inspector').on('click', () => this.removeInspector());
       }
 
       if ('_online' in this.h) {
-         d3btns.append('text').text(" | ");
-         d3btns.append("a").attr('class', "h_button").text("reload")
-               .attr('title',"reload object list from the server").on("click", () => this.reload());
+         d3btns.append('text').text(' | ');
+         d3btns.append('a').attr('class', 'h_button').text('reload')
+               .attr('title','reload object list from the server').on('click', () => this.reload());
       }
 
       if ('disp_kind' in this) {
-         d3btns.append('text').text(" | ");
-         d3btns.append("a").attr('class', "h_button").text("clear")
-               .attr('title',"clear all drawn objects").on("click", () => this.clearHierarchy(false));
+         d3btns.append('text').text(' | ');
+         d3btns.append('a').attr('class', 'h_button').text('clear')
+               .attr('title','clear all drawn objects').on('click', () => this.clearHierarchy(false));
       }
 
       let maindiv =
          d3elem.append('div')
-               .attr('class', "jsroot")
-               .style('font-size', this.with_icons ? "12px" : "15px")
-               .style("flex","1");
+               .attr('class', 'jsroot')
+               .style('font-size', this.with_icons ? '12px' : '15px')
+               .style('flex','1');
 
       if (!this.show_overflow)
-         maindiv.style('overflow',"auto");
+         maindiv.style('overflow','auto');
 
       if (this.background) // case of object inspector and streamer infos display
-         maindiv.style("background-color", this.background)
+         maindiv.style('background-color', this.background)
                 .style('margin', '2px').style('padding', '2px');
       if (this.textcolor)
          maindiv.style('color', this.textcolor);
 
-      this.addItemHtml(this.h, maindiv.append('div').attr('class',"h_tree"));
+      this.addItemHtml(this.h, maindiv.append('div').attr('class','h_tree'));
 
       this.setTopPainter(); //assign hpainter as top painter
 
@@ -73686,7 +73687,7 @@ class HierarchyPainter extends BasePainter {
          if (d3cont.empty()) return;
       }
 
-      this.addItemHtml(hitem, d3cont, "update");
+      this.addItemHtml(hitem, d3cont, 'update');
 
       this.brlayout?.adjustBrowserSize(true);
    }
@@ -73700,7 +73701,7 @@ class HierarchyPainter extends BasePainter {
 
       if (d3cont.empty()) return;
 
-      let d3a = d3cont.select(".h_item");
+      let d3a = d3cont.select('.h_item');
 
       d3a.style('background', hitem._background ? hitem._background : null);
 
@@ -73733,7 +73734,7 @@ class HierarchyPainter extends BasePainter {
       let promise = need_refresh ? this.refreshHtml() : Promise.resolve(true);
 
       return promise.then(() => {
-         let d3cont = this.selectDom().select("[item='" + name + "']");
+         let d3cont = this.selectDom().select(`[item='${name}']`);
          if (d3cont.empty()) return false;
          d3cont.node().scrollIntoView();
          return true;
@@ -73757,7 +73758,7 @@ class HierarchyPainter extends BasePainter {
          delete hitem._break_point;
 
          // update item itself
-         this.addItemHtml(hitem, d3cont, "update");
+         this.addItemHtml(hitem, d3cont, 'update');
 
          let prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
              d3chlds = select(d3cont.node().parentNode);
@@ -73781,11 +73782,11 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (!place) place = "item";
-      let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : '',
+      if (!place) place = 'item';
+      let selector = (hitem._kind == 'ROOT.TKey' && hitem._more) ? 'noinspect' : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
-      if (place == "icon") {
+      if (place == 'icon') {
          let func = null;
          if (typeof hitem._icon_click == 'function')
             func = hitem._icon_click;
@@ -73797,21 +73798,21 @@ class HierarchyPainter extends BasePainter {
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place == "item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
+      if ((place == 'item') && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = 'plusminus';
 
       // special case - one should expand item
-      if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
-          ((place == "item") && (dflt === "expand"))) {
+      if (((place == 'plusminus') && !('_childs' in hitem) && hitem._more) ||
+          ((place == 'item') && (dflt === 'expand'))) {
          return this.expandItem(itemname, d3cont);
       }
 
-      if (place == "item") {
+      if (place == 'item') {
 
          if (hitem._player)
             return this.player(itemname);
 
          if (handle?.aslink)
-            return window.open(itemname + "/");
+            return window.open(itemname + '/');
 
          if (handle?.execute)
             return this.executeCommand(itemname, node.parentNode);
@@ -73820,12 +73821,12 @@ class HierarchyPainter extends BasePainter {
 
          let can_draw = hitem._can_draw,
              can_expand = hitem._more,
-             dflt_expand = (this.default_by_click === "expand"),
-             drawopt = "";
+             dflt_expand = (this.default_by_click === 'expand'),
+             drawopt = '';
 
          if (evnt.shiftKey) {
-            drawopt = handle?.shift || "inspect";
-            if ((drawopt == "inspect") && handle?.noinspect) drawopt = "";
+            drawopt = handle?.shift || 'inspect';
+            if ((drawopt == 'inspect') && handle?.noinspect) drawopt = '';
          }
          if (evnt.ctrlKey && handle?.ctrl)
             drawopt = handle.ctrl;
@@ -73848,7 +73849,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          if (can_draw && !drawopt)
-            drawopt = "__default_draw_option__";
+            drawopt = '__default_draw_option__';
 
          if (can_draw)
             return this.display(itemname, drawopt, true);
@@ -73857,8 +73858,8 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === 'string') && (hitem._kind.indexOf("ROOT.") === 0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, "inspect", true);
+         if ((typeof hitem._kind === 'string') && (hitem._kind.indexOf('ROOT.') === 0) && sett.inspect && (can_draw !== false))
+            return this.display(itemname, 'inspect', true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -73911,10 +73912,10 @@ class HierarchyPainter extends BasePainter {
      * @private */
    fillSettingsMenu(menu, alone) {
       menu.addSettingsMenu(true, alone, arg => {
-         if (arg == "refresh") {
-            this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ""));
+         if (arg == 'refresh') {
+            this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ''));
             this.refreshHtml();
-         } else if (arg == "dark") {
+         } else if (arg == 'dark') {
             this.brlayout?.createStyle();
             if (this.disp)
                this.disp.forEachFrame(frame => {
@@ -73946,31 +73947,31 @@ class HierarchyPainter extends BasePainter {
       function qualifyURL(url) {
          const escapeHTML = s => s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;'),
                el = document.createElement('div');
-         el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
+         el.innerHTML = `<a href="${escapeHTML(url)}">x</a>`;
          return el.firstChild.href;
       }
 
       createMenu$1(evnt, this).then(menu => {
 
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
-            let files = [], addr = "", cnt = 0,
-                separ = () => (cnt++ > 0) ? "&" : "?";
+            let files = [], addr = '', cnt = 0,
+                separ = () => (cnt++ > 0) ? '&' : '?';
 
             this.forEachRootFile(item => files.push(item._file.fFullURL));
 
             if (!this.getTopOnlineItem())
-               addr = exports.source_dir + "index.htm";
+               addr = exports.source_dir + 'index.htm';
 
             if (this.isMonitoring())
-               addr += separ() + "monitoring=" + this.getMonitoringInterval();
+               addr += separ() + 'monitoring=' + this.getMonitoringInterval();
 
             if (files.length == 1)
-               addr += separ() + "file=" + files[0];
+               addr += separ() + 'file=' + files[0];
             else if (files.length > 1)
-               addr += separ() + "files=" + JSON.stringify(files);
+               addr += separ() + 'files=' + JSON.stringify(files);
 
             if (this.disp_kind)
-               addr += separ() + "layout=" + this.disp_kind.replace(/ /g, "");
+               addr += separ() + 'layout=' + this.disp_kind.replace(/ /g, '');
 
             let items = [], opts = [];
 
@@ -73993,9 +73994,9 @@ class HierarchyPainter extends BasePainter {
                            item = _item;
                            opt = _opt;
                         } else if (top.getPadPainter() === p.getPadPainter()) {
-                           if (_opt.indexOf("same ") == 0) _opt = _opt.slice(5);
-                           item += "+" + _item;
-                           opt += "+" + _opt;
+                           if (_opt.indexOf('same ') == 0) _opt = _opt.slice(5);
+                           item += '+' + _item;
+                           opt += '+' + _opt;
                         }
                      });
                   }
@@ -74007,13 +74008,13 @@ class HierarchyPainter extends BasePainter {
                });
 
             if (items.length == 1) {
-               addr += separ() + "item=" + items[0] + separ() + "opt=" + opts[0];
+               addr += separ() + 'item=' + items[0] + separ() + 'opt=' + opts[0];
             } else if (items.length > 1) {
-               addr += separ() + "items=" + JSON.stringify(items) + separ() + "opts=" + JSON.stringify(opts);
+               addr += separ() + 'items=' + JSON.stringify(items) + separ() + 'opts=' + JSON.stringify(opts);
             }
 
-            menu.add("Direct link", () => window.open(addr));
-            menu.add("Only items", () => window.open(addr + "&nobrowser"));
+            menu.add('Direct link', () => window.open(addr));
+            menu.add('Only items', () => window.open(addr + '&nobrowser'));
             this.fillSettingsMenu(menu);
          } else if (onlineprop) {
             this.fillOnlineMenu(menu, onlineprop, itemname);
@@ -74022,33 +74023,33 @@ class HierarchyPainter extends BasePainter {
 
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
-               if (!sett.opts) sett.opts = [""];
-               if (sett.opts.indexOf("") < 0) sett.opts.unshift("");
+               if (!sett.opts) sett.opts = [''];
+               if (sett.opts.indexOf('') < 0) sett.opts.unshift('');
             }
 
             if (sett.opts)
-               menu.addDrawMenu("Draw", sett.opts, arg => this.display(itemname, arg));
+               menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg));
 
             if (fileprop && sett.opts && !fileprop.localfile) {
                let filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(exports.source_dir) == 0)
                   filepath = filepath.slice(exports.source_dir.length);
-               filepath = fileprop.kind + "=" + filepath;
+               filepath = fileprop.kind + '=' + filepath;
                if (fileprop.itemname.length > 0) {
                   let name = fileprop.itemname;
-                  if (name.search(/\+| |\,/) >= 0) name = "\'" + name + "\'";
-                  filepath += "&item=" + name;
+                  if (name.search(/\+| |\,/) >= 0) name = `'${name}'`;
+                  filepath += '&item=' + name;
                }
 
-               menu.addDrawMenu("Draw in new tab", sett.opts,
-                                arg => window.open(exports.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg));
+               menu.addDrawMenu('Draw in new tab', sett.opts,
+                                arg => window.open(`${exports.source_dir}index.htm?nobrowser&${filepath}&opt=${arg}`));
             }
 
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
-               menu.add("Expand", () => this.expandItem(itemname));
+               menu.add('Expand', () => this.expandItem(itemname));
 
-            if (hitem._kind === "ROOT.TStyle")
-               menu.add("Apply", () => this.applyStyle(itemname));
+            if (hitem._kind === 'ROOT.TStyle')
+               menu.add('Apply', () => this.applyStyle(itemname));
          }
 
          if (typeof hitem._menu == 'function')
@@ -74056,8 +74057,8 @@ class HierarchyPainter extends BasePainter {
 
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
-            if (menu.separ) menu.add("separator"); // add separator at the end
-            menu.add("Close");
+            if (menu.separ) menu.add('separator'); // add separator at the end
+            menu.add('Close');
             menu.show();
          }
 
@@ -74067,7 +74068,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Starts player for specified item
-     * @desc Same as "Player" context menu
+     * @desc Same as 'Player' context menu
      * @param {string} itemname - item name for which player should be started
      * @param {string} [option] - extra options for the player
      * @return {Promise} when ready*/
@@ -74084,7 +74085,7 @@ class HierarchyPainter extends BasePainter {
          player_func = hh ? hh[item._player] : null;
       } else {
          if (item._prereq || (item._player.indexOf('JSROOT.') >= 0))
-            await this.loadScripts("", item._prereq);
+            await this.loadScripts('', item._prereq);
          player_func = findFunction(item._player);
       }
 
@@ -74124,7 +74125,7 @@ class HierarchyPainter extends BasePainter {
           item = null,
           display_itemname = itemname,
           frame_name = itemname,
-          marker = "::_display_on_frame_::",
+          marker = '::_display_on_frame_::',
           p = drawopt ? drawopt.indexOf(marker) : -1;
 
       if (p >= 0) {
@@ -74154,7 +74155,7 @@ class HierarchyPainter extends BasePainter {
          if (item && ('_player' in item))
             return this.player(display_itemname, drawopt).then(res => complete(res));
 
-         updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:") == 0);
+         updating = (typeof drawopt == 'string') && (drawopt.indexOf('update:') == 0);
 
          if (updating) {
             drawopt = drawopt.slice(7);
@@ -74164,19 +74165,19 @@ class HierarchyPainter extends BasePainter {
 
          if (item && !this.canDisplay(item, drawopt)) return complete();
 
-         let divid = "", use_dflt_opt = false;
-         if ((typeof drawopt == 'string') && (drawopt.indexOf("divid:") >= 0)) {
-            let pos = drawopt.indexOf("divid:");
+         let divid = '', use_dflt_opt = false;
+         if ((typeof drawopt == 'string') && (drawopt.indexOf('divid:') >= 0)) {
+            let pos = drawopt.indexOf('divid:');
             divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
          }
 
-         if (drawopt == "__default_draw_option__") {
+         if (drawopt == '__default_draw_option__') {
             use_dflt_opt = true;
-            drawopt = "";
+            drawopt = '';
          }
 
-         if (!updating) showProgress("Loading " + display_itemname);
+         if (!updating) showProgress('Loading ' + display_itemname);
 
          return this.getObject(display_itemname, drawopt).then(result => {
 
@@ -74187,14 +74188,14 @@ class HierarchyPainter extends BasePainter {
 
             if (!obj) return complete();
 
-            if (!updating) showProgress("Drawing " + display_itemname);
+            if (!updating) showProgress('Drawing ' + display_itemname);
 
-            let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
+            let handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || '';
-               handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
+               handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
             }
 
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
@@ -74247,9 +74248,9 @@ class HierarchyPainter extends BasePainter {
    /** @summary Enable drag of the element
      * @private  */
    enableDrag(d3elem /*, itemname*/) {
-      d3elem.attr("draggable", 'true').on("dragstart", function(ev) {
+      d3elem.attr('draggable', 'true').on('dragstart', function(ev) {
          let itemname = this.parentNode.parentNode.getAttribute('item');
-         ev.dataTransfer.setData("item", itemname);
+         ev.dataTransfer.setData('item', itemname);
       });
    }
 
@@ -74257,18 +74258,18 @@ class HierarchyPainter extends BasePainter {
      * @private  */
    enableDrop(frame) {
       let h = this;
-      select(frame).on("dragover", function(ev) {
-         let itemname = ev.dataTransfer.getData("item"),
+      select(frame).on('dragover', function(ev) {
+         let itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
-         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf("ROOT.") == 0))
+         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf('ROOT.') == 0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
-      }).on("dragenter", function() {
+      }).on('dragenter', function() {
          select(this).classed('jsroot_drag_area', true);
-      }).on("dragleave", function() {
+      }).on('dragleave', function() {
          select(this).classed('jsroot_drag_area', false);
-      }).on("drop", function(ev) {
+      }).on('drop', function(ev) {
          select(this).classed('jsroot_drag_area', false);
-         let itemname = ev.dataTransfer.getData("item");
+         let itemname = ev.dataTransfer.getData('item');
          if (itemname) h.dropItem(itemname, this.getAttribute('id'));
       });
    }
@@ -74276,7 +74277,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Remove all drop handlers on the frame
      * @private  */
    clearDrop(frame) {
-      select(frame).on("dragover", null).on("dragenter", null).on("dragleave", null).on("drop", null);
+      select(frame).on('dragover', null).on('dragenter', null).on('dragleave', null).on('drop', null);
    }
 
   /** @summary Drop item on specified element for drawing
@@ -74284,8 +74285,8 @@ class HierarchyPainter extends BasePainter {
     * @private */
    async dropItem(itemname, divid, opt) {
 
-      if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
-      if (opt === undefined) opt = "";
+      if (opt && typeof opt === 'function') { call_back = opt; opt = ''; }
+      if (opt === undefined) opt = '';
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
@@ -74293,7 +74294,7 @@ class HierarchyPainter extends BasePainter {
          return drop_painter;
       };
 
-      if (itemname == "$legend")
+      if (itemname == '$legend')
          return produceLegend(divid, opt).then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
@@ -74306,7 +74307,7 @@ class HierarchyPainter extends BasePainter {
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
          if (main_painter?.accept_drops)
-            return draw(divid, res.obj, "same " + opt).then(p => drop_complete(p, main_painter === p));
+            return draw(divid, res.obj, 'same ' + opt).then(p => drop_complete(p, main_painter === p));
 
          this.cleanupFrame(divid);
          return draw(divid, res.obj, opt).then(p => drop_complete(p));
@@ -74354,7 +74355,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          allitems.push(itemname);
-         options.push("update:" + p.getItemDrawOpt());
+         options.push('update:' + p.getItemDrawOpt());
       }, true); // only visible panels are considered
 
       // force all files to read again (normally in non-browser mode)
@@ -74379,16 +74380,16 @@ class HierarchyPainter extends BasePainter {
 
       if (!options) options = [];
       while (options.length < items.length)
-         options.push("__default_draw_option__");
+         options.push('__default_draw_option__');
 
-      if ((options.length == 1) && (options[0] == "iotest")) {
+      if ((options.length == 1) && (options[0] == 'iotest')) {
          this.clearHierarchy();
-         select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>");
+         select('#' + this.disp_frameid).html('<h2>Start I/O test</h2>');
 
          let tm0 = new Date();
          return this.getObject(items[0]).then(() => {
             let tm1 = new Date();
-            select("#" + this.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
+            select('#' + this.disp_frameid).append('h2').html('Item ' + items[0] + ' reading time = ' + (tm1.getTime() - tm0.getTime()) + 'ms');
             return true;
          });
       }
@@ -74403,7 +74404,7 @@ class HierarchyPainter extends BasePainter {
 
          let item = items[i], can_split = true;
 
-         if (item && item.indexOf("img:") == 0) { images[i] = true; continue; }
+         if (item && item.indexOf('img:') == 0) { images[i] = true; continue; }
 
          if (item && (item.length > 1) && (item[0] == '\'') && (item[item.length - 1] == '\'')) {
             items[i] = item.slice(1, item.length-1);
@@ -74416,15 +74417,15 @@ class HierarchyPainter extends BasePainter {
          if (can_split && (items[i][0] == '[') && (items[i][items[i].length - 1] == ']')) {
             dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
-         } else if (can_split && (items[i].indexOf("+") > 0)) {
-            dropitems[i] = items[i].split("+");
+         } else if (can_split && (items[i].indexOf('+') > 0)) {
+            dropitems[i] = items[i].split('+');
             items[i] = dropitems[i].shift();
          }
 
          if (dropitems[i] && dropitems[i].length > 0) {
             // allow to specify _same_ item in different file
             for (let j = 0; j < dropitems[i].length; ++j) {
-               let pos = dropitems[i][j].indexOf("_same_");
+               let pos = dropitems[i][j].indexOf('_same_');
                if ((pos > 0) && (h.findItem(dropitems[i][j]) === null))
                   dropitems[i][j] = dropitems[i][j].slice(0,pos) + items[i].slice(pos);
 
@@ -74432,21 +74433,21 @@ class HierarchyPainter extends BasePainter {
                if (elem) dropitems[i][j] = h.itemFullName(elem);
             }
 
-            if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
+            if ((options[i][0] == '[') && (options[i][options[i].length-1] == ']')) {
                dropopts[i] = parseAsArray(options[i]);
                options[i] = dropopts[i].shift();
-            } else if (options[i].indexOf("+") > 0) {
-               dropopts[i] = options[i].split("+");
+            } else if (options[i].indexOf('+') > 0) {
+               dropopts[i] = options[i].split('+');
                options[i] = dropopts[i].shift();
             } else {
                dropopts[i] = [];
             }
 
-            while (dropopts[i].length < dropitems[i].length) dropopts[i].push("");
+            while (dropopts[i].length < dropitems[i].length) dropopts[i].push('');
          }
 
          // also check if subsequent items has _same_, than use name from first item
-         let pos = items[i].indexOf("_same_");
+         let pos = items[i].indexOf('_same_');
          if ((pos > 0) && !h.findItem(items[i]) && (i > 0))
             items[i] = items[i].slice(0,pos) + items[0].slice(pos);
 
@@ -74474,13 +74475,13 @@ class HierarchyPainter extends BasePainter {
          items_wait[n] = 0;
          let fname = items[n], k = 0;
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
-         let p = options[n].indexOf("frameid:");
+         let p = options[n].indexOf('frameid:');
          if (p >= 0) {
             fname = options[n].slice(p+8);
             options[n] = options[n].slice(0,p);
          } else {
             while (frame_names.indexOf(fname) >= 0)
-               fname = items[n] + "_" + k++;
+               fname = items[n] + '_' + k++;
          }
          frame_names[n] = fname;
       }
@@ -74503,7 +74504,7 @@ class HierarchyPainter extends BasePainter {
          for (let i = 0; i < items.length; ++i)
             if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
-               options[i] += "::_display_on_frame_::"+frame_names[i];
+               options[i] += '::_display_on_frame_::'+frame_names[i];
             }
 
          function DropNextItem(indx, painter) {
@@ -74584,7 +74585,7 @@ class HierarchyPainter extends BasePainter {
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
                   let newname = this.itemFullName(d.last);
-                  if (newname.length > 0) newname+="/";
+                  if (newname.length > 0) newname+='/';
                   find_next(newname + d.rest, d.now_found);
                });
             }
@@ -74630,7 +74631,7 @@ class HierarchyPainter extends BasePainter {
    canExpandItem(item) {
       if (!item) return false;
       if (item._expand) return true;
-      let handle = getDrawHandle(item._kind, "::expand");
+      let handle = getDrawHandle(item._kind, '::expand');
       return handle && canExpandHandle(handle);
    }
 
@@ -74649,11 +74650,11 @@ class HierarchyPainter extends BasePainter {
             _item._expand = findFunction(item._expand);
 
          if (typeof _item._expand !== 'function') {
-            let handle = getDrawHandle(_item._kind, "::expand");
+            let handle = getDrawHandle(_item._kind, '::expand');
 
             if (handle?.expand_item) {
                _obj = _obj[handle.expand_item];
-              handle = (_obj && _obj._typename) ? getDrawHandle("ROOT."+_obj._typename, "::expand") : null;
+              handle = (_obj && _obj._typename) ? getDrawHandle('ROOT.'+_obj._typename, '::expand') : null;
             }
 
             if (handle?.expand || handle?.get_expand) {
@@ -74718,9 +74719,9 @@ class HierarchyPainter extends BasePainter {
       return promise.then(res => {
          if (res !== -1) return res; // done
 
-         showProgress("Loading " + itemname);
+         showProgress('Loading ' + itemname);
 
-         return this.getObject(itemname, silent ? "hierarchy_expand" : "hierarchy_expand_verbose").then(res => {
+         return this.getObject(itemname, silent ? 'hierarchy_expand' : 'hierarchy_expand_verbose').then(res => {
 
             showProgress();
 
@@ -74767,7 +74768,7 @@ class HierarchyPainter extends BasePainter {
       if (isfileopened) return;
 
       return httpRequest(filepath, 'object').then(res => {
-         let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
+         let h1 = { _jsonfile: filepath, _kind: 'ROOT.' + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
@@ -74780,7 +74781,7 @@ class HierarchyPainter extends BasePainter {
          };
          if (!this.h) this.h = h1; else
          if (this.h._kind == 'TopFolder') this.h._childs.push(h1); else {
-            let h0 = this.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
+            let h0 = this.h, topname = ('_jsonfile' in h0) ? 'Files' : 'Items';
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
@@ -74792,7 +74793,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    forEachRootFile(func) {
       if (!this.h) return;
-      if ((this.h._kind == "ROOT.TFile") && this.h._file)
+      if ((this.h._kind == 'ROOT.TFile') && this.h._file)
          return func(this.h);
 
       if (this.h._childs)
@@ -74812,7 +74813,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachRootFile(item => { if (item._fullurl === filepath) isfileopened = true; });
       if (isfileopened) return;
 
-      let msg = typeof filepath == 'string' ? filepath : "file";
+      let msg = typeof filepath == 'string' ? filepath : 'file';
 
       showProgress(`Opening ${msg} ...`);
 
@@ -74826,7 +74827,7 @@ class HierarchyPainter extends BasePainter {
          } else if (this.h._kind == 'TopFolder') {
             this.h._childs.push(h1);
          }  else {
-            let h0 = this.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            let h0 = this.h, topname = (h0._kind == 'ROOT.TFile') ? 'Files' : 'Items';
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
@@ -74835,8 +74836,8 @@ class HierarchyPainter extends BasePainter {
          // make CORS warning
          if (isBatchMode())
             console.error(`Fail to open ${msg} - check CORS headers`);
-         else if (!select("#gui_fileCORS").style("background","red").empty())
-            setTimeout(() => select("#gui_fileCORS").style("background",''), 5000);
+         else if (!select('#gui_fileCORS').style('background','red').empty())
+            setTimeout(() => select('#gui_fileCORS').style('background',''), 5000);
          return false;
       }).finally(() => showProgress());
    }
@@ -74859,7 +74860,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       return pr.then(st => {
-         if (st && (typeof st === 'object') && (st._typename === "TStyle"))
+         if (st && (typeof st === 'object') && (st._typename === 'TStyle'))
             Object.assign(gStyle, st);
       });
    }
@@ -74874,12 +74875,12 @@ class HierarchyPainter extends BasePainter {
       while (item._parent) {
          item = item._parent;
          if ('_file' in item)
-            return { kind: "file", fileurl: item._file.fURL, itemname: subname, localfile: !!item._file.fLocalFile };
+            return { kind: 'file', fileurl: item._file.fURL, itemname: subname, localfile: !!item._file.fLocalFile };
 
          if ('_jsonfile' in item)
-            return { kind: "json", fileurl: item._jsonfile, itemname: subname };
+            return { kind: 'json', fileurl: item._jsonfile, itemname: subname };
 
-         subname = item._name + "/" + subname;
+         subname = item._name + '/' + subname;
       }
 
       return null;
@@ -74907,9 +74908,9 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async importModule(module) {
       switch(module) {
-         case "core": return Promise.resolve().then(function () { return core; });
-         case "draw_tree": return Promise.resolve().then(function () { return TTree; });
-         case "hierarchy": return { HierarchyPainter, markAsStreamerInfo };
+         case 'core': return Promise.resolve().then(function () { return core; });
+         case 'draw_tree': return Promise.resolve().then(function () { return TTree; });
+         case 'hierarchy': return { HierarchyPainter, markAsStreamerInfo };
       }
       return import(/* webpackIgnore: true */ module);
    }
@@ -74919,7 +74920,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async getOnlineItem(item, itemname, option) {
 
-      let url = itemname, h_get = false, req = "", req_kind = 'object', draw_handle = null;
+      let url = itemname, h_get = false, req = '', req_kind = 'object', draw_handle = null;
 
       if ((typeof option == 'string') && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
@@ -74959,7 +74960,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if ((req.length == 0) && (item._kind.indexOf("ROOT.") != 0))
+         if ((req.length == 0) && (item._kind.indexOf('ROOT.') != 0))
            req = 'item.json.gz?compact=3';
       }
 
@@ -74973,7 +74974,7 @@ class HierarchyPainter extends BasePainter {
       if (req.length == 0)
          req = 'root.json.gz?compact=23';
 
-      if (url.length > 0) url += "/";
+      if (url.length > 0) url += '/';
       url += req;
 
       return new Promise(resolveFunc => {
@@ -75003,7 +75004,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Access THttpServer with provided address
-     * @param {string} server_address - URL to server like "http://localhost:8090/"
+     * @param {string} server_address - URL to server like 'http://localhost:8090/'
      * @return {Promise} when ready */
    async openOnline(server_address) {
       let AdoptHierarchy = result => {
@@ -75031,11 +75032,11 @@ class HierarchyPainter extends BasePainter {
             if (item._autoload) {
                let arr = item._autoload.split(';');
                arr.forEach(name => {
-                  if ((name.length > 4) && (name.lastIndexOf(".mjs") == name.length-4)) {
+                  if ((name.length > 4) && (name.lastIndexOf('.mjs') == name.length-4)) {
                      v7_imports.push(this.importModule(name));
-                  } else if ((name.length > 3) && (name.lastIndexOf(".js") == name.length-3)) {
+                  } else if ((name.length > 3) && (name.lastIndexOf('.js') == name.length-3)) {
                      if (!scripts.find(elem => elem == name)) scripts.push(name);
-                  } else if ((name.length > 4) && (name.lastIndexOf(".css") == name.length-4)) {
+                  } else if ((name.length > 4) && (name.lastIndexOf('.css') == name.length-4)) {
                      if (!styles.find(elem => elem == name)) styles.push(name);
                   } else if (name && !v6_modules.find(elem => elem == name)) {
                      v6_modules.push(name);
@@ -75050,7 +75051,7 @@ class HierarchyPainter extends BasePainter {
                .then(() => {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
-                     let typename = "kind:" + item._kind;
+                     let typename = 'kind:' + item._kind;
                      if (item._kind.indexOf('ROOT.') == 0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
                      if (!canDrawHandle(typename) || drawopt)
@@ -75061,15 +75062,15 @@ class HierarchyPainter extends BasePainter {
                });
       };
 
-      if (!server_address) server_address = "";
+      if (!server_address) server_address = '';
 
       if (typeof server_address == 'object') {
          let h = server_address;
-         server_address = "";
+         server_address = '';
          return AdoptHierarchy(h);
       }
 
-      return httpRequest(server_address + "h.json?compact=3", 'object').then(hh => AdoptHierarchy(hh));
+      return httpRequest(server_address + 'h.json?compact=3', 'object').then(hh => AdoptHierarchy(hh));
    }
 
    /** @summary Get properties for online item  - server name and relative name
@@ -75088,7 +75089,7 @@ class HierarchyPainter extends BasePainter {
                itemname: subname
             };
          }
-         subname = item._name + "/" + subname;
+         subname = item._name + '/' + subname;
       }
 
       return null;
@@ -75101,31 +75102,31 @@ class HierarchyPainter extends BasePainter {
       let node = this.findItem(itemname),
           sett = getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = getDrawHandle(node._kind),
-          root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
+          root_type = (typeof node._kind == 'string') ? node._kind.indexOf('ROOT.') == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push('inspect');
-         menu.addDrawMenu("Draw", sett.opts, arg => this.display(itemname, arg));
+         menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg));
       }
 
       if (!node._childs && (node._more !== false) && (node._more || root_type || sett.expand || sett.get_expand))
-         menu.add("Expand", () => this.expandItem(itemname));
+         menu.add('Expand', () => this.expandItem(itemname));
 
       if (handle?.execute)
-         menu.add("Execute", () => this.executeCommand(itemname, menu.tree_node));
+         menu.add('Execute', () => this.executeCommand(itemname, menu.tree_node));
 
       if (sett.opts && (node._can_draw !== false))
-         menu.addDrawMenu("Draw in new window", sett.opts,
-                           arg => window.open(onlineprop.server + "?nobrowser&item=" + onlineprop.itemname +
-                                              (this.isMonitoring() ? "&monitoring=" + this.getMonitoringInterval() : '') +
-                                              (arg ? "&opt=" + arg : '')));
+         menu.addDrawMenu('Draw in new window', sett.opts,
+                           arg => window.open(onlineprop.server + '?nobrowser&item=' + onlineprop.itemname +
+                                              (this.isMonitoring() ? '&monitoring=' + this.getMonitoringInterval() : '') +
+                                              (arg ? '&opt=' + arg : '')));
 
       if (sett.opts && (sett.opts.length > 0) && root_type && (node._can_draw !== false))
-         menu.addDrawMenu("Draw as png", sett.opts,
-                           arg => window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=600&h=400" + (arg ? "&opt=" + arg : '')));
+         menu.addDrawMenu('Draw as png', sett.opts,
+                           arg => window.open(onlineprop.server + onlineprop.itemname + '/root.png?w=600&h=400' + (arg ? '&opt=' + arg : '')));
 
       if ('_player' in node)
-         menu.add("Player", () => this.player(itemname));
+         menu.add('Player', () => this.player(itemname));
    }
 
    /** @summary Assign existing hierarchy to the painter and refresh HTML code
@@ -75140,7 +75141,7 @@ class HierarchyPainter extends BasePainter {
      * @param {boolean} flag - initial monitoring state */
    setMonitoring(interval, monitor_on) {
 
-      this._runMonitoring("cleanup");
+      this._runMonitoring('cleanup');
 
       if (interval) {
          interval = parseInt(interval);
@@ -75161,7 +75162,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Runs monitoring event loop
      * @private */
    _runMonitoring(arg) {
-      if ((arg == "cleanup") || !this.isMonitoring()) {
+      if ((arg == 'cleanup') || !this.isMonitoring()) {
          if (this._monitoring_handle) {
             clearTimeout(this._monitoring_handle);
             delete this._monitoring_handle;
@@ -75177,11 +75178,11 @@ class HierarchyPainter extends BasePainter {
       if (arg == 'frame') {
          // process of timeout, request animation frame
          delete this._monitoring_handle;
-         this._monitoring_frame = requestAnimationFrame(this._runMonitoring.bind(this,"draw"));
+         this._monitoring_frame = requestAnimationFrame(this._runMonitoring.bind(this,'draw'));
          return;
       }
 
-      if (arg == "draw") {
+      if (arg == 'draw') {
          delete this._monitoring_frame;
          this.updateItems();
       }
@@ -75200,7 +75201,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Assign default layout and place where drawing will be performed
-     * @param {string} layout - layout like "simple" or "grid2x2"
+     * @param {string} layout - layout like 'simple' or 'grid2x2'
      * @param {string} frameid - DOM element id where object drawing will be performed */
    setDisplay(layout, frameid) {
       if (!frameid && (typeof layout == 'object')) {
@@ -75257,7 +75258,7 @@ class HierarchyPainter extends BasePainter {
          // cleanup all monitoring loops
          this.enableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
-         this.selectDom().html("");
+         this.selectDom().html('');
          plainarr.forEach(d => { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
          delete this.h;
       }
@@ -75274,7 +75275,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    cleanupFrame(frame) {
 
-      select(frame).attr("frame_title", null);
+      select(frame).attr('frame_title', null);
 
       this.clearDrop(frame);
 
@@ -75294,7 +75295,7 @@ class HierarchyPainter extends BasePainter {
    async createDisplay() {
 
       if ('disp' in this) {
-         if ((this.disp.numDraw() > 0) || (this.disp_kind == "custom"))
+         if ((this.disp.numDraw() > 0) || (this.disp_kind == 'custom'))
             return this.disp;
          this.disp.cleanup();
          delete this.disp;
@@ -75312,9 +75313,9 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return null;
 
-      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind.indexOf("coll") == 0))
+      if ((this.disp_kind.indexOf('flex') == 0) || (this.disp_kind.indexOf('coll') == 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
-      else if (this.disp_kind == "tabs")
+      else if (this.disp_kind == 'tabs')
          this.disp = new TabsDisplay(this.disp_frameid);
       else
          this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
@@ -75333,7 +75334,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    async createCustomDisplay(itemname, custom_kind) {
 
-      if (this.disp_kind != "simple")
+      if (this.disp_kind != 'simple')
          return this.createDisplay();
 
       this.disp_kind = custom_kind;
@@ -75356,7 +75357,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
+      let handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
@@ -75435,7 +75436,7 @@ class HierarchyPainter extends BasePainter {
          while (opt.length > 0) {
             let separ = opt.indexOf(';');
             let part = separ > 0 ? opt.slice(0, separ) : opt;
-            if (separ > 0) opt = opt.slice(separ+1); else opt = "";
+            if (separ > 0) opt = opt.slice(separ+1); else opt = '';
 
             let canarray = true;
             if (part[0] == '#') { part = part.slice(1); canarray = false; }
@@ -75454,19 +75455,19 @@ class HierarchyPainter extends BasePainter {
       };
 
       let prereq = GetOption('prereq') || '',
-          filesdir = d.get("path") || '', // path used in normal gui
-          filesarr = GetOptionAsArray("#file;files"),
-          localfile = GetOption("localfile"),
-          jsonarr = GetOptionAsArray("#json;jsons"),
-          expanditems = GetOptionAsArray("expand"),
-          focusitem = GetOption("focus"),
-          itemsarr = GetOptionAsArray("#item;items"),
-          optionsarr = GetOptionAsArray("#opt;opts"),
-          monitor = GetOption("monitoring"),
-          layout = GetOption("layout"),
-          style = GetOptionAsArray("#style"),
-          statush = 0, status = GetOption("status"),
-          browser_kind = GetOption("browser"),
+          filesdir = d.get('path') || '', // path used in normal gui
+          filesarr = GetOptionAsArray('#file;files'),
+          localfile = GetOption('localfile'),
+          jsonarr = GetOptionAsArray('#json;jsons'),
+          expanditems = GetOptionAsArray('expand'),
+          focusitem = GetOption('focus'),
+          itemsarr = GetOptionAsArray('#item;items'),
+          optionsarr = GetOptionAsArray('#opt;opts'),
+          monitor = GetOption('monitoring'),
+          layout = GetOption('layout'),
+          style = GetOptionAsArray('#style'),
+          statush = 0, status = GetOption('status'),
+          browser_kind = GetOption('browser'),
           browser_configured = !!browser_kind,
           title = GetOption('title');
 
@@ -75477,27 +75478,27 @@ class HierarchyPainter extends BasePainter {
       else
          monitor = parseInt(monitor);
 
-      if (GetOption("float") !== null) { browser_kind = 'float'; browser_configured = true; } else
-      if (GetOption("fix") !== null) { browser_kind = 'fix'; browser_configured = true; }
+      if (GetOption('float') !== null) { browser_kind = 'float'; browser_configured = true; } else
+      if (GetOption('fix') !== null) { browser_kind = 'fix'; browser_configured = true; }
 
-      this.no_select = GetOption("noselect");
+      this.no_select = GetOption('noselect');
 
       if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
 
       if (title) document.title = title;
 
-      let load = GetOption("load");
+      let load = GetOption('load');
 
-      if (expanditems.length == 0 && (GetOption("expand") === '')) expanditems.push("");
+      if (expanditems.length == 0 && (GetOption('expand') === '')) expanditems.push('');
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
          for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length == 0) && GetOption("item") === '') itemsarr.push("");
+      if ((itemsarr.length == 0) && GetOption('item') === '') itemsarr.push('');
 
-      if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push("");
+      if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push('');
 
       if (!this.disp_kind) {
          if ((typeof layout == 'string') && (layout.length > 0))
@@ -75518,7 +75519,7 @@ class HierarchyPainter extends BasePainter {
          }
       }
 
-      if (status === "no")
+      if (status === 'no')
          status = null;
       else if (status === 'off') {
          this.status_disabled = true;
@@ -75533,28 +75534,28 @@ class HierarchyPainter extends BasePainter {
       if (this.no_select === '') this.no_select = true;
 
       if (!browser_kind)
-         browser_kind = "fix";
-      else if (browser_kind === "no")
-         browser_kind = "";
+         browser_kind = 'fix';
+      else if (browser_kind === 'no')
+         browser_kind = '';
       else if (browser_kind === 'off') {
-         browser_kind = "";
+         browser_kind = '';
          status = null;
          this.exclude_browser = true;
       }
-      if (GetOption("nofloat") !== null)
+      if (GetOption('nofloat') !== null)
          this.float_browser_disabled = true;
 
-      if (this.start_without_browser) browser_kind = "";
+      if (this.start_without_browser) browser_kind = '';
 
-      this._topname = GetOption("topname");
+      this._topname = GetOption('topname');
 
       let openAllFiles = () => {
          let promise;
 
          if (load || prereq) {
-            promise = this.loadScripts(load, prereq); load = ""; prereq = "";
+            promise = this.loadScripts(load, prereq); load = ''; prereq = '';
          } else if (browser_kind) {
-            promise = this.createBrowser(browser_kind); browser_kind = "";
+            promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
          } else if (jsonarr.length > 0)
@@ -75584,10 +75585,10 @@ class HierarchyPainter extends BasePainter {
          let func = internals.getCachedHierarchy || findFunction('GetCachedHierarchy');
          if (typeof func == 'function')
             h0 = func();
-         if (typeof h0 !== 'object') h0 = "";
+         if (typeof h0 !== 'object') h0 = '';
 
-         if ((this.is_online == "draw") && !itemsarr.length)
-            itemsarr.push("");
+         if ((this.is_online == 'draw') && !itemsarr.length)
+            itemsarr.push('');
       }
 
       if (h0 !== null)
@@ -75595,8 +75596,8 @@ class HierarchyPainter extends BasePainter {
             // check if server enables monitoring
             if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
                browser_kind = this.h._browser;
-               if (browser_kind === "no") browser_kind = ""; else
-               if (browser_kind === 'off') { browser_kind = ""; status = null; this.exclude_browser = true; }
+               if (browser_kind === 'no') browser_kind = ''; else
+               if (browser_kind === 'off') { browser_kind = ''; status = null; this.exclude_browser = true; }
             }
 
             if (('_monitoring' in this.h) && !monitor)
@@ -75610,7 +75611,7 @@ class HierarchyPainter extends BasePainter {
                optionsarr = parseAsArray(this.h._drawopt);
             }
 
-            if (('_layout' in this.h) && !layout && ((this.is_online != "draw") || (itemsarr.length > 1)))
+            if (('_layout' in this.h) && !layout && ((this.is_online != 'draw') || (itemsarr.length > 1)))
                this.disp_kind = this.h._layout;
 
             if (('_toptitle' in this.h) && this.exclude_browser && document)
@@ -75641,16 +75642,16 @@ class HierarchyPainter extends BasePainter {
       if (!this.exclude_browser) {
          let btns = this.brlayout.createBrowserBtns();
 
-         ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, "toggle fix-pos browser")
-                     .style("margin","3px").on("click", () => this.createBrowser("fix", true));
+         ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser')
+                     .style('margin','3px').on('click', () => this.createBrowser('fix', true));
 
          if (!this.float_browser_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, "toggle float browser")
-                        .style("margin","3px").on("click", () => this.createBrowser("float", true));
+            ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser')
+                        .style('margin','3px').on('click', () => this.createBrowser('float', true));
 
          if (!this.status_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, "toggle status line")
-                        .style("margin","3px").on("click", () => this.createStatusLine(0, "toggle"));
+            ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line')
+                        .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
       }
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
@@ -75665,7 +75666,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create status line
      * @param {number} [height] - size of the status line
-     * @param [mode] - false / true / "toggle"
+     * @param [mode] - false / true / 'toggle'
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
@@ -75698,7 +75699,7 @@ class HierarchyPainter extends BasePainter {
       if (main.empty())
          return false;
 
-      if ((browser_kind == "float") && this.float_browser_disabled) browser_kind = "fix";
+      if ((browser_kind == 'float') && this.float_browser_disabled) browser_kind = 'fix';
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -75748,7 +75749,7 @@ class HierarchyPainter extends BasePainter {
       this.brlayout.setBrowserContent(guiCode);
 
       let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
-      if (title_elem) title_elem.on("contextmenu", evnt => {
+      if (title_elem) title_elem.on('contextmenu', evnt => {
          evnt.preventDefault();
          createMenu$1(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
@@ -75761,33 +75762,33 @@ class HierarchyPainter extends BasePainter {
       if (!this.is_online && !this.no_select) {
 
          this.readSelectedFile = function() {
-            let filename = main.select(".gui_urlToLoad").property('value').trim();
+            let filename = main.select('.gui_urlToLoad').property('value').trim();
             if (!filename) return;
 
-            if (filename.toLowerCase().lastIndexOf(".json") == filename.length-5)
+            if (filename.toLowerCase().lastIndexOf('.json') == filename.length-5)
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
          };
 
-         main.select(".gui_selectFileName").property("value", "")
-              .on("change", evnt => main.select(".gui_urlToLoad").property("value", evnt.target.value));
-         main.select(".gui_fileBtn").on("click", () => main.select(".gui_localFile").node().click());
+         main.select('.gui_selectFileName').property('value', '')
+              .on('change', evnt => main.select('.gui_urlToLoad').property('value', evnt.target.value));
+         main.select('.gui_fileBtn').on('click', () => main.select('.gui_localFile').node().click());
 
-         main.select(".gui_ReadFileBtn").on("click", () => this.readSelectedFile());
+         main.select('.gui_ReadFileBtn').on('click', () => this.readSelectedFile());
 
-         main.select(".gui_ResetUIBtn").on("click", () => this.clearHierarchy(true));
+         main.select('.gui_ResetUIBtn').on('click', () => this.clearHierarchy(true));
 
-         main.select(".gui_urlToLoad").on("keyup", evnt => {
+         main.select('.gui_urlToLoad').on('keyup', evnt => {
             if (evnt.code == 'Enter') this.readSelectedFile();
          });
 
-         main.select(".gui_localFile").on('change', evnt => {
+         main.select('.gui_localFile').on('change', evnt => {
             let files = evnt.target.files, promises = [];
 
             for (let n = 0; n < files.length; ++n) {
                let f = files[n];
-               main.select(".gui_urlToLoad").property('value', f.name);
+               main.select('.gui_urlToLoad').property('value', f.name);
                promises.push(this.openRootFile(f));
             }
 
@@ -75802,17 +75803,17 @@ class HierarchyPainter extends BasePainter {
          this.selectLocalFile = async function() {
             return new Promise(resolveFunc => {
                localfile_read_callback = resolveFunc;
-               main.select(".gui_localFile").node().click();
+               main.select('.gui_localFile').node().click();
             });
          };
       }
 
-      let layout = main.select(".gui_layout");
+      let layout = main.select('.gui_layout');
       if (!layout.empty()) {
          ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex', 'tabs',
-          'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append("option").attr("value", kind).html(kind));
+          'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append('option').attr('value', kind).html(kind));
 
-         layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + "_drawing"));
+         layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + '_drawing'));
       }
 
       this.setDom(this.gui_div + '_browser_hierarchy');
@@ -75822,7 +75823,7 @@ class HierarchyPainter extends BasePainter {
          this.initializeBrowser();
       }
 
-      return this.brlayout.toggleBrowserKind(browser_kind || "fix");
+      return this.brlayout.toggleBrowserKind(browser_kind || 'fix');
    }
 
    /** @summary Initialize browser elements */
@@ -75833,14 +75834,14 @@ class HierarchyPainter extends BasePainter {
 
       this.brlayout.adjustBrowserSize();
 
-      let selects = main.select(".gui_layout").node();
+      let selects = main.select('.gui_layout').node();
 
       if (selects) {
          let found = false;
          for (let i in selects.options) {
             let s = selects.options[i].text;
             if (typeof s !== 'string') continue;
-            if ((s == this.getLayout()) || (s.replace(/ /g,"") == this.getLayout())) {
+            if ((s == this.getLayout()) || (s.replace(/ /g, '') == this.getLayout())) {
                selects.selectedIndex = i; found = true;
                break;
             }
@@ -75856,16 +75857,16 @@ class HierarchyPainter extends BasePainter {
       if (this.is_online) {
          if (this.h?._toptitle)
             this.brlayout.setBrowserTitle(this.h._toptitle);
-         main.select(".gui_monitoring")
+         main.select('.gui_monitoring')
            .property('checked', this.isMonitoring())
-           .on("click", evnt => {
+           .on('click', evnt => {
                this.enableMonitoring(evnt.target.checked);
                this.updateItems();
             });
       } else if (!this.no_select) {
-         let fname = "";
+         let fname = '';
          this.forEachRootFile(item => { if (!fname) fname = item._fullurl; });
-         main.select(".gui_urlToLoad").property("value", fname);
+         main.select('.gui_urlToLoad').property('value', fname);
       }
    }
 
@@ -75892,11 +75893,11 @@ ObjectPainter.prototype.showInspector = function(obj) {
       rect = getElementRect(main),
       w = Math.round(rect.width * 0.05) + 'px',
       h = Math.round(rect.height * 0.05) + 'px',
-      id = "root_inspector_" + internals.id_counter++;
+      id = 'root_inspector_' + internals.id_counter++;
 
    main.append('div')
       .attr('id', id)
-      .attr('class', "jsroot_inspector")
+      .attr('class', 'jsroot_inspector')
       .style('position', 'absolute')
       .style('top', h)
       .style('bottom', h)
@@ -75917,7 +75918,7 @@ async function drawStreamerInfo(dom, lst) {
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
-      painter.selectDom().property("_json_object_", lst);
+      painter.selectDom().property('_json_object_', lst);
       return painter;
    }
 
@@ -75943,15 +75944,15 @@ async function drawInspector(dom, obj) {
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
-      painter.selectDom().property("_json_object_", obj);
+      painter.selectDom().property('_json_object_', obj);
       return painter;
    }
 
-   painter.default_by_click = "expand"; // default action
+   painter.default_by_click = 'expand'; // default action
    painter.with_icons = false;
    painter._inspector = true; // keep
 
-   if (painter.selectDom().classed("jsroot_inspector"))
+   if (painter.selectDom().classed('jsroot_inspector'))
       painter.removeInspector = function() {
          this.selectDom().remove();
       };
@@ -75959,13 +75960,13 @@ async function drawInspector(dom, obj) {
    painter.fill_context = function(menu, hitem) {
       let sett = getDrawSettings(hitem._kind, 'nosame');
       if (sett.opts)
-         menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
+         menu.addDrawMenu('nosub:Draw', sett.opts, function(arg) {
             if (!hitem || !hitem._obj) return;
             let obj = hitem._obj, ddom = this.selectDom().node();
             if (this.removeInspector) {
                ddom = ddom.parentNode;
                this.removeInspector();
-               if (arg == "inspect")
+               if (arg == 'inspect')
                   return this.showInspector(obj);
             }
             cleanup(ddom);
@@ -76011,24 +76012,24 @@ function readStyleFromURL(url) {
    function get_bool(name, field) {
       if (d.has(name)) {
          let val = d.get(name);
-         settings[field] = (val != "0") && (val != 'false') && (val != 'off');
+         settings[field] = (val != '0') && (val != 'false') && (val != 'off');
       }
    }
 
-   if (d.has("optimize")) {
+   if (d.has('optimize')) {
       settings.OptimizeDraw = 2;
-      let optimize = d.get("optimize");
+      let optimize = d.get('optimize');
       if (optimize) {
          optimize = parseInt(optimize);
          if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
       }
    }
 
-   get_bool("lastcycle", "OnlyLastCycle");
-   get_bool("usestamp", "UseStamp");
-   get_bool("dark", "DarkMode");
+   get_bool('lastcycle', 'OnlyLastCycle');
+   get_bool('usestamp', 'UseStamp');
+   get_bool('dark', 'DarkMode');
 
-   let mr = d.get("maxranges");
+   let mr = d.get('maxranges');
    if (mr) {
       mr = parseInt(mr);
       if (Number.isInteger(mr)) settings.MaxRanges = mr;
@@ -76037,19 +76038,19 @@ function readStyleFromURL(url) {
    if (d.has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true;
 
-   let inter = d.get("interactive");
-   if (inter === "nomenu")
+   let inter = d.get('interactive');
+   if (inter === 'nomenu')
       settings.ContextMenu = false;
    else if (inter !== undefined) {
-      if (!inter || (inter == "1"))
-         inter = "111111";
-      else if (inter == "0")
-         inter = "000000";
+      if (!inter || (inter == '1'))
+         inter = '111111';
+      else if (inter == '0')
+         inter = '000000';
       if (inter.length === 6) {
          switch(inter[0]) {
-            case "0": settings.ToolBar = false; break;
-            case "1": settings.ToolBar = 'popup'; break;
-            case "2": settings.ToolBar = true; break;
+            case '0': settings.ToolBar = false; break;
+            case '1': settings.ToolBar = 'popup'; break;
+            case '2': settings.ToolBar = true; break;
          }
          inter = inter.slice(1);
       }
@@ -76062,50 +76063,50 @@ function readStyleFromURL(url) {
       }
    }
 
-   get_bool("tooltip", "Tooltip");
+   get_bool('tooltip', 'Tooltip');
 
-   if (d.has("bootstrap") || d.has("bs"))
+   if (d.has('bootstrap') || d.has('bs'))
       settings.Bootstrap = true;
 
-   let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
+   let mathjax = d.get('mathjax', null), latex = d.get('latex', null);
 
-   if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
+   if ((mathjax !== null) && (mathjax != '0') && (latex === null)) latex = 'math';
    if (latex !== null)
       settings.Latex = constants$1.Latex.fromString(latex);
 
-   if (d.has("nomenu")) settings.ContextMenu = false;
-   if (d.has("noprogress")) settings.ProgressBox = false;
-   if (d.has("notouch")) browser.touches = false;
-   if (d.has("adjframe")) settings.CanAdjustFrame = true;
+   if (d.has('nomenu')) settings.ContextMenu = false;
+   if (d.has('noprogress')) settings.ProgressBox = false;
+   if (d.has('notouch')) browser.touches = false;
+   if (d.has('adjframe')) settings.CanAdjustFrame = true;
 
-   if (d.has("toolbar")) {
-      let toolbar = d.get("toolbar", ""), val = null;
+   if (d.has('toolbar')) {
+      let toolbar = d.get('toolbar', ''), val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
       if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
       if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
       if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
       if (toolbar.indexOf('show') >= 0) val = true;
-      settings.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf('false') < 0) && (toolbar.indexOf('off') < 0));
+      settings.ToolBar = val || ((toolbar.indexOf('0') < 0) && (toolbar.indexOf('false') < 0) && (toolbar.indexOf('off') < 0));
    }
 
-   get_bool("skipsi", "SkipStreamerInfos");
-   get_bool("skipstreamerinfos", "SkipStreamerInfos");
+   get_bool('skipsi', 'SkipStreamerInfos');
+   get_bool('skipstreamerinfos', 'SkipStreamerInfos');
 
-   if (d.has("nodraggraphs"))
+   if (d.has('nodraggraphs'))
       settings.DragGraphs = false;
 
-   if (d.has("palette")) {
-      let palette = parseInt(d.get("palette"));
+   if (d.has('palette')) {
+      let palette = parseInt(d.get('palette'));
       if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
    }
 
-   let render3d = d.get("render3d"), embed3d = d.get("embed3d"), geosegm = d.get("geosegm");
+   let render3d = d.get('render3d'), embed3d = d.get('embed3d'), geosegm = d.get('geosegm');
    if (render3d) settings.Render3D = constants$1.Render3D.fromString(render3d);
    if (embed3d) settings.Embed3D = constants$1.Embed3D.fromString(embed3d);
    if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-   get_bool("geocomp", "GeoCompressComp");
+   get_bool('geocomp', 'GeoCompressComp');
 
-   if (d.has("hlimit")) settings.HierarchyLimit = parseInt(d.get("hlimit"));
+   if (d.has('hlimit')) settings.HierarchyLimit = parseInt(d.get('hlimit'));
 
    function get_int_style(name, field, dflt) {
       if (!d.has(name)) return;
@@ -76118,48 +76119,48 @@ function readStyleFromURL(url) {
          gStyle[field] = parseInt(val);
    }
 
-   if (d.has("histzero")) gStyle.fHistMinimumZero = true;
-   if (d.has("histmargin")) gStyle.fHistTopMargin = parseFloat(d.get("histmargin"));
-   get_int_style("optstat", "fOptStat", 1111);
-   get_int_style("optfit", "fOptFit", 0);
-   get_int_style("optdate", "fOptDate", 1);
-   get_int_style("optfile", "fOptFile", 1);
-   get_int_style("opttitle", "fOptTitle", 1);
-   gStyle.fStatFormat = d.get("statfmt", gStyle.fStatFormat);
-   gStyle.fFitFormat = d.get("fitfmt", gStyle.fFitFormat);
+   if (d.has('histzero')) gStyle.fHistMinimumZero = true;
+   if (d.has('histmargin')) gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
+   get_int_style('optstat', 'fOptStat', 1111);
+   get_int_style('optfit', 'fOptFit', 0);
+   get_int_style('optdate', 'fOptDate', 1);
+   get_int_style('optfile', 'fOptFile', 1);
+   get_int_style('opttitle', 'fOptTitle', 1);
+   gStyle.fStatFormat = d.get('statfmt', gStyle.fStatFormat);
+   gStyle.fFitFormat = d.get('fitfmt', gStyle.fFitFormat);
 }
 
 
 /** @summary Build main GUI
   * @desc Used in many HTML files to create JSROOT GUI elements
   * @param {String} gui_element - id of the `<div>` element
-  * @param {String} gui_kind - either "online", "nobrowser", "draw"
+  * @param {String} gui_kind - either 'online', 'nobrowser', 'draw'
   * @return {Promise} with {@link HierarchyPainter} instance
   * @example
   * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
-  * buildGUI("guiDiv"); */
-async function buildGUI(gui_element, gui_kind = "") {
+  * buildGUI('guiDiv'); */
+async function buildGUI(gui_element, gui_kind = '') {
    let myDiv = (typeof gui_element == 'string') ? select('#' + gui_element) : select(gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));
 
-   myDiv.html(""); // clear element
+   myDiv.html(''); // clear element
 
-   let d = decodeUrl(), online = (gui_kind == "online"), nobrowser = false, drawing = false;
+   let d = decodeUrl(), online = (gui_kind == 'online'), nobrowser = false, drawing = false;
 
-   if (gui_kind == "draw") {
+   if (gui_kind == 'draw') {
       online = drawing = nobrowser = true;
-   } else if ((gui_kind == "nobrowser") || d.has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser") !== 'false')) {
+   } else if ((gui_kind == 'nobrowser') || d.has('nobrowser') || (myDiv.attr('nobrowser') && myDiv.attr('nobrowser') !== 'false')) {
       nobrowser = true;
    }
 
-   if (myDiv.attr("ignoreurl") === 'true')
+   if (myDiv.attr('ignoreurl') === 'true')
       settings.IgnoreUrlOptions = true;
 
    readStyleFromURL();
 
    if (nobrowser) {
-      let guisize = d.get("divsize");
+      let guisize = d.get('divsize');
       if (guisize) {
          guisize = guisize.split('x');
          if (guisize.length != 2) guisize = null;
@@ -76176,7 +76177,7 @@ async function buildGUI(gui_element, gui_kind = "") {
 
    let hpainter = new HierarchyPainter('root', null);
 
-   if (online) hpainter.is_online = drawing ? "draw" : "online";
+   if (online) hpainter.is_online = drawing ? 'draw' : 'online';
    if (drawing) hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
 
@@ -76189,9 +76190,9 @@ async function buildGUI(gui_element, gui_kind = "") {
       if (typeof func == 'function')
          obj = parse(func());
       if (obj) hpainter._cached_draw_object = obj;
-      let opt = d.get("opt", "");
-      if (d.has("websocket")) opt+=";websocket";
-      return hpainter.display("", opt);
+      let opt = d.get('opt', '');
+      if (d.has('websocket')) opt+=';websocket';
+      return hpainter.display('', opt);
    }).then(() => hpainter);
 }
 
@@ -76228,17 +76229,17 @@ class TSelector {
    /** @summary Add branch to the selector
     * @desc Either branch name or branch itself should be specified
     * Second parameter defines member name in the tgtobj
-    * If selector.addBranch('px', "read_px") is called,
+    * If selector.addBranch('px', 'read_px') is called,
     * branch will be read into selector.tgtobj.read_px member
     * If second parameter not specified, branch name (here 'px') will be used
     * If branch object specified as first parameter and second parameter missing,
-    * then member like "br0", "br1" and so on will be assigned
+    * then member like 'br0', 'br1' and so on will be assigned
     * @param {string|Object} branch - name of branch (or branch object itself}
     * @param {string} [name] - member name in tgtobj where data will be read
     * @param {boolean} [direct] - if only branch without any children should be read */
    addBranch(branch, name, direct) {
       if (!name)
-         name = (typeof branch === 'string') ? branch : ("br" + this._branches.length);
+         name = (typeof branch === 'string') ? branch : ('br' + this._branches.length);
       this._branches.push(branch);
       this._names.push(name);
       this._directs.push(direct);
@@ -76353,39 +76354,39 @@ class ArrayIterator {
 
          obj = (cnt < 0) ? this.object : (this.arr[cnt])[this.indx[cnt]];
 
-         typ = obj ? typeof obj : "any";
+         typ = obj ? typeof obj : 'any';
 
          if (typ === 'object') {
             if (obj._typename !== undefined) {
-               if (isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
-               else typ = "any";
+               if (isRootCollection(obj)) { obj = obj.arr; typ = 'array'; }
+               else typ = 'any';
             } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
-               typ = "array";
+               typ = 'array';
             } else {
-               typ = "any";
+               typ = 'any';
             }
          }
 
-         if (this.select[cnt + 1] == "$self$") {
+         if (this.select[cnt + 1] == '$self$') {
             this.value = obj;
             this.fastindx = this.fastlimit = 0;
             this.cnt = cnt + 1;
             return true;
          }
 
-         if ((typ == "any") && (typeof this.select[cnt + 1] === 'string')) {
+         if ((typ == 'any') && (typeof this.select[cnt + 1] === 'string')) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
             continue;
          }
 
-         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt + 1] === "$size$"))) {
+         if ((typ === 'array') && ((obj.length > 0) || (this.select[cnt + 1] === '$size$'))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
-               case "$last$": this.indx[cnt] = obj.length - 1; break;
-               case "$size$":
+               case '$last$': this.indx[cnt] = obj.length - 1; break;
+               case '$size$':
                   this.value = obj.length;
                   this.fastindx = this.fastlimit = 0;
                   this.cnt = cnt;
@@ -76438,7 +76439,7 @@ class ArrayIterator {
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
 
-   if (!branch || (branch._typename !== "TBranchElement")) return '';
+   if (!branch || (branch._typename !== 'TBranchElement')) return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
       // object where all sub-branches will be collected
@@ -76450,13 +76451,13 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
 
    let s_elem = findBrachStreamerElement(branch, tree.$file);
 
-   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
+   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === 'BASE'))
       return s_elem.fName;
 
    if (branch.fType === kObjectNode) {
       if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
          return s_elem.fTypeName;
-      return "TObject";
+      return 'TObject';
    }
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
@@ -76491,7 +76492,7 @@ function getTreeBranch(tree, id) {
 /** @summary Special branch search
   * @desc Name can include extra part, which will be returned in the result
   * @param {string} name - name of the branch
-  * @return {Object} with "branch" and "rest" members
+  * @return {Object} with 'branch' and 'rest' members
   * @private */
 function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
@@ -76500,7 +76501,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
    if (!lst) {
       top_search = true;
       lst = tree.fBranches;
-      let pos = search.indexOf("[");
+      let pos = search.indexOf('[');
       if (pos > 0) search = search.slice(0, pos);
    }
 
@@ -76508,12 +76509,12 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
    for (let n = 0; n < lst.arr.length; ++n) {
       let brname = lst.arr[n].fName;
-      if (brname[brname.length - 1] == "]")
-         brname = brname.slice(0, brname.indexOf("["));
+      if (brname[brname.length - 1] == ']')
+         brname = brname.slice(0, brname.indexOf('['));
 
       // special case when branch name includes STL map name
-      if ((search.indexOf(brname) !== 0) && (brname.indexOf("<") > 0)) {
-         let p1 = brname.indexOf("<"), p2 = brname.lastIndexOf(">");
+      if ((search.indexOf(brname) !== 0) && (brname.indexOf('<') > 0)) {
+         let p1 = brname.indexOf('<'), p2 = brname.lastIndexOf('>');
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
@@ -76536,7 +76537,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       break;
    }
 
-   if (top_search && !only_search && !res && (search.indexOf("br_") == 0)) {
+   if (top_search && !only_search && !res && (search.indexOf('br_') == 0)) {
       let p = 3;
       while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
       let br = (p > 3) ? getTreeBranch(tree, parseInt(search.slice(3,p))) : null;
@@ -76597,7 +76598,7 @@ class TDrawVariable {
          return false;
       };
 
-      if (!code) code = ""; // should be empty string at least
+      if (!code) code = ''; // should be empty string at least
 
       this.code = (only_branch?.fName ?? '') + code;
 
@@ -76614,11 +76615,11 @@ class TDrawVariable {
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === '.')) pos2++;
             if (code[pos2] == '$') {
-               let repl = "";
+               let repl = '';
                switch (code.slice(pos, pos2)) {
-                  case "LocalEntry":
-                  case "Entry": repl = "arg.$globals.entry"; break;
-                  case "Entries": repl = "arg.$globals.entries"; break;
+                  case 'LocalEntry':
+                  case 'Entry': repl = 'arg.$globals.entry'; break;
+                  case 'Entries': repl = 'arg.$globals.entries'; break;
                }
                if (repl) {
                   code = code.slice(0, pos) + repl + code.slice(pos2 + 1);
@@ -76640,7 +76641,7 @@ class TDrawVariable {
             // when code ends with the point - means object itself will be accessed
             // sometime branch name itself ends with the point
             if ((pos2 >= code.length - 1) && (code[code.length - 1] === '.')) {
-               arriter.push("$self$");
+               arriter.push('$self$');
                pos2 = code.length;
             }
          }
@@ -76648,7 +76649,7 @@ class TDrawVariable {
          // now extract all levels of iterators
          while (pos2 < code.length) {
 
-            if ((code[pos2] === "@") && (code.slice(pos2, pos2 + 5) == "@size") && (arriter.length == 0)) {
+            if ((code[pos2] === '@') && (code.slice(pos2, pos2 + 5) == '@size') && (arriter.length == 0)) {
                pos2 += 5;
                branch_mode = true;
                break;
@@ -76658,21 +76659,21 @@ class TDrawVariable {
                // this is object member
                let prev = ++pos2;
 
-               if ((code[prev] === "@") && (code.slice(prev, prev + 5) === "@size")) {
-                  arriter.push("$size$");
+               if ((code[prev] === '@') && (code.slice(prev, prev + 5) === '@size')) {
+                  arriter.push('$size$');
                   pos2 += 5;
                   break;
                }
 
                if (!is_start_symbol(code[prev])) {
-                  arriter.push("$self$"); // last point means extraction of object itself
+                  arriter.push('$self$'); // last point means extraction of object itself
                   break;
                }
 
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
 
                // this is looks like function call - do not need to extract member with
-               if (code[pos2] == "(") { pos2 = prev - 1; break; }
+               if (code[pos2] == '(') { pos2 = prev - 1; break; }
 
                // this is selection of member, but probably we need to activate iterator for ROOT collection
                if ((arriter.length === 0) && br) {
@@ -76688,23 +76689,23 @@ class TDrawVariable {
                continue;
             }
 
-            if (code[pos2] !== "[") break;
+            if (code[pos2] !== '[') break;
 
             // simple []
-            if (code[pos2 + 1] == "]") { arriter.push(undefined); pos2 += 2; continue; }
+            if (code[pos2 + 1] == ']') { arriter.push(undefined); pos2 += 2; continue; }
 
             let prev = pos2++, cnt = 0;
-            while ((pos2 < code.length) && ((code[pos2] != "]") || (cnt > 0))) {
+            while ((pos2 < code.length) && ((code[pos2] != ']') || (cnt > 0))) {
                if (code[pos2] == '[') cnt++; else if (code[pos2] == ']') cnt--;
                pos2++;
             }
             let sub = code.slice(prev + 1, pos2);
             switch (sub) {
-               case "":
-               case "$all$": arriter.push(undefined); break;
-               case "$last$": arriter.push("$last$"); break;
-               case "$size$": arriter.push("$size$"); break;
-               case "$first$": arriter.push(0); break;
+               case '':
+               case '$all$': arriter.push(undefined); break;
+               case '$last$': arriter.push('$last$'); break;
+               case '$size$': arriter.push('$size$'); break;
+               case '$first$': arriter.push(0); break;
                default:
                   if (Number.isInteger(parseInt(sub))) {
                      arriter.push(parseInt(sub));
@@ -76736,7 +76737,7 @@ class TDrawVariable {
             return true;
          }
 
-         let replace = "arg.var" + (this.branches.length - 1);
+         let replace = 'arg.var' + (this.branches.length - 1);
 
          code = code.slice(0, pos) + replace + code.slice(pos2);
 
@@ -76749,7 +76750,7 @@ class TDrawVariable {
                  .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
                  .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
 
-      this.func = new Function("arg", "return (" + code + ")");
+      this.func = new Function('arg', `return (${code})`);
 
       return true;
    }
@@ -76772,7 +76773,7 @@ class TDrawVariable {
 
       let arg = { $globals: this.globals, $math: jsroot_math }, usearrlen = -1, arrs = [];
       for (let n = 0; n < this.branches.length; ++n) {
-         let name = "var" + n;
+         let name = 'var' + n;
          arg[name] = obj[this.branches[n]];
 
          // try to check if branch is array and need to be iterated
@@ -76817,7 +76818,7 @@ class TDrawVariable {
 
          for (let k = 0; k < usearrlen; ++k) {
             for (let n = 0; n < this.branches.length; ++n) {
-               if (arrs[n]) arg["var" + n] = arrs[n][k];
+               if (arrs[n]) arg['var' + n] = arrs[n][k];
             }
             this.value[k] = this.func(arg);
          }
@@ -76851,13 +76852,13 @@ class TDrawSelector extends TSelector {
       this.vars = []; // array of expression variables
       this.cut = null; // cut variable
       this.hist = null;
-      this.histo_drawopt = "";
-      this.hist_name = "$htemp";
-      this.hist_title = "Result of TTree::Draw";
+      this.histo_drawopt = '';
+      this.hist_name = '$htemp';
+      this.hist_title = 'Result of TTree::Draw';
       this.graph = false;
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 1000;  // number of accumulated items before create histogram
-      this.htype = "F";
+      this.htype = 'F';
       this.monitoring = 0;
       this.globals = {}; // object with global parameters, which could be used in any draw expression
       this.last_progress = 0;
@@ -76882,76 +76883,79 @@ class TDrawSelector extends TSelector {
          expr = expr.slice(0, pos);
          pos = expr.lastIndexOf(';');
 
-         let separ = parname.indexOf(":");
+         let separ = parname.indexOf(':');
          if (separ > 0) { parvalue = parname.slice(separ + 1); parname = parname.slice(0, separ); }
 
          let intvalue = parseInt(parvalue);
          if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
 
          switch (parname) {
-            case "num":
-            case "entries":
-            case "numentries":
-               if (parvalue === "all") args.numentries = tree.fEntries; else
-                  if (parvalue === "half") args.numentries = Math.round(tree.fEntries / 2); else
-                     if (intvalue !== undefined) args.numentries = intvalue;
+            case 'num':
+            case 'entries':
+            case 'numentries':
+               if (parvalue === 'all')
+                  args.numentries = tree.fEntries;
+               else if (parvalue === 'half')
+                  args.numentries = Math.round(tree.fEntries / 2);
+               else if (intvalue !== undefined)
+                  args.numentries = intvalue;
                break;
-            case "first":
+            case 'first':
                if (intvalue !== undefined) args.firstentry = intvalue;
                break;
-            case "mon":
-            case "monitor":
+            case 'mon':
+            case 'monitor':
                args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
                break;
-            case "player":
+            case 'player':
                args.player = true;
                break;
-            case "dump":
+            case 'dump':
                args.dump = true;
                break;
-            case "maxseg":
-            case "maxrange":
+            case 'maxseg':
+            case 'maxrange':
                if (intvalue) tree.$file.fMaxRanges = intvalue;
                break;
-            case "accum":
+            case 'accum':
                if (intvalue) this.arr_limit = intvalue;
                break;
-            case "htype":
+            case 'htype':
                if (parvalue && (parvalue.length === 1)) {
                   this.htype = parvalue.toUpperCase();
-                  if ((this.htype !== "C") && (this.htype !== "S") && (this.htype !== "I")
-                     && (this.htype !== "F") && (this.htype !== "L") && (this.htype !== "D")) this.htype = "F";
+                  if ((this.htype !== 'C') && (this.htype !== 'S') && (this.htype !== 'I')
+                     && (this.htype !== 'F') && (this.htype !== 'L') && (this.htype !== 'D')) this.htype = 'F';
                }
                break;
-            case "hbins":
+            case 'hbins':
                this.hist_nbins = parseInt(parvalue);
                if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
                break;
             case 'drawopt':
                args.drawopt = parvalue;
                break;
-            case "graph":
+            case 'graph':
                args.graph = intvalue || true;
                break;
          }
       }
 
-      pos = expr.lastIndexOf(">>");
+      pos = expr.lastIndexOf('>>');
       if (pos >= 0) {
          let harg = expr.slice(pos + 2).trim();
          expr = expr.slice(0, pos).trim();
-         pos = harg.indexOf("(");
+         pos = harg.indexOf('(');
          if (pos > 0) {
             this.hist_name = harg.slice(0, pos);
             harg = harg.slice(pos);
          }
-         if (harg === "dump") {
+         if (harg === 'dump') {
             args.dump = true;
-         } else if (harg.indexOf("Graph") == 0) {
+         } else if (harg.indexOf('Graph') == 0) {
             args.graph = true;
          } else if (pos < 0) {
             this.hist_name = harg;
-         } else if ((harg[0] == "(") && (harg[harg.length - 1] == ")")) {
+         } else if ((harg[0] == '(') && (harg[harg.length - 1] == ')')) {
             harg = harg.slice(1, harg.length - 1).split(',');
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
@@ -76975,7 +76979,7 @@ class TDrawSelector extends TSelector {
    parseDrawExpression(tree, args) {
 
       // parse complete expression
-      let expr = this.parseParameters(tree, args, args.expr), cut = "";
+      let expr = this.parseParameters(tree, args, args.expr), cut = '';
 
       // parse option for histogram creation
       this.hist_title = `drawing '${expr}' from ${tree.fName}`;
@@ -76984,7 +76988,7 @@ class TDrawSelector extends TSelector {
       if (args.cut) {
          cut = args.cut;
       } else {
-         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf("::"); // avoid confusion due-to :: in the namespace
+         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf('::'); // avoid confusion due-to :: in the namespace
          if (pos > 0) {
             cut = expr.slice(pos + 2).trim();
             expr = expr.slice(0, pos).trim();
@@ -76994,16 +76998,16 @@ class TDrawSelector extends TSelector {
       args.parse_expr = expr;
       args.parse_cut = cut;
 
-      // let names = expr.split(":"); // to allow usage of ? operator, we need to handle : as well
+      // let names = expr.split(':'); // to allow usage of ? operator, we need to handle : as well
       let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
       for (pos = 0; pos < expr.length; ++pos) {
          switch (expr[pos]) {
-            case "(": nbr1++; break;
-            case ")": nbr1--; break;
-            case "[": nbr2++; break;
-            case "]": nbr2--; break;
-            case ":":
-               if (expr[pos + 1] == ":") { pos++; continue; }
+            case '(': nbr1++; break;
+            case ')': nbr1--; break;
+            case '[': nbr2++; break;
+            case ']': nbr2--; break;
+            case ':':
+               if (expr[pos + 1] == ':') { pos++; continue; }
                if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
                prev = pos + 1;
                break;
@@ -77041,7 +77045,7 @@ class TDrawSelector extends TSelector {
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
       else
-         this.histo_drawopt = (this.ndim === 2) ? "col" : '';
+         this.histo_drawopt = (this.ndim === 2) ? 'col' : '';
 
       return true;
    }
@@ -77050,7 +77054,7 @@ class TDrawSelector extends TSelector {
    drawOnlyBranch(tree, branch, expr, args) {
       this.ndim = 1;
 
-      if (expr.indexOf("dump") == 0) expr = ';' + expr;
+      if (expr.indexOf('dump') == 0) expr = ';' + expr;
 
       expr = this.parseParameters(tree, args, expr);
 
@@ -77071,7 +77075,7 @@ class TDrawSelector extends TSelector {
          this.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
             (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
 
-         this.addBranch(branch, "br0", args.direct_branch); // add branch
+         this.addBranch(branch, 'br0', args.direct_branch); // add branch
 
          this.Process = this.ProcessDump;
 
@@ -77080,7 +77084,7 @@ class TDrawSelector extends TSelector {
 
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
-      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : '') + "'  from " + tree.fName;
+      this.hist_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName}`;
 
       this.cut = new TDrawVariable(this.globals);
 
@@ -77165,7 +77169,7 @@ class TDrawSelector extends TSelector {
             if (s.fString === '') s.fString = '<empty>';
             res.fLabels.Add(s);
          }
-      } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
+      } else if ((axisid === 0) && (this.hist_name === 'bits') && (this.hist_args.length <= 1)) {
          this.fill1DHistogram = this.FillBitsHistogram;
          return this.getBitsBins(this.hist_args[0] || 32, res);
       } else if (axisid * 3 + 2 < this.hist_args.length) {
@@ -77238,7 +77242,7 @@ class TDrawSelector extends TSelector {
          }
 
          this.hist.fTitle = this.hist_title;
-         this.hist.fName = "Graph";
+         this.hist.fName = 'Graph';
 
       } else {
 
@@ -77560,14 +77564,14 @@ class TDrawSelector extends TSelector {
   * @desc unfortunately, branch.fID is not number of element in streamer info
   * @private */
 function findBrachStreamerElement(branch, file) {
-   if (!branch || !file || (branch._typename !== "TBranchElement") || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
+   if (!branch || !file || (branch._typename !== 'TBranchElement') || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
    let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
       arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
    if (!arr) return null;
 
    let match_name = branch.fName,
-      pos = match_name.indexOf("[");
+      pos = match_name.indexOf('[');
    if (pos > 0) match_name = match_name.slice(0, pos);
    pos = match_name.lastIndexOf('.');
    if (pos > 0) match_name = match_name.slice(pos + 1);
@@ -77606,7 +77610,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
    if (!arr) return '';
 
    for (let k = 0; k < arr.length; ++k) {
-      if (arr[k].fTypeName === "BASE") {
+      if (arr[k].fTypeName === 'BASE') {
          let res = defineMemberTypeName(file, arr[k].fName, member_name);
          if (res) return res;
       } else
@@ -77616,7 +77620,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
    if (!elem) return '';
 
    let clname = elem.fTypeName;
-   if (clname[clname.length - 1] === "*") clname = clname.slice(0, clname.length - 1);
+   if (clname[clname.length - 1] === '*') clname = clname.slice(0, clname.length - 1);
 
    return clname;
 }
@@ -77637,7 +77641,7 @@ function makeMethodsList(typename) {
       }
    };
 
-   res.names.push("_typename");
+   res.names.push('_typename');
    res.values.push(typename);
    for (let key in methods) {
       res.names.push(key);
@@ -77649,7 +77653,7 @@ function makeMethodsList(typename) {
 /** @summary try to define classname for the branch member, scanning list of branches
   * @private */
 function detectBranchMemberClass(brlst, prefix, start) {
-   let clname = "";
+   let clname = '';
    for (let kk = (start || 0); kk < brlst.arr.length; ++kk)
       if ((brlst.arr[kk].fName.indexOf(prefix) === 0) && brlst.arr[kk].fClassName)
          clname = brlst.arr[kk].fClassName;
@@ -77669,7 +77673,7 @@ async function treeProcess(tree, selector, args) {
 
    if (!selector || !tree.$file || !selector.numBranches()) {
       if (selector) selector.Terminate(false);
-      return Promise.reject(Error("required parameter missing for TTree::Process"));
+      return Promise.reject(Error('required parameter missing for TTree::Process'));
    }
 
    // central handle with all information required for reading
@@ -77802,16 +77806,16 @@ async function treeProcess(tree, selector, args) {
          leaf = (nb_leaves > 0) ? branch.fLeaves.arr[0] : null,
          elem = null, // TStreamerElement used to create reader
          member = null, // member for actual reading of the branch
-         is_brelem = (branch._typename === "TBranchElement"),
+         is_brelem = (branch._typename === 'TBranchElement'),
          child_scan = 0, // scan child branches after main branch is appended
-         item_cnt = null, item_cnt2 = null, object_class = "";
+         item_cnt = null, item_cnt2 = null, object_class = '';
 
       if (branch.fBranchCount) {
 
          item_cnt = findInHandle(branch.fBranchCount);
 
          if (!item_cnt)
-            item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true);
+            item_cnt = AddBranchForReading(branch.fBranchCount, target_object, '$counter' + namecnt++, true);
 
          if (!item_cnt) { console.error(`Cannot add counter branch ${branch.fBranchCount.fName}`); return null; }
 
@@ -77870,7 +77874,7 @@ async function treeProcess(tree, selector, args) {
             }
 
             let elem = findBrachStreamerElement(br, handle.file);
-            if (elem && (elem.fTypeName === "BASE")) {
+            if (elem && (elem.fTypeName === 'BASE')) {
                // if branch is data of base class, map it to original target
                if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
                if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
@@ -77891,9 +77895,9 @@ async function treeProcess(tree, selector, args) {
             if (p > 0) subname = subname.slice(0, p);
 
             if (chld_kind > 0) {
-               chld_direct = "$child$";
+               chld_direct = '$child$';
                let pp = subname.indexOf('.');
-               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || "TObject";
+               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || 'TObject';
             }
 
             if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -77902,7 +77906,7 @@ async function treeProcess(tree, selector, args) {
          return true;
       }
 
-      if (branch._typename === "TBranchObject") {
+      if (branch._typename === 'TBranchObject') {
          member = {
             name: target_name,
             typename: branch.fClassName,
@@ -77923,7 +77927,7 @@ async function treeProcess(tree, selector, args) {
 
             member = {
                name: target_name,
-               conttype: branch.fClonesName || "TObject",
+               conttype: branch.fClonesName || 'TObject',
                reallocate: args.reallocate_objects,
                func(buf, obj) {
                   let size = buf.ntoi4(), n = 0, arr = obj[this.name];
@@ -78008,7 +78012,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createLeafElem(leaf, target_name);
 
-      } else if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
+      } else if ((branch._typename === 'TBranch') && (nb_leaves > 1)) {
          // branch with many elementary leaves
 
          let leaves = new Array(nb_leaves), isok = true;
@@ -78056,7 +78060,7 @@ async function treeProcess(tree, selector, args) {
          if (snames.length === 1) {
             // no point in the name - just plain array of objects
             member.get = (arr, n) => arr[n];
-         } else if (read_mode === "$child$") {
+         } else if (read_mode === '$child$') {
             console.error(`target name ${target_name} contains point, but suppose to be direct child`);
             return null;
          } else if (snames.length === 2) {
@@ -78087,7 +78091,7 @@ async function treeProcess(tree, selector, args) {
 
             for (let k = 0; k < snames.length; ++k) {
                let chld_class = defineMemberTypeName(handle.file, parent_class, snames[k]);
-               member.smethods[k] = makeMethodsList(chld_class || "AbstractClass");
+               member.smethods[k] = makeMethodsList(chld_class || 'AbstractClass');
                parent_class = chld_class;
             }
             member.get = function(arr, n) {
@@ -78189,14 +78193,14 @@ async function treeProcess(tree, selector, args) {
             }
          } else {
 
-            member.name = "$stl_member";
+            member.name = '$stl_member';
 
             let loop_size_name;
 
             if (item_cnt2) {
                if (member.cntname) {
                   loop_size_name = item_cnt2.name;
-                  member.cntname = "$loop_size";
+                  member.cntname = '$loop_size';
                } else {
                   throw new Error('Second branch counter not used - very BAD');
                }
@@ -78338,7 +78342,7 @@ async function treeProcess(tree, selector, args) {
       function ExtractPlaces() {
          // extract places to read and define file name
 
-         let places = [], filename = "";
+         let places = [], filename = '';
 
          for (let n = 0; n < bitems.length; ++n) {
             if (bitems[n].done) continue;
@@ -78391,7 +78395,7 @@ async function treeProcess(tree, selector, args) {
 
                let blob = blobs.shift(),
                   buf = new TBuffer(blob, 0, handle.file),
-                  basket = buf.classStreamer({}, "TBasket");
+                  basket = buf.classStreamer({}, 'TBasket');
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                   console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
@@ -78547,7 +78551,7 @@ async function treeProcess(tree, selector, args) {
 
       if (is_direct) return ProcessBaskets([]); // directly process baskets
 
-      throw new Error("No any data is requested - never come here");
+      throw new Error('No any data is requested - never come here');
    }
 
    function ProcessBaskets(bitems) {
@@ -78698,7 +78702,7 @@ async function treeDraw(tree, args) {
 
    if (typeof args === 'string') args = { expr: args };
 
-   if (!args.expr) args.expr = "";
+   if (!args.expr) args.expr = '';
 
    let selector = new TDrawSelector();
 
@@ -78709,7 +78713,7 @@ async function treeDraw(tree, args) {
    }
 
    if (!selector)
-      return Promise.reject(Error("Fail to create selector for specified expression"));
+      return Promise.reject(Error('Fail to create selector for specified expression'));
 
    return new Promise(resolve => {
       selector.setCallback(resolve, args.progress);
@@ -78718,19 +78722,19 @@ async function treeDraw(tree, args) {
 }
 
 /** @summary Performs generic I/O test for all branches in the TTree
-  * @desc Used when "testio" draw option for TTree is specified
+  * @desc Used when 'testio' draw option for TTree is specified
   * @private */
 function treeIOTest(tree, args) {
    let branches = [], names = [], nchilds = [];
 
-   function collectBranches(obj, prntname = "") {
+   function collectBranches(obj, prntname = '') {
       if (!obj?.fBranches) return 0;
 
       let cnt = 0;
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
          let br = obj.fBranches.arr[n],
-             name = (prntname ? prntname + "/" : '') + br.fName;
+             name = (prntname ? prntname + '/' : '') + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
@@ -78756,7 +78760,7 @@ function treeIOTest(tree, args) {
 
       let selector = new TSelector;
 
-      selector.addBranch(branches[nbr], "br0");
+      selector.addBranch(branches[nbr], 'br0');
 
       selector.Process = function() {
          if (this.tgtobj.br0 === undefined)
@@ -78765,9 +78769,9 @@ function treeIOTest(tree, args) {
 
       selector.Terminate = function(res) {
          if (typeof res !== 'string')
-            res = (!res || this.fails) ? "FAIL" : "ok";
+            res = (!res || this.fails) ? 'FAIL' : 'ok';
 
-         names[nbr] = res + " " + names[nbr];
+         names[nbr] = res + ' ' + names[nbr];
       };
 
       let br = branches[nbr],
@@ -78819,7 +78823,7 @@ function treeHierarchy(node, obj) {
           nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
 
       function ClearName(arg) {
-         let pos = arg.indexOf("[");
+         let pos = arg.indexOf('[');
          if (pos > 0) arg = arg.slice(0, pos);
          if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
             arg = arg.slice(parent_branch.fName.length);
@@ -78832,7 +78836,7 @@ function treeHierarchy(node, obj) {
 
       let subitem = {
             _name: ClearName(branch.fName),
-            _kind: "ROOT." + branch._typename,
+            _kind: 'ROOT.' + branch._typename,
             _title: branch.fTitle,
             _obj: branch
       };
@@ -78842,7 +78846,7 @@ function treeHierarchy(node, obj) {
       node._childs.push(subitem);
 
       if (branch._typename === 'TBranchElement')
-         subitem._title += " from " + branch.fClassName + ';' + branch.fClassVersion;
+         subitem._title += ` from ${branch.fClassName};${branch.fClassVersion}`;
 
       if (nb_branches > 0) {
          subitem._more = true;
@@ -78856,10 +78860,10 @@ function treeHierarchy(node, obj) {
                 ((bobj.fType === kClonesNode) || (bobj.fType === kSTLNode))) {
                  bobj.fLeaves.arr[0].$branch = bobj;
                  bnode._childs.push({
-                    _name: "@size",
-                    _title: "container size",
-                    _kind: "ROOT.TLeafElement",
-                    _icon: "img_leaf",
+                    _name: '@size',
+                    _title: 'container size',
+                    _kind: 'ROOT.TLeafElement',
+                    _icon: 'img_leaf',
                     _obj: bobj.fLeaves.arr[0],
                     _more: false
                  });
@@ -78875,12 +78879,12 @@ function treeHierarchy(node, obj) {
                for (let key in methods) {
                   if (typeof methods[key] !== 'function') continue;
                   let s = methods[key].toString();
-                  if ((s.indexOf("return") > 0) && (s.indexOf("function ()") == 0))
+                  if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
                      bnode._childs.push({
-                        _name: key+"()",
-                        _title: "function " + key + " of class " + object_class,
-                        _kind: "ROOT.TBranchFunc", // fictional class, only for drawing
-                        _obj: { _typename: "TBranchFunc", branch: bobj, func: key },
+                        _name: key+'()',
+                        _title: `function ${key} of class ${object_class}`,
+                        _kind: 'ROOT.TBranchFunc', // fictional class, only for drawing
+                        _obj: { _typename: 'TBranchFunc', branch: bobj, func: key },
                         _more: false
                      });
 
@@ -78890,7 +78894,7 @@ function treeHierarchy(node, obj) {
          };
          return true;
       } else if (nb_leaves === 1) {
-         subitem._icon = "img_leaf";
+         subitem._icon = 'img_leaf';
          subitem._more = false;
       } else if (nb_leaves > 1) {
          subitem._childs = [];
@@ -78898,7 +78902,7 @@ function treeHierarchy(node, obj) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
             let leafitem = {
                _name : ClearName(branch.fLeaves.arr[j].fName),
-               _kind : "ROOT." + branch.fLeaves.arr[j]._typename,
+               _kind : 'ROOT.' + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
             };
             subitem._childs.push(leafitem);
@@ -78957,7 +78961,7 @@ async function drawText$1() {
       // frame coordiantes
       w = main.getFrameWidth();
       h = main.getFrameHeight();
-      use_frame = "upper_layer";
+      use_frame = 'upper_layer';
    } else if (pp.getRootPad(true)) ; else {
       // place in the middle
       this.isndc = true;
@@ -79291,7 +79295,7 @@ function drawJSImage(dom, obj, opt) {
 
    if (opt && opt.indexOf('scale') >= 0) {
       img.style('width','100%').style('height','100%');
-   } else if (opt && opt.indexOf("center") >= 0) {
+   } else if (opt && opt.indexOf('center') >= 0) {
       main.style('position', 'relative');
       img.attr('style', 'margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);');
    }
@@ -80254,8 +80258,8 @@ function checkDuplicates(parent, chlds) {
          let indx = names.indexOf(chld.fName);
          if (indx >= 0) {
             let cnt = cnts[indx] || 1;
-            while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
-            chld.$geo_suffix = "#" + cnt;
+            while(names.indexOf(chld.fName+'#'+cnt) >= 0) ++cnt;
+            chld.$geo_suffix = '#' + cnt;
             cnts[indx] = cnt+1;
          }
       }
@@ -80730,7 +80734,7 @@ function createTrapezoidBuffer( shape, faces_limit ) {
    if (faces_limit < 0) return 12;
 
    let y1, y2;
-   if (shape._typename == "TGeoTrd1") {
+   if (shape._typename == 'TGeoTrd1') {
       y1 = y2 = shape.fDY;
    } else {
       y1 = shape.fDy1; y2 = shape.fDy2;
@@ -80986,7 +80990,7 @@ function createSphereBuffer( shape, faces_limit ) {
   * @private */
 function createTubeBuffer( shape, faces_limit) {
    let outerR, innerR; // inner/outer tube radius
-   if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
+   if ((shape._typename == 'TGeoCone') || (shape._typename == 'TGeoConeSeg')) {
       outerR = [ shape.fRmax2, shape.fRmax1 ];
       innerR = [ shape.fRmin2, shape.fRmin1 ];
    } else {
@@ -80997,7 +81001,7 @@ function createTubeBuffer( shape, faces_limit) {
    let hasrmin = (innerR[0] > 0) || (innerR[1] > 0),
        thetaStart = 0, thetaLength = 360;
 
-   if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
+   if ((shape._typename == 'TGeoConeSeg') || (shape._typename == 'TGeoTubeSeg') || (shape._typename == 'TGeoCtub')) {
       thetaStart = shape.fPhi1;
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
@@ -81033,7 +81037,7 @@ function createTubeBuffer( shape, faces_limit) {
 
    let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-   const calcZ = (shape._typename !== "TGeoCtub") ? null : (x,y,z) => {
+   const calcZ = (shape._typename !== 'TGeoCtub') ? null : (x,y,z) => {
       let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
       return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
    };
@@ -81268,7 +81272,7 @@ function createPolygonBuffer( shape, faces_limit ) {
        thetaLength = shape.fDphi,
        radiusSegments, factor;
 
-   if (shape._typename == "TGeoPgon") {
+   if (shape._typename == 'TGeoPgon') {
       radiusSegments = shape.fNedges;
       factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
@@ -81765,7 +81769,7 @@ function getNodeMatrix(kind, node) {
       }
    } else if (node.fMatrix) {
       matrix = createMatrix(node.fMatrix);
-   } else if ((node._typename == "TGeoNodeOffset") && node.fFinder) {
+   } else if ((node._typename == 'TGeoNodeOffset') && node.fFinder) {
       let kPatternReflected = JSROOT_BIT(14);
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
          geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
@@ -81950,7 +81954,7 @@ function createComposite( shape, faces_limit ) {
    if (matrix2 && (matrix2.determinant() < -0.9))
       geoWarn('Axis reflections in right composite shape - not supported');
 
-   if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
+   if (shape.fNode.fLeft._typename == 'TGeoHalfSpace') {
       geom1 = createHalfSpace(shape.fNode.fLeft);
    } else {
       geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
@@ -81963,7 +81967,7 @@ function createComposite( shape, faces_limit ) {
 
    if (n1 < faces_limit) {
 
-      if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
+      if (shape.fNode.fRight._typename == 'TGeoHalfSpace') {
          geom2 = createHalfSpace(shape.fNode.fRight, geom1);
       } else {
          geom2 = createGeometry(shape.fNode.fRight, faces_limit);
@@ -81988,9 +81992,9 @@ function createComposite( shape, faces_limit ) {
    bsp1.maxid = bsp2.maxid;
 
    switch(shape.fNode._typename) {
-      case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // "*"
-      case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // "+"
-      case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // "/"
+      case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // '*'
+      case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // '+'
+      case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // '/'
       default:
          geoWarn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
    }
@@ -82055,48 +82059,48 @@ function createGeometry(shape, limit) {
 
    try {
       switch (shape._typename) {
-         case "TGeoBBox": return createCubeBuffer( shape, limit );
-         case "TGeoPara": return createParaBuffer( shape, limit );
-         case "TGeoTrd1":
-         case "TGeoTrd2": return createTrapezoidBuffer( shape, limit );
-         case "TGeoArb8":
-         case "TGeoTrap":
-         case "TGeoGtra": return createArb8Buffer( shape, limit );
-         case "TGeoSphere": return createSphereBuffer( shape , limit );
-         case "TGeoCone":
-         case "TGeoConeSeg":
-         case "TGeoTube":
-         case "TGeoTubeSeg":
-         case "TGeoCtub": return createTubeBuffer( shape, limit );
-         case "TGeoEltu": return createEltuBuffer( shape, limit );
-         case "TGeoTorus": return createTorusBuffer( shape, limit );
-         case "TGeoPcon":
-         case "TGeoPgon": return createPolygonBuffer( shape, limit );
-         case "TGeoXtru": return createXtruBuffer( shape, limit );
-         case "TGeoParaboloid": return createParaboloidBuffer( shape, limit );
-         case "TGeoHype": return createHypeBuffer( shape, limit );
-         case "TGeoTessellated": return createTessellatedBuffer( shape, limit );
-         case "TGeoCompositeShape": return createComposite( shape, limit );
-         case "TGeoShapeAssembly": break;
-         case "TGeoScaledShape": {
+         case 'TGeoBBox': return createCubeBuffer( shape, limit );
+         case 'TGeoPara': return createParaBuffer( shape, limit );
+         case 'TGeoTrd1':
+         case 'TGeoTrd2': return createTrapezoidBuffer( shape, limit );
+         case 'TGeoArb8':
+         case 'TGeoTrap':
+         case 'TGeoGtra': return createArb8Buffer( shape, limit );
+         case 'TGeoSphere': return createSphereBuffer( shape , limit );
+         case 'TGeoCone':
+         case 'TGeoConeSeg':
+         case 'TGeoTube':
+         case 'TGeoTubeSeg':
+         case 'TGeoCtub': return createTubeBuffer( shape, limit );
+         case 'TGeoEltu': return createEltuBuffer( shape, limit );
+         case 'TGeoTorus': return createTorusBuffer( shape, limit );
+         case 'TGeoPcon':
+         case 'TGeoPgon': return createPolygonBuffer( shape, limit );
+         case 'TGeoXtru': return createXtruBuffer( shape, limit );
+         case 'TGeoParaboloid': return createParaboloidBuffer( shape, limit );
+         case 'TGeoHype': return createHypeBuffer( shape, limit );
+         case 'TGeoTessellated': return createTessellatedBuffer( shape, limit );
+         case 'TGeoCompositeShape': return createComposite( shape, limit );
+         case 'TGeoShapeAssembly': break;
+         case 'TGeoScaledShape': {
             let res = createGeometry(shape.fShape, limit);
             if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
                res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
-         case "TGeoHalfSpace":
+         case 'TGeoHalfSpace':
             if (limit < 0) return 1; // half space if just plane used in composite
             // no break here - warning should appear
          default: geoWarn('unsupported shape type ' + shape._typename);
       }
    } catch(e) {
-      let place = "";
+      let place = '';
       if (e.stack !== undefined) {
-         place = e.stack.split("\n")[0];
-         if (place.indexOf(e.message) >= 0) place = e.stack.split("\n")[1];
-                                       else place = " at: " + place;
+         place = e.stack.split('\n')[0];
+         if (place.indexOf(e.message) >= 0) place = e.stack.split('\n')[1];
+                                       else place = 'at: ' + place;
       }
-      geoWarn(shape._typename + " err: " + e.message + place);
+      geoWarn(`${shape._typename} err: ${e.message} ${place}`);
    }
 
    return limit < 0 ? 0 : null;
@@ -82106,11 +82110,11 @@ function createGeometry(shape, limit) {
 function makeEveGeometry(rnr_data /*, force */) {
    const GL_TRIANGLES = 4; // same as in EVE7
 
-   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
+   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
 
    let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
 
-   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
+   if (rnr_data.idxBuff.length != nVert + 2) throw 'Expect single list of triangles in index buffer.';
 
    let body = new BufferGeometry();
    body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
@@ -82172,7 +82176,7 @@ function createServerGeometry(rd, nsegm) {
 
    // shape handle is similar to created in JSROOT.GeoPainter
    return {
-      _typename: "$$Shape$$", // indicate that shape can be used as is
+      _typename: '$$Shape$$', // indicate that shape can be used as is
       ready: true,
       geom: g,
       nfaces: numGeometryFaces(g)
@@ -82200,7 +82204,7 @@ function provideObjectInfo(obj) {
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
        useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
-          if (v === undefined) return "???";
+          if (v === undefined) return '???';
           if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
@@ -82210,51 +82214,51 @@ function provideObjectInfo(obj) {
    info.push(`DX=${conv(shape.fDX)} DY=${conv(shape.fDY)} DZ=${conv(shape.fDZ)}`);
 
    switch (shape._typename) {
-      case "TGeoBBox": break;
-      case "TGeoPara": info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
-      case "TGeoTrd2": info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
-      case "TGeoTrd1": info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
-      case "TGeoArb8": break;
-      case "TGeoTrap": break;
-      case "TGeoGtra": break;
-      case "TGeoSphere":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
-         info.push(`Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
+      case 'TGeoBBox': break;
+      case 'TGeoPara': info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
+      case 'TGeoTrd2': info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+      case 'TGeoTrd1': info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
+      case 'TGeoArb8': break;
+      case 'TGeoTrap': break;
+      case 'TGeoGtra': break;
+      case 'TGeoSphere':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`,
+                   `Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
          break;
-      case "TGeoConeSeg":
+      case 'TGeoConeSeg':
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
          // no break;
-      case "TGeoCone":
-         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`);
-         info.push(`Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
+      case 'TGeoCone':
+         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`,
+                   `Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
          break;
-      case "TGeoCtub":
-      case "TGeoTubeSeg":
+      case 'TGeoCtub':
+      case 'TGeoTubeSeg':
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
          // no break
-      case "TGeoEltu":
-      case "TGeoTube":
+      case 'TGeoEltu':
+      case 'TGeoTube':
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
          break;
-      case "TGeoTorus":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
+      case 'TGeoTorus':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
          break;
-      case "TGeoPcon":
-      case "TGeoPgon": break;
-      case "TGeoXtru": break;
-      case "TGeoParaboloid":
-         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`);
-         info.push(`A=${conv(shape.fA)} B=${conv(shape.fB)}`);
+      case 'TGeoPcon':
+      case 'TGeoPgon': break;
+      case 'TGeoXtru': break;
+      case 'TGeoParaboloid':
+         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`,
+                   `A=${conv(shape.fA)} B=${conv(shape.fB)}`);
          break;
-      case "TGeoHype":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
+      case 'TGeoHype':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
-      case "TGeoCompositeShape": break;
-      case "TGeoShapeAssembly": break;
-      case "TGeoScaledShape":
+      case 'TGeoCompositeShape': break;
+      case 'TGeoShapeAssembly': break;
+      case 'TGeoScaledShape':
          info = provideObjectInfo(shape.fShape);
          if (shape.fScale)
             info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
@@ -82362,7 +82366,7 @@ class ClonedNodes {
    /** @summary Constructor */
    constructor(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
-      this.name_prefix = ""; // name prefix used for nodes names
+      this.name_prefix = ''; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
       this.vislevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
       this.maxnodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
@@ -82449,7 +82453,7 @@ class ClonedNodes {
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
 
-         if (obj && obj._typename == "$$Shape$$")
+         if (obj && obj._typename == '$$Shape$$')
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -82557,7 +82561,7 @@ class ClonedNodes {
 
       let node = {
             id: 0, sortid: 0, kind: kindShape,
-            name: "Shape",
+            name: 'Shape',
             nfaces: obj.nfaces,
             fDX: 1, fDY: 1, fDZ: 1, vol: 1,
             vis: true
@@ -82777,7 +82781,7 @@ class ClonedNodes {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
 
-      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
+      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
       if (withmatrix) {
          res.matrix = new Matrix4();
@@ -82800,7 +82804,7 @@ class ClonedNodes {
 
             let subname = this.getNodeName(res.id);
             if (subname) {
-               if (res.name) res.name += "/";
+               if (res.name) res.name += '/';
                res.name += subname;
             }
 
@@ -82931,7 +82935,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
             _opacity = entry.opacity || 1;
-         prop.fillcolor = new Color$1( entry.color ? `rgb(${entry.color})` : "blue" );
+         prop.fillcolor = new Color$1( entry.color ? `rgb(${entry.color})` : 'blue' );
          prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
@@ -83007,7 +83011,7 @@ class ClonedNodes {
                prop.fillcolor = root_colors[mat.fFillColor];
          }
          if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
+            prop.fillcolor = 'lightgrey';
 
          prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -83380,7 +83384,7 @@ class ClonedNodes {
          if (res.done) { item.ready = true; continue; }
 
          if (!item.ready) {
-            item._typename = "$$Shape$$"; // let reuse item for direct drawing
+            item._typename = '$$Shape$$'; // let reuse item for direct drawing
             item.ready = true;
             if (item.geom === undefined) {
                item.geom = createGeometry(item.shape);
@@ -83567,7 +83571,7 @@ function cleanupShape(shape) {
  * @desc depending from provided method sort differently objects
  * @param toplevel - top element
  * @param origin - camera position used to provide sorting
- * @param method - name of sorting method like "pnt", "ray", "size", "dflt"  */
+ * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
 
    let raycast = new Raycaster();
@@ -83632,7 +83636,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             continue;
          }
 
-         if (method === "pnt") {
+         if (method === 'pnt') {
             mesh.$jsroot_distance = origin.distanceTo(box3.getCenter(tmp_vect));
             continue;
          }
@@ -83664,7 +83668,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          resort[i] = arr[i];
       }
 
-      if (method === "ray")
+      if (method === 'ray')
          for (let i=arr.length - 1; i >= 0; --i) {
             let mesh = arr[i], intersects,
                 box3 = mesh.$jsroot_box3,
@@ -83749,7 +83753,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
    }
 
-   if (!method || (method == "dflt"))
+   if (!method || (method == 'dflt'))
       setdefaults(toplevel);
    else
       process(toplevel, 0, 1, 1000000);
@@ -83761,20 +83765,20 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
   * @private */
 function buildOverlapVolume(overlap) {
 
-   let vol = create$1("TGeoVolume");
+   let vol = create$1('TGeoVolume');
 
    setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
-   vol.fName = "";
+   vol.fName = '';
 
-   let node1 = create$1("TGeoNodeMatrix");
-   node1.fName = overlap.fVolume1.fName || "Overlap1";
+   let node1 = create$1('TGeoNodeMatrix');
+   node1.fName = overlap.fVolume1.fName || 'Overlap1';
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
    // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-   let node2 = create$1("TGeoNodeMatrix");
-   node2.fName = overlap.fVolume2.fName || "Overlap2";
+   let node2 = create$1('TGeoNodeMatrix');
+   node2.fName = overlap.fVolume2.fName || 'Overlap2';
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
@@ -83795,10 +83799,10 @@ function buildCompositeVolume(comp, maxlvl, side) {
    if (maxlvl === undefined) maxlvl = 1;
    if (!side) {
       $comp_col_cnt = 0;
-      side = "";
+      side = '';
    }
 
-   let vol = create$1("TGeoVolume");
+   let vol = create$1('TGeoVolume');
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
@@ -83809,23 +83813,23 @@ function buildCompositeVolume(comp, maxlvl, side) {
       return vol;
    }
 
-   if (side) side += "/";
+   if (side) side += '/';
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
-   vol.fName = "";
+   vol.fName = '';
 
-   let node1 = create$1("TGeoNodeMatrix");
+   let node1 = create$1('TGeoNodeMatrix');
    setGeoBit(node1, geoBITS.kVisThis, true);
    setGeoBit(node1, geoBITS.kVisDaughters, true);
-   node1.fName = "Left";
+   node1.fName = 'Left';
    node1.fMatrix = comp.fNode.fLeftMat;
-   node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
+   node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + 'Left');
 
-   let node2 = create$1("TGeoNodeMatrix");
+   let node2 = create$1('TGeoNodeMatrix');
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
-   node2.fName = "Right";
+   node2.fName = 'Right';
    node2.fMatrix = comp.fNode.fRightMat;
-   node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
+   node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + 'Right');
 
    vol.fNodes = create$1('TList');
    vol.fNodes.Add(node1);
@@ -83845,7 +83849,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: "ROOT.TList",
+       _kind: 'ROOT.TList',
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -83896,10 +83900,10 @@ function expandGeoObject(parent, obj) {
    if (parent._childs) return true;
 
    if (ismanager) {
-      createList(parent, obj.fMaterials, "Materials", "list of materials");
-      createList(parent, obj.fMedia, "Media", "list of media");
-      createList(parent, obj.fTracks, "Tracks", "list of tracks");
-      createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
+      createList(parent, obj.fMaterials, 'Materials', 'list of materials');
+      createList(parent, obj.fMedia, 'Media', 'list of media');
+      createList(parent, obj.fTracks, 'Tracks', 'list of tracks');
+      createList(parent, obj.fOverlaps, 'Overlaps', 'list of detected overlaps');
       createItem(parent, obj.fMasterVolume);
       return true;
    }
@@ -83922,7 +83926,7 @@ function expandGeoObject(parent, obj) {
       shape = volume?.fShape;
    }
 
-   if (!subnodes && (shape?._typename === "TGeoCompositeShape") && shape?.fNode) {
+   if (!subnodes && (shape?._typename === 'TGeoCompositeShape') && shape?.fNode) {
       if (!parent._childs) {
          createItem(parent, shape.fNode.fLeft, 'Left');
          createItem(parent, shape.fNode.fRight, 'Right');
@@ -83960,7 +83964,7 @@ function findItemWithPainter(hitem, funcname) {
   * @private */
 function provideVisStyle(obj) {
    if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
-      return obj.fRnrSelf ? " geovis_this" : '';
+      return obj.fRnrSelf ? ' geovis_this' : '';
 
    let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
               testGeoBit(obj, geoBITS.kVisThis),
@@ -83968,9 +83972,9 @@ function provideVisStyle(obj) {
 
    if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
-   if (vis && chld) return " geovis_all";
-   if (vis) return " geovis_this";
-   if (chld) return " geovis_daughters";
+   if (vis && chld) return ' geovis_all';
+   if (vis) return ' geovis_this';
+   if (chld) return ' geovis_daughters';
    return '';
 }
 
@@ -83983,7 +83987,7 @@ function updateBrowserIcons(obj, hpainter) {
    hpainter.forEachItem(m => {
       // update all items with that volume
       if ((obj === m._volume) || (obj === m._geoobj)) {
-         m._icon = m._icon.split(" ")[0] + provideVisStyle(obj);
+         m._icon = m._icon.split(' ')[0] + provideVisStyle(obj);
          hpainter.updateTreeNode(m);
       }
    });
@@ -83994,29 +83998,29 @@ function updateBrowserIcons(obj, hpainter) {
   * @private */
 function getShapeIcon(shape) {
    switch (shape._typename) {
-      case "TGeoArb8": return "img_geoarb8";
-      case "TGeoCone": return "img_geocone";
-      case "TGeoConeSeg": return "img_geoconeseg";
-      case "TGeoCompositeShape": return "img_geocomposite";
-      case "TGeoTube": return "img_geotube";
-      case "TGeoTubeSeg": return "img_geotubeseg";
-      case "TGeoPara": return "img_geopara";
-      case "TGeoParaboloid": return "img_geoparab";
-      case "TGeoPcon": return "img_geopcon";
-      case "TGeoPgon": return "img_geopgon";
-      case "TGeoShapeAssembly": return "img_geoassembly";
-      case "TGeoSphere": return "img_geosphere";
-      case "TGeoTorus": return "img_geotorus";
-      case "TGeoTrd1": return "img_geotrd1";
-      case "TGeoTrd2": return "img_geotrd2";
-      case "TGeoXtru": return "img_geoxtru";
-      case "TGeoTrap": return "img_geotrap";
-      case "TGeoGtra": return "img_geogtra";
-      case "TGeoEltu": return "img_geoeltu";
-      case "TGeoHype": return "img_geohype";
-      case "TGeoCtub": return "img_geoctub";
+      case 'TGeoArb8': return 'img_geoarb8';
+      case 'TGeoCone': return 'img_geocone';
+      case 'TGeoConeSeg': return 'img_geoconeseg';
+      case 'TGeoCompositeShape': return 'img_geocomposite';
+      case 'TGeoTube': return 'img_geotube';
+      case 'TGeoTubeSeg': return 'img_geotubeseg';
+      case 'TGeoPara': return 'img_geopara';
+      case 'TGeoParaboloid': return 'img_geoparab';
+      case 'TGeoPcon': return 'img_geopcon';
+      case 'TGeoPgon': return 'img_geopgon';
+      case 'TGeoShapeAssembly': return 'img_geoassembly';
+      case 'TGeoSphere': return 'img_geosphere';
+      case 'TGeoTorus': return 'img_geotorus';
+      case 'TGeoTrd1': return 'img_geotrd1';
+      case 'TGeoTrd2': return 'img_geotrd2';
+      case 'TGeoXtru': return 'img_geoxtru';
+      case 'TGeoTrap': return 'img_geotrap';
+      case 'TGeoGtra': return 'img_geogtra';
+      case 'TGeoEltu': return 'img_geoeltu';
+      case 'TGeoHype': return 'img_geohype';
+      case 'TGeoCtub': return 'img_geoctub';
    }
-   return "img_geotube";
+   return 'img_geotube';
 }
 
 
@@ -84054,7 +84058,7 @@ class Toolbar {
       buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
-            throw new Error("must provide button name in button config");
+            throw new Error('must provide button name in button config');
          if (this.buttonsNames.indexOf(buttonName) !== -1)
             throw new Error(`button name ${buttonName} is taken`);
 
@@ -84063,7 +84067,7 @@ class Toolbar {
          let title = buttonConfig.title || buttonConfig.name;
 
          if (typeof buttonConfig.click !== 'function')
-            throw new Error('must provide button "click" function in button config');
+            throw new Error('must provide button click() function in button config');
 
          let button = this.element.append('a')
                            .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
@@ -84080,8 +84084,8 @@ class Toolbar {
    changeBrightness(bright) {
       this.bright = bright;
       if (this.element)
-         this.element.selectAll(bright ? '.geo_toolbar_btn' : ".geo_toolbar_btn_bright")
-                     .attr('class', !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
+         this.element.selectAll(bright ? '.geo_toolbar_btn' : '.geo_toolbar_btn_bright')
+                     .attr('class', !bright ? 'geo_toolbar_btn' : 'geo_toolbar_btn_bright');
    }
 
    /** @summary cleanup toolbar */
@@ -84177,13 +84181,13 @@ class TGeoPainter extends ObjectPainter {
    constructor(dom, obj) {
 
       let gm;
-      if (obj?._typename === "TGeoManager") {
+      if (obj?._typename === 'TGeoManager') {
          gm = obj;
          obj = obj.fMasterVolume;
       }
 
       if (obj?._typename && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+         obj = { _typename: 'TGeoNode', fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       super(dom, obj);
 
@@ -84192,7 +84196,7 @@ class TGeoPainter extends ObjectPainter {
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = stageInit; //
-      this.drawing_log = "Init";
+      this.drawing_log = 'Init';
       this.ctrl = {
          clipIntersect: true,
          clip: [{ name:'x', enabled: false, value: 0, min: -100, max: 100}, { name:'y', enabled: false, value: 0, min: -100, max: 100}, { name:'z', enabled: false, value: 0, min: -100, max: 100}],
@@ -84202,20 +84206,20 @@ class TGeoPainter extends ObjectPainter {
          highlight: false,
          highlight_scene: false,
          depthTest: true,
-         depthMethod: "dflt",
+         depthMethod: 'dflt',
          select_in_view: false,
          update_browser: true,
-         light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
+         light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
          trans_radial: 0,
          trans_z: 0
       };
 
       this.ctrl.depthMethodItems = [
-         { name: 'Default', value: "dflt" },
-         { name: 'Raytraicing', value: "ray" },
-         { name: 'Boundary box', value: "box" },
-         { name: 'Mesh size', value: "size" },
-         { name: 'Central point', value: "pnt" }
+         { name: 'Default', value: 'dflt' },
+         { name: 'Raytraicing', value: 'ray' },
+         { name: 'Boundary box', value: 'box' },
+         { name: 'Mesh size', value: 'size' },
+         { name: 'Central point', value: 'pnt' }
        ];
 
       this.ctrl.ssao.outputItems = [
@@ -84236,17 +84240,17 @@ class TGeoPainter extends ObjectPainter {
       this.drawing_stage = value;
       if (!msg)
          switch(value) {
-            case stageInit: msg = "Building done"; break;
-            case stageCollect: msg = "collect visibles"; break;
-            case stageWorkerCollect: msg = "worker collect visibles"; break;
-            case stageAnalyze: msg = "Analyse visibles"; break;
-            case stageCollShapes: msg = "collect shapes for building"; break;
-            case stageStartBuild: msg = "Start build shapes"; break;
-            case stageWorkerBuild: msg = "Worker build shapes"; break;
-            case stageBuild: msg = "Build shapes"; break;
-            case stageBuildReady: msg = "Build ready"; break;
-            case stageWaitMain: msg = "Wait for main painter"; break;
-            case stageBuildProj: msg = "Build projection"; break;
+            case stageInit: msg = 'Building done'; break;
+            case stageCollect: msg = 'collect visibles'; break;
+            case stageWorkerCollect: msg = 'worker collect visibles'; break;
+            case stageAnalyze: msg = 'Analyse visibles'; break;
+            case stageCollShapes: msg = 'collect shapes for building'; break;
+            case stageStartBuild: msg = 'Start build shapes'; break;
+            case stageWorkerBuild: msg = 'Worker build shapes'; break;
+            case stageBuild: msg = 'Build shapes'; break;
+            case stageBuildReady: msg = 'Build ready'; break;
+            case stageWaitMain: msg = 'Wait for main painter'; break;
+            case stageBuildProj: msg = 'Build projection'; break;
             default: msg = `stage ${value}`;
          }
       this.drawing_log = msg;
@@ -84261,17 +84265,17 @@ class TGeoPainter extends ObjectPainter {
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
-         icon: "camera",
+         icon: 'camera',
          click: () => this.createSnapshot()
       }, {
          name: 'control',
          title: 'Toggle control UI',
-         icon: "rect",
+         icon: 'rect',
          click: () => this.showControlOptions('toggle')
       }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
-         icon: "circle",
+         icon: 'circle',
          click: () => this.toggleEnlarge()
       }];
 
@@ -84280,7 +84284,7 @@ class TGeoPainter extends ObjectPainter {
          buttonList.push({
             name: 'entervr',
             title: 'Enter VR (It requires a VR Headset connected)',
-            icon: "vrgoggles",
+            icon: 'vrgoggles',
             click: () => this.toggleVRMode()
          });
          this.initVRMode();
@@ -84290,7 +84294,7 @@ class TGeoPainter extends ObjectPainter {
       buttonList.push({
          name: 'menu',
          title: 'Show context menu',
-         icon: "question",
+         icon: 'question',
          click: evnt => {
 
             evnt.preventDefault();
@@ -84475,28 +84479,28 @@ class TGeoPainter extends ObjectPainter {
       if (getNodeKind(this.getGeometry()) !== 0) return;
 
       if (!name)
-         return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === "+"));
+         return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === '+'));
 
       let regexp, exact = false;
 
       //arg.node.fVolume
-      if (name.indexOf("*") < 0) {
-         regexp = new RegExp("^"+name+"$");
+      if (name.indexOf('*') < 0) {
+         regexp = new RegExp('^'+name+'$');
          exact = true;
       } else {
-         regexp = new RegExp("^" + name.split("*").join(".*") + "$");
+         regexp = new RegExp('^' + name.split('*').join('.*') + '$');
          exact = false;
       }
 
       this.findNodeWithVolume(regexp, function(arg) {
-         setInvisibleAll(arg.node.fVolume, (sign !== "+"));
+         setInvisibleAll(arg.node.fVolume, (sign !== '+'));
          return exact ? arg : null; // continue search if not exact expression provided
       });
    }
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (typeof opt != 'string') opt = "";
+      if (typeof opt != 'string') opt = '';
 
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
@@ -84509,16 +84513,16 @@ class TGeoPainter extends ObjectPainter {
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
-                   depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
+                   depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       let dd = decodeUrl();
       if (dd.get('_grid') == 'true') res._grid = true;
       let _opt = dd.get('_debug');
       if (_opt == 'true') { res._debug = true; res._grid = true; }
-      if (_opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
-      if (_opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
+      if (_opt == 'bound') { res._debug = true; res._grid = true; res._bound = true; }
+      if (_opt == 'full') { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
-      let macro = opt.indexOf("macro:");
+      let macro = opt.indexOf('macro:');
       if (macro >= 0) {
          let separ = opt.indexOf(';', macro+6);
          if (separ < 0) separ = opt.length;
@@ -84528,9 +84532,9 @@ class TGeoPainter extends ObjectPainter {
       }
 
       while (true) {
-         let pp = opt.indexOf("+"), pm = opt.indexOf("-");
+         let pp = opt.indexOf('+'), pm = opt.indexOf('-');
          if ((pp < 0) && (pm < 0)) break;
-         let p1 = pp, sign = "+";
+         let p1 = pp, sign = '+';
          if ((p1 < 0) || ((pm >= 0) && (pm < pp))) { p1 = pm; sign = '-'; }
 
          let p2 = p1+1, regexp = new RegExp('[,; .]');
@@ -84545,29 +84549,29 @@ class TGeoPainter extends ObjectPainter {
 
       let d = new DrawOptions(opt);
 
-      if (d.check("MAIN")) res.is_main = true;
+      if (d.check('MAIN')) res.is_main = true;
 
-      if (d.check("TRACKS")) res.tracks = true; // only for TGeoManager
-      if (d.check("SHOWTOP")) res.showtop = true; // only for TGeoManager
-      if (d.check("NO_SCREEN")) res.no_screen = true; // ignore kVisOnScreen bits for visibility
+      if (d.check('TRACKS')) res.tracks = true; // only for TGeoManager
+      if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
+      if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check("ORTHO_CAMERA_ROTATE")) { res.ortho_camera = true; res.can_rotate = true; }
-      if (d.check("ORTHO_CAMERA")) { res.ortho_camera = true; res.can_rotate = false; }
-      if (d.check("MOUSE_CLICK")) res.mouse_click = true;
+      if (d.check('ORTHO_CAMERA_ROTATE')) { res.ortho_camera = true; res.can_rotate = true; }
+      if (d.check('ORTHO_CAMERA')) { res.ortho_camera = true; res.can_rotate = false; }
+      if (d.check('MOUSE_CLICK')) res.mouse_click = true;
 
-      if (d.check("DEPTHRAY") || d.check("DRAY")) res.depthMethod = "ray";
-      if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
-      if (d.check("DEPTHPNT") || d.check("DPNT")) res.depthMethod = "pnt";
-      if (d.check("DEPTHSIZE") || d.check("DSIZE")) res.depthMethod = "size";
-      if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "dflt";
+      if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
+      if (d.check('DEPTHBOX') || d.check('DBOX')) res.depthMethod = 'box';
+      if (d.check('DEPTHPNT') || d.check('DPNT')) res.depthMethod = 'pnt';
+      if (d.check('DEPTHSIZE') || d.check('DSIZE')) res.depthMethod = 'size';
+      if (d.check('DEPTHDFLT') || d.check('DDFLT')) res.depthMethod = 'dflt';
 
-      if (d.check("ZOOM", true)) res.zoom = d.partAsFloat(0, 100) / 100;
-      if (d.check("ROTY", true)) res.rotatey = d.partAsFloat();
-      if (d.check("ROTZ", true)) res.rotatez = d.partAsFloat();
-      if (d.check("VISLVL", true)) res.vislevel = d.partAsInt();
+      if (d.check('ZOOM', true)) res.zoom = d.partAsFloat(0, 100) / 100;
+      if (d.check('ROTY', true)) res.rotatey = d.partAsFloat();
+      if (d.check('ROTZ', true)) res.rotatez = d.partAsFloat();
+      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
 
-      if (d.check('BLACK')) res.background = "#000000";
-      if (d.check('WHITE')) res.background = "#FFFFFF";
+      if (d.check('BLACK')) res.background = '#000000';
+      if (d.check('WHITE')) res.background = '#FFFFFF';
 
       if (d.check('BKGR_', true)) {
          let bckgr = null;
@@ -84578,51 +84582,51 @@ class TGeoPainter extends ObjectPainter {
                if (getColor(col).toUpperCase() === d.part)
                   bckgr = getColor(col);
          }
-         if (bckgr) res.background = "#" + new Color$1(bckgr).getHexString();
+         if (bckgr) res.background = '#' + new Color$1(bckgr).getHexString();
       }
 
       if (d.check('R3D_', true))
          res.Render3D = constants$1.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check("MORE3")) res.more = 3;
-      if (d.check("MORE")) res.more = 2;
-      if (d.check("ALL")) { res.more = 10; res.vislevel = 9; }
+      if (d.check('MORE3')) res.more = 3;
+      if (d.check('MORE')) res.more = 2;
+      if (d.check('ALL')) { res.more = 10; res.vislevel = 9; }
 
-      if (d.check("CONTROLS") || d.check("CTRL")) res.show_controls = true;
+      if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
 
-      if (d.check("CLIPXYZ")) res.clipx = res.clipy = res.clipz = true;
-      if (d.check("CLIPX")) res.clipx = true;
-      if (d.check("CLIPY")) res.clipy = true;
-      if (d.check("CLIPZ")) res.clipz = true;
-      if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
+      if (d.check('CLIPXYZ')) res.clipx = res.clipy = res.clipz = true;
+      if (d.check('CLIPX')) res.clipx = true;
+      if (d.check('CLIPY')) res.clipy = true;
+      if (d.check('CLIPZ')) res.clipz = true;
+      if (d.check('CLIP')) res.clipx = res.clipy = res.clipz = true;
 
-      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
-      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check('PROJX', true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check('PROJY', true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check('PROJZ', true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
-      if (d.check("DFLT_COLORS") || d.check("DFLT")) res.dflt_colors = true;
-      if (d.check("SSAO")) res.usessao = true;
-      if (d.check("NOBLOOM")) res.usebloom = false;
-      if (d.check("BLOOM")) res.usebloom = true;
-      if (d.check("OUTLINE")) res.outline = true;
+      if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
+      if (d.check('SSAO')) res.usessao = true;
+      if (d.check('NOBLOOM')) res.usebloom = false;
+      if (d.check('BLOOM')) res.usebloom = true;
+      if (d.check('OUTLINE')) res.outline = true;
 
-      if (d.check("NOWORKER")) res.use_worker = -1;
-      if (d.check("WORKER")) res.use_worker = 1;
+      if (d.check('NOWORKER')) res.use_worker = -1;
+      if (d.check('WORKER')) res.use_worker = 1;
 
-      if (d.check("NOHIGHLIGHT") || d.check("NOHIGH")) res.highlight_scene = res.highlight = 0;
-      if (d.check("HIGHLIGHT")) res.highlight_scene = res.highlight = true;
-      if (d.check("HSCENEONLY")) { res.highlight_scene = true; res.highlight = 0; }
-      if (d.check("NOHSCENE")) res.highlight_scene = 0;
-      if (d.check("HSCENE")) res.highlight_scene = true;
+      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = 0;
+      if (d.check('HIGHLIGHT')) res.highlight_scene = res.highlight = true;
+      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = 0; }
+      if (d.check('NOHSCENE')) res.highlight_scene = 0;
+      if (d.check('HSCENE')) res.highlight_scene = true;
 
-      if (d.check("WIREFRAME") || d.check("WIRE")) res.wireframe = true;
-      if (d.check("ROTATE")) res.rotate = true;
+      if (d.check('WIREFRAME') || d.check('WIRE')) res.wireframe = true;
+      if (d.check('ROTATE')) res.rotate = true;
 
-      if (d.check("INVX") || d.check("INVERTX")) res.scale.x = -1;
-      if (d.check("INVY") || d.check("INVERTY")) res.scale.y = -1;
-      if (d.check("INVZ") || d.check("INVERTZ")) res.scale.z = -1;
+      if (d.check('INVX') || d.check('INVERTX')) res.scale.x = -1;
+      if (d.check('INVY') || d.check('INVERTY')) res.scale.y = -1;
+      if (d.check('INVZ') || d.check('INVERTZ')) res.scale.z = -1;
 
-      if (d.check("COUNT")) res._count = true;
+      if (d.check('COUNT')) res._count = true;
 
       if (d.check('TRANSP',true))
          res.transparency = d.partAsInt(0,100)/100;
@@ -84630,20 +84634,20 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('OPACITY',true))
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
-      if (d.check("AXISCENTER") || d.check("AC")) res._axis = 2;
+      if (d.check('AXISCENTER') || d.check('AC')) res._axis = 2;
 
       if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
       if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
 
-      if (d.check("AXIS") || d.check("A")) res._axis = true;
+      if (d.check('AXIS') || d.check('A')) res._axis = true;
 
-      if (d.check("D")) res._debug = true;
-      if (d.check("G")) res._grid = true;
-      if (d.check("B")) res._bound = true;
-      if (d.check("W")) res.wireframe = true;
-      if (d.check("F")) res._full = true;
-      if (d.check("Y")) res._yup = true;
-      if (d.check("Z")) res._yup = false;
+      if (d.check('D')) res._debug = true;
+      if (d.check('G')) res._grid = true;
+      if (d.check('B')) res._bound = true;
+      if (d.check('W')) res.wireframe = true;
+      if (d.check('F')) res._full = true;
+      if (d.check('Y')) res._yup = true;
+      if (d.check('Z')) res._yup = false;
 
       // when drawing geometry without TCanvas, yup = true by default
       if (res._yup === undefined)
@@ -84724,35 +84728,35 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Fill context menu */
    fillContextMenu(menu) {
-      menu.add("header: Draw options");
+      menu.add('header: Draw options');
 
-      menu.addchk(this.ctrl.update_browser, "Browser update", () => {
+      menu.addchk(this.ctrl.update_browser, 'Browser update', () => {
          this.ctrl.update_browser = !this.ctrl.update_browser;
          if (!this.ctrl.update_browser) this.activateInBrowser([]);
       });
-      menu.addchk(this.ctrl.show_controls, "Show Controls", () => this.showControlOptions('toggle'));
+      menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlOptions('toggle'));
 
-      menu.addchk(this.ctrl._axis, "Show axes", () => this.setAxesDraw('toggle'));
+      menu.addchk(this.ctrl._axis, 'Show axes', () => this.setAxesDraw('toggle'));
 
       if (this.geo_manager)
-         menu.addchk(this.ctrl.showtop, "Show top volume", () => this.setShowTop(!this.ctrl.showtop));
+         menu.addchk(this.ctrl.showtop, 'Show top volume', () => this.setShowTop(!this.ctrl.showtop));
 
-      menu.addchk(this.ctrl.wireframe, "Wire frame", () => this.toggleWireFrame());
+      menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
 
-      menu.addchk(this.ctrl.highlight, "Highlight volumes", () => {
+      menu.addchk(this.ctrl.highlight, 'Highlight volumes', () => {
          this.ctrl.highlight = !this.ctrl.highlight;
       });
-      menu.addchk(this.ctrl.highlight_scene, "Highlight scene", () => {
+      menu.addchk(this.ctrl.highlight_scene, 'Highlight scene', () => {
          this.ctrl.highlight_scene = !this.ctrl.highlight_scene;
       });
-      menu.add("Reset camera position", () => this.focusCamera());
+      menu.add('Reset camera position', () => this.focusCamera());
 
       if (!this._geom_viewer)
-         menu.add("Get camera position", () => menu.info("Position (as url)", "&opt=" + this.produceCameraUrl()));
+         menu.add('Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
 
       if (!this.ctrl.project)
-         menu.addchk(this.ctrl.rotate, "Autorotate", () => this.setAutoRotate(!this.ctrl.rotate));
-      menu.addchk(this.ctrl.select_in_view, "Select in view", () => {
+         menu.addchk(this.ctrl.rotate, 'Autorotate', () => this.setAutoRotate(!this.ctrl.rotate));
+      menu.addchk(this.ctrl.select_in_view, 'Select in view', () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
          if (this.ctrl.select_in_view) this.startDrawGeometry();
       });
@@ -84780,7 +84784,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Reset transformation */
    resetTransformation() {
-      this.changedTransformation("reset");
+      this.changedTransformation('reset');
    }
 
    /** @summary Method should be called when transformation parameters were changed */
@@ -84791,7 +84795,7 @@ class TGeoPainter extends ObjectPainter {
           translation = new Matrix4(),
           vect2 = new Vector3();
 
-      if (arg == "reset")
+      if (arg == 'reset')
          ctrl.trans_z = ctrl.trans_radial = 0;
 
       this._toplevel.traverse(mesh => {
@@ -84799,7 +84803,7 @@ class TGeoPainter extends ObjectPainter {
 
          let node = mesh.parent;
 
-         if (arg == "reset") {
+         if (arg == 'reset') {
             if (node.matrix0) {
                node.matrix.copy(node.matrix0);
                node.matrix.decompose( node.position, node.quaternion, node.scale );
@@ -84834,7 +84838,7 @@ class TGeoPainter extends ObjectPainter {
       this._toplevel.updateMatrixWorld();
 
       // axes drawing always triggers rendering
-      if (arg != "norender")
+      if (arg != 'norender')
          this.drawSimpleAxis();
    }
 
@@ -84961,12 +84965,12 @@ class TGeoPainter extends ObjectPainter {
                 .listen() // react if option changed outside
                 .onChange(clip_handler);
 
-            clipFolder.add(cc, "value", cc.min, cc.max)
+            clipFolder.add(cc, 'value', cc.min, cc.max)
                 .name(axisC + ' position')
                 .onChange(this.changedClipping.bind(this, naxis));
          }
 
-         clipFolder.add(this.ctrl, 'clipIntersect').name("Clip intersection")
+         clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
                    .listen().onChange(clip_handler);
 
       }
@@ -84988,11 +84992,11 @@ class TGeoPainter extends ObjectPainter {
                      .listen().onChange(() => this.changedWireFrame());
 
       this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { 'none': 0, "show": 1, "center": 2 }).name('Axes')
+      appearance.add(this.ctrl, '_axis', { 'none': 0, 'show': 1, 'center': 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
-         appearance.add(this.ctrl, 'rotate').name("Autorotate")
+         appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
@@ -85003,14 +85007,14 @@ class TGeoPainter extends ObjectPainter {
          let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
-         advanced.add(this.ctrl, 'depthTest').name("Depth test")
+         advanced.add(this.ctrl, 'depthTest').name('Depth test')
             .listen().onChange(() => this.changedDepthTest());
 
          advanced.add( this.ctrl, 'depthMethod', depthcfg)
-             .name("Rendering order")
+             .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
 
-         advanced.add(this.ctrl, 'ortho_camera').name("Orhographic camera")
+         advanced.add(this.ctrl, 'ortho_camera').name('Orhographic camera')
                  .listen().onChange(() => this.changeCamera());
 
         advanced.add(this, 'resetAdvanced').name('Reset');
@@ -85060,7 +85064,7 @@ class TGeoPainter extends ObjectPainter {
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
               .listen().onChange(bloom_handler);
 
-      blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name("Strength")
+      blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name('Strength')
                .listen().onChange(bloom_handler);
    }
 
@@ -85170,7 +85174,7 @@ class TGeoPainter extends ObjectPainter {
          } else {
             let many = (numnodes + numitems) > 1;
 
-            if (many) menu.add("header:" + ((numitems > 0) ? "Items" : "Nodes"));
+            if (many) menu.add('header:' + ((numitems > 0) ? 'Items' : 'Nodes'));
 
             for (let n = 0; n < intersects.length; ++n) {
                let obj = intersects[n].object,
@@ -85178,41 +85182,41 @@ class TGeoPainter extends ObjectPainter {
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
-                  if (itemname.indexOf("<prnt>") == 0)
-                     itemname = (this.getItemName() || "top") + itemname.slice(6);
-                  name = itemname.slice(itemname.lastIndexOf("/")+1);
+                  if (itemname.indexOf('<prnt>') == 0)
+                     itemname = (this.getItemName() || 'top') + itemname.slice(6);
+                  name = itemname.slice(itemname.lastIndexOf('/')+1);
                   if (!name) name = itemname;
                   hdr = name;
                } else if (obj.stack) {
                   name = this._clones.resolveStack(obj.stack).name;
                   itemname = this.getStackFullName(obj.stack);
                   hdr = this.getItemName();
-                  if (name.indexOf("Nodes/") === 0)
+                  if (name.indexOf('Nodes/') === 0)
                      hdr = name.slice(6);
                   else if (name.length > 0)
                      hdr = name;
                   else if (!hdr)
-                     hdr = "header";
+                     hdr = 'header';
 
                } else
                   continue;
 
-               menu.add((many ? "sub:" : "header:") + hdr, itemname, arg => this.activateInBrowser([arg], true));
+               menu.add((many ? 'sub:' : 'header:') + hdr, itemname, arg => this.activateInBrowser([arg], true));
 
-               menu.add("Browse", itemname, arg => this.activateInBrowser([arg], true));
+               menu.add('Browse', itemname, arg => this.activateInBrowser([arg], true));
 
                if (this._hpainter)
-                  menu.add("Inspect", itemname, arg => this._hpainter.display(arg, "inspect"));
+                  menu.add('Inspect', itemname, arg => this._hpainter.display(arg, 'inspect'));
 
                if (obj.geo_name) {
-                  menu.add("Hide", n, indx => {
+                  menu.add('Hide', n, indx => {
                      let mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.render3D();
                   });
 
-                  if (many) menu.add("endsub:");
+                  if (many) menu.add('endsub:');
 
                   continue;
                }
@@ -85220,14 +85224,14 @@ class TGeoPainter extends ObjectPainter {
                let wireframe = this.accessObjectWireFrame(obj);
 
                if (wireframe !== undefined)
-                  menu.addchk(wireframe, "Wireframe", n, function(indx) {
+                  menu.addchk(wireframe, 'Wireframe', n, function(indx) {
                      let m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.render3D();
                   });
 
                if (++cnt > 1)
-                  menu.add("Manifest", n, function(indx) {
+                  menu.add('Manifest', n, function(indx) {
 
                      if (this._last_manifest)
                         this._last_manifest.wireframe = !this._last_manifest.wireframe;
@@ -85250,12 +85254,12 @@ class TGeoPainter extends ObjectPainter {
                   });
 
 
-               menu.add("Focus", n, function(indx) {
+               menu.add('Focus', n, function(indx) {
                   this.focusCamera(intersects[indx].object);
                });
 
                if (!this._geom_viewer)
-               menu.add("Hide", n, function(indx) {
+               menu.add('Hide', n, function(indx) {
                   let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
                   if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                      setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
@@ -85268,7 +85272,7 @@ class TGeoPainter extends ObjectPainter {
                   this.testGeomChanges();// while many volumes may disappear, recheck all of them
                });
 
-               if (many) menu.add("endsub:");
+               if (many) menu.add('endsub:');
             }
          }
          menu.show();
@@ -85309,7 +85313,7 @@ class TGeoPainter extends ObjectPainter {
          let clippedIntersects = [];
 
          for (let i = 0; i < intersects.length; ++i) {
-            let point = intersects[i].point, special = (intersects[i].object.type == "Points"), clipped = true;
+            let point = intersects[i].point, special = (intersects[i].object.type == 'Points'), clipped = true;
 
             if (clip[0].enabled && ((this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant) ^ special)) clipped = false;
             if (clip[1].enabled && ((this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant) ^ special)) clipped = false;
@@ -85350,7 +85354,7 @@ class TGeoPainter extends ObjectPainter {
       let mainitemname = this.getItemName(),
           sub = this.resolveStack(stack);
       if (!sub || !sub.name) return mainitemname;
-      return mainitemname ? mainitemname + "/" + sub.name : sub.name;
+      return mainitemname ? mainitemname + '/' + sub.name : sub.name;
    }
 
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
@@ -85448,7 +85452,7 @@ class TGeoPainter extends ObjectPainter {
 
       ctrl.evnt = evnt;
 
-      if (ctrl.setSelected("blue", click_indx))
+      if (ctrl.setSelected('blue', click_indx))
          this.render3D();
 
       ctrl.evnt = null;
@@ -85464,7 +85468,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Configure depth method, used for render order production.
-     * @param {string} method - Allowed values: "ray", "box","pnt", "size", "dflt" */
+     * @param {string} method - Allowed values: 'ray', 'box','pnt', 'size', 'dflt' */
    setDepthMethod(method) {
       if (this.ctrl)
          this.ctrl.depthMethod = method;
@@ -85502,7 +85506,7 @@ class TGeoPainter extends ObjectPainter {
                info = this.getStackFullName(obj.stack);
             if (!info) continue;
 
-            if (info.indexOf("<prnt>") == 0)
+            if (info.indexOf('<prnt>') == 0)
                info = this.getItemName() + info.slice(6);
 
             names.push(info);
@@ -85514,7 +85518,7 @@ class TGeoPainter extends ObjectPainter {
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
                   if ((geo_index !== undefined) && (typeof tooltip == 'string'))
-                     tooltip += " indx:" + JSON.stringify(geo_index);
+                     tooltip += ' indx:' + JSON.stringify(geo_index);
                }
                if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
             }
@@ -85570,7 +85574,7 @@ class TGeoPainter extends ObjectPainter {
       window.addEventListener( 'keydown', event => {
          switch ( event.key ) {
          case 'q':
-            this._tcontrols.setSpace( this._tcontrols.space === "local" ? "world" : "local" );
+            this._tcontrols.setSpace( this._tcontrols.space === 'local' ? 'world' : 'local' );
             break;
          case 'Control':
             this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
@@ -85656,7 +85660,7 @@ class TGeoPainter extends ObjectPainter {
          let need_worker = !isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
-         if (need_worker && exports.source_dir.indexOf("file://") == 0) {
+         if (need_worker && exports.source_dir.indexOf('file://') == 0) {
             console.log('disable worker for jsroot from file system');
             need_worker = false;
          }
@@ -85832,7 +85836,7 @@ class TGeoPainter extends ObjectPainter {
          // wait for main painter to be ready
 
          if (!this._main_painter) {
-            this.changeStage(stageInit, "Lost main painter");
+            this.changeStage(stageInit, 'Lost main painter');
             return false;
          }
          if (!this._main_painter._drawing_ready) return 1;
@@ -85863,9 +85867,9 @@ class TGeoPainter extends ObjectPainter {
       // workaround for the TGeoOverlap, where two branches should get predefined color
       if (this._splitColors && entry.stack) {
          if (entry.stack[0] === 0)
-            entry.custom_color = "green";
+            entry.custom_color = 'green';
          else if (entry.stack[0] === 1)
-            entry.custom_color = "blue";
+            entry.custom_color = 'blue';
       }
 
       let prop = this._clones.getDrawEntryProperties(entry, getRootColors()),
@@ -86060,8 +86064,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera._lights = this.ctrl.light.kind;
 
          switch (this._camera._lights) {
-            case "ambient" : this._camera.add(new AmbientLight(0xefefef, p)); break;
-            case "hemisphere" : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
+            case 'ambient' : this._camera.add(new AmbientLight(0xefefef, p)); break;
+            case 'hemisphere' : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
             default: // 6 point lights
                for (let n = 0; n < 6; ++n)
                   this._camera.add(new PointLight(0xefefef, p));
@@ -86192,7 +86196,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
             let doc = getDocument(),
-                svg = doc.createElementNS("http://www.w3.org/2000/svg", 'svg');
+                svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
             svg.appendChild(this._renderer.jsroot_dom);
@@ -86251,9 +86255,9 @@ class TGeoPainter extends ObjectPainter {
 
       this.ctrl.depthTest = true;
       this.ctrl.clipIntersect = true;
-      this.ctrl.depthMethod = "ray";
+      this.ctrl.depthMethod = 'ray';
 
-      this.changedDepthMethod("norender");
+      this.changedDepthMethod('norender');
       this.changedDepthTest();
    }
 
@@ -86280,13 +86284,13 @@ class TGeoPainter extends ObjectPainter {
       if (!this._renderer) return;
       this.render3D(0);
       let dataUrl = this._renderer.domElement.toDataURL('image/png');
-      if (filename === "asis") return dataUrl;
-      dataUrl.replace('image/png', "image/octet-stream");
+      if (filename === 'asis') return dataUrl;
+      dataUrl.replace('image/png', 'image/octet-stream');
       let doc = getDocument(),
           link = doc.createElement('a');
       if (typeof link.download === 'string') {
          doc.body.appendChild(link); //Firefox requires the link to be in the body
-         link.download = filename || "geometry.png";
+         link.download = filename || 'geometry.png';
          link.href = dataUrl;
          link.click();
          doc.body.removeChild(link); //remove the link when done
@@ -86313,7 +86317,7 @@ class TGeoPainter extends ObjectPainter {
       let quat = new Quaternion(), euler = new Euler();
 
       quat.setFromUnitVectors(pos1, pos2);
-      euler.setFromQuaternion(quat, "YZX");
+      euler.setFromQuaternion(quat, 'YZX');
 
       let roty = euler.y / Math.PI * 180,
           rotz = euler.z / Math.PI * 180;
@@ -86321,7 +86325,7 @@ class TGeoPainter extends ObjectPainter {
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
 
-      return "roty" + roty.toFixed(prec || 0) + ",rotz" + rotz.toFixed(prec || 0) + ",zoom" + zoom.toFixed(prec || 0);
+      return 'roty' + roty.toFixed(prec || 0) + ',rotz' + rotz.toFixed(prec || 0) + ',zoom' + zoom.toFixed(prec || 0);
    }
 
    /** @summary Calculates current zoom factor */
@@ -86504,7 +86508,7 @@ class TGeoPainter extends ObjectPainter {
           frames = 50, step = 0,
           // Amount to change camera position at each step
           posIncrement = position.sub(this._camera.position).divideScalar(frames),
-          // Amount to change "lookAt" so it will end pointed at target
+          // Amount to change 'lookAt' so it will end pointed at target
           targetIncrement = target.sub(oldTarget).divideScalar(frames);
 
       autoClip = autoClip && this._webgl;
@@ -86601,12 +86605,12 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Drawing with "count" option
+   /** @summary Drawing with 'count' option
      * @desc Scans hieararchy and check for unique nodes
      * @return {Promise} with object drawing ready */
    async drawCount(unqievis, clonetm) {
 
-      const makeTime = tm => (isBatchMode() ? "anytime" : tm.toString()) + " ms";
+      const makeTime = tm => (isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
 
       let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
@@ -86640,14 +86644,14 @@ class TGeoPainter extends ObjectPainter {
             res.push('  lvl' + lvl + ': ' + arg.cnt[lvl]);
       }
 
-      res.push("Time to scan: " + makeTime(tm2-tm1), "", "Check timing for matrix calculations ...");
+      res.push('Time to scan: ' + makeTime(tm2-tm1), '', 'Check timing for matrix calculations ...');
 
       let elem = this.selectDom().style('overflow', 'auto');
 
       if (isBatchMode())
-         elem.property("_json_object_", res);
+         elem.property('_json_object_', res);
       else
-         res.forEach(str => elem.append("p").text(str));
+         res.forEach(str => elem.append('p').text(str));
 
       return new Promise(resolveFunc => {
          setTimeout(() => {
@@ -86656,11 +86660,11 @@ class TGeoPainter extends ObjectPainter {
             numvis = this._clones.scanVisible(arg);
             tm2 = new Date().getTime();
 
-            let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
+            let last_str = 'Time to scan with matrix: ' + makeTime(tm2-tm1);
             if (isBatchMode())
                res.push(last_str);
             else
-               elem.append("p").text(last_str);
+               elem.append('p').text(last_str);
             resolveFunc(this);
          }, 100);
       });
@@ -86670,18 +86674,18 @@ class TGeoPainter extends ObjectPainter {
      * @desc opt parameter can include function name like opt$func_name
      * Such function should be possible to find via {@link findFunction}
      * Function has to return Promise with objects to draw on geometry
-     * By default function with name "extract_geo_tracks" is checked
+     * By default function with name 'extract_geo_tracks' is checked
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind === 'TTree')) {
          // drop tree means function call which must extract tracks from provided tree
 
-         let funcname = "extract_geo_tracks";
+         let funcname = 'extract_geo_tracks';
 
-         if (opt && opt.indexOf("$") > 0) {
-            funcname = opt.slice(0, opt.indexOf("$"));
-            opt = opt.slice(opt.indexOf("$")+1);
+         if (opt && opt.indexOf('$') > 0) {
+            funcname = opt.slice(0, opt.indexOf('$'));
+            opt = opt.slice(opt.indexOf('$')+1);
          }
 
          let func = findFunction(funcname);
@@ -86692,7 +86696,7 @@ class TGeoPainter extends ObjectPainter {
             if (!tracks) return this;
 
             // FIXME: probably tracks should be remembered?
-            return this.drawExtras(tracks, "", false).then(()=> {
+            return this.drawExtras(tracks, '', false).then(()=> {
                this.updateClipping(true);
 
                return this.render3D(100);
@@ -86718,14 +86722,14 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet" && obj._typename !== "TPolyMarker3D")) return;
+      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== 'TPolyMarker3D')) return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
 
    /** @summary clear extra drawn objects like tracks or hits */
    clearExtras() {
-      this.getExtrasContainer("delete");
+      this.getExtrasContainer('delete');
       delete this._extraObjects; // workaround, later will be normal function
       this.render3D();
    }
@@ -86776,7 +86780,7 @@ class TGeoPainter extends ObjectPainter {
             mesh.visible = res;
             this.render3D();
          } else if (res) {
-            this.drawExtras(obj, "", false).then(()=> {
+            this.drawExtras(obj, '', false).then(()=> {
                this.updateClipping(true);
                this.render3D();
             });
@@ -86801,12 +86805,12 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === 'TList') || (obj._typename === "TObjArray")) {
+      if ((obj._typename === 'TList') || (obj._typename === 'TObjArray')) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
             let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : '';
-            if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
+            if (!sname) sname = (itemname || '<prnt>') + '/[' + n + ']';
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
          promise = Promise.all(parr).then(ress => ress.indexOf(true) >= 0);
@@ -86823,10 +86827,10 @@ class TGeoPainter extends ObjectPainter {
       } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
+      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === 'TPolyMarker3D')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
-      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawExtraShape(obj, itemname);
       }
@@ -86849,7 +86853,7 @@ class TGeoPainter extends ObjectPainter {
    getExtrasContainer(action, name) {
       if (!this._toplevel) return null;
 
-      if (!name) name = "tracks";
+      if (!name) name = 'tracks';
 
       let extras = null, lst = [];
       for (let n = 0; n < this._toplevel.children.length; ++n) {
@@ -86865,13 +86869,13 @@ class TGeoPainter extends ObjectPainter {
          return lst;
       }
 
-      if (action == "delete") {
+      if (action == 'delete') {
          if (extras) this._toplevel.remove(extras);
          disposeThreejsObject(extras);
          return null;
       }
 
-      if ((action !== "get") && !extras) {
+      if ((action !== 'get') && !extras) {
          extras = new Object3D();
          extras._extras = name;
          this._toplevel.add(extras);
@@ -86883,7 +86887,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary add object to extras container.
      * @desc If fail, dispore object */
    addToExtrasContainer(obj, name) {
-      let container = this.getExtrasContainer("", name);
+      let container = this.getExtrasContainer('', name);
       if (container) {
          container.add(obj);
       } else {
@@ -86897,7 +86901,7 @@ class TGeoPainter extends ObjectPainter {
       if (!track || !track.fNpoints) return false;
 
       let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1), // linew width not supported on windows
-          color = getColor(track.fLineColor) || "#ff00ff",
+          color = getColor(track.fLineColor) || '#ff00ff',
           npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
@@ -86923,7 +86927,7 @@ class TGeoPainter extends ObjectPainter {
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      if (itemname && itemname.indexOf("<prnt>/Tracks") == 0)
+      if (itemname && itemname.indexOf('<prnt>/Tracks') == 0)
          line.main_track = true;
 
       this.addToExtrasContainer(line);
@@ -86936,7 +86940,7 @@ class TGeoPainter extends ObjectPainter {
       if (!line) return false;
 
       let linewidth = browser$1.isWin ? 1 : (line.fLineWidth || 1),
-          color = getColor(line.fLineColor) || "#ff00ff",
+          color = getColor(line.fLineColor) || '#ff00ff',
           npoints = line.fN,
           fP = line.fP,
           buf = new Float32Array((npoints-1)*6),
@@ -86973,7 +86977,7 @@ class TGeoPainter extends ObjectPainter {
       if (!track || (track.fN <= 0)) return false;
 
       let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1),
-          color = getColor(track.fLineColor) || "#ff00ff",
+          color = getColor(track.fLineColor) || '#ff00ff',
           buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
           projx = (this.ctrl.project === 'x'),
@@ -87029,7 +87033,7 @@ class TGeoPainter extends ObjectPainter {
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style }).then(mesh => {
+      return pnts.createPoints({ color: getColor(hit.fMarkerColor) || '#0000ff', style }).then(mesh => {
          mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
@@ -87064,7 +87068,7 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname.length > 0) itemname += "/";
+         if (itemname.length > 0) itemname += '/';
          itemname += prnt.fName;
       }
 
@@ -87104,7 +87108,7 @@ class TGeoPainter extends ObjectPainter {
 
       let mgr = {
             GetVolume: name => {
-               let regexp = new RegExp("^"+name+"$"),
+               let regexp = new RegExp('^'+name+'$'),
                    currnode = this.findNodeWithVolume(regexp, arg => arg);
 
                if (!currnode) console.log(`Did not found ${name} volume`);
@@ -87198,11 +87202,11 @@ class TGeoPainter extends ObjectPainter {
       if (this.did_cleanup)
          return null;
 
-      if (name_prefix == "__geom_viewer_append__") {
+      if (name_prefix == '__geom_viewer_append__') {
          this._new_append_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
-      } else if ((name_prefix == "__geom_viewer_selection__") && this._clones) {
+      } else if ((name_prefix == '__geom_viewer_selection__') && this._clones) {
          // these are selection done from geom viewer
          this._new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
@@ -87270,7 +87274,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._on_pad) {
             let size, render3d, fp;
-            promise = ensureTCanvas(this,"3d").then(() => {
+            promise = ensureTCanvas(this,'3d').then(() => {
 
                fp = this.getFramePainter();
 
@@ -87318,7 +87322,7 @@ class TGeoPainter extends ObjectPainter {
 
          return new Promise(resolveFunc => {
             this._resolveFunc = resolveFunc;
-            this.showDrawInfo("Drawing geometry");
+            this.showDrawInfo('Drawing geometry');
             this.startDrawGeometry(true);
          });
       });
@@ -87329,16 +87333,16 @@ class TGeoPainter extends ObjectPainter {
       if (isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
       let main = this._renderer.domElement.parentNode,
-          info = main.querySelector(".geo_info");
+          info = main.querySelector('.geo_info');
 
       if (!msg) {
          info.remove();
       } else {
          let spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
          if (!info) {
-            info = document.createElement("p");
-            info.setAttribute('class', "geo_info");
-            info.setAttribute('style',  "position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;");
+            info = document.createElement('p');
+            info.setAttribute('class', 'geo_info');
+            info.setAttribute('style',  'position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;');
             main.append(info);
          }
          info.innerHTML = `${msg}, ${spent.toFixed(1)}s`;
@@ -87365,7 +87369,7 @@ class TGeoPainter extends ObjectPainter {
 
          // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) {
-            this.changeStage(stageInit, "Abort build after 100s");
+            this.changeStage(stageInit, 'Abort build after 100s');
             break;
          }
 
@@ -87396,7 +87400,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (take_time > 300) {
          showProgress('Rendering geometry');
-         this.showDrawInfo("Rendering");
+         this.showDrawInfo('Rendering');
          return setTimeout(() => this.completeDraw(true), 10);
       }
 
@@ -87510,7 +87514,7 @@ class TGeoPainter extends ObjectPainter {
       this._worker_jobs = 0; // counter how many requests send to worker
 
       // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(exports.source_dir + "scripts/geoworker.js" /*, { type: "module" } */);
+      this._worker = new Worker(exports.source_dir + 'scripts/geoworker.js' /*, { type: 'module' } */);
 
       this._worker.onmessage = e => {
 
@@ -87638,7 +87642,7 @@ class TGeoPainter extends ObjectPainter {
           center = [0,0,0],
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
-          colors = ["red","green","blue"],
+          colors = ['red','green','blue'],
           ortho = this.ctrl.ortho_camera,
           yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
           numaxis = 3;
@@ -87682,9 +87686,9 @@ class TGeoPainter extends ObjectPainter {
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; if (yup[0] && !ortho) lbl = labels[0] + " " + lbl; else lbl += " " + labels[0]; break;
-           case 1: buf[4] = box.max.y; if (yup[1]) lbl += " " + labels[1]; else lbl = labels[1] + " " + lbl; break;
-           case 2: buf[5] = box.max.z; lbl += " " + labels[2]; break;
+           case 0: buf[3] = box.max.x; if (yup[0] && !ortho) lbl = labels[0] + ' ' + lbl; else lbl += ' ' + labels[0]; break;
+           case 1: buf[4] = box.max.y; if (yup[1]) lbl += ' ' + labels[1]; else lbl = labels[1] + ' ' + lbl; break;
+           case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
          }
 
          if (this.ctrl._axis == 2)
@@ -87794,12 +87798,12 @@ class TGeoPainter extends ObjectPainter {
       }
 
       // after creating axes trigger rendering and recalculation of depth
-      return this.changedDepthMethod(norender ? "norender" : undefined);
+      return this.changedDepthMethod(norender ? 'norender' : undefined);
    }
 
    /** @summary Set axes visibility 0 - off, 1 - on, 2 - centered */
    setAxesDraw(on) {
-      if (on === "toggle")
+      if (on === 'toggle')
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
          this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
@@ -87864,7 +87868,7 @@ class TGeoPainter extends ObjectPainter {
    changedDepthMethod(arg) {
       // force recalculatiion of render order
       delete this._last_camera_position;
-      if (arg !== "norender")
+      if (arg !== 'norender')
          return this.render3D();
    }
 
@@ -87908,7 +87912,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (force_traverse || changed)
          this._scene.traverse(node => {
-            if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
+            if (node.hasOwnProperty('material') && node.material && (node.material.clippingPlanes !== undefined)) {
 
                if (node.material.clippingPlanes !== panels) {
                   node.material.clipIntersection = ci;
@@ -87955,12 +87959,12 @@ class TGeoPainter extends ObjectPainter {
       if (!this._clones) {
          check_extras = false;
          // if extra object where append, redraw them at the end
-         this.getExtrasContainer("delete"); // delete old container
+         this.getExtrasContainer('delete'); // delete old container
          let extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
-         promise = this.drawExtras(extras, "", false);
+         promise = this.drawExtras(extras, '', false);
       } else if (this._first_drawing || this._full_redrawing) {
          if (this.ctrl.tracks && this.geo_manager)
-            promise = this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks");
+            promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
       }
 
       return promise.then(() => {
@@ -87969,7 +87973,7 @@ class TGeoPainter extends ObjectPainter {
             this.adjustCameraPosition(true);
             this._full_redrawing = false;
             full_redraw = true;
-            this.changedDepthMethod("norender");
+            this.changedDepthMethod('norender');
          }
 
          if (this._first_drawing) {
@@ -87987,7 +87991,7 @@ class TGeoPainter extends ObjectPainter {
             this.completeScene();
 
          if (full_redraw && (this.ctrl.trans_radial || this.ctrl.trans_z))
-            this.changedTransformation("norender");
+            this.changedTransformation('norender');
 
          if (full_redraw && this.ctrl._axis)
             this.drawSimpleAxis(true);
@@ -88001,9 +88005,9 @@ class TGeoPainter extends ObjectPainter {
 
          if (check_extras) {
             // if extra object where append, redraw them at the end
-            this.getExtrasContainer("delete"); // delete old container
+            this.getExtrasContainer('delete'); // delete old container
             let extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
-            return this.drawExtras(extras, "", false);
+            return this.drawExtras(extras, '', false);
          }
       }).then(() => {
 
@@ -88147,7 +88151,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.did_cleanup = true;
 
-         if (can3d < 0) this.selectDom().html("");
+         if (can3d < 0) this.selectDom().html('');
       }
 
       if (this._slave_painters)
@@ -88192,7 +88196,7 @@ class TGeoPainter extends ObjectPainter {
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
 
-      this.changeStage(stageInit, "cleanup");
+      this.changeStage(stageInit, 'cleanup');
       delete this.drawing_log;
 
       delete this._datgui;
@@ -88219,7 +88223,7 @@ class TGeoPainter extends ObjectPainter {
       this._scene_height = height;
 
       if (this._camera && this._renderer) {
-         if (this._camera.type == "PerspectiveCamera")
+         if (this._camera.type == 'PerspectiveCamera')
             this._camera.aspect = this._scene_width / this._scene_height;
          this._camera.updateProjectionMatrix();
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
@@ -88267,7 +88271,7 @@ class TGeoPainter extends ObjectPainter {
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj.hasOwnProperty("material") || (obj instanceof GridHelper)) return;
+      if (!obj.hasOwnProperty('material') || (obj instanceof GridHelper)) return;
 
       if (this.ownedByTransformControls(obj)) return;
 
@@ -88291,13 +88295,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Update object in geo painter */
    updateObject(obj) {
-      if (obj === "same") return true;
+      if (obj === 'same') return true;
       if (!obj?._typename) return false;
       if (obj === this.getObject()) return true;
 
-      if (this.geo_manager && (obj._typename == "TGeoManager")) {
+      if (this.geo_manager && (obj._typename == 'TGeoManager')) {
          this.geo_manager = obj;
-         this.assignObject({ _typename:"TGeoNode", fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
+         this.assignObject({ _typename: 'TGeoNode', fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
          return true;
       }
 
@@ -88347,7 +88351,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.clearDrawings();
 
-      let draw_obj = this.getGeometry(), name_prefix = "";
+      let draw_obj = this.getGeometry(), name_prefix = '';
       if (this.geo_manager) name_prefix = draw_obj.fName;
 
       return this.prepareObjectDraw(draw_obj, name_prefix);
@@ -88357,35 +88361,35 @@ class TGeoPainter extends ObjectPainter {
    static async draw(dom, obj, opt) {
       if (!obj) return null;
 
-      let shape = null, extras = null, extras_path = "", is_eve = false;
+      let shape = null, extras = null, extras_path = '', is_eve = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
       } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
-      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
          shape = obj.fShape; is_eve = true;
       } else if (obj._typename === 'TGeoManager') {
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
-         extras = obj.fMarker; extras_path = "<prnt>/Marker";
+         extras = obj.fMarker; extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
-         if (!opt) opt = "wire";
+         if (!opt) opt = 'wire';
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
          obj = null;
       }
 
-      if ((typeof opt == 'string') && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == 'string') && opt.indexOf('comp') == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
-         if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
+         if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 
       if (!obj && shape)
-         obj = Object.assign(create$1("TEveGeoShapeExtract"),
+         obj = Object.assign(create$1('TEveGeoShapeExtract'),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
@@ -88423,46 +88427,46 @@ function injectGeoStyle() {
    if (!add_settings && typeof internals.addDrawFunc == 'function') {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
-      internals.addDrawFunc({ name: "TEvePointSet", icon_get: getBrowserIcon, icon_click: browserIconClick });
-      internals.addDrawFunc({ name: "TEveTrack", icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: 'TEvePointSet', icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: 'TEveTrack', icon_get: getBrowserIcon, icon_click: browserIconClick });
    }
 
    function img(name,code) {
-      return `.jsroot .img_${name} { display: inline-block; height: 16px; width: 16px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ${code}"); }`;
+      return `.jsroot .img_${name} { display: inline-block; height: 16px; width: 16px; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ${code}'); }`;
    }
 
    injectStyle(`
-${img("geoarb8","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB1SURBVBjTdY6rEYAwEETTy6lzK8/Fo+Jj18dTAjUgaQGfGiggtRDE8RtY93Zu514If2nzk2ux9c5TZkwXbiWTUavzws69oBfpYBrMT4r0Jhsw+QfRgQSw+CaKRsKsnV+SaF8MN49RBSgPUxO85PMl5n4tfGUH2gghs2uPAeQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geocombi","CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAlUlEQVQoz5VQMQ4CMQyzEUNnBqT7Bo+4nZUH8gj+welWJsQDkHoCEYakTXMHSFiq2jqu4xRAEl2A7w4myWzpzCSZRZ658ldKu1hPnFsequBIc/hcLli3l52MAIANtpWrDsv8waGTW6BPuFtsdZArXyFuj33TQpazGEQF38phipnLgItxRcAoOeNpzv4PTXnC42fb//AGI5YqfQAU8dkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geocone","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACRSURBVBjTdY+xDcNACEVvEm/ggo6Olva37IB0C3iEzJABvAHFTXBDeJRwthMnUvylk44vPjxK+afeokX0flQhJO7L4pafSOMxzaxIKc/Tc7SIjNLyieyZSjBzc4DqMZI0HTMonWPBNlogOLeuewbg9c0hOiIqH7DKmTCuFykjHe4XOzQ58XVMGxzt575tKzd6AX9yMkcWyPlsAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geogtra","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACCSURBVBjTVc+hDQMxDAVQD1FyqCQk0MwsCwQEG3+eCW6B0FvheDboFMGepTlVitPP/Cz5y0S/mNkw8pySU9INJDDH4vM4Usm5OrQXasXtkA+tQF+zxfcDY8EVwgNeiwmA37TEccK5oLOwQtuCj7BM2Fq7iGrxVqJbSsH+GzXs+798AThwKMh3/6jDAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geomedium","BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABVQTFRFAAAAAAAAMDAww8PDWKj/////gICAG0/C4AAAAAF0Uk5TAEDm2GYAAAABYktHRAX4b+nHAAAACXBIWXMAAABIAAAASABGyWs+AAAAXElEQVQI102MwRGAMAgEuQ6IDwvQCjQdhAl/H7ED038JHhkd3dcOLAgESFARaAqnEB3yrj6QSEym1RbbOKinN+8q2Esui1GaX7VXSi4RUbxHRbER8X6O5Pg/fLgBBzMN8HfXD3AAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geopara","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABtSURBVBjTY2DADq5MT7+CzD9kaKjp+QhJYIWqublhMbKAgpOnZxWSQJdsVJTndCSBKoWoAM/VSALpqlEBAYeQBKJAAsi2BGgCBZDdEWUYFZCOLFBlGOWJ7AyGFeaotjIccopageK3R12PGHABACTYHWd0tGw6AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("georotation","CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAiklEQVQoz2NgYGBgYGDg+A/BmIAFIvyDEbs0AwMTAwHACLPiB5QVBTdpGSOSCZjScDcgc4z+32BgYGBgEGIQw3QDLkdCTZD8/xJFeBfDVxQT/j9n/MeIrMCNIRBJwX8GRuzGM/yHKMAljeILNFOuMTyEisEUMKIqucrwB2oyIhyQpH8y/MZrLWkAAHFzIHIc0Q5yAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geotranslation","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABESURBVBjTY2DgYGAAYzjgAAIQgSLAgSwAAcrWUUCAJBAVhSpgBAQumALGCJPAAsriHIS0IAQ4UAU4cGphQBWwZSAOAADGJBKdZk/rHQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geotrd2","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABsSURBVBjTbY+xDcAwCARZx6UraiaAmpoRvIIb75PWI2QITxIiRQKk0CCO/xcA/NZ9LRs7RkJEYg3QxczUwoGsXiMAoe8lAelqRWFNKpiNXZLAalRDd0f3TMgeMckABKsCDmu+442RddeHz9cf9jUkW8smGn8AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geovolume","BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAB5QTFRFAAAAMDAw///Ay8uc/7+Q/4BgmJh4gIDgAAD/////CZb2ugAAAAF0Uk5TAEDm2GYAAAABYktHRAnx2aXsAAAACXBIWXMAAABIAAAASABGyWs+AAAAR0lEQVQI12NggAEBIBAEQgYGQUYQAyIGIhgwAZMSGCgwMJuEKimFOhswsKWAGG4JDGxJIBk1EEO9o6NIDVkEpgauC24ODAAASQ8Pkj/retYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geoassembly","BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAA9QTFRFAAAAMDAw/wAAAAD/////jEo0BQAAAAF0Uk5TAEDm2GYAAAABYktHRASPaNlRAAAACXBIWXMAAABIAAAASABGyWs+AAAAOklEQVQI12NggAFGRgEgEBRgEBSAMhgYGQQEgAR+oARGDIwCIAYjUL0A2DQQg9nY2ABVBKoGrgsDAADxzgNboMz8zQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geocomposite","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABuSURBVBjTY2AgF2hqgQCCr+0V4O7hFmgCF7CJyKysKkmxhfGNLaw9SppqAi2gfMuY5Agrl+ZaC6iAUXRJZX6Ic0klTMA5urapPFY5NRcmYKFqWl8S5RobBRNg0PbNT3a1dDGH8RlM3LysTRjIBwAG6xrzJt11BAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geoctub","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACESURBVBjTdc+xDcMwDARA7cKKHTuWX37LHaw+vQbQAJomA7j2DB7FhCMFCZB8pxPwJEv5kQcZW+3HencRBekak4aaMQIi8YJdAQ1CMeE0UBkuaLMETklQ9Alhka0JzzXWqLVBuQYPpWcVuBbZjZafNRYcDk9o/b07bvhINz+/zxu1/M0FSRcmAk/HaIcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geohype","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACKSURBVBjTbU+rFQQhDKQSDDISEYuMREfHx6eHKMpYuf5qoIQt5bgDblfcuJk3nySEhSvceDV3c/ejT66lspopE9pXyIlkCrHMBACpu1DClekQAREi/loviCnF/NhRwJLaQ6hVhPjB8bOCsjlnNnNl0FWJVWxAqGzHONRHpu5Ml+nQ+8GzNW9n+Is3eg80Nk0iiwoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geomixture","BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACFQTFRFAAAAAAAAKysrVVUA//8B//8AgICAqqpV398gv79A////VYJtlwAAAAF0Uk5TAEDm2GYAAAABYktHRApo0PRWAAAACXBIWXMAAABIAAAASABGyWs+AAAAXklEQVQI12NgwASCQsJCgoZAhoADq1tKIJAhEpDGxpYIZKgxsLElgBhibAkOCY4gKTaGkPRGIEPUIYEBrEaAIY0tDawmgYWNgREkkjCVjRWkWCUhLY0FJCIIBljsBgCZTAykgaRiRwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geopcon","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACJSURBVBjTdc+hGcQwCIZhhjl/rkgWiECj8XgGyAbZoD5LdIRMkEnKkV575n75Pp8AgLU54dmh6mauelyAL2Qzxfe2sklioq6FacFAcRFXYhwJHdU5rDD2hEYB/CmoJVRMiIJqgtENuoqA8ltAlYAqRH4d1tGkwzTqN2gA7Nv+fUwkgZ/3mg34txM+szzATJS1HQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geosphere","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACFSURBVBjTdY+xEcQwCAQp5QNFjpQ5vZACFBFTADFFfKYCXINzlUAJruXll2ekxDAEt9zcANFbXb2mqm56dxsymAH0yccAJaeNi0h5QGyfxGJmivMPjj0nmLsbRmyFCss3rlbpcUjfS8wLUNRcJyCF6uqg2IvYCnoKC7f1kSbA6riTz7evfwj3Ml+H3KBqAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geotrap","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB5SURBVBjTbY+hFYAwDETZB1OJi4yNPp0JqjtAZ2AELL5DdABmIS2PtLxHXH7u7l2W5W+uHMHpGiCHLYR1yw4SCZMIXBOJWVSjK7QDDAu4g8OBmAKK4sAEDdR3rw8YmcUcrEijKKhl7lN1IQPn9ExlgU6/WEyc75+5AYK0KY5oHBDfAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geotubeseg","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACBSURBVBjTdc+hEcQwDARA12P6QFBQ9LDwcXEVkA7SQTr4BlJBakgpsWdsh/wfux3NSCrlV86Mlrxmz1pBWq3bAHwETohxABVmDZADQp1BE+wDNnGywzHgmHDOreJNTDH3Xn3CVX0dpu2MHcIFBkYp/gKsQ8SCQ72V+36/+2aWf3kAQfgshnpXF0wAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geoxtru","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABcSURBVBjTY2AgEmhpeZV56vmWwQW00QUYwAJlSAI6XmVqukh8PT1bT03PchhXX09Pr9wQIQDiJ+ZowgWAXD3bck+QQDlCQTkDQgCoxA/ERBKwhbDglgA1lDMQDwCc/Rvq8nYsWgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geobbox","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTVc+hEYAwDAXQLlNRF1tVGxn9NRswQiSSCdgDyQBM0FlIIb2WuL77uf6E8E0N02wKYRwDciTKREVvB04GuZSyOMCABRB1WGzF3uDNQTvs/RcDtJXT4fSEXA5XoiQt0ttVSm8Co2psIOvoimjAOqBmFtH5wEP2373TPIvTK1nrpULXAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geoconeseg","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB4SURBVBjTdc6hEcAgDAXQbFNZXHQkFlkd/30myAIMwAws0gmYpVzvoFyv/S5P/B+izzQ387ZA2pkDnvsU1SQLVIFrOM4JFmEaYp2gCQbmPEGODhJ8jt7Am47hwgrzInGAifa/elUZnQLY00iU30BZAV+BWi2VfnIBv1osbHH8jX0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==")}
-${img("geoeltu","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTdY+hFYUwDEU7xq9CIXC4uNjY6KczQXeoYgVMR2ABRmCGjvIp/6dgiEruueedvBDuOR57LQnKyc8CJmKO+N8bieIUPtmBWjIIx8XDBHYCipsnql1g2D0UP2OoDqwBncf+RdZmzFMHizRjog7KZYzawd4Ay93lEAPWR7WAvNbwMl/XwSxBV8qCjgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geomaterial","CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAbElEQVQoz62QMRbAIAhDP319Xon7j54qHSyCtaMZFCUkRjgDIdRU9yZUCfg8ut5aAHdcxtoNurmgA3ABNKIR9KimhSukPe2qxcCYC0pfFXx/aFWo7i42KKItOpopqvvnLzJmtlZTS7EfGAfwAM4EQbLIGV0sAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geoparab","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbY+xDYAwDAQ9UAp3X7p0m9o9dUZgA9oMwAjpMwMzMAnYBAQSX9mn9+tN9KOtzsWsLOvYCziUGNX3nnCLJRzKPgeYrhPW7FJNLUB3YJazYKQKTnBaxgXRzNmJcrt7XCHQp9kEB1wfELEir/KGj4Foh8A+/zW1nf51AFabKZuWK+mNAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geopgon","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABwSURBVBjTY2AgDlwAAzh3sX1sPRDEeuwDc+8V2dsHgQQ8LCzq74HkLSzs7Yva2tLt7S3sN4MNiDUGKQmysCi6BzWkzcI+PdY+aDPCljZlj1iFOUjW1tvHLjYuQhJIt5/DcAFZYLH9YnSn7iPST9gAACbsJth21haFAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geotorus","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTjY+hFcMwDEQ9SkFggXGIoejhw+LiGkBDlHoAr+AhgjNL5byChuXeE7gvPelUyjOds/f5Zw0ggfj5KVCPMBWeyx+SbQ1XUriAC2XfpWWxjQQEZasRtRHiCUAj3qN4JaolUJppzh4q7dUTdHFXW/tH9OuswWm3nI7tc08+/eGLl758ey9KpKrNOQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("geotrd1","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbc6xDQMhDAVQ9qH6lUtal65/zQ5IDMAMmYAZrmKGm4FJzlEQQUo+bvwkG4fwm9lbodV7w40Y4WGfSxQiXiJlQfZOjWRb8Ioi3tKuBQMCo7+9N72BzPsfAuoTdUP9QN8wgOQwvsfWmHzpeT5BKydMNW0nhJGvGf7mAc5WKO9e5N2dAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=")}
-${img("geotube","CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTRc+tEcAwCAXgLFNbWeSzSDQazw5doWNUZIOM0BEyS/NHy10E30HyklKvWnJ+0le3sJoKn3X2z7GRuvG++YRyMMDt0IIKUXMzxbnugJi5m9K1gNnGBOUFElAWGMaKIKI4xoQggl00gT+A9hXWgDwnfqgsHRAx2m+8bfjfdyrx5AtsSjpwu+M2RgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC")}
-${img("evepoints","BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABJQTFRF////n4mJcEdKRDMzcEdH////lLE/CwAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAABIAAAASABGyWs+AAAAI0lEQVQI12NgIAowIpgKEJIZLiAgAKWZGQzQ9UGlWIizBQgAN4IAvGtVrTcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMDktMDJUMTU6MDQ6MzgrMDI6MDDPyc7hAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTA5LTAyVDE1OjA0OjM4KzAyOjAwvpR2XQAAAABJRU5ErkJggg==")}
-${img("evetrack", "CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAqElEQVQoz32RMQrCQBBFf4IgSMB0IpGkMpVHCFh7BbHIGTyVhU0K8QYewEKsbVJZaCUiPAsXV8Puzhaz7H8zs5+JUDjikLilQr5zpCRl5xMXZNScQE5gSMGaz70jjUAJcw5c3UBMTsUe+9Kzf065SbropeLXimWfDIgoab/tOyPGzOhz53+oSWcSGh7UdB2ZNKXBZdgAuUdEKJYmrEILyVgG6pE2tEHgDfe42rbjYzSHAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA5LTAyVDE1OjA0OjQ3KzAyOjAwM0S3EQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0wOS0wMlQxNTowNDo0NyswMjowMEIZD60AAAAASUVORK5CYII=")}
+${img('geoarb8','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB1SURBVBjTdY6rEYAwEETTy6lzK8/Fo+Jj18dTAjUgaQGfGiggtRDE8RtY93Zu514If2nzk2ux9c5TZkwXbiWTUavzws69oBfpYBrMT4r0Jhsw+QfRgQSw+CaKRsKsnV+SaF8MN49RBSgPUxO85PMl5n4tfGUH2gghs2uPAeQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geocombi','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAlUlEQVQoz5VQMQ4CMQyzEUNnBqT7Bo+4nZUH8gj+welWJsQDkHoCEYakTXMHSFiq2jqu4xRAEl2A7w4myWzpzCSZRZ658ldKu1hPnFsequBIc/hcLli3l52MAIANtpWrDsv8waGTW6BPuFtsdZArXyFuj33TQpazGEQF38phipnLgItxRcAoOeNpzv4PTXnC42fb//AGI5YqfQAU8dkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geocone','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACRSURBVBjTdY+xDcNACEVvEm/ggo6Olva37IB0C3iEzJABvAHFTXBDeJRwthMnUvylk44vPjxK+afeokX0flQhJO7L4pafSOMxzaxIKc/Tc7SIjNLyieyZSjBzc4DqMZI0HTMonWPBNlogOLeuewbg9c0hOiIqH7DKmTCuFykjHe4XOzQ58XVMGxzt575tKzd6AX9yMkcWyPlsAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geogtra','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACCSURBVBjTVc+hDQMxDAVQD1FyqCQk0MwsCwQEG3+eCW6B0FvheDboFMGepTlVitPP/Cz5y0S/mNkw8pySU9INJDDH4vM4Usm5OrQXasXtkA+tQF+zxfcDY8EVwgNeiwmA37TEccK5oLOwQtuCj7BM2Fq7iGrxVqJbSsH+GzXs+798AThwKMh3/6jDAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geomedium','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABVQTFRFAAAAAAAAMDAww8PDWKj/////gICAG0/C4AAAAAF0Uk5TAEDm2GYAAAABYktHRAX4b+nHAAAACXBIWXMAAABIAAAASABGyWs+AAAAXElEQVQI102MwRGAMAgEuQ6IDwvQCjQdhAl/H7ED038JHhkd3dcOLAgESFARaAqnEB3yrj6QSEym1RbbOKinN+8q2Esui1GaX7VXSi4RUbxHRbER8X6O5Pg/fLgBBzMN8HfXD3AAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geopara','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABtSURBVBjTY2DADq5MT7+CzD9kaKjp+QhJYIWqublhMbKAgpOnZxWSQJdsVJTndCSBKoWoAM/VSALpqlEBAYeQBKJAAsi2BGgCBZDdEWUYFZCOLFBlGOWJ7AyGFeaotjIccopageK3R12PGHABACTYHWd0tGw6AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('georotation','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAiklEQVQoz2NgYGBgYGDg+A/BmIAFIvyDEbs0AwMTAwHACLPiB5QVBTdpGSOSCZjScDcgc4z+32BgYGBgEGIQw3QDLkdCTZD8/xJFeBfDVxQT/j9n/MeIrMCNIRBJwX8GRuzGM/yHKMAljeILNFOuMTyEisEUMKIqucrwB2oyIhyQpH8y/MZrLWkAAHFzIHIc0Q5yAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotranslation','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABESURBVBjTY2DgYGAAYzjgAAIQgSLAgSwAAcrWUUCAJBAVhSpgBAQumALGCJPAAsriHIS0IAQ4UAU4cGphQBWwZSAOAADGJBKdZk/rHQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geotrd2','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABsSURBVBjTbY+xDcAwCARZx6UraiaAmpoRvIIb75PWI2QITxIiRQKk0CCO/xcA/NZ9LRs7RkJEYg3QxczUwoGsXiMAoe8lAelqRWFNKpiNXZLAalRDd0f3TMgeMckABKsCDmu+442RddeHz9cf9jUkW8smGn8AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geovolume','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAB5QTFRFAAAAMDAw///Ay8uc/7+Q/4BgmJh4gIDgAAD/////CZb2ugAAAAF0Uk5TAEDm2GYAAAABYktHRAnx2aXsAAAACXBIWXMAAABIAAAASABGyWs+AAAAR0lEQVQI12NggAEBIBAEQgYGQUYQAyIGIhgwAZMSGCgwMJuEKimFOhswsKWAGG4JDGxJIBk1EEO9o6NIDVkEpgauC24ODAAASQ8Pkj/retYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoassembly','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAA9QTFRFAAAAMDAw/wAAAAD/////jEo0BQAAAAF0Uk5TAEDm2GYAAAABYktHRASPaNlRAAAACXBIWXMAAABIAAAASABGyWs+AAAAOklEQVQI12NggAFGRgEgEBRgEBSAMhgYGQQEgAR+oARGDIwCIAYjUL0A2DQQg9nY2ABVBKoGrgsDAADxzgNboMz8zQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geocomposite','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABuSURBVBjTY2AgF2hqgQCCr+0V4O7hFmgCF7CJyKysKkmxhfGNLaw9SppqAi2gfMuY5Agrl+ZaC6iAUXRJZX6Ic0klTMA5urapPFY5NRcmYKFqWl8S5RobBRNg0PbNT3a1dDGH8RlM3LysTRjIBwAG6xrzJt11BAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geoctub','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACESURBVBjTdc+xDcMwDARA7cKKHTuWX37LHaw+vQbQAJomA7j2DB7FhCMFCZB8pxPwJEv5kQcZW+3HencRBekak4aaMQIi8YJdAQ1CMeE0UBkuaLMETklQ9Alhka0JzzXWqLVBuQYPpWcVuBbZjZafNRYcDk9o/b07bvhINz+/zxu1/M0FSRcmAk/HaIcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geohype','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACKSURBVBjTbU+rFQQhDKQSDDISEYuMREfHx6eHKMpYuf5qoIQt5bgDblfcuJk3nySEhSvceDV3c/ejT66lspopE9pXyIlkCrHMBACpu1DClekQAREi/loviCnF/NhRwJLaQ6hVhPjB8bOCsjlnNnNl0FWJVWxAqGzHONRHpu5Ml+nQ+8GzNW9n+Is3eg80Nk0iiwoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geomixture','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACFQTFRFAAAAAAAAKysrVVUA//8B//8AgICAqqpV398gv79A////VYJtlwAAAAF0Uk5TAEDm2GYAAAABYktHRApo0PRWAAAACXBIWXMAAABIAAAASABGyWs+AAAAXklEQVQI12NgwASCQsJCgoZAhoADq1tKIJAhEpDGxpYIZKgxsLElgBhibAkOCY4gKTaGkPRGIEPUIYEBrEaAIY0tDawmgYWNgREkkjCVjRWkWCUhLY0FJCIIBljsBgCZTAykgaRiRwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geopcon','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACJSURBVBjTdc+hGcQwCIZhhjl/rkgWiECj8XgGyAbZoD5LdIRMkEnKkV575n75Pp8AgLU54dmh6mauelyAL2Qzxfe2sklioq6FacFAcRFXYhwJHdU5rDD2hEYB/CmoJVRMiIJqgtENuoqA8ltAlYAqRH4d1tGkwzTqN2gA7Nv+fUwkgZ/3mg34txM+szzATJS1HQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geosphere','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACFSURBVBjTdY+xEcQwCAQp5QNFjpQ5vZACFBFTADFFfKYCXINzlUAJruXll2ekxDAEt9zcANFbXb2mqm56dxsymAH0yccAJaeNi0h5QGyfxGJmivMPjj0nmLsbRmyFCss3rlbpcUjfS8wLUNRcJyCF6uqg2IvYCnoKC7f1kSbA6riTz7evfwj3Ml+H3KBqAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotrap','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB5SURBVBjTbY+hFYAwDETZB1OJi4yNPp0JqjtAZ2AELL5DdABmIS2PtLxHXH7u7l2W5W+uHMHpGiCHLYR1yw4SCZMIXBOJWVSjK7QDDAu4g8OBmAKK4sAEDdR3rw8YmcUcrEijKKhl7lN1IQPn9ExlgU6/WEyc75+5AYK0KY5oHBDfAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotubeseg','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACBSURBVBjTdc+hEcQwDARA12P6QFBQ9LDwcXEVkA7SQTr4BlJBakgpsWdsh/wfux3NSCrlV86Mlrxmz1pBWq3bAHwETohxABVmDZADQp1BE+wDNnGywzHgmHDOreJNTDH3Xn3CVX0dpu2MHcIFBkYp/gKsQ8SCQ72V+36/+2aWf3kAQfgshnpXF0wAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoxtru','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABcSURBVBjTY2AgEmhpeZV56vmWwQW00QUYwAJlSAI6XmVqukh8PT1bT03PchhXX09Pr9wQIQDiJ+ZowgWAXD3bck+QQDlCQTkDQgCoxA/ERBKwhbDglgA1lDMQDwCc/Rvq8nYsWgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geobbox','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTVc+hEYAwDAXQLlNRF1tVGxn9NRswQiSSCdgDyQBM0FlIIb2WuL77uf6E8E0N02wKYRwDciTKREVvB04GuZSyOMCABRB1WGzF3uDNQTvs/RcDtJXT4fSEXA5XoiQt0ttVSm8Co2psIOvoimjAOqBmFtH5wEP2373TPIvTK1nrpULXAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geoconeseg','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB4SURBVBjTdc6hEcAgDAXQbFNZXHQkFlkd/30myAIMwAws0gmYpVzvoFyv/S5P/B+izzQ387ZA2pkDnvsU1SQLVIFrOM4JFmEaYp2gCQbmPEGODhJ8jt7Am47hwgrzInGAifa/elUZnQLY00iU30BZAV+BWi2VfnIBv1osbHH8jX0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoeltu','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTdY+hFYUwDEU7xq9CIXC4uNjY6KczQXeoYgVMR2ABRmCGjvIp/6dgiEruueedvBDuOR57LQnKyc8CJmKO+N8bieIUPtmBWjIIx8XDBHYCipsnql1g2D0UP2OoDqwBncf+RdZmzFMHizRjog7KZYzawd4Ay93lEAPWR7WAvNbwMl/XwSxBV8qCjgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geomaterial','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAbElEQVQoz62QMRbAIAhDP319Xon7j54qHSyCtaMZFCUkRjgDIdRU9yZUCfg8ut5aAHdcxtoNurmgA3ABNKIR9KimhSukPe2qxcCYC0pfFXx/aFWo7i42KKItOpopqvvnLzJmtlZTS7EfGAfwAM4EQbLIGV0sAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geoparab','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbY+xDYAwDAQ9UAp3X7p0m9o9dUZgA9oMwAjpMwMzMAnYBAQSX9mn9+tN9KOtzsWsLOvYCziUGNX3nnCLJRzKPgeYrhPW7FJNLUB3YJazYKQKTnBaxgXRzNmJcrt7XCHQp9kEB1wfELEir/KGj4Foh8A+/zW1nf51AFabKZuWK+mNAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geopgon','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABwSURBVBjTY2AgDlwAAzh3sX1sPRDEeuwDc+8V2dsHgQQ8LCzq74HkLSzs7Yva2tLt7S3sN4MNiDUGKQmysCi6BzWkzcI+PdY+aDPCljZlj1iFOUjW1tvHLjYuQhJIt5/DcAFZYLH9YnSn7iPST9gAACbsJth21haFAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotorus','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTjY+hFcMwDEQ9SkFggXGIoejhw+LiGkBDlHoAr+AhgjNL5byChuXeE7gvPelUyjOds/f5Zw0ggfj5KVCPMBWeyx+SbQ1XUriAC2XfpWWxjQQEZasRtRHiCUAj3qN4JaolUJppzh4q7dUTdHFXW/tH9OuswWm3nI7tc08+/eGLl758ey9KpKrNOQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geotrd1','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbc6xDQMhDAVQ9qH6lUtal65/zQ5IDMAMmYAZrmKGm4FJzlEQQUo+bvwkG4fwm9lbodV7w40Y4WGfSxQiXiJlQfZOjWRb8Ioi3tKuBQMCo7+9N72BzPsfAuoTdUP9QN8wgOQwvsfWmHzpeT5BKydMNW0nhJGvGf7mAc5WKO9e5N2dAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotube','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTRc+tEcAwCAXgLFNbWeSzSDQazw5doWNUZIOM0BEyS/NHy10E30HyklKvWnJ+0le3sJoKn3X2z7GRuvG++YRyMMDt0IIKUXMzxbnugJi5m9K1gNnGBOUFElAWGMaKIKI4xoQggl00gT+A9hXWgDwnfqgsHRAx2m+8bfjfdyrx5AtsSjpwu+M2RgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('evepoints','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABJQTFRF////n4mJcEdKRDMzcEdH////lLE/CwAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAABIAAAASABGyWs+AAAAI0lEQVQI12NgIAowIpgKEJIZLiAgAKWZGQzQ9UGlWIizBQgAN4IAvGtVrTcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMDktMDJUMTU6MDQ6MzgrMDI6MDDPyc7hAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTA5LTAyVDE1OjA0OjM4KzAyOjAwvpR2XQAAAABJRU5ErkJggg==')}
+${img('evetrack', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAqElEQVQoz32RMQrCQBBFf4IgSMB0IpGkMpVHCFh7BbHIGTyVhU0K8QYewEKsbVJZaCUiPAsXV8Puzhaz7H8zs5+JUDjikLilQr5zpCRl5xMXZNScQE5gSMGaz70jjUAJcw5c3UBMTsUe+9Kzf065SbropeLXimWfDIgoab/tOyPGzOhz53+oSWcSGh7UdB2ZNKXBZdgAuUdEKJYmrEILyVgG6pE2tEHgDfe42rbjYzSHAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA5LTAyVDE1OjA0OjQ3KzAyOjAwM0S3EQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0wOS0wMlQxNTowNDo0NyswMjowMEIZD60AAAAASUVORK5CYII=')}
 .jsroot .geovis_this { background-color: lightgreen; }
 .jsroot .geovis_daughters { background-color: lightblue; }
 .jsroot .geovis_all { background-color: yellow; }`);
@@ -88475,8 +88479,8 @@ function createGeoPainter(dom, obj, opt) {
 
    injectGeoStyle();
 
-   geoCfg("GradPerSegm", settings.GeoGradPerSegm);
-   geoCfg("CompressComp", settings.GeoCompressComp);
+   geoCfg('GradPerSegm', settings.GeoGradPerSegm);
+   geoCfg('CompressComp', settings.GeoCompressComp);
 
    let painter = new TGeoPainter(dom, obj);
 
@@ -88508,7 +88512,7 @@ function provideMenu(menu, item, hpainter) {
 
    if (!vol && !iseve) return false;
 
-   menu.add("separator");
+   menu.add('separator');
 
    const ScanEveVisible = (obj, arg, skip_this) => {
 
@@ -88533,14 +88537,14 @@ function provideMenu(menu, item, hpainter) {
 
       if (arg === 'self') {
          obj.fRnrSelf = !obj.fRnrSelf;
-         item._icon = item._icon.split(" ")[0] + provideVisStyle(obj);
+         item._icon = item._icon.split(' ')[0] + provideVisStyle(obj);
          hpainter.updateTreeNode(item);
       } else {
          ScanEveVisible(obj, { assign: (arg === 'true') }, true);
          hpainter.forEachItem(m => {
             // update all child items
             if (m._geoobj && m._icon) {
-               m._icon = item._icon.split(" ")[0] + provideVisStyle(m._geoobj);
+               m._icon = item._icon.split(' ')[0] + provideVisStyle(m._geoobj);
                hpainter.updateTreeNode(m);
             }
          }, item);
@@ -88549,7 +88553,7 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    }, ToggleMenuBit = arg => {
       toggleGeoBit(vol, arg);
-      let newname = item._icon.split(" ")[0] + provideVisStyle(vol);
+      let newname = item._icon.split(' ')[0] + provideVisStyle(vol);
       hpainter.forEachItem(m => {
          // update all items with that volume
          if (item._volume === m._volume) {
@@ -88562,8 +88566,8 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf("TGeoNode") === 0) && findItemWithPainter(item))
-      menu.add("Focus", function() {
+   if ((item._geoobj._typename.indexOf('TGeoNode') === 0) && findItemWithPainter(item))
+      menu.add('Focus', function() {
 
         let drawitem = findItemWithPainter(item);
 
@@ -88576,18 +88580,18 @@ function provideMenu(menu, item, hpainter) {
       });
 
    if (iseve) {
-      menu.addchk(obj.fRnrSelf, "Visible", "self", ToggleEveVisibility);
+      menu.addchk(obj.fRnrSelf, 'Visible', 'self', ToggleEveVisibility);
       let res = ScanEveVisible(obj, undefined, true);
 
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden == 0), "Daughters", res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
+         menu.addchk((res.hidden == 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
 
    } else {
-      menu.addchk(testGeoBit(vol, geoBITS.kVisNone), "Invisible",
+      menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible',
             geoBITS.kVisNone, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geoBITS.kVisThis), "Visible",
+      menu.addchk(testGeoBit(vol, geoBITS.kVisThis), 'Visible',
             geoBITS.kVisThis, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), "Daughters",
+      menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
             geoBITS.kVisDaughters, ToggleMenuBit);
    }
 
@@ -88609,7 +88613,7 @@ function browserIconClick(hitem, hpainter) {
       return false; // no need to update icon - we did it ourself
    }
 
-   if (hitem._geoobj && ((hitem._geoobj._typename == "TEveGeoShapeExtract") || (hitem._geoobj._typename == "ROOT::Experimental::REveGeoShapeExtract"))) {
+   if (hitem._geoobj && ((hitem._geoobj._typename == 'TEveGeoShapeExtract') || (hitem._geoobj._typename == 'ROOT::Experimental::REveGeoShapeExtract'))) {
       hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
       updateBrowserIcons(hitem._geoobj, hpainter);
@@ -88632,7 +88636,7 @@ function browserIconClick(hitem, hpainter) {
 /** @summary Get icon for the browser
   * @private */
 function getBrowserIcon(hitem, hpainter) {
-   let icon = "";
+   let icon = '';
    if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
    if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
    if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
@@ -88640,7 +88644,7 @@ function getBrowserIcon(hitem, hpainter) {
       let drawitem = findItemWithPainter(hitem);
       if (drawitem)
          if (drawitem._painter.extraObjectVisible(hpainter, hitem))
-            icon += " geovis_this";
+            icon += ' geovis_this';
    }
    return icon;
 }
@@ -88650,7 +88654,7 @@ function getBrowserIcon(hitem, hpainter) {
   * @private */
 function createItem(node, obj, name) {
    let sub = {
-      _kind: "ROOT." + obj._typename,
+      _kind: 'ROOT.' + obj._typename,
       _name: name ? name : getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,
@@ -88662,16 +88666,16 @@ function createItem(node, obj, name) {
       }
    }, volume, shape, subnodes, iseve = false;
 
-   if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
-   if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
-   if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-   if ((obj._typename.indexOf("TGeoNode") === 0) && obj.fVolume) {
-      sub._title = "node:"  + obj._typename;
-      if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
+   if (obj._typename == 'TGeoMaterial') sub._icon = 'img_geomaterial'; else
+   if (obj._typename == 'TGeoMedium') sub._icon = 'img_geomedium'; else
+   if (obj._typename == 'TGeoMixture') sub._icon = 'img_geomixture'; else
+   if ((obj._typename.indexOf('TGeoNode') === 0) && obj.fVolume) {
+      sub._title = 'node:'  + obj._typename;
+      if (obj.fTitle.length > 0) sub._title += ' ' + obj.fTitle;
       volume = obj.fVolume;
-   } else if (obj._typename.indexOf("TGeoVolume") === 0) {
+   } else if (obj._typename.indexOf('TGeoVolume') === 0) {
       volume = obj;
-   } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
+   } else if ((obj._typename == 'TEveGeoShapeExtract') || (obj._typename == 'ROOT::Experimental::REveGeoShapeExtract')) {
       iseve = true;
       shape = obj.fShape;
       subnodes = obj.fElements ? obj.fElements.arr : null;
@@ -88691,7 +88695,7 @@ function createItem(node, obj, name) {
          sub._more = true;
          sub._expand = expandGeoObject;
       } else
-      if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
+      if (shape && (shape._typename === 'TGeoCompositeShape') && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
          sub._expand = function(node /*, obj */) {
@@ -88701,7 +88705,7 @@ function createItem(node, obj, name) {
          };
       }
 
-      if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
+      if (!sub._title && (obj._typename != 'TGeoVolume')) sub._title = obj._typename;
 
       if (shape) {
          if (sub._title == '')
@@ -88709,7 +88713,7 @@ function createItem(node, obj, name) {
 
          sub._icon = getShapeIcon(shape);
       } else {
-         sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
+         sub._icon = sub._more ? 'img_geocombi' : 'img_geobbox';
       }
 
       if (volume)
@@ -88726,11 +88730,11 @@ function createItem(node, obj, name) {
    if (!sub._name)
       if (typeof node._name === 'string') {
          sub._name = node._name;
-         if (sub._name.lastIndexOf("s")===sub._name.length-1)
+         if (sub._name.lastIndexOf('s')===sub._name.length-1)
             sub._name = sub._name.slice(0, sub._name.length-1);
-         sub._name += "_" + node._childs.length;
+         sub._name += '_' + node._childs.length;
       } else {
-         sub._name = "item_" + node._childs.length;
+         sub._name = 'item_' + node._childs.length;
       }
 
    node._childs.push(sub);
@@ -88754,7 +88758,7 @@ async function drawDummy3DGeom(painter) {
 
 
    let shape = create$1('TNamed');
-   shape._typename = "TGeoBBox";
+   shape._typename = 'TGeoBBox';
    shape.fDX = max[0] - min[0];
    shape.fDY = max[1] - min[1];
    shape.fDZ = max[2] - min[2];
@@ -88762,15 +88766,15 @@ async function drawDummy3DGeom(painter) {
    shape.fShapeBits = 0;
    shape.fOrigin = [0,0,0];
 
-   let obj = create$1("TEveGeoShapeExtract");
+   let obj = create$1('TEveGeoShapeExtract');
 
    Object.assign(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
                         fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
-   let opt = "", pp = painter.getPadPainter();
+   let opt = '', pp = painter.getPadPainter();
 
    if (pp?.pad?.fFillColor && pp?.pad?.fFillStyle > 1000)
-      opt = "bkgr_" +  pp.pad.fFillColor;
+      opt = 'bkgr_' +  pp.pad.fFillColor;
 
    return TGeoPainter.draw(painter.getDom(), obj, opt)
                      .then(geop => geop.drawExtras(extra));
@@ -88852,7 +88856,7 @@ function build(obj, opt) {
          shape = obj; obj = null;
       } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
-      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
          shape = obj.fShape;
       } else if (obj._typename === 'TGeoManager') {
          obj = obj.fMasterVolume;
@@ -88868,13 +88872,13 @@ function build(obj, opt) {
          obj = buildCompositeVolume(shape);
 
       if (!obj && shape)
-         obj = Object.assign(create$1("TEveGeoShapeExtract"),
+         obj = Object.assign(create$1('TEveGeoShapeExtract'),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
 
       if (obj._typename.indexOf('TGeoVolume') === 0)
-         obj = { _typename: "TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+         obj = { _typename: 'TGeoNode', fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       clones = new ClonedNodes(obj);
       clones.setVisLevel(opt.vislevel);
@@ -89437,7 +89441,7 @@ function drawPolyMarker3D() {
    return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
 
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-      mesh.tip_name = poly.fName || "Poly3D";
+      mesh.tip_name = poly.fName || 'Poly3D';
       mesh.poly = poly;
       mesh.painter = fp;
       mesh.scale0 = 0.7*pnts.scale;
@@ -89469,10 +89473,10 @@ function drawPolyMarker3D() {
             z2: grz + this.scale0,
             color: this.tip_color,
             lines: [ this.tip_name,
-                     "pnt: " + indx/3,
-                     "x: " + p.axisAsText('x', this.poly.fP[indx]),
-                     "y: " + p.axisAsText('y', this.poly.fP[indx+1]),
-                     "z: " + p.axisAsText('z', this.poly.fP[indx+2])
+                     'pnt: ' + indx/3,
+                     'x: ' + p.axisAsText('x', this.poly.fP[indx]),
+                     'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
+                     'z: ' + p.axisAsText('z', this.poly.fP[indx+2])
                    ]
          };
       };
@@ -90115,8 +90119,8 @@ class TGraphPolargramPainter extends ObjectPainter {
 
    /** @summary Process mouse event */
    mouseEvent(kind, evnt) {
-      let layer = this.getLayerSvg("primitives_layer"),
-          interactive = layer.select(".interactive_ellipse");
+      let layer = this.getLayerSvg('primitives_layer'),
+          interactive = layer.select('.interactive_ellipse');
       if (interactive.empty()) return;
 
       let pnt = null;
@@ -90214,11 +90218,11 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       for (let n = 0; n < ticks.length; ++n) {
          let rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
-         this.draw_g.append("ellipse")
-             .attr("cx",0)
-             .attr("cy",0)
-             .attr("rx",Math.round(rx))
-             .attr("ry",Math.round(ry))
+         this.draw_g.append('ellipse')
+             .attr('cx',0)
+             .attr('cy',0)
+             .attr('rx',Math.round(rx))
+             .attr('ry',Math.round(ry))
              .style('fill', 'none')
              .call(this.lineatt.func);
 
@@ -90232,11 +90236,11 @@ class TGraphPolargramPainter extends ObjectPainter {
                let gridr = ticks[n] + dr*nn;
                if (gridr > this.scale_rmax) break;
                rx = this.r(gridr); ry = rx/this.szx*this.szy;
-               this.draw_g.append("ellipse")
-                   .attr("cx",0)
-                   .attr("cy",0)
-                   .attr("rx",Math.round(rx))
-                   .attr("ry",Math.round(ry))
+               this.draw_g.append('ellipse')
+                   .attr('cx',0)
+                   .attr('cy',0)
+                   .attr('rx',Math.round(rx))
+                   .attr('ry',Math.round(ry))
                    .style('fill', 'none')
                    .call(this.gridatt.func);
             }
@@ -90251,7 +90255,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
          this.startTextDrawing(polar.fPolarLabelFont, fontsize);
 
-         lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"];
+         lbls = (nmajor==8) ? ['0', '#frac{#pi}{4}', '#frac{#pi}{2}', '#frac{3#pi}{4}', '#pi', '#frac{5#pi}{4}', '#frac{3#pi}{2}', '#frac{7#pi}{4}'] : ['0', '#frac{2#pi}{3}', '#frac{4#pi}{3}'];
          let aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
          for (let n = 0; n < nmajor; ++n) {
@@ -90287,28 +90291,28 @@ class TGraphPolargramPainter extends ObjectPainter {
 
          TooltipHandler.assign(this);
 
-         let layer = this.getLayerSvg("primitives_layer"),
-             interactive = layer.select(".interactive_ellipse");
+         let layer = this.getLayerSvg('primitives_layer'),
+             interactive = layer.select('.interactive_ellipse');
 
          if (interactive.empty())
             interactive = layer.append('g')
-                               .classed("most_upper_primitives", true)
-                               .append("ellipse")
-                               .classed("interactive_ellipse", true)
-                               .attr("cx",0)
-                               .attr("cy",0)
+                               .classed('most_upper_primitives', true)
+                               .append('ellipse')
+                               .classed('interactive_ellipse', true)
+                               .attr('cx', 0)
+                               .attr('cy', 0)
                                .style('fill', 'none')
-                               .style("pointer-events","visibleFill")
+                               .style('pointer-events', 'visibleFill')
                                .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
                                .on('mousemove', evnt => this.mouseEvent('move', evnt))
                                .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
 
-         interactive.attr("rx", this.szx).attr("ry", this.szy);
+         interactive.attr('rx', this.szx).attr('ry', this.szy);
 
          select(interactive.node().parentNode).attr('transform', this.draw_g.attr('transform'));
 
          if (settings.Zooming && settings.ZoomWheel)
-            interactive.on("wheel", evnt => this.mouseWheel(evnt));
+            interactive.on('wheel', evnt => this.mouseWheel(evnt));
       });
    }
 
@@ -90319,7 +90323,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       if (main) {
          if (main.getObject() === polargram)
             return main;
-         throw Error("Cannot superimpose TGraphPolargram with any other drawings");
+         throw Error('Cannot superimpose TGraphPolargram with any other drawings');
       }
 
       let painter = new TGraphPolargramPainter(dom, polargram);
@@ -90348,16 +90352,16 @@ class TGraphPolarPainter extends ObjectPainter {
    /** @summary Decode options for drawing TGraphPolar */
    decodeOptions(opt) {
 
-      let d = new DrawOptions(opt || "L");
+      let d = new DrawOptions(opt || 'L');
 
       if (!this.options) this.options = {};
 
       Object.assign(this.options, {
-          mark: d.check("P"),
-          err: d.check("E"),
-          fill: d.check("F"),
-          line: d.check("L"),
-          curve: d.check("C")
+          mark: d.check('P'),
+          err: d.check('E'),
+          fill: d.check('F'),
+          line: d.check('L'),
+          curve: d.check('C')
       });
 
       this.storeDrawOpt(opt);
@@ -90378,7 +90382,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
-      let mpath = "", epath = "", lpath = "", bins = [];
+      let mpath = '', epath = '', lpath = '', bins = [];
 
       for (let n = 0; n < graph.fNpoints; ++n) {
 
@@ -90402,7 +90406,7 @@ class TGraphPolarPainter extends ObjectPainter {
          }
 
          if (this.options.line || this.options.fill) {
-            lpath += (lpath ? "L" : "M") + pos.x + "," + pos.y;
+            lpath += (lpath ? 'L' : 'M') + pos.x + ',' + pos.y;
          }
 
          if (this.options.curve) {
@@ -90414,7 +90418,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (this.options.fill && lpath)
          this.draw_g.append('svg:path')
-             .attr('d', lpath + "Z")
+             .attr('d', lpath + 'Z')
              .call(this.fillatt.func);
 
       if (this.options.line && lpath)
@@ -90425,7 +90429,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (this.options.curve && bins.length)
          this.draw_g.append('svg:path')
-                 .attr('d', buildSvgPath("bezier", bins).path)
+                 .attr('d', buildSvgPath('bezier', bins).path)
                  .style('fill', 'none')
                  .call(this.lineatt.func);
 
@@ -90443,7 +90447,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Create polargram object */
    createPolargram() {
-      let polargram = create$1("TGraphPolargram"),
+      let polargram = create$1('TGraphPolargram'),
           gr = this.getObject();
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
@@ -90487,14 +90491,14 @@ class TGraphPolarPainter extends ObjectPainter {
                   radius: match_distance
                 };
 
-      res.lines.push("r = " + main.axisAsText('r', graph.fY[bestindx]));
-      res.lines.push("phi = " + main.axisAsText("phi",graph.fX[bestindx]));
+      res.lines.push('r = ' + main.axisAsText('r', graph.fY[bestindx]));
+      res.lines.push('phi = ' + main.axisAsText('phi',graph.fX[bestindx]));
 
       if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push("error r = " + main.axisAsText('r', graph.fEY[bestindx]));
+         res.lines.push('error r = ' + main.axisAsText('r', graph.fEY[bestindx]));
 
       if (graph.fEX && graph.fEX[bestindx])
-         res.lines.push("error phi = " + main.axisAsText("phi", graph.fEX[bestindx]));
+         res.lines.push('error phi = ' + main.axisAsText('phi', graph.fEX[bestindx]));
 
       return res;
    }
@@ -90504,7 +90508,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (!this.draw_g) return;
 
-      let ttcircle = this.draw_g.select(".tooltip_bin");
+      let ttcircle = this.draw_g.select('.tooltip_bin');
 
       if (!hint) {
          ttcircle.remove();
@@ -90512,20 +90516,20 @@ class TGraphPolarPainter extends ObjectPainter {
       }
 
       if (ttcircle.empty())
-         ttcircle = this.draw_g.append("svg:ellipse")
-                             .attr('class',"tooltip_bin")
-                             .style("pointer-events",'none');
+         ttcircle = this.draw_g.append('svg:ellipse')
+                             .attr('class','tooltip_bin')
+                             .style('pointer-events','none');
 
-      hint.changed = ttcircle.property("current_bin") !== hint.binindx;
+      hint.changed = ttcircle.property('current_bin') !== hint.binindx;
 
       if (hint.changed)
-         ttcircle.attr("cx", hint.x)
-               .attr("cy", hint.y)
-               .attr("rx", Math.round(hint.radius))
-               .attr("ry", Math.round(hint.radius))
+         ttcircle.attr('cx', hint.x)
+               .attr('cy', hint.y)
+               .attr('rx', Math.round(hint.radius))
+               .attr('ry', Math.round(hint.radius))
                .style('fill', 'none')
                .style('stroke', hint.color1)
-               .property("current_bin", hint.binindx);
+               .property('current_bin', hint.binindx);
    }
 
    /** @summary Process tooltip event */
@@ -92670,7 +92674,7 @@ class TRatioPlotPainter extends ObjectPainter {
    setGridsRange(xmin, xmax) {
       let ratio = this.getObject();
       if (xmin === xmax) {
-         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad")?.getFramePainter()?.x_handle;
+         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', 'TPad')?.getFramePainter()?.x_handle;
          if (!x_handle) return;
          xmin = x_handle.full_min;
          xmax = x_handle.full_max;
@@ -92687,13 +92691,13 @@ class TRatioPlotPainter extends ObjectPainter {
       let ratio = this.getObject(),
           pp = this.getPadPainter();
 
-      let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
+      let top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', 'TPad');
       if (top_p) top_p.disablePadDrawing();
 
-      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
+      let up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', 'TPad'),
           up_main = up_p?.getMainPainter(),
           up_fp = up_p?.getFramePainter(),
-          low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
+          low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', 'TPad'),
           low_main = low_p?.getMainPainter(),
           low_fp = low_p?.getFramePainter(),
           lbl_size = 20, promise_up = Promise.resolve(true);
@@ -92707,7 +92711,7 @@ class TRatioPlotPainter extends ObjectPainter {
 
          let h = up_main.getHisto();
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
-         h.fXaxis.fTitle = ""; // do not draw X axis title
+         h.fXaxis.fTitle = ''; // do not draw X axis title
          h.fYaxis.fLabelSize = lbl_size;
          h.fYaxis.fTitleSize = lbl_size;
 
@@ -92764,7 +92768,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  let line = create$1("TLine");
+                  let line = create$1('TLine');
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;
@@ -93199,7 +93203,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
       if (!obj?.fOper || !func) return;
 
-      let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = "",
+      let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = '',
           oper, npoints, n, arr = obj.fOper.split(';');
 
       const check_attributes = kind => {
@@ -93207,7 +93211,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
          if (lastpath) {
             lastpath.attr('d', d); // flush previous
-            d = ""; lastpath = null; lastkind = 'none';
+            d = ''; lastpath = null; lastkind = 'none';
          }
 
          if (!kind) return;
@@ -93215,14 +93219,14 @@ class TWebPaintingPainter extends ObjectPainter {
          lastkind = kind;
          lastpath = this.draw_g.append('svg:path');
          switch (kind) {
-            case "f": lastpath.call(this.fillatt.func); break;
-            case "l": lastpath.call(this.lineatt.func).style('fill', 'none'); break;
-            case "m": lastpath.call(this.markeratt.func); break;
+            case 'f': lastpath.call(this.fillatt.func); break;
+            case 'l': lastpath.call(this.lineatt.func).style('fill', 'none'); break;
+            case 'm': lastpath.call(this.markeratt.func); break;
          }
       }, read_attr = (str, names) => {
-         let lastp = 0, obj = { _typename: "any" };
+         let lastp = 0, obj = { _typename: 'any' };
          for (let k = 0; k < names.length; ++k) {
-            let p = str.indexOf(":", lastp+1);
+            let p = str.indexOf(':', lastp+1);
             obj[names[k]] = parseInt(str.slice(lastp+1, (p > lastp) ? p : undefined));
             lastp = p;
          }
@@ -93232,26 +93236,26 @@ class TWebPaintingPainter extends ObjectPainter {
             oper = arr[k][0];
             switch (oper) {
                case 'z':
-                  this.createAttLine({ attr: read_attr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
+                  this.createAttLine({ attr: read_attr(arr[k], ['fLineColor', 'fLineStyle', 'fLineWidth']), force: true });
                   check_attributes();
                   continue;
                case 'y':
-                  this.createAttFill({ attr: read_attr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
+                  this.createAttFill({ attr: read_attr(arr[k], ['fFillColor', 'fFillStyle']), force: true });
                   check_attributes();
                   continue;
                case 'x':
-                  this.createAttMarker({ attr: read_attr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true });
+                  this.createAttMarker({ attr: read_attr(arr[k], ['fMarkerColor', 'fMarkerStyle', 'fMarkerSize']), force: true });
                   check_attributes();
                   continue;
-               case "o":
-                  attr = read_attr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle"]);
+               case 'o':
+                  attr = read_attr(arr[k], ['fTextColor', 'fTextFont', 'fTextSize', 'fTextAlign', 'fTextAngle']);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   check_attributes();
                   continue;
                case 'r':
-               case "b": {
+               case 'b': {
 
-                  check_attributes((oper == "b") ? "f" : "l");
+                  check_attributes((oper == 'b') ? 'f' : 'l');
 
                   let x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
@@ -93262,23 +93266,23 @@ class TWebPaintingPainter extends ObjectPainter {
 
                   continue;
                }
-               case "l":
-               case "f": {
+               case 'l':
+               case 'f': {
 
                   check_attributes(oper);
 
                   npoints = parseInt(arr[k].slice(1));
 
                   for (n = 0; n < npoints; ++n)
-                     d += ((n > 0) ? "L" : "M") +
-                           func.x(obj.fBuf[indx++]) + "," + func.y(obj.fBuf[indx++]);
+                     d += ((n > 0) ? 'L' : 'M') +
+                           func.x(obj.fBuf[indx++]) + ',' + func.y(obj.fBuf[indx++]);
 
-                  if (oper == "f") d+="Z";
+                  if (oper == 'f') d+='Z';
 
                   continue;
                }
 
-               case "m": {
+               case 'm': {
 
                   check_attributes(oper);
 
@@ -93292,7 +93296,7 @@ class TWebPaintingPainter extends ObjectPainter {
                }
 
                case 'h':
-               case "t": {
+               case 't': {
                   if (attr.fTextSize) {
 
                      check_attributes();
@@ -93307,7 +93311,7 @@ class TWebPaintingPainter extends ObjectPainter {
                      this.startTextDrawing(attr.fTextFont, height, group);
 
                      if (oper == 'h') {
-                        let res = "";
+                        let res = '';
                         for (n = 0; n < txt.length; n += 2)
                            res += String.fromCharCode(parseInt(txt.slice(n,n+2), 16));
                         txt = res;
@@ -93382,7 +93386,7 @@ function createTF2Histogram(func, hist = undefined) {
          }
 
          if (!iserr && Number.isFinite(z)) {
-            if (!hist) hist = createHistogram("TH2F", npx, npy);
+            if (!hist) hist = createHistogram('TH2F', npx, npy);
             isany = true;
             hist.setBinContent(hist.getBin(i+1,j+1), z);
          }
@@ -93390,7 +93394,7 @@ function createTF2Histogram(func, hist = undefined) {
 
    let use_saved_points = (iserr || !isany) && (nsave > 6);
    if (!use_saved_points && !hist)
-      hist = createHistogram("TH2F", npx, npy);
+      hist = createHistogram('TH2F', npx, npy);
 
    if (!iserr && isany) {
       hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
@@ -93406,7 +93410,7 @@ function createTF2Histogram(func, hist = undefined) {
       dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
       dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
-      if (!hist) hist = createHistogram("TH2F", npx+1, npy+1);
+      if (!hist) hist = createHistogram('TH2F', npx+1, npy+1);
 
       hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
       hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
@@ -93419,7 +93423,7 @@ function createTF2Histogram(func, hist = undefined) {
             hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
    }
 
-   hist.fName = "Func";
+   hist.fName = 'Func';
    hist.fTitle = func.fTitle;
    hist.fMinimum = func.fMinimum;
    hist.fMaximum = func.fMaximum;
@@ -93452,18 +93456,18 @@ function drawTF2(dom, func, opt) {
    let d = new DrawOptions(opt);
 
    if (d.empty())
-      opt = "cont3";
-   else if (d.opt === "SAME")
-      opt = "cont2 same";
+      opt = 'cont3';
+   else if (d.opt === 'SAME')
+      opt = 'cont2 same';
    else
       opt = d.opt;
 
    // workaround for old waves.C
-   if (opt == "SAMECOLORZ" || opt == "SAMECOLOR" || opt == "SAMECOLZ") opt = "SAMECOL";
+   if (opt == 'SAMECOLORZ' || opt == 'SAMECOLOR' || opt == 'SAMECOLZ') opt = 'SAMECOL';
 
-   if (opt.indexOf("SAME") == 0)
+   if (opt.indexOf('SAME') == 0)
       if (!getElementMainPainter(dom))
-         opt = "A_ADJUST_FRAME_" + opt.slice(4);
+         opt = 'A_ADJUST_FRAME_' + opt.slice(4);
 
    return TH2Painter.draw(dom, hist, opt).then(hpainter => {
 
@@ -93512,10 +93516,10 @@ class TSplinePainter extends ObjectPainter {
    eval(knot, x) {
       let dx = x - knot.fX;
 
-      if (knot._typename == "TSplinePoly3")
+      if (knot._typename == 'TSplinePoly3')
          return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
 
-      if (knot._typename == "TSplinePoly5")
+      if (knot._typename == 'TSplinePoly5')
          return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*(knot.fD + dx*(knot.fE + dx*knot.fF))));
 
       return knot.fY + dx;
@@ -93573,9 +93577,9 @@ class TSplinePainter extends ObjectPainter {
          if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      let histo = create$1("TH1I");
+      let histo = create$1('TH1I');
 
-      histo.fName = spline.fName + "_hist";
+      histo.fName = spline.fName + '_hist';
       histo.fTitle = spline.fTitle;
 
       histo.fXaxis.fXmin = xmin;
@@ -93616,17 +93620,17 @@ class TSplinePainter extends ObjectPainter {
 
       if (cleanup) {
          if (this.draw_g)
-            this.draw_g.select(".tooltip_bin").remove();
+            this.draw_g.select('.tooltip_bin').remove();
          return null;
       }
 
-      let gbin = this.draw_g.select(".tooltip_bin"),
+      let gbin = this.draw_g.select('.tooltip_bin'),
           radius = this.lineatt.width + 3;
 
       if (gbin.empty())
-         gbin = this.draw_g.append("svg:circle")
-                           .attr('class', "tooltip_bin")
-                           .style("pointer-events",'none')
+         gbin = this.draw_g.append('svg:circle')
+                           .attr('class', 'tooltip_bin')
+                           .style('pointer-events','none')
                            .attr('r', radius)
                            .style('fill', 'none')
                            .call(this.lineatt.func);
@@ -93639,27 +93643,27 @@ class TSplinePainter extends ObjectPainter {
                   lines: [],
                   exact: (knot !== null) || (Math.abs(funcs.gry(yy) - pnt.y) < radius) };
 
-      res.changed = gbin.property("current_xx") !== xx;
+      res.changed = gbin.property('current_xx') !== xx;
       res.menu = res.exact;
       res.menu_dist = Math.sqrt((res.x-pnt.x)**2 + (res.y-pnt.y)**2);
 
       if (res.changed)
-         gbin.attr("cx", Math.round(res.x))
-             .attr("cy", Math.round(res.y))
-             .property("current_xx", xx);
+         gbin.attr('cx', Math.round(res.x))
+             .attr('cy', Math.round(res.y))
+             .property('current_xx', xx);
 
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
-      res.lines.push("x = " + funcs.axisAsText('x', xx));
-      res.lines.push("y = " + funcs.axisAsText('y', yy));
+      res.lines.push('x = ' + funcs.axisAsText('x', xx));
+      res.lines.push('y = ' + funcs.axisAsText('y', yy));
       if (knot !== null) {
-         res.lines.push("knot = " + indx);
-         res.lines.push("B = " + floatToString(knot.fB, gStyle.fStatFormat));
-         res.lines.push("C = " + floatToString(knot.fC, gStyle.fStatFormat));
-         res.lines.push("D = " + floatToString(knot.fD, gStyle.fStatFormat));
+         res.lines.push('knot = ' + indx);
+         res.lines.push('B = ' + floatToString(knot.fB, gStyle.fStatFormat));
+         res.lines.push('C = ' + floatToString(knot.fC, gStyle.fStatFormat));
+         res.lines.push('D = ' + floatToString(knot.fD, gStyle.fStatFormat));
          if ((knot.fE !== undefined) && (knot.fF !== undefined)) {
-            res.lines.push("E = " + floatToString(knot.fE, gStyle.fStatFormat));
-            res.lines.push("F = " + floatToString(knot.fF, gStyle.fStatFormat));
+            res.lines.push('E = ' + floatToString(knot.fE, gStyle.fStatFormat));
+            res.lines.push('F = ' + floatToString(knot.fF, gStyle.fStatFormat));
          }
       }
 
@@ -93724,7 +93728,7 @@ class TSplinePainter extends ObjectPainter {
       if (this.options.Mark) {
 
          // for tooltips use markers only if nodes where not created
-         let path = "";
+         let path = '';
 
          this.createAttMarker({ attr: spline });
 
@@ -93774,7 +93778,7 @@ class TSplinePainter extends ObjectPainter {
          Line: d.check('L'),
          Curve: d.check('C'),
          Mark: d.check('P'),
-         Hopt: "AXIS",
+         Hopt: 'AXIS',
          second_x: false,
          second_y: false
       });
@@ -93823,7 +93827,7 @@ class TArrowPainter extends ObjectPainter {
 
    /** @summary Create line segment with rotation */
    rotate(angle, x0, y0) {
-      let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
+      let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = '';
       if ((x0 !== undefined) && (y0 !== undefined)) {
          res =  `M${Math.round(x0-dx)},${Math.round(y0-dy)}`;
       } else {
@@ -93839,7 +93843,7 @@ class TArrowPainter extends ObjectPainter {
       let angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1),
           dlen = this.wsize * Math.cos(this.angle2),
           dx = dlen*Math.cos(angle), dy = dlen*Math.sin(angle),
-          path = "";
+          path = '';
 
       if (this.beg)
          path += this.rotate(angle - Math.PI - this.angle2, this.x1, this.y1) +
@@ -93885,14 +93889,14 @@ class TArrowPainter extends ObjectPainter {
    /** @summary Finish interactive moving */
    moveEnd(not_changed) {
       if (not_changed) return;
-      let arrow = this.getObject(), exec = "";
+      let arrow = this.getObject(), exec = '';
       arrow.fX1 = this.svgToAxis('x', this.x1, this.isndc);
       arrow.fX2 = this.svgToAxis('x', this.x2, this.isndc);
       arrow.fY1 = this.svgToAxis('y', this.y1, this.isndc);
       arrow.fY2 = this.svgToAxis('y', this.y2, this.isndc);
       if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
       if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
-      this.submitCanvExec(exec + "Notify();;");
+      this.submitCanvExec(exec + 'Notify();;');
    }
 
    /** @summary Redraw arrow */
@@ -93905,18 +93909,18 @@ class TArrowPainter extends ObjectPainter {
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
 
-      if (oo.indexOf("<") == 0)
-         this.beg = (oo.indexOf("<|") == 0) ? 12 : 2;
-      if (oo.indexOf("->-") >= 0)
+      if (oo.indexOf('<') == 0)
+         this.beg = (oo.indexOf('<|') == 0) ? 12 : 2;
+      if (oo.indexOf('->-') >= 0)
          this.mid = 1;
-      else if (oo.indexOf("-|>-") >= 0)
+      else if (oo.indexOf('-|>-') >= 0)
          this.mid = 11;
-      else if (oo.indexOf("-<-") >= 0)
+      else if (oo.indexOf('-<-') >= 0)
          this.mid = 2;
-      else if (oo.indexOf("-<|-") >= 0)
+      else if (oo.indexOf('-<|-') >= 0)
          this.mid = 12;
 
-      let p1 = oo.lastIndexOf(">"), p2 = oo.lastIndexOf("|>"), len = oo.length;
+      let p1 = oo.lastIndexOf('>'), p2 = oo.lastIndexOf('|>'), len = oo.length;
       if ((p1 >= 0) && (p1 == len-1))
          this.end = ((p2 >= 0) && (p2 == len-2)) ? 11 : 1;
 
@@ -94012,7 +94016,7 @@ class TASImagePainter extends ObjectPainter {
          max = Math.max(v, max);
       }
 
-      // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
+      // does not work properly in Node.js, causes 'Maximum call stack size exceeded' error
       // min = Math.min.apply(null, obj.fImgBuf),
       // max = Math.max.apply(null, obj.fImgBuf);
 
@@ -94022,9 +94026,9 @@ class TASImagePainter extends ObjectPainter {
          rgba: this.rgba,
          getLevels() { return this.arr; },
          getPaletteColor(pal, zval) {
-            if (!this.arr || !this.rgba) return "white";
+            if (!this.arr || !this.rgba) return 'white';
             let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-            return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
+            return '#' + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
          }
       };
       for (let k = 0; k < 200; k++)
@@ -94080,7 +94084,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Produce data url from png data */
    async makeUrlFromPngBuf(obj) {
-      let buf = obj.fPngBuf, pngbuf = "";
+      let buf = obj.fPngBuf, pngbuf = '';
 
       if (typeof buf == 'string')
          pngbuf = buf;
@@ -94088,7 +94092,7 @@ class TASImagePainter extends ObjectPainter {
          for (let k = 0; k < buf.length; ++k)
             pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
 
-      return { url: "data:image/png;base64," + btoa_func(pngbuf), constRatio: true };
+      return { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: true };
    }
 
    /** @summary Draw image */
@@ -94106,7 +94110,7 @@ class TASImagePainter extends ObjectPainter {
             obj.fImageCompression = obj._blob[2];
             obj.fConstRatio = obj._blob[3];
             obj.fPalette = {
-                _typename: "TImagePalette",
+                _typename: 'TImagePalette',
                 fUniqueID: obj._blob[4],
                 fBits: obj._blob[5],
                 fNumPoints: obj._blob[6],
@@ -94123,7 +94127,7 @@ class TASImagePainter extends ObjectPainter {
 
             if ((obj.fWidth * obj.fHeight != obj.fImgBuf.length) ||
                   (obj.fPalette.fNumPoints != obj.fPalette.fPoints.length)) {
-               console.error('TASImage _blob decoding error', obj.fWidth * obj.fHeight, '!=', obj.fImgBuf.length, obj.fPalette.fNumPoints, "!=", obj.fPalette.fPoints.length);
+               console.error(`TASImage _blob decoding error ${obj.fWidth * obj.fHeight} != ${obj.fImgBuf.length} ${obj.fPalette.fNumPoints} != ${obj.fPalette.fPoints.length}`);
                delete obj.fImgBuf;
                delete obj.fPalette;
             }
@@ -94155,17 +94159,17 @@ class TASImagePainter extends ObjectPainter {
 
          if (res.url)
             this.createG(fp ? true : false)
-                .append("image")
-                .attr("href", res.url)
+                .append('image')
+                .attr('href', res.url)
                 .attr('width', rect.width)
                 .attr('height', rect.height)
-                .attr("preserveAspectRatio", res.constRatio ? null : 'none');
+                .attr('preserveAspectRatio', res.constRatio ? null : 'none');
 
          if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.setAxesRanges(create$1("TAxis"), 0, 1, create$1("TAxis"), 0, 1, null, 0, 0);
+            fp.setAxesRanges(create$1('TAxis'), 0, 1, create$1('TAxis'), 0, 1, null, 0, 0);
             fp.createXY({ ndim: 2, check_pad_range: false });
             return fp.addInteractivity();
          })
@@ -94196,10 +94200,10 @@ class TASImagePainter extends ObjectPainter {
       if (!this.draw_palette) {
          let pal = create$1('TPave');
 
-         Object.assign(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: create$1('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: 'TPave', fH: null, fAxis: create$1('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
-         pal.fAxis.fChopt = "+";
+         pal.fAxis.fChopt = '+';
 
          this.draw_palette = pal;
          this.fPalette = true; // to emulate behaviour of hist painter
@@ -94228,7 +94232,7 @@ class TASImagePainter extends ObjectPainter {
 
       if (pal_painter) {
          pal_painter.Enabled = true;
-         return pal_painter.drawPave("");
+         return pal_painter.drawPave('');
       }
 
 
@@ -94261,7 +94265,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Redraw image */
    redraw(reason) {
-      let img = this.draw_g ? this.draw_g.select("image") : null,
+      let img = this.draw_g ? this.draw_g.select('image') : null,
           fp = this.getFramePainter();
 
       if (img && !img.empty() && (reason !== 'zoom') && fp) {
@@ -94287,7 +94291,7 @@ class TASImagePainter extends ObjectPainter {
    fillToolbar() {
       let pp = this.getPadPainter(), obj = this.getObject();
       if (pp && obj?.fPalette) {
-         pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
+         pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
          pp.showPadButtons();
       }
    }
@@ -94334,17 +94338,17 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   let main_box = document.createElement("p"),
-      text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
+   let main_box = document.createElement('p'),
+      text_node = document.createTextNode('TTree draw ' + (value * 100).toFixed(ndig) + ' %  '),
       selector = this;
 
    main_box.appendChild(text_node);
-   main_box.title = "Click on element to break drawing";
+   main_box.title = 'Click on element to break drawing';
 
    main_box.onclick = function() {
       if (++selector._break < 3) {
-         main_box.title = "Tree draw will break after next I/O operation";
-         return text_node.nodeValue = "Breaking ... ";
+         main_box.title = 'Tree draw will break after next I/O operation';
+         return text_node.nodeValue = 'Breaking ... ';
       }
       selector.Abort();
       showProgress();
@@ -94388,7 +94392,7 @@ async function treeDrawProgress(obj, final) {
       if (!final) return;
       if (isBatchMode()) {
          let painter = new BasePainter(this.drawid);
-         painter.selectDom().property("_json_object_", obj);
+         painter.selectDom().property('_json_object_', obj);
          return painter;
       }
       if (typeof internals.drawInspector == 'function')
@@ -94428,7 +94432,7 @@ function createTreePlayer(player) {
    player.draw_first = true;
 
    player.configureOnline = function(itemname, url, askey, root_version, expr) {
-      this.setItemName(itemname, "", this);
+      this.setItemName(itemname, '', this);
       this.url = url;
       this.root_version = root_version;
       this.askey = askey;
@@ -94445,26 +94449,26 @@ function createTreePlayer(player) {
 
       main.select('.treedraw_more').remove(); // remove more button first
 
-      main.select(".treedraw_buttons").node().innerHTML +=
+      main.select('.treedraw_buttons').node().innerHTML +=
           'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
           'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
           `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
           `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
           '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
-      main.select('.treedraw_exe').on("click", () => this.performDraw());
-      main.select(".treedraw_cut").property("value", args?.parse_cut || '').on("change", () => this.performDraw());
-      main.select(".treedraw_opt").property("value", args?.drawopt || '').on("change", () => this.performDraw());
-      main.select(".treedraw_number").attr("value", args?.numentries || ''); // .on("change", () => this.performDraw());
-      main.select(".treedraw_first").attr("value", args?.firstentry || ''); // .on("change", () => this.performDraw());
-      main.select(".treedraw_clear").on("click", () => cleanup(this.drawid));
+      main.select('.treedraw_exe').on('click', () => this.performDraw());
+      main.select('.treedraw_cut').property('value', args?.parse_cut || '').on('change', () => this.performDraw());
+      main.select('.treedraw_opt').property('value', args?.drawopt || '').on('change', () => this.performDraw());
+      main.select('.treedraw_number').attr('value', args?.numentries || ''); // .on('change', () => this.performDraw());
+      main.select('.treedraw_first').attr('value', args?.firstentry || ''); // .on('change', () => this.performDraw());
+      main.select('.treedraw_clear').on('click', () => cleanup(this.drawid));
    };
 
    player.showPlayer = function(args) {
 
       let main = this.selectDom();
 
-      this.drawid = "jsroot_tree_player_" + internals.id_counter++ + "_draw";
+      this.drawid = 'jsroot_tree_player_' + internals.id_counter++ + '_draw';
 
       let show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
 
@@ -94485,26 +94489,26 @@ function createTreePlayer(player) {
 
       if (this.local_tree)
          main.select('.treedraw_buttons')
-             .attr('title', "Tree draw player for: " + this.local_tree.fName);
-      main.select('.treedraw_exe').on("click", () => this.performDraw());
+             .attr('title', 'Tree draw player for: ' + this.local_tree.fName);
+      main.select('.treedraw_exe').on('click', () => this.performDraw());
       main.select('.treedraw_varexp')
-          .attr("value", args?.parse_expr || this.draw_expr || "px:py")
-          .on("change", () => this.performDraw());
+          .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
+          .on('change', () => this.performDraw());
       main.select('.treedraw_varexp_info')
-          .attr('title', "Example of valid draw expressions:\n" +
-                         "  px - 1-dim draw\n" +
-                         "  px:py - 2-dim draw\n" +
-                         "  px:py:pz - 3-dim draw\n" +
-                         "  px+py:px-py - use any expressions\n" +
-                         "  px:py>>Graph - create and draw TGraph\n" +
-                         "  px:py>>dump - dump extracted variables\n" +
-                         "  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n" +
-                         "  px:py;hbins:100 - custom number of bins");
+          .attr('title', 'Example of valid draw expressions:\n' +
+                         '  px - 1-dim draw\n' +
+                         '  px:py - 2-dim draw\n' +
+                         '  px:py:pz - 3-dim draw\n' +
+                         '  px+py:px-py - use any expressions\n' +
+                         '  px:py>>Graph - create and draw TGraph\n' +
+                         '  px:py>>dump - dump extracted variables\n' +
+                         '  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n' +
+                         '  px:py;hbins:100 - custom number of bins');
 
       if (show_extra)
          this.showExtraButtons(args);
       else
-         main.select('.treedraw_more').on("click", () => this.showExtraButtons(args));
+         main.select('.treedraw_more').on('click', () => this.showExtraButtons(args));
 
       this.checkResize();
 
@@ -94514,9 +94518,9 @@ function createTreePlayer(player) {
    player.getValue = function(sel) {
       const elem = this.selectDom().select(sel);
       if (elem.empty()) return;
-      const val = elem.property("value");
+      const val = elem.property('value');
       if (val !== undefined) return val;
-      return elem.attr("value");
+      return elem.attr('value');
    };
 
    player.performLocalDraw = function() {
@@ -94530,7 +94534,7 @@ function createTreePlayer(player) {
          if (!args.cut) delete args.cut;
 
          args.drawopt = this.getValue('.treedraw_opt');
-         if (args.drawopt === "dump") { args.dump = true; args.drawopt = ""; }
+         if (args.drawopt === 'dump') { args.dump = true; args.drawopt = ''; }
          if (!args.drawopt) delete args.drawopt;
 
          args.numentries = parseInt(this.getValue('.treedraw_number'));
@@ -94550,9 +94554,9 @@ function createTreePlayer(player) {
    };
 
    player.getDrawOpt = function() {
-      let res = "player",
+      let res = 'player',
           expr = this.getValue('.treedraw_varexp');
-      if (expr) res += ":" + expr;
+      if (expr) res += ':' + expr;
       return res;
    };
 
@@ -94564,15 +94568,15 @@ function createTreePlayer(player) {
       let frame = this.selectDom(),
           url = this.url + '/exe.json.gz?compact=3&method=Draw',
           expr = this.getValue('.treedraw_varexp'),
-          hname = "h_tree_draw", option = "",
-          pos = expr.indexOf(">>");
+          hname = 'h_tree_draw', option = '',
+          pos = expr.indexOf('>>');
 
       if (pos < 0) {
-         expr += ">>" + hname;
+         expr += '>>' + hname;
       } else {
          hname = expr.slice(pos+2);
          if (hname[0] == '+') hname = hname.slice(1);
-         let pos2 = hname.indexOf("(");
+         let pos2 = hname.indexOf('(');
          if (pos2 > 0) hname = hname.slice(0, pos2);
       }
 
@@ -94586,8 +94590,8 @@ function createTreePlayer(player) {
          url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
          // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (nentries == '') nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
-         if (firstentry == '') firstentry = "0";
+         if (nentries == '') nentries = (this.root_version >= 394499) ? 'TTree::kMaxEntries': '1000000000'; // kMaxEntries available since ROOT 6.05/03
+         if (firstentry == '') firstentry = '0';
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
       } else {
          url += `&prototype="Option_t*"&opt="${expr}"`;
@@ -94606,7 +94610,7 @@ function createTreePlayer(player) {
       if (this.askey) {
          // first let read tree from the file
          this.askey = false;
-         httpRequest(this.url + "/root.json.gz?compact=3", 'text').then(submitDrawRequest);
+         httpRequest(this.url + '/root.json.gz?compact=3', 'text').then(submitDrawRequest);
       } else {
          submitDrawRequest();
       }
@@ -94626,7 +94630,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
 
    let item = hpainter.findItem(itemname),
        top = hpainter.getTopOnlineItem(item),
-       expr = "", leaf_cnt = 0;
+       expr = '', leaf_cnt = 0;
    if (!item || !top) return null;
 
    if (asleaf) {
@@ -94653,8 +94657,8 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    if (item._childs && !asleaf)
       for (let n = 0; n < item._childs.length; ++n) {
          let leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf("ROOT.TLeaf") == 0) && (leaf_cnt < 2)) {
-            if (leaf_cnt++ > 0) expr += ":";
+         if (leaf && leaf._kind && (leaf._kind.indexOf('ROOT.TLeaf') == 0) && (leaf_cnt < 2)) {
+            if (leaf_cnt++ > 0) expr += ':';
             expr += leaf._name;
          }
       }
@@ -94686,17 +94690,17 @@ async function drawTree(dom, obj, opt) {
 
    let tree = obj, args = opt;
 
-   if (obj._typename == "TBranchFunc") {
+   if (obj._typename == 'TBranchFunc') {
       // fictional object, created only in browser
-      args = { expr: '.' + obj.func + "()", branch: obj.branch };
-      if (opt && opt.indexOf("dump") == 0)
-         args.expr += ">>" + opt;
+      args = { expr: `.${obj.func}()`, branch: obj.branch };
+      if (opt && opt.indexOf('dump') == 0)
+         args.expr += '>>' + opt;
       else if (opt)
          args.expr += opt;
       tree = obj.branch.$tree;
    } else if (obj.$branch) {
       // this is drawing of the single leaf from the branch
-      args = { expr: '.' + obj.fName + (opt || ''), branch: obj.$branch };
+      args = { expr: `.${obj.fName}${opt || ''}`, branch: obj.$branch };
       if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
          // special case of size
          args.expr = opt;
@@ -94709,7 +94713,7 @@ async function drawTree(dom, obj, opt) {
 
       // if generic object tried to be drawn without specifying any options, it will be just dump
       if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
-          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = "dump";
+          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = 'dump';
 
       args = { expr: opt, branch: obj };
       tree = obj.$tree;
@@ -94751,7 +94755,7 @@ async function drawTree(dom, obj, opt) {
    args.progress = treeDrawProgress.bind(args);
 
    let pr;
-   if (args.expr === "testio") {
+   if (args.expr === 'testio') {
       args.testio = true;
       args.showProgress = showProgress;
       pr = treeIOTest(tree, args);
@@ -94791,7 +94795,7 @@ class RObjectPainter extends ObjectPainter {
          let typ1 = typeof dflt, typ2 = typeof res;
          if (typ1 == typ2) return res;
          if (typ1 == 'boolean') {
-            if (typ2 == 'string') return (res != "") && (res != "0") && (res != "no") && (res != 'off');
+            if (typ2 == 'string') return (res != '') && (res != '0') && (res != 'no') && (res != 'off');
             return !!res;
          }
          if ((typ1 == 'number') && (typ2 == 'string'))
@@ -94809,7 +94813,7 @@ class RObjectPainter extends ObjectPainter {
          for (let k = 0; k < blks.length; ++k) {
             let block = blks[k],
                 match = (this.csstype && (block.selector == this.csstype)) ||
-                        (obj.fId && (block.selector == ("#" + obj.fId))) ||
+                        (obj.fId && (block.selector == ('#' + obj.fId))) ||
                         (obj.fCssClass && (block.selector == ('.' + obj.fCssClass)));
 
             if (match && block.map && block.map.m) {
@@ -94858,7 +94862,7 @@ class RObjectPainter extends ObjectPainter {
 
          if ((val[pos] == '-') || (val[pos] == '+')) {
             if (operand) {
-               console.log("Fail to parse RPadLength " + value);
+               console.log('Fail to parse RPadLength ' + value);
                return dflt;
             }
             operand = (val[pos] == '-') ? -1 : 1;
@@ -94872,7 +94876,7 @@ class RObjectPainter extends ObjectPainter {
 
          let v = parseFloat(val.slice(0, pos));
          if (!Number.isFinite(v)) {
-            console.log("Fail to parse RPadLength " + value);
+            console.log('Fail to parse RPadLength ' + value);
             return Math.round(dflt*sizepx);
          }
 
@@ -94897,26 +94901,26 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Evaluate RColor using attribute storage and configured RStyle */
    v7EvalColor(name, dflt) {
-      let val = this.v7EvalAttr(name, "");
+      let val = this.v7EvalAttr(name, '');
       if (!val || (typeof val != 'string')) return dflt;
 
-      if (val == "auto") {
+      if (val == 'auto') {
          let pp = this.getPadPainter();
          if (pp?._auto_color_cnt !== undefined) {
             let pal = pp.getHistPalette(),
                 cnt = pp._auto_color_cnt++,
                 num = pp._num_primitives - 1;
             if (num < 2) num = 2;
-            val = pal ? pal.getColorOrdinal((cnt % num) / num) : "blue";
+            val = pal ? pal.getColorOrdinal((cnt % num) / num) : 'blue';
             if (!this._auto_colors) this._auto_colors = {};
             this._auto_colors[name] = val;
          } else if (this._auto_colors && this._auto_colors[name]) {
             val = this._auto_colors[name];
          } else {
             console.error(`Autocolor ${name} not defined yet - please check code`);
-            val = "";
+            val = '';
          }
-      } else if (val[0] == "[") {
+      } else if (val[0] == '[') {
          let ordinal = parseFloat(val.slice(1, val.length-1));
          val = 'black';
          if (Number.isFinite(ordinal)) {
@@ -94936,14 +94940,14 @@ class RObjectPainter extends ObjectPainter {
       if (typeof dflts == 'number') dflts = { size: dflts };
 
       let pp = this.getPadPainter(),
-          rfont = pp?._dfltRFont || { fFamily: "Arial", fStyle: '', fWeight: '' },
-          text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
-          text_angle  = this.v7EvalAttr(name + "_angle", 0),
-          text_align  = this.v7EvalAttr(name + "_align", dflts.align || 'none'),
-          text_color  = this.v7EvalColor(name + "_color", dflts.color || 'none'),
-          font_family = this.v7EvalAttr(name + "_font_family", rfont.fFamily || "Arial"),
-          font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ''),
-          font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || '');
+          rfont = pp?._dfltRFont || { fFamily: 'Arial', fStyle: '', fWeight: '' },
+          text_size   = this.v7EvalAttr(name + '_size', dflts.size || 12),
+          text_angle  = this.v7EvalAttr(name + '_angle', 0),
+          text_align  = this.v7EvalAttr(name + '_align', dflts.align || 'none'),
+          text_color  = this.v7EvalColor(name + '_color', dflts.color || 'none'),
+          font_family = this.v7EvalAttr(name + '_font_family', rfont.fFamily || 'Arial'),
+          font_style  = this.v7EvalAttr(name + '_font_style', rfont.fStyle || ''),
+          font_weight = this.v7EvalAttr(name + '_font_weight', rfont.fWeight || '');
 
        if (typeof text_size == 'string') text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
@@ -94960,9 +94964,9 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = "fill_";
+      if (!prefix || (typeof prefix != 'string')) prefix = 'fill_';
 
-      let color = this.v7EvalColor(prefix + 'color', ""),
+      let color = this.v7EvalColor(prefix + 'color', ''),
           pattern = this.v7EvalAttr(prefix + 'style', 0);
 
       this.createAttFill({ pattern, color,  color_as_svg: true });
@@ -94970,25 +94974,25 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.lineatt object based on v7 line attributes */
    createv7AttLine(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = "line_";
+      if (!prefix || (typeof prefix != 'string')) prefix = 'line_';
 
       let color = this.v7EvalColor(prefix + 'color', 'black'),
           width = this.v7EvalAttr(prefix + 'width', 1),
           style = this.v7EvalAttr(prefix + 'style', 1),
-          pattern = this.v7EvalAttr(prefix + "pattern");
+          pattern = this.v7EvalAttr(prefix + 'pattern');
 
       this.createAttLine({ color, width, style, pattern });
 
-      if (prefix == "border_")
-         this.lineatt.setBorder(this.v7EvalAttr(prefix + "rx", 0), this.v7EvalAttr(prefix + "ry", 0));
+      if (prefix == 'border_')
+         this.lineatt.setBorder(this.v7EvalAttr(prefix + 'rx', 0), this.v7EvalAttr(prefix + 'ry', 0));
    }
 
     /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = "marker_";
+      if (!prefix || (typeof prefix != 'string')) prefix = 'marker_';
 
       let color = this.v7EvalColor(prefix + 'color', 'black'),
-          size = this.v7EvalAttr(prefix + "size", 0.01),
+          size = this.v7EvalAttr(prefix + 'size', 0.01),
           style = this.v7EvalAttr(prefix + 'style', 1),
           refsize = 1;
       if (size < 1) {
@@ -95006,7 +95010,7 @@ class RObjectPainter extends ObjectPainter {
          return false;
 
       if (!req._typename) {
-         req._typename = "ROOT::Experimental::RChangeAttrRequest";
+         req._typename = 'ROOT::Experimental::RChangeAttrRequest';
          req.ids = [];
          req.names = [];
          req.values = [];
@@ -95025,17 +95029,17 @@ class RObjectPainter extends ObjectPainter {
 
       if (!kind)
          switch(typeof value) {
-            case 'number': kind = "double"; break;
-            case "boolean": kind = "boolean"; break;
+            case 'number': kind = 'double'; break;
+            case 'boolean': kind = 'boolean'; break;
          }
 
-      obj = { _typename: "ROOT::Experimental::RAttrMap::" };
+      obj = { _typename: 'ROOT::Experimental::RAttrMap::' };
       switch(kind) {
-         case 'none': obj._typename += "NoValue_t"; break;
-         case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
-         case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
-         case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;
-         default: obj._typename += "StringValue_t"; obj.v = (typeof value == 'string') ? value : JSON.stringify(value); break;
+         case 'none': obj._typename += 'NoValue_t'; break;
+         case 'boolean': obj._typename += 'BoolValue_t'; obj.v = value ? true : false; break;
+         case 'int': obj._typename += 'IntValue_t'; obj.v = parseInt(value); break;
+         case 'double': obj._typename += 'DoubleValue_t'; obj.v = parseFloat(value); break;
+         default: obj._typename += 'StringValue_t'; obj.v = (typeof value == 'string') ? value : JSON.stringify(value); break;
       }
 
       req.values.push(obj);
@@ -95048,7 +95052,7 @@ class RObjectPainter extends ObjectPainter {
       if (canp && req?._typename) {
          if (do_update !== undefined)
             req.update = do_update ? true : false;
-         canp.v7SubmitRequest("", req);
+         canp.v7SubmitRequest('', req);
       }
    }
 
@@ -95111,7 +95115,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary constructor */
    constructor(dom, arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.getObject() : arg1;
-      super(dom, drawable, "", cssprefix ? arg1.csstype : "axis");
+      super(dom, drawable, '', cssprefix ? arg1.csstype : 'axis');
       Object.assign(this, AxisPainterMethods);
       this.initAxisPainter();
 
@@ -95122,8 +95126,8 @@ class RAxisPainter extends RObjectPainter {
          this.cssprefix = cssprefix;
          this.rstyle = arg1.rstyle;
       } else {
-         // this.csstype = "axis";
-         this.cssprefix = "axis_";
+         // this.csstype = 'axis';
+         this.cssprefix = 'axis_';
       }
    }
 
@@ -95136,14 +95140,14 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Use in GED to identify kind of axis */
-   getAxisType() { return "RAttrAxis"; }
+   getAxisType() { return 'RAttrAxis'; }
 
    /** @summary Configure only base parameters, later same handle will be used for drawing  */
    configureZAxis(name, fp) {
       this.name = name;
-      this.kind = "normal";
+      this.kind = 'normal';
       this.log = false;
-      let _log = this.v7EvalAttr("log", 0);
+      let _log = this.v7EvalAttr('log', 0);
       if (_log) {
          this.log = true;
          this.logbase = 10;
@@ -95164,17 +95168,17 @@ class RAxisPainter extends RObjectPainter {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
-      this.kind = "normal";
+      this.kind = 'normal';
       this.vertical = vertical;
       this.log = false;
-      let _log = this.v7EvalAttr("log", 0),
-          _symlog = this.v7EvalAttr("symlog", 0);
+      let _log = this.v7EvalAttr('log', 0),
+          _symlog = this.v7EvalAttr('symlog', 0);
       this.reverse = opts.reverse || false;
 
-      if (this.v7EvalAttr("time")) {
+      if (this.v7EvalAttr('time')) {
          this.kind = 'time';
          this.timeoffset = 0;
-         let toffset = this.v7EvalAttr("timeOffset");
+         let toffset = this.v7EvalAttr('timeOffset');
          if (toffset !== undefined) {
             toffset = parseFloat(toffset);
             if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
@@ -95231,7 +95235,7 @@ class RAxisPainter extends RObjectPainter {
 
       delete this.format;// remove formatting func
 
-      let ndiv = this.v7EvalAttr("ndiv", 508);
+      let ndiv = this.v7EvalAttr('ndiv', 508);
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
@@ -95245,7 +95249,7 @@ class RAxisPainter extends RObjectPainter {
          if (this.nticks > 8) this.nticks = 8;
 
          let scale_range = this.scale_max - this.scale_min,
-             tf1 = this.v7EvalAttr("timeFormat", ""),
+             tf1 = this.v7EvalAttr('timeFormat', ''),
              tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
@@ -95262,9 +95266,9 @@ class RAxisPainter extends RObjectPainter {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
          }
-         this.noexp = this.v7EvalAttr("noexp", false);
+         this.noexp = this.v7EvalAttr('noexp', false);
          if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase == 10)) this.noexp = true;
-         this.moreloglabels = this.v7EvalAttr("moreloglbls", false);
+         this.moreloglabels = this.v7EvalAttr('moreloglbls', false);
 
          this.format = this.formatLog;
       } else if (this.kind == 'labels') {
@@ -95312,7 +95316,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Creates array with minor/middle/major ticks */
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
 
-      if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
+      if (optionNoopt && this.nticks && (this.kind == 'normal')) this.noticksopt = true;
 
       let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
@@ -95377,7 +95381,7 @@ class RAxisPainter extends RObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == "normal") && !this.log && (handle.major.length > 0)) {
+      if ((this.kind == 'normal') && !this.log && (handle.major.length > 0)) {
 
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
@@ -95416,7 +95420,7 @@ class RAxisPainter extends RObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order == 0 we should virually remove "0." and extra label on top
+            // for order == 0 we should virually remove '0.' and extra label on top
             if (!order && (this.ndig < 4))
                totallen -= (handle.major.length * 2 + 3);
 
@@ -95445,7 +95449,7 @@ class RAxisPainter extends RObjectPainter {
    isCenteredLabels() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
-      return this.v7EvalAttr("labels_center", false);
+      return this.v7EvalAttr('labels_center', false);
    }
 
    /** @summary Used to move axis labels instead of zooming
@@ -95453,20 +95457,20 @@ class RAxisPainter extends RObjectPainter {
    processLabelsMove(arg, pos) {
       if (this.optionUnlab || !this.axis_g) return false;
 
-      let label_g = this.axis_g.select(".axis_labels");
+      let label_g = this.axis_g.select('.axis_labels');
       if (!label_g || (label_g.size() != 1)) return false;
 
       if (arg == 'start') {
          // no moving without labels
          let box = label_g.node().getBBox();
 
-         label_g.append("rect")
+         label_g.append('rect')
                  .classed('zoom', true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style("cursor", "move");
+                 .style('cursor', 'move');
          if (this.vertical) {
             this.drag_pos0 = pos[0];
          } else {
@@ -95488,13 +95492,13 @@ class RAxisPainter extends RObjectPainter {
       if (!offset) label_g.attr('transform', null);
 
       if (arg == 'stop') {
-         label_g.select("rect.zoom").remove();
+         label_g.select('rect.zoom').remove();
          delete this.drag_pos0;
          if (offset != label_g.property('fix_offset')) {
             label_g.property('fix_offset', offset);
             let side = label_g.property('side') || 1;
             this.labelsOffset = offset / (this.vertical ? -side : side);
-            this.changeAxisAttr(1, "labels_offset", this.labelsOffset / this.scalingSize);
+            this.changeAxisAttr(1, 'labels_offset', this.labelsOffset / this.scalingSize);
          }
       }
 
@@ -95510,7 +95514,7 @@ class RAxisPainter extends RObjectPainter {
           drag_move = drag().subject(Object);
 
       drag_move
-         .on("start", evnt => {
+         .on('start', evnt => {
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -95521,19 +95525,19 @@ class RAxisPainter extends RObjectPainter {
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
 
-            if (this.titlePos == "center")
+            if (this.titlePos == 'center')
                curr_indx = 1;
             else
-               curr_indx = (this.titlePos == "left") ? 0 : 2;
+               curr_indx = (this.titlePos == 'left') ? 0 : 2;
 
             // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
             alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
             let off = this.vertical ? -title_length : title_length,
                 swap = this.isReverseAxis() ? 2 : 0;
-            if (this.title_align == "middle") {
+            if (this.title_align == 'middle') {
                alt_pos[swap] += off/2;
                alt_pos[2-swap] -= off/2;
-            } else if ((this.title_align == "begin") ^ this.isTitleRotated()) {
+            } else if ((this.title_align == 'begin') ^ this.isTitleRotated()) {
                alt_pos[1] -= off/2;
                alt_pos[2-swap] -= off;
             } else { // end
@@ -95543,15 +95547,15 @@ class RAxisPainter extends RObjectPainter {
 
             alt_pos[curr_indx] = this.vertical ? acc_y : acc_x;
 
-            drag_rect = title_g.append("rect")
+            drag_rect = title_g.append('rect')
                  .classed('zoom', true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style("cursor", "move");
-//                 .style("pointer-events",'none'); // let forward double click to underlying elements
-          }).on("drag", evnt => {
+                 .style('cursor', 'move');
+//                 .style('pointer-events','none'); // let forward double click to underlying elements
+          }).on('drag', evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -95577,7 +95581,7 @@ class RAxisPainter extends RObjectPainter {
                new_x = set_x; new_y = set_y; curr_indx = besti;
                title_g.attr('transform', 'translate(' + Math.round(new_x) + ',' + Math.round(new_y) +  ')');
 
-          }).on("end", evnt => {
+          }).on('end', evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -95591,20 +95595,20 @@ class RAxisPainter extends RObjectPainter {
                this.titleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side;
 
                if (curr_indx == 1) {
-                  this.titlePos = "center";
+                  this.titlePos = 'center';
                } else if (curr_indx == 0) {
-                  this.titlePos = "left";
+                  this.titlePos = 'left';
                } else {
-                  this.titlePos = "right";
+                  this.titlePos = 'right';
                }
 
-               this.changeAxisAttr(0, "title_position", this.titlePos, "title_offset", this.titleOffset / this.scalingSize);
+               this.changeAxisAttr(0, 'title_position', this.titlePos, 'title_offset', this.titleOffset / this.scalingSize);
 
                drag_rect.remove();
                drag_rect = null;
             });
 
-      title_g.style("cursor", "move").call(drag_move);
+      title_g.style('cursor', 'move').call(drag_move);
    }
 
    /** @summary checks if value inside graphical range, taking into account delta */
@@ -95632,7 +95636,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Draw axis ticks
      * @private */
    drawMainLine(axis_g) {
-      let ending = "";
+      let ending = '';
 
       if (this.endingSize && this.endingStyle) {
          let sz = (this.gr_range > 0) ? -this.endingSize : this.endingSize,
@@ -95645,7 +95649,7 @@ class RAxisPainter extends RObjectPainter {
       }
 
       axis_g.append('svg:path')
-            .attr('d',"M0,0" + (this.vertical ? 'v' : 'h') + this.gr_range + ending)
+            .attr('d','M0,0' + (this.vertical ? 'v' : 'h') + this.gr_range + ending)
             .call(this.lineatt.func)
             .style('fill', ending ? 'none' : null);
    }
@@ -95658,8 +95662,8 @@ class RAxisPainter extends RObjectPainter {
 
       this.handle.reset();
 
-      let res = "", ticks_plusminus = 0;
-      if (this.ticksSide == "both") {
+      let res = '', ticks_plusminus = 0;
+      if (this.ticksSide == 'both') {
          side = 1;
          ticks_plusminus = 1;
       }
@@ -95677,7 +95681,7 @@ class RAxisPainter extends RObjectPainter {
 
          if (this.handle.kind == 1) {
             // if not showing labels, not show large tick
-            if ((this.kind == "labels") || (this.format(this.handle.tick,true) !== null)) h1 = this.ticksSize;
+            if ((this.kind == 'labels') || (this.format(this.handle.tick,true) !== null)) h1 = this.ticksSize;
 
             if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
          }
@@ -95700,8 +95704,8 @@ class RAxisPainter extends RObjectPainter {
                .style('stroke-width', !this.ticksWidth || (this.ticksWidth == 1) ? null : this.ticksWidth);
 
        let gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
-       return { "-1": (side > 0) || ticks_plusminus ? gap : gap0,
-                 "1": (side < 0) || ticks_plusminus ? gap : gap0 };
+       return { '-1': (side > 0) || ticks_plusminus ? gap : gap0,
+                 '1': (side < 0) || ticks_plusminus ? gap : gap0 };
    }
 
    /** @summary Performs labels drawing
@@ -95710,7 +95714,7 @@ class RAxisPainter extends RObjectPainter {
       let center_lbls = this.isCenteredLabels(),
           rotate_lbls = this.labelsFont.angle != 0,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
-          label_g = axis_g.append('svg:g').attr('class',"axis_labels").property('side', side),
+          label_g = axis_g.append('svg:g').attr('class','axis_labels').property('side', side),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
           max_lbl_width = 0, max_lbl_height = 0;
 
@@ -95807,7 +95811,7 @@ class RAxisPainter extends RObjectPainter {
         if (lbls_tilt)
            label_g.selectAll('text').each(function () {
                let txt = select(this), tr = txt.attr('transform');
-               txt.attr('transform', tr + " rotate(25)").style("text-anchor", "start");
+               txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
            });
 
          if (this.vertical) {
@@ -95830,9 +95834,9 @@ class RAxisPainter extends RObjectPainter {
                                : `h${this.gr_range}v${side*sz}h${-this.gr_range}`;
          axis_g.append('svg:path')
                .attr('d',`M0,0${d}z`)
-               .attr('class', "axis_zoom")
-               .style("opacity", "0")
-               .style("cursor", "crosshair");
+               .attr('class', 'axis_zoom')
+               .style('opacity', '0')
+               .style('cursor', 'crosshair');
       }
    }
 
@@ -95846,14 +95850,14 @@ class RAxisPainter extends RObjectPainter {
       if (!this.fTitle)
          return this;
 
-      let title_g = axis_g.append('svg:g').attr('class', "axis_title"),
+      let title_g = axis_g.append('svg:g').attr('class', 'axis_title'),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
       let rotated = this.isTitleRotated();
 
       this.startTextDrawing(this.titleFont, 'font', title_g);
 
-      this.title_align = this.titleCenter ? "middle" : (this.titleOpposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
+      this.title_align = this.titleCenter ? 'middle' : (this.titleOpposite ^ (this.isReverseAxis() || rotated) ? 'begin' : 'end');
 
       if (this.vertical) {
          title_basepos = Math.round(-side*(lgaps[side]));
@@ -95887,30 +95891,30 @@ class RAxisPainter extends RObjectPainter {
 
       this.scalingSize = scalingSize || (this.vertical ? rect.width : rect.height);
 
-      this.createv7AttLine("line_");
+      this.createv7AttLine('line_');
 
-      this.optionUnlab = this.v7EvalAttr("labels_hide", false);
+      this.optionUnlab = this.v7EvalAttr('labels_hide', false);
 
-      this.endingStyle = this.v7EvalAttr("ending_style", "");
-      this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scalingSize, this.endingStyle ? 0.02 : 0));
-      this.startingSize = Math.round(this.v7EvalLength("starting_size", this.scalingSize, 0));
-      this.ticksSize = this.v7EvalLength("ticks_size", this.scalingSize, 0.02);
-      this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
-      this.ticksColor = this.v7EvalColor("ticks_color", "");
-      this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
+      this.endingStyle = this.v7EvalAttr('ending_style', '');
+      this.endingSize = Math.round(this.v7EvalLength('ending_size', this.scalingSize, this.endingStyle ? 0.02 : 0));
+      this.startingSize = Math.round(this.v7EvalLength('starting_size', this.scalingSize, 0));
+      this.ticksSize = this.v7EvalLength('ticks_size', this.scalingSize, 0.02);
+      this.ticksSide = this.v7EvalAttr('ticks_side', 'normal');
+      this.ticksColor = this.v7EvalColor('ticks_color', '');
+      this.ticksWidth = this.v7EvalAttr('ticks_width', 1);
       if (scalingSize && (this.ticksSize < 0))
          this.ticksSize = -this.ticksSize;
 
-      this.fTitle = this.v7EvalAttr("title_value", "");
+      this.fTitle = this.v7EvalAttr('title_value', '');
 
       if (this.fTitle) {
          this.titleFont = this.v7EvalFont('title', { size: 0.03 }, scalingSize || pp?.getPadHeight() || 10);
          this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
-         this.titleOffset = this.v7EvalLength("title_offset", this.scalingSize, 0);
-         this.titlePos = this.v7EvalAttr("title_position", "right");
-         this.titleCenter = (this.titlePos == "center");
-         this.titleOpposite = (this.titlePos == "left");
+         this.titleOffset = this.v7EvalLength('title_offset', this.scalingSize, 0);
+         this.titlePos = this.v7EvalAttr('title_position', 'right');
+         this.titleCenter = (this.titlePos == 'center');
+         this.titleOpposite = (this.titlePos == 'left');
       } else {
          delete this.titleFont;
          delete this.titleOffset;
@@ -95918,10 +95922,10 @@ class RAxisPainter extends RObjectPainter {
       }
 
       // TODO: remove old scaling factors for labels and ticks
-      this.labelsFont = this.v7EvalFont("labels", { size: scalingSize ? 0.05 : 0.03 });
+      this.labelsFont = this.v7EvalFont('labels', { size: scalingSize ? 0.05 : 0.03 });
       this.labelsFont.roundAngle(180);
       if (this.labelsFont.angle) this.labelsFont.angle = 270;
-      this.labelsOffset = this.v7EvalLength("labels_offset", this.scalingSize, 0);
+      this.labelsOffset = this.v7EvalLength('labels_offset', this.scalingSize, 0);
 
       if (scalingSize) this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
 
@@ -95937,11 +95941,11 @@ class RAxisPainter extends RObjectPainter {
       if (side === undefined) side = 1;
 
       if (!this.standalone) {
-         axis_g = layer.select('.' + this.name + "_container");
+         axis_g = layer.select('.' + this.name + '_container');
          if (axis_g.empty())
-            axis_g = layer.append('svg:g').attr('class', this.name + "_container");
+            axis_g = layer.append('svg:g').attr('class', this.name + '_container');
          else
-            axis_g.selectAll("*").remove();
+            axis_g.selectAll('*').remove();
       }
 
       axis_g.attr('transform', transform || null);
@@ -95950,7 +95954,7 @@ class RAxisPainter extends RObjectPainter {
       this.axis_g = axis_g;
       this.side = side;
 
-      if (this.ticksSide == "invert") side = -side;
+      if (this.ticksSide == 'invert') side = -side;
 
       if (this.standalone)
          this.drawMainLine(axis_g);
@@ -95986,12 +95990,12 @@ class RAxisPainter extends RObjectPainter {
    drawAxisAgain() {
       if (!this.axis_g || !this.side) return;
 
-      this.axis_g.selectAll("*").remove();
+      this.axis_g.selectAll('*').remove();
 
       this.extractDrawAttributes();
 
       let side = this.side;
-      if (this.ticksSide == "invert") side = -side;
+      if (this.ticksSide == 'invert') side = -side;
 
       if (this.standalone)
          this.drawMainLine(this.axis_g);
@@ -96014,15 +96018,15 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Draw axis again on opposite frame size */
    drawAxisOtherPlace(layer, transform, side, only_ticks) {
-      let axis_g = layer.select('.' + this.name + "_container2");
+      let axis_g = layer.select('.' + this.name + '_container2');
       if (axis_g.empty())
-         axis_g = layer.append('svg:g').attr('class',this.name + "_container2");
+         axis_g = layer.append('svg:g').attr('class',this.name + '_container2');
       else
-         axis_g.selectAll("*").remove();
+         axis_g.selectAll('*').remove();
 
       axis_g.attr('transform', transform || null);
 
-      if (this.ticksSide == "invert") side = -side;
+      if (this.ticksSide == 'invert') side = -side;
 
       // draw ticks again
       let tgaps = this.drawTicks(axis_g, side, false);
@@ -96038,7 +96042,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Change zooming in standalone mode */
    zoomStandalone(min,max) {
-      this.changeAxisAttr(1, "zoomMin", min, "zoomMax", max);
+      this.changeAxisAttr(1, 'zoomMin', min, 'zoomMax', max);
    }
 
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
@@ -96048,21 +96052,21 @@ class RAxisPainter extends RObjectPainter {
           pp   = this.getPadPainter(),
           pos  = pp.getCoordinate(drawable.fPos),
           len  = pp.getPadLength(drawable.fVertical, drawable.fLength),
-          reverse = this.v7EvalAttr("reverse", false),
+          reverse = this.v7EvalAttr('reverse', false),
           labels_len = drawable.fLabels.length,
-          min = (labels_len > 0) ? 0 : this.v7EvalAttr("min", 0),
-          max = (labels_len > 0) ? labels_len : this.v7EvalAttr("max", 100);
+          min = (labels_len > 0) ? 0 : this.v7EvalAttr('min', 0),
+          max = (labels_len > 0) ? labels_len : this.v7EvalAttr('max', 100);
 
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len -= pp.getPadHeight();
 
-      let smin = this.v7EvalAttr("zoomMin"),
-          smax = this.v7EvalAttr("zoomMax");
+      let smin = this.v7EvalAttr('zoomMin'),
+          smax = this.v7EvalAttr('zoomMax');
       if (smin === smax) {
          smin = min; smax = max;
       }
 
-      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse, labels: labels_len > 0 });
+      this.configureAxis('axis', min, max, smin, smax, drawable.fVertical, undefined, len, { reverse, labels: labels_len > 0 });
 
       this.createG();
 
@@ -96074,13 +96078,13 @@ class RAxisPainter extends RObjectPainter {
 
       return promise.then(() => {
          if (settings.ContextMenu)
-            this.draw_g.on("contextmenu", evnt => {
+            this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                createMenu$1(evnt, this).then(menu => {
-                 menu.add("header:RAxisDrawable");
-                 menu.add("Unzoom", () => this.zoomStandalone());
-                 this.fillAxisContextMenu(menu, "");
+                 menu.add('header:RAxisDrawable');
+                 menu.add('Unzoom', () => this.zoomStandalone());
+                 this.fillAxisContextMenu(menu, '');
                  menu.show();
                });
             });
@@ -96088,10 +96092,10 @@ class RAxisPainter extends RObjectPainter {
          addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
                                 only_move: true, redraw: d => this.positionChanged(d) });
 
-         this.draw_g.on("dblclick", () => this.zoomStandalone());
+         this.draw_g.on('dblclick', () => this.zoomStandalone());
 
          if (settings.ZoomWheel)
-            this.draw_g.on("wheel", evnt => {
+            this.draw_g.on('wheel', evnt => {
                evnt.stopPropagation();
                evnt.preventDefault();
 
@@ -96138,60 +96142,60 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Change axis log scale kind */
    changeAxisLog(arg) {
-      if ((this.kind == "labels") || (this.kind == 'time')) return;
+      if ((this.kind == 'labels') || (this.kind == 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (Number.isFinite(arg)) this.changeAxisAttr(2, "log", arg, "symlog", 0);
+      if (Number.isFinite(arg)) this.changeAxisAttr(2, 'log', arg, 'symlog', 0);
    }
 
    /** @summary Provide context menu for axis */
    fillAxisContextMenu(menu, kind) {
 
-      if (kind) menu.add("Unzoom", () => this.getFramePainter().unzoom(kind));
+      if (kind) menu.add('Unzoom', () => this.getFramePainter().unzoom(kind));
 
-      menu.add("sub:Log scale", () => this.changeAxisLog('toggle'));
-      menu.addchk(!this.log && !this.symlog, "linear", 0, arg => this.changeAxisLog(arg));
-      menu.addchk(this.log && !this.symlog && (this.logbase == 10), "log10", () => this.changeAxisLog(10));
-      menu.addchk(this.log && !this.symlog && (this.logbase == 2), "log2", () => this.changeAxisLog(2));
-      menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", () => this.changeAxisLog(Math.exp(1)));
-      menu.addchk(!this.log && this.symlog, "symlog", 0, () =>
-         menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v)));
-      menu.add("endsub:");
+      menu.add('sub:Log scale', () => this.changeAxisLog('toggle'));
+      menu.addchk(!this.log && !this.symlog, 'linear', 0, arg => this.changeAxisLog(arg));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 10), 'log10', () => this.changeAxisLog(10));
+      menu.addchk(this.log && !this.symlog && (this.logbase == 2), 'log2', () => this.changeAxisLog(2));
+      menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, 'ln', () => this.changeAxisLog(Math.exp(1)));
+      menu.addchk(!this.log && this.symlog, 'symlog', 0, () =>
+         menu.input('set symlog constant', this.symlog || 10, 'float').then(v => this.changeAxisAttr(2,'symlog', v)));
+      menu.add('endsub:');
 
-      menu.add("Divisions", () => menu.input("Set axis devisions", this.v7EvalAttr("ndiv", 508), "int").then(val => this.changeAxisAttr(2, "ndiv", val)));
+      menu.add('Divisions', () => menu.input('Set axis devisions', this.v7EvalAttr('ndiv', 508), 'int').then(val => this.changeAxisAttr(2, 'ndiv', val)));
 
-      menu.add("sub:Ticks");
-      menu.addRColorMenu('color', this.ticksColor, col => this.changeAxisAttr(1, "ticks_color", col));
-      menu.addSizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scalingSize, sz => this.changeAxisAttr(1, "ticks_size", sz));
-      menu.addSelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.changeAxisAttr(1, "ticks_side", side));
-      menu.add("endsub:");
+      menu.add('sub:Ticks');
+      menu.addRColorMenu('color', this.ticksColor, col => this.changeAxisAttr(1, 'ticks_color', col));
+      menu.addSizeMenu('size', 0, 0.05, 0.01, this.ticksSize/this.scalingSize, sz => this.changeAxisAttr(1, 'ticks_size', sz));
+      menu.addSelectMenu('side', ['normal', 'invert', 'both'], this.ticksSide, side => this.changeAxisAttr(1, 'ticks_side', side));
+      menu.add('endsub:');
 
       if (!this.optionUnlab && this.labelsFont) {
-         menu.add("sub:Labels");
-         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scalingSize,
-                         offset => this.changeAxisAttr(1, "labels_offset", offset));
+         menu.add('sub:Labels');
+         menu.addSizeMenu('offset', -0.05, 0.05, 0.01, this.labelsOffset/this.scalingSize,
+                         offset => this.changeAxisAttr(1, 'labels_offset', offset));
          menu.addRAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 },
-               change => this.changeAxisAttr(1, "labels_" + change.name, change.value));
-         menu.addchk(this.labelsFont.angle, "rotate", res => this.changeAxisAttr(1, "labels_angle", res ? 180 : 0));
-         menu.add("endsub:");
+               change => this.changeAxisAttr(1, 'labels_' + change.name, change.value));
+         menu.addchk(this.labelsFont.angle, 'rotate', res => this.changeAxisAttr(1, 'labels_angle', res ? 180 : 0));
+         menu.add('endsub:');
       }
 
-      menu.add("sub:Title", () => menu.input("Enter axis title", this.fTitle).then(t => this.changeAxisAttr(1, "title_value", t)));
+      menu.add('sub:Title', () => menu.input('Enter axis title', this.fTitle).then(t => this.changeAxisAttr(1, 'title_value', t)));
 
       if (this.fTitle) {
-         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scalingSize,
-                           offset => this.changeAxisAttr(1, "title_offset", offset));
+         menu.addSizeMenu('offset', -0.05, 0.05, 0.01, this.titleOffset/this.scalingSize,
+                           offset => this.changeAxisAttr(1, 'title_offset', offset));
 
-         menu.addSelectMenu('position', ["left", "center", "right"], this.titlePos,
-                            pos => this.changeAxisAttr(1, "title_position", pos));
+         menu.addSelectMenu('position', ['left', 'center', 'right'], this.titlePos,
+                            pos => this.changeAxisAttr(1, 'title_position', pos));
 
-         menu.addchk(this.isTitleRotated(), "rotate", flag => this.changeAxisAttr(1, "title_angle", flag ? 180 : 0));
+         menu.addchk(this.isTitleRotated(), 'rotate', flag => this.changeAxisAttr(1, 'title_angle', flag ? 180 : 0));
 
-         menu.addRAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => this.changeAxisAttr(1, "title_" + change.name, change.value));
+         menu.addRAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => this.changeAxisAttr(1, 'title_' + change.name, change.value));
       }
 
-      menu.add("endsub:");
+      menu.add('endsub:');
       return true;
    }
 
@@ -97317,7 +97321,7 @@ class RFramePainter extends RObjectPainter {
          menu.addchk(this.x_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksX", 1));
          menu.addchk(this.x_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksX", 2));
          menu.addchk(this.x_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksX", 3));
-         menu.add("endsub:");
+         menu.add('endsub:');
        }
       if (this.y_handle && !this.y2_handle) {
          menu.add("sub:Ticks y");
@@ -97325,7 +97329,7 @@ class RFramePainter extends RObjectPainter {
          menu.addchk(this.y_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksY", 1));
          menu.addchk(this.y_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksY", 2));
          menu.addchk(this.y_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksY", 3));
-         menu.add("endsub:");
+         menu.add('endsub:');
        }
 
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
@@ -98952,8 +98956,6 @@ class RPadPainter extends RObjectPainter {
 
 } // class RPadPainter
 
-/// Connections handling to RWebWindow
-
 /**
  * @summary Class emulating web socket with long-poll http requests
  *
@@ -98969,37 +98971,37 @@ class LongPollSocket {
       this.raw = _raw;
       this.args = _args;
 
-      this.nextRequest("", "connect");
+      this.nextRequest('', 'connect');
    }
 
    /** @summary Submit next request */
    nextRequest(data, kind) {
-      let url = this.path, reqmode = "buf", post = null;
-      if (kind === "connect") {
-         url += this.raw ? "?raw_connect" : "?txt_connect";
-         if (this.args) url += "&" + this.args;
+      let url = this.path, reqmode = 'buf', post = null;
+      if (kind === 'connect') {
+         url += this.raw ? '?raw_connect' : '?txt_connect';
+         if (this.args) url += '&' + this.args;
          console.log(`longpoll connect ${url} raw = ${this.raw}`);
-         this.connid = "connect";
-      } else if (kind === "close") {
+         this.connid = 'connect';
+      } else if (kind === 'close') {
          if ((this.connid === null) || (this.connid === 'close')) return;
-         url += "?connection=" + this.connid + "&close";
-         this.connid = "close";
-         reqmode = "text;sync"; // use sync mode to close connection before browser window closed
+         url += `?connection=${this.connid}&close`;
+         this.connid = 'close';
+         reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
          if (!browser$1.qt5) console.error('No connection');
          return;
       } else {
-         url += "?connection=" + this.connid;
-         if (kind === "dummy") url += "&dummy";
+         url += '?connection=' + this.connid;
+         if (kind === 'dummy') url += '&dummy';
       }
 
       if (data) {
          if (this.raw) {
             // special workaround to avoid POST request, use base64 coding
-            url += "&post=" + btoa_func(data);
+            url += '&post=' + btoa_func(data);
          } else {
             // send data with post request - most efficient way
-            reqmode = "postbuf";
+            reqmode = 'postbuf';
             post = data;
          }
       }
@@ -99015,57 +99017,57 @@ class LongPollSocket {
 
          if (this.handle.raw) {
             // raw mode - all kind of reply data packed into binary buffer
-            // first 4 bytes header "txt:" or "bin:"
-            // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
+            // first 4 bytes header 'txt:' or 'bin:'
+            // after the 'bin:' there is length of optional text argument like 'bin:14  :optional_text'
             // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
 
-            let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
+            let str = '', i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
                if (!browser$1.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
             while (i < 4) str += String.fromCharCode(u8Arr[i++]);
-            if (str != "txt:") {
-               str = "";
+            if (str != 'txt:') {
+               str = '';
                while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':'))
                   str += String.fromCharCode(u8Arr[i++]);
                ++i;
                offset = i + parseInt(str.trim());
             }
 
-            str = "";
+            str = '';
             while (i < offset) str += String.fromCharCode(u8Arr[i++]);
 
             if (str) {
-               if (str == "<<nope>>")
+               if (str == '<<nope>>')
                   this.handle.processRequest(-1111);
                else
                    this.handle.processRequest(str);
             }
             if (offset < u8Arr.length)
                this.handle.processRequest(res, offset);
-         } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
+         } else if (this.getResponseHeader('Content-Type') == 'application/x-binary') {
             // binary reply with optional header
-            let extra_hdr = this.getResponseHeader("LongpollHeader");
+            let extra_hdr = this.getResponseHeader('LongpollHeader');
             if (extra_hdr) this.handle.processRequest(extra_hdr);
             this.handle.processRequest(res, 0);
          } else {
             // text reply
             if (res && typeof res !== 'string') {
-               let str = "", u8Arr = new Uint8Array(res);
+               let str = '', u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
                res = str;
             }
-            if (res == "<<nope>>")
+            if (res == '<<nope>>')
                this.handle.processRequest(-1111);
             else
                this.handle.processRequest(res);
          }
       }, function(/*err,status*/) {
          // console.log(`Get request error ${err} status ${status}`);
-         this.handle.processRequest(null, "error");
+         this.handle.processRequest(null, 'error');
       }, true).then(req => {
          req.handle = this;
          if (!this.req)
@@ -99078,22 +99080,22 @@ class LongPollSocket {
    processRequest(res, _offset) {
       if (res === null) {
          if (typeof this.onerror === 'function')
-            this.onerror("receive data with connid " + (this.connid || "---"));
-         if ((_offset == "error") && (typeof this.onclose === 'function'))
-            this.onclose("force_close");
+            this.onerror('receive data with connid ' + (this.connid || '---'));
+         if ((_offset == 'error') && (typeof this.onclose === 'function'))
+            this.onclose('force_close');
          this.connid = null;
          return;
       } else if (res === -1111) {
-         res = "";
+         res = '';
       }
 
       let dummy_tmout = 5;
 
-      if (this.connid === "connect") {
+      if (this.connid === 'connect') {
          if (!res) {
             this.connid = null;
             if (typeof this.onerror === 'function')
-               this.onerror("connection rejected");
+               this.onerror('connection rejected');
             return;
          }
 
@@ -99137,7 +99139,7 @@ class FileDumpSocket {
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      httpRequest("protocol.json", 'text').then(res => this.getProtocol(res));
+      httpRequest('protocol.json', 'text').then(res => this.getProtocol(res));
    }
 
    /** @summary Get stored protocol */
@@ -99150,7 +99152,7 @@ class FileDumpSocket {
 
    /** @summary Emulate send - just cound operation */
    send(/* str */) {
-      if (this.protocol[this.cnt] == "send") {
+      if (this.protocol[this.cnt] == 'send') {
          this.cnt++;
          setTimeout(() => this.nextOperation(), 10);
       }
@@ -99165,11 +99167,11 @@ class FileDumpSocket {
       if (this.wait_for_file) return;
       let fname = this.protocol[this.cnt];
       if (!fname) return;
-      if (fname == "send") return; // waiting for send
+      if (fname == 'send') return; // waiting for send
       // console.log(`getting file ${fname} wait ${this.wait_for_file}`);
       this.wait_for_file = true;
       this.cnt++;
-      httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : 'text')).then(res => {
+      httpRequest(fname, (fname.indexOf('.bin') > 0 ? 'buf' : 'text')).then(res => {
          this.wait_for_file = false;
          if (!res) return;
          if (this.receiver.provideData)
@@ -99290,7 +99292,7 @@ class WebWindowHandle {
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
          let front = this.msgqueue.shift();
-         this.invokeReceiver(false, "onWebsocketMsg", front.msg, front.len);
+         this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
          delete this.msgqueue;
@@ -99300,7 +99302,7 @@ class WebWindowHandle {
    /** @summary Close connection */
    close(force) {
       if (this.master) {
-         this.master.send("CLOSECH=" + this.channelid, 0);
+         this.master.send('CLOSECH=' + this.channelid, 0);
          delete this.master.channels[this.channelid];
          delete this.master;
          return;
@@ -99340,13 +99342,13 @@ class WebWindowHandle {
 
       if (this.cansend <= 0) console.error(`should be queued before sending cansend: ${this.cansend}`);
 
-      let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
+      let prefix = `${this.ackn}:${this.cansend}:${chid}:`;
       this.ackn = 0;
       this.cansend--; // decrease number of allowed send packets
 
       this._websocket.send(prefix + msg);
 
-      if ((this.kind === "websocket") || (this.kind === "longpoll")) {
+      if ((this.kind === 'websocket') || (this.kind === 'longpoll')) {
          if (this.timerid) clearTimeout(this.timerid);
          this.timerid = setTimeout(() => this.keepAlive(), 10000);
       }
@@ -99377,7 +99379,7 @@ class WebWindowHandle {
      * @private */
    keepAlive() {
       delete this.timerid;
-      this.send("KEEPALIVE", 0);
+      this.send('KEEPALIVE', 0);
    }
 
    /** @summary Method open channel, which will share same connection, but can be used independently from main
@@ -99386,7 +99388,7 @@ class WebWindowHandle {
       if (this.master)
          return master.createChannel();
 
-      let channel = new WebWindowHandle("channel", this.credits);
+      let channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
 
       if (!this.channels) {
@@ -99419,8 +99421,8 @@ class WebWindowHandle {
       if (!relative_path || !this.kind || !this.href) return this.href;
 
       let addr = this.href;
-      if (relative_path.indexOf("../") == 0) {
-         let ddd = addr.lastIndexOf("/",addr.length-2);
+      if (relative_path.indexOf('../') == 0) {
+         let ddd = addr.lastIndexOf('/',addr.length-2);
          addr = addr.slice(0,ddd) + relative_path.slice(2);
       } else {
          addr += relative_path;
@@ -99436,10 +99438,10 @@ class WebWindowHandle {
       this.close();
       if (!href && this.href) href = this.href;
 
-      let ntry = 0, args = (this.key ? ("key=" + this.key) : '');
+      let ntry = 0, args = (this.key ? ('key=' + this.key) : '');
       if (this.token) {
-         if (args) args += "&";
-         args += "token=" + this.token;
+         if (args) args += '&';
+         args += 'token=' + this.token;
       }
 
       const retry_open = first_time => {
@@ -99455,8 +99457,8 @@ class WebWindowHandle {
 
          if (!href) {
             href = window.location.href;
-            if (href && href.indexOf("#") > 0) href = href.slice(0, href.indexOf("#"));
-            if (href && href.lastIndexOf("/") > 0) href = href.slice(0, href.lastIndexOf("/") + 1);
+            if (href && href.indexOf('#') > 0) href = href.slice(0, href.indexOf('#'));
+            if (href && href.lastIndexOf('/') > 0) href = href.slice(0, href.lastIndexOf('/') + 1);
          }
          this.href = href;
          ntry++;
@@ -99467,13 +99469,13 @@ class WebWindowHandle {
 
          let path = href;
 
-         if (this.kind == "file") {
-            path += "root.filedump";
+         if (this.kind == 'file') {
+            path += 'root.filedump';
             this._websocket = new FileDumpSocket(this);
             console.log(`configure protocol log ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
-            path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
-            if (args) path += "?" + args;
+            path = path.replace('http://', 'ws://').replace('https://', 'wss://') + 'root.websocket';
+            if (args) path += '?' + args;
             console.log(`configure websocket ${path}`);
             this._websocket = new WebSocket(path);
          } else {
@@ -99490,8 +99492,8 @@ class WebWindowHandle {
 
             let key = this.key || '';
 
-            this.send("READY=" + key, 0); // need to confirm connection
-            this.invokeReceiver(false, "onWebsocketOpened");
+            this.send('READY=' + key, 0); // need to confirm connection
+            this.invokeReceiver(false, 'onWebsocketOpened');
          };
 
          this._websocket.onmessage = e => {
@@ -99520,11 +99522,11 @@ class WebWindowHandle {
 
             if (typeof msg != 'string') return console.log(`unsupported message kind: ${typeof msg}`);
 
-            let i1 = msg.indexOf(":"),
+            let i1 = msg.indexOf(':'),
                credit = parseInt(msg.slice(0, i1)),
-               i2 = msg.indexOf(":", i1 + 1),
+               i2 = msg.indexOf(':', i1 + 1),
                // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
-               i3 = msg.indexOf(":", i2 + 1),
+               i3 = msg.indexOf(':', i2 + 1),
                chid = parseInt(msg.slice(i2 + 1, i3));
 
             this.ackn++;            // count number of received packets,
@@ -99534,13 +99536,13 @@ class WebWindowHandle {
 
             if (chid == 0) {
                console.log(`GET chid=0 message ${msg}`);
-               if (msg == "CLOSE") {
+               if (msg == 'CLOSE') {
                   this.close(true); // force closing of socket
-                  this.invokeReceiver(true, "onWebsocketClosed");
+                  this.invokeReceiver(true, 'onWebsocketClosed');
                }
-            } else if (msg == "$$binary$$") {
+            } else if (msg == '$$binary$$') {
                this.next_binary = chid;
-            } else if (msg == "$$nullbinary$$") {
+            } else if (msg == '$$nullbinary$$') {
                this.provideData(chid, new ArrayBuffer(0), 0);
             } else {
                this.provideData(chid, msg);
@@ -99552,17 +99554,17 @@ class WebWindowHandle {
 
          this._websocket.onclose = arg => {
             delete this._websocket;
-            if ((this.state > 0) || (arg === "force_close")) {
+            if ((this.state > 0) || (arg === 'force_close')) {
                console.log('websocket closed');
                this.state = 0;
-               this.invokeReceiver(true, "onWebsocketClosed");
+               this.invokeReceiver(true, 'onWebsocketClosed');
             }
          };
 
          this._websocket.onerror = err => {
             console.log(`websocket error ${err} state ${this.state}`);
             if (this.state > 0) {
-               this.invokeReceiver(true, "onWebsocketError", err);
+               this.invokeReceiver(true, 'onWebsocketError', err);
                this.state = 0;
             }
          };
@@ -100472,12 +100474,12 @@ RCanvasPainter: RCanvasPainter
 function drawText() {
    let text      = this.getObject(),
        pp        = this.getPadPainter(),
-       onframe   = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-       clipping  = onframe ? this.v7EvalAttr("clipping", false) : false,
+       onframe   = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+       clipping  = onframe ? this.v7EvalAttr('clipping', false) : false,
        p         = pp.getCoordinate(text.fPos, onframe),
        textFont  = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 });
 
-   this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+   this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
    this.startTextDrawing(textFont, 'font');
 
@@ -100492,12 +100494,12 @@ function drawLine() {
 
     let line     = this.getObject(),
         pp       = this.getPadPainter(),
-        onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-        clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+        onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
         p1       = pp.getCoordinate(line.fP1, onframe),
         p2       = pp.getCoordinate(line.fP2, onframe);
 
-    this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
     this.createv7AttLine();
 
@@ -100513,14 +100515,14 @@ function drawBox() {
 
    let box      = this.getObject(),
        pp       = this.getPadPainter(),
-       onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-       clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+       onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+       clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
        p1       = pp.getCoordinate(box.fP1, onframe),
        p2       = pp.getCoordinate(box.fP2, onframe);
 
-   this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+   this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
-   this.createv7AttLine("border_");
+   this.createv7AttLine('border_');
 
    this.createv7AttFill();
 
@@ -100536,11 +100538,11 @@ function drawBox() {
 function drawMarker() {
     let marker   = this.getObject(),
         pp       = this.getPadPainter(),
-        onframe  = this.v7EvalAttr("onFrame", false) ? pp.getFramePainter() : null,
-        clipping = onframe ? this.v7EvalAttr("clipping", false) : false,
+        onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
         p        = pp.getCoordinate(marker.fP, onframe);
 
-    this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
+    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
     this.createv7AttMarker();
 
@@ -100565,7 +100567,7 @@ class RPalettePainter extends RObjectPainter {
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
-         addMethods(pal, "ROOT::Experimental::RPalette");
+         addMethods(pal, 'ROOT::Experimental::RPalette');
 
       return pal;
    }
@@ -100591,8 +100593,8 @@ class RPalettePainter extends RObjectPainter {
           rect         = framep.getFrameRect(),
           pad_width    = this.getPadPainter().getPadWidth(),
           pad_height   = this.getPadPainter().getPadHeight(),
-          visible      = this.v7EvalAttr("visible", true),
-          vertical     = this.v7EvalAttr("vertical", true),
+          visible      = this.v7EvalAttr('visible', true),
+          vertical     = this.v7EvalAttr('vertical', true),
           palette_x, palette_y, palette_width, palette_height;
 
       if (drag) {
@@ -100601,22 +100603,22 @@ class RPalettePainter extends RObjectPainter {
 
          let changes = {};
          if (vertical) {
-            this.v7AttrChange(changes, "margin", (drag.x - rect.x - rect.width) / pad_width);
+            this.v7AttrChange(changes, 'margin', (drag.x - rect.x - rect.width) / pad_width);
             this.v7AttrChange(changes, 'width', palette_width / pad_width);
          } else {
-            this.v7AttrChange(changes, "margin", (drag.y - rect.y - rect.height) / pad_width);
+            this.v7AttrChange(changes, 'margin', (drag.y - rect.y - rect.height) / pad_width);
             this.v7AttrChange(changes, 'width', palette_height / pad_height);
          }
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
           if (vertical) {
-            let margin = this.v7EvalLength("margin", pad_width, 0.02);
+            let margin = this.v7EvalLength('margin', pad_width, 0.02);
             palette_x = Math.round(rect.x + rect.width + margin);
             palette_width = this.v7EvalLength('width', pad_width, 0.05);
             palette_y = rect.y;
             palette_height = rect.height;
           } else {
-            let margin = this.v7EvalLength("margin", pad_height, 0.02);
+            let margin = this.v7EvalLength('margin', pad_height, 0.02);
             palette_x = rect.x;
             palette_width = rect.width;
             palette_y = Math.round(rect.y + rect.height + margin);
@@ -100627,7 +100629,7 @@ class RPalettePainter extends RObjectPainter {
           this.draw_g.attr('transform',`translate(${palette_x},${palette_y})`);
       }
 
-      let g_btns = this.draw_g.select(".colbtns");
+      let g_btns = this.draw_g.select('.colbtns');
       if (g_btns.empty())
          g_btns = this.draw_g.append('svg:g').attr('class', 'colbtns');
       else
@@ -100656,18 +100658,18 @@ class RPalettePainter extends RObjectPainter {
                      .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                      .style('fill', col)
                      .style('stroke', col)
-                     .property("fill0", col)
-                     .property("fill1", rgb(col).darker(0.5).toString());
+                     .property('fill0', col)
+                     .property('fill1', rgb(col).darker(0.5).toString());
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
                select(this).transition().duration(100).style('fill', select(this).property('fill1'));
             }).on('mouseout', function() {
                select(this).transition().duration(100).style('fill', select(this).property('fill0'));
-            }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+            }).append('svg:title').text(contour[i].toFixed(2) + ' - ' + contour[i+1].toFixed(2));
 
          if (settings.Zooming)
-            r.on("dblclick", () => framep.unzoom('z'));
+            r.on('dblclick', () => framep.unzoom('z'));
       }
 
       framep.z_handle.maxTickSize = Math.round(palette_width*0.3);
@@ -100680,12 +100682,12 @@ class RPalettePainter extends RObjectPainter {
       return promise.then(() => {
 
          if (settings.ContextMenu)
-            this.draw_g.on("contextmenu", evnt => {
+            this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                createMenu$1(evnt, this).then(menu => {
-                  menu.add("header:Palette");
-                  menu.addchk(vertical, "Vertical", flag => { this.v7SetAttr("vertical", flag); this.redrawPad(); });
+                  menu.add('header:Palette');
+                  menu.addchk(vertical, 'Vertical', flag => { this.v7SetAttr('vertical', flag); this.redrawPad(); });
                   framep.z_handle.fillAxisContextMenu(menu, 'z');
                   menu.show();
                });
@@ -100728,8 +100730,8 @@ class RPalettePainter extends RObjectPainter {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
-            select(window).on("mousemove.colzoomRect", null)
-                             .on("mouseup.colzoomRect", null);
+            select(window).on('mousemove.colzoomRect', null)
+                             .on('mouseup.colzoomRect', null);
             zoom_rect.remove();
             zoom_rect = null;
             doing_zoom = false;
@@ -100753,29 +100755,29 @@ class RPalettePainter extends RObjectPainter {
             zoom_rect_visible = false;
             moving_labels = false;
             zoom_rect = g_btns
-                 .append("svg:rect")
+                 .append('svg:rect')
                  .attr('class', 'zoom')
-                 .attr('id', "colzoomRect")
+                 .attr('id', 'colzoomRect')
                  .style('display', 'none');
             if (vertical)
                zoom_rect.attr('x', 0).attr('width', palette_width).attr('y', sel1).attr('height', 1);
             else
                zoom_rect.attr('x', sel1).attr('width', 1).attr('y', 0).attr('height', palette_height);
 
-            select(window).on("mousemove.colzoomRect", moveRectSel)
-                             .on("mouseup.colzoomRect", endRectSel, true);
+            select(window).on('mousemove.colzoomRect', moveRectSel)
+                             .on('mouseup.colzoomRect', endRectSel, true);
 
             setTimeout(() => {
                if (!zoom_rect_visible && doing_zoom)
                   moving_labels = framep.z_handle.processLabelsMove('start', last_pos);
             }, 500);
          },  assignHandlers = () => {
-            this.draw_g.selectAll(".axis_zoom, .axis_labels")
-                       .on("mousedown", startRectSel)
-                       .on("dblclick", () => framep.unzoom('z'));
+            this.draw_g.selectAll('.axis_zoom, .axis_labels')
+                       .on('mousedown', startRectSel)
+                       .on('dblclick', () => framep.unzoom('z'));
 
             if (settings.ZoomWheel)
-               this.draw_g.on("wheel", evnt => {
+               this.draw_g.on('wheel', evnt => {
                   evnt.stopPropagation();
                   evnt.preventDefault();
 
@@ -100796,7 +100798,7 @@ class RPalettePainter extends RObjectPainter {
 
    /** @summary draw RPalette object */
    static async draw(dom, palette, opt) {
-      let painter = new RPalettePainter(dom, palette, opt, "palette");
+      let painter = new RPalettePainter(dom, palette, opt, 'palette');
       return ensureRCanvas(painter, false).then(() => {
          painter.createG(); // just create container, real drawing will be done by histogram
          return painter;
@@ -103312,7 +103314,7 @@ class RH2Painter$2 extends RHistPainter {
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
       for (let k = 0; k < kinds.length; ++k)
          menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-      menu.add("endsub:");
+      menu.add('endsub:');
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
