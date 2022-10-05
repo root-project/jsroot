@@ -53,15 +53,15 @@ class TWebPaintingPainter extends ObjectPainter {
          while (++k < arr.length) {
             oper = arr[k][0];
             switch (oper) {
-               case "z":
+               case 'z':
                   this.createAttLine({ attr: read_attr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
                   check_attributes();
                   continue;
-               case "y":
+               case 'y':
                   this.createAttFill({ attr: read_attr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
                   check_attributes();
                   continue;
-               case "x":
+               case 'x':
                   this.createAttMarker({ attr: read_attr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true });
                   check_attributes();
                   continue;

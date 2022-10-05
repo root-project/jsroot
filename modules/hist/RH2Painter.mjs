@@ -50,7 +50,7 @@ class RH2Painter extends RH2Painter2D {
       if (is_main) {
          assignFrame3DMethods(main);
          pr = main.create3DScene(this.options.Render3D).then(() => {
-            main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
+            main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, null, this.zmin, this.zmax);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
          });

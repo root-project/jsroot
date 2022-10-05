@@ -17,7 +17,7 @@ class TArrowPainter extends ObjectPainter {
          dx = -dx; dy = -dy;
       }
       res += `l${Math.round(dx)},${Math.round(dy)}`;
-      if (x0 && (y0 === undefined)) res += "z";
+      if (x0 && (y0 === undefined)) res += 'z';
       return res;
    }
 
@@ -73,10 +73,10 @@ class TArrowPainter extends ObjectPainter {
    moveEnd(not_changed) {
       if (not_changed) return;
       let arrow = this.getObject(), exec = "";
-      arrow.fX1 = this.svgToAxis("x", this.x1, this.isndc);
-      arrow.fX2 = this.svgToAxis("x", this.x2, this.isndc);
-      arrow.fY1 = this.svgToAxis("y", this.y1, this.isndc);
-      arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
+      arrow.fX1 = this.svgToAxis('x', this.x1, this.isndc);
+      arrow.fX2 = this.svgToAxis('x', this.x2, this.isndc);
+      arrow.fY1 = this.svgToAxis('y', this.y1, this.isndc);
+      arrow.fY2 = this.svgToAxis('y', this.y2, this.isndc);
       if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
       if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
       this.submitCanvExec(exec + "Notify();;");
@@ -111,10 +111,10 @@ class TArrowPainter extends ObjectPainter {
 
       this.createG();
 
-      this.x1 = this.axisToSvg("x", arrow.fX1, this.isndc, true);
-      this.y1 = this.axisToSvg("y", arrow.fY1, this.isndc, true);
-      this.x2 = this.axisToSvg("x", arrow.fX2, this.isndc, true);
-      this.y2 = this.axisToSvg("y", arrow.fY2, this.isndc, true);
+      this.x1 = this.axisToSvg('x', arrow.fX1, this.isndc, true);
+      this.y1 = this.axisToSvg('y', arrow.fY1, this.isndc, true);
+      this.x2 = this.axisToSvg('x', arrow.fX2, this.isndc, true);
+      this.y2 = this.axisToSvg('y', arrow.fY2, this.isndc, true);
 
       let elem = this.draw_g.append('svg:path')
                      .attr('d', this.createPath())

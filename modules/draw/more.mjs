@@ -43,8 +43,8 @@ async function drawText() {
 
    this.draw_g.attr("transform", null); // remove transofrm from interactive changes
 
-   this.pos_x = this.axisToSvg("x", pos_x, this.isndc);
-   this.pos_y = this.axisToSvg("y", pos_y, this.isndc);
+   this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
+   this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
 
    let arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
 
@@ -73,8 +73,8 @@ async function drawText() {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
             let text = this.getObject();
-            text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
-            text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
+            text.fY = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
             this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
          }
 
@@ -101,7 +101,7 @@ async function drawTLine(dom, obj) {
 
       this.draw_g
           .append('svg:path')
-          .attr('d', `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},${this.axisToSvg("y", line.fY2, isndc)}`)
+          .attr('d', `M${this.axisToSvg('x', line.fX1, isndc)},${this.axisToSvg('y', line.fY1, isndc)}L${this.axisToSvg('x', line.fX2, isndc)},${this.axisToSvg('y', line.fY2, isndc)}`)
           .call(lineatt.func);
 
       return this;
@@ -233,10 +233,10 @@ function drawPie() {
    // create svg:g container for ellipse drawing
    this.createG();
 
-   let xc = this.axisToSvg("x", pie.fX),
-       yc = this.axisToSvg("y", pie.fY),
-       rx = this.axisToSvg("x", pie.fX + pie.fRadius) - xc,
-       ry = this.axisToSvg("y", pie.fY + pie.fRadius) - yc;
+   let xc = this.axisToSvg('x', pie.fX),
+       yc = this.axisToSvg('y', pie.fY),
+       rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
+       ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
    this.draw_g.attr("transform",`translate(${xc},${yc})`);
 
@@ -278,10 +278,10 @@ function drawBox() {
    // create svg:g container for box drawing
    this.createG();
 
-   let x1 = this.axisToSvg("x", box.fX1),
-       x2 = this.axisToSvg("x", box.fX2),
-       y1 = this.axisToSvg("y", box.fY1),
-       y2 = this.axisToSvg("y", box.fY2),
+   let x1 = this.axisToSvg('x', box.fX1),
+       x2 = this.axisToSvg('x', box.fX2),
+       y1 = this.axisToSvg('y', box.fY1),
+       y2 = this.axisToSvg('y', box.fY2),
        xx = Math.min(x1,x2), yy = Math.min(y1,y2),
        ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
@@ -324,8 +324,8 @@ function drawMarker() {
    // create svg:g container for box drawing
    this.createG();
 
-   let x = this.axisToSvg("x", marker.fX, isndc),
-       y = this.axisToSvg("y", marker.fY, isndc),
+   let x = this.axisToSvg('x', marker.fX, isndc),
+       y = this.axisToSvg('y', marker.fY, isndc),
        path = att.create(x,y);
 
    if (path)

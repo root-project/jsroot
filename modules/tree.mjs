@@ -405,7 +405,7 @@ class TDrawVariable {
    constructor (globals) {
       this.globals = globals;
 
-      this.code = "";
+      this.code = '';
       this.brindex = []; // index of used branches from selector
       this.branches = []; // names of branches in target object
       this.brarray = []; // array specifier for each branch
@@ -420,18 +420,18 @@ class TDrawVariable {
    parse(tree, selector, code, only_branch, branch_mode) {
 
       const is_start_symbol = symb => {
-         if ((symb >= "A") && (symb <= "Z")) return true;
-         if ((symb >= "a") && (symb <= "z")) return true;
-         return (symb === "_");
+         if ((symb >= 'A') && (symb <= 'Z')) return true;
+         if ((symb >= 'a') && (symb <= 'z')) return true;
+         return (symb === '_');
       }, is_next_symbol = symb => {
          if (is_start_symbol(symb)) return true;
-         if ((symb >= "0") && (symb <= "9")) return true;
+         if ((symb >= '0') && (symb <= '9')) return true;
          return false;
       };
 
       if (!code) code = ""; // should be empty string at least
 
-      this.code = (only_branch ? only_branch.fName : '') + code;
+      this.code = (only_branch?.fName ?? '') + code;
 
       let pos = 0, pos2 = 0, br = null;
       while ((pos < code.length) || only_branch) {
@@ -445,7 +445,7 @@ class TDrawVariable {
             // first try to find branch
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
-            if (code[pos2] == "$") {
+            if (code[pos2] == '$') {
                let repl = "";
                switch (code.slice(pos, pos2)) {
                   case "LocalEntry":
@@ -759,7 +759,7 @@ class TDrawSelector extends TSelector {
                this.hist_nbins = parseInt(parvalue);
                if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
                break;
-            case "drawopt":
+            case 'drawopt':
                args.drawopt = parvalue;
                break;
             case "graph":

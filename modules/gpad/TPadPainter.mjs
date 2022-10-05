@@ -97,12 +97,12 @@ let PadButtonsHandler = {
 
       if (this._fast_drawing) {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), "enlargePad");
-         ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
+         ctrl.attr("name", "Enlarge").attr('x', 0).attr('y', 0)
              .on("click", evnt => this.clickPadButton("enlargePad", evnt));
       } else {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
 
-         ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
+         ctrl.attr("name", "Toggle").attr('x', 0).attr('y', 0)
              .property("buttons_state", (settings.ToolBar !== 'popup'))
              .on("click", () => toggleButtonsVisibility(this, 'toggle'))
              .on("mouseenter", () => toggleButtonsVisibility(this, 'enable'))
@@ -119,9 +119,9 @@ let PadButtonsHandler = {
                         item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ''));
 
             if (group.property('vertical'))
-                svg.attr("x", y).attr("y", x);
+                svg.attr('x', y).attr('y', x);
             else
-               svg.attr("x", x).attr("y", y);
+               svg.attr('x', x).attr('y', y);
 
             svg.attr("name", item.funcname)
                .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
@@ -141,9 +141,9 @@ let PadButtonsHandler = {
       this.alignButtons(group, this.getPadWidth(), this.getPadHeight());
 
       if (group.property('vertical'))
-         ctrl.attr("y", x);
+         ctrl.attr('y', x);
       else if (!group.property('leftside'))
-         ctrl.attr("x", x);
+         ctrl.attr('x', x);
    },
 
    assign(painter) {
@@ -479,14 +479,14 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (this._fixed_size) {
-         svg.attr("x", 0)
-            .attr("y", 0)
+         svg.attr('x', 0)
+            .attr('y', 0)
             .attr('width', rect.width)
             .attr('height', rect.height)
             .style('position', 'absolute');
       } else {
-        svg.attr("x", 0)
-           .attr("y", 0)
+        svg.attr('x', 0)
+           .attr('y', 0)
            .style('width', '100%')
            .style('height', '100%')
            .style('position', 'absolute')
@@ -627,7 +627,7 @@ class TPadPainter extends ObjectPainter {
          svg_pad = svg_can.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
-             .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
+             .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
          if (!isBatchMode())
@@ -658,8 +658,8 @@ class TPadPainter extends ObjectPainter {
       svg_pad.style("display", pad_visible ? null : "none")
              .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
-             .attr("x", x)        // due to svg
-             .attr("y", y)        // due to svg
+             .attr('x', x)        // due to svg
+             .attr('y', y)        // due to svg
              .attr('width', w)    // due to svg
              .attr('height', h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
@@ -993,7 +993,7 @@ class TPadPainter extends ObjectPainter {
 
          function SetPadField(arg) {
             this.pad[arg.slice(1)] = parseInt(arg[0]);
-            this.interactiveRedraw("pad", arg.slice(1));
+            this.interactiveRedraw('pad', arg.slice(1));
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
@@ -1036,9 +1036,9 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk(this.enlargeMain('state') == 'on', "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk(this.enlargeMain('state') == 'on', "Enlarge " + (this.iscan ? "canvas" : 'pad'), () => this.enlargePad());
 
-      let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
+      let fname = this.this_pad_name || (this.iscan ? "canvas" : 'pad');
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", this.iscan, arg));
       menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", this.iscan, arg));
 
@@ -1680,7 +1680,7 @@ class TPadPainter extends ObjectPainter {
            evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
-       if (name == "pad")
+       if (name == 'pad')
           return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
@@ -1713,7 +1713,7 @@ class TPadPainter extends ObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
+         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + "." + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
@@ -1785,8 +1785,8 @@ class TPadPainter extends ObjectPainter {
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
-                        .attr("x", sz2.x)
-                        .attr("y", sz2.y)
+                        .attr('x', sz2.x)
+                        .attr('y', sz2.y)
                         .attr('width', canvas.width)
                         .attr('height', canvas.height)
                         .attr("href", dataUrl);
@@ -1893,9 +1893,9 @@ class TPadPainter extends ObjectPainter {
             menu.add("header:Menus");
 
             if (this.iscan)
-               menu.add("Canvas", "pad", this.itemContextMenu);
+               menu.add("Canvas", 'pad', this.itemContextMenu);
             else
-               menu.add("Pad", "pad", this.itemContextMenu);
+               menu.add("Pad", 'pad', this.itemContextMenu);
 
             if (this.getFramePainter())
                menu.add("Frame", "frame", this.itemContextMenu);

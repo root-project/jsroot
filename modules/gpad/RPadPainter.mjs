@@ -20,13 +20,13 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
-      super(dom, pad, "", "pad");
+      super(dom, pad, "", 'pad');
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
       if (!this.iscan && (pad !== null)) {
          if (pad.fObjectID)
-            this.this_pad_name = "pad" + pad.fObjectID; // use objectid as padname
+            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as padname
          else
             this.this_pad_name = "ppp" + internals.id_counter++; // artificical name
       }
@@ -335,14 +335,14 @@ class RPadPainter extends RObjectPainter {
       }
 
       if (this._fixed_size) {
-         svg.attr("x", 0)
-            .attr("y", 0)
+         svg.attr('x', 0)
+            .attr('y', 0)
             .attr('width', rect.width)
             .attr('height', rect.height)
             .style('position', 'absolute');
       } else {
-        svg.attr("x", 0)
-           .attr("y", 0)
+        svg.attr('x', 0)
+           .attr('y', 0)
            .style('width', '100%')
            .style('height', '100%')
            .style('position', 'absolute')
@@ -455,7 +455,7 @@ class RPadPainter extends RObjectPainter {
          svg_pad = svg_parent.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
-             .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
+             .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
          if (!isBatchMode())
@@ -487,8 +487,8 @@ class RPadPainter extends RObjectPainter {
       svg_pad.style("display", pad_visible ? null : "none")
              .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
-             .attr("x", x)    // due to svg
-             .attr("y", y)   // due to svg
+             .attr('x', x)    // due to svg
+             .attr('y', y)   // due to svg
              .attr('width', w)    // due to svg
              .attr('height', h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
@@ -656,9 +656,9 @@ class RPadPainter extends RObjectPainter {
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state') == 'on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
+         menu.addchk((this.enlargeMain('state') == 'on'), "Enlarge " + (this.iscan ? "canvas" : 'pad'), () => this.enlargePad());
 
-      let fname = this.this_pad_name || (this.iscan ? "canvas" : "pad");
+      let fname = this.this_pad_name || (this.iscan ? "canvas" : 'pad');
       menu.add(`Save as ${fname}.png`, fname+".png", arg => this.saveAs("png", false, arg));
       menu.add(`Save as ${fname}.svg`, fname+".svg", arg => this.saveAs("svg", false, arg));
 
@@ -1161,7 +1161,7 @@ class RPadPainter extends RObjectPainter {
            evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
-       if (name == "pad")
+       if (name == 'pad')
           return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
@@ -1194,7 +1194,7 @@ class RPadPainter extends RObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.iscan ? "canvas" : "pad")) + "." + kind;
+         filename = (this.this_pad_name || (this.iscan ? "canvas" : 'pad')) + "." + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
@@ -1261,8 +1261,8 @@ class RPadPainter extends RObjectPainter {
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
-                        .attr("x", sz2.x)
-                        .attr("y", sz2.y)
+                        .attr('x', sz2.x)
+                        .attr('y', sz2.y)
                         .attr('width', canvas.width)
                         .attr('height', canvas.height)
                         .attr("href", dataUrl);
@@ -1366,9 +1366,9 @@ class RPadPainter extends RObjectPainter {
             menu.add("header:Menus");
 
             if (this.iscan)
-               menu.add("Canvas", "pad", this.itemContextMenu);
+               menu.add("Canvas", 'pad', this.itemContextMenu);
             else
-               menu.add("Pad", "pad", this.itemContextMenu);
+               menu.add("Pad", 'pad', this.itemContextMenu);
 
             if (this.getFramePainter())
                menu.add("Frame", "frame", this.itemContextMenu);

@@ -38,8 +38,8 @@ class TH1Painter extends THistPainter {
       if (!when_axis_changed)
          this.extractAxesProperties(1);
 
-      let left = this.getSelectIndex("x", "left"),
-          right = this.getSelectIndex("x", "right");
+      let left = this.getSelectIndex('x', "left"),
+          right = this.getSelectIndex('x', "right");
 
       if (when_axis_changed) {
          if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
@@ -153,8 +153,8 @@ class TH1Painter extends THistPainter {
    countStat(cond) {
       let profile = this.isTProfile(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
-          left = this.getSelectIndex("x", "left"),
-          right = this.getSelectIndex("x", "right"),
+          left = this.getSelectIndex('x', "left"),
+          right = this.getSelectIndex('x', "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
@@ -181,7 +181,7 @@ class TH1Painter extends THistPainter {
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed("x") && (histo.fTsumw > 0)) {
+      if (!fp.isAxisZoomed('x') && (histo.fTsumw > 0)) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -280,8 +280,8 @@ class TH1Painter extends THistPainter {
 
       this.createG(true);
 
-      let left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           show_text = this.options.Text, text_col, text_angle, text_size,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
@@ -376,8 +376,8 @@ class TH1Painter extends THistPainter {
    drawFilledErrors(funcs) {
       this.createG(true);
 
-      let left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
@@ -426,8 +426,8 @@ class TH1Painter extends THistPainter {
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
          return this.drawFilledErrors(pmain, funcs);
 
-      let left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 2),
+      let left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 2),
           histo = this.getHisto(),
           want_tooltip = !isBatchMode() && settings.Tooltip,
           xaxis = histo.fXaxis,
@@ -746,13 +746,13 @@ class TH1Painter extends THistPainter {
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
           x2 = histo.fXaxis.GetBinLowEdge(bin+2),
           cont = histo.getBinContent(bin+1),
-          xlbl = this.getAxisBinTip("x", histo.fXaxis, bin);
+          xlbl = this.getAxisBinTip('x', histo.fXaxis, bin);
 
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
-         tips.push("y = " + funcs.axisAsText("y", cont));
+         tips.push("y = " + funcs.axisAsText('y', cont));
          if (this.options.Error) {
             if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
@@ -781,8 +781,8 @@ class TH1Painter extends THistPainter {
       const pmain = this.getFramePainter(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
             histo = this.getHisto(),
-            left = this.getSelectIndex("x", "left", -1),
-            right = this.getSelectIndex("x", "right", 2);
+            left = this.getSelectIndex('x', "left", -1),
+            right = this.getSelectIndex('x', "right", 2);
       let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           findbin = null, show_rect,
@@ -957,9 +957,9 @@ class TH1Painter extends THistPainter {
          res.changed = ttrect.property("current_bin") !== findbin;
 
          if (res.changed)
-            ttrect.attr("x", funcs.swap_xy ? gry1 : grx1)
+            ttrect.attr('x', funcs.swap_xy ? gry1 : grx1)
                   .attr('width', funcs.swap_xy ? gry2-gry1 : grx2-grx1)
-                  .attr("y", funcs.swap_xy ? grx1 : gry1)
+                  .attr('y', funcs.swap_xy ? grx1 : gry1)
                   .attr('height', funcs.swap_xy ? grx2-grx1 : gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
@@ -1019,7 +1019,7 @@ class TH1Painter extends THistPainter {
             this.fillatt.change(5,1001);
 
          // redraw all objects in pad, inform dependent objects
-         this.interactiveRedraw("pad", "drawopt");
+         this.interactiveRedraw('pad', 'drawopt');
       });
 
       if (!this.snapid && !this.isTProfile())
@@ -1070,13 +1070,13 @@ class TH1Painter extends THistPainter {
 
       this.scanContent();
 
-      this.interactiveRedraw("pad");
+      this.interactiveRedraw('pad');
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 1),
           dist = right - left,
           histo = this.getHisto();
 
@@ -1104,9 +1104,9 @@ class TH1Painter extends THistPainter {
    canZoomInside(axis,min,max) {
       let histo = this.getHisto();
 
-      if ((axis == "x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
+      if ((axis == 'x') && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
 
-      if ((axis == "y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis == 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
       return false;
    }

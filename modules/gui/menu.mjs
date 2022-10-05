@@ -483,7 +483,7 @@ class JSRootMenu {
              name = " " + fullname.split(" ")[0] + " ";
          if (handler.weight) { name = "b" + name; fullname += " " + handler.weight; }
          if (handler.style) { name = handler.style[0] + name; fullname += " " + handler.style; }
-         txt.attr("x", 1).attr("y",15).text(name);
+         txt.attr('x', 1).attr('y',15).text(name);
          handler.setFont(txt);
 
          let rect = (value != n*10+2) ? "" : "<rect width='90' height='18' style='fill:none;stroke:black'></rect>",
@@ -579,52 +579,52 @@ class JSRootMenu {
    addTAxisMenu(EAxisBits, painter, faxis, kind) {
       this.add("Divisions", () => this.input("Set Ndivisions", faxis.fNdivisions, "int", 0).then(val => {
          faxis.fNdivisions = val;
-         painter.interactiveRedraw("pad", `exec:SetNdivisions(${val})`, kind);
+         painter.interactiveRedraw('pad', `exec:SetNdivisions(${val})`, kind);
       }));
 
       this.add("sub:Labels");
       this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), "Center",
-            arg => { faxis.InvertBit(EAxisBits.kCenterLabels); painter.interactiveRedraw("pad", `exec:CenterLabels(${arg})`, kind); });
+            arg => { faxis.InvertBit(EAxisBits.kCenterLabels); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
       this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), "Rotate",
-            arg => { faxis.InvertBit(EAxisBits.kLabelsVert); painter.interactiveRedraw("pad", `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
+            arg => { faxis.InvertBit(EAxisBits.kLabelsVert); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
       this.addColorMenu("Color", faxis.fLabelColor,
-            arg => { faxis.fLabelColor = arg; painter.interactiveRedraw("pad", getColorExec(arg, "SetLabelColor"), kind); });
+            arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetLabelColor"), kind); });
       this.addSizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-            arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw("pad", `exec:SetLabelOffset(${arg})`, kind); } );
+            arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); } );
       this.addSizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-            arg => { faxis.fLabelSize = arg; painter.interactiveRedraw("pad", `exec:SetLabelSize(${arg})`, kind); } );
+            arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); } );
       this.add("endsub:");
       this.add("sub:Title");
       this.add("SetTitle", () => {
          this.input("Enter axis title", faxis.fTitle).then(t => {
             faxis.fTitle = t;
-            painter.interactiveRedraw("pad", `exec:SetTitle("${t}")`, kind);
+            painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
          });
       });
       this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), "Center",
-            arg => { faxis.InvertBit(EAxisBits.kCenterTitle); painter.interactiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
+            arg => { faxis.InvertBit(EAxisBits.kCenterTitle); painter.interactiveRedraw('pad', `exec:CenterTitle(${arg})`, kind); });
       this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), "Opposite",
              () => { faxis.InvertBit(EAxisBits.kOppositeTitle); painter.redrawPad(); });
       this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), "Rotate",
-            arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw("pad", `exec:RotateTitle(${arg})`, kind); });
+            arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw('pad', `exec:RotateTitle(${arg})`, kind); });
       this.addColorMenu("Color", faxis.fTitleColor,
-            arg => { faxis.fTitleColor = arg; painter.interactiveRedraw("pad", getColorExec(arg, "SetTitleColor"), kind); });
+            arg => { faxis.fTitleColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetTitleColor"), kind); });
       this.addSizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                      arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw("pad", `exec:SetTitleOffset(${arg})`, kind); });
+                      arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
       this.addSizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-                      arg => { faxis.fTitleSize = arg; painter.interactiveRedraw("pad", `exec:SetTitleSize(${arg})`, kind); });
+                      arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.add("endsub:");
       this.add("sub:Ticks");
       if (faxis._typename == "TGaxis") {
          this.addColorMenu("Color", faxis.fLineColor,
-                  arg => { faxis.fLineColor = arg; painter.interactiveRedraw("pad"); });
+                  arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad'); });
          this.addSizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickSize,
-                  arg => { faxis.fTickSize = arg; painter.interactiveRedraw("pad"); } );
+                  arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad'); } );
       } else {
          this.addColorMenu("Color", faxis.fAxisColor,
-                  arg => { faxis.fAxisColor = arg; painter.interactiveRedraw("pad", getColorExec(arg, "SetAxisColor"), kind); });
+                  arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, "SetAxisColor"), kind); });
          this.addSizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                  arg => { faxis.fTickLength = arg; painter.interactiveRedraw("pad", `exec:SetTickLength(${arg})`, kind); });
+                  arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       }
       this.add("endsub:");
    }

@@ -455,7 +455,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Converts x or y coordinate into pad SVG coordinates.
      * @desc Only can be used for painting in the pad, means CreateG() should be called without arguments
-     * @param {string} axis - name like "x" or "y"
+     * @param {string} axis - name like 'x' or 'y'
      * @param {number} value - axis value to convert.
      * @param {boolean} ndc - is value in NDC coordinates
      * @param {boolean} [noround] - skip rounding
@@ -468,7 +468,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
      * @desc Reverse transformation for {@link ObjectPainter#axisToSvg}
-     * @param {string} axis - name like "x" or "y"
+     * @param {string} axis - name like 'x' or 'y'
      * @param {number} coord - graphics coordiante.
      * @param {boolean} ndc - kind of return value
      * @return {number} value of requested coordiantes
@@ -482,11 +482,11 @@ class ObjectPainter extends BasePainter {
       }
 
       let pp = this.getPadPainter(),
-          value = !pp ? 0 : ((axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth()),
+          value = !pp ? 0 : ((axis == 'y') ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth()),
           pad = (ndc || !pp) ? null : pp.getRootPad(true);
 
       if (pad) {
-         if (axis == "y") {
+         if (axis == 'y') {
             value = pad.fY1 + value * (pad.fY2 - pad.fY1);
             if (pad.fLogy) value = Math.pow(10, value);
          } else {
@@ -696,7 +696,7 @@ class ObjectPainter extends BasePainter {
       if ((typeof info == 'string') && (info.indexOf("exec:") != 0))
          reason = info;
 
-      if (arg == "pad")
+      if (arg == 'pad')
          res = this.redrawPad(reason);
       else if (arg !== false)
          res = this.redraw(reason);
@@ -1217,7 +1217,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Configure user-defined context menu for the object
      * @desc fillmenu_func will be called when context menu is actiavted
      * Arguments fillmenu_func are (menu,kind)
-     * First is menu object, second is object subelement like axis "x" or "y"
+     * First is menu object, second is object subelement like axis 'x' or 'y'
      * Function should return promise with menu when items are filled
      * @param {function} fillmenu_func - function to fill custom context menu for oabject */
    configureUserContextMenu(fillmenu_func) {

@@ -69,9 +69,9 @@ class RPavePainter extends RObjectPainter {
       this.draw_g.attr("transform", `translate(${pave_x},${pave_y})`);
 
       this.draw_g.append("svg:rect")
-                 .attr("x", 0)
+                 .attr('x', 0)
                  .attr('width', pave_width)
-                 .attr("y", 0)
+                 .attr('y', 0)
                  .attr('height', pave_height)
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
@@ -475,7 +475,7 @@ class RHistStatsPainter extends RPavePainter {
 
    /** @summary Redraw stats box */
    async redraw(reason) {
-      if (reason && (typeof reason == 'string') && (reason.indexOf("zoom") == 0) && this.v7NormalMode()) {
+      if (reason && (typeof reason == 'string') && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.getObject().fShowMask // lines to show in stat box

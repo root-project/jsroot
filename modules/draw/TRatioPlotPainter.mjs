@@ -89,7 +89,7 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p._ratio_configured = true;
          low_main.options.Axis = 0; // draw both axes
          let h = low_main.getHisto();
-         h.fXaxis.fTitle = "x";
+         h.fXaxis.fTitle = 'x';
          h.fXaxis.fLabelSize = lbl_size;
          h.fXaxis.fTitleSize = lbl_size;
          h.fYaxis.fLabelSize = lbl_size;

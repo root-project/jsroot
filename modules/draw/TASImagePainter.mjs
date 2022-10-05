@@ -16,7 +16,7 @@ class TASImagePainter extends ObjectPainter {
    decodeOptions(opt) {
       this.options = { Zscale: false };
 
-      if (opt && (opt.indexOf("z") >= 0)) this.options.Zscale = true;
+      if (opt && (opt.indexOf('z') >= 0)) this.options.Zscale = true;
    }
 
    /** @summary Create RGBA buffers */
@@ -224,9 +224,9 @@ class TASImagePainter extends ObjectPainter {
       if (!obj?.fImgBuf)
          return false;
 
-      if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;
+      if ((axis == 'x') && ((max - min) * obj.fWidth > 3)) return true;
 
-      if ((axis == "y") && ((max - min) * obj.fHeight > 3)) return true;
+      if ((axis == 'y') && ((max - min) * obj.fHeight > 3)) return true;
 
       return false;
    }
@@ -309,7 +309,7 @@ class TASImagePainter extends ObjectPainter {
       let img = this.draw_g ? this.draw_g.select("image") : null,
           fp = this.getFramePainter();
 
-      if (img && !img.empty() && (reason !== "zoom") && fp) {
+      if (img && !img.empty() && (reason !== 'zoom') && fp) {
          img.attr('width', fp.getFrameWidth()).attr('height', fp.getFrameHeight());
       } else {
          return this.drawImage();
@@ -321,7 +321,7 @@ class TASImagePainter extends ObjectPainter {
       if (!this.isMainPainter()) return false;
 
       switch(funcname) {
-         case "ToggleColorZ": this.toggleColz(); break;
+         case 'ToggleColorZ': this.toggleColz(); break;
          default: return false;
       }
 

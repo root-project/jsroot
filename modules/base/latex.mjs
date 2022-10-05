@@ -448,8 +448,8 @@ function parseLatex(node, arg, label, curr) {
             let rect = !isNodeJs() && !settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
                           { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
 
-            if (curr.x) elem.attr("x", curr.x);
-            if (curr.y) elem.attr("y", curr.y);
+            if (curr.x) elem.attr('x', curr.x);
+            if (curr.y) elem.attr('y', curr.y);
 
             // values used for superscript
             curr.last_y1 = curr.y - rect.height*0.8;
@@ -1273,13 +1273,13 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 
    if (arg.valign === null) arg.valign = (font_size - mh) / 2;
 
-   let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
+   let sign = { x: 1, y: 1 }, nx = 'x', ny = 'y';
    if (arg.rotate == 180) {
       sign.x = sign.y = -1;
    } else if ((arg.rotate == 270) || (arg.rotate == 90)) {
       sign.x = (arg.rotate == 270) ? -1 : 1;
       sign.y = -sign.x;
-      nx = "y"; ny = "x"; // replace names to which align applied
+      nx = 'y'; ny = 'x'; // replace names to which align applied
    }
 
    if (arg.align[0] == 'middle')

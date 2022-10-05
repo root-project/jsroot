@@ -144,9 +144,9 @@ class TGraph2DPainter extends ObjectPainter {
          color: this.tip_color,
          lines: [ this.tip_name,
                   "pnt: " + indx,
-                  "x: " + p.axisAsText("x", gr.fX[indx]),
-                  "y: " + p.axisAsText("y", gr.fY[indx]),
-                  "z: " + p.axisAsText("z", gr.fZ[indx])
+                  "x: " + p.axisAsText('x', gr.fX[indx]),
+                  "y: " + p.axisAsText('y', gr.fY[indx]),
+                  "z: " + p.axisAsText('z', gr.fZ[indx])
                 ]
       };
    }

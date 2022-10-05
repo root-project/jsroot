@@ -261,7 +261,7 @@ class RHistPainter extends RObjectPainter {
          if (!this.options.second_x && !this.options.second_y)
             return true;
 
-         main.setAxes2Ranges(this.options.second_x, this.getAxis("x"), this.xmin, this.xmax, this.options.second_y, this.getAxis("y"), this.ymin, this.ymax);
+         main.setAxes2Ranges(this.options.second_x, this.getAxis('x'), this.xmin, this.xmax, this.options.second_y, this.getAxis('y'), this.ymin, this.ymax);
          return main.drawAxes2(this.options.second_x, this.options.second_y);
       }
 
@@ -269,7 +269,7 @@ class RHistPainter extends RObjectPainter {
       main.xmin = main.xmax = 0;
       main.ymin = main.ymax = 0;
       main.zmin = main.zmax = 0;
-      main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
+      main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
       return main.drawAxes();
    }
 
@@ -336,16 +336,16 @@ class RHistPainter extends RObjectPainter {
 
       if (obj && obj.fAxes) {
          switch(name) {
-            case "x": axis = obj.fAxes[0]; break;
-            case "y": axis = obj.fAxes[1]; break;
-            case "z": axis = obj.fAxes[2]; break;
+            case 'x': axis = obj.fAxes[0]; break;
+            case 'y': axis = obj.fAxes[1]; break;
+            case 'z': axis = obj.fAxes[2]; break;
             default: axis = obj.fAxes[0]; break;
          }
       } else if (histo && histo.fAxes) {
          switch(name) {
-            case "x": axis = histo.fAxes._0; break;
-            case "y": axis = histo.fAxes._1; break;
-            case "z": axis = histo.fAxes._2; break;
+            case 'x': axis = histo.fAxes._0; break;
+            case 'y': axis = histo.fAxes._1; break;
+            case 'z': axis = histo.fAxes._2; break;
             default: axis = histo.fAxes._0; break;
          }
       }
@@ -383,19 +383,19 @@ class RHistPainter extends RObjectPainter {
 
       this.nbinsx = this.nbinsy = this.nbinsz = 0;
 
-      let axis = this.getAxis("x");
+      let axis = this.getAxis('x');
       this.nbinsx = axis.GetNumBins();
       this.xmin = axis.min;
       this.xmax = axis.max;
 
       if (ndim < 2) return;
-      axis = this.getAxis("y");
+      axis = this.getAxis('y');
       this.nbinsy = axis.GetNumBins();
       this.ymin = axis.min;
       this.ymax = axis.max;
 
       if (ndim < 3) return;
-      axis = this.getAxis("z");
+      axis = this.getAxis('z');
       this.nbinsz = axis.GetNumBins();
       this.zmin = axis.min;
       this.zmax = axis.max;
@@ -431,7 +431,7 @@ class RHistPainter extends RObjectPainter {
    async drawingBins(reason) {
 
       let is_axes_zoomed = false;
-      if (reason && (typeof reason == 'string') && (reason.indexOf("zoom") == 0)) {
+      if (reason && (typeof reason == 'string') && (reason.indexOf('zoom') == 0)) {
          if (reason.indexOf("0") > 0) is_axes_zoomed = true;
          if ((this.getDimension() > 1) && (reason.indexOf("1") > 0)) is_axes_zoomed = true;
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
@@ -471,8 +471,8 @@ class RHistPainter extends RObjectPainter {
           taxis = this.getAxis(axis),
           nbins = this['nbins'+axis] || 0;
 
-      if (this.options.second_x && axis == "x") axis = "x2";
-      if (this.options.second_y && axis == "y") axis = "y2";
+      if (this.options.second_x && axis == 'x') axis = "x2";
+      if (this.options.second_y && axis == 'y') axis = "y2";
 
       let main = this.getFramePainter(),
           min = main ? main['zoom_' + axis + 'min'] : 0,
@@ -510,9 +510,9 @@ class RHistPainter extends RObjectPainter {
                return true;
             }
             break;
-         case "ToggleLogX": this.getFramePainter().toggleAxisLog("x"); break;
-         case "ToggleLogY": this.getFramePainter().toggleAxisLog("y"); break;
-         case "ToggleLogZ": this.getFramePainter().toggleAxisLog("z"); break;
+         case "ToggleLogX": this.getFramePainter().toggleAxisLog('x'); break;
+         case "ToggleLogY": this.getFramePainter().toggleAxisLog('y'); break;
+         case "ToggleLogZ": this.getFramePainter().toggleAxisLog('z'); break;
          case "ToggleStatBox": this.toggleStat(); return true;
       }
       return false;
@@ -623,7 +623,7 @@ class RHistPainter extends RObjectPainter {
          menu.addchk(this.toggleStat('only-check'), "Show statbox", () => this.toggleStat());
 
          if (this.getDimension() == 2)
-             menu.add("Values range", () => this.changeValuesRange(menu, "z"));
+             menu.add("Values range", () => this.changeValuesRange(menu, 'z'));
 
          if (typeof this.fillHistContextMenu == 'function')
             this.fillHistContextMenu(menu);
@@ -712,7 +712,7 @@ class RHistPainter extends RObjectPainter {
       }
 
       this.copyOptionsToOthers();
-      this.interactiveRedraw("pad", "drawopt");
+      this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Calculate histogram inidicies and axes values for each visible bin */
@@ -724,17 +724,17 @@ class RHistPainter extends RObjectPainter {
       if (args.right_extra === undefined) args.right_extra = args.extra;
       if (args.middle === undefined) args.middle = 0;
 
-      let histo = this.getHisto(), xaxis = this.getAxis("x"), yaxis = this.getAxis("y"),
+      let histo = this.getHisto(), xaxis = this.getAxis('x'), yaxis = this.getAxis('y'),
           pmain = this.getFramePainter(),
           hdim = this.getDimension(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.getSelectIndex("x", "left", 0 - args.extra),
-             i2: this.getSelectIndex("x", "right", 1 + args.right_extra),
-             j1: (hdim < 2) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim < 2) ? 1 : this.getSelectIndex("y", "right", 1 + args.right_extra),
-             k1: (hdim < 3) ? 0 : this.getSelectIndex("z", "left", 0 - args.extra),
-             k2: (hdim < 3) ? 1 : this.getSelectIndex("z", "right", 1 + args.right_extra),
+             i1: this.getSelectIndex('x', "left", 0 - args.extra),
+             i2: this.getSelectIndex('x', "right", 1 + args.right_extra),
+             j1: (hdim < 2) ? 0 : this.getSelectIndex('y', "left", 0 - args.extra),
+             j2: (hdim < 2) ? 1 : this.getSelectIndex('y', "right", 1 + args.right_extra),
+             k1: (hdim < 3) ? 0 : this.getSelectIndex('z', "left", 0 - args.extra),
+             k2: (hdim < 3) ? 1 : this.getSelectIndex('z', "right", 1 + args.right_extra),
              stepi: 1, stepj: 1, stepk: 1,
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };

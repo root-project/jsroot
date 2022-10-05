@@ -370,9 +370,9 @@ class RAxisPainter extends RObjectPainter {
          let box = label_g.node().getBBox();
 
          label_g.append("rect")
-                 .classed("zoom", true)
-                 .attr("x", box.x)
-                 .attr("y", box.y)
+                 .classed('zoom', true)
+                 .attr('x', box.x)
+                 .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style("cursor", "move");
@@ -453,9 +453,9 @@ class RAxisPainter extends RObjectPainter {
             alt_pos[curr_indx] = this.vertical ? acc_y : acc_x;
 
             drag_rect = title_g.append("rect")
-                 .classed("zoom", true)
-                 .attr("x", box.x)
-                 .attr("y", box.y)
+                 .classed('zoom', true)
+                 .attr('x', box.x)
+                 .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style("cursor", "move");

@@ -377,19 +377,19 @@ class TGraphPainter extends ObjectPainter {
       if (d && funcs) {
          if (d.indx !== undefined)
             lines.push("p = " + d.indx);
-         lines.push("x = " + funcs.axisAsText("x", d.x));
-         lines.push("y = " + funcs.axisAsText("y", d.y));
+         lines.push("x = " + funcs.axisAsText('x', d.x));
+         lines.push("y = " + funcs.axisAsText('y', d.y));
 
          if (gme)
-            lines.push("error x = -" + funcs.axisAsText("x", gme.fExL[d.indx]) + "/+" + funcs.axisAsText("x", gme.fExH[d.indx]));
+            lines.push("error x = -" + funcs.axisAsText('x', gme.fExL[d.indx]) + "/+" + funcs.axisAsText('x', gme.fExH[d.indx]));
          else if (this.options.Errors && (funcs.x_handle.kind == 'normal') && (d.exlow || d.exhigh))
-            lines.push("error x = -" + funcs.axisAsText("x", d.exlow) + "/+" + funcs.axisAsText("x", d.exhigh));
+            lines.push("error x = -" + funcs.axisAsText('x', d.exlow) + "/+" + funcs.axisAsText('x', d.exhigh));
 
          if (gme) {
             for (let ny = 0; ny < gme.fNYErrors; ++ny)
-               lines.push(`error y${ny} = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
+               lines.push(`error y${ny} = -${funcs.axisAsText('y', gme.fEyL[ny][d.indx])}/+${funcs.axisAsText('y', gme.fEyH[ny][d.indx])}`);
          } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind == 'normal') && (d.eylow || d.eyhigh))
-            lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
+            lines.push("error y = -" + funcs.axisAsText('y', d.eylow) + "/+" + funcs.axisAsText('y', d.eyhigh));
 
       }
       return lines;
@@ -970,9 +970,9 @@ class TGraphPainter extends ObjectPainter {
       hint.changed = ttrect.property("current_bin") !== hint.d3bin;
 
       if (hint.changed)
-         ttrect.attr("x", d.grx1 + hint.rect.x1)
+         ttrect.attr('x', d.grx1 + hint.rect.x1)
                .attr('width', hint.rect.x2 - hint.rect.x1)
-               .attr("y", d.gry1 + hint.rect.y1)
+               .attr('y', d.gry1 + hint.rect.y1)
                .attr('height', hint.rect.y2 - hint.rect.y1)
                .style("opacity", "0.3")
                .property("current_bin", hint.d3bin);
@@ -1168,8 +1168,8 @@ class TGraphPainter extends ObjectPainter {
                  .attr("class","h1bin")
                  .style("pointer-events","none")
                  .style("opacity", "0.3")
-                 .attr("x", Math.round(hint.x - hint.radius))
-                 .attr("y", Math.round(hint.y - hint.radius))
+                 .attr('x', Math.round(hint.x - hint.radius))
+                 .attr('y', Math.round(hint.y - hint.radius))
                  .attr('width', 2*hint.radius)
                  .attr('height', 2*hint.radius);
          } else {
@@ -1229,8 +1229,8 @@ class TGraphPainter extends ObjectPainter {
          let pmain = this.getFramePainter(),
              funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y);
          if (funcs && this.move_bin) {
-            this.move_bin.x = funcs.revertAxis("x", this.move_x0 + this.pos_dx);
-            this.move_bin.y = funcs.revertAxis("y", this.move_y0 + this.pos_dy);
+            this.move_bin.x = funcs.revertAxis('x', this.move_x0 + this.pos_dx);
+            this.move_bin.y = funcs.revertAxis('y', this.move_y0 + this.pos_dy);
             this.drawGraph();
          }
       }
@@ -1248,8 +1248,8 @@ class TGraphPainter extends ObjectPainter {
          if (funcs && this.bins && !not_changed) {
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
-               bin.x = funcs.revertAxis("x", funcs.grx(bin.x) + this.pos_dx);
-               bin.y = funcs.revertAxis("y", funcs.gry(bin.y) + this.pos_dy);
+               bin.x = funcs.revertAxis('x', funcs.grx(bin.x) + this.pos_dx);
+               bin.y = funcs.revertAxis('y', funcs.gry(bin.y) + this.pos_dy);
                exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
                if ((bin.indx == 0) && this.matchObjectType('TCutG'))
                   exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
@@ -1293,8 +1293,8 @@ class TGraphPainter extends ObjectPainter {
 
          if (method.fName == 'InsertPoint') {
             let funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
-                userx = funcs?.revertAxis("x", pnt.x) ?? 0,
-                usery = funcs?.revertAxis("y", pnt.y) ?? 0;
+                userx = funcs?.revertAxis('x', pnt.x) ?? 0,
+                usery = funcs?.revertAxis('y', pnt.y) ?? 0;
             this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, this.args_menu_id);
          } else if (this.args_menu_id && (hint?.binindx !== undefined)) {
             this.submitCanvExec(`RemovePoint(${hint.binindx})`, this.args_menu_id);
@@ -1345,7 +1345,7 @@ class TGraphPainter extends ObjectPainter {
      * @desc allow to zoom TGraph only when at least one point in the range */
    canZoomInside(axis,min,max) {
       let gr = this.getObject();
-      if (!gr || (axis !== (this.options.pos3d ? "y" : "x"))) return false;
+      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
 
       for (let n = 0; n < gr.fNpoints; ++n)
          if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;

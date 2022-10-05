@@ -382,11 +382,11 @@ class RCanvasPainter extends RPadPainter {
 
       if (subelem && (typeof subelem == 'string')) {
          let len = subelem.length;
-         if ((len > 2) && (subelem.indexOf("#x") == len - 2)) subelem = "x"; else
-         if ((len > 2) && (subelem.indexOf("#y") == len - 2)) subelem = "y"; else
-         if ((len > 2) && (subelem.indexOf("#z") == len - 2)) subelem = "z";
+         if ((len > 2) && (subelem.indexOf("#x") == len - 2)) subelem = 'x'; else
+         if ((len > 2) && (subelem.indexOf("#y") == len - 2)) subelem = 'y'; else
+         if ((len > 2) && (subelem.indexOf("#z") == len - 2)) subelem = 'z';
 
-         if ((subelem == "x") || (subelem == "y") || (subelem == "z"))
+         if ((subelem == 'x') || (subelem == 'y') || (subelem == 'z'))
             exec = subelem + "axis#" + exec;
          else
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
@@ -448,7 +448,7 @@ class RCanvasPainter extends RPadPainter {
             console.log("Status bits in RCanvas are changed - that to do?");
             break;
          case "frame": // when moving frame
-         case "zoom":  // when changing zoom inside frame
+         case 'zoom':  // when changing zoom inside frame
             console.log("Frame moved or zoom is changed - that to do?");
             break;
          case "pave_moved":

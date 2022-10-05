@@ -1925,9 +1925,9 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
        size = 10000;
 
    switch (projection) {
-      case "x": size = Math.max(sizey,sizez); break;
-      case "y": size = Math.max(sizex,sizez); break;
-      case "z": size = Math.max(sizex,sizey); break;
+      case 'x': size = Math.max(sizey,sizez); break;
+      case 'y': size = Math.max(sizex,sizez); break;
+      case 'z': size = Math.max(sizex,sizey); break;
    }
 
    let bsp2 = createNormal(projection, position, size);

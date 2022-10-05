@@ -56,17 +56,17 @@ class RH3Painter extends RHistPainter {
   /** @summary Count histogram statistic */
    countStat() {
       let histo = this.getHisto(),
-          xaxis = this.getAxis("x"),
-          yaxis = this.getAxis("y"),
-          zaxis = this.getAxis("z"),
+          xaxis = this.getAxis('x'),
+          yaxis = this.getAxis('y'),
+          zaxis = this.getAxis('z'),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.getSelectIndex("x", "left"),
-          i2 = this.getSelectIndex("x", "right"),
-          j1 = this.getSelectIndex("y", "left"),
-          j2 = this.getSelectIndex("y", "right"),
-          k1 = this.getSelectIndex("z", "left"),
-          k2 = this.getSelectIndex("z", "right"),
+          i1 = this.getSelectIndex('x', "left"),
+          i2 = this.getSelectIndex('x', "right"),
+          j1 = this.getSelectIndex('y', "left"),
+          j2 = this.getSelectIndex('y', "right"),
+          k1 = this.getSelectIndex('z', "left"),
+          k2 = this.getSelectIndex('z', "right"),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
@@ -102,7 +102,7 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.isAxisZoomed("x") && !fp.isAxisZoomed("y") && !fp.isAxisZoomed("z")) {
+      if ((histo.fTsumw > 0) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z')) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -182,9 +182,9 @@ class RH3Painter extends RHistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push(`x = ${this.getAxisBinTip("x", ix, dx)}  xbin=${ix+1}`);
-      lines.push(`y = ${this.getAxisBinTip("y", iy, dy)}  ybin=${iy+1}`);
-      lines.push(`z = ${this.getAxisBinTip("z", iz, dz)}  zbin=${iz+1}`);
+      lines.push(`x = ${this.getAxisBinTip('x', ix, dx)}  xbin=${ix+1}`);
+      lines.push(`y = ${this.getAxisBinTip('y', iy, dy)}  ybin=${iy+1}`);
+      lines.push(`z = ${this.getAxisBinTip('z', iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
           lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : '');
@@ -231,7 +231,7 @@ class RH3Painter extends RHistPainter {
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
-          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
+          xaxis = this.getAxis('x'), yaxis = this.getAxis('y'), zaxis = this.getAxis('z'),
           rnd = new TRandom(sumz);
 
       for (i = i1; i < i2; i += di) {
@@ -275,12 +275,12 @@ class RH3Painter extends RHistPainter {
                 main = p.getFramePainter(),
                 tip = p.get3DToolTip(this.bins[indx]);
 
-            tip.x1 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix));
-            tip.x2 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix+di));
-            tip.y1 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy));
-            tip.y2 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy+dj));
-            tip.z1 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz));
-            tip.z2 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz+dk));
+            tip.x1 = main.grx(p.getAxis('x').GetBinLowEdge(tip.ix));
+            tip.x2 = main.grx(p.getAxis('x').GetBinLowEdge(tip.ix+di));
+            tip.y1 = main.gry(p.getAxis('y').GetBinLowEdge(tip.iy));
+            tip.y2 = main.gry(p.getAxis('y').GetBinLowEdge(tip.iy+dj));
+            tip.z1 = main.grz(p.getAxis('z').GetBinLowEdge(tip.iz));
+            tip.z2 = main.grz(p.getAxis('z').GetBinLowEdge(tip.iz+dk));
             tip.color = this.tip_color;
             tip.opacity = 0.3;
 
@@ -375,7 +375,7 @@ class RH3Painter extends RHistPainter {
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return true;
 
-      let xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
+      let xaxis = this.getAxis('x'), yaxis = this.getAxis('y'), zaxis = this.getAxis('z'),
           scalex = (main.grx(xaxis.GetBinCoord(i2)) - main.grx(xaxis.GetBinCoord(i1))) / (i2 - i1) * di,
           scaley = (main.gry(yaxis.GetBinCoord(j2)) - main.gry(yaxis.GetBinCoord(j1))) / (j2 - j1) * dj,
           scalez = (main.grz(zaxis.GetBinCoord(k2)) - main.grz(zaxis.GetBinCoord(k1))) / (k2 - k1) * dk;
@@ -449,9 +449,9 @@ class RH3Painter extends RHistPainter {
       }
 
       let binx, grx, biny, gry, binz, grz;
-      xaxis = this.getAxis("x"),
-      yaxis = this.getAxis("y"),
-      zaxis = this.getAxis("z");
+      xaxis = this.getAxis('x'),
+      yaxis = this.getAxis('y'),
+      zaxis = this.getAxis('z');
 
       for (i = i1; i < i2; i += di) {
          binx = xaxis.GetBinCenter(i+1); grx = main.grx(binx);
@@ -558,9 +558,9 @@ class RH3Painter extends RHistPainter {
             let p = this.painter,
                 main = p.getFramePainter(),
                 tip = p.get3DToolTip(this.bins[indx]),
-                grx = main.grx(p.getAxis("x").GetBinCoord(tip.ix-0.5)),
-                gry = main.gry(p.getAxis("y").GetBinCoord(tip.iy-0.5)),
-                grz = main.grz(p.getAxis("z").GetBinCoord(tip.iz-0.5)),
+                grx = main.grx(p.getAxis('x').GetBinCoord(tip.ix-0.5)),
+                gry = main.gry(p.getAxis('y').GetBinCoord(tip.iy-0.5)),
+                grz = main.grz(p.getAxis('z').GetBinCoord(tip.iz-0.5)),
                 wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
@@ -624,7 +624,7 @@ class RH3Painter extends RHistPainter {
 
       assignFrame3DMethods(main);
       return main.create3DScene(this.options.Render3D).then(() => {
-         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
+         main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
          return this.drawingBins(reason);
@@ -655,12 +655,12 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let i1 = this.getSelectIndex("x", "left"),
-          i2 = this.getSelectIndex("x", "right"),
-          j1 = this.getSelectIndex("y", "left"),
-          j2 = this.getSelectIndex("y", "right"),
-          k1 = this.getSelectIndex("z", "left"),
-          k2 = this.getSelectIndex("z", "right"),
+      let i1 = this.getSelectIndex('x', "left"),
+          i2 = this.getSelectIndex('x', "right"),
+          j1 = this.getSelectIndex('y', "left"),
+          j2 = this.getSelectIndex('y', "right"),
+          k1 = this.getSelectIndex('z', "left"),
+          k2 = this.getSelectIndex('z', "right"),
           i, j, k, histo = this.getHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
@@ -695,20 +695,20 @@ class RH3Painter extends RHistPainter {
       if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = this.getAxis("x").GetBinLowEdge(ileft+1);
-         xmax = this.getAxis("x").GetBinLowEdge(iright+1);
+         xmin = this.getAxis('x').GetBinLowEdge(ileft+1);
+         xmax = this.getAxis('x').GetBinLowEdge(iright+1);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = this.getAxis("y").GetBinLowEdge(jleft+1);
-         ymax = this.getAxis("y").GetBinLowEdge(jright+1);
+         ymin = this.getAxis('y').GetBinLowEdge(jleft+1);
+         ymax = this.getAxis('y').GetBinLowEdge(jright+1);
          isany = true;
       }
 
       if ((kleft > k1 || kright < k2) && (kleft < kright - 1)) {
-         zmin = this.getAxis("z").GetBinLowEdge(kleft+1);
-         zmax = this.getAxis("z").GetBinLowEdge(kright+1);
+         zmin = this.getAxis('z').GetBinLowEdge(kleft+1);
+         zmax = this.getAxis('z').GetBinLowEdge(kright+1);
          isany = true;
       }
 
@@ -727,7 +727,7 @@ class RH3Painter extends RHistPainter {
 
          this.decodeOptions(arg);
 
-         this.interactiveRedraw(true, "drawopt");
+         this.interactiveRedraw(true, 'drawopt');
       });
    }
 

@@ -171,7 +171,7 @@ class TH2Painter extends THistPainter {
          if (arg == 'inspect')
             return this.showInspector();
          this.decodeOptions(arg);
-         this.interactiveRedraw("pad", "drawopt");
+         this.interactiveRedraw('pad', 'drawopt');
       });
 
       if (this.options.Color)
@@ -230,10 +230,10 @@ class TH2Painter extends THistPainter {
    autoZoom() {
       if (this.isTH2Poly()) return; // not implemented
 
-      let i1 = this.getSelectIndex("x", "left", -1),
-          i2 = this.getSelectIndex("x", "right", 1),
-          j1 = this.getSelectIndex("y", "left", -1),
-          j2 = this.getSelectIndex("y", "right", 1),
+      let i1 = this.getSelectIndex('x', "left", -1),
+          i2 = this.getSelectIndex('x', "right", 1),
+          j1 = this.getSelectIndex('y', "left", -1),
+          j2 = this.getSelectIndex('y', "right", 1),
           i,j, histo = this.getObject();
 
       if ((i1 == i2) || (j1 == j2)) return;
@@ -396,10 +396,10 @@ class TH2Painter extends THistPainter {
             stat_sumy2 += yy * yy * zz;
          }
       } else {
-         let xleft = this.getSelectIndex("x", "left"),
-             xright = this.getSelectIndex("x", "right"),
-             yleft = this.getSelectIndex("y", "left"),
-             yright = this.getSelectIndex("y", "right"),
+         let xleft = this.getSelectIndex('x', "left"),
+             xright = this.getSelectIndex('x', "right"),
+             yleft = this.getSelectIndex('y', "left"),
+             yright = this.getSelectIndex('y', "right"),
              xi, yi;
 
          for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
@@ -432,7 +432,7 @@ class TH2Painter extends THistPainter {
          }
       }
 
-      if (!fp.isAxisZoomed("x") && !fp.isAxisZoomed("y") && (histo.fTsumw > 0)) {
+      if (!fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (histo.fTsumw > 0)) {
          stat_sum0 = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -852,7 +852,7 @@ class TH2Painter extends THistPainter {
                cmd = `M${x},${y}`; x0 = x; y0 = y;
             } else if ((i == iplus) && (iminus !== iplus) && (x == x0) && (y == y0)) {
                if (!isany) return ''; // all same points
-               cmd += "z"; do_close = false; matched = true;
+               cmd += 'z'; do_close = false; matched = true;
             } else {
                let dx = x - lastx, dy = y - lasty;
                if (dx) {
@@ -869,7 +869,7 @@ class TH2Painter extends THistPainter {
 
          if (do_close && !matched && !func)
             return "<failed>";
-         if (do_close) cmd += "z";
+         if (do_close) cmd += 'z';
          return cmd;
 
       }, get_segm_intersection = (segm1, segm2) => {
@@ -1059,7 +1059,7 @@ class TH2Painter extends THistPainter {
          flush();
 
          if (grcmd)
-            cmd += poscmd + grcmd + "z";
+            cmd += poscmd + grcmd + 'z';
       }
 
       if (text_pos) {
@@ -1559,7 +1559,7 @@ class TH2Painter extends THistPainter {
              res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
          while (i < l) {
             switch(a[i]) {
-               case 'Z': return res + "z";
+               case 'Z': return res + 'z';
                case 'V': if (yy != a[i+1]) { res += (swapXY ? 'h' : 'v') + (a[i+1] - yy); yy = a[i+1]; } break;
                case 'H': if (xx != a[i+1]) { res += (swapXY ? 'v' : 'h') + (a[i+1] - xx); xx = a[i+1]; } break;
                default: res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`; xx = a[i]; yy = a[i+1];
@@ -2240,7 +2240,7 @@ class TH2Painter extends THistPainter {
          .attr("x2", 6);
 
       groupTick.append("text")
-         .attr("x", 8)
+         .attr('x', 8)
          .attr("dy", "0.35em")
          .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
          .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
@@ -2276,8 +2276,8 @@ class TH2Painter extends THistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, i));
-      lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, j));
+      lines.push("x = " + this.getAxisBinTip('x', histo.fXaxis, i));
+      lines.push("y = " + this.getAxisBinTip('y', histo.fYaxis, j));
 
       lines.push(`bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`);
 
@@ -2302,9 +2302,9 @@ class TH2Painter extends THistPainter {
       lines.push(this.getObjectHint());
 
       if (p.swapXY)
-         lines.push("y = " + funcs.axisAsText("y", histo.fYaxis.GetBinLowEdge(p.bin+1)));
+         lines.push("y = " + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1)));
       else
-         lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
+         lines.push("x = " + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
       lines.push('m-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat))
       lines.push('median = ' + floatToString(p.fMedian, gStyle.fStatFormat))
@@ -2348,8 +2348,8 @@ class TH2Painter extends THistPainter {
       }
 
       lines.push(this.getObjectHint());
-      lines.push("x = " + funcs.axisAsText("x", realx));
-      lines.push("y = " + funcs.axisAsText("y", realy));
+      lines.push("x = " + funcs.axisAsText('x', realx));
+      lines.push("y = " + funcs.axisAsText('y', realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
       if (bin.fContent === Math.round(bin.fContent))
@@ -2377,8 +2377,8 @@ class TH2Painter extends THistPainter {
          let pmain = this.getFramePainter(),
              funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
              foundindx = -1, bin;
-         const realx = funcs.revertAxis("x", pnt.x),
-               realy = funcs.revertAxis("y", pnt.y);
+         const realx = funcs.revertAxis('x', pnt.x),
+               realy = funcs.revertAxis('y', pnt.y);
 
          if ((realx !== undefined) && (realy !== undefined)) {
             const len = histo.fBins.arr.length;
@@ -2601,7 +2601,7 @@ class TH2Painter extends THistPainter {
          res.changed = ttrect.property("current_bin") !== binid;
 
          if (res.changed)
-            ttrect.attr('d', "M"+x1+","+y1 + "h"+(x2-x1) + "v"+(y2-y1) + "h"+(x1-x2) + "z")
+            ttrect.attr('d', "M"+x1+","+y1 + "h"+(x2-x1) + "v"+(y2-y1) + "h"+(x1-x2) + 'z')
                   .style("opacity", "0.7")
                   .property("current_bin", binid);
 
@@ -2620,10 +2620,10 @@ class TH2Painter extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
 
-      if (axis == "z") return true;
+      if (axis == 'z') return true;
 
       let obj = this.getHisto();
-      if (obj) obj = (axis == "y") ? obj.fYaxis : obj.fXaxis;
+      if (obj) obj = (axis == 'y') ? obj.fYaxis : obj.fXaxis;
 
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }

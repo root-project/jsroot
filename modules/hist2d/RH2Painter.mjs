@@ -97,7 +97,7 @@ class RH2Painter extends RHistPainter {
          if (arg === 'inspect')
             return this.showInspector();
          this.decodeOptions(arg);
-         this.interactiveRedraw("pad", "drawopt");
+         this.interactiveRedraw('pad', 'drawopt');
       });
 
       if (this.options.Color)
@@ -146,11 +146,11 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let i1 = this.getSelectIndex("x", "left", -1),
-          i2 = this.getSelectIndex("x", "right", 1),
-          j1 = this.getSelectIndex("y", "left", -1),
-          j2 = this.getSelectIndex("y", "right", 1),
-          i,j, histo = this.getHisto(), xaxis = this.getAxis("x"), yaxis = this.getAxis("y");
+      let i1 = this.getSelectIndex('x', "left", -1),
+          i2 = this.getSelectIndex('x', "right", 1),
+          j1 = this.getSelectIndex('y', "left", -1),
+          j2 = this.getSelectIndex('y', "right", 1),
+          i,j, histo = this.getHisto(), xaxis = this.getAxis('x'), yaxis = this.getAxis('y');
 
       if ((i1 == i2) || (j1 == j2)) return;
 
@@ -244,11 +244,11 @@ class RH2Painter extends RHistPainter {
           xside, yside, xx, yy, zz,
           res = { name: "histo", entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
-      let xleft = this.getSelectIndex("x", "left"),
-          xright = this.getSelectIndex("x", "right"),
-          yleft = this.getSelectIndex("y", "left"),
-          yright = this.getSelectIndex("y", "right"),
-          xi, yi, xaxis = this.getAxis("x"), yaxis = this.getAxis("y");
+      let xleft = this.getSelectIndex('x', "left"),
+          xright = this.getSelectIndex('x', "right"),
+          yleft = this.getSelectIndex('y', "left"),
+          yright = this.getSelectIndex('y', "right"),
+          xi, yi, xaxis = this.getAxis('x'), yaxis = this.getAxis('y');
 
       // TODO: account underflow/overflow bins, now stored in different array and only by histogram itself
       for (xi = 1; xi <= this.nbinsx; ++xi) {
@@ -657,7 +657,7 @@ class RH2Painter extends RHistPainter {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                if (!isany) return ''; // all same points
-               cmd += "z"; do_close = false;
+               cmd += 'z'; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
             } else if (pnt.x != last.x) {
@@ -667,12 +667,12 @@ class RH2Painter extends RHistPainter {
             }
             last = pnt;
          }
-         if (do_close) cmd += "z";
+         if (do_close) cmd += 'z';
          return cmd;
       };
 
       if (this.options.Contour === 14) {
-         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
+         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+'z';
          if (this.options.Proj) {
             let dj = handle.stepj, sz = parseInt((handle.j2 - handle.j1)/dj),
                 xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
@@ -772,7 +772,7 @@ class RH2Painter extends RHistPainter {
          }
 
          if (text_pos) addPoint(grx, gry, Math.round(funcs.grx(x[0])), Math.round(funcs.gry(y[0])));
-         cmd += "z";
+         cmd += 'z';
       }
 
       if (text_pos) {
@@ -1026,7 +1026,7 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Draw histogram bins as candle plot */
    drawBinsCandle(funcs, w) {
-      let histo = this.getHisto(), yaxis = this.getAxis("y"),
+      let histo = this.getHisto(), yaxis = this.getAxis('y'),
           handle = this.prepareDraw(),
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
@@ -1096,7 +1096,7 @@ class RH2Painter extends RHistPainter {
 
          // rectangle
          bars += "M" + pnt.x1 + "," + pnt.y1 +
-         "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + "z";
+         "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + 'z';
 
          pnt.yy1 = Math.round(funcs.gry(pnt.whiskerp));
          pnt.yy2 = Math.round(funcs.gry(pnt.whiskerm));
@@ -1209,7 +1209,7 @@ class RH2Painter extends RHistPainter {
             currx[colindx] = handle.grx[i];
             curry[colindx] = handle.gry[j+dj];
 
-            colPaths[colindx] += "v"+ch+"h"+cw+"v-"+ch+"z";
+            colPaths[colindx] += "v"+ch+"h"+cw+"v-"+ch+'z';
          }
       }
 
@@ -1332,8 +1332,8 @@ class RH2Painter extends RHistPainter {
       }
 
       lines.push(this.getObjectHint() || "histo<2>");
-      lines.push("x = " + this.getAxisBinTip("x", i, di));
-      lines.push("y = " + this.getAxisBinTip("y", j, dj));
+      lines.push("x = " + this.getAxisBinTip('x', i, di));
+      lines.push("y = " + this.getAxisBinTip('y', j, dj));
 
       lines.push(`bin = ${i+1}, ${j+1}`);
 
@@ -1351,11 +1351,11 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
-      let lines = [], main = this.getFramePainter(), xaxis = this.getAxis("y");
+      let lines = [], main = this.getFramePainter(), xaxis = this.getAxis('y');
 
       lines.push(this.getObjectHint() || "histo");
 
-      lines.push("x = " + main.axisAsText("x", xaxis.GetBinCoord(p.bin)));
+      lines.push("x = " + main.axisAsText('x', xaxis.GetBinCoord(p.bin)));
 
       lines.push('mean y = ' + floatToString(p.meany, gStyle.fStatFormat))
       lines.push('m25 = ' + floatToString(p.m25y, gStyle.fStatFormat))
@@ -1398,8 +1398,8 @@ class RH2Painter extends RHistPainter {
       }
 
       lines.push(this.getObjectHint() || "histo");
-      lines.push("x = " + pmain.axisAsText("x", realx));
-      lines.push("y = " + pmain.axisAsText("y", realy));
+      lines.push("x = " + pmain.axisAsText('x', realx));
+      lines.push("y = " + pmain.axisAsText('y', realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
       if (bin.fContent === Math.round(bin.fContent))
@@ -1425,8 +1425,8 @@ class RH2Painter extends RHistPainter {
          // process tooltips from TH2Poly
 
          let pmain = this.getFramePainter(), foundindx = -1, bin;
-         const realx = pmain.revertAxis("x", pnt.x),
-               realy = pmain.revertAxis("y", pnt.y);
+         const realx = pmain.revertAxis('x', pnt.x),
+               realy = pmain.revertAxis('y', pnt.y);
 
          if ((realx !== undefined) && (realy !== undefined)) {
             const len = histo.fBins.arr.length;
@@ -1528,9 +1528,9 @@ class RH2Painter extends RHistPainter {
             res.changed = ttrect.property("current_bin") !== i;
 
             if (res.changed)
-               ttrect.attr("x", p.x1)
+               ttrect.attr('x', p.x1)
                      .attr('width', p.x2-p.x1)
-                     .attr("y", p.yy1)
+                     .attr('y', p.yy1)
                      .attr('height', p.yy2- p.yy1)
                      .style("opacity", "0.7")
                      .property("current_bin", i);
@@ -1616,9 +1616,9 @@ class RH2Painter extends RHistPainter {
          res.changed = ttrect.property("current_bin") !== binid;
 
          if (res.changed)
-            ttrect.attr("x", x1)
+            ttrect.attr('x', x1)
                   .attr('width', x2 - x1)
-                  .attr("y", y1)
+                  .attr('y', y1)
                   .attr('height', y2 - y1)
                   .style("opacity", "0.7")
                   .property("current_bin", binid);
@@ -1637,7 +1637,7 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      if (axis == "z") return true;
+      if (axis == 'z') return true;
       let obj = this.getAxis(axis);
       return obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1;
    }

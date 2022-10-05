@@ -59,17 +59,17 @@ function proivdeEvalPar(obj) {
      _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
 
   if (isformula) {
-     _func = _func.replace(/x\[0\]/g,"x");
+     _func = _func.replace(/x\[0\]/g,'x');
      if (obj._typename === "TF2") {
-        _func = _func.replace(/x\[1\]/g,"y");
-        obj.evalPar = new Function("x", "y", _func).bind(obj);
+        _func = _func.replace(/x\[1\]/g,'y');
+        obj.evalPar = new Function('x', 'y', _func).bind(obj);
      } else {
-        obj.evalPar = new Function("x", _func).bind(obj);
+        obj.evalPar = new Function('x', _func).bind(obj);
      }
   } else if (obj._typename === "TF2")
-     obj.evalPar = new Function("x", "y", "return " + _func).bind(obj);
+     obj.evalPar = new Function('x', 'y', "return " + _func).bind(obj);
   else
-     obj.evalPar = new Function("x", "return " + _func).bind(obj);
+     obj.evalPar = new Function('x', "return " + _func).bind(obj);
 }
 
 /**
@@ -264,7 +264,7 @@ class TF1Painter extends ObjectPainter {
       let pmain = this.getFramePainter(),
           funcs = pmain?.getGrFuncs(this.second_x, this.second_y);
       if (funcs)
-         res.lines.push(`x = ${funcs.axisAsText("x",bin.x)} y = ${funcs.axisAsText("y",bin.y)}`);
+         res.lines.push(`x = ${funcs.axisAsText('x',bin.x)} y = ${funcs.axisAsText('y',bin.y)}`);
 
       return res;
    }
@@ -324,7 +324,7 @@ class TF1Painter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      if (axis !== "x") return false;
+      if (axis !== 'x') return false;
 
       let tf1 = this.getObject();
 

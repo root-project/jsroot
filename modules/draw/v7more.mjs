@@ -206,7 +206,7 @@ class RPalettePainter extends RObjectPainter {
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (settings.Zooming)
-            r.on("dblclick", () => framep.unzoom("z"));
+            r.on("dblclick", () => framep.unzoom('z'));
       }
 
       framep.z_handle.maxTickSize = Math.round(palette_width*0.3);
@@ -225,7 +225,7 @@ class RPalettePainter extends RObjectPainter {
                createMenu(evnt, this).then(menu => {
                   menu.add("header:Palette");
                   menu.addchk(vertical, "Vertical", flag => { this.v7SetAttr("vertical", flag); this.redrawPad(); });
-                  framep.z_handle.fillAxisContextMenu(menu, "z");
+                  framep.z_handle.fillAxisContextMenu(menu, 'z');
                   menu.show();
                });
             });
@@ -260,9 +260,9 @@ class RPalettePainter extends RObjectPainter {
             }
 
             if (vertical)
-               zoom_rect.attr("y", Math.min(sel1, sel2)).attr('height', sz);
+               zoom_rect.attr('y', Math.min(sel1, sel2)).attr('height', sz);
             else
-               zoom_rect.attr("x", Math.min(sel1, sel2)).attr('width', sz);
+               zoom_rect.attr('x', Math.min(sel1, sel2)).attr('width', sz);
          }, endRectSel = evnt => {
             if (!doing_zoom) return;
 
@@ -277,7 +277,7 @@ class RPalettePainter extends RObjectPainter {
                framep.z_handle.processLabelsMove('stop', last_pos);
             } else {
                let z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
-               this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+               this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
             }
          }, startRectSel = evnt => {
             // ignore when touch selection is activated
@@ -293,13 +293,13 @@ class RPalettePainter extends RObjectPainter {
             moving_labels = false;
             zoom_rect = g_btns
                  .append("svg:rect")
-                 .attr("class", "zoom")
+                 .attr("class", 'zoom')
                  .attr("id", "colzoomRect")
                  .style('display', 'none');
             if (vertical)
-               zoom_rect.attr("x", 0).attr('width', palette_width).attr("y", sel1).attr('height', 1);
+               zoom_rect.attr('x', 0).attr('width', palette_width).attr('y', sel1).attr('height', 1);
             else
-               zoom_rect.attr("x", sel1).attr('width', 1).attr("y", 0).attr('height', palette_height);
+               zoom_rect.attr('x', sel1).attr('width', 1).attr('y', 0).attr('height', palette_height);
 
             d3_select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);
@@ -311,7 +311,7 @@ class RPalettePainter extends RObjectPainter {
          },  assignHandlers = () => {
             this.draw_g.selectAll(".axis_zoom, .axis_labels")
                        .on("mousedown", startRectSel)
-                       .on("dblclick", () => framep.unzoom("z"));
+                       .on("dblclick", () => framep.unzoom('z'));
 
             if (settings.ZoomWheel)
                this.draw_g.on("wheel", evnt => {
@@ -323,7 +323,7 @@ class RPalettePainter extends RObjectPainter {
 
                   let item = framep.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
-                     framep.zoom("z", item.min, item.max);
+                     framep.zoom('z', item.min, item.max);
                });
          };
 

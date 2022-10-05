@@ -118,7 +118,7 @@ class TSplinePainter extends ObjectPainter {
       if ((pnt === null) || !spline || !funcs) {
          cleanup = true;
       } else {
-         xx = funcs.revertAxis("x", pnt.x);
+         xx = funcs.revertAxis('x', pnt.x);
          indx = this.findX(xx);
          knot = spline.fPoly[indx];
          yy = this.eval(knot, xx);
@@ -169,8 +169,8 @@ class TSplinePainter extends ObjectPainter {
 
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
-      res.lines.push("x = " + funcs.axisAsText("x", xx));
-      res.lines.push("y = " + funcs.axisAsText("y", yy));
+      res.lines.push("x = " + funcs.axisAsText('x', xx));
+      res.lines.push("y = " + funcs.axisAsText('y', yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
          res.lines.push("B = " + floatToString(knot.fB, gStyle.fStatFormat));
@@ -271,7 +271,7 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis/*,min,max*/) {
-      if (axis !== "x") return false;
+      if (axis !== 'x') return false;
 
       let spline = this.getObject();
       if (!spline) return false;

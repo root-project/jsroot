@@ -246,7 +246,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
                 axis_name = zoom_mesh.zoom,
                 axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
-            if ((axis_name === "z") && zoom_mesh.use_y_for_z) axis_name = "y";
+            if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
 
             return { name: axis_name,
                      title: "axis object",
@@ -520,7 +520,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                { log: pad ? pad.fLogx : 0 });
-   this.x_handle.assignFrameMembers(this, "x");
+   this.x_handle.assignFrameMembers(this, 'x');
    this.x_handle.extractDrawAttributes(scalingSize);
 
    this.y_handle = new AxisPainter(null, this.yaxis);
@@ -530,7 +530,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
-   this.y_handle.assignFrameMembers(this, "y");
+   this.y_handle.assignFrameMembers(this, 'y');
    this.y_handle.extractDrawAttributes(scalingSize);
 
    this.z_handle = new AxisPainter(null, this.zaxis);
@@ -540,7 +540,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                { log: pad ? pad.fLogz : 0 });
-   this.z_handle.assignFrameMembers(this, "z");
+   this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
    this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
@@ -581,7 +581,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          lbl = this.x_handle.format(xticks.tick, 2);
 
       if (xticks.last_major()) {
-         if (!this.x_handle.fTitle) lbl = "x";
+         if (!this.x_handle.fTitle) lbl = 'x';
       } else if (lbl === null) {
          is_major = false; lbl = "";
       }
@@ -632,9 +632,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let pos = point[kind], min = this[`scale_${kind}min`], max = this[`scale_${kind}max`];
 
       switch(kind) {
-         case "x": pos = (pos + this.size_x3d)/2/this.size_x3d; break;
-         case "y": pos = (pos + this.size_y3d)/2/this.size_y3d; break;
-         case "z": pos = pos/2/this.size_z3d; break;
+         case 'x': pos = (pos + this.size_x3d)/2/this.size_x3d; break;
+         case 'y': pos = (pos + this.size_y3d)/2/this.size_y3d; break;
+         case 'z': pos = pos/2/this.size_z3d; break;
       }
       if (this["log"+kind]) {
          pos = Math.exp(Math.log(min) + pos*(Math.log(max)-Math.log(min)));
@@ -646,7 +646,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
       let positions, geom = new BufferGeometry(), tsz = Math.max(this[kind+"_handle"].ticksSize, 0.005 * size_3d);
-      if (kind === "z")
+      if (kind === 'z')
          positions = new Float32Array([0,0,0, tsz*4,0,2*size_3d, tsz*4,0,0, 0,0,0, 0,0,2*size_3d, tsz*4,0,2*size_3d]);
       else
          positions = new Float32Array([-size_3d,0,0, size_3d,-tsz*4,0, size_3d,0,0, -size_3d,0,0, -size_3d,-tsz*4,0, size_3d,-tsz*4,0]);
@@ -660,7 +660,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       mesh.size_3d = size_3d;
       mesh.tsz = tsz;
       mesh.use_y_for_z = use_y_for_z;
-      if (kind == "y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+      if (kind == 'y') mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
       mesh.v1 = new Vector3(positions[0], positions[1], positions[2]);
       mesh.v2 = new Vector3(positions[6], positions[7], positions[8]);
@@ -680,7 +680,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          if (!pnt) return undefined;
 
          let min = -this.size_3d, max = this.size_3d;
-         if (this.zoom === "z") { min = 0; max = 2*this.size_3d; }
+         if (this.zoom === 'z') { min = 0; max = 2*this.size_3d; }
 
          if (pnt[this.zoom] < min)
             pnt[this.zoom] = min;
@@ -709,7 +709,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             let pos = gg.getAttribute('position').array;
 
             // original vertices [0, 2, 1, 0, 3, 2]
-            if (kind == "z") pos[6] = pos[3] = pos[15] = this.tsz;
+            if (kind == 'z') pos[6] = pos[3] = pos[15] = this.tsz;
                         else pos[4] = pos[16] = pos[13] = -this.tsz;
             tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
@@ -719,7 +719,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let pos = gg.getAttribute('position').array;
 
-         if (kind == "z") {
+         if (kind == 'z') {
             pos[2] = pos[11] = pos[8] = pnt1[kind];
             pos[5] = pos[17] = pos[14] = pnt2[kind];
          } else {
@@ -760,7 +760,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(mesh);
    });
 
-   if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
+   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    xcont = new Object3D();
@@ -785,7 +785,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    });
 
    xcont.xyid = 4;
-   if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
+   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -796,7 +796,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
-         if (!this.y_handle.fTitle) lbl = "y";
+         if (!this.y_handle.fTitle) lbl = 'y';
       }  else if (lbl === null) {
          is_major = false; lbl = "";
       }
@@ -865,7 +865,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       ycont.xyid = 3;
-      if (opts.zoom) ycont.add(createZoomMesh("y", this.size_y3d));
+      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
 
       ycont = new Object3D();
@@ -888,7 +888,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(mesh);
       });
       ycont.xyid = 1;
-      if (opts.zoom) ycont.add(createZoomMesh("y", this.size_y3d));
+      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
    }
 
@@ -1011,7 +1011,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (opts.draw && zticksline)
          zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
       if (opts.zoom)
-         zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
+         zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
 
       zcont[n].zid = n + 2;
       top.add(zcont[n]);

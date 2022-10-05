@@ -47,12 +47,12 @@ class TH3Painter extends THistPainter {
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.getSelectIndex("x", "left"),
-          i2 = this.getSelectIndex("x", "right"),
-          j1 = this.getSelectIndex("y", "left"),
-          j2 = this.getSelectIndex("y", "right"),
-          k1 = this.getSelectIndex("z", "left"),
-          k2 = this.getSelectIndex("z", "right"),
+          i1 = this.getSelectIndex('x', "left"),
+          i2 = this.getSelectIndex('x', "right"),
+          j1 = this.getSelectIndex('y', "left"),
+          j2 = this.getSelectIndex('y', "right"),
+          k1 = this.getSelectIndex('z', "left"),
+          k2 = this.getSelectIndex('z', "right"),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
@@ -88,7 +88,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.isAxisZoomed("x") && !fp.isAxisZoomed("y") && !fp.isAxisZoomed("z")) {
+      if ((histo.fTsumw > 0) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z')) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -166,9 +166,9 @@ class TH3Painter extends THistPainter {
 
       lines.push(this.getObjectHint());
 
-      lines.push(`x = ${this.getAxisBinTip("x", histo.fXaxis, ix)}  xbin=${ix+1}`);
-      lines.push(`y = ${this.getAxisBinTip("y", histo.fYaxis, iy)}  ybin=${iy+1}`);
-      lines.push(`z = ${this.getAxisBinTip("z", histo.fZaxis, iz)}  zbin=${iz+1}`);
+      lines.push(`x = ${this.getAxisBinTip('x', histo.fXaxis, ix)}  xbin=${ix+1}`);
+      lines.push(`y = ${this.getAxisBinTip('y', histo.fYaxis, iy)}  ybin=${iy+1}`);
+      lines.push(`z = ${this.getAxisBinTip('z', histo.fZaxis, iz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
@@ -186,12 +186,12 @@ class TH3Painter extends THistPainter {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
-          i1 = this.getSelectIndex("x", "left", 0.5),
-          i2 = this.getSelectIndex("x", "right", 0),
-          j1 = this.getSelectIndex("y", "left", 0.5),
-          j2 = this.getSelectIndex("y", "right", 0),
-          k1 = this.getSelectIndex("z", "left", 0.5),
-          k2 = this.getSelectIndex("z", "right", 0),
+          i1 = this.getSelectIndex('x', "left", 0.5),
+          i2 = this.getSelectIndex('x', "right", 0),
+          j1 = this.getSelectIndex('y', "left", 0.5),
+          j2 = this.getSelectIndex('y', "right", 0),
+          k1 = this.getSelectIndex('z', "left", 0.5),
+          k2 = this.getSelectIndex('z', "right", 0),
           i, j, k, bin_content;
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
@@ -371,12 +371,12 @@ class TH3Painter extends THistPainter {
       if (use_scale)
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
-      let i1 = this.getSelectIndex("x", "left", 0.5),
-          i2 = this.getSelectIndex("x", "right", 0),
-          j1 = this.getSelectIndex("y", "left", 0.5),
-          j2 = this.getSelectIndex("y", "right", 0),
-          k1 = this.getSelectIndex("z", "left", 0.5),
-          k2 = this.getSelectIndex("z", "right", 0);
+      let i1 = this.getSelectIndex('x', "left", 0.5),
+          i2 = this.getSelectIndex('x', "right", 0),
+          j1 = this.getSelectIndex('y', "left", 0.5),
+          j2 = this.getSelectIndex('y', "right", 0),
+          k1 = this.getSelectIndex('z', "left", 0.5),
+          k2 = this.getSelectIndex('z', "right", 0);
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return false;
@@ -642,12 +642,12 @@ class TH3Painter extends THistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let i1 = this.getSelectIndex("x", "left"),
-          i2 = this.getSelectIndex("x", "right"),
-          j1 = this.getSelectIndex("y", "left"),
-          j2 = this.getSelectIndex("y", "right"),
-          k1 = this.getSelectIndex("z", "left"),
-          k2 = this.getSelectIndex("z", "right"),
+      let i1 = this.getSelectIndex('x', "left"),
+          i2 = this.getSelectIndex('x', "right"),
+          j1 = this.getSelectIndex('y', "left"),
+          j2 = this.getSelectIndex('y', "right"),
+          k1 = this.getSelectIndex('z', "left"),
+          k2 = this.getSelectIndex('z', "right"),
           i,j,k, histo = this.getObject();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
@@ -714,7 +714,7 @@ class TH3Painter extends THistPainter {
 
          this.decodeOptions(arg);
 
-         this.interactiveRedraw(true, "drawopt");
+         this.interactiveRedraw(true, 'drawopt');
       });
    }
 

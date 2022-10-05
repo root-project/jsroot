@@ -42,8 +42,8 @@ class RH1Painter extends RHistPainter {
          hsum = hmax;
       } else {
 
-         let left = this.getSelectIndex("x", "left"),
-             right = this.getSelectIndex("x", "right");
+         let left = this.getSelectIndex('x', "left"),
+             right = this.getSelectIndex('x', "right");
 
          if (when_axis_changed) {
             if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
@@ -103,9 +103,9 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Count statistic */
    countStat(cond) {
-      let histo = this.getHisto(), xaxis = this.getAxis("x"),
-          left = this.getSelectIndex("x", "left"),
-          right = this.getSelectIndex("x", "right"),
+      let histo = this.getHisto(), xaxis = this.getAxis('x'),
+          left = this.getSelectIndex('x', "left"),
+          right = this.getSelectIndex('x', "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
@@ -126,7 +126,7 @@ class RH1Painter extends RHistPainter {
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed("x") && histo.fTsumw) {
+      if (!fp.isAxisZoomed('x') && histo.fTsumw) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -203,7 +203,7 @@ class RH1Painter extends RHistPainter {
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.getFramePainter(),
-          histo = this.getHisto(), xaxis = this.getAxis("x"),
+          histo = this.getHisto(), xaxis = this.getAxis('x'),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "";
 
@@ -230,19 +230,19 @@ class RH1Painter extends RHistPainter {
          w = Math.round(this.options.BarWidth*w);
 
          if (pmain.swap_xy)
-            bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + "z";
+            bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + 'z';
          else
-            bars += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
+            bars += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ 'z';
 
          if (this.options.BarStyle > 0) {
             grx2 = grx1 + w;
             w = Math.round(w / 10);
             if (pmain.swap_xy) {
-               barsl += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v" + w + "h"+(gry2-gry1) + "z";
-               barsr += "M"+gry2+","+grx2 + "h"+(gry1-gry2) + "v" + (-w) + "h"+(gry2-gry1) + "z";
+               barsl += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v" + w + "h"+(gry2-gry1) + 'z';
+               barsr += "M"+gry2+","+grx2 + "h"+(gry1-gry2) + "v" + (-w) + "h"+(gry2-gry1) + 'z';
             } else {
-               barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
-               barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + "z";
+               barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ 'z';
+               barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + 'z';
             }
          }
       }
@@ -274,7 +274,7 @@ class RH1Painter extends RHistPainter {
       this.createG(true);
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
-          histo = this.getHisto(), xaxis = this.getAxis("x"),
+          histo = this.getHisto(), xaxis = this.getAxis('x'),
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
 
@@ -342,7 +342,7 @@ class RH1Painter extends RHistPainter {
           di = handle.stepi,
           histo = this.getHisto(),
           want_tooltip = !isBatchMode() && settings.Tooltip,
-          xaxis = this.getAxis("x"),
+          xaxis = this.getAxis('x'),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           exclude_zero = !options.Zero,
@@ -439,7 +439,7 @@ class RH1Painter extends RHistPainter {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
                   if (path_fill !== null)
                      path_fill += "M" + mx1 +","+(my-yerr1) +
-                                  "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                                  "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + 'z';
                   if (path_marker !== null)
                      path_marker += this.markeratt.create(midx, my);
                   if (path_err !== null) {
@@ -451,7 +451,7 @@ class RH1Painter extends RHistPainter {
                      }
                      path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
                      if (hints_err !== null)
-                        hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + "z";
+                        hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + 'z';
                   }
                }
             }
@@ -603,18 +603,18 @@ class RH1Painter extends RHistPainter {
           name = this.getObjectHint(),
           pmain = this.getFramePainter(),
           histo = this.getHisto(),
-          xaxis = this.getAxis("x"),
+          xaxis = this.getAxis('x'),
           di = this.isDisplayItem() ? histo.stepx : 1,
           x1 = xaxis.GetBinCoord(bin),
           x2 = xaxis.GetBinCoord(bin+di),
           cont = histo.getBinContent(bin+1),
-          xlbl = this.getAxisBinTip("x", bin, di);
+          xlbl = this.getAxisBinTip('x', bin, di);
 
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
-         tips.push("y = " + pmain.axisAsText("y", cont));
+         tips.push("y = " + pmain.axisAsText('y', cont));
          if (this.options.Error) {
             if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
@@ -645,11 +645,11 @@ class RH1Painter extends RHistPainter {
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
-          histo = this.getHisto(), xaxis = this.getAxis("x"),
+          histo = this.getHisto(), xaxis = this.getAxis('x'),
           findbin = null, show_rect,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
-          left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 2),
+          left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 2),
           l = left, r = right;
 
       function GetBinGrX(i) {
@@ -821,9 +821,9 @@ class RH1Painter extends RHistPainter {
          res.changed = ttrect.property("current_bin") !== findbin;
 
          if (res.changed)
-            ttrect.attr("x", pmain.swap_xy ? gry1 : grx1)
+            ttrect.attr('x', pmain.swap_xy ? gry1 : grx1)
                   .attr('width', pmain.swap_xy ? gry2-gry1 : grx2-grx1)
-                  .attr("y", pmain.swap_xy ? grx1 : gry1)
+                  .attr('y', pmain.swap_xy ? grx1 : gry1)
                   .attr('height', pmain.swap_xy ? grx2-grx1 : gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
@@ -883,15 +883,15 @@ class RH1Painter extends RHistPainter {
             this.fillatt.change(5,1001);
 
          // redraw all objects
-         this.interactiveRedraw("pad", "drawopt");
+         this.interactiveRedraw('pad', 'drawopt');
       });
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 1),
-          dist = right - left, histo = this.getHisto(), xaxis = this.getAxis("x");
+      let left = this.getSelectIndex('x', "left", -1),
+          right = this.getSelectIndex('x', "right", 1),
+          dist = right - left, histo = this.getHisto(), xaxis = this.getAxis('x');
 
       if (dist == 0) return;
 
@@ -915,11 +915,11 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
-      let xaxis = this.getAxis("x");
+      let xaxis = this.getAxis('x');
 
-      if ((axis == "x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
+      if ((axis == 'x') && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
 
-      if ((axis == "y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis == 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
       return false;
    }

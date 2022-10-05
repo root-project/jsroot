@@ -106,9 +106,9 @@ function drawPolyMarker3D() {
             color: this.tip_color,
             lines: [ this.tip_name,
                      "pnt: " + indx/3,
-                     "x: " + p.axisAsText("x", this.poly.fP[indx]),
-                     "y: " + p.axisAsText("y", this.poly.fP[indx+1]),
-                     "z: " + p.axisAsText("z", this.poly.fP[indx+2])
+                     "x: " + p.axisAsText('x', this.poly.fP[indx]),
+                     "y: " + p.axisAsText('y', this.poly.fP[indx+1]),
+                     "z: " + p.axisAsText('z', this.poly.fP[indx+2])
                    ]
          };
       };

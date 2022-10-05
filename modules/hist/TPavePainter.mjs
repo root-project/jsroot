@@ -96,7 +96,7 @@ class TPavePainter extends ObjectPainter {
       }
 
       // fill stats before drawing to have coordinates early
-      if (this.isStats() && !this.NoFillStats && !(pp && pp._fast_drawing)) {
+      if (this.isStats() && !this.NoFillStats && !pp?._fast_drawing) {
 
          let main = pt.$main_painter || this.getMainPainter();
 
@@ -171,7 +171,7 @@ class TPavePainter extends ObjectPainter {
             spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
          }
          this.draw_g.append('svg:path')
-                    .attr('d', spath + "z")
+                    .attr('d', spath + 'z')
                     .style("fill", scol)
                     .style("stroke", scol)
                     .style("stroke-width", "1px");
@@ -742,7 +742,7 @@ class TPavePainter extends ObjectPainter {
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (settings.Zooming)
-               r.on("dblclick", () => this.getFramePainter().unzoom("z"));
+               r.on("dblclick", () => this.getFramePainter().unzoom('z'));
          }
 
       return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform).then(() => {
@@ -786,11 +786,11 @@ class TPavePainter extends ObjectPainter {
          let m = d3_pointer(evnt, this.draw_g.node());
          if (this._palette_vertical) {
             sel2 = Math.min(Math.max(m[1], 0), s_height);
-            zoom_rect.attr("y", Math.min(sel1, sel2))
+            zoom_rect.attr('y', Math.min(sel1, sel2))
                      .attr('height', Math.abs(sel2-sel1));
          } else {
             sel2 = Math.min(Math.max(m[0], 0), s_width);
-            zoom_rect.attr("x", Math.min(sel1, sel2))
+            zoom_rect.attr('x', Math.min(sel1, sel2))
                      .attr('width', Math.abs(sel2-sel1));
          }
       }, endRectSel = evnt => {
@@ -805,7 +805,7 @@ class TPavePainter extends ObjectPainter {
 
          let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-         this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+         this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
       }, startRectSel = evnt => {
          // ignore when touch selection is activated
          if (doing_zoom) return;
@@ -816,19 +816,19 @@ class TPavePainter extends ObjectPainter {
 
          let origin = d3_pointer(evnt, this.draw_g.node());
 
-         zoom_rect = this.draw_g.append("svg:rect").attr("class", "zoom").attr("id", "colzoomRect");
+         zoom_rect = this.draw_g.append("svg:rect").attr("class", 'zoom').attr("id", "colzoomRect");
 
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];
-            zoom_rect.attr("x", "0")
+            zoom_rect.attr('x', "0")
                      .attr('width', s_width)
-                     .attr("y", sel1)
+                     .attr('y', sel1)
                      .attr('height', 1);
          } else {
             sel1 = sel2 = origin[0];
-            zoom_rect.attr("x", sel1)
+            zoom_rect.attr('x', sel1)
                      .attr('width', 1)
-                     .attr("y", 0)
+                     .attr('y', 0)
                      .attr('height', s_height);
          }
 
@@ -839,7 +839,7 @@ class TPavePainter extends ObjectPainter {
       if (settings.Zooming)
          this.draw_g.selectAll(".axis_zoom")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", () => this.getFramePainter().unzoom("z"));
+                    .on("dblclick", () => this.getFramePainter().unzoom('z'));
 
       if (settings.ZoomWheel)
          this.draw_g.on("wheel", evnt => {
@@ -847,7 +847,7 @@ class TPavePainter extends ObjectPainter {
                 coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                 item = this.z_handle.analyzeWheelEvent(evnt, coord);
             if (item && item.changed)
-               this.getFramePainter().zoom("z", item.min, item.max);
+               this.getFramePainter().zoom('z', item.min, item.max);
          });
    }
 
@@ -975,7 +975,7 @@ class TPavePainter extends ObjectPainter {
       if (this.z_handle) {
          let fp = this.getFramePainter();
          if (typeof fp?.showContextMenu == 'function')
-             fp.showContextMenu("z", evnt);
+             fp.showContextMenu('z', evnt);
          return;
       }
 

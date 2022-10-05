@@ -791,17 +791,17 @@ function createNormal(axis_name, pos, size) {
    let vertices;
 
    switch(axis_name) {
-      case "x":
+      case 'x':
          vertices = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
                       new Vertex(pos,    size, -3*size, 1, 0, 0),
                       new Vertex(pos,    size,    size, 1, 0, 0) ];
          break;
-      case "y":
+      case 'y':
          vertices = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
                       new Vertex(   size,  pos,    size, 0, 1, 0),
                       new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
          break;
-      // case "z":
+      // case 'z':
       default:
          vertices = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
                       new Vertex(   size, -3*size, pos, 0, 0, 1),

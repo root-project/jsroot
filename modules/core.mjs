@@ -1199,7 +1199,7 @@ function create(typename, target) {
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                        fPrimitives: create('TList'), fExecs: null,
-                       fName: "pad", fTitle: "canvas" });
+                       fName: 'pad', fTitle: "canvas" });
 
          break;
       case 'TAttCanvas':

@@ -210,7 +210,7 @@ const ToolbarIcons = {
          let rec = {};
          for (let n = 0; n < btn.recs.length; ++n) {
             Object.assign(rec, btn.recs[n]);
-            svg.append('rect').attr("x", rec.x).attr("y", rec.y)
+            svg.append('rect').attr('x', rec.x).attr('y', rec.y)
                .attr('width', rec.w).attr('height', rec.h)
                .style("fill", rec.f);
          }
@@ -219,7 +219,7 @@ const ToolbarIcons = {
       }
 
       //  special rect to correctly get mouse events for whole button area
-      svg.append("svg:rect").attr("x", 0).attr("y", 0).attr('width', 512).attr('height', 512)
+      svg.append("svg:rect").attr('x', 0).attr('y', 0).attr('width', 512).attr('height', 512)
          .style('opacity', 0).style('fill', "none").style("pointer-events", "visibleFill")
          .append("svg:title").text(title);
 

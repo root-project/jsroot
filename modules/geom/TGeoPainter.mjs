@@ -466,7 +466,7 @@ class TGeoPainter extends ObjectPainter {
       this.drawing_log = "Init";
       this.ctrl = {
          clipIntersect: true,
-         clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
+         clip: [{ name:'x', enabled: false, value: 0, min: -100, max: 100}, { name:'y', enabled: false, value: 0, min: -100, max: 100}, { name:'z', enabled: false, value: 0, min: -100, max: 100}],
          ssao: { enabled: false, output: SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
          bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
@@ -3172,9 +3172,9 @@ class TGeoPainter extends ObjectPainter {
           npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === "x"),
-          projy = (this.ctrl.project === "y"),
-          projz = (this.ctrl.project === "z");
+          projx = (this.ctrl.project === 'x'),
+          projy = (this.ctrl.project === 'y'),
+          projz = (this.ctrl.project === 'z');
 
       for (let k = 0; k < npoints-1; ++k) {
          buf[pos]   = projx ? projv : track.fPoints[k*4];
@@ -3212,9 +3212,9 @@ class TGeoPainter extends ObjectPainter {
           fP = line.fP,
           buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === "x"),
-          projy = (this.ctrl.project === "y"),
-          projz = (this.ctrl.project === "z");
+          projx = (this.ctrl.project === 'x'),
+          projy = (this.ctrl.project === 'y'),
+          projz = (this.ctrl.project === 'z');
 
       for (let k = 0; k < npoints-1; ++k) {
          buf[pos]   = projx ? projv : fP[k*3];
@@ -3247,9 +3247,9 @@ class TGeoPainter extends ObjectPainter {
           color = getColor(track.fLineColor) || "#ff00ff",
           buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === "x"),
-          projy = (this.ctrl.project === "y"),
-          projz = (this.ctrl.project === "z");
+          projx = (this.ctrl.project === 'x'),
+          projy = (this.ctrl.project === 'y'),
+          projz = (this.ctrl.project === 'z');
 
       for (let k = 0; k < track.fN-1; ++k) {
          buf[pos]   = projx ? projv : track.fP[k*3];
@@ -3284,9 +3284,9 @@ class TGeoPainter extends ObjectPainter {
       let hit_size = Math.max(hit.fMarkerSize * this.getOverallSize() * 0.005, 0.2),
           nhits = hit.fN,
           projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === "x"),
-          projy = (this.ctrl.project === "y"),
-          projz = (this.ctrl.project === "z"),
+          projx = (this.ctrl.project === 'x'),
+          projy = (this.ctrl.project === 'y'),
+          projz = (this.ctrl.project === 'z'),
           style = hit.fMarkerStyle;
 
       // FIXME: styles 2 and 4 does not work properly, see Misc/basic3d demo
@@ -4651,7 +4651,7 @@ class TGeoPainter extends ObjectPainter {
       if ((typeof opt == 'string') && opt.indexOf("comp") == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
-         if (opt[0] == "x") {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
+         if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + "_vislvl999"; }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 

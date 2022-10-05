@@ -169,7 +169,7 @@ async function buildGUI(gui_element, gui_kind = "") {
    if (nobrowser) {
       let guisize = d.get("divsize");
       if (guisize) {
-         guisize = guisize.split("x");
+         guisize = guisize.split('x');
          if (guisize.length != 2) guisize = null;
       }
 

@@ -204,7 +204,7 @@ class GridDisplay extends MDIDisplay {
       this.getcnt = 0;
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
-      this.use_separarators = !kind || (kind.indexOf("x") < 0);
+      this.use_separarators = !kind || (kind.indexOf('x') < 0);
       this.simple_layout = false;
 
       let dom = this.selectDom();
@@ -220,7 +220,7 @@ class GridDisplay extends MDIDisplay {
       let num = 2, arr = undefined, sizes = undefined;
 
       if ((kind.indexOf("grid") == 0) || kind2) {
-         if (kind2) kind = kind + "x" + kind2;
+         if (kind2) kind = kind + 'x' + kind2;
                else kind = kind.slice(4).trim();
          this.use_separarators = false;
          if (kind[0] === "i") {
@@ -228,7 +228,7 @@ class GridDisplay extends MDIDisplay {
             kind = kind.slice(1);
          }
 
-         let separ = kind.indexOf("x"), sizex, sizey;
+         let separ = kind.indexOf('x'), sizex, sizey;
 
          if (separ > 0) {
             sizey = parseInt(kind.slice(separ + 1));
@@ -1165,7 +1165,7 @@ class BatchDisplay extends MDIDisplay {
           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
           .attr('width', this.width)
           .attr('height', this.height)
-          .attr('title', null).attr('style', null).attr("class", null).attr("x", null).attr("y", null);
+          .attr('title', null).attr('style', null).attr("class", null).attr('x', null).attr('y', null);
 
       let svg = main.html();
       if (has_workarounds)

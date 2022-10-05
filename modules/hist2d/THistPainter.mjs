@@ -751,9 +751,9 @@ class THistPainter extends ObjectPainter {
    getAxis(name) {
       let histo = this.getObject();
       switch(name) {
-         case "x": return histo?.fXaxis;
-         case "y": return histo?.fYaxis;
-         case "z": return histo?.fZaxis;
+         case 'x': return histo?.fXaxis;
+         case 'y': return histo?.fYaxis;
+         case 'z': return histo?.fZaxis;
       }
       return null;
    }
@@ -1000,9 +1000,9 @@ class THistPainter extends ObjectPainter {
             }
          };
 
-         copyAxisMembers("x", histo.fXaxis, obj.fXaxis);
-         copyAxisMembers("y", histo.fYaxis, obj.fYaxis);
-         copyAxisMembers("z", histo.fZaxis, obj.fZaxis);
+         copyAxisMembers('x', histo.fXaxis, obj.fXaxis);
+         copyAxisMembers('y', histo.fYaxis, obj.fYaxis);
+         copyAxisMembers('z', histo.fZaxis, obj.fZaxis);
 
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
@@ -1503,8 +1503,8 @@ class THistPainter extends ObjectPainter {
           nbin = this['nbins'+axis] || 0,
           taxis = this.getAxis(axis);
 
-      if (this.options.second_x && axis == "x") axis = "x2";
-      if (this.options.second_y && axis == "y") axis = "y2";
+      if (this.options.second_x && axis == 'x') axis = "x2";
+      if (this.options.second_y && axis == 'y') axis = "y2";
       let main = this.getFramePainter(),
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
@@ -1692,7 +1692,7 @@ class THistPainter extends ObjectPainter {
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
                this.options.Zero = !this.options.Zero;
-               this.interactiveRedraw("pad");
+               this.interactiveRedraw('pad');
             });
 
             if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
@@ -1739,9 +1739,9 @@ class THistPainter extends ObjectPainter {
                return true;
             }
             break;
-         case "ToggleLogX": fp.toggleAxisLog("x"); break;
-         case "ToggleLogY": fp.toggleAxisLog("y"); break;
-         case "ToggleLogZ": fp.toggleAxisLog("z"); break;
+         case "ToggleLogX": fp.toggleAxisLog('x'); break;
+         case "ToggleLogY": fp.toggleAxisLog('y'); break;
+         case "ToggleLogZ": fp.toggleAxisLog('z'); break;
          case "ToggleStatBox": this.toggleStat(); return true;
       }
       return false;
@@ -2105,7 +2105,7 @@ class THistPainter extends ObjectPainter {
       }
 
       this.copyOptionsToOthers();
-      this.interactiveRedraw("pad","drawopt");
+      this.interactiveRedraw('pad','drawopt');
    }
 
    /** @summary Prepare handle for color draw */
@@ -2122,10 +2122,10 @@ class THistPainter extends ObjectPainter {
           hdim = this.getDimension(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.getSelectIndex("x", "left", 0 - args.extra),
-             i2: this.getSelectIndex("x", "right", 1 + args.extra),
-             j1: (hdim === 1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim === 1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
+             i1: this.getSelectIndex('x', "left", 0 - args.extra),
+             i2: this.getSelectIndex('x', "right", 1 + args.extra),
+             j1: (hdim === 1) ? 0 : this.getSelectIndex('y', "left", 0 - args.extra),
+             j2: (hdim === 1) ? 1 : this.getSelectIndex('y', "right", 1 + args.extra),
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 

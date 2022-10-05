@@ -178,7 +178,7 @@ const AxisPainterMethods = {
       let res = "";
       if (value) {
          value = Math.round(value/Math.pow(base,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? "#times" : "x");
+         if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? "#times" : 'x');
       }
       if (Math.abs(base-Math.exp(1)) < 0.001)
          res += "e";
@@ -770,9 +770,9 @@ class TAxisPainter extends ObjectPainter {
             alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
             drag_rect = title_g.append("rect")
-                 .classed("zoom", true)
-                 .attr("x", box.x)
-                 .attr("y", box.y)
+                 .classed('zoom', true)
+                 .attr('x', box.x)
+                 .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style("cursor", "move");
@@ -1169,10 +1169,10 @@ class TAxisPainter extends ObjectPainter {
 
             if (this.vertical) {
                let rw = (labelsMaxWidth || 2*labelSize) + 3;
-               r.attr("x", (side > 0) ? -rw : 0).attr("y", 0)
+               r.attr('x', (side > 0) ? -rw : 0).attr('y', 0)
                 .attr('width', rw).attr('height', h);
             } else {
-               r.attr("x", 0).attr("y", (side > 0) ? 0 : -labelSize - 3)
+               r.attr('x', 0).attr('y', (side > 0) ? 0 : -labelSize - 3)
                 .attr('width', w).attr('height', labelSize + 3);
             }
          }
@@ -1261,10 +1261,10 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
    convertTo(opt) {
       let gaxis = this.getObject(),
-          x1 = this.axisToSvg("x", gaxis.fX1),
-          y1 = this.axisToSvg("y", gaxis.fY1),
-          x2 = this.axisToSvg("x", gaxis.fX2),
-          y2 = this.axisToSvg("y", gaxis.fY2);
+          x1 = this.axisToSvg('x', gaxis.fX1),
+          y1 = this.axisToSvg('y', gaxis.fY1),
+          x2 = this.axisToSvg('x', gaxis.fX2),
+          y2 = this.axisToSvg('y', gaxis.fY2);
 
       if (opt == "ndc") {
           let pw = this.getPadPainter().getPadWidth(),
@@ -1297,10 +1297,10 @@ class TAxisPainter extends ObjectPainter {
          y1 = Math.round(rect.y + gaxis.fY1 * rect.height);
          y2 = Math.round(rect.y + gaxis.fY2 * rect.height);
       } else {
-          x1 = this.axisToSvg("x", gaxis.fX1, this.use_ndc);
-          y1 = this.axisToSvg("y", gaxis.fY1, this.use_ndc);
-          x2 = this.axisToSvg("x", gaxis.fX2, this.use_ndc);
-          y2 = this.axisToSvg("y", gaxis.fY2, this.use_ndc);
+          x1 = this.axisToSvg('x', gaxis.fX1, this.use_ndc);
+          y1 = this.axisToSvg('y', gaxis.fY1, this.use_ndc);
+          x2 = this.axisToSvg('x', gaxis.fX2, this.use_ndc);
+          y2 = this.axisToSvg('y', gaxis.fY2, this.use_ndc);
       }
       let w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
