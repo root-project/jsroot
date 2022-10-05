@@ -2601,9 +2601,9 @@ class TH2Painter extends THistPainter {
          res.changed = ttrect.property("current_bin") !== binid;
 
          if (res.changed)
-            ttrect.attr('d', "M"+x1+","+y1 + "h"+(x2-x1) + "v"+(y2-y1) + "h"+(x1-x2) + 'z')
-                  .style("opacity", "0.7")
-                  .property("current_bin", binid);
+            ttrect.attr('d', `M${x1},${y1}h${x2-x1}v${y2-y1}h${x1-x2}z`)
+                  .style('opacity', '0.7')
+                  .property('current_bin', binid);
 
          if (this.is_projection && res.changed)
             this.redrawProjection(i1, i2, j1, j2);
