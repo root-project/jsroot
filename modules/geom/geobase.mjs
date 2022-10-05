@@ -132,8 +132,8 @@ function checkDuplicates(parent, chlds) {
          let indx = names.indexOf(chld.fName);
          if (indx >= 0) {
             let cnt = cnts[indx] || 1;
-            while(names.indexOf(chld.fName+"#"+cnt) >= 0) ++cnt;
-            chld.$geo_suffix = "#" + cnt;
+            while(names.indexOf(chld.fName+'#'+cnt) >= 0) ++cnt;
+            chld.$geo_suffix = '#' + cnt;
             cnts[indx] = cnt+1;
          }
       }
@@ -608,7 +608,7 @@ function createTrapezoidBuffer( shape, faces_limit ) {
    if (faces_limit < 0) return 12;
 
    let y1, y2;
-   if (shape._typename == "TGeoTrd1") {
+   if (shape._typename == 'TGeoTrd1') {
       y1 = y2 = shape.fDY;
    } else {
       y1 = shape.fDy1; y2 = shape.fDy2;
@@ -864,7 +864,7 @@ function createSphereBuffer( shape, faces_limit ) {
   * @private */
 function createTubeBuffer( shape, faces_limit) {
    let outerR, innerR; // inner/outer tube radius
-   if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
+   if ((shape._typename == 'TGeoCone') || (shape._typename == 'TGeoConeSeg')) {
       outerR = [ shape.fRmax2, shape.fRmax1 ];
       innerR = [ shape.fRmin2, shape.fRmin1 ];
    } else {
@@ -875,7 +875,7 @@ function createTubeBuffer( shape, faces_limit) {
    let hasrmin = (innerR[0] > 0) || (innerR[1] > 0),
        thetaStart = 0, thetaLength = 360;
 
-   if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
+   if ((shape._typename == 'TGeoConeSeg') || (shape._typename == 'TGeoTubeSeg') || (shape._typename == 'TGeoCtub')) {
       thetaStart = shape.fPhi1;
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
@@ -911,7 +911,7 @@ function createTubeBuffer( shape, faces_limit) {
 
    let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-   const calcZ = (shape._typename !== "TGeoCtub") ? null : (x,y,z) => {
+   const calcZ = (shape._typename !== 'TGeoCtub') ? null : (x,y,z) => {
       let arr = (z < 0) ? shape.fNlow : shape.fNhigh;
       return ((z < 0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
    };
@@ -1147,7 +1147,7 @@ function createPolygonBuffer( shape, faces_limit ) {
        thetaLength = shape.fDphi,
        radiusSegments, factor;
 
-   if (shape._typename == "TGeoPgon") {
+   if (shape._typename == 'TGeoPgon') {
       radiusSegments = shape.fNedges;
       factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
@@ -1644,7 +1644,7 @@ function getNodeMatrix(kind, node) {
       }
    } else if (node.fMatrix) {
       matrix = createMatrix(node.fMatrix);
-   } else if ((node._typename == "TGeoNodeOffset") && node.fFinder) {
+   } else if ((node._typename == 'TGeoNodeOffset') && node.fFinder) {
       let kPatternReflected = JSROOT_BIT(14);
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
          geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
@@ -1845,7 +1845,7 @@ function createComposite( shape, faces_limit ) {
    if (matrix2 && (matrix2.determinant() < -0.9))
       geoWarn('Axis reflections in right composite shape - not supported');
 
-   if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
+   if (shape.fNode.fLeft._typename == 'TGeoHalfSpace') {
       geom1 = createHalfSpace(shape.fNode.fLeft);
    } else {
       geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
@@ -1858,7 +1858,7 @@ function createComposite( shape, faces_limit ) {
 
    if (n1 < faces_limit) {
 
-      if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
+      if (shape.fNode.fRight._typename == 'TGeoHalfSpace') {
          geom2 = createHalfSpace(shape.fNode.fRight, geom1);
       } else {
          geom2 = createGeometry(shape.fNode.fRight, faces_limit);
@@ -1883,9 +1883,9 @@ function createComposite( shape, faces_limit ) {
    bsp1.maxid = bsp2.maxid;
 
    switch(shape.fNode._typename) {
-      case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // "*"
-      case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // "+"
-      case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // "/"
+      case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // '*'
+      case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // '+'
+      case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // '/'
       default:
          geoWarn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
    }
@@ -1950,48 +1950,48 @@ function createGeometry(shape, limit) {
 
    try {
       switch (shape._typename) {
-         case "TGeoBBox": return createCubeBuffer( shape, limit );
-         case "TGeoPara": return createParaBuffer( shape, limit );
-         case "TGeoTrd1":
-         case "TGeoTrd2": return createTrapezoidBuffer( shape, limit );
-         case "TGeoArb8":
-         case "TGeoTrap":
-         case "TGeoGtra": return createArb8Buffer( shape, limit );
-         case "TGeoSphere": return createSphereBuffer( shape , limit );
-         case "TGeoCone":
-         case "TGeoConeSeg":
-         case "TGeoTube":
-         case "TGeoTubeSeg":
-         case "TGeoCtub": return createTubeBuffer( shape, limit );
-         case "TGeoEltu": return createEltuBuffer( shape, limit );
-         case "TGeoTorus": return createTorusBuffer( shape, limit );
-         case "TGeoPcon":
-         case "TGeoPgon": return createPolygonBuffer( shape, limit );
-         case "TGeoXtru": return createXtruBuffer( shape, limit );
-         case "TGeoParaboloid": return createParaboloidBuffer( shape, limit );
-         case "TGeoHype": return createHypeBuffer( shape, limit );
-         case "TGeoTessellated": return createTessellatedBuffer( shape, limit );
-         case "TGeoCompositeShape": return createComposite( shape, limit );
-         case "TGeoShapeAssembly": break;
-         case "TGeoScaledShape": {
+         case 'TGeoBBox': return createCubeBuffer( shape, limit );
+         case 'TGeoPara': return createParaBuffer( shape, limit );
+         case 'TGeoTrd1':
+         case 'TGeoTrd2': return createTrapezoidBuffer( shape, limit );
+         case 'TGeoArb8':
+         case 'TGeoTrap':
+         case 'TGeoGtra': return createArb8Buffer( shape, limit );
+         case 'TGeoSphere': return createSphereBuffer( shape , limit );
+         case 'TGeoCone':
+         case 'TGeoConeSeg':
+         case 'TGeoTube':
+         case 'TGeoTubeSeg':
+         case 'TGeoCtub': return createTubeBuffer( shape, limit );
+         case 'TGeoEltu': return createEltuBuffer( shape, limit );
+         case 'TGeoTorus': return createTorusBuffer( shape, limit );
+         case 'TGeoPcon':
+         case 'TGeoPgon': return createPolygonBuffer( shape, limit );
+         case 'TGeoXtru': return createXtruBuffer( shape, limit );
+         case 'TGeoParaboloid': return createParaboloidBuffer( shape, limit );
+         case 'TGeoHype': return createHypeBuffer( shape, limit );
+         case 'TGeoTessellated': return createTessellatedBuffer( shape, limit );
+         case 'TGeoCompositeShape': return createComposite( shape, limit );
+         case 'TGeoShapeAssembly': break;
+         case 'TGeoScaledShape': {
             let res = createGeometry(shape.fShape, limit);
             if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
                res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
-         case "TGeoHalfSpace":
+         case 'TGeoHalfSpace':
             if (limit < 0) return 1; // half space if just plane used in composite
             // no break here - warning should appear
          default: geoWarn('unsupported shape type ' + shape._typename);
       }
    } catch(e) {
-      let place = "";
+      let place = '';
       if (e.stack !== undefined) {
-         place = e.stack.split("\n")[0];
-         if (place.indexOf(e.message) >= 0) place = e.stack.split("\n")[1];
-                                       else place = " at: " + place;
+         place = e.stack.split('\n')[0];
+         if (place.indexOf(e.message) >= 0) place = e.stack.split('\n')[1];
+                                       else place = 'at: ' + place;
       }
-      geoWarn(shape._typename + " err: " + e.message + place);
+      geoWarn(`${shape._typename} err: ${e.message} ${place}`);
    }
 
    return limit < 0 ? 0 : null;
@@ -2001,11 +2001,11 @@ function createGeometry(shape, limit) {
 function makeEveGeometry(rnr_data /*, force */) {
    const GL_TRIANGLES = 4; // same as in EVE7
 
-   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw "Expect triangles first.";
+   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
 
    let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
 
-   if (rnr_data.idxBuff.length != nVert + 2) throw "Expect single list of triangles in index buffer.";
+   if (rnr_data.idxBuff.length != nVert + 2) throw 'Expect single list of triangles in index buffer.';
 
    let body = new BufferGeometry();
    body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
@@ -2067,7 +2067,7 @@ function createServerGeometry(rd, nsegm) {
 
    // shape handle is similar to created in JSROOT.GeoPainter
    return {
-      _typename: "$$Shape$$", // indicate that shape can be used as is
+      _typename: '$$Shape$$', // indicate that shape can be used as is
       ready: true,
       geom: g,
       nfaces: numGeometryFaces(g)
@@ -2095,7 +2095,7 @@ function provideObjectInfo(obj) {
    let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
        useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
-          if (v === undefined) return "???";
+          if (v === undefined) return '???';
           if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
@@ -2105,51 +2105,51 @@ function provideObjectInfo(obj) {
    info.push(`DX=${conv(shape.fDX)} DY=${conv(shape.fDY)} DZ=${conv(shape.fDZ)}`);
 
    switch (shape._typename) {
-      case "TGeoBBox": break;
-      case "TGeoPara": info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
-      case "TGeoTrd2": info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
-      case "TGeoTrd1": info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
-      case "TGeoArb8": break;
-      case "TGeoTrap": break;
-      case "TGeoGtra": break;
-      case "TGeoSphere":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
-         info.push(`Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
+      case 'TGeoBBox': break;
+      case 'TGeoPara': info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
+      case 'TGeoTrd2': info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+      case 'TGeoTrd1': info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
+      case 'TGeoArb8': break;
+      case 'TGeoTrap': break;
+      case 'TGeoGtra': break;
+      case 'TGeoSphere':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`,
+                   `Theta1=${shape.fTheta1} Theta2=${shape.fTheta2}`);
          break;
-      case "TGeoConeSeg":
+      case 'TGeoConeSeg':
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
          // no break;
-      case "TGeoCone":
-         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`);
-         info.push(`Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
+      case 'TGeoCone':
+         info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`,
+                   `Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
          break;
-      case "TGeoCtub":
-      case "TGeoTubeSeg":
+      case 'TGeoCtub':
+      case 'TGeoTubeSeg':
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
          // no break
-      case "TGeoEltu":
-      case "TGeoTube":
+      case 'TGeoEltu':
+      case 'TGeoTube':
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
          break;
-      case "TGeoTorus":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
+      case 'TGeoTorus':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
          break;
-      case "TGeoPcon":
-      case "TGeoPgon": break;
-      case "TGeoXtru": break;
-      case "TGeoParaboloid":
-         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`);
-         info.push(`A=${conv(shape.fA)} B=${conv(shape.fB)}`);
+      case 'TGeoPcon':
+      case 'TGeoPgon': break;
+      case 'TGeoXtru': break;
+      case 'TGeoParaboloid':
+         info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`,
+                   `A=${conv(shape.fA)} B=${conv(shape.fB)}`);
          break;
-      case "TGeoHype":
-         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
-         info.push(`StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
+      case 'TGeoHype':
+         info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
+                   `StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
-      case "TGeoCompositeShape": break;
-      case "TGeoShapeAssembly": break;
-      case "TGeoScaledShape":
+      case 'TGeoCompositeShape': break;
+      case 'TGeoShapeAssembly': break;
+      case 'TGeoScaledShape':
          info = provideObjectInfo(shape.fShape);
          if (shape.fScale)
             info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
@@ -2269,7 +2269,7 @@ class ClonedNodes {
    /** @summary Constructor */
    constructor(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
-      this.name_prefix = ""; // name prefix used for nodes names
+      this.name_prefix = ''; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
       this.vislevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
       this.maxnodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
@@ -2356,7 +2356,7 @@ class ClonedNodes {
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
 
-         if (obj && obj._typename == "$$Shape$$")
+         if (obj && obj._typename == '$$Shape$$')
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -2464,7 +2464,7 @@ class ClonedNodes {
 
       let node = {
             id: 0, sortid: 0, kind: kindShape,
-            name: "Shape",
+            name: 'Shape',
             nfaces: obj.nfaces,
             fDX: 1, fDY: 1, fDZ: 1, vol: 1,
             vis: true
@@ -2684,7 +2684,7 @@ class ClonedNodes {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
 
-      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
+      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
       if (withmatrix) {
          res.matrix = new Matrix4();
@@ -2707,7 +2707,7 @@ class ClonedNodes {
 
             let subname = this.getNodeName(res.id);
             if (subname) {
-               if (res.name) res.name += "/";
+               if (res.name) res.name += '/';
                res.name += subname;
             }
 
@@ -2838,7 +2838,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
             _opacity = entry.opacity || 1;
-         prop.fillcolor = new Color( entry.color ? `rgb(${entry.color})` : "blue" );
+         prop.fillcolor = new Color( entry.color ? `rgb(${entry.color})` : 'blue' );
          prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
@@ -2914,7 +2914,7 @@ class ClonedNodes {
                prop.fillcolor = root_colors[mat.fFillColor];
          }
          if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
+            prop.fillcolor = 'lightgrey';
 
          prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -3287,7 +3287,7 @@ class ClonedNodes {
          if (res.done) { item.ready = true; continue; }
 
          if (!item.ready) {
-            item._typename = "$$Shape$$"; // let reuse item for direct drawing
+            item._typename = '$$Shape$$'; // let reuse item for direct drawing
             item.ready = true;
             if (item.geom === undefined) {
                item.geom = createGeometry(item.shape);
@@ -3474,7 +3474,7 @@ function cleanupShape(shape) {
  * @desc depending from provided method sort differently objects
  * @param toplevel - top element
  * @param origin - camera position used to provide sorting
- * @param method - name of sorting method like "pnt", "ray", 'size', "dflt"  */
+ * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
 
    let raycast = new Raycaster();
@@ -3539,7 +3539,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             continue;
          }
 
-         if (method === "pnt") {
+         if (method === 'pnt') {
             mesh.$jsroot_distance = origin.distanceTo(box3.getCenter(tmp_vect));
             continue;
          }
@@ -3571,7 +3571,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          resort[i] = arr[i];
       }
 
-      if (method === "ray")
+      if (method === 'ray')
          for (let i=arr.length - 1; i >= 0; --i) {
             let mesh = arr[i], intersects,
                 box3 = mesh.$jsroot_box3,
@@ -3656,7 +3656,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
    }
 
-   if (!method || (method == "dflt"))
+   if (!method || (method == 'dflt'))
       setdefaults(toplevel);
    else
       process(toplevel, 0, 1, 1000000);
