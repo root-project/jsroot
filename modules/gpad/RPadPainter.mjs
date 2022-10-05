@@ -294,7 +294,7 @@ class RPadPainter extends RObjectPainter {
 
          frect = svg.append('svg:path').attr('class',"canvas_fillrect");
          if (!isBatchMode())
-            frect.style("pointer-events", "visibleFill")
+            frect.style('pointer-events', "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter(this, null))
                  .on("mouseenter", () => this.showObjectStatus())
@@ -474,7 +474,7 @@ class RPadPainter extends RObjectPainter {
             svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
          if (!isBatchMode())
-            svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
+            svg_rect.style('pointer-events', "visibleFill") // get events also for not visible rect
                     .on("dblclick", evnt => this.enlargePad(evnt))
                     .on("click", () => this.selectObjectPainter(this, null))
                     .on("mouseenter", () => this.showObjectStatus());

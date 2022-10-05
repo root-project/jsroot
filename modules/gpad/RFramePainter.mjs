@@ -251,11 +251,11 @@ class RFramePainter extends RObjectPainter {
    setAxes2Ranges(second_x, xaxis, xmin, xmax, second_y, yaxis, ymin, ymax) {
       if (second_x) {
          this.x2axis = xaxis;
-         this._setAxisRange("x2", xmin, xmax);
+         this._setAxisRange('x2', xmin, xmax);
       }
       if (second_y) {
          this.y2axis = yaxis;
-         this._setAxisRange("y2", ymin, ymax);
+         this._setAxisRange('y2', ymin, ymax);
       }
    }
 
@@ -495,7 +495,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.snapid = this.snapid;
 
          this.x2_handle.configureAxis("x2axis", this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
-         this.x2_handle.assignFrameMembers(this,"x2");
+         this.x2_handle.assignFrameMembers(this,'x2');
 
          pr1 = this.x2_handle.drawAxis(layer, "", -1);
       }
@@ -514,7 +514,7 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.snapid = this.snapid;
 
          this.y2_handle.configureAxis("y2axis", this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
-         this.y2_handle.assignFrameMembers(this,"y2");
+         this.y2_handle.assignFrameMembers(this,'y2');
 
          pr2 = this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
       }
@@ -546,13 +546,13 @@ class RFramePainter extends RObjectPainter {
          swap_xy: this.swap_xy,
          fp: this,
          revertAxis(name, v) {
-            if ((name == 'x') && this.use_x2) name = "x2";
-            if ((name == 'y') && this.use_y2) name = "y2";
+            if ((name == 'x') && this.use_x2) name = 'x2';
+            if ((name == 'y') && this.use_y2) name = 'y2';
             return this.fp.revertAxis(name, v);
          },
          axisAsText(name, v) {
-            if ((name == 'x') && this.use_x2) name = "x2";
-            if ((name == 'y') && this.use_y2) name = "y2";
+            if ((name == 'x') && this.use_x2) name = 'x2';
+            if ((name == 'y') && this.use_y2) name = 'y2';
             return this.fp.axisAsText(name, v);
          }
       };
@@ -624,8 +624,8 @@ class RFramePainter extends RObjectPainter {
       clean('x');
       clean('y');
       clean('z');
-      clean("x2");
-      clean("y2");
+      clean('x2');
+      clean('y2');
 
       if (this.draw_g) {
          this.draw_g.select(".main_layer").selectAll("*").remove();
@@ -738,7 +738,7 @@ class RFramePainter extends RObjectPainter {
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
       } else {
-         top_rect = this.draw_g.select("rect");
+         top_rect = this.draw_g.select('rect');
          main_svg = this.draw_g.select(".main_layer");
       }
 
@@ -769,7 +769,7 @@ class RFramePainter extends RObjectPainter {
 
       return pr.then(() => {
          if (!isBatchMode()) {
-            top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
+            top_rect.style('pointer-events', "visibleFill");  // let process mouse events inside frame
 
             FrameInteractive.assign(this);
             this.addBasicInteractivity();
@@ -940,7 +940,7 @@ class RFramePainter extends RObjectPainter {
      * @desc One can specify names like x/y/z but also second axis x2 or y2 */
    async zoomSingle(name, vmin, vmax) {
 
-      let names = ['x','y','z',"x2","y2"], indx = names.indexOf(name);
+      let names = ['x','y','z','x2','y2'], indx = names.indexOf(name);
 
       // disable zooming when axis conversion is enabled
       if (this.projection || !this[name+"_handle"] || (indx < 0))
@@ -1010,9 +1010,9 @@ class RFramePainter extends RObjectPainter {
      * @return {Promise} with boolean flag if zoom is changed */
    async unzoom(dox, doy, doz) {
       if (dox == "all")
-         return this.unzoom("x2").then(() => this.unzoom("y2")).then(() => this.unzoom("xyz"));
+         return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom("xyz"));
 
-      if ((dox == "x2") || (dox == "y2"))
+      if ((dox == 'x2') || (dox == 'y2'))
          return this.zoomSingle(dox, 0, 0).then(changed => {
             if (changed) this.zoomChangedInteractive(dox, "unzoom");
             return changed;
@@ -1083,7 +1083,7 @@ class RFramePainter extends RObjectPainter {
 
       // when fill and show context menu, remove all zooming
 
-      if ((kind == 'x') || (kind == 'y') || (kind == "x2") || (kind == "y2")) {
+      if ((kind == 'x') || (kind == 'y') || (kind == 'x2') || (kind == 'y2')) {
          let handle = this[kind+"_handle"];
          if (!handle) return false;
          menu.add("header: " + kind.toUpperCase() + " axis");
@@ -1104,9 +1104,9 @@ class RFramePainter extends RObjectPainter {
       if (this.zoom_zmin !== this.zoom_zmax)
          menu.add("Unzoom Z", () => this.unzoom('z'));
       if (this.zoom_x2min !== this.zoom_x2max)
-         menu.add("Unzoom X2", () => this.unzoom("x2"));
+         menu.add("Unzoom X2", () => this.unzoom('x2'));
       if (this.zoom_y2min !== this.zoom_y2max)
-         menu.add("Unzoom Y2", () => this.unzoom("y2"));
+         menu.add("Unzoom Y2", () => this.unzoom('y2'));
       menu.add("Unzoom all", () => this.unzoom("all"));
 
       menu.add("separator");

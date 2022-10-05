@@ -132,7 +132,7 @@ class RPavePainter extends RObjectPainter {
       this.v7AttrChange(changes, 'height', this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
-      this.draw_g.select("rect")
+      this.draw_g.select('rect')
                  .attr('width', this.pave_width)
                  .attr('height', this.pave_height);
 

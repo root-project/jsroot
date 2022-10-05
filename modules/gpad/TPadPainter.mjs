@@ -890,7 +890,7 @@ class TPadPainter extends ObjectPainter {
    async divide(nx, ny) {
       if (!ny) {
          let ndiv = nx;
-         if (ndiv < 2) return this;pad_enlarged
+         if (ndiv < 2) return this;
          nx = ny = Math.round(Math.sqrt(ndiv));
          if (nx*ny < ndiv) nx += 1;
       }
