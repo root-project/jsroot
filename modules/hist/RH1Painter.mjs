@@ -3,6 +3,7 @@ import { RH1Painter as RH1Painter2D } from '../hist2d/RH1Painter.mjs';
 import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 import { assignFrame3DMethods, drawBinsLego } from './hist3d.mjs';
 
+
 class RH1Painter extends RH1Painter2D {
 
    /** @summary Draw 1-D histogram in 3D mode */
@@ -15,7 +16,7 @@ class RH1Painter extends RH1Painter2D {
           zmult = 1 + 2*gStyle.fHistTopMargin,
           pr = Promise.resolve(this);
 
-      if (reason == "resize")  {
+      if (reason == 'resize')  {
          if (is_main && main.resize3D()) main.render3D();
          return pr;
       }

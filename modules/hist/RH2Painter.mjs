@@ -3,6 +3,7 @@ import { RH2Painter as RH2Painter2D } from '../hist2d/RH2Painter.mjs';
 import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 
+
 class RH2Painter extends RH2Painter2D {
 
    /** Draw histogram bins in 3D, using provided draw options */
@@ -31,7 +32,7 @@ class RH2Painter extends RH2Painter2D {
           is_main = this.isMainPainter(), // is main histogram
           pr = Promise.resolve(this);
 
-      if (reason == "resize") {
+      if (reason == 'resize') {
          if (is_main && main.resize3D()) main.render3D();
 
          return pr;

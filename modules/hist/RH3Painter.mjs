@@ -61,12 +61,12 @@ class RH3Painter extends RHistPainter {
           zaxis = this.getAxis('z'),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.getSelectIndex('x', "left"),
-          i2 = this.getSelectIndex('x', "right"),
-          j1 = this.getSelectIndex('y', "left"),
-          j2 = this.getSelectIndex('y', "right"),
-          k1 = this.getSelectIndex('z', "left"),
-          k2 = this.getSelectIndex('z', "right"),
+          i1 = this.getSelectIndex('x', 'left'),
+          i2 = this.getSelectIndex('x', 'right'),
+          j1 = this.getSelectIndex('y', 'left'),
+          j2 = this.getSelectIndex('y', 'right'),
+          k1 = this.getSelectIndex('z', 'left'),
+          k2 = this.getSelectIndex('z', 'right'),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
@@ -148,22 +148,22 @@ class RH3Painter extends RHistPainter {
          stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.addText("Entries = " + stat.format(data.entries,"entries"));
+         stat.addText('Entries = ' + stat.format(data.entries,'entries'));
 
       if (print_mean > 0) {
-         stat.addText("Mean x = " + stat.format(data.meanx));
-         stat.addText("Mean y = " + stat.format(data.meany));
-         stat.addText("Mean z = " + stat.format(data.meanz));
+         stat.addText('Mean x = ' + stat.format(data.meanx));
+         stat.addText('Mean y = ' + stat.format(data.meany));
+         stat.addText('Mean z = ' + stat.format(data.meanz));
       }
 
       if (print_rms > 0) {
-         stat.addText("Std Dev x = " + stat.format(data.rmsx));
-         stat.addText("Std Dev y = " + stat.format(data.rmsy));
-         stat.addText("Std Dev z = " + stat.format(data.rmsz));
+         stat.addText('Std Dev x = ' + stat.format(data.rmsx));
+         stat.addText('Std Dev y = ' + stat.format(data.rmsy));
+         stat.addText('Std Dev z = ' + stat.format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         stat.addText("Integral = " + stat.format(data.integral,"entries"));
+         stat.addText('Integral = ' + stat.format(data.integral,'entries'));
       }
 
       return true;
@@ -187,7 +187,7 @@ class RH3Painter extends RHistPainter {
       lines.push(`z = ${this.getAxisBinTip('z', iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
-          lbl = "entries = "+ ((dx > 1) || (dy > 1) || (dz > 1) ? "~" : '');
+          lbl = 'entries = '+ ((dx > 1) || (dy > 1) || (dz > 1) ? '~' : '');
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
@@ -255,7 +255,7 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      return pnts.createPoints({ color: this.v7EvalColor("fill_color", "red") }).then(mesh => {
+      return pnts.createPoints({ color: this.v7EvalColor('fill_color', 'red') }).then(mesh => {
          main.toplevel.add(mesh);
 
          mesh.bins = bins;
@@ -294,7 +294,7 @@ class RH3Painter extends RHistPainter {
    /** @summary Drawing of 3D histogram */
    draw3DBins(handle) {
 
-      let fillcolor = this.v7EvalColor("fill_color", "red"),
+      let fillcolor = this.v7EvalColor('fill_color', 'red'),
           main = this.getFramePainter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
@@ -575,7 +575,7 @@ class RH3Painter extends RHistPainter {
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            let lcolor = this.v7EvalColor("line_color", "lightblue"),
+            let lcolor = this.v7EvalColor('line_color', 'lightblue'),
                 helper_material = new LineBasicMaterial({ color: lcolor }),
                 lines = null;
 
@@ -617,7 +617,7 @@ class RH3Painter extends RHistPainter {
 
       let main = this.getFramePainter(); // who makes axis and 3D drawing
 
-      if (reason == "resize") {
+      if (reason == 'resize') {
          if (main.resize3D()) main.render3D();
          return this;
       }
@@ -640,27 +640,27 @@ class RH3Painter extends RHistPainter {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      pp.addPadButton("auto_zoom", 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
+      pp.addPadButton('auto_zoom', 'Unzoom all axes', 'ToggleZoom', 'Ctrl *');
       if (this.draw_content)
-         pp.addPadButton("statbox", 'Toggle stat box', "ToggleStatBox");
+         pp.addPadButton('statbox', 'Toggle stat box', 'ToggleStatBox');
       pp.showPadButtons();
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
       let obj = this.getHisto();
-      if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];
+      if (obj) obj = obj['f'+axis.toUpperCase()+'axis'];
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let i1 = this.getSelectIndex('x', "left"),
-          i2 = this.getSelectIndex('x', "right"),
-          j1 = this.getSelectIndex('y', "left"),
-          j2 = this.getSelectIndex('y', "right"),
-          k1 = this.getSelectIndex('z', "left"),
-          k2 = this.getSelectIndex('z', "right"),
+      let i1 = this.getSelectIndex('x', 'left'),
+          i2 = this.getSelectIndex('x', 'right'),
+          j1 = this.getSelectIndex('y', 'left'),
+          j2 = this.getSelectIndex('y', 'right'),
+          k1 = this.getSelectIndex('z', 'left'),
+          k2 = this.getSelectIndex('z', 'right'),
           i, j, k, histo = this.getHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
@@ -721,7 +721,7 @@ class RH3Painter extends RHistPainter {
 
       let opts = this.getSupportedDrawOptions();
 
-      menu.addDrawMenu("Draw with", opts, arg => {
+      menu.addDrawMenu('Draw with', opts, arg => {
          if (arg === 'inspect')
             return this.showInspector();
 
@@ -736,21 +736,21 @@ class RH3Painter extends RHistPainter {
       let painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 
-      return ensureRCanvas(painter, "3d").then(() => {
+      return ensureRCanvas(painter, '3d').then(() => {
 
          painter.setAsMainPainter();
 
          painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
 
-         let kind = painter.v7EvalAttr("kind", ""),
-             sub = painter.v7EvalAttr("sub", 0),
+         let kind = painter.v7EvalAttr('kind', ''),
+             sub = painter.v7EvalAttr('sub', 0),
              o = painter.options;
 
          switch(kind) {
-            case "box": o.Box = 10 + sub; break;
-            case "sphere": o.Sphere = 10 + sub; break;
-            case "col": o.Color = true; break;
-            case "scat": o.Scatter = true;  break;
+            case 'box': o.Box = 10 + sub; break;
+            case 'sphere': o.Sphere = 10 + sub; break;
+            case 'col': o.Color = true; break;
+            case 'scat': o.Scatter = true;  break;
             default: o.Box = 10;
          }
 

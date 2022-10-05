@@ -249,8 +249,8 @@ function create3DScene(render3d, x3dscale, y3dscale) {
             if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
 
             return { name: axis_name,
-                     title: "axis object",
-                     line: axis_name + " : " + frame_painter.axisAsText(axis_name, axis_value),
+                     title: 'axis object',
+                     line: axis_name + ' : ' + frame_painter.axisAsText(axis_name, axis_value),
                      only_status: true };
          }
 
@@ -262,7 +262,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       };
 
       this.control.contextMenu = function(pos, intersects) {
-         let kind = "painter", p = obj_painter;
+         let kind = 'painter', p = obj_painter;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
                let mesh = intersects[n].object;
@@ -551,8 +551,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        zticks = this.z_handle.createTicks(false, true);
 
    function getLineMaterial(handle, kind) {
-      let color = (kind == "ticks") ? handle.ticksColor : handle.lineatt.color,
-          linewidth = (kind == "ticks") ? handle.ticksWidth : handle.lineatt.width;
+      let color = (kind == 'ticks') ? handle.ticksColor : handle.lineatt.color,
+          linewidth = (kind == 'ticks') ? handle.ticksWidth : handle.lineatt.width;
       if (!color) color = 'black';
       let name = `${color}_${linewidth}`;
       if (!lineMaterials[name])
@@ -583,7 +583,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (xticks.last_major()) {
          if (!this.x_handle.fTitle) lbl = 'x';
       } else if (lbl === null) {
-         is_major = false; lbl = "";
+         is_major = false; lbl = '';
       }
 
       if (is_major && lbl && opts.draw) {
@@ -636,7 +636,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          case 'y': pos = (pos + this.size_y3d)/2/this.size_y3d; break;
          case 'z': pos = pos/2/this.size_z3d; break;
       }
-      if (this["log"+kind]) {
+      if (this['log'+kind]) {
          pos = Math.exp(Math.log(min) + pos*(Math.log(max)-Math.log(min)));
       } else {
          pos = min + pos*(max-min);
@@ -645,7 +645,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      let positions, geom = new BufferGeometry(), tsz = Math.max(this[kind+"_handle"].ticksSize, 0.005 * size_3d);
+      let positions, geom = new BufferGeometry(), tsz = Math.max(this[kind+'_handle'].ticksSize, 0.005 * size_3d);
       if (kind === 'z')
          positions = new Float32Array([0,0,0, tsz*4,0,2*size_3d, tsz*4,0,0, 0,0,0, 0,0,2*size_3d, tsz*4,0,2*size_3d]);
       else
@@ -741,7 +741,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    xcont.xyid = 2;
 
    if (opts.draw) {
-      xtickslines = createLineSegments(ticks, getLineMaterial(this.x_handle, "ticks"));
+      xtickslines = createLineSegments(ticks, getLineMaterial(this.x_handle, 'ticks'));
       xcont.add(xtickslines);
    }
 
@@ -798,7 +798,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (yticks.last_major()) {
          if (!this.y_handle.fTitle) lbl = 'y';
       }  else if (lbl === null) {
-         is_major = false; lbl = "";
+         is_major = false; lbl = '';
       }
 
       if (is_major && lbl && opts.draw) {
@@ -844,7 +844,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
-         yticksline = createLineSegments(ticks, getLineMaterial(this.y_handle, "ticks"));
+         yticksline = createLineSegments(ticks, getLineMaterial(this.y_handle, 'ticks'));
          ycont.add(yticksline);
       }
 
@@ -905,7 +905,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           is_major = (zticks.kind == 1),
           lbl = this.z_handle.format(zticks.tick, 2);
 
-      if (lbl === null) { is_major = false; lbl = ""; }
+      if (lbl === null) { is_major = false; lbl = ''; }
 
       if (is_major && lbl && opts.draw) {
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.z_handle.labelsFont.size, height: 0, curveSegments: 5 });
@@ -968,7 +968,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       top.add(lines2);
    }
 
-   let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, getLineMaterial(this.z_handle, "ticks")) : null;
+   let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, getLineMaterial(this.z_handle, 'ticks')) : null;
    for (let n = 0; n < 4; ++n) {
       zcont.push(new Object3D());
 
@@ -1419,8 +1419,8 @@ function drawBinsLego(painter, is_v7 = false) {
    }
 
    // create boxes
-   const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr("line_width", 1) : histo.fLineWidth }),
+   const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
+         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
@@ -1501,8 +1501,8 @@ function drawBinsError3D(painter, is_v7 = false) {
    }
 
     // create lines
-    const lcolor = is_v7 ? painter.v7EvalColor("line_color", "lightblue") : painter.getColor(histo.fLineColor),
-          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr("line_width", 1) : histo.fLineWidth }),
+    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
+          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
           line = createLineSegments(lpos, material);
 
     line.painter = painter;
@@ -1568,7 +1568,7 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
       }
    );
 
-   let lines = createLineSegments(pnts, create3DLineMaterial(painter, is_v7 ? "line_" : histo));
+   let lines = createLineSegments(pnts, create3DLineMaterial(painter, is_v7 ? 'line_' : histo));
    main.toplevel.add(lines);
 }
 
