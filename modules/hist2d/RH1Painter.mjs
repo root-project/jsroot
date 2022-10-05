@@ -230,19 +230,19 @@ class RH1Painter extends RHistPainter {
          w = Math.round(this.options.BarWidth*w);
 
          if (pmain.swap_xy)
-            bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + 'z';
+            bars += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
          else
-            bars += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ 'z';
+            bars += `M${grx1},${gry1}h${w}v${gry2-gry1}h${-w}z`;
 
          if (this.options.BarStyle > 0) {
             grx2 = grx1 + w;
             w = Math.round(w / 10);
             if (pmain.swap_xy) {
-               barsl += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v" + w + "h"+(gry2-gry1) + 'z';
-               barsr += "M"+gry2+","+grx2 + "h"+(gry1-gry2) + "v" + (-w) + "h"+(gry2-gry1) + 'z';
+               barsl += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
+               barsr += `M${gry2},${grx2}h${gry1-gry2}v${-w}h${gry2-gry1}z`;
             } else {
-               barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ 'z';
-               barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + 'z';
+               barsl += `M${grx1},${gry1}h${w}v${gry2-gry1}h${-w}z`;
+               barsr += `M${grx2},${gry1}h${-w}v${gry2-gry1}h${w}z`;
             }
          }
       }
@@ -433,13 +433,12 @@ class RH1Painter extends RHistPainter {
             }
 
             if (show_line && (path_line !== null))
-               path_line += ((path_line.length === 0) ? "M" : "L") + midx + "," + my;
+               path_line += ((path_line.length === 0) ? 'M' : 'L') + midx + ',' + my;
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
                   if (path_fill !== null)
-                     path_fill += "M" + mx1 +","+(my-yerr1) +
-                                  "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + 'z';
+                     path_fill += `M${mx1},${my-yerr1}h${mx2-mx1}v${yerr1+yerr2+1}h${mx1-mx2}z`;
                   if (path_marker !== null)
                      path_marker += this.markeratt.create(midx, my);
                   if (path_err !== null) {
@@ -447,11 +446,11 @@ class RH1Painter extends RHistPainter {
                      if (this.options.errorX > 0) {
                         edx = Math.round((mx2-mx1)*this.options.errorX);
                         let mmx1 = midx - edx, mmx2 = midx + edx;
-                        path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
+                        path_err += `M${mmx1+dend},${my}${endx}h${mmx2-mmx1-2*dend}${endx}`;
                      }
-                     path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+                     path_err += `M${midx},${my-yerr1+dend}${endy}v${yerr1+yerr2-2*dend}${endy}`;
                      if (hints_err !== null)
-                        hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + 'z';
+                        hints_err += `M${midx-edx},${my-yerr1}h${2*edx}v${yerr1+yerr2}h${-2*edx}z`;
                   }
                }
             }

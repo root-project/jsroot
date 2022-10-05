@@ -1194,13 +1194,13 @@ class RH2Painter extends RHistPainter {
             colindx = handle.palette.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
 
-            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+dj];
+            cmd1 = `M${handle.grx[i]},${handle.gry[j+dj]}`;
             if (colPaths[colindx] === undefined) {
                colPaths[colindx] = cmd1;
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else{
-               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+dj] - curry[colindx]);
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+dj] - curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -1209,14 +1209,14 @@ class RH2Painter extends RHistPainter {
             currx[colindx] = handle.grx[i];
             curry[colindx] = handle.gry[j+dj];
 
-            colPaths[colindx] += "v"+ch+"h"+cw+"v-"+ch+'z';
+            colPaths[colindx] += `v${ch}h${cw}v${-ch}z`;
          }
       }
 
       let layer = this.getFrameSvg().select('.main_layer'),
-          defs = layer.select("defs");
+          defs = layer.select('def');
       if (defs.empty() && (colPaths.length > 0))
-         defs = layer.insert("svg:defs",":first-child");
+         defs = layer.insert('svg:defs', ':first-child');
 
       this.createv7AttMarker();
 
