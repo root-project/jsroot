@@ -1,8 +1,8 @@
-import { openFile, treeDraw } from "jsroot";
+import { openFile, treeDraw } from 'jsroot';
 
-let f = await openFile("https://root.cern/js/files/hsimple.root");
-let tree = await f.readObject("ntuple;1");
-let dump = await treeDraw(tree, { expr: "px:py:pz", dump: true, numentries: 1000 });
+let f = await openFile('https://root.cern/js/files/hsimple.root');
+let tree = await f.readObject('ntuple;1');
+let dump = await treeDraw(tree, { expr: 'px:py:pz', dump: true, numentries: 1000 });
 
 console.log(`NumEntries ${dump.length}`);
 let sumx = 0, sumy = 0, sumz = 0;

@@ -6,8 +6,8 @@ JSROOT is provided as npm module and always can be installed as:
 
 After this JSROOT functionality can be used from Node.js scripts via:
 
-    import { openFile } from "jsroot/io";
-    import { makeSVG } from "jsroot/draw";
+    import { openFile } from 'jsroot/io';
+    import { makeSVG } from 'jsroot/draw';
 
 Provided package.json file allows to use demos directly with local jsroot installation:
 
