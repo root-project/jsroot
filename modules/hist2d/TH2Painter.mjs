@@ -1015,8 +1015,8 @@ class TH2Painter extends THistPainter {
       };
 
       const flush = () => {
-         if (acc_x) { grcmd += "h" + acc_x; acc_x = 0; }
-         if (acc_y) { grcmd += "v" + acc_y; acc_y = 0; }
+         if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
+         if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
       };
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {

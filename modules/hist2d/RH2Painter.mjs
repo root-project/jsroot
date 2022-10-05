@@ -661,9 +661,9 @@ class RH2Painter extends RHistPainter {
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
             } else if (pnt.x != last.x) {
-               cmd +=  "h" + (pnt.x - last.x); isany = true;
+               cmd +=  'h' + (pnt.x - last.x); isany = true;
             } else if (pnt.y != last.y) {
-               cmd +=  "v" + (pnt.y - last.y); isany = true;
+               cmd +=  'v' + (pnt.y - last.y); isany = true;
             }
             last = pnt;
          }
@@ -762,9 +762,9 @@ class RH2Painter extends RHistPainter {
             if (text_pos) addPoint(grx,gry, nextx, nexty);
             if ((grx!==nextx) || (gry!==nexty)) {
                if (grx===nextx)
-                  cmd += "v" + (nexty - gry);
+                  cmd += 'v' + (nexty - gry);
                else if (gry===nexty)
-                  cmd += "h" + (nextx - grx);
+                  cmd += 'h' + (nextx - grx);
                else
                   cmd += "l" + (nextx - grx) + "," + (nexty - gry);
             }

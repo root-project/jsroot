@@ -554,7 +554,7 @@ class RAxisPainter extends RObjectPainter {
       }
 
       axis_g.append('svg:path')
-            .attr('d',"M0,0" + (this.vertical ? "v" : "h") + this.gr_range + ending)
+            .attr('d',"M0,0" + (this.vertical ? 'v' : 'h') + this.gr_range + ending)
             .call(this.lineatt.func)
             .style('fill', ending ? 'none' : null);
    }

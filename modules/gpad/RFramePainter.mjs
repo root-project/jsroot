@@ -163,13 +163,13 @@ class RFramePainter extends RObjectPainter {
          let grid = "";
          for (let n = 0; n < this.x_handle.ticks.length; ++n)
             if (this.swap_xy)
-               grid += "M0,"+(h+this.x_handle.ticks[n])+"h"+w;
+               grid += `M0,${h+this.x_handle.ticks[n]}h${w}`;
             else
-               grid += "M"+this.x_handle.ticks[n]+",0v"+h;
+               grid += `M${this.x_handle.ticks[n]},0v${h}`;
 
          if (grid.length > 0)
             layer.append('svg:path')
-                 .attr('class', "xgrid")
+                 .attr('class', 'xgrid')
                  .attr('d', grid)
                  .style('stroke',grid_color)
                  .style('stroke-width', gStyle.fGridWidth)
@@ -184,13 +184,13 @@ class RFramePainter extends RObjectPainter {
          let grid = "";
          for (let n = 0; n < this.y_handle.ticks.length; ++n)
             if (this.swap_xy)
-               grid += "M"+this.y_handle.ticks[n]+",0v"+h;
+               grid += `M${this.y_handle.ticks[n]},0v${h}`;
             else
-               grid += "M0,"+(h+this.y_handle.ticks[n])+"h"+w;
+               grid += `M0,${h+this.y_handle.ticks[n]}h${w}`;
 
          if (grid.length > 0)
           layer.append('svg:path')
-               .attr('class', "ygrid")
+               .attr('class', 'ygrid')
                .attr('d', grid)
                .style('stroke', grid_color)
                .style('stroke-width', gStyle.fGridWidth)
@@ -200,7 +200,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Converts "raw" axis value into text */
    axisAsText(axis, value) {
-      let handle = this[axis+"_handle"];
+      let handle = this[axis+'_handle'];
 
       if (handle)
          return handle.axisAsText(value, settings[axis.toUpperCase() + "ValuesFormat"]);

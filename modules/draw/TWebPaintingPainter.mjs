@@ -113,7 +113,7 @@ class TWebPaintingPainter extends ObjectPainter {
                   continue;
                }
 
-               case "h":
+               case 'h':
                case "t": {
                   if (attr.fTextSize) {
 
@@ -128,7 +128,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
                      this.startTextDrawing(attr.fTextFont, height, group);
 
-                     if (oper == "h") {
+                     if (oper == 'h') {
                         let res = "";
                         for (n = 0; n < txt.length; n += 2)
                            res += String.fromCharCode(parseInt(txt.slice(n,n+2), 16));

@@ -500,20 +500,20 @@ class RH1Painter extends RHistPainter {
                if (!draw_markers && ((curry_min !== curry_max) || (prevy !== curry_min))) {
 
                   if (prevx !== currx)
-                     res += "h"+(currx-prevx);
+                     res += 'h'+(currx-prevx);
 
                   if (curry === curry_min) {
                      if (curry_max !== prevy)
-                        res += "v" + (curry_max - prevy);
+                        res += 'v' + (curry_max - prevy);
                      if (curry_min !== curry_max)
-                        res += "v" + (curry_min - curry_max);
+                        res += 'v' + (curry_min - curry_max);
                   } else {
                      if (curry_min !== prevy)
-                        res += "v" + (curry_min - prevy);
+                        res += 'v' + (curry_min - prevy);
                      if (curry_max !== curry_min)
-                        res += "v" + (curry_max - curry_min);
+                        res += 'v' + (curry_max - curry_min);
                      if (curry !== curry_max)
-                       res += "v" + (curry - curry_max);
+                       res += 'v' + (curry - curry_max);
                   }
 
                   prevx = currx;
@@ -521,7 +521,7 @@ class RH1Painter extends RHistPainter {
                }
 
                if (lastbin && (prevx !== grx))
-                  res += "h"+(grx-prevx);
+                  res += 'h'+(grx-prevx);
 
                bestimin = bestimax = i;
                curry_min = curry_max = curry = gry;
@@ -529,8 +529,8 @@ class RH1Painter extends RHistPainter {
             }
          } else
          if ((gry !== curry) || lastbin) {
-            if (grx !== currx) res += "h"+(grx-currx);
-            if (gry !== curry) res += "v"+(gry-curry);
+            if (grx !== currx) res += 'h'+(grx-currx);
+            if (gry !== curry) res += 'v'+(gry-curry);
             curry = gry;
             currx = grx;
          }

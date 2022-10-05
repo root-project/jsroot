@@ -295,8 +295,8 @@ function buildSvgPath(kind, bins, height, ndig) {
       let acc_x = 0, acc_y = 0;
 
       const flush = () => {
-         if (acc_x) { res.path += "h" + acc_x; acc_x = 0; }
-         if (acc_y) { res.path += "v" + acc_y; acc_y = 0; }
+         if (acc_x) { res.path += 'h' + acc_x; acc_x = 0; }
+         if (acc_y) { res.path += 'v' + acc_y; acc_y = 0; }
       };
 
       for (let n = 1; n < npnts; ++n) {
@@ -337,24 +337,24 @@ function buildSvgPath(kind, bins, height, ndig) {
          }
 
          if (cminy !== cmaxy) {
-            if (cminy != curry) res.path += "v" + (cminy - curry);
-            res.path += "v" + (cmaxy - cminy);
-            if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
+            if (cminy != curry) res.path += 'v' + (cminy - curry);
+            res.path += 'v' + (cmaxy - cminy);
+            if (cmaxy != prevy) res.path += 'v' + (prevy - cmaxy);
             curry = prevy;
          }
          dy = lasty - curry;
          if (dy)
             res.path += `l${dx},${dy}`;
          else
-            res.path += "h" + dx;
+            res.path += 'h' + dx;
          currx = lastx; curry = lasty;
          prevy = cminy = cmaxy = lasty;
       }
 
       if (cminy != cmaxy) {
-         if (cminy != curry) res.path += "v" + (cminy - curry);
-         res.path += "v" + (cmaxy - cminy);
-         if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
+         if (cminy != curry) res.path += 'v' + (cminy - curry);
+         res.path += 'v' + (cmaxy - cminy);
+         if (cmaxy != prevy) res.path += 'v' + (prevy - cmaxy);
       }
    }
 

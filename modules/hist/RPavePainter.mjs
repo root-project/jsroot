@@ -459,11 +459,11 @@ class RHistStatsPainter extends RPavePainter {
       let lpath = "";
 
       if (has_head)
-         lpath += "M0," + Math.round(stepy) + "h" + width;
+         lpath += "M0," + Math.round(stepy) + 'h' + width;
 
       if ((first_stat > 0) && (num_cols > 1)) {
          for (let nrow = first_stat; nrow < nlines; ++nrow)
-            lpath += "M0," + Math.round(nrow * stepy) + "h" + width;
+            lpath += "M0," + Math.round(nrow * stepy) + 'h' + width;
          for (let ncol = 0; ncol < num_cols - 1; ++ncol)
             lpath += "M" + Math.round(width / num_cols * (ncol + 1)) + "," + Math.round(first_stat * stepy) + "V" + height;
       }

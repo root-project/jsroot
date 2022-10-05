@@ -640,20 +640,20 @@ class TH1Painter extends THistPainter {
                if (draw_hist && ((curry_min !== curry_max) || (prevy !== curry_min))) {
 
                   if (prevx !== currx)
-                     res += "h"+(currx-prevx);
+                     res += 'h'+(currx-prevx);
 
                   if (curry === curry_min) {
                      if (curry_max !== prevy)
-                        res += "v" + (curry_max - prevy);
+                        res += 'v' + (curry_max - prevy);
                      if (curry_min !== curry_max)
-                        res += "v" + (curry_min - curry_max);
+                        res += 'v' + (curry_min - curry_max);
                   } else {
                      if (curry_min !== prevy)
-                        res += "v" + (curry_min - prevy);
+                        res += 'v' + (curry_min - prevy);
                      if (curry_max !== curry_min)
-                        res += "v" + (curry_max - curry_min);
+                        res += 'v' + (curry_max - curry_min);
                      if (curry !== curry_max)
-                       res += "v" + (curry - curry_max);
+                       res += 'v' + (curry - curry_max);
                   }
 
                   prevx = currx;
@@ -661,7 +661,7 @@ class TH1Painter extends THistPainter {
                }
 
                if (lastbin && (prevx !== grx))
-                  res += "h" + (grx-prevx);
+                  res += 'h' + (grx-prevx);
 
                bestimin = bestimax = i;
                curry_min = curry_max = curry = gry;
