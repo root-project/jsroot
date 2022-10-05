@@ -64,7 +64,7 @@ class TMultiGraphPainter extends ObjectPainter {
    scanGraphsRange(graphs, histo, pad) {
       let mgraph = this.getObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
-          time_display = false, time_format = "",
+          time_display = false, time_format = '',
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
       if (pad) {
@@ -161,12 +161,12 @@ class TMultiGraphPainter extends ObjectPainter {
                let lbl = create('TObjString');
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
-               xaxis.fLabels.Add(lbl, "");
+               xaxis.fLabels.Add(lbl, '');
             }
             xaxis = histo.fYaxis;
             yaxis = histo.fZaxis;
          } else {
-            histo = create("TH1I");
+            histo = create('TH1I');
             xaxis = histo.fXaxis;
             yaxis = histo.fYaxis;
          }
@@ -198,7 +198,7 @@ class TMultiGraphPainter extends ObjectPainter {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      return TH1Painter.draw(this.getDom(), histo, "AXIS" + hopt);
+      return TH1Painter.draw(this.getDom(), histo, 'AXIS' + hopt);
    }
 
    /** @summary method draws next function from the functions list  */
@@ -257,16 +257,16 @@ class TMultiGraphPainter extends ObjectPainter {
 
       let d = new DrawOptions(opt);
 
-      painter._3d = d.check("3D");
-      painter._pfc = d.check("PFC");
-      painter._plc = d.check("PLC");
-      painter._pmc = d.check("PMC");
+      painter._3d = d.check('3D');
+      painter._pfc = d.check('PFC');
+      painter._plc = d.check('PLC');
+      painter._pmc = d.check('PMC');
 
-      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY", "FB"];
+      let hopt = '', checkhopt = ['USE_PAD_TITLE', 'LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY', 'FB'];
       checkhopt.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
       let promise = Promise.resolve(true);
-      if (d.check("A") || !painter.getMainPainter()) {
+      if (d.check('A') || !painter.getMainPainter()) {
           let mgraph = painter.getObject(),
               pp = painter.getPadPainter(),
               histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp?.getRootPad(true));
