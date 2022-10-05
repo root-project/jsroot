@@ -1,20 +1,20 @@
 
 /** @summary version id
-  * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
-let version_id = "dev";
+  * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
+let version_id = 'dev';
 
 /** @summary version date
-  * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "5/10/2022";
+  * @desc Release date in format day/month/year like '19/11/2021' */
+let version_date = '5/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
-  * Like "7.0.0 14/04/2022" */
-let version = version_id + " " + version_date;
+  * Like '7.0.0 14/04/2022' */
+let version = version_id + ' ' + version_date;
 
 /** @summary Location of JSROOT scripts
   * @desc Automatically detected and used to load other scripts or modules */
-let source_dir = "";
+let source_dir = '';
 
 let nodejs = !!((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
 
@@ -24,11 +24,11 @@ let internals = {
    id_counter: 1          ///< unique id contner, starts from 1
 };
 
-//openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = "nojsroot";
+//openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = 'nojsroot';
 
 const src = import.meta?.url;
 if (src && (typeof src == 'string')) {
-   const pos = src.indexOf("modules/core.mjs");
+   const pos = src.indexOf('modules/core.mjs');
    if (pos >= 0) {
       source_dir = src.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
@@ -58,7 +58,7 @@ const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64
 let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined')) {
-   browser.isFirefox = (navigator.userAgent.indexOf("Firefox") >= 0) || (typeof InstallTrigger !== 'undefined');
+   browser.isFirefox = (navigator.userAgent.indexOf('Firefox') >= 0) || (typeof InstallTrigger !== 'undefined');
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser.isChrome = !!window.chrome;
    browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
@@ -74,7 +74,7 @@ function isArrayProto(proto) {
     if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
     let p = proto.indexOf('Array]');
     if ((p < 0) || (p != proto.length - 6)) return 0;
-    // plain array has only "[object Array]", typed array type name inside
+    // plain array has only '[object Array]', typed array type name inside
     return proto.length == 14 ? 1 : 2;
 }
 
@@ -93,8 +93,8 @@ let constants = {
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
       fromString(s) {
-         if ((s === "webgl") || (s == "gl")) return this.WebGL;
-         if (s === "img") return this.WebGLImage;
+         if ((s === 'webgl') || (s == 'gl')) return this.WebGL;
+         if (s === 'img') return this.WebGLImage;
          if (s === 'svg') return this.SVG;
          return this.Default;
       }
@@ -114,8 +114,8 @@ let constants = {
       EmbedSVG: 3,
       /** @summary Convert string values into number  */
       fromString(s) {
-         if (s === "embed") return this.Embed;
-         if (s === "overlay") return this.Overlay;
+         if (s === 'embed') return this.Embed;
+         if (s === 'overlay') return this.Overlay;
          return this.Default;
       }
    },
@@ -138,17 +138,17 @@ let constants = {
             return this.Normal;
          switch(s){
             case 'off': return this.Off;
-            case "symbols": return this.Symbols;
-            case "normal":
-            case "latex":
-            case "exp":
-            case "experimental": return this.Normal;
-            case "MathJax":
-            case "mathjax":
-            case "math": return this.MathJax;
-            case "AlwaysMathJax":
-            case "alwaysmath":
-            case "alwaysmathjax": return this.AlwaysMathJax;
+            case 'symbols': return this.Symbols;
+            case 'normal':
+            case 'latex':
+            case 'exp':
+            case 'experimental': return this.Normal;
+            case 'MathJax':
+            case 'mathjax':
+            case 'math': return this.MathJax;
+            case 'AlwaysMathJax':
+            case 'alwaysmath':
+            case 'alwaysmathjax': return this.AlwaysMathJax;
          }
          let code = parseInt(s);
          return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
@@ -231,7 +231,7 @@ let settings = {
    ZValuesFormat: undefined,
    /** @summary Let detect and solve problem when browser returns wrong content-length parameter
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
-     * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
+     * Can be enabled by adding 'wrong_http_response' parameter to URL when using JSROOT UI
      * @default false */
    HandleWrongHttpResponse: false,
    /** @summary Tweak browser caching with stamp URL parameter
@@ -239,7 +239,7 @@ let settings = {
      * In such case browser will be forced to load file content disregards of server cache settings
      * @default true */
    UseStamp: true,
-   /** @summary Maximal number of bytes ranges in http "Range" header
+   /** @summary Maximal number of bytes ranges in http 'Range' header
      * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
      * @default 200 */
    MaxRanges: 200,
@@ -260,9 +260,9 @@ if (nodejs)
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
   * or can be load from the file providing style=itemname in the URL
-  * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
+  * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} 'Private attributes' section for more detailed info about each value */
 let gStyle = {
-   fName: "Modern",
+   fName: 'Modern',
    /** @summary Default log x scale */
    fOptLogx: 0,
    /** @summary Default log y scale */
@@ -302,7 +302,7 @@ let gStyle = {
    /** @summary Stat border size */
    fStatBorderSize: 1,
    /** @summary Printing format for stats */
-   fStatFormat: "6.4g",
+   fStatFormat: '6.4g',
    fStatX: 0.98,
    fStatY: 0.935,
    fStatW: 0.2,
@@ -323,7 +323,7 @@ let gStyle = {
    /** @summary Height of title box */
    fTitleH: 0,
    /** @summary Printing format for fit parameters */
-   fFitFormat: "5.4g",
+   fFitFormat: '5.4g',
    fOptStat: 1111,
    fOptFit: 0,
    fNumberContours: 20,
@@ -382,12 +382,12 @@ async function injectCode(code) {
    if (nodejs) {
       let name, fs;
       return import('tmp').then(tmp => {
-         name = tmp.tmpNameSync() + ".js";
+         name = tmp.tmpNameSync() + '.js';
          return import('fs');
       }).then(_fs => {
          fs = _fs;
          fs.writeFileSync(name, code);
-         return import(/* webpackIgnore: true */ "file://" + name);
+         return import(/* webpackIgnore: true */ 'file://' + name);
       }).finally(() => fs.unlinkSync(name));
    }
 
@@ -398,12 +398,12 @@ async function injectCode(code) {
          if (scripts[n].innerHTML == code)
             return true;
 
-      let promise = code.indexOf("JSROOT.require") >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+      let promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          return new Promise(resolve => {
-            let element = document.createElement("script");
-            element.setAttribute('type', "text/javascript");
+            let element = document.createElement('script');
+            element.setAttribute('type', 'text/javascript');
             element.innerHTML = code;
             document.head.appendChild(element);
             setTimeout(() => resolve(true), 10); // while onload event not fired, just postpone resolve
@@ -432,19 +432,19 @@ async function loadScript(url) {
       return loadNext();
    }
 
-   if (url.indexOf("$$$") === 0) {
+   if (url.indexOf('$$$') === 0) {
       url = url.slice(3);
-      if ((url.indexOf("style/") == 0) && (url.indexOf('.css') < 0))
-         url += ".css";
+      if ((url.indexOf('style/') == 0) && (url.indexOf('.css') < 0))
+         url += '.css';
       url = source_dir + url;
    }
 
-   let element, isstyle = url.indexOf(".css") > 0;
+   let element, isstyle = url.indexOf('.css') > 0;
 
    if (nodejs) {
       if (isstyle)
          return null;
-      if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+      if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0))
          return httpRequest(url, 'text').then(code => injectCode(code));
 
       return import(/* webpackIgnore: true */ url);
@@ -453,7 +453,7 @@ async function loadScript(url) {
    const match_url = src => {
       if (src == url) return true;
       let indx = src.indexOf(url);
-      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == "/");
+      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == '/');
    };
 
    if (isstyle) {
@@ -472,13 +472,13 @@ async function loadScript(url) {
    }
 
    if (isstyle) {
-      element = document.createElement("link");
-      element.setAttribute("rel", "stylesheet");
-      element.setAttribute('type', "text/css");
-      element.setAttribute("href", url);
+      element = document.createElement('link');
+      element.setAttribute('rel', 'stylesheet');
+      element.setAttribute('type', 'text/css');
+      element.setAttribute('href', url);
    } else {
-      element = document.createElement("script");
-      element.setAttribute('type', "text/javascript");
+      element = document.createElement('script');
+      element.setAttribute('type', 'text/javascript');
       element.setAttribute('src', url);
    }
 
@@ -576,7 +576,7 @@ function parse(json) {
       if ((value === null) || (value === undefined)) return;
 
       if (typeof value === 'string') {
-         if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
+         if (newfmt || (value.length < 6) || (value.indexOf('$ref:') !== 0)) return;
          let ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = false;
@@ -609,20 +609,20 @@ function parse(json) {
          // this is ROOT-coded array
          let arr;
          switch (value.$arr) {
-            case "Int8": arr = new Int8Array(value.len); break;
-            case "Uint8": arr = new Uint8Array(value.len); break;
-            case "Int16": arr = new Int16Array(value.len); break;
-            case "Uint16": arr = new Uint16Array(value.len); break;
-            case "Int32": arr = new Int32Array(value.len); break;
-            case "Uint32": arr = new Uint32Array(value.len); break;
-            case "Float32": arr = new Float32Array(value.len); break;
-            case "Int64":
-            case "Uint64":
-            case "Float64": arr = new Float64Array(value.len); break;
+            case 'Int8': arr = new Int8Array(value.len); break;
+            case 'Uint8': arr = new Uint8Array(value.len); break;
+            case 'Int16': arr = new Int16Array(value.len); break;
+            case 'Uint16': arr = new Uint16Array(value.len); break;
+            case 'Int32': arr = new Int32Array(value.len); break;
+            case 'Uint32': arr = new Uint32Array(value.len); break;
+            case 'Float32': arr = new Float32Array(value.len); break;
+            case 'Int64':
+            case 'Uint64':
+            case 'Float64': arr = new Float64Array(value.len); break;
             default: arr = new Array(value.len);
          }
 
-         arr.fill((value.$arr === "Bool") ? false : 0);
+         arr.fill((value.$arr === 'Bool') ? false : 0);
 
          if (value.b !== undefined) {
             // base64 coding
@@ -641,7 +641,7 @@ function parse(json) {
             // compressed coding
             let nkey = 2, p = 0;
             while (nkey < len) {
-               if (ks[nkey][0] == "p") p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] == 'p') p = value[ks[nkey++]]; // position
                if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
                let v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
@@ -763,11 +763,11 @@ function toJSON(obj, spacing) {
   * @param {string} [url] URL string with options, document.URL will be used when not specified
   * @return {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
   * @example
-  * let d = decodeUrl("any?opt1&op2=3");
-  * console.log(`Has opt1 ${d.has("opt1")}`);     // true
-  * console.log(`Get opt1 ${d.get("opt1")}`);     // ""
-  * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"
-  * console.log(`Get opt3 ${d.get("opt3","-")}`); // "-" */
+  * let d = decodeUrl('any?opt1&op2=3');
+  * console.log(`Has opt1 ${d.has('opt1')}`);     // true
+  * console.log(`Get opt1 ${d.get('opt1')}`);     // ''
+  * console.log(`Get opt2 ${d.get('opt2')}`);     // '3'
+  * console.log(`Get opt3 ${d.get('opt3','-')}`); // '-' */
 function decodeUrl(url) {
    let res = {
       opts: {},
@@ -781,7 +781,7 @@ function decodeUrl(url) {
    }
    res.url = url;
 
-   let p1 = url.indexOf("?");
+   let p1 = url.indexOf('?');
    if (p1 < 0) return res;
    url = decodeURI(url.slice(p1+1));
 
@@ -789,7 +789,7 @@ function decodeUrl(url) {
 
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
-      while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== "&") && (url[pos] !== "#")))) {
+      while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== '&') && (url[pos] !== '#')))) {
          switch (url[pos]) {
             case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
             case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
@@ -799,7 +799,7 @@ function decodeUrl(url) {
       }
 
       if ((eq < 0) && (firstq < 0)) {
-         res.opts[url.slice(0,pos)] = "";
+         res.opts[url.slice(0,pos)] = '';
       } if (eq > 0) {
          let val = url.slice(eq+1, pos);
          if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
@@ -834,22 +834,22 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
-   if (!kind) kind = "buf";
+   if (!kind) kind = 'buf';
 
-   let method = "GET", is_async = true, p = kind.indexOf(";sync");
+   let method = 'GET', is_async = true, p = kind.indexOf(';sync');
    if (p > 0) { kind = kind.slice(0,p); is_async = false; }
    switch (kind) {
-      case "head": method = "HEAD"; break;
-      case "posttext": method = "POST"; kind = 'text'; break;
-      case "postbuf":  method = "POST"; kind = "buf"; break;
-      case "post":
-      case "multi": method = "POST"; break;
+      case 'head': method = 'HEAD'; break;
+      case 'posttext': method = 'POST'; kind = 'text'; break;
+      case 'postbuf':  method = 'POST'; kind = 'buf'; break;
+      case 'post':
+      case 'multi': method = 'POST'; break;
    }
 
    xhr.kind = kind;
 
-   if (settings.HandleWrongHttpResponse && (method == "GET") && (typeof xhr.addEventListener === 'function'))
-      xhr.addEventListener("progress", function(oEvent) {
+   if (settings.HandleWrongHttpResponse && (method == 'GET') && (typeof xhr.addEventListener === 'function'))
+      xhr.addEventListener('progress', function(oEvent) {
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
             this.abort();
@@ -862,7 +862,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
       if (this.did_abort) return;
 
       if ((this.readyState === 2) && this.expected_size) {
-         let len = parseInt(this.getResponseHeader("Content-Length"));
+         let len = parseInt(this.getResponseHeader('Content-Length'));
          if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
             this.did_abort = true;
             this.abort();
@@ -874,11 +874,11 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
       if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
           // in these special cases browsers not always set status
-          !((this.status == 0) && ((url.indexOf("file://") == 0) || (url.indexOf("blob:") == 0)))) {
+          !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
             return this.error_callback(Error(`Fail to load url ${url}`), this.status);
       }
 
-      if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
+      if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') == 'gzip'))
          // special handling of gzipped JSON objects in Node.js
          return import('zlib').then(handle => {
              let res = handle.unzipSync(Buffer.from(this.response)),
@@ -887,21 +887,21 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
          });
 
       switch(this.kind) {
-         case "xml": return this.http_callback(this.responseXML);
+         case 'xml': return this.http_callback(this.responseXML);
          case 'text': return this.http_callback(this.responseText);
          case 'object': return this.http_callback(parse(this.responseText));
-         case "multi": return this.http_callback(parseMulti(this.responseText));
-         case "head": return this.http_callback(this);
+         case 'multi': return this.http_callback(parseMulti(this.responseText));
+         case 'head': return this.http_callback(this);
       }
 
       // if no response type is supported, return as text (most probably, will fail)
       if (this.responseType === undefined)
          return this.http_callback(this.responseText);
 
-      if ((this.kind == "bin") && ('byteLength' in this.response)) {
+      if ((this.kind == 'bin') && ('byteLength' in this.response)) {
          // if string representation in requested - provide it
 
-         let filecontent = "", u8Arr = new Uint8Array(this.response);
+         let filecontent = '', u8Arr = new Uint8Array(this.response);
          for (let i = 0; i < u8Arr.length; ++i)
             filecontent += String.fromCharCode(u8Arr[i]);
 
@@ -913,10 +913,10 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
    xhr.open(method, url, is_async);
 
-   if ((kind == "bin") || (kind == "buf"))
+   if ((kind == 'bin') || (kind == 'buf'))
       xhr.responseType = 'arraybuffer';
 
-   if (nodejs && (method == "GET") && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
+   if (nodejs && (method == 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
       xhr.nodejs_checkzip = true;
       xhr.responseType = 'arraybuffer';
    }
@@ -929,7 +929,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
    if (isNodeJs()) {
       if (!use_promise)
-         throw Error("Not allowed to create http requests in node without promise");
+         throw Error('Not allowed to create http requests in node without promise');
       return import('xhr2').then(h => {
          let xhr = new h.default();
          setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
@@ -944,21 +944,21 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
 /** @summary Submit asynchronoues http request
   * @desc Following requests kind can be specified:
-  *    - "bin" - abstract binary data, result as string
-  *    - "buf" - abstract binary data, result as ArrayBuffer (default)
+  *    - 'bin' - abstract binary data, result as string
+  *    - 'buf' - abstract binary data, result as ArrayBuffer (default)
   *    - 'text' - returns req.responseText
   *    - 'object' - returns parse(req.responseText)
-  *    - "multi" - returns correctly parsed multi.json request
-  *    - "xml" - returns req.responseXML
-  *    - "head" - returns request itself, uses "HEAD" request method
-  *    - "post" - creates post request, submits req.send(post_data)
-  *    - "postbuf" - creates post request, expectes binary data as response
+  *    - 'multi' - returns correctly parsed multi.json request
+  *    - 'xml' - returns req.responseXML
+  *    - 'head' - returns request itself, uses 'HEAD' request method
+  *    - 'post' - creates post request, submits req.send(post_data)
+  *    - 'postbuf' - creates post request, expectes binary data as response
   * @param {string} url - URL for the request
   * @param {string} kind - kind of requested data
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
   * @example
-  * httpRequest("https://root.cern/js/files/thstack.json.gz", 'object')
+  * httpRequest('https://root.cern/js/files/thstack.json.gz', 'object')
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 async function httpRequest(url, kind, post_data) {
@@ -972,9 +972,9 @@ async function httpRequest(url, kind, post_data) {
   * @param {string} typename - ROOT class name
   * @example
   * import { create } from 'path_to_jsroot/modules/core.mjs';
-  * let obj = create("TNamed");
+  * let obj = create('TNamed');
   * obj.fName = 'name';
-  * obj.fTitle = "title"; */
+  * obj.fTitle = 'title'; */
 function create(typename, target) {
    let obj = target || {};
 
@@ -995,8 +995,8 @@ function create(typename, target) {
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case 'TAxis':
-         create("TNamed", obj);
-         create("TAttAxis", obj);
+         create('TNamed', obj);
+         create('TAttAxis', obj);
          extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
@@ -1010,72 +1010,72 @@ function create(typename, target) {
          extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
       case 'TLine':
-         create("TObject", obj);
-         create("TAttLine", obj);
+         create('TObject', obj);
+         create('TAttLine', obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TBox':
-         create("TObject", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
+         create('TObject', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TPave':
-         create("TBox", obj);
+         create('TBox', obj);
          extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                       fCornerRadius: 0, fOption: "brNDC", fName: 'title' });
+                       fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
       case 'TAttText':
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
          break;
       case 'TPaveText':
-         create("TPave", obj);
-         create("TAttText", obj);
+         create('TPave', obj);
+         create('TAttText', obj);
          extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create('TList') });
          break;
       case 'TPaveStats':
-         create("TPaveText", obj);
+         create('TPaveText', obj);
          extend(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case 'TLegend':
-         create("TPave", obj);
-         create("TAttText", obj);
+         create('TPave', obj);
+         create('TAttText', obj);
          extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create('TList'),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
-         create("TObject", obj);
-         create("TAttText", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
-         create("TAttMarker", obj);
+         create('TObject', obj);
+         create('TAttText', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
+         create('TAttMarker', obj);
          extend(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
-         create("TNamed", obj);
-         create("TAttText", obj);
+         create('TNamed', obj);
+         create('TAttText', obj);
          extend(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
       case 'TLatex':
-         create("TText", obj);
-         create("TAttLine", obj);
+         create('TText', obj);
+         create('TAttLine', obj);
          extend(obj, { fX: 0, fY: 0 });
          break;
       case 'TObjString':
-         create("TObject", obj);
+         create('TObject', obj);
          extend(obj, { fString: '' });
          break;
       case 'TH1':
-         create("TNamed", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
-         create("TAttMarker", obj);
+         create('TNamed', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
+         create('TAttMarker', obj);
          extend(obj, { fBits: 8, fNcells: 0,
-                       fXaxis: create("TAxis"), fYaxis: create("TAxis"), fZaxis: create("TAxis"),
+                       fXaxis: create('TAxis'), fYaxis: create('TAxis'), fZaxis: create('TAxis'),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
@@ -1090,11 +1090,11 @@ function create(typename, target) {
       case 'TH1D':
       case 'TH1S':
       case 'TH1C':
-         create("TH1", obj);
+         create('TH1', obj);
          obj.fArray = [];
          break;
       case 'TH2':
-         create("TH1", obj);
+         create('TH1', obj);
          extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case 'TH2I':
@@ -1103,11 +1103,11 @@ function create(typename, target) {
       case 'TH2D':
       case 'TH2S':
       case 'TH2C':
-         create("TH2", obj);
+         create('TH2', obj);
          obj.fArray = [];
          break;
       case 'TH3':
-         create("TH1", obj);
+         create('TH1', obj);
          extend(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
@@ -1116,48 +1116,48 @@ function create(typename, target) {
       case 'TH3D':
       case 'TH3S':
       case 'TH3C':
-         create("TH3", obj);
+         create('TH3', obj);
          obj.fArray = [];
          break;
       case 'THStack':
-         create("TNamed", obj);
+         create('TNamed', obj);
          extend(obj, { fHists: create('TList'), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraph':
-         create("TNamed", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
-         create("TAttMarker", obj);
+         create('TNamed', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
+         create('TAttMarker', obj);
          extend(obj, { fFunctions: create('TList'), fHistogram: null,
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
-         create("TGraph", obj);
+         create('TGraph', obj);
          extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
-         create("TNamed", obj);
+         create('TNamed', obj);
          extend(obj, { fFunctions: create('TList'), fGraphs: create('TList'),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraphPolargram':
-         create("TNamed", obj);
-         create("TAttText", obj);
-         create("TAttLine", obj);
+         create('TNamed', obj);
+         create('TAttText', obj);
+         create('TAttLine', obj);
          extend(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case 'TPolyLine':
-         create("TObject", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
+         create('TObject', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
          extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case 'TGaxis':
-         create("TLine", obj);
-         create("TAttText", obj);
+         create('TLine', obj);
+         create('TAttText', obj);
          extend(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
                        fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
@@ -1179,10 +1179,10 @@ function create(typename, target) {
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
       case 'TPad':
-         create("TObject", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
-         create("TAttPad", obj);
+         create('TObject', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
+         create('TAttPad', obj);
          extend(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
@@ -1199,7 +1199,7 @@ function create(typename, target) {
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                        fPrimitives: create('TList'), fExecs: null,
-                       fName: 'pad', fTitle: "canvas" });
+                       fName: 'pad', fTitle: 'canvas' });
 
          break;
       case 'TAttCanvas':
@@ -1207,34 +1207,34 @@ function create(typename, target) {
                        fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
          break;
       case 'TCanvas':
-         create("TPad", obj);
+         create('TPad', obj);
          extend(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
-                       fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
+                       fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: '$DISPLAY',
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
-                       fCw: 500, fCh: 300, fCatt: create("TAttCanvas"),
+                       fCw: 500, fCh: 300, fCatt: create('TAttCanvas'),
                        kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
       case 'TGeoVolume':
-         create("TNamed", obj);
-         create("TAttLine", obj);
-         create("TAttFill", obj);
+         create('TNamed', obj);
+         create('TAttLine', obj);
+         create('TAttFill', obj);
          extend(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
       case 'TGeoNode':
-         create("TNamed", obj);
+         create('TNamed', obj);
          extend(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case 'TGeoNodeMatrix':
-         create("TGeoNode", obj);
+         create('TGeoNode', obj);
          extend(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
-         create("TObject", obj);
-         create("TAttLine", obj);
-         create("TAttMarker", obj);
+         create('TObject', obj);
+         create('TAttLine', obj);
+         create('TAttMarker', obj);
          extend(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
    }
@@ -1251,16 +1251,16 @@ function create(typename, target) {
   * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
   * @return {Object} created histogram object
   * @example
-  * let h1 = createHistogram("TH1I", 20);
-  * h1.fName = "Hist1";
-  * h1.fTitle = "Histogram title";
+  * let h1 = createHistogram('TH1I', 20);
+  * h1.fName = 'Hist1';
+  * h1.fTitle = 'Histogram title';
   * h1.fXaxis.fTitle = 'xaxis';
   * h1.fYaxis.fTitle = 'yaxis';
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    let histo = create(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
-   histo.fName = "hist"; histo.fTitle = 'title';
+   histo.fName = 'hist'; histo.fTitle = 'title';
    if (nbinsx) extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
    if (nbinsy) extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
    if (nbinsz) extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
@@ -1271,12 +1271,12 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    }
    if (histo.fNcells > 0) {
       switch (typename[3]) {
-         case "C": histo.fArray = new Int8Array(histo.fNcells); break;
-         case "S": histo.fArray = new Int16Array(histo.fNcells); break;
-         case "I": histo.fArray = new Int32Array(histo.fNcells); break;
-         case "F": histo.fArray = new Float32Array(histo.fNcells); break;
-         case "L":
-         case "D": histo.fArray = new Float64Array(histo.fNcells); break;
+         case 'C': histo.fArray = new Int8Array(histo.fNcells); break;
+         case 'S': histo.fArray = new Int16Array(histo.fNcells); break;
+         case 'I': histo.fArray = new Int32Array(histo.fNcells); break;
+         case 'F': histo.fArray = new Float32Array(histo.fNcells); break;
+         case 'L':
+         case 'D': histo.fArray = new Float64Array(histo.fNcells); break;
          default: histo.fArray = new Array(histo.fNcells);
       }
       histo.fArray.fill(0);
@@ -1288,7 +1288,7 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   let poly = create("TPolyLine");
+   let poly = create('TPolyLine');
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1307,7 +1307,7 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend(create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: 'title' });
+   let graph = extend(create('TGraph'), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
@@ -1328,14 +1328,14 @@ function createTGraph(npoints, xpts, ypts) {
   * @desc As arguments one could specify any number of histograms objects
   * @example
   * let nbinsx = 20;
-  * let h1 = createHistogram("TH1F", nbinsx);
-  * let h2 = createHistogram("TH1F", nbinsx);
-  * let h3 = createHistogram("TH1F", nbinsx);
+  * let h1 = createHistogram('TH1F', nbinsx);
+  * let h2 = createHistogram('TH1F', nbinsx);
+  * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   let stack = create("THStack");
+   let stack = create('THStack');
    for (let i = 0; i < arguments.length; ++i)
-      stack.fHists.Add(arguments[i], "");
+      stack.fHists.Add(arguments[i], '');
    return stack;
 }
 
@@ -1347,9 +1347,9 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   let mgraph = create("TMultiGraph");
+   let mgraph = create('TMultiGraph');
    for (let i = 0; i < arguments.length; ++i)
-       mgraph.fGraphs.Add(arguments[i], "");
+       mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
 }
 
@@ -1368,7 +1368,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == "TObject") || (typename == "TNamed") || (obj && (obj.fBits !== undefined)))
+   if ((typename == 'TObject') || (typename == 'TNamed') || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1395,9 +1395,9 @@ function getMethods(typename, obj) {
       }
    }
 
-   if ((typename === "TPaveText") || (typename === "TPaveStats")) {
+   if ((typename === 'TPaveText') || (typename === 'TPaveStats')) {
       m.AddText = function(txt) {
-         let line = create("TLatex");
+         let line = create('TLatex');
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1407,7 +1407,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if ((typename.indexOf("TF1") == 0) || (typename === "TF2")) {
+   if ((typename.indexOf('TF1') == 0) || (typename === 'TF2')) {
       m.addFormula = function(obj) {
          if (!obj) return;
          if (this.formulas === undefined) this.formulas = [];
@@ -1422,7 +1422,7 @@ function getMethods(typename, obj) {
                   return this.fFormula.fParams[k].first;
          }
          if (this.fNames && this.fNames[n]) return this.fNames[n];
-         return "p"+n;
+         return 'p'+n;
       }
       m.GetParValue = function(n) {
          if (this.fParams && this.fParams.fParameters) return this.fParams.fParameters[n];
@@ -1438,7 +1438,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) && (typename != "TGraphPolargram") && (typename != "TGraphTime")) {
+   if (((typename.indexOf('TGraph') == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1456,7 +1456,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("TH1") == 0 || typename.indexOf("TH2") == 0 || typename.indexOf("TH3") == 0) {
+   if (typename.indexOf('TH1') == 0 || typename.indexOf('TH2') == 0 || typename.indexOf('TH3') == 0) {
       m.getBinError = function(bin) {
          //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
          //    if the sum of squares of weights has been defined (via Sumw2),
@@ -1477,7 +1477,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("TH1") == 0) {
+   if (typename.indexOf('TH1') == 0) {
       m.getBin = function(x) { return x; }
       m.getBinContent = function(bin) { return this.fArray[bin]; }
       m.Fill = function(x, weight) {
@@ -1490,7 +1490,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("TH2") == 0) {
+   if (typename.indexOf('TH2') == 0) {
       m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
       m.Fill = function(x, y, weight) {
@@ -1506,7 +1506,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("TH3") == 0) {
+   if (typename.indexOf('TH3') == 0) {
       m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; }
       m.Fill = function(x, y, z, weight) {
@@ -1525,8 +1525,8 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("TProfile") == 0) {
-      if (typename.indexOf("TProfile2D") == 0) {
+   if (typename.indexOf('TProfile') == 0) {
+      if (typename.indexOf('TProfile2D') == 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
          m.getBinContent = function(x, y) {
             let bin = this.getBin(x, y);
@@ -1580,7 +1580,7 @@ function getMethods(typename, obj) {
          }
          // if approximate compute the sums (of w, wy and wy2) using all the bins
          //  when the variance in y is zero
-         // case option "S" return standard deviation in y
+         // case option 'S' return standard deviation in y
          if (this.fErrorMode === EErrorType.kERRORSPREAD) return eprim;
          // default case : fErrorMode = kERRORMEAN
          // return standard error on the mean of y
@@ -1588,7 +1588,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename == "TAxis") {
+   if (typename == 'TAxis') {
       m.GetBinLowEdge = function(bin) {
          if (this.fNbins <= 0) return 0;
          if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
@@ -1601,7 +1601,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf("ROOT::Math::LorentzVector") === 0) {
+   if (typename.indexOf('ROOT::Math::LorentzVector') === 0) {
       m.Px = m.X = function() { return this.fCoordinates.Px(); }
       m.Py = m.Y = function() { return this.fCoordinates.Py(); }
       m.Pz = m.Z = function() { return this.fCoordinates.Pz(); }
@@ -1615,7 +1615,7 @@ function getMethods(typename, obj) {
       m.Eta = m.eta = function() { return Math.atanh(this.Pz()/this.P()); }
    }
 
-   if (typename.indexOf("ROOT::Math::PxPyPzE4D") === 0) {
+   if (typename.indexOf('ROOT::Math::PxPyPzE4D') === 0) {
       m.Px = m.X = function() { return this.fX; }
       m.Py = m.Y = function() { return this.fY; }
       m.Pz = m.Z = function() { return this.fZ; }
@@ -1648,7 +1648,7 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === 'TList') || (lst.$kind === "TObjArray")) return true;
+      if ((lst.$kind === 'TList') || (lst.$kind === 'TObjArray')) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
