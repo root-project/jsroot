@@ -17,21 +17,21 @@ Data can be read and displayed from ROOT binary and JSON files.
    </body>
    <script type='module'>
       import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
-      let file = await openFile("https://root.cern/js/files/hsimple.root");
-      let obj = await file.readObject("hpxpy;1");
-      draw("drawing", obj, "colz");
+      let file = await openFile('https://root.cern/js/files/hsimple.root');
+      let obj = await file.readObject('hpxpy;1');
+      draw('drawing', obj, 'colz');
    </script>
 ...
 ```
 
 ### In node.js
 ```javascript
-import { openFile, makeSVG } from "jsroot";
-import { writeFileSync } from "fs";
-let file = await openFile("https://root.cern/js/files/hsimple.root");
-let obj = await file.readObject("hpxpy;1");
-let svg = await makeSVG({ object: obj, option: "lego2,pal50", width: 1200, height: 800 });
-writeFileSync("lego2.svg", svg);
+import { openFile, makeSVG } from 'jsroot';
+import { writeFileSync } from 'fs';
+let file = await openFile('https://root.cern/js/files/hsimple.root');
+let obj = await file.readObject('hpxpy;1');
+let svg = await makeSVG({ object: obj, option: 'lego2,pal50', width: 1200, height: 800 });
+writeFileSync('lego2.svg', svg);
 ```
 
 ### More examples
