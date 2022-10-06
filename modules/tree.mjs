@@ -785,8 +785,10 @@ class TDrawSelector extends TSelector {
          } else if (harg.indexOf('Graph') == 0) {
             args.graph = true;
          } else if (pos < 0) {
+            this.want_hist = true;
             this.hist_name = harg;
          } else if ((harg[0] == '(') && (harg[harg.length - 1] == ')')) {
+            this.want_hist = true;
             harg = harg.slice(1, harg.length - 1).split(',');
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
@@ -870,6 +872,9 @@ class TDrawSelector extends TSelector {
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
 
       this.monitoring = args.monitoring;
+
+      // force TPolyMarker3D drawing for 3D case
+      if ((this.ndim == 3) && !this.want_hist && !args.dump) args.graph = true;
 
       this.graph = args.graph;
 
@@ -1091,6 +1096,9 @@ class TDrawSelector extends TSelector {
          this.x = x;
          this.y = y;
          this.z = z;
+      } else {
+         let kNoStats = BIT(9);
+         hist.fBits = hist.fBits | kNoStats;
       }
 
       return hist;
@@ -1107,33 +1115,39 @@ class TDrawSelector extends TSelector {
          // reassign fill method
          this.fill1DHistogram = this.fill2DHistogram = this.fill3DHistogram = this.dumpValues;
       } else if (this.graph) {
-         let N = this.vars[0].buf.length;
+         let N = this.vars[0].buf.length, res = null;
 
          if (this.ndim == 1) {
             // A 1-dimensional graph will just have the x axis as an index
-            this.hist = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            res = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            res.fName = 'Graph';
+            res.fTitle = this.hist_title;
          } else if (this.ndim == 2) {
-            this.hist = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
+            res = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
+            res.fName = 'Graph';
+            res.fTitle = this.hist_title;
             delete this.vars[1].buf;
          } else if (this.ndim == 3) {
-            this.hist = create('TPolyMarker3D');
-            this.hist.fN = N;
-            this.hist.fLastPoint = N - 1;
-            let arr = [];
-            for (let k = 0; k< N; ++k)
-               arr.push(this.vars[0].buf[k], this.vars[1].buf[k], this.vars[2].buf[k]);
-            this.hist.fP = arr;
-            this.hist.$hist = this.createHistogram(10);
+            res = create('TPolyMarker3D');
+            res.fN = N;
+            res.fLastPoint = N - 1;
+            let arr = new Array(N*3);
+            for (let k = 0; k< N; ++k) {
+               arr[k*3] = this.vars[0].buf[k];
+               arr[k*3+1] = this.vars[1].buf[k];
+               arr[k*3+2] = this.vars[2].buf[k];
+            }
+            res.fP = arr;
+            res.$hist = this.createHistogram(10);
             delete this.vars[1].buf;
             delete this.vars[2].buf;
+            res.fName = 'Points';
          }
 
-         this.hist.fTitle = this.hist_title;
-         this.hist.fName = 'Graph';
+         this.hist = res;
 
       } else {
          let nbins = [ 200, 50, 20 ];
-
          this.createHistogram(nbins[this.ndim], true);
       }
 

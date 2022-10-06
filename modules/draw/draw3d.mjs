@@ -44,7 +44,7 @@ async function drawPolyMarker3D() {
 /** @summary Direct draw function for TPolyLine3D object
   * @desc Takes into account dashed properties
   * @private */
-function drawPolyLine3D() {
+async function drawPolyLine3D() {
    let line = this.getObject(),
        fp = before3DDraw(this, line);
 
