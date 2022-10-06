@@ -2454,13 +2454,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._animating = false;
 
-         // Clipping Planes
-
-         this.ctrl.bothSides = false; // which material kind should be used
-         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
-                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
-
+         this.ctrl.bothSides = false; // both sides need for clipping
          this.createSpecialEffects();
 
          if (this._fit_main_area && !this._webgl) {
@@ -2614,6 +2608,10 @@ class TGeoPainter extends ObjectPainter {
       if (!this._toplevel) return;
 
       let box = this.getGeomBoundingBox(this._toplevel);
+
+      // let box2 = new Box3().makeEmpty();
+      // box2.expandByObject(this._toplevel, true);
+      // console.log('min,max', box.min.x, box.max.x, box2.min.x, box2.max.x);
 
       // if detect of coordinates fails - ignore
       if (!Number.isFinite(box.min.x)) return;
@@ -3050,7 +3048,7 @@ class TGeoPainter extends ObjectPainter {
             mesh.visible = res;
             this.render3D();
          } else if (res) {
-            this.drawExtras(obj, '', false).then(()=> {
+            this.drawExtras(obj, '', false).then(() => {
                this.updateClipping(true);
                this.render3D();
             });
@@ -3080,7 +3078,7 @@ class TGeoPainter extends ObjectPainter {
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
             let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : '';
-            if (!sname) sname = (itemname || '<prnt>') + '/[' + n + ']';
+            if (!sname) sname = (itemname || '<prnt>') + `/[${n}]`;
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
          promise = Promise.all(parr).then(ress => ress.indexOf(true) >= 0);
@@ -3155,7 +3153,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary add object to extras container.
-     * @desc If fail, dispore object */
+     * @desc If fail, dispose object */
    addToExtrasContainer(obj, name) {
       let container = this.getExtrasContainer('', name);
       if (container) {
@@ -3168,9 +3166,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary drawing TGeoTrack */
    drawGeoTrack(track, itemname) {
-      if (!track || !track.fNpoints) return false;
+      if (!track?.fNpoints) return false;
 
-      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // linew width not supported on windows
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
           color = getColor(track.fLineColor) || '#ff00ff',
           npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
@@ -4148,19 +4146,26 @@ class TGeoPainter extends ObjectPainter {
          this.highlightMesh(null);
    }
 
+
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
       if (this._renderer?.jsroot_render3d === constants.Render3D.SVG) return;
 
+      if (!this._clipPlanes)
+         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
+                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+
       let clip = this.ctrl.clip, panels = [], changed = false,
-          clip_constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
+          clip_constants = [ -1 * clip[0].value, clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
           clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
       for (let k = 0; k < 3; ++k) {
-         if (clip[k].enabled) clip_cfg += 2 << k;
-         if (this._clipPlanes[k].constant != clip_constants[k]) {
-            changed = true;
+         if (clip[k].enabled)
+            clip_cfg += 2 << k;
+         if (this._clipPlanes[k].constant !== clip_constants[k]) {
+            if (clip[k].enabled) changed = true;
             this._clipPlanes[k].constant = clip_constants[k];
          }
       }
