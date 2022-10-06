@@ -1237,6 +1237,16 @@ function create(typename, target) {
          create('TAttMarker', obj);
          extend(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
+      case 'TPolyLine3D':
+         create('TObject', obj);
+         create('TAttLine', obj);
+         extend(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
+         break;
+      case 'TPolyMarker3D':
+         create('TObject', obj);
+         create('TAttMarker', obj);
+         extend(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
+         break;
    }
 
    obj._typename = typename;
