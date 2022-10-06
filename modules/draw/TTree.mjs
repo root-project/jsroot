@@ -8,8 +8,8 @@ import { TH1Painter } from '../hist/TH1Painter.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { TH3Painter } from '../hist/TH3Painter.mjs';
 import { TGraphPainter } from '../hist/TGraphPainter.mjs';
+import { drawPolyMarker3D } from '../draw/TPolyMarker3D.mjs';
 import { showProgress, registerForResize } from '../gui/utils.mjs';
-
 
 /** @summary Show TTree::Draw progress during processing */
 TDrawSelector.prototype.ShowProgress = function(value) {
@@ -58,7 +58,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
   * @private */
 async function drawTreeDrawResult(dom, obj, opt) {
 
-   let typ = obj._typename;
+   let typ = obj?._typename;
 
    if (!typ || (typeof typ !== 'string'))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
@@ -71,6 +71,14 @@ async function drawTreeDrawResult(dom, obj, opt) {
       return TH3Painter.draw(dom, obj, opt);
    if (typ.indexOf('TGraph') == 0)
       return TGraphPainter.draw(dom, obj, opt);
+   if ((typ == 'TPolyMarker3D') && obj.$hist) {
+      return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
+         let p2 = new ObjectPainter(dom, obj, opt);
+         p2.addToPadPrimitives();
+         p2.redraw = drawPolyMarker3D;
+         return p2.redraw();
+      });
+   }
 
    return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
 }

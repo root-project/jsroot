@@ -1051,8 +1051,53 @@ class TDrawSelector extends TSelector {
       return res;
    }
 
-   /** @summary Create histogram */
-   createHistogram() {
+   /** @summary Create histogram which matches value in dimensions */
+   createHistogram(nbins, set_hist = false) {
+      if (!nbins) nbins = 20;
+
+      let x = this.getMinMaxBins(0, nbins),
+          y = this.getMinMaxBins(1, nbins),
+          z = this.getMinMaxBins(2, nbins),
+          hist = null;
+
+      switch (this.ndim) {
+         case 1: hist = createHistogram('TH1' + this.htype, x.nbins); break;
+         case 2: hist = createHistogram('TH2' + this.htype, x.nbins, y.nbins); break;
+         case 3: hist = createHistogram('TH3' + this.htype, x.nbins, y.nbins, z.nbins); break;
+      }
+
+      hist.fXaxis.fTitle = x.title;
+      hist.fXaxis.fXmin = x.min;
+      hist.fXaxis.fXmax = x.max;
+      hist.fXaxis.fLabels = x.fLabels;
+
+      if (this.ndim > 1) hist.fYaxis.fTitle = y.title;
+      hist.fYaxis.fXmin = y.min;
+      hist.fYaxis.fXmax = y.max;
+      hist.fYaxis.fLabels = y.fLabels;
+
+      if (this.ndim > 2) hist.fZaxis.fTitle = z.title;
+      hist.fZaxis.fXmin = z.min;
+      hist.fZaxis.fXmax = z.max;
+      hist.fZaxis.fLabels = z.fLabels;
+
+      hist.fName = this.hist_name;
+      hist.fTitle = this.hist_title;
+      hist.fOption = this.histo_drawopt;
+      hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
+
+      if (set_hist) {
+         this.hist = hist;
+         this.x = x;
+         this.y = y;
+         this.z = z;
+      }
+
+      return hist;
+   }
+
+   /** @summary Create output object - histogram, graph, dump array */
+   createOutputObject() {
       if (this.hist || !this.vars[0].buf) return;
 
       if (this.dump_values) {
@@ -1070,44 +1115,26 @@ class TDrawSelector extends TSelector {
          } else if (this.ndim == 2) {
             this.hist = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
             delete this.vars[1].buf;
+         } else if (this.ndim == 3) {
+            this.hist = create('TPolyMarker3D');
+            this.hist.fN = N;
+            this.hist.fLastPoint = N - 1;
+            let arr = [];
+            for (let k = 0; k< N; ++k)
+               arr.push(this.vars[0].buf[k], this.vars[1].buf[k], this.vars[2].buf[k]);
+            this.hist.fP = arr;
+            this.hist.$hist = this.createHistogram(10);
+            delete this.vars[1].buf;
+            delete this.vars[2].buf;
          }
 
          this.hist.fTitle = this.hist_title;
          this.hist.fName = 'Graph';
 
       } else {
+         let nbins = [ 200, 50, 20 ];
 
-         this.x = this.getMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
-
-         this.y = this.getMinMaxBins(1, 50);
-
-         this.z = this.getMinMaxBins(2, 50);
-
-         switch (this.ndim) {
-            case 1: this.hist = createHistogram('TH1' + this.htype, this.x.nbins); break;
-            case 2: this.hist = createHistogram('TH2' + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = createHistogram('TH3' + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
-         }
-
-         this.hist.fXaxis.fTitle = this.x.title;
-         this.hist.fXaxis.fXmin = this.x.min;
-         this.hist.fXaxis.fXmax = this.x.max;
-         this.hist.fXaxis.fLabels = this.x.fLabels;
-
-         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.y.title;
-         this.hist.fYaxis.fXmin = this.y.min;
-         this.hist.fYaxis.fXmax = this.y.max;
-         this.hist.fYaxis.fLabels = this.y.fLabels;
-
-         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.z.title;
-         this.hist.fZaxis.fXmin = this.z.min;
-         this.hist.fZaxis.fXmax = this.z.max;
-         this.hist.fZaxis.fLabels = this.z.fLabels;
-
-         this.hist.fName = this.hist_name;
-         this.hist.fTitle = this.hist_title;
-         this.hist.fOption = this.histo_drawopt;
-         this.hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
+         this.createHistogram(nbins[this.ndim], true);
       }
 
       let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
@@ -1261,7 +1288,7 @@ class TDrawSelector extends TSelector {
          if (var2) var2.kind = 'number';
          this.cut.buf = null; // do not create buffer for cuts
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
-            this.createHistogram();
+            this.createOutputObject();
             this.arr_limit = 0;
          }
       } else {
@@ -1345,7 +1372,7 @@ class TDrawSelector extends TSelector {
                break;
          }
          if (!this.graph && var0.buf.length >= this.arr_limit) {
-            this.createHistogram();
+            this.createOutputObject();
             this.arr_limit = 0;
          }
       } else if (this.hist) {
@@ -1380,11 +1407,12 @@ class TDrawSelector extends TSelector {
 
    /** @summary Normal TSelector Terminate handler */
    Terminate(res) {
-      if (res && !this.hist) this.createHistogram();
+      if (res && !this.hist)
+         this.createOutputObject();
 
       this.ShowProgress();
 
-      if (this.result_callback)
+      if (typeof this.result_callback == 'function')
          this.result_callback(this.hist);
    }
 
