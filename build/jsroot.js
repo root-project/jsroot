@@ -11,7 +11,7 @@ let version_id = "7.2.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "29/09/2022";
+let version_date = "6/10/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -702,7 +702,7 @@ function parse(json) {
   * @returns {Array} array of parsed elements */
 function parseMulti(json) {
    if (!json) return null;
-   let arr = parse(json);
+   let arr = JSON.parse(json);
    if (arr && arr.length)
       for (let i = 0; i < arr.length; ++i)
          arr[i] = parse(arr[i]);

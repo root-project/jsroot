@@ -2,6 +2,7 @@
 
 ## Changes in 7.2.x
 1. Fix - prevent glitch when enabling projection via context menu
+2. Fix - multi.json parsing
 
 
 ## Changes in 7.2.0
