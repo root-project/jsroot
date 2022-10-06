@@ -754,13 +754,16 @@ class TDrawSelector extends TSelector {
             case 'htype':
                if (parvalue && (parvalue.length === 1)) {
                   this.htype = parvalue.toUpperCase();
-                  if ((this.htype !== 'C') && (this.htype !== 'S') && (this.htype !== 'I')
-                     && (this.htype !== 'F') && (this.htype !== 'L') && (this.htype !== 'D')) this.htype = 'F';
+                  if (['C', 'S', 'I', 'F', 'L', 'D'].indexOf(this.htype) < 0)
+                     this.htype = 'F';
                }
                break;
             case 'hbins':
                this.hist_nbins = parseInt(parvalue);
-               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
+               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3))
+                  delete this.hist_nbins;
+               else
+                  this.want_hist = true;
                break;
             case 'drawopt':
                args.drawopt = parvalue;
