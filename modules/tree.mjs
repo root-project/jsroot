@@ -1385,7 +1385,7 @@ class TDrawSelector extends TSelector {
                      }
                break;
          }
-         if (!this.graph && var0.buf.length >= this.arr_limit) {
+         if (!this.graph && (var0.buf.length >= this.arr_limit)) {
             this.createOutputObject();
             this.arr_limit = 0;
          }

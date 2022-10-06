@@ -1242,6 +1242,16 @@ function create$1(typename, target) {
          create$1('TAttMarker', obj);
          extend$1(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
+      case 'TPolyLine3D':
+         create$1('TObject', obj);
+         create$1('TAttLine', obj);
+         extend$1(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
+         break;
+      case 'TPolyMarker3D':
+         create$1('TObject', obj);
+         create$1('TAttMarker', obj);
+         extend$1(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
+         break;
    }
 
    obj._typename = typename;
@@ -76952,8 +76962,10 @@ class TDrawSelector extends TSelector {
          } else if (harg.indexOf('Graph') == 0) {
             args.graph = true;
          } else if (pos < 0) {
+            this.want_hist = true;
             this.hist_name = harg;
          } else if ((harg[0] == '(') && (harg[harg.length - 1] == ')')) {
+            this.want_hist = true;
             harg = harg.slice(1, harg.length - 1).split(',');
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
@@ -77037,6 +77049,9 @@ class TDrawSelector extends TSelector {
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
 
       this.monitoring = args.monitoring;
+
+      // force TPolyMarker3D drawing for 3D case
+      if ((this.ndim == 3) && !this.want_hist && !args.dump) args.graph = true;
 
       this.graph = args.graph;
 
@@ -77218,8 +77233,56 @@ class TDrawSelector extends TSelector {
       return res;
    }
 
-   /** @summary Create histogram */
-   createHistogram() {
+   /** @summary Create histogram which matches value in dimensions */
+   createHistogram(nbins, set_hist = false) {
+      if (!nbins) nbins = 20;
+
+      let x = this.getMinMaxBins(0, nbins),
+          y = this.getMinMaxBins(1, nbins),
+          z = this.getMinMaxBins(2, nbins),
+          hist = null;
+
+      switch (this.ndim) {
+         case 1: hist = createHistogram('TH1' + this.htype, x.nbins); break;
+         case 2: hist = createHistogram('TH2' + this.htype, x.nbins, y.nbins); break;
+         case 3: hist = createHistogram('TH3' + this.htype, x.nbins, y.nbins, z.nbins); break;
+      }
+
+      hist.fXaxis.fTitle = x.title;
+      hist.fXaxis.fXmin = x.min;
+      hist.fXaxis.fXmax = x.max;
+      hist.fXaxis.fLabels = x.fLabels;
+
+      if (this.ndim > 1) hist.fYaxis.fTitle = y.title;
+      hist.fYaxis.fXmin = y.min;
+      hist.fYaxis.fXmax = y.max;
+      hist.fYaxis.fLabels = y.fLabels;
+
+      if (this.ndim > 2) hist.fZaxis.fTitle = z.title;
+      hist.fZaxis.fXmin = z.min;
+      hist.fZaxis.fXmax = z.max;
+      hist.fZaxis.fLabels = z.fLabels;
+
+      hist.fName = this.hist_name;
+      hist.fTitle = this.hist_title;
+      hist.fOption = this.histo_drawopt;
+      hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
+
+      if (set_hist) {
+         this.hist = hist;
+         this.x = x;
+         this.y = y;
+         this.z = z;
+      } else {
+         let kNoStats = BIT(9);
+         hist.fBits = hist.fBits | kNoStats;
+      }
+
+      return hist;
+   }
+
+   /** @summary Create output object - histogram, graph, dump array */
+   createOutputObject() {
       if (this.hist || !this.vars[0].buf) return;
 
       if (this.dump_values) {
@@ -77229,52 +77292,40 @@ class TDrawSelector extends TSelector {
          // reassign fill method
          this.fill1DHistogram = this.fill2DHistogram = this.fill3DHistogram = this.dumpValues;
       } else if (this.graph) {
-         let N = this.vars[0].buf.length;
+         let N = this.vars[0].buf.length, res = null;
 
          if (this.ndim == 1) {
             // A 1-dimensional graph will just have the x axis as an index
-            this.hist = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            res = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            res.fName = 'Graph';
+            res.fTitle = this.hist_title;
          } else if (this.ndim == 2) {
-            this.hist = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
+            res = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
+            res.fName = 'Graph';
+            res.fTitle = this.hist_title;
             delete this.vars[1].buf;
+         } else if (this.ndim == 3) {
+            res = create$1('TPolyMarker3D');
+            res.fN = N;
+            res.fLastPoint = N - 1;
+            let arr = new Array(N*3);
+            for (let k = 0; k< N; ++k) {
+               arr[k*3] = this.vars[0].buf[k];
+               arr[k*3+1] = this.vars[1].buf[k];
+               arr[k*3+2] = this.vars[2].buf[k];
+            }
+            res.fP = arr;
+            res.$hist = this.createHistogram(10);
+            delete this.vars[1].buf;
+            delete this.vars[2].buf;
+            res.fName = 'Points';
          }
 
-         this.hist.fTitle = this.hist_title;
-         this.hist.fName = 'Graph';
+         this.hist = res;
 
       } else {
-
-         this.x = this.getMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
-
-         this.y = this.getMinMaxBins(1, 50);
-
-         this.z = this.getMinMaxBins(2, 50);
-
-         switch (this.ndim) {
-            case 1: this.hist = createHistogram('TH1' + this.htype, this.x.nbins); break;
-            case 2: this.hist = createHistogram('TH2' + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = createHistogram('TH3' + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
-         }
-
-         this.hist.fXaxis.fTitle = this.x.title;
-         this.hist.fXaxis.fXmin = this.x.min;
-         this.hist.fXaxis.fXmax = this.x.max;
-         this.hist.fXaxis.fLabels = this.x.fLabels;
-
-         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.y.title;
-         this.hist.fYaxis.fXmin = this.y.min;
-         this.hist.fYaxis.fXmax = this.y.max;
-         this.hist.fYaxis.fLabels = this.y.fLabels;
-
-         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.z.title;
-         this.hist.fZaxis.fXmin = this.z.min;
-         this.hist.fZaxis.fXmax = this.z.max;
-         this.hist.fZaxis.fLabels = this.z.fLabels;
-
-         this.hist.fName = this.hist_name;
-         this.hist.fTitle = this.hist_title;
-         this.hist.fOption = this.histo_drawopt;
-         this.hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
+         let nbins = [ 200, 50, 20 ];
+         this.createHistogram(nbins[this.ndim], true);
       }
 
       let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
@@ -77428,7 +77479,7 @@ class TDrawSelector extends TSelector {
          if (var2) var2.kind = 'number';
          this.cut.buf = null; // do not create buffer for cuts
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
-            this.createHistogram();
+            this.createOutputObject();
             this.arr_limit = 0;
          }
       } else {
@@ -77511,8 +77562,8 @@ class TDrawSelector extends TSelector {
                      }
                break;
          }
-         if (!this.graph && var0.buf.length >= this.arr_limit) {
-            this.createHistogram();
+         if (!this.graph && (var0.buf.length >= this.arr_limit)) {
+            this.createOutputObject();
             this.arr_limit = 0;
          }
       } else if (this.hist) {
@@ -77547,11 +77598,12 @@ class TDrawSelector extends TSelector {
 
    /** @summary Normal TSelector Terminate handler */
    Terminate(res) {
-      if (res && !this.hist) this.createHistogram();
+      if (res && !this.hist)
+         this.createOutputObject();
 
       this.ShowProgress();
 
-      if (this.result_callback)
+      if (typeof this.result_callback == 'function')
          this.result_callback(this.hist);
    }
 
@@ -89370,38 +89422,18 @@ __proto__: null,
 THStackPainter: THStackPainter
 });
 
-/** @summary Prepare frame painter for 3D drawing
-  * @private */
-function before3DDraw(painter, obj) {
-   let fp = painter.getFramePainter();
-
-   if (!fp?.mode3d || !obj)
-      return null;
-
-   if (fp.toplevel)
-      return fp;
-
-   let geop = painter.getMainPainter();
-   if(!geop)
-      return drawDummy3DGeom(painter);
-   if (typeof geop.drawExtras == 'function')
-      return geop.drawExtras(obj);
-
-   return null;
-}
-
-
 /** @summary direct draw function for TPolyMarker3D object
   * @private */
-function drawPolyMarker3D() {
+async function drawPolyMarker3D$1() {
 
-   let poly = this.getObject(),
-       fp = before3DDraw(this, poly);
+   let fp = this.$fp || this.getFramePainter();
+
+   delete this.$fp;
 
    if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
-      return fp;
+      return this;
 
-   let step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
+   let poly = this.getObject(), step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
 
    for (let i = 0; i < fP.length; i += 3) {
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
@@ -89485,10 +89517,48 @@ function drawPolyMarker3D() {
    });
 }
 
+/** @summary Prepare frame painter for 3D drawing
+  * @private */
+function before3DDraw(painter, obj) {
+   let fp = painter.getFramePainter();
+
+   if (!fp?.mode3d || !obj)
+      return null;
+
+   if (fp.toplevel)
+      return fp;
+
+   let geop = painter.getMainPainter();
+   if(!geop)
+      return drawDummy3DGeom(painter);
+   if (typeof geop.drawExtras == 'function')
+      return geop.drawExtras(obj);
+
+   return null;
+}
+
+
+/** @summary direct draw function for TPolyMarker3D object (optionally with geo painter)
+  * @private */
+async function drawPolyMarker3D() {
+
+   let poly = this.getObject(),
+       fp = before3DDraw(this, poly);
+
+   if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+      return fp;
+
+   this.$fp = fp;
+
+   this.plain_redraw = drawPolyMarker3D$1;
+
+   return this.plain_redraw();
+}
+
 /** @summary Direct draw function for TPolyLine3D object
   * @desc Takes into account dashed properties
   * @private */
-function drawPolyLine3D() {
+async function drawPolyLine3D() {
    let line = this.getObject(),
        fp = before3DDraw(this, line);
 
@@ -94358,7 +94428,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
   * @private */
 async function drawTreeDrawResult(dom, obj, opt) {
 
-   let typ = obj._typename;
+   let typ = obj?._typename;
 
    if (!typ || (typeof typ !== 'string'))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
@@ -94371,6 +94441,14 @@ async function drawTreeDrawResult(dom, obj, opt) {
       return TH3Painter.draw(dom, obj, opt);
    if (typ.indexOf('TGraph') == 0)
       return TGraphPainter.draw(dom, obj, opt);
+   if ((typ == 'TPolyMarker3D') && obj.$hist) {
+      return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
+         let p2 = new ObjectPainter(dom, obj, opt);
+         p2.addToPadPrimitives();
+         p2.redraw = drawPolyMarker3D$1;
+         return p2.redraw();
+      });
+   }
 
    return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
 }

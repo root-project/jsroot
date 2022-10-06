@@ -8,6 +8,7 @@
 5. Fix several bugs in csg.mjs
 6. Upgrade three.js to r145
 7. Improve geometry clipping
+8. 3-dimensional TTree::Draw now produces TPolyMarker3D by default
 
 
 ## Changes in 7.2.0
