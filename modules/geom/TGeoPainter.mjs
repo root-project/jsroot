@@ -466,7 +466,9 @@ class TGeoPainter extends ObjectPainter {
       this.drawing_log = 'Init';
       this.ctrl = {
          clipIntersect: true,
-         clip: [{ name:'x', enabled: false, value: 0, min: -100, max: 100}, { name:'y', enabled: false, value: 0, min: -100, max: 100}, { name:'z', enabled: false, value: 0, min: -100, max: 100}],
+         clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
+                { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
+                { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
          ssao: { enabled: false, output: SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
          bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
@@ -2266,7 +2268,8 @@ class TGeoPainter extends ObjectPainter {
             getBoundingBox(mesh, box3);
       });
 
-      if (scalar !== undefined) box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
+      if (scalar !== undefined)
+         box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
 
       return box3;
    }
@@ -2664,7 +2667,7 @@ class TGeoPainter extends ObjectPainter {
          let prev_zoom = this.calculateZoom();
          if (keep_zoom && prev_zoom) k = 2*prev_zoom;
 
-         let euler = new Euler( 0, this.ctrl.rotatey/180.*Math.PI, this.ctrl.rotatez/180.*Math.PI, 'YZX' );
+         let euler = new Euler(0, this.ctrl.rotatey/180.*Math.PI, this.ctrl.rotatez/180.*Math.PI, 'YZX');
 
          this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
@@ -4148,7 +4151,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
-      if (this._renderer && this._renderer.jsroot_render3d === constants.Render3D.SVG) return;
+      if (this._renderer?.jsroot_render3d === constants.Render3D.SVG) return;
 
       let clip = this.ctrl.clip, panels = [], changed = false,
           clip_constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],

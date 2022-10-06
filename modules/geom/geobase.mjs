@@ -3428,10 +3428,9 @@ function getBoundingBox(node, box3, local_coordinates) {
 
    if (!box3) box3 = new Box3().makeEmpty();
 
-   if (!local_coordinates) node.updateMatrixWorld();
+   if (!local_coordinates) node.updateWorldMatrix(false, false);
 
-   let v1 = new Vector3(),
-       attribute = node.geometry.getAttribute('position');
+   let v1 = new Vector3(), attribute = node.geometry.attributes?.position;
 
    if ( attribute !== undefined )
       for (let i = 0, l = attribute.count; i < l; i ++ ) {
@@ -3445,7 +3444,7 @@ function getBoundingBox(node, box3, local_coordinates) {
 }
 
 /** @summary Cleanup shape entity
- * @private */
+  * @private */
 function cleanupShape(shape) {
    if (!shape) return;
 
@@ -3460,10 +3459,10 @@ function cleanupShape(shape) {
 }
 
 /** @summary Set rendering order for created hierarchy
- * @desc depending from provided method sort differently objects
- * @param toplevel - top element
- * @param origin - camera position used to provide sorting
- * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
+  * @desc depending from provided method sort differently objects
+  * @param toplevel - top element
+  * @param origin - camera position used to provide sorting
+  * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
 
    let raycast = new Raycaster();
