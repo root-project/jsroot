@@ -3424,33 +3424,22 @@ function createFlippedMesh(shape, material) {
   * @desc Major difference - do not traverse hierarchy
   * @private */
 function getBoundingBox(node, box3, local_coordinates) {
-   if (!node || !node.geometry) return box3;
+   if (!node?.geometry) return box3;
 
-   if (!box3) { box3 = new Box3(); box3.makeEmpty(); }
+   if (!box3) box3 = new Box3().makeEmpty();
 
    if (!local_coordinates) node.updateMatrixWorld();
 
    let v1 = new Vector3(),
-       geometry = node.geometry;
+       attribute = node.geometry.getAttribute('position');
 
-   if (geometry.isGeometry) {
-      let vertices = geometry.vertices;
-      for (let i = 0, l = vertices.length; i < l; i ++ ) {
-         v1.copy( vertices[ i ] );
+   if ( attribute !== undefined )
+      for (let i = 0, l = attribute.count; i < l; i ++ ) {
+         // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
+         v1.fromBufferAttribute( attribute, i );
          if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
          box3.expandByPoint( v1 );
       }
-   } else if ( geometry.isBufferGeometry ) {
-      let attribute = geometry.attributes.position;
-      if ( attribute !== undefined ) {
-         for (let i = 0, l = attribute.count; i < l; i ++ ) {
-            // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
-            v1.fromBufferAttribute( attribute, i );
-            if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
-            box3.expandByPoint( v1 );
-         }
-      }
-   }
 
    return box3;
 }
