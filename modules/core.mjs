@@ -697,7 +697,7 @@ function parse(json) {
   * @return {Array} array of parsed elements */
 function parseMulti(json) {
    if (!json) return null;
-   let arr = parse(json);
+   let arr = JSON.parse(json);
    if (arr && arr.length)
       for (let i = 0; i < arr.length; ++i)
          arr[i] = parse(arr[i]);
