@@ -3966,6 +3966,8 @@ class TGeoPainter extends ObjectPainter {
          let lineMaterial = new LineBasicMaterial({ color }),
              mesh = createLineSegments(buf, lineMaterial);
 
+         mesh._axis_draw = true; // skip from clipping
+
          container.add(mesh);
 
          let textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
@@ -3983,6 +3985,7 @@ class TGeoPainter extends ObjectPainter {
 
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new Mesh(text3d, textMaterial);
+         mesh._axis_draw = true; // skip from clipping
          let textbox = new Box3().setFromObject(mesh);
 
          mesh.translateX(buf[3]);
@@ -4025,6 +4028,7 @@ class TGeoPainter extends ObjectPainter {
          text3d = new TextGeometry(Convert(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new Mesh(text3d, textMaterial);
+         mesh._axis_draw = true; // skip from clipping
          textbox = new Box3().setFromObject(mesh);
 
          mesh.translateX(buf[0]);
@@ -4187,7 +4191,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (force_traverse || changed)
          this._scene.traverse(node => {
-            if (node.hasOwnProperty('material') && node.material && (node.material.clippingPlanes !== undefined)) {
+            if (!node._axis_draw && node.hasOwnProperty('material') && (node.material?.clippingPlanes !== undefined)) {
 
                if (node.material.clippingPlanes !== panels) {
                   node.material.clipIntersection = ci;
