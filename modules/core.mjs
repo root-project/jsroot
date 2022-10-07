@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '6/10/2022';
+let version_date = '7/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -967,6 +967,9 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
+const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
+      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
+
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
   * @param {string} typename - ROOT class name
@@ -979,13 +982,13 @@ function create(typename, target) {
    let obj = target || {};
 
    switch (typename) {
-      case 'TObject':
+      case clTObject:
           extend(obj, { fUniqueID: 0, fBits: 0 });
           break;
-      case 'TNamed':
+      case clTNamed:
          extend(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
-      case 'TList':
+      case clTList:
       case 'THashList':
          extend(obj, { name: typename, arr: [], opt: [] });
          break;
@@ -995,29 +998,29 @@ function create(typename, target) {
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case 'TAxis':
-         create('TNamed', obj);
+         create(clTNamed, obj);
          create('TAttAxis', obj);
          extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
-      case 'TAttLine':
+      case clTAttLine:
          extend(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
          break;
-      case 'TAttFill':
+      case clTAttFill:
          extend(obj, { fFillColor: 0, fFillStyle: 0 } );
          break;
-      case 'TAttMarker':
+      case clTAttMarker:
          extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
       case 'TLine':
-         create('TObject', obj);
-         create('TAttLine', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TBox':
-         create('TObject', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TPave':
@@ -1026,13 +1029,13 @@ function create(typename, target) {
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
-      case 'TAttText':
+      case clTAttText:
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
          break;
       case 'TPaveText':
          create('TPave', obj);
-         create('TAttText', obj);
-         extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create('TList') });
+         create(clTAttText, obj);
+         extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create(clTList) });
          break;
       case 'TPaveStats':
          create('TPaveText', obj);
@@ -1043,37 +1046,37 @@ function create(typename, target) {
          break;
       case 'TLegend':
          create('TPave', obj);
-         create('TAttText', obj);
-         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create('TList'),
+         create(clTAttText, obj);
+         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
-         create('TObject', obj);
-         create('TAttText', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
-         create('TAttMarker', obj);
+         create(clTObject, obj);
+         create(clTAttText, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
+         create(clTAttMarker, obj);
          extend(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
-         create('TNamed', obj);
-         create('TAttText', obj);
+         create(clTNamed, obj);
+         create(clTAttText, obj);
          extend(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
       case 'TLatex':
          create('TText', obj);
-         create('TAttLine', obj);
+         create(clTAttLine, obj);
          extend(obj, { fX: 0, fY: 0 });
          break;
       case 'TObjString':
-         create('TObject', obj);
+         create(clTObject, obj);
          extend(obj, { fString: '' });
          break;
       case 'TH1':
-         create('TNamed', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
-         create('TAttMarker', obj);
+         create(clTNamed, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
+         create(clTAttMarker, obj);
          extend(obj, { fBits: 8, fNcells: 0,
                        fXaxis: create('TAxis'), fYaxis: create('TAxis'), fZaxis: create('TAxis'),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
@@ -1081,7 +1084,7 @@ function create(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: '', fFunctions: create('TList'),
+                       fSumw2: [], fOption: '', fFunctions: create(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1120,15 +1123,15 @@ function create(typename, target) {
          obj.fArray = [];
          break;
       case 'THStack':
-         create('TNamed', obj);
-         extend(obj, { fHists: create('TList'), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+         create(clTNamed, obj);
+         extend(obj, { fHists: create(clTList), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraph':
-         create('TNamed', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
-         create('TAttMarker', obj);
-         extend(obj, { fFunctions: create('TList'), fHistogram: null,
+         create(clTNamed, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
+         create(clTAttMarker, obj);
+         extend(obj, { fFunctions: create(clTList), fHistogram: null,
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
@@ -1136,28 +1139,28 @@ function create(typename, target) {
          extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
-         create('TNamed', obj);
-         extend(obj, { fFunctions: create('TList'), fGraphs: create('TList'),
+         create(clTNamed, obj);
+         extend(obj, { fFunctions: create(clTList), fGraphs: create(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraphPolargram':
-         create('TNamed', obj);
-         create('TAttText', obj);
-         create('TAttLine', obj);
+         create(clTNamed, obj);
+         create(clTAttText, obj);
+         create(clTAttLine, obj);
          extend(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case 'TPolyLine':
-         create('TObject', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case 'TGaxis':
          create('TLine', obj);
-         create('TAttText', obj);
+         create(clTAttText, obj);
          extend(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
                        fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
@@ -1179,9 +1182,9 @@ function create(typename, target) {
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
       case 'TPad':
-         create('TObject', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
          create('TAttPad', obj);
          extend(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
@@ -1198,7 +1201,7 @@ function create(typename, target) {
                        fBorderMode: 0, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
-                       fPrimitives: create('TList'), fExecs: null,
+                       fPrimitives: create(clTList), fExecs: null,
                        fName: 'pad', fTitle: 'canvas' });
 
          break;
@@ -1218,13 +1221,13 @@ function create(typename, target) {
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
       case 'TGeoVolume':
-         create('TNamed', obj);
-         create('TAttLine', obj);
-         create('TAttFill', obj);
+         create(clTNamed, obj);
+         create(clTAttLine, obj);
+         create(clTAttFill, obj);
          extend(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
       case 'TGeoNode':
-         create('TNamed', obj);
+         create(clTNamed, obj);
          extend(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case 'TGeoNodeMatrix':
@@ -1232,19 +1235,19 @@ function create(typename, target) {
          extend(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
-         create('TObject', obj);
-         create('TAttLine', obj);
-         create('TAttMarker', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
+         create(clTAttMarker, obj);
          extend(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
       case 'TPolyLine3D':
-         create('TObject', obj);
-         create('TAttLine', obj);
+         create(clTObject, obj);
+         create(clTAttLine, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
          break;
       case 'TPolyMarker3D':
-         create('TObject', obj);
-         create('TAttMarker', obj);
+         create(clTObject, obj);
+         create(clTAttMarker, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
          break;
    }
@@ -1378,7 +1381,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == 'TObject') || (typename == 'TNamed') || (obj && (obj.fBits !== undefined)))
+   if ((typename == clTObject) || (typename == clTNamed) || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1386,7 +1389,7 @@ function getMethods(typename, obj) {
 
    if (has_methods) return m;
 
-   if ((typename === 'TList') || (typename === 'THashList')) {
+   if ((typename === clTList) || (typename === 'THashList')) {
       m.Clear = function() {
          this.arr = [];
          this.opt = [];
@@ -1658,11 +1661,11 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === 'TList') || (lst.$kind === 'TObjArray')) return true;
+      if ((lst.$kind === clTList) || (lst.$kind === 'TObjArray')) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
-   return (typename === 'TList') || (typename === 'THashList') || (typename === 'TMap') ||
+   return (typename === clTList) || (typename === 'THashList') || (typename === 'TMap') ||
           (typename === 'TObjArray') || (typename === 'TClonesArray');
 }
 
