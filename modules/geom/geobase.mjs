@@ -1998,21 +1998,59 @@ function createGeometry(shape, limit) {
 }
 
 
-function makeEveGeometry(rnr_data /*, force */) {
+/** @summary Create single shape from EVE7 render date
+  * @private */
+function makeEveGeometry(rd) {
+
+   let off = 0;
+
+   if (rd.sz[0]) {
+      rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
+      off += rd.sz[0]*4;
+   }
+
+   if (rd.sz[1]) {
+      // normals were not used
+      // rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
+      off += rd.sz[1]*4;
+   }
+
+   if (rd.sz[2]) {
+      // these are special values in the buffer begin
+      rd.prefixBuf = new Uint32Array(rd.raw.buffer, off, 2);
+      off += 2*4;
+      rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]-2);
+      off += (rd.sz[2]-2)*4;
+   }
+
    const GL_TRIANGLES = 4; // same as in EVE7
 
-   if (rnr_data.prefixBuf[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
+   if (rd.prefixBuf[0] != GL_TRIANGLES)
+      throw 'Expect triangles first.';
 
-   let nVert = 3 * rnr_data.prefixBuf[1]; // number of vertices to draw
+   let nVert = 3 * rd.prefixBuf[1]; // number of vertices to draw
 
-   if (rnr_data.idxBuff.length != nVert)
+   if (rd.idxBuff.length != nVert)
       throw 'Expect single list of triangles in index buffer.';
 
    let body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
-   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
+   body.setAttribute('position', new BufferAttribute(rd.vtxBuff, 3));
+   body.setIndex(new BufferAttribute(rd.idxBuff, 1));
    body.computeVertexNormals();
 
+   return body;
+}
+
+/** @summary Create single shape from geometry veiwer render date
+  * @private */
+function makeViewerGeometry(rd) {
+
+   let vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4);
+
+   let body = new BufferGeometry();
+   body.setAttribute('position', new BufferAttribute(vtxBuff, 3));
+   body.setIndex(new BufferAttribute(new Uint32Array(rd.idx), 1));
+   body.computeVertexNormals();
    return body;
 }
 
@@ -2026,37 +2064,23 @@ function createServerGeometry(rd, nsegm) {
 
    rd.nsegm = nsegm;
 
-   let g = null, off = 0;
+   let g = null;
 
    if (rd.shape) {
       // case when TGeoShape provided as is
       g = createGeometry(rd.shape);
    } else {
 
-      if (!rd?.raw?.buffer) {
+      if (!rd.raw?.buffer) {
          console.error('No raw data at all');
          return null;
       }
 
-      if (rd.sz[0]) {
-         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
-         off += rd.sz[0]*4;
-      }
+      if (rd.sz)
+         g = makeEveGeometry(rd);
+      else
+         g = makeViewerGeometry(rd);
 
-      if (rd.sz[1]) {
-         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
-         off += rd.sz[1]*4;
-      }
-
-      if (rd.sz[2]) {
-         // these are special values in the buffer begin
-         rd.prefixBuf = new Uint32Array(rd.raw.buffer, off, 2);
-         off += 2*4;
-         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]-2);
-         off += (rd.sz[2]-2)*4;
-      }
-
-      g = makeEveGeometry(rd);
    }
 
    // shape handle is similar to created in JSROOT.GeoPainter
