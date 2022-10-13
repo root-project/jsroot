@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '6/10/2022';
+let version_date = '13/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -972,6 +972,9 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
+const clTObject$1 = 'TObject', clTNamed$1 = 'TNamed', clTList$1 = 'TList',
+      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
+
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
   * @param {string} typename - ROOT class name
@@ -984,13 +987,13 @@ function create$1(typename, target) {
    let obj = target || {};
 
    switch (typename) {
-      case 'TObject':
+      case clTObject$1:
           extend$1(obj, { fUniqueID: 0, fBits: 0 });
           break;
-      case 'TNamed':
+      case clTNamed$1:
          extend$1(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
-      case 'TList':
+      case clTList$1:
       case 'THashList':
          extend$1(obj, { name: typename, arr: [], opt: [] });
          break;
@@ -1000,29 +1003,29 @@ function create$1(typename, target) {
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case 'TAxis':
-         create$1('TNamed', obj);
+         create$1(clTNamed$1, obj);
          create$1('TAttAxis', obj);
          extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
-      case 'TAttLine':
+      case clTAttLine:
          extend$1(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
          break;
-      case 'TAttFill':
+      case clTAttFill:
          extend$1(obj, { fFillColor: 0, fFillStyle: 0 } );
          break;
-      case 'TAttMarker':
+      case clTAttMarker:
          extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
       case 'TLine':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TBox':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TPave':
@@ -1031,13 +1034,13 @@ function create$1(typename, target) {
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
-      case 'TAttText':
+      case clTAttText:
          extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
          break;
       case 'TPaveText':
          create$1('TPave', obj);
-         create$1('TAttText', obj);
-         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1('TList') });
+         create$1(clTAttText, obj);
+         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1(clTList$1) });
          break;
       case 'TPaveStats':
          create$1('TPaveText', obj);
@@ -1048,37 +1051,37 @@ function create$1(typename, target) {
          break;
       case 'TLegend':
          create$1('TPave', obj);
-         create$1('TAttText', obj);
-         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1('TList'),
+         create$1(clTAttText, obj);
+         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList$1),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
-         create$1('TObject', obj);
-         create$1('TAttText', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
-         create$1('TAttMarker', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttText, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
-         create$1('TNamed', obj);
-         create$1('TAttText', obj);
+         create$1(clTNamed$1, obj);
+         create$1(clTAttText, obj);
          extend$1(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
       case 'TLatex':
          create$1('TText', obj);
-         create$1('TAttLine', obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fX: 0, fY: 0 });
          break;
       case 'TObjString':
-         create$1('TObject', obj);
+         create$1(clTObject$1, obj);
          extend$1(obj, { fString: '' });
          break;
       case 'TH1':
-         create$1('TNamed', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
-         create$1('TAttMarker', obj);
+         create$1(clTNamed$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fBits: 8, fNcells: 0,
                        fXaxis: create$1('TAxis'), fYaxis: create$1('TAxis'), fZaxis: create$1('TAxis'),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
@@ -1086,7 +1089,7 @@ function create$1(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: '', fFunctions: create$1('TList'),
+                       fSumw2: [], fOption: '', fFunctions: create$1(clTList$1),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1125,15 +1128,15 @@ function create$1(typename, target) {
          obj.fArray = [];
          break;
       case 'THStack':
-         create$1('TNamed', obj);
-         extend$1(obj, { fHists: create$1('TList'), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+         create$1(clTNamed$1, obj);
+         extend$1(obj, { fHists: create$1(clTList$1), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraph':
-         create$1('TNamed', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
-         create$1('TAttMarker', obj);
-         extend$1(obj, { fFunctions: create$1('TList'), fHistogram: null,
+         create$1(clTNamed$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
+         extend$1(obj, { fFunctions: create$1(clTList$1), fHistogram: null,
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
@@ -1141,28 +1144,28 @@ function create$1(typename, target) {
          extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
-         create$1('TNamed', obj);
-         extend$1(obj, { fFunctions: create$1('TList'), fGraphs: create$1('TList'),
+         create$1(clTNamed$1, obj);
+         extend$1(obj, { fFunctions: create$1(clTList$1), fGraphs: create$1(clTList$1),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraphPolargram':
-         create$1('TNamed', obj);
-         create$1('TAttText', obj);
-         create$1('TAttLine', obj);
+         create$1(clTNamed$1, obj);
+         create$1(clTAttText, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case 'TPolyLine':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case 'TGaxis':
          create$1('TLine', obj);
-         create$1('TAttText', obj);
+         create$1(clTAttText, obj);
          extend$1(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
                        fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
@@ -1184,9 +1187,9 @@ function create$1(typename, target) {
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
       case 'TPad':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          create$1('TAttPad', obj);
          extend$1(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
@@ -1203,7 +1206,7 @@ function create$1(typename, target) {
                        fBorderMode: 0, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
-                       fPrimitives: create$1('TList'), fExecs: null,
+                       fPrimitives: create$1(clTList$1), fExecs: null,
                        fName: 'pad', fTitle: 'canvas' });
 
          break;
@@ -1223,13 +1226,13 @@ function create$1(typename, target) {
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
       case 'TGeoVolume':
-         create$1('TNamed', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttFill', obj);
+         create$1(clTNamed$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
       case 'TGeoNode':
-         create$1('TNamed', obj);
+         create$1(clTNamed$1, obj);
          extend$1(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case 'TGeoNodeMatrix':
@@ -1237,19 +1240,19 @@ function create$1(typename, target) {
          extend$1(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
-         create$1('TAttMarker', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
       case 'TPolyLine3D':
-         create$1('TObject', obj);
-         create$1('TAttLine', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
          break;
       case 'TPolyMarker3D':
-         create$1('TObject', obj);
-         create$1('TAttMarker', obj);
+         create$1(clTObject$1, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
          break;
    }
@@ -1383,7 +1386,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == 'TObject') || (typename == 'TNamed') || (obj && (obj.fBits !== undefined)))
+   if ((typename == clTObject$1) || (typename == clTNamed$1) || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1391,7 +1394,7 @@ function getMethods(typename, obj) {
 
    if (has_methods) return m;
 
-   if ((typename === 'TList') || (typename === 'THashList')) {
+   if ((typename === clTList$1) || (typename === 'THashList')) {
       m.Clear = function() {
          this.arr = [];
          this.opt = [];
@@ -1663,11 +1666,11 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === 'TList') || (lst.$kind === 'TObjArray')) return true;
+      if ((lst.$kind === clTList$1) || (lst.$kind === 'TObjArray')) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
-   return (typename === 'TList') || (typename === 'THashList') || (typename === 'TMap') ||
+   return (typename === clTList$1) || (typename === 'THashList') || (typename === 'TMap') ||
           (typename === 'TObjArray') || (typename === 'TClonesArray');
 }
 
@@ -76931,13 +76934,16 @@ class TDrawSelector extends TSelector {
             case 'htype':
                if (parvalue && (parvalue.length === 1)) {
                   this.htype = parvalue.toUpperCase();
-                  if ((this.htype !== 'C') && (this.htype !== 'S') && (this.htype !== 'I')
-                     && (this.htype !== 'F') && (this.htype !== 'L') && (this.htype !== 'D')) this.htype = 'F';
+                  if (['C', 'S', 'I', 'F', 'L', 'D'].indexOf(this.htype) < 0)
+                     this.htype = 'F';
                }
                break;
             case 'hbins':
                this.hist_nbins = parseInt(parvalue);
-               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
+               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3))
+                  delete this.hist_nbins;
+               else
+                  this.want_hist = true;
                break;
             case 'drawopt':
                args.drawopt = parvalue;
@@ -82157,25 +82163,59 @@ function createGeometry(shape, limit) {
 }
 
 
-function makeEveGeometry(rnr_data /*, force */) {
+/** @summary Create single shape from EVE7 render date
+  * @private */
+function makeEveGeometry(rd) {
+
+   let off = 0;
+
+   if (rd.sz[0]) {
+      rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
+      off += rd.sz[0]*4;
+   }
+
+   if (rd.sz[1]) {
+      // normals were not used
+      // rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
+      off += rd.sz[1]*4;
+   }
+
+   if (rd.sz[2]) {
+      // these are special values in the buffer begin
+      rd.prefixBuf = new Uint32Array(rd.raw.buffer, off, 2);
+      off += 2*4;
+      rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]-2);
+      off += (rd.sz[2]-2)*4;
+   }
+
    const GL_TRIANGLES = 4; // same as in EVE7
 
-   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
+   if (rd.prefixBuf[0] != GL_TRIANGLES)
+      throw 'Expect triangles first.';
 
-   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
+   let nVert = 3 * rd.prefixBuf[1]; // number of vertices to draw
 
-   if (rnr_data.idxBuff.length != nVert + 2) throw 'Expect single list of triangles in index buffer.';
+   if (rd.idxBuff.length != nVert)
+      throw 'Expect single list of triangles in index buffer.';
 
    let body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
-   body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
-   body.setDrawRange(2, nVert);
-   // this does not work correctly - draw range ignored when calculating normals
-   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
-   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
-   if (typeof body.computeVertexNormalsIdxRange == 'function')
-      body.computeVertexNormalsIdxRange(2, nVert);
+   body.setAttribute('position', new BufferAttribute(rd.vtxBuff, 3));
+   body.setIndex(new BufferAttribute(rd.idxBuff, 1));
+   body.computeVertexNormals();
 
+   return body;
+}
+
+/** @summary Create single shape from geometry veiwer render date
+  * @private */
+function makeViewerGeometry(rd) {
+
+   let vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4);
+
+   let body = new BufferGeometry();
+   body.setAttribute('position', new BufferAttribute(vtxBuff, 3));
+   body.setIndex(new BufferAttribute(new Uint32Array(rd.idx), 1));
+   body.computeVertexNormals();
    return body;
 }
 
@@ -82189,39 +82229,23 @@ function createServerGeometry(rd, nsegm) {
 
    rd.nsegm = nsegm;
 
-   let g = null, off = 0;
+   let g = null;
 
    if (rd.shape) {
       // case when TGeoShape provided as is
       g = createGeometry(rd.shape);
    } else {
 
-      if (!rd.raw) {
+      if (!rd.raw?.buffer) {
          console.error('No raw data at all');
          return null;
       }
 
-      if (!rd.raw.buffer) {
-         console.error('No raw buffer');
-         return null;
-      }
+      if (rd.sz)
+         g = makeEveGeometry(rd);
+      else
+         g = makeViewerGeometry(rd);
 
-      if (rd.sz[0]) {
-         rd.vtxBuff = new Float32Array(rd.raw.buffer, off, rd.sz[0]);
-         off += rd.sz[0]*4;
-      }
-
-      if (rd.sz[1]) {
-         rd.nrmBuff = new Float32Array(rd.raw.buffer, off, rd.sz[1]);
-         off += rd.sz[1]*4;
-      }
-
-      if (rd.sz[2]) {
-         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
-         off += rd.sz[2]*4;
-      }
-
-      g = makeEveGeometry(rd);
    }
 
    // shape handle is similar to created in JSROOT.GeoPainter
