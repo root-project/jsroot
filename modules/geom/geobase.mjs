@@ -2001,21 +2001,17 @@ function createGeometry(shape, limit) {
 function makeEveGeometry(rnr_data /*, force */) {
    const GL_TRIANGLES = 4; // same as in EVE7
 
-   if (rnr_data.idxBuff[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
+   if (rnr_data.prefixBuf[0] != GL_TRIANGLES)  throw 'Expect triangles first.';
 
-   let nVert = 3 * rnr_data.idxBuff[1]; // number of vertices to draw
+   let nVert = 3 * rnr_data.prefixBuf[1]; // number of vertices to draw
 
-   if (rnr_data.idxBuff.length != nVert + 2) throw 'Expect single list of triangles in index buffer.';
+   if (rnr_data.idxBuff.length != nVert)
+      throw 'Expect single list of triangles in index buffer.';
 
    let body = new BufferGeometry();
    body.setAttribute('position', new BufferAttribute(rnr_data.vtxBuff, 3));
    body.setIndex(new BufferAttribute(rnr_data.idxBuff, 1));
-   body.setDrawRange(2, nVert);
-   // this does not work correctly - draw range ignored when calculating normals
-   // even worse - shift 2 makes complete logic wrong while wrong triangle are extracted
-   // Let see if it will be fixed https://github.com/mrdoob/three.js/issues/15560
-   if (typeof body.computeVertexNormalsIdxRange == 'function')
-      body.computeVertexNormalsIdxRange(2, nVert);
+   body.computeVertexNormals();
 
    return body;
 }
@@ -2037,13 +2033,8 @@ function createServerGeometry(rd, nsegm) {
       g = createGeometry(rd.shape);
    } else {
 
-      if (!rd.raw) {
+      if (!rd?.raw?.buffer) {
          console.error('No raw data at all');
-         return null;
-      }
-
-      if (!rd.raw.buffer) {
-         console.error('No raw buffer');
          return null;
       }
 
@@ -2058,8 +2049,11 @@ function createServerGeometry(rd, nsegm) {
       }
 
       if (rd.sz[2]) {
-         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]);
-         off += rd.sz[2]*4;
+         // these are special values in the buffer begin
+         rd.prefixBuf = new Uint32Array(rd.raw.buffer, off, 2);
+         off += 2*4;
+         rd.idxBuff = new Uint32Array(rd.raw.buffer, off, rd.sz[2]-2);
+         off += (rd.sz[2]-2)*4;
       }
 
       g = makeEveGeometry(rd);
