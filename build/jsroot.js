@@ -11,7 +11,7 @@ let version_id = "7.2.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "6/10/2022";
+let version_date = "19/10/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -73089,8 +73089,10 @@ class TFile {
             boundary = hdr.slice(indx + 9);
             if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
                boundary = boundary.slice(1, boundary.length - 1);
-            boundary = "--" + boundary;
-         } else console.error('Did not found boundary id in the response header');
+            boundary = '--' + boundary;
+         } else {
+            console.error('Did not found boundary id in the response header');
+         }
 
          while (n < last) {
 
@@ -73101,7 +73103,8 @@ class TFile {
                code1 = code2;
                code2 = view.getUint8(o + 1);
 
-               if ((code1 == 13) && (code2 == 10)) {
+               if (((code1 == 13) && (code2 == 10)) || (code1 == 10)) {
+
                   if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
                      return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
 
@@ -73122,8 +73125,10 @@ class TFile {
 
                   if ((nline > 1) && (line.length === 0)) finish_header = true;
 
-                  o++; nline++; line = "";
-                  code2 = view.getUint8(o + 1);
+                  nline++; line = '';
+                  if (code1 != 10) {
+                     o++; code2 = view.getUint8(o + 1);
+                  }
                } else {
                   line += String.fromCharCode(code1);
                }
