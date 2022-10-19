@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '17/10/2022';
+let version_date = '19/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12298,6 +12298,25 @@ function cleanup(dom) {
    dummy.selectDom().html('');
    return lst;
 }
+
+const EAxisBits = {
+   kDecimals: BIT(7),
+   kTickPlus: BIT(9),
+   kTickMinus: BIT(10),
+   kAxisRange: BIT(11),
+   kCenterTitle: BIT(12),
+   kCenterLabels: BIT(14),
+   kRotateTitle: BIT(15),
+   kPalette: BIT(16),
+   kNoExponent: BIT(17),
+   kLabelsHori: BIT(18),
+   kLabelsVert: BIT(19),
+   kLabelsDown: BIT(20),
+   kLabelsUp: BIT(21),
+   kIsInteger: BIT(22),
+   kMoreLogLabels: BIT(23),
+   kOppositeTitle: BIT(32) // atrificial bit, not possible to set in ROOT
+};
 
 /**
  * @license
@@ -46587,25 +46606,6 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    }
 }
 
-const EAxisBits = {
-   kDecimals: BIT(7),
-   kTickPlus: BIT(9),
-   kTickMinus: BIT(10),
-   kAxisRange: BIT(11),
-   kCenterTitle: BIT(12),
-   kCenterLabels: BIT(14),
-   kRotateTitle: BIT(15),
-   kPalette: BIT(16),
-   kNoExponent: BIT(17),
-   kLabelsHori: BIT(18),
-   kLabelsVert: BIT(19),
-   kLabelsDown: BIT(20),
-   kLabelsUp: BIT(21),
-   kIsInteger: BIT(22),
-   kMoreLogLabels: BIT(23),
-   kOppositeTitle: BIT(32) // atrificial bit, not possible to set in ROOT
-};
-
 /** @summary Return time offset value for given TAxis object
   * @private */
 function getTimeOffset(axis) {
@@ -50541,10 +50541,14 @@ function setSaveFile(func) {
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
    if (typeof col == 'string') {
-      if (!col || (col == 'none')) id = 0; else
+      if (!col || (col == 'none')) {
+         id = 0;
+      } else {
          for (let k = 1; k < arr.length; ++k)
             if (arr[k] == col) { id = k; break; }
-      if ((id < 0) && (col.indexOf('rgb') == 0)) id = 9999;
+      }
+      if ((id < 0) && (col.indexOf('rgb') == 0))
+         id = 9999;
    } else if (Number.isInteger(col) && arr[col]) {
       id = col;
       col = arr[id];
@@ -50552,11 +50556,11 @@ function getColorExec(col, method) {
 
    if (id < 0) return '';
 
+   // for higher color numbers ensure that such color exists
    if (id >= 50) {
-      // for higher color numbers ensure that such color exists
       let c = color$1(col);
       id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
-   }
+    }
 
    return `exec:${method}(${id})`;
 }
@@ -59063,6 +59067,12 @@ class TCanvasPainter extends TPadPainter {
       this.processChanges('sbits', this);
    }
 
+   /** @summary Get view data for ui5 panel
+     * @private */
+   getUi5PanelData(/* panel_name */) {
+      return { jsroot: { parse, toJSON, loadScript, EAxisBits, getColorExec } };
+   }
+
    /** @summary Function used to activate GED
      * @return {Promise} when GED is there
      * @private */
@@ -59109,7 +59119,8 @@ class TCanvasPainter extends TPadPainter {
                let oModel = new JSONModel({ handle: null });
 
                XMLView.create({
-                  viewName: 'rootui5.canv.view.Ged'
+                  viewName: 'rootui5.canv.view.Ged',
+                  viewData: this.getUi5PanelData('Ged')
                }).then(oGed => {
 
                   oGed.setModel(oModel);
@@ -71399,7 +71410,9 @@ class TFile {
             if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
-         } else console.error('Did not found boundary id in the response header');
+         } else {
+            console.error('Did not found boundary id in the response header');
+         }
 
          while (n < last) {
 
@@ -71410,7 +71423,8 @@ class TFile {
                code1 = code2;
                code2 = view.getUint8(o + 1);
 
-               if ((code1 == 13) && (code2 == 10)) {
+               if (((code1 == 13) && (code2 == 10)) || (code1 == 10)) {
+
                   if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
                      return rejectFunc(Error(`Decode multipart message, expect boundary ${boundary} got ${line}`));
 
@@ -71431,8 +71445,10 @@ class TFile {
 
                   if ((nline > 1) && (line.length === 0)) finish_header = true;
 
-                  o++; nline++; line = '';
-                  code2 = view.getUint8(o + 1);
+                  nline++; line = '';
+                  if (code1 != 10) {
+                     o++; code2 = view.getUint8(o + 1);
+                  }
                } else {
                   line += String.fromCharCode(code1);
                }
@@ -99164,7 +99180,6 @@ class LongPollSocket {
                this.handle.processRequest(res);
          }
       }, function(/*err,status*/) {
-         // console.log(`Get request error ${err} status ${status}`);
          this.handle.processRequest(null, 'error');
       }, true).then(req => {
          req.handle = this;
@@ -99266,7 +99281,6 @@ class FileDumpSocket {
       let fname = this.protocol[this.cnt];
       if (!fname) return;
       if (fname == 'send') return; // waiting for send
-      // console.log(`getting file ${fname} wait ${this.wait_for_file}`);
       this.wait_for_file = true;
       this.cnt++;
       httpRequest(fname, (fname.indexOf('.bin') > 0 ? 'buf' : 'text')).then(res => {
@@ -99343,7 +99357,6 @@ class WebWindowHandle {
     * @private */
    provideData(chid, _msg, _len) {
       if (this.wait_first_recv) {
-         console.log(`FIRST MESSAGE ${chid} ${msg}`);
          delete this.wait_first_recv;
          return this.invokeReceiver(false, 'onWebsocketOpened');
       }
@@ -99603,14 +99616,12 @@ class WebWindowHandle {
                delete this.next_binary;
 
                if (msg instanceof Blob) {
-                  // this is case of websocket
-                  // console.log('Get Blob object - convert to buffer array');
+                  // convert Blob object to BufferArray
                   let reader = new FileReader, qitem = this.reserveQueueItem();
                   // The file's text will be printed here
                   reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
-                  // console.log(`got array ${typeof msg} len = ${msg.byteLength}`);
                   // this is from CEF or LongPoll handler
                   this.provideData(binchid, msg, e.offset || 0);
                }
@@ -99618,7 +99629,8 @@ class WebWindowHandle {
                return;
             }
 
-            if (typeof msg != 'string') return console.log(`unsupported message kind: ${typeof msg}`);
+            if (typeof msg != 'string')
+               return console.log(`unsupported message kind: ${typeof msg}`);
 
             let i1 = msg.indexOf(':'),
                credit = parseInt(msg.slice(0, i1)),
@@ -99703,7 +99715,7 @@ class WebWindowHandle {
          if (((evnt.key == 'R') || (evnt.key == 'r')) && evnt.ctrlKey) {
             evnt.stopPropagation();
             evnt.preventDefault();
-            console.log('Prevent Ctrl-R propogation - ask reload web window!');
+            console.log('Prevent Ctrl-R propogation - ask reload RWebWindow!');
             this.askReload();
           }
       });
@@ -100213,6 +100225,12 @@ class RCanvasPainter extends RPadPainter {
       this.processChanges('sbits', this);
    }
 
+   /** @summary Get view data for ui5 panel
+     * @private */
+   getUi5PanelData(/* panel_name */) {
+      return { jsroot: { parse, toJSON, loadScript, EAxisBits, getColorExec } };
+   }
+
    /** @summary Function used to activate GED
      * @return {Promise} when GED is there
      * @private */
@@ -100259,7 +100277,8 @@ class RCanvasPainter extends RPadPainter {
                let oModel = new JSONModel({ handle: null });
 
                XMLView.create({
-                  viewName: 'rootui5.canv.view.Ged'
+                  viewName: 'rootui5.canv.view.Ged',
+                  viewData: this.getUi5PanelData('Ged')
                }).then(oGed => {
 
                   oGed.setModel(oModel);
@@ -108293,6 +108312,7 @@ exports.BatchDisplay = BatchDisplay;
 exports.BrowserLayout = BrowserLayout;
 exports.CustomDisplay = CustomDisplay;
 exports.DrawOptions = DrawOptions;
+exports.EAxisBits = EAxisBits;
 exports.FileProxy = FileProxy;
 exports.FlexibleDisplay = FlexibleDisplay;
 exports.GridDisplay = GridDisplay;
