@@ -645,7 +645,7 @@ class TCanvasPainter extends TPadPainter {
 
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
-            if (p.$secondary) return; // ignore all secoandry painters
+            if (p.$secondary) return; // ignore all secondary painters
 
             let subobj = p.getObject();
             if (subobj && subobj._typename)
