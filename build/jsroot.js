@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '19/10/2022';
+let version_date = '20/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -58081,15 +58081,18 @@ class TPadPainter extends ObjectPainter {
       // find and remove painters which no longer exists in the list
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if ((sub.snapid === undefined) || sub.$secondary) continue; // look only for painters with snapid
+
+         if (typeof sub.snapid !== 'string') continue; // look only for painters with snapid
+
+         let snapid = sub.snapid, p = snapid.indexOf('#');
+         if (p > 0) snapid = snapid.slice(0, p);
 
          for (let i = 0; i < snap.fPrimitives.length; ++i)
-            if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
+            if (snap.fPrimitives[i].fObjectID === snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            // console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()} ismain ${sub.isMainPainter()}`);
             // remove painter which does not found in the list of snaps
-            this.painters.splice(k--,1);
+            this.painters.splice(k--, 1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
             if (this.main_painter_ref === sub)
@@ -59306,7 +59309,7 @@ class TCanvasPainter extends TPadPainter {
 
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
-            if (p.$secondary) return; // ignore all secoandry painters
+            if (p.$secondary) return; // ignore all secondary painters
 
             let subobj = p.getObject();
             if (subobj && subobj._typename)
