@@ -1059,23 +1059,19 @@ function createMemberStreamer(element, file) {
             }
 
             member.func = function(buf, obj) {
-               const ver = buf.readVersion();
-               let res = this.read_loop(buf, obj[this.cntname]);
-               if (!buf.checkByteCount(ver, this.typename)) res = null;
-               obj[this.name] = res;
+               const ver = buf.readVersion(),
+                     res = this.read_loop(buf, obj[this.cntname]);
+               obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
             }
             member.branch_func = function(buf, obj) {
                // this is special functions, used by branch in the STL container
-
-               const ver = buf.readVersion(), sz0 = obj[this.stl_size];
-               let res = new Array(sz0);
+               const ver = buf.readVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
 
                for (let loop0 = 0; loop0 < sz0; ++loop0) {
                   let cnt = obj[this.cntname][loop0];
                   res[loop0] = this.read_loop(buf, cnt);
                }
-               if (!buf.checkByteCount(ver, this.typename)) res = null;
-               obj[this.name] = res;
+               obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
             }
 
             member.objs_branch_func = function(buf, obj) {
@@ -1083,8 +1079,8 @@ function createMemberStreamer(element, file) {
                // objects already preallocated and only appropriate member must be set
                // see code in JSRoot.tree.js for reference
 
-               const ver = buf.readVersion();
-               let arr = obj[this.name0]; // objects array where reading is done
+               const ver = buf.readVersion(),
+                     arr = obj[this.name0]; // objects array where reading is done
 
                for (let loop0 = 0; loop0 < arr.length; ++loop0) {
                   let obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
@@ -1116,7 +1112,7 @@ function createMemberStreamer(element, file) {
          } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
             let p1 = member.typename.indexOf('<'),
-               p2 = member.typename.lastIndexOf('>');
+                p2 = member.typename.lastIndexOf('>');
 
             member.conttype = member.typename.slice(p1 + 1, p2).trim();
 
