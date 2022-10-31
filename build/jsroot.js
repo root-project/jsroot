@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '20/10/2022';
+let version_date = '31/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -60,15 +60,15 @@ const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin
 /** @summary btoa function in all environments */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
-let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
+let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false };
 
-if ((typeof document !== 'undefined') && (typeof window !== 'undefined')) {
+if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
    browser$1.isFirefox = (navigator.userAgent.indexOf('Firefox') >= 0) || (typeof InstallTrigger !== 'undefined');
    browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser$1.isChrome = !!window.chrome;
    browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    browser$1.chromeVersion = (browser$1.isChrome || browser$1.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
-   browser$1.isWin = navigator.platform.indexOf('Win') >= 0;
+   browser$1.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    browser$1.touches = ('ontouchend' in document); // identify if touch events are supported
 }
 
@@ -1682,7 +1682,7 @@ function isPromise(obj) {
 
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
-function _ensureJSROOT() {
+async function _ensureJSROOT() {
    let pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(exports.source_dir + 'scripts/JSRoot.core.js');
 
    return pr.then(() => {
@@ -6262,6 +6262,7 @@ defaultLocale({
 function defaultLocale(definition) {
   locale = formatLocale(definition);
   timeFormat = locale.format;
+  locale.parse;
   utcFormat = locale.utcFormat;
   utcParse = locale.utcParse;
   return locale;
@@ -65252,7 +65253,7 @@ class TH2Painter$2 extends THistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   drawPolyBinsColor() {
+   async drawPolyBinsColor() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
@@ -65339,7 +65340,7 @@ class TH2Painter$2 extends THistPainter {
    }
 
    /** @summary Draw TH2 bins as text */
-   drawBinsText(handle) {
+   async drawBinsText(handle) {
       let histo = this.getObject(),
           x, y, width, height,
           color = this.getColor(histo.fMarkerColor),
@@ -65832,19 +65833,19 @@ class TH2Painter$2 extends THistPainter {
              y02 = Math.round(funcs[fname](pnt.fMedian - fMedianErr));
 
          if (isOption(kHistoZeroIndicator))
-            hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])),'V',Math.round(funcs[fname](xx[xindx2])));
+            hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])), 'V', Math.round(funcs[fname](xx[xindx2])));
 
          if (isOption(kMedianLine))
-            lines += make_path(pnt.x1,pnt.y0,'H',pnt.x2);
+            lines += make_path(pnt.x1, pnt.y0, 'H', pnt.x2);
          else if (isOption(kMedianNotched))
-            lines += make_path(x1d,pnt.y0,'H',x2d);
+            lines += make_path(x1d, pnt.y0, 'H', x2d);
          else if (isOption(kMedianCircle))
             make_cmarker(center, pnt.y0);
 
          if (isOption(kMeanCircle))
             make_cmarker(center, y0m);
          else if (isOption(kMeanLine))
-            dashed_lines += make_path(pnt.x1,y0m,'H',pnt.x2);
+            dashed_lines += make_path(pnt.x1, y0m, 'H', pnt.x2);
 
          if (isOption(kBox))
             if (isOption(kMedianNotched))
@@ -66341,7 +66342,7 @@ class TH2Painter$2 extends THistPainter {
           ndig = 0, tickStep = 1,
           formatValue = v => v.toString(),
           formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig),
-          d3_descending = (a,b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN; };
+          d3_descending = (a,b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : Number.NaN; };
 
       if (!isint && fullsum < 10) {
          let lstep = Math.round(Math.log10(fullsum) - 2.3);
@@ -68348,9 +68349,9 @@ async function redraw(dom, obj, opt) {
 function addStreamerInfosForPainter(lst) {
    if (!lst) return;
 
-   function CheckBaseClasses(si, lvl) {
-      if (!si.fElements) return null;
-      if (lvl > 10) return null; // protect against recursion
+   function checkBaseClasses(si, lvl) {
+      if (!si.fElements || (lvl > 10))
+         return null;
 
       for (let j = 0; j < si.fElements.arr.length; ++j) {
          // extract streamer info for each class member
@@ -68358,34 +68359,34 @@ function addStreamerInfosForPainter(lst) {
          if (element.fTypeName !== 'BASE') continue;
 
          let handle = getDrawHandle('ROOT.' + element.fName);
-         if (handle && !handle.for_derived) handle = null;
+         if (handle && !handle.for_derived)
+            handle = null;
 
          // now try find that base class of base in the list
          if (handle === null)
             for (let k = 0; k < lst.arr.length; ++k)
                if (lst.arr[k].fName === element.fName) {
-                  handle = CheckBaseClasses(lst.arr[k], lvl + 1);
+                  handle = checkBaseClasses(lst.arr[k], lvl + 1);
                   break;
                }
 
-         if (handle && handle.for_derived) return handle;
+         if (handle?.for_derived)
+            return handle;
       }
       return null;
    }
 
-   for (let n = 0; n < lst.arr.length; ++n) {
-      let si = lst.arr[n];
-      if (getDrawHandle('ROOT.' + si.fName) !== null) continue;
+   lst.arr.forEach(si => {
+      if (getDrawHandle('ROOT.' + si.fName) !== null) return;
 
-      let handle = CheckBaseClasses(si, 0);
-
-      if (!handle) continue;
-
-      let newhandle = Object.assign({}, handle);
-      // delete newhandle.for_derived; // should we disable?
-      newhandle.name = si.fName;
-      addDrawFunc(newhandle);
-   }
+      let handle = checkBaseClasses(si, 0);
+      if (handle) {
+         let newhandle = Object.assign({}, handle);
+         // delete newhandle.for_derived; // should we disable?
+         newhandle.name = si.fName;
+         addDrawFunc(newhandle);
+      }
+   });
 }
 
 
@@ -68405,7 +68406,7 @@ async function makeSVG(args) {
    if (!args.width) args.width = 1200;
    if (!args.height) args.height = 800;
 
-   function build(main) {
+   async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px');
@@ -68465,7 +68466,7 @@ function assignPadPainterDraw(PadPainterClass) {
 assignPadPainterDraw(TPadPainter);
 
 // load v7 only by demand
-function init_v7(arg) {
+async function init_v7(arg) {
    return Promise.resolve().then(function () { return RCanvasPainter$1; }).then(h => {
       // only now one can draw primitives in the canvas
       assignPadPainterDraw(h.RPadPainter);
@@ -68486,7 +68487,7 @@ internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 /** @summary Draw TRooPlot
   * @private */
-function drawRooPlot(dom, plot) {
+async function drawRooPlot(dom, plot) {
 
    return draw(dom, plot._hist, 'hist').then(hp => {
       let arr = [];
@@ -69549,23 +69550,19 @@ function createMemberStreamer(element, file) {
             };
 
             member.func = function(buf, obj) {
-               const ver = buf.readVersion();
-               let res = this.read_loop(buf, obj[this.cntname]);
-               if (!buf.checkByteCount(ver, this.typename)) res = null;
-               obj[this.name] = res;
+               const ver = buf.readVersion(),
+                     res = this.read_loop(buf, obj[this.cntname]);
+               obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
             };
             member.branch_func = function(buf, obj) {
                // this is special functions, used by branch in the STL container
-
-               const ver = buf.readVersion(), sz0 = obj[this.stl_size];
-               let res = new Array(sz0);
+               const ver = buf.readVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
 
                for (let loop0 = 0; loop0 < sz0; ++loop0) {
                   let cnt = obj[this.cntname][loop0];
                   res[loop0] = this.read_loop(buf, cnt);
                }
-               if (!buf.checkByteCount(ver, this.typename)) res = null;
-               obj[this.name] = res;
+               obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
             };
 
             member.objs_branch_func = function(buf, obj) {
@@ -69573,8 +69570,8 @@ function createMemberStreamer(element, file) {
                // objects already preallocated and only appropriate member must be set
                // see code in JSRoot.tree.js for reference
 
-               const ver = buf.readVersion();
-               let arr = obj[this.name0]; // objects array where reading is done
+               const ver = buf.readVersion(),
+                     arr = obj[this.name0]; // objects array where reading is done
 
                for (let loop0 = 0; loop0 < arr.length; ++loop0) {
                   let obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
@@ -69606,7 +69603,7 @@ function createMemberStreamer(element, file) {
          } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
             let p1 = member.typename.indexOf('<'),
-               p2 = member.typename.lastIndexOf('>');
+                p2 = member.typename.lastIndexOf('>');
 
             member.conttype = member.typename.slice(p1 + 1, p2).trim();
 
