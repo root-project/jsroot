@@ -6,7 +6,7 @@
 3. Fix - show correct bin index in TH2 tooltips
 4. Mark methods returning `Promise` objects as **async**
 5. Fix several bugs in csg.mjs
-6. Upgrade three.js to r145
+6. Upgrade three.js to r146
 7. Improve geometry clipping
 8. 3-dimensional TTree::Draw now produces TPolyMarker3D by default
 9. Fix - multipart message handling (#250)
