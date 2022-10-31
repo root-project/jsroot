@@ -1656,19 +1656,19 @@ class TH2Painter extends THistPainter {
              y02 = Math.round(funcs[fname](pnt.fMedian - fMedianErr));
 
          if (isOption(kHistoZeroIndicator))
-            hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])),'V',Math.round(funcs[fname](xx[xindx2])));
+            hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])), 'V', Math.round(funcs[fname](xx[xindx2])));
 
          if (isOption(kMedianLine))
-            lines += make_path(pnt.x1,pnt.y0,'H',pnt.x2);
+            lines += make_path(pnt.x1, pnt.y0, 'H', pnt.x2);
          else if (isOption(kMedianNotched))
-            lines += make_path(x1d,pnt.y0,'H',x2d);
+            lines += make_path(x1d, pnt.y0, 'H', x2d);
          else if (isOption(kMedianCircle))
             make_cmarker(center, pnt.y0);
 
          if (isOption(kMeanCircle))
             make_cmarker(center, y0m);
          else if (isOption(kMeanLine))
-            dashed_lines += make_path(pnt.x1,y0m,'H',pnt.x2);
+            dashed_lines += make_path(pnt.x1, y0m, 'H', pnt.x2);
 
          if (isOption(kBox))
             if (isOption(kMedianNotched))
@@ -2165,7 +2165,7 @@ class TH2Painter extends THistPainter {
           ndig = 0, tickStep = 1,
           formatValue = v => v.toString(),
           formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig),
-          d3_descending = (a,b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN; };
+          d3_descending = (a,b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : Number.NaN; };
 
       if (!isint && fullsum < 10) {
          let lstep = Math.round(Math.log10(fullsum) - 2.3);
