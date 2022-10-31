@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '20/10/2022';
+let version_date = '31/10/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -55,9 +55,9 @@ const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin
 /** @summary btoa function in all environments */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
-let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
+let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false };
 
-if ((typeof document !== 'undefined') && (typeof window !== 'undefined')) {
+if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
    browser.isFirefox = (navigator.userAgent.indexOf('Firefox') >= 0) || (typeof InstallTrigger !== 'undefined');
    browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser.isChrome = !!window.chrome;
@@ -1677,7 +1677,7 @@ function isPromise(obj) {
 
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
-function _ensureJSROOT() {
+async function _ensureJSROOT() {
    let pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
 
    return pr.then(() => {
