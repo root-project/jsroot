@@ -63,7 +63,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined')) {
    browser.isChrome = !!window.chrome;
    browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
-   browser.isWin = navigator.platform.indexOf('Win') >= 0;
+   browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    browser.touches = ('ontouchend' in document); // identify if touch events are supported
 }
 
