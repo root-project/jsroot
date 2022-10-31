@@ -171,5 +171,3 @@ createRootColors();
 
 export { ColorPalette, getColor, findColor, addColor, adoptRootColors,
          getRootColors, extendRootColors, getRGBfromTColor, createRootColors, toHex };
-
-

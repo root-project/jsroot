@@ -472,9 +472,9 @@ async function redraw(dom, obj, opt) {
 function addStreamerInfosForPainter(lst) {
    if (!lst) return;
 
-   function CheckBaseClasses(si, lvl) {
-      if (!si.fElements) return null;
-      if (lvl > 10) return null; // protect against recursion
+   function checkBaseClasses(si, lvl) {
+      if (!si.fElements || (lvl > 10))
+         return null;
 
       for (let j = 0; j < si.fElements.arr.length; ++j) {
          // extract streamer info for each class member
@@ -482,34 +482,34 @@ function addStreamerInfosForPainter(lst) {
          if (element.fTypeName !== 'BASE') continue;
 
          let handle = getDrawHandle('ROOT.' + element.fName);
-         if (handle && !handle.for_derived) handle = null;
+         if (handle && !handle.for_derived)
+            handle = null;
 
          // now try find that base class of base in the list
          if (handle === null)
             for (let k = 0; k < lst.arr.length; ++k)
                if (lst.arr[k].fName === element.fName) {
-                  handle = CheckBaseClasses(lst.arr[k], lvl + 1);
+                  handle = checkBaseClasses(lst.arr[k], lvl + 1);
                   break;
                }
 
-         if (handle && handle.for_derived) return handle;
+         if (handle?.for_derived)
+            return handle;
       }
       return null;
    }
 
-   for (let n = 0; n < lst.arr.length; ++n) {
-      let si = lst.arr[n];
-      if (getDrawHandle('ROOT.' + si.fName) !== null) continue;
+   lst.arr.forEach(si => {
+      if (getDrawHandle('ROOT.' + si.fName) !== null) return;
 
-      let handle = CheckBaseClasses(si, 0);
-
-      if (!handle) continue;
-
-      let newhandle = Object.assign({}, handle);
-      // delete newhandle.for_derived; // should we disable?
-      newhandle.name = si.fName;
-      addDrawFunc(newhandle);
-   }
+      let handle = checkBaseClasses(si, 0);
+      if (handle) {
+         let newhandle = Object.assign({}, handle);
+         // delete newhandle.for_derived; // should we disable?
+         newhandle.name = si.fName;
+         addDrawFunc(newhandle);
+      }
+   });
 }
 
 
@@ -623,4 +623,5 @@ async function drawRooPlot(dom, plot) {
    });
 }
 
-export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt, draw, redraw, cleanup, makeSVG, drawRooPlot, assignPadPainterDraw };
+export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
+         draw, redraw, cleanup, makeSVG, drawRooPlot, assignPadPainterDraw };

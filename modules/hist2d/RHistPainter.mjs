@@ -861,5 +861,4 @@ class RHistPainter extends RObjectPainter {
 
 } // class RHistPainter
 
-
-export { RHistPainter }
+export { RHistPainter };

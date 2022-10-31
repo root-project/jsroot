@@ -395,4 +395,4 @@ class THStackPainter extends ObjectPainter {
 
 } // class THStackPainter
 
-export { THStackPainter }
+export { THStackPainter };

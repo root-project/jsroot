@@ -156,4 +156,4 @@ class TRatioPlotPainter extends ObjectPainter {
 
 } // class TRatioPlotPainter
 
-export { TRatioPlotPainter }
+export { TRatioPlotPainter };

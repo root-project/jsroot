@@ -331,4 +331,4 @@ class TSplinePainter extends ObjectPainter {
 
 } // class TSplinePainter
 
-export { TSplinePainter }
+export { TSplinePainter };
