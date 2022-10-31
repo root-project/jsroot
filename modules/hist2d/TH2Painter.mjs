@@ -1076,7 +1076,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   drawPolyBinsColor() {
+   async drawPolyBinsColor() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
@@ -1163,7 +1163,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Draw TH2 bins as text */
-   drawBinsText(handle) {
+   async drawBinsText(handle) {
       let histo = this.getObject(),
           x, y, width, height,
           color = this.getColor(histo.fMarkerColor),

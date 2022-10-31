@@ -529,7 +529,7 @@ async function makeSVG(args) {
    if (!args.width) args.width = 1200;
    if (!args.height) args.height = 800;
 
-   function build(main) {
+   async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px');
@@ -590,7 +590,7 @@ function assignPadPainterDraw(PadPainterClass) {
 assignPadPainterDraw(TPadPainter);
 
 // load v7 only by demand
-function init_v7(arg) {
+async function init_v7(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
       assignPadPainterDraw(h.RPadPainter);
@@ -611,7 +611,7 @@ internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 /** @summary Draw TRooPlot
   * @private */
-function drawRooPlot(dom, plot) {
+async function drawRooPlot(dom, plot) {
 
    return draw(dom, plot._hist, 'hist').then(hp => {
       let arr = [];
