@@ -421,16 +421,8 @@ async function createRender3D(width, height, render3d, args) {
          if (!gl) throw(Error('Fail to create headless-gl'));
          args.context = gl;
          gl.canvas = args.canvas;
-         let wk_rnd = false;
-         if (typeof navigator == 'undefined') {
-            // TODO: check if needed after r145
-            globalThis.navigator = { userAgent: 'node' };
-            wk_rnd = true;
-         }
 
          let r = new WebGLRenderer(args);
-
-         if (wk_rnd) delete globalThis.navigator;
 
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
