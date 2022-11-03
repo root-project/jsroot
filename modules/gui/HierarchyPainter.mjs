@@ -88,12 +88,7 @@ async function drawList(dom, lst, opt) {
    if (!lst || !lst.arr)
       return null;
 
-   let obj = {
-     dom,
-     lst,
-     opt,
-     indx: -1,
-     painter: null,
+   let handle = { dom, lst, opt, indx: -1, painter: null,
      draw_next() {
         while (++this.indx < this.lst.arr.length) {
            let item = this.lst.arr[this.indx],
@@ -108,7 +103,7 @@ async function drawList(dom, lst, opt) {
      }
    }
 
-   return obj.draw_next();
+   return handle.draw_next();
 }
 
 // ===================== hierarchy scanning functions ==================================
@@ -198,8 +193,7 @@ function listHierarchy(folder, lst) {
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj?._typename ?
-           {
+          item = !obj?._typename ? {
             _name: i.toString(),
             _kind: 'ROOT.NULL',
             _title: 'NULL',
@@ -210,7 +204,7 @@ function listHierarchy(folder, lst) {
             _kind: 'ROOT.' + obj._typename,
             _title: (obj.fTitle || '') + ' type:'  +  obj._typename,
             _obj: obj
-        };
+          };
 
         switch(obj._typename) {
            case 'TColor': item._value = getRGBfromTColor(obj); break;

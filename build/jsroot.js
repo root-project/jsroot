@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '31/10/2022';
+let version_date = '3/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -2712,7 +2712,7 @@ function Dispatch(_) {
 
 function parseTypenames$1(typenames, types) {
   return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf('.');
+    var name = "", i = t.indexOf(".");
     if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
     if (t && !types.hasOwnProperty(t)) throw new Error("unknown type: " + t);
     return {type: t, name: name};
@@ -3093,7 +3093,7 @@ function selection_data(value, key) {
 // cause the data to change while iterating by using a key function, but please
 // don’t; we’d rather avoid a gratuitous copy.)
 function arraylike(data) {
-  return typeof data === 'object' && "length" in data
+  return typeof data === "object" && "length" in data
     ? data // Array, TypedArray, NodeList, array-like
     : Array.from(data); // Map, Set, iterable, string, or anything else
 }
@@ -3542,7 +3542,7 @@ function contextListener(listener) {
 
 function parseTypenames(typenames) {
   return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf('.');
+    var name = "", i = t.indexOf(".");
     if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
     return {type: t, name: name};
   });
@@ -4255,8 +4255,8 @@ function object(a, b) {
       c = {},
       k;
 
-  if (a === null || typeof a !== 'object') a = {};
-  if (b === null || typeof b !== 'object') b = {};
+  if (a === null || typeof a !== "object") a = {};
+  if (b === null || typeof b !== "object") b = {};
 
   for (k in b) {
     if (k in a) {
@@ -4685,7 +4685,7 @@ FormatSpecifier.prototype.toString = function() {
       + (this.zero ? "0" : "")
       + (this.width === undefined ? "" : Math.max(1, this.width | 0))
       + (this.comma ? "," : "")
-      + (this.precision === undefined ? "" : '.' + Math.max(0, this.precision | 0))
+      + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0))
       + (this.trim ? "~" : "")
       + this.type;
 };
@@ -4694,7 +4694,7 @@ FormatSpecifier.prototype.toString = function() {
 function formatTrim(s) {
   out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
     switch (s[i]) {
-      case '.': i0 = i1 = i; break;
+      case ".": i0 = i1 = i; break;
       case "0": if (i0 === 0) i0 = i; i1 = i; break;
       default: if (!+s[i]) break out; if (i0 > 0) i0 = 0; break;
     }
@@ -4713,7 +4713,7 @@ function formatPrefixAuto(x, p) {
       n = coefficient.length;
   return i === n ? coefficient
       : i > n ? coefficient + new Array(i - n + 1).join("0")
-      : i > 0 ? coefficient.slice(0, i) + '.' + coefficient.slice(i)
+      : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
       : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
 }
 
@@ -4723,7 +4723,7 @@ function formatRounded(x, p) {
   var coefficient = d[0],
       exponent = d[1];
   return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
-      : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + '.' + coefficient.slice(exponent + 1)
+      : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
       : coefficient + new Array(exponent - coefficient.length + 2).join("0");
 }
 
@@ -4754,7 +4754,7 @@ function formatLocale$1(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
-      decimal = locale.decimal === undefined ? '.' : locale.decimal + "",
+      decimal = locale.decimal === undefined ? "." : locale.decimal + "",
       numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map$1.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
       minus = locale.minus === undefined ? "\u2212" : locale.minus + "",
@@ -6647,8 +6647,8 @@ var frame = 0, // is an animation frame pending?
     clockLast = 0,
     clockNow = 0,
     clockSkew = 0,
-    clock = typeof performance === 'object' && performance.now ? performance : Date,
-    setFrame = typeof window === 'object' && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+    clock = typeof performance === "object" && performance.now ? performance : Date,
+    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now$1() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -7250,7 +7250,7 @@ function transition_merge(transition) {
 
 function start(name) {
   return (name + "").trim().split(/^|\s+/).every(function(t) {
-    var i = t.indexOf('.');
+    var i = t.indexOf(".");
     if (i >= 0) t = t.slice(0, i);
     return !t || t === "start";
   });
@@ -69402,28 +69402,22 @@ async function drawList(dom, lst, opt) {
    if (!lst || !lst.arr)
       return null;
 
-   let obj = {
-     divid: dom,
-     lst: lst,
-     opt: opt,
-     indx: -1,
-     painter: null,
+   let handle = { dom, lst, opt, indx: -1, painter: null,
      draw_next() {
         while (++this.indx < this.lst.arr.length) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
            if (!item) continue;
-           return draw(this.getDom(), item, opt).then(p => {
+           return draw(this.dom, item, opt).then(p => {
               if (p && !this.painter) this.painter = p;
               return this.draw_next(); // reenter loop
            });
         }
-
         return this.painter;
      }
    };
 
-   return obj.draw_next();
+   return handle.draw_next();
 }
 
 // ===================== hierarchy scanning functions ==================================
@@ -69513,8 +69507,7 @@ function listHierarchy(folder, lst) {
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj?._typename ?
-           {
+          item = !obj?._typename ? {
             _name: i.toString(),
             _kind: 'ROOT.NULL',
             _title: 'NULL',
@@ -69525,7 +69518,7 @@ function listHierarchy(folder, lst) {
             _kind: 'ROOT.' + obj._typename,
             _title: (obj.fTitle || '') + ' type:'  +  obj._typename,
             _obj: obj
-        };
+          };
 
         switch(obj._typename) {
            case 'TColor': item._value = getRGBfromTColor(obj); break;
