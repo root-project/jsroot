@@ -119,30 +119,30 @@
 
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
 
-      let jsroot_path = "./",
-          demo_path = "demo/",
-          filepath = "../files/",
-          extra_opts = "", // extra options like webgl=no or interactive=0
+      let jsroot_path = './',
+          demo_path = 'demo/',
+          filepath = '../files/',
+          extra_opts = '', // extra options like webgl=no or interactive=0
           select_key = null, // select the only key like ?select=TH2
           no_interactive = false, // disable interactivity
           use_zstd = true,
           examples_main = [];
 
-      if (window.location.search.indexOf("nowebgl") > 0)
-         extra_opts = "&webgl=0";
+      if (window.location.search.indexOf('nowebgl') > 0)
+         extra_opts = '&webgl=0';
 
-      if (window.location.search.indexOf("noint") > 0) {
+      if (window.location.search.indexOf('noint') > 0) {
          no_interactive = true;
-         extra_opts += "&interactive=0";
+         extra_opts += '&interactive=0';
       }
 
       let host = window.location.host;
 
-      if (host.indexOf("localhost") >= 0) {
-         filepath = "https://jsroot.gsi.de/files/"; // "https://root.cern/js/files/"
+      if (host.indexOf('localhost') >= 0) {
+         filepath = 'https://jsroot.gsi.de/files/'; // "https://root.cern/js/files/"
          use_zstd = false;
       } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
-         filepath = "https://root.cern/js/files/";
+         filepath = 'https://root.cern/js/files/';
          use_zstd = false;
       }
 
@@ -174,17 +174,17 @@
          if (durl.length > 0) {
             let viewer = document.getElementById( 'viewer_frame' );
             if (!viewer) {
-               document.getElementById('viewer').innerHTML = "";
+               document.getElementById('viewer').innerHTML = '';
                viewer = document.createElement('iframe');
                viewer.id = "viewer_frame";
                document.getElementById('viewer').appendChild(viewer);
             }
-            viewer.src = jsroot_path + durl + (opt.length > 0 ? ("&opt=" + opt) : "") + extra_opts;
+            viewer.src = jsroot_path + durl + (opt.length > 0 ? ("&opt=" + opt) : '') + extra_opts;
             viewer.focus();
           } else {
 
-             document.getElementById('viewer').innerHTML = "";
-             document.getElementById('viewer').style['background-color'] = "";
+             document.getElementById('viewer').innerHTML = '';
+             document.getElementById('viewer').style['background-color'] = '';
 
              if (jsonname) {
                 httpRequest(jsonname, 'object')
@@ -261,7 +261,7 @@
          if (entry.notest) return runBigTest(0);
          if (!use_zstd && entry.zstd) return runBigTest(0);
 
-         let filename = "", itemname = "", jsonname = "", url = "", opt = "";
+         let filename = '', itemname = '', jsonname = '', url = '', opt = '';
 
          if (entry.file) {
              filename = entry.file;
@@ -312,7 +312,7 @@
                 nobrowser = d.has("nobrowser");
 
             if (nobrowser) {
-               document.getElementById('viewer').innerHTML = "";
+               document.getElementById('viewer').innerHTML = '';
                hpainter = new HierarchyPainter('root', null);
                hpainter.setDisplay(layout, "viewer");
             } else {
@@ -395,14 +395,13 @@
          if (window.location.hash == "#" + key.toLowerCase())
             header.scrollIntoView();
 
-         let url = "", filename = "", itemname = "", jsonname = "", style = "";
+         let url = '', filename = '', itemname = '', jsonname = '', style = '';
 
          for (let n = 0; n<opts.length; ++n) {
-            let entry = opts[n];
+            let entry = opts[n],
+                shortname = key.toLowerCase().replace(' ', '_');
 
-            let shortname = key.toLowerCase().replace(" ","_");
-
-            jsonname = ""; url = ""; style = "";
+            jsonname = url = style = '';
 
             if ('url' in entry) {
                url = entry.url.replace(/\$\$\$/g,filepath);
@@ -411,11 +410,11 @@
                if ((jsonname.indexOf("http:") < 0) && (jsonname.indexOf("https:") < 0)) jsonname = filepath + jsonname;
             } else {
                if ('file' in entry) {
-                  url = ""; filename = entry.file;
+                  url = ''; filename = entry.file;
                   if ((filename.indexOf("http:") < 0) && (filename.indexOf("https:") < 0)) filename = filepath + filename;
                }
                if ('item' in entry) {
-                  url = ""; itemname = entry.item; style = entry.style;
+                  url = ''; itemname = entry.item; style = entry.style;
                } else if ('items' in entry) {
                   url = "?nobrowser&file=" + filename;
                   if (entry.layout) url += "&layout=" + entry.layout;
@@ -427,18 +426,18 @@
                }
             }
 
-            let opt = ('opt' in entry) ? entry.opt : "";
+            let opt = entry.opt || '';
             let aaa = document.createElement( 'a' );
 
             if ('name' in entry)
                aaa.textContent = entry.name;
-            else if (opt != "")
+            else if (opt)
                aaa.textContent = opt;
             else
                aaa.textContent = "<dflt>";
 
             if (aaa.textContent != "<dflt>")
-               shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
+               shortname += "_" + aaa.textContent.toLowerCase().replace(' ', '_');
 
             let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
 
@@ -516,24 +515,24 @@
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();
-             window.location.hash = "slow";
-             runBigTest(5000,true);
+             window.location.hash = 'slow';
+             runBigTest(5000, true);
           });
 
-          content.appendChild(document.createTextNode(", "));
+          content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement( 'a' );
+          aaa = document.createElement('a');
           aaa.textContent = "fast";
           aaa.title = "Run all examples very fast";
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();
              window.location.hash = "fast";
-             runBigTest(1,true);
+             runBigTest(1, true);
           });
 
-          content.appendChild(document.createTextNode(", "));
-          aaa = document.createElement( 'a' );
+          content.appendChild(document.createTextNode(', '));
+          aaa = document.createElement('a');
           aaa.textContent = "stop";
           aaa.title = "Stop running example";
           content.appendChild( aaa );
@@ -543,12 +542,12 @@
           });
       }
 
-      if (window.location.hash == "#run")
+      if (window.location.hash == '#run')
          runBigTest(100,true);
-      else if (window.location.hash == "#fast")
-         runBigTest(1,true);
-      else if (window.location.hash == "#slow")
-         runBigTest(5000,true);
+      else if (window.location.hash == '#fast')
+         runBigTest(1, true);
+      else if (window.location.hash == '#slow')
+         runBigTest(5000, true);
 
    </script>
 </html>

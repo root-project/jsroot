@@ -361,20 +361,20 @@
 
             if (entry.src) {
 
-               let srcurl = "", github = "https://github.com/root-project/jsroot/blob/" + GetGithubBrunch();
+               let srcurl = '', github = 'https://github.com/root-project/jsroot/blob/' + GetGithubBrunch();
                if (entry.src === true) {
                   srcurl = github + url;
                   entry.src = source_dir + url;
-               } else if (entry.src.indexOf("http") === 0)
+               } else if (entry.src.indexOf('http') === 0)
                   srcurl = entry.src;
                else
                   srcurl = github + entry.src;
 
-               let saaa = document.createElement( 'a' );
+               let saaa = document.createElement('a');
 
                if (url) {
-                  saaa.textContent = " (src)";
-                  saaa.title = "Click to see source of the example";
+                  saaa.textContent = ' (src)';
+                  saaa.title = 'Click to see source of the example';
                } else {
                   saaa.textContent = entry.name;
                   saaa.title = entry.title;
@@ -382,7 +382,7 @@
 
                saaa.href = srcurl;
                content.appendChild( saaa );
-               SetSourceListener(saaa, shortname + "_src", entry);
+               SetSourceListener(saaa, shortname + '_src', entry);
 
                if ((window.location.hash == "#" + shortname + "_src") || (entry.syn && window.location.hash == "#" + entry.syn + "_src")) {
                   saaa.focus();

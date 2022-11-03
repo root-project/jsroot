@@ -1252,7 +1252,7 @@ function create(typename, target) {
       case 'TPolyMarker3D':
          create(clTObject, obj);
          create(clTAttMarker, obj);
-         extend(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: "", fP: [] });
+         extend(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: '', fP: [] });
          break;
    }
 
