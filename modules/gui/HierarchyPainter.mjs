@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT,
-         clTList, clTMap, clTObjString } from '../core.mjs';
+         clTList, clTMap, clTObjString, clTText, clTLatex } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -209,8 +209,8 @@ function listHierarchy(folder, lst) {
 
         switch(obj._typename) {
            case 'TColor': item._value = getRGBfromTColor(obj); break;
-           case 'TText':
-           case 'TLatex': item._value = obj.fTitle; break;
+           case clTText:
+           case clTLatex: item._value = obj.fTitle; break;
            case clTObjString: item._value = obj.fString; break;
            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
         }
@@ -490,8 +490,8 @@ function objectHierarchy(top, obj, args = undefined) {
 
                switch(fld._typename) {
                   case 'TColor': item._value = getRGBfromTColor(fld); break;
-                  case 'TText':
-                  case 'TLatex': item._value = fld.fTitle; break;
+                  case clTText:
+                  case clTLatex: item._value = fld.fTitle; break;
                   case clTObjString: item._value = fld.fString; break;
                   default:
                      if (isRootCollection(fld) && (typeof fld.arr === 'object')) {

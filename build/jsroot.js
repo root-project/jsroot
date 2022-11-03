@@ -976,7 +976,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats';
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1066,13 +1067,13 @@ function create$1(typename, target) {
          create$1(clTAttMarker, obj);
          extend$1(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
-      case 'TText':
+      case clTText:
          create$1(clTNamed, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
-      case 'TLatex':
-         create$1('TText', obj);
+      case clTLatex:
+         create$1(clTText, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fX: 0, fY: 0 });
          break;
@@ -1251,12 +1252,12 @@ function create$1(typename, target) {
       case 'TPolyLine3D':
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
-         extend$1(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
+         extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fP: [] });
          break;
       case 'TPolyMarker3D':
          create$1(clTObject, obj);
          create$1(clTAttMarker, obj);
-         extend$1(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
+         extend$1(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: "", fP: [] });
          break;
    }
 
@@ -1418,7 +1419,7 @@ function getMethods(typename, obj) {
 
    if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
-         let line = create$1('TLatex');
+         let line = create$1(clTLatex);
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1722,6 +1723,9 @@ clTClonesArray: clTClonesArray,
 clTPave: clTPave,
 clTPaveText: clTPaveText,
 clTPaveStats: clTPaveStats,
+clTText: clTText,
+clTLatex: clTLatex,
+clTMathText: clTMathText,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -56722,7 +56726,7 @@ class TPavePainter extends ObjectPainter {
       // now draw TLine and TBox objects
       for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
-         if ((entry._typename == 'TText') || (entry._typename == 'TLatex'))
+         if ((entry._typename == clTText) || (entry._typename == clTLatex))
             lines.push(entry.fTitle);
       }
 
@@ -56835,8 +56839,8 @@ class TPavePainter extends ObjectPainter {
          let entry = arr[nline], texty = nline*stepy;
 
          switch(entry._typename) {
-            case 'TText':
-            case 'TLatex':
+            case clTText:
+            case clTLatex:
                if (!entry.fTitle || !entry.fTitle.trim()) continue;
 
                if (entry.fX || entry.fY) {
@@ -56854,7 +56858,7 @@ class TPavePainter extends ObjectPainter {
                   this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
 
                   this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x, y, text: entry.fTitle, color,
-                                  latex: (entry._typename == 'TText') ? 0 : 1,  draw_g: sub_g, fast });
+                                  latex: (entry._typename == clTText) ? 0 : 1,  draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
@@ -56874,7 +56878,7 @@ class TPavePainter extends ObjectPainter {
 
                   arg.align = entry.fTextAlign || pt.fTextAlign;
                   arg.draw_g = text_g;
-                  arg.latex = (entry._typename == 'TText' ? 0 : 1);
+                  arg.latex = (entry._typename == clTText ? 0 : 1);
                   arg.text = entry.fTitle;
                   arg.fast = fast;
                   if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
@@ -64951,9 +64955,9 @@ const drawFuncs = { lst: [
    { name: 'TDiamond', sameas: clTPave },
    { name: 'TLegend', icon: 'img_pavelabel', sameas: clTPave },
    { name: 'TPaletteAxis', icon: 'img_colz', sameas: clTPave },
-   { name: 'TLatex', icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
-   { name: 'TMathText', sameas: 'TLatex' },
-   { name: 'TText', sameas: 'TLatex' },
+   { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
+   { name: clTMathText, sameas: clTLatex },
+   { name: clTText, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
    { name: 'TProfile', icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
    { name: 'TH2Poly', icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
@@ -69534,8 +69538,8 @@ function listHierarchy(folder, lst) {
 
         switch(obj._typename) {
            case 'TColor': item._value = getRGBfromTColor(obj); break;
-           case 'TText':
-           case 'TLatex': item._value = obj.fTitle; break;
+           case clTText:
+           case clTLatex: item._value = obj.fTitle; break;
            case clTObjString: item._value = obj.fString; break;
            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
         }
@@ -69815,8 +69819,8 @@ function objectHierarchy(top, obj, args = undefined) {
 
                switch(fld._typename) {
                   case 'TColor': item._value = getRGBfromTColor(fld); break;
-                  case 'TText':
-                  case 'TLatex': item._value = fld.fTitle; break;
+                  case clTText:
+                  case clTLatex: item._value = fld.fTitle; break;
                   case clTObjString: item._value = fld.fString; break;
                   default:
                      if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
@@ -76080,8 +76084,8 @@ async function drawText$1() {
 
    if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
-   if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
-   if (text._typename == 'TMathText') { arg.latex = 2; fact = 0.8; }
+   if (text._typename == clTLatex) { arg.latex = 1; fact = 0.9; } else
+   if (text._typename == clTMathText) { arg.latex = 2; fact = 0.8; }
 
    this.startTextDrawing(text.fTextFont, Math.round((textsize > 1) ? textsize : textsize*Math.min(w,h)*fact));
 
@@ -105363,8 +105367,10 @@ exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.clTClonesArray = clTClonesArray;
 exports.clTHashList = clTHashList;
+exports.clTLatex = clTLatex;
 exports.clTList = clTList;
 exports.clTMap = clTMap;
+exports.clTMathText = clTMathText;
 exports.clTNamed = clTNamed;
 exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;
@@ -105373,6 +105379,7 @@ exports.clTPave = clTPave;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;
 exports.clTString = clTString;
+exports.clTText = clTText;
 exports.cleanup = cleanup;
 exports.clone = clone;
 exports.compressSVG = compressSVG;

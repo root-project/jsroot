@@ -1,5 +1,5 @@
 import { gStyle, browser, settings, clone, create, isBatchMode,
-         clTPave, clTPaveText, clTPaveStats } from '../core.mjs';
+         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
@@ -261,7 +261,7 @@ class TPavePainter extends ObjectPainter {
       // now draw TLine and TBox objects
       for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
-         if ((entry._typename == 'TText') || (entry._typename == 'TLatex'))
+         if ((entry._typename == clTText) || (entry._typename == clTLatex))
             lines.push(entry.fTitle);
       }
 
@@ -374,8 +374,8 @@ class TPavePainter extends ObjectPainter {
          let entry = arr[nline], texty = nline*stepy;
 
          switch(entry._typename) {
-            case 'TText':
-            case 'TLatex':
+            case clTText:
+            case clTLatex:
                if (!entry.fTitle || !entry.fTitle.trim()) continue;
 
                if (entry.fX || entry.fY) {
@@ -393,7 +393,7 @@ class TPavePainter extends ObjectPainter {
                   this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
 
                   this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x, y, text: entry.fTitle, color,
-                                  latex: (entry._typename == 'TText') ? 0 : 1,  draw_g: sub_g, fast });
+                                  latex: (entry._typename == clTText) ? 0 : 1,  draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
@@ -413,7 +413,7 @@ class TPavePainter extends ObjectPainter {
 
                   arg.align = entry.fTextAlign || pt.fTextAlign;
                   arg.draw_g = text_g;
-                  arg.latex = (entry._typename == 'TText' ? 0 : 1);
+                  arg.latex = (entry._typename == clTText ? 0 : 1);
                   arg.text = entry.fTitle;
                   arg.fast = fast;
                   if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }

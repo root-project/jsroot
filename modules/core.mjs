@@ -971,7 +971,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats';
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1061,13 +1062,13 @@ function create(typename, target) {
          create(clTAttMarker, obj);
          extend(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
-      case 'TText':
+      case clTText:
          create(clTNamed, obj);
          create(clTAttText, obj);
          extend(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
-      case 'TLatex':
-         create('TText', obj);
+      case clTLatex:
+         create(clTText, obj);
          create(clTAttLine, obj);
          extend(obj, { fX: 0, fY: 0 });
          break;
@@ -1246,12 +1247,12 @@ function create(typename, target) {
       case 'TPolyLine3D':
          create(clTObject, obj);
          create(clTAttLine, obj);
-         extend(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
+         extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fP: [] });
          break;
       case 'TPolyMarker3D':
          create(clTObject, obj);
          create(clTAttMarker, obj);
-         extend(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
+         extend(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: "", fP: [] });
          break;
    }
 
@@ -1413,7 +1414,7 @@ function getMethods(typename, obj) {
 
    if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
-         let line = create('TLatex');
+         let line = create(clTLatex);
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1692,7 +1693,7 @@ async function _ensureJSROOT() {
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats,
+         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

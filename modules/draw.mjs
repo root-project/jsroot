@@ -1,7 +1,7 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats } from './core.mjs';
+         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -33,9 +33,9 @@ const drawFuncs = { lst: [
    { name: 'TDiamond', sameas: clTPave },
    { name: 'TLegend', icon: 'img_pavelabel', sameas: clTPave },
    { name: 'TPaletteAxis', icon: 'img_colz', sameas: clTPave },
-   { name: 'TLatex', icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
-   { name: 'TMathText', sameas: 'TLatex' },
-   { name: 'TText', sameas: 'TLatex' },
+   { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
+   { name: clTMathText, sameas: clTLatex },
+   { name: clTText, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
    { name: 'TProfile', icon: 'img_profile', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
    { name: 'TH2Poly', icon: 'img_histo2d', class: () => import('./hist/TH2Painter.mjs').then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
