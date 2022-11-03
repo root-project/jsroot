@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, constants, internals, isNodeJs, isPromise, BIT } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -1484,7 +1484,7 @@ function drawRawText(dom, txt /*, opt*/) {
    }
 
    painter.drawText = async function() {
-      let txt = (this.txt._typename && (this.txt._typename == 'TObjString')) ? this.txt.fString : this.txt.value;
+      let txt = (this.txt._typename && (this.txt._typename == clTObjString)) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants.Latex.AlwaysMathJax);

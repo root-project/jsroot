@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, create, toJSON } from '../core.mjs';
+import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
 import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
@@ -101,7 +101,7 @@ async function treeDrawProgress(obj, final) {
       }
       if (typeof internals.drawInspector == 'function')
          return internals.drawInspector(this.drawid, obj);
-      let str = create('TObjString');
+      let str = create(clTObjString);
       str.fString = toJSON(obj,2);
       return drawRawText(this.drawid, str);
    }

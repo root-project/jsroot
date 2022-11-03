@@ -968,6 +968,7 @@ async function httpRequest(url, kind, post_data) {
 }
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
+      clTString = 'TString', clTObjString = 'TObjString',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
 
 /** @summary Create some ROOT classes
@@ -1068,7 +1069,7 @@ function create(typename, target) {
          create(clTAttLine, obj);
          extend(obj, { fX: 0, fY: 0 });
          break;
-      case 'TObjString':
+      case clTObjString:
          create(clTObject, obj);
          extend(obj, { fString: '' });
          break;
@@ -1688,7 +1689,7 @@ async function _ensureJSROOT() {
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
-         clTObject, clTNamed, clTList,
+         clTObject, clTNamed, clTList, clTString, clTObjString,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

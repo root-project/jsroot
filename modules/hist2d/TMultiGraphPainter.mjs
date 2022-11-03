@@ -1,4 +1,4 @@
-import { create } from '../core.mjs';
+import { create, clTObjString } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -158,7 +158,7 @@ class TMultiGraphPainter extends ObjectPainter {
             xaxis.fNbins = graphs.arr.length;
             xaxis.fLabels = create('THashList');
             for (let i = 0; i < graphs.arr.length; i++) {
-               let lbl = create('TObjString');
+               let lbl = create(clTObjString);
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                xaxis.fLabels.Add(lbl, '');

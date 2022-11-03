@@ -973,6 +973,7 @@ async function httpRequest(url, kind, post_data) {
 }
 
 const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
+      clTString = 'TString', clTObjString = 'TObjString',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
 
 /** @summary Create some ROOT classes
@@ -1073,7 +1074,7 @@ function create$1(typename, target) {
          create$1(clTAttLine, obj);
          extend$1(obj, { fX: 0, fY: 0 });
          break;
-      case 'TObjString':
+      case clTObjString:
          create$1(clTObject, obj);
          extend$1(obj, { fString: '' });
          break;
@@ -1710,6 +1711,8 @@ btoa_func: btoa_func,
 clTObject: clTObject,
 clTNamed: clTNamed,
 clTList: clTList,
+clTString: clTString,
+clTObjString: clTObjString,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -12183,7 +12186,7 @@ function drawRawText(dom, txt /*, opt*/) {
    };
 
    painter.drawText = async function() {
-      let txt = (this.txt._typename && (this.txt._typename == 'TObjString')) ? this.txt.fString : this.txt.value;
+      let txt = (this.txt._typename && (this.txt._typename == clTObjString)) ? this.txt.fString : this.txt.value;
       if (typeof txt != 'string') txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants$1.Latex.AlwaysMathJax);
@@ -64912,8 +64915,6 @@ __proto__: null,
 TH3Painter: TH3Painter
 });
 
-/// generic draw, loads functionality via dynamic import
-
 // v7 namespace prefix
 const _v7 = 'ROOT::Experimental::';
 
@@ -64977,7 +64978,7 @@ const drawFuncs = { lst: [
    { name: 'TCanvasWebSnapshot', icon: 'img_canvas', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: 'TCanvasWebSnapshot' },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
-   { name: 'TObjString', icon: 'img_text', func: drawRawText },
+   { name: clTObjString, icon: 'img_text', func: drawRawText },
    { name: 'TF1', icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TF1Painter$1; }).then(h => h.TF1Painter) },
    { name: 'TF2', icon: 'img_tf2', draw: () => Promise.resolve().then(function () { return TF2; }).then(h => h.drawTF2) },
    { name: 'TSpline3', icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TSplinePainter$1; }).then(h => h.TSplinePainter) },
@@ -65528,8 +65529,7 @@ async function drawRooPlot(dom, plot) {
 
 /// I/O methods of JavaScript ROOT
 
-const clTObjString = 'TObjString', clTString = 'TString',
-      clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
+const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
       kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
@@ -69527,7 +69527,7 @@ function listHierarchy(folder, lst) {
            case 'TColor': item._value = getRGBfromTColor(obj); break;
            case 'TText':
            case 'TLatex': item._value = obj.fTitle; break;
-           case 'TObjString': item._value = obj.fString; break;
+           case clTObjString: item._value = obj.fString; break;
            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
         }
 
@@ -69808,7 +69808,7 @@ function objectHierarchy(top, obj, args = undefined) {
                   case 'TColor': item._value = getRGBfromTColor(fld); break;
                   case 'TText':
                   case 'TLatex': item._value = fld.fTitle; break;
-                  case 'TObjString': item._value = fld.fString; break;
+                  case clTObjString: item._value = fld.fString; break;
                   default:
                      if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
                         item._value = fld.arr.length ? '[...]' : '[]';
@@ -73243,8 +73243,6 @@ async function buildGUI(gui_element, gui_kind = '') {
    }).then(() => hpainter);
 }
 
-/// TTree functionality
-
 // branch types
 const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
       kSTLNode = 4, kClonesMemberNode = 31, kSTLMemberNode = 41,
@@ -74164,7 +74162,7 @@ class TDrawSelector extends TSelector {
       res.nbins = res.max = nbits;
       res.fLabels = create$1('THashList');
       for (let k = 0; k < nbits; ++k) {
-         let s = create$1('TObjString');
+         let s = create$1(clTObjString);
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -74218,7 +74216,7 @@ class TDrawSelector extends TSelector {
 
          res.fLabels = create$1('THashList');
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = create$1('TObjString');
+            let s = create$1(clTObjString);
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === '') s.fString = '<empty>';
@@ -90099,7 +90097,7 @@ class TMultiGraphPainter$2 extends ObjectPainter {
             xaxis.fNbins = graphs.arr.length;
             xaxis.fLabels = create$1('THashList');
             for (let i = 0; i < graphs.arr.length; i++) {
-               let lbl = create$1('TObjString');
+               let lbl = create$1(clTObjString);
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                xaxis.fLabels.Add(lbl, '');
@@ -91531,7 +91529,7 @@ async function treeDrawProgress(obj, final) {
       }
       if (typeof internals.drawInspector == 'function')
          return internals.drawInspector(this.drawid, obj);
-      let str = create$1('TObjString');
+      let str = create$1(clTObjString);
       str.fString = toJSON(obj,2);
       return drawRawText(this.drawid, str);
    }
@@ -105356,7 +105354,9 @@ exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.clTList = clTList;
 exports.clTNamed = clTNamed;
+exports.clTObjString = clTObjString;
 exports.clTObject = clTObject;
+exports.clTString = clTString;
 exports.cleanup = cleanup;
 exports.clone = clone;
 exports.compressSVG = compressSVG;

@@ -1,13 +1,7 @@
-/// generic draw, loads functionality via dynamic import
-
 import { select as d3_select } from './d3.mjs';
-
-import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT, clTList } from './core.mjs';
-
+import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT, clTList, clTObjString } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
-
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
-
 import { TPadPainter } from './gpad/TPadPainter.mjs';
 
 // v7 namespace prefix
@@ -73,7 +67,7 @@ const drawFuncs = { lst: [
    { name: 'TCanvasWebSnapshot', icon: 'img_canvas', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: 'TCanvasWebSnapshot' },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
-   { name: 'TObjString', icon: 'img_text', func: drawRawText },
+   { name: clTObjString, icon: 'img_text', func: drawRawText },
    { name: 'TF1', icon: 'img_tf1', class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter) },
    { name: 'TF2', icon: 'img_tf2', draw: () => import('./draw/TF2.mjs').then(h => h.drawTF2) },
    { name: 'TSpline3', icon: 'img_tf1', class: () => import('./draw/TSplinePainter.mjs').then(h => h.TSplinePainter) },

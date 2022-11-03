@@ -1,9 +1,6 @@
-/// TTree functionality
-
 import { BIT, isArrayProto, isRootCollection, getMethods,
          create, createHistogram, createTGraph,
-         clTObject } from './core.mjs';
-
+         clTObject, clTObjString } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
          kCharStar, kDouble, kDouble32,
          kUChar, kUShort, kUInt,
@@ -11,7 +8,6 @@ import { kChar, kShort, kInt, kFloat,
          kOffsetL, kOffsetP, kObject, kAny, kObjectp, kTString,
          kStreamer, kStreamLoop, kSTLp, kSTL,
          R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
-
 import * as jsroot_math from './base/math.mjs';
 
 // branch types
@@ -949,7 +945,7 @@ class TDrawSelector extends TSelector {
       res.nbins = res.max = nbits;
       res.fLabels = create('THashList');
       for (let k = 0; k < nbits; ++k) {
-         let s = create('TObjString');
+         let s = create(clTObjString);
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -1003,7 +999,7 @@ class TDrawSelector extends TSelector {
 
          res.fLabels = create('THashList');
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = create('TObjString');
+            let s = create(clTObjString);
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === '') s.fString = '<empty>';
