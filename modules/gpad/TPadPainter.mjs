@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray, clTPaveText } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray, clTPaveText, clTColor } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -739,7 +739,7 @@ class TPadPainter extends ObjectPainter {
          let arr = [], missing = false;
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
-            if (col && (col._typename == 'TColor')) {
+            if (col?._typename == clTColor) {
                arr[n] = getRGBfromTColor(col);
             } else {
                console.log(`Missing color with index ${n}`); missing = true;

@@ -977,7 +977,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
-      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText';
+      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTColor = 'TColor';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1726,6 +1726,7 @@ clTPaveStats: clTPaveStats,
 clTText: clTText,
 clTLatex: clTLatex,
 clTMathText: clTMathText,
+clTColor: clTColor,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -9822,7 +9823,7 @@ function getRootColors() {
 /** @summary Produces rgb code for TColor object
   * @private */
 function getRGBfromTColor(col) {
-   if (!col || (col._typename != 'TColor')) return null;
+   if (col?._typename != clTColor) return null;
 
    let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
    if ((col.fAlpha !== undefined) && (col.fAlpha !== 1.))
@@ -9858,7 +9859,7 @@ function extendRootColors(jsarr, objarr) {
       rgb_array = [];
       for (let n = 0; n < objarr.arr.length; ++n) {
          let col = objarr.arr[n];
-         if (!col || (col._typename != 'TColor')) continue;
+         if (col?._typename != clTColor) continue;
 
          if ((col.fNumber >= 0) && (col.fNumber <= 10000))
             rgb_array[col.fNumber] = getRGBfromTColor(col);
@@ -54369,7 +54370,7 @@ class TPadPainter extends ObjectPainter {
          let arr = [], missing = false;
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
-            if (col && (col._typename == 'TColor')) {
+            if (col?._typename == clTColor) {
                arr[n] = getRGBfromTColor(col);
             } else {
                console.log(`Missing color with index ${n}`); missing = true;
@@ -65039,7 +65040,7 @@ const drawFuncs = { lst: [
    { name: clTObjArray, sameas: clTList },
    { name: clTClonesArray, sameas: clTList },
    { name: clTMap, sameas: clTList },
-   { name: 'TColor', icon: 'img_color' },
+   { name: clTColor, icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
    { name: 'TStyle', icon: 'img_question', noexpand: true },
@@ -69537,7 +69538,7 @@ function listHierarchy(folder, lst) {
           };
 
         switch(obj._typename) {
-           case 'TColor': item._value = getRGBfromTColor(obj); break;
+           case clTColor: item._value = getRGBfromTColor(obj); break;
            case clTText:
            case clTLatex: item._value = obj.fTitle; break;
            case clTObjString: item._value = obj.fString; break;
@@ -69818,7 +69819,7 @@ function objectHierarchy(top, obj, args = undefined) {
                item._more = false;
 
                switch(fld._typename) {
-                  case 'TColor': item._value = getRGBfromTColor(fld); break;
+                  case clTColor: item._value = getRGBfromTColor(fld); break;
                   case clTText:
                   case clTLatex: item._value = fld.fTitle; break;
                   case clTObjString: item._value = fld.fString; break;
@@ -105366,6 +105367,7 @@ exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.clTClonesArray = clTClonesArray;
+exports.clTColor = clTColor;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
 exports.clTList = clTList;

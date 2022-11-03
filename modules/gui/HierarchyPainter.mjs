@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT,
-         clTList, clTMap, clTObjString, clTText, clTLatex } from '../core.mjs';
+         clTList, clTMap, clTObjString, clTText, clTLatex, clTColor } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -208,7 +208,7 @@ function listHierarchy(folder, lst) {
           };
 
         switch(obj._typename) {
-           case 'TColor': item._value = getRGBfromTColor(obj); break;
+           case clTColor: item._value = getRGBfromTColor(obj); break;
            case clTText:
            case clTLatex: item._value = obj.fTitle; break;
            case clTObjString: item._value = obj.fString; break;
@@ -489,7 +489,7 @@ function objectHierarchy(top, obj, args = undefined) {
                item._more = false;
 
                switch(fld._typename) {
-                  case 'TColor': item._value = getRGBfromTColor(fld); break;
+                  case clTColor: item._value = getRGBfromTColor(fld); break;
                   case clTText:
                   case clTLatex: item._value = fld.fTitle; break;
                   case clTObjString: item._value = fld.fString; break;

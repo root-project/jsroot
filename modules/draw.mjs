@@ -1,7 +1,8 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText } from './core.mjs';
+         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText,
+         clTColor } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -117,7 +118,7 @@ const drawFuncs = { lst: [
    { name: clTObjArray, sameas: clTList },
    { name: clTClonesArray, sameas: clTList },
    { name: clTMap, sameas: clTList },
-   { name: 'TColor', icon: 'img_color' },
+   { name: clTColor, icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
    { name: 'TStyle', icon: 'img_question', noexpand: true },
