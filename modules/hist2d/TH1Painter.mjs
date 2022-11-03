@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode } from '../core.mjs';
+import { gStyle, settings, isBatchMode, clTF1 } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, buildSvgPath } from '../base/BasePainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
@@ -270,7 +270,7 @@ class TH1Painter extends THistPainter {
             stat.addText('Kurt = <not avail>');
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF1'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit);
 
       return true;
    }

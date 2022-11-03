@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, internals, create,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis } from '../core.mjs';
+         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1 } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1456,7 +1456,7 @@ class THistPainter extends ObjectPainter {
       if (func._typename === clTPaveStats)
           return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
 
-       if (func._typename === 'TF1')
+       if (func._typename === clTF1)
           return !func.TestBit(BIT(9));
 
        return func._typename !== clTPaletteAxis;

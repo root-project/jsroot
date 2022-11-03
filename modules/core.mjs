@@ -977,7 +977,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
-      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis',
+      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
@@ -1430,7 +1431,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if ((typename.indexOf('TF1') == 0) || (typename === 'TF2')) {
+   if ((typename.indexOf(clTF1) == 0) || (typename === clTF2)) {
       m.addFormula = function(obj) {
          if (!obj) return;
          if (this.formulas === undefined) this.formulas = [];
@@ -1701,7 +1702,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis, clTText, clTLatex, clTMathText, clTMultiGraph,
          clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis,
-         clTAxis, clTH1, clTH2, clTH3,
+         clTAxis, clTH1, clTH2, clTH3, clTF1, clTF2,
          clTGraph, clTCutG, clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,

@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats, clTCutG } from '../core.mjs';
+import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats, clTCutG, clTF1, clTF2 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -1369,10 +1369,7 @@ class TGraphPainter extends ObjectPainter {
    findFunc() {
       let gr = this.getObject();
       if (gr?.fFunctions?.arr)
-         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
-            let func = gr.fFunctions.arr[i];
-            if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
-         }
+         return gr?.fFunctions?.arr.find(func => (func._typename == clTF1) || (func._typename == clTF2));
       return null;
    }
 

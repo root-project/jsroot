@@ -1,4 +1,4 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, clTMultiGraph } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, clTMultiGraph, clTF2 } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -503,14 +503,14 @@ class TH2Painter extends THistPainter {
          stat.addText('Kurt = <undef>');
 
       if ((print_under > 0) || (print_over > 0)) {
-         let m = data.matrix;
+         let get = i => data.matrix[i].toFixed(0);
 
-         stat.addText('' + m[6].toFixed(0) + ' | ' + m[7].toFixed(0) + ' | '  + m[7].toFixed(0));
-         stat.addText('' + m[3].toFixed(0) + ' | ' + m[4].toFixed(0) + ' | '  + m[5].toFixed(0));
-         stat.addText('' + m[0].toFixed(0) + ' | ' + m[1].toFixed(0) + ' | '  + m[2].toFixed(0));
+         stat.addText(`${get(6)} | ${get(7)} | ${get(7)}`);
+         stat.addText(`${get(3)} | ${get(4)} | ${get(5)}`);
+         stat.addText(`${get(0)} | ${get(1)} | ${get(2)}`);
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF2'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF2), dofit);
 
       return true;
    }

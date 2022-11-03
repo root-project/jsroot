@@ -2,7 +2,8 @@ import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
-         clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2,
+         clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph,
+         clTH2, clTF1, clTF2,
          clTColor, clTGraph, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D, clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
@@ -74,8 +75,8 @@ const drawFuncs = { lst: [
    { name: 'TPadWebSnapshot', sameas: 'TCanvasWebSnapshot' },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
-   { name: 'TF1', icon: 'img_tf1', class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter) },
-   { name: 'TF2', icon: 'img_tf2', draw: () => import('./draw/TF2.mjs').then(h => h.drawTF2) },
+   { name: clTF1, icon: 'img_tf1', class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter) },
+   { name: clTF2, icon: 'img_tf2', draw: () => import('./draw/TF2.mjs').then(h => h.drawTF2) },
    { name: 'TSpline3', icon: 'img_tf1', class: () => import('./draw/TSplinePainter.mjs').then(h => h.TSplinePainter) },
    { name: 'TSpline5', sameas: 'TSpline3' },
    { name: 'TEllipse', icon: 'img_graph', draw: () => import_more().then(h => h.drawEllipse), direct: true },
@@ -213,12 +214,12 @@ function getDrawHandle(kind, selector) {
 
          if (selector == '::expand') {
             if (('expand' in h) || ('expand_item' in h)) return h;
-         } else
-            if ('opt' in h) {
-               let opts = h.opt.split(';');
-               for (let j = 0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
-               if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
-            }
+         } else if ('opt' in h) {
+            let opts = h.opt.split(';');
+            for (let j = 0; j < opts.length; ++j)
+               opts[j] = opts[j].toLowerCase();
+            if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+         }
       } else if (selector === counter) {
          return h;
       }
@@ -230,8 +231,7 @@ function getDrawHandle(kind, selector) {
 
 /** @summary Returns true if handle can be potentially drawn
   * @private */
-function canDrawHandle(h)
-{
+function canDrawHandle(h) {
    if (typeof h == 'string')
       h = getDrawHandle(h);
    if (!h || (typeof h !== 'object')) return false;

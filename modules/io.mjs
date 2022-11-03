@@ -3,7 +3,7 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
-         clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D } from './core.mjs';
+         clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
@@ -3120,7 +3120,7 @@ class TFile {
             buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
-            if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
+            if ((key.fClassName === clTF1) || (key.fClassName === clTF2))
                return this._readFormulas(obj);
 
             return obj;

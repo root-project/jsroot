@@ -1,4 +1,4 @@
-import { create, gStyle } from '../core.mjs';
+import { create, gStyle, clTF2 } from '../core.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -60,13 +60,13 @@ function proivdeEvalPar(obj) {
 
   if (isformula) {
      _func = _func.replace(/x\[0\]/g,'x');
-     if (obj._typename === 'TF2') {
+     if (obj._typename === clTF2) {
         _func = _func.replace(/x\[1\]/g,'y');
         obj.evalPar = new Function('x', 'y', _func).bind(obj);
      } else {
         obj.evalPar = new Function('x', _func).bind(obj);
      }
-  } else if (obj._typename === 'TF2')
+  } else if (obj._typename === clTF2)
      obj.evalPar = new Function('x', 'y', 'return ' + _func).bind(obj);
   else
      obj.evalPar = new Function('x', 'return ' + _func).bind(obj);

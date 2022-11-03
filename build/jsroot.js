@@ -982,7 +982,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
-      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis',
+      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
@@ -1435,7 +1436,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if ((typename.indexOf('TF1') == 0) || (typename === 'TF2')) {
+   if ((typename.indexOf(clTF1) == 0) || (typename === clTF2)) {
       m.addFormula = function(obj) {
          if (!obj) return;
          if (this.formulas === undefined) this.formulas = [];
@@ -1747,6 +1748,8 @@ clTAxis: clTAxis,
 clTH1: clTH1,
 clTH2: clTH2,
 clTH3: clTH3,
+clTF1: clTF1,
+clTF2: clTF2,
 clTGraph: clTGraph,
 clTCutG: clTCutG,
 clTPolyLine3D: clTPolyLine3D,
@@ -59208,7 +59211,7 @@ class THistPainter extends ObjectPainter {
       if (func._typename === clTPaveStats)
           return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
 
-       if (func._typename === 'TF1')
+       if (func._typename === clTF1)
           return !func.TestBit(BIT(9));
 
        return func._typename !== clTPaletteAxis;
@@ -60307,7 +60310,7 @@ class TH1Painter$2 extends THistPainter {
             stat.addText('Kurt = <not avail>');
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF1'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit);
 
       return true;
    }
@@ -61756,14 +61759,14 @@ class TH2Painter$2 extends THistPainter {
          stat.addText('Kurt = <undef>');
 
       if ((print_under > 0) || (print_over > 0)) {
-         let m = data.matrix;
+         let get = i => data.matrix[i].toFixed(0);
 
-         stat.addText('' + m[6].toFixed(0) + ' | ' + m[7].toFixed(0) + ' | '  + m[7].toFixed(0));
-         stat.addText('' + m[3].toFixed(0) + ' | ' + m[4].toFixed(0) + ' | '  + m[5].toFixed(0));
-         stat.addText('' + m[0].toFixed(0) + ' | ' + m[1].toFixed(0) + ' | '  + m[2].toFixed(0));
+         stat.addText(`${get(6)} | ${get(7)} | ${get(7)}`);
+         stat.addText(`${get(3)} | ${get(4)} | ${get(5)}`);
+         stat.addText(`${get(0)} | ${get(1)} | ${get(2)}`);
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF2'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF2), dofit);
 
       return true;
    }
@@ -65024,8 +65027,8 @@ const drawFuncs = { lst: [
    { name: 'TPadWebSnapshot', sameas: 'TCanvasWebSnapshot' },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
-   { name: 'TF1', icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TF1Painter$1; }).then(h => h.TF1Painter) },
-   { name: 'TF2', icon: 'img_tf2', draw: () => Promise.resolve().then(function () { return TF2; }).then(h => h.drawTF2) },
+   { name: clTF1, icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TF1Painter$1; }).then(h => h.TF1Painter) },
+   { name: clTF2, icon: 'img_tf2', draw: () => Promise.resolve().then(function () { return TF2; }).then(h => h.drawTF2) },
    { name: 'TSpline3', icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TSplinePainter$1; }).then(h => h.TSplinePainter) },
    { name: 'TSpline5', sameas: 'TSpline3' },
    { name: 'TEllipse', icon: 'img_graph', draw: () => import_more().then(h => h.drawEllipse), direct: true },
@@ -65163,12 +65166,12 @@ function getDrawHandle(kind, selector) {
 
          if (selector == '::expand') {
             if (('expand' in h) || ('expand_item' in h)) return h;
-         } else
-            if ('opt' in h) {
-               let opts = h.opt.split(';');
-               for (let j = 0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
-               if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
-            }
+         } else if ('opt' in h) {
+            let opts = h.opt.split(';');
+            for (let j = 0; j < opts.length; ++j)
+               opts[j] = opts[j].toLowerCase();
+            if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+         }
       } else if (selector === counter) {
          return h;
       }
@@ -65180,8 +65183,7 @@ function getDrawHandle(kind, selector) {
 
 /** @summary Returns true if handle can be potentially drawn
   * @private */
-function canDrawHandle(h)
-{
+function canDrawHandle(h) {
    if (typeof h == 'string')
       h = getDrawHandle(h);
    if (!h || (typeof h !== 'object')) return false;
@@ -68682,7 +68684,7 @@ class TFile {
             buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
-            if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
+            if ((key.fClassName === clTF1) || (key.fClassName === clTF2))
                return this._readFormulas(obj);
 
             return obj;
@@ -89136,10 +89138,7 @@ class TGraphPainter$1 extends ObjectPainter {
    findFunc() {
       let gr = this.getObject();
       if (gr?.fFunctions?.arr)
-         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
-            let func = gr.fFunctions.arr[i];
-            if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
-         }
+         return gr?.fFunctions?.arr.find(func => (func._typename == clTF1) || (func._typename == clTF2));
       return null;
    }
 
@@ -89328,13 +89327,13 @@ function proivdeEvalPar(obj) {
 
   if (isformula) {
      _func = _func.replace(/x\[0\]/g,'x');
-     if (obj._typename === 'TF2') {
+     if (obj._typename === clTF2) {
         _func = _func.replace(/x\[1\]/g,'y');
         obj.evalPar = new Function('x', 'y', _func).bind(obj);
      } else {
         obj.evalPar = new Function('x', _func).bind(obj);
      }
-  } else if (obj._typename === 'TF2')
+  } else if (obj._typename === clTF2)
      obj.evalPar = new Function('x', 'y', 'return ' + _func).bind(obj);
   else
      obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
@@ -105270,6 +105269,8 @@ exports.clTCanvas = clTCanvas;
 exports.clTClonesArray = clTClonesArray;
 exports.clTColor = clTColor;
 exports.clTCutG = clTCutG;
+exports.clTF1 = clTF1;
+exports.clTF2 = clTF2;
 exports.clTGaxis = clTGaxis;
 exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
