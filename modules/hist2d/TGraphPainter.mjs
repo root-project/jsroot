@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats } from '../core.mjs';
+import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats, clTCutG } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -214,7 +214,7 @@ class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename === 'TCutG') && (npoints > 3)) npoints--;
+      if ((gr._typename === clTCutG) && (npoints > 3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphMultiErrors') kind = 2; else
@@ -494,7 +494,7 @@ class TGraphPainter extends ObjectPainter {
       if (options.Line || options.Fill) {
 
          let close_symbol = '';
-         if (graph._typename == 'TCutG') options.Fill = 1;
+         if (graph._typename == clTCutG) options.Fill = 1;
 
          if (options.Fill) {
             close_symbol = 'Z'; // always close area if we want to fill it
@@ -1249,14 +1249,14 @@ class TGraphPainter extends ObjectPainter {
                bin.x = funcs.revertAxis('x', funcs.grx(bin.x) + this.pos_dx);
                bin.y = funcs.revertAxis('y', funcs.gry(bin.y) + this.pos_dy);
                exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               if ((bin.indx == 0) && this.matchObjectType('TCutG'))
+               if ((bin.indx == 0) && this.matchObjectType(clTCutG))
                   exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
             }
             this.drawGraph();
          }
       } else {
          exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
-         if ((this.move_bin.indx == 0) && this.matchObjectType('TCutG'))
+         if ((this.move_bin.indx == 0) && this.matchObjectType(clTCutG))
             exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
          delete this.move_binindx;
       }

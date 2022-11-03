@@ -1,4 +1,4 @@
-import { create, clTPad } from '../core.mjs';
+import { create, clTPad, clTLine } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { drawTLine } from './more.mjs';
@@ -110,7 +110,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  let line = create('TLine');
+                  let line = create(clTLine);
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;

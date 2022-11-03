@@ -976,12 +976,12 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph',
-      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
-      clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode';
+      clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1025,19 +1025,19 @@ function create$1(typename, target) {
       case clTAttMarker:
          extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
-      case 'TLine':
+      case clTLine:
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
-      case 'TBox':
+      case clTBox:
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case clTPave:
-         create$1('TBox', obj);
+         create$1(clTBox, obj);
          extend$1(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
@@ -1057,7 +1057,7 @@ function create$1(typename, target) {
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
-      case 'TLegend':
+      case clTLegend:
          create$1(clTPave, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList),
@@ -1172,7 +1172,7 @@ function create$1(typename, target) {
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case clTGaxis:
-         create$1('TLine', obj);
+         create$1(clTLine, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
@@ -1243,7 +1243,7 @@ function create$1(typename, target) {
          create$1(clTNamed, obj);
          extend$1(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
-      case 'TGeoNodeMatrix':
+      case clTGeoNodeMatrix:
          create$1(clTGeoNode, obj);
          extend$1(obj, { fMatrix: null });
          break;
@@ -1464,7 +1464,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1727,19 +1727,26 @@ clTClonesArray: clTClonesArray,
 clTPave: clTPave,
 clTPaveText: clTPaveText,
 clTPaveStats: clTPaveStats,
+clTLegend: clTLegend,
+clTPaletteAxis: clTPaletteAxis,
 clTText: clTText,
 clTLatex: clTLatex,
 clTMathText: clTMathText,
 clTMultiGraph: clTMultiGraph,
 clTColor: clTColor,
+clTLine: clTLine,
+clTBox: clTBox,
 clTPolyLine: clTPolyLine,
 clTPad: clTPad,
 clTCanvas: clTCanvas,
 clTAttCanvas: clTAttCanvas,
 clTGaxis: clTGaxis,
 clTAxis: clTAxis,
+clTGraph: clTGraph,
+clTCutG: clTCutG,
 clTGeoVolume: clTGeoVolume,
 clTGeoNode: clTGeoNode,
+clTGeoNodeMatrix: clTGeoNodeMatrix,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -56491,6 +56498,8 @@ TPadPainter: TPadPainter,
 TCanvasPainter: TCanvasPainter
 });
 
+const clTDiamond = 'TDiamond', clTPavesText = 'TPavesText', clTPaveLabel = 'TPaveLabel';
+
 /**
  * @summary painter for TPave-derived classes
  *
@@ -56528,7 +56537,7 @@ class TPavePainter extends ObjectPainter {
          pt.fInit = 1;
          let pad = pp.getRootPad(true);
 
-         if ((pt._typename == 'TPaletteAxis') && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
+         if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -56567,7 +56576,7 @@ class TPavePainter extends ObjectPainter {
             pt.fX2NDC = pt.fY2NDC = 0.9;
          }
 
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == 'TLegend')) {
+         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
             pt.fX1NDC = Math.max(pad ? pad.fLeftMargin : 0, pt.fX2NDC - 0.3);
             pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, pad ? 1 - pad.fRightMargin : 1);
             let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
@@ -56617,7 +56626,7 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttFill({ attr: pt });
 
-      if (pt._typename == 'TDiamond') {
+      if (pt._typename == clTDiamond) {
          let h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
@@ -56691,7 +56700,7 @@ class TPavePainter extends ObjectPainter {
          if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
-         if (pt._typename == 'TPaletteAxis')
+         if (pt._typename == clTPaletteAxis)
             this.interactivePaletteAxis(width, height);
 
          return this;
@@ -56900,7 +56909,7 @@ class TPavePainter extends ObjectPainter {
                }
                break;
 
-            case 'TLine':
+            case clTLine:
                let lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    lx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
@@ -56911,7 +56920,7 @@ class TPavePainter extends ObjectPainter {
                      .call(lineatt.func);
                break;
 
-            case 'TBox':
+            case clTBox:
                let bx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    bx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    by1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty),
@@ -57559,18 +57568,18 @@ class TPavePainter extends ObjectPainter {
          case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;
-         case 'TPavesText':
+         case clTPavesText:
             pave.fLines = clone(obj.fLines);
             pave.fNpaves = obj.fNpaves;
             return true;
-         case 'TPaveLabel':
+         case clTPaveLabel:
             pave.fLabel = obj.fLabel;
             return true;
          case clTPaveStats:
             pave.fOptStat = obj.fOptStat;
             pave.fOptFit = obj.fOptFit;
             return true;
-         case 'TLegend':
+         case clTLegend:
             let oldprim = pave.fPrimitives;
             pave.fPrimitives = obj.fPrimitives;
             pave.fNColumns = obj.fNColumns;
@@ -57585,7 +57594,7 @@ class TPavePainter extends ObjectPainter {
                }
             }
             return true;
-         case 'TPaletteAxis':
+         case clTPaletteAxis:
             pave.fBorderSize = 1;
             pave.fShadowColor = 0;
             return true;
@@ -57612,8 +57621,8 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       let typ = obj?._typename;
-      return typ == clTPave || typ == 'TPaveLabel' || typ == clTPaveStats || typ == clTPaveText
-             || typ == 'TPavesText' || typ == 'TDiamond' || typ == 'TLegend' || typ == 'TPaletteAxis';
+      return typ == clTPave || typ == clTPaveLabel || typ == clTPaveStats || typ == clTPaveText ||
+             typ == clTPavesText || typ == clTDiamond || typ == clTLegend || typ == clTPaletteAxis;
    }
 
    /** @summary Draw TPave */
@@ -57642,7 +57651,7 @@ class TPavePainter extends ObjectPainter {
                   pave.fInit = 1;
                }
             }
-         } else if (pave._typename === 'TPaletteAxis') {
+         } else if (pave._typename === clTPaletteAxis) {
             pave.fBorderSize = 1;
             pave.fShadowColor = 0;
 
@@ -57662,7 +57671,7 @@ class TPavePainter extends ObjectPainter {
          painter.NoFillStats = (opt == 'nofillstats');
 
          switch (pave._typename) {
-            case 'TPaveLabel':
+            case clTPaveLabel:
                painter.paveDrawFunc = painter.drawPaveLabel;
                break;
             case clTPaveStats:
@@ -57670,14 +57679,14 @@ class TPavePainter extends ObjectPainter {
                painter.$secondary = true; // indicates that painter created from others
                break;
             case clTPaveText:
-            case 'TPavesText':
-            case 'TDiamond':
+            case clTPavesText:
+            case clTDiamond:
                painter.paveDrawFunc = painter.drawPaveText;
                break;
-            case 'TLegend':
+            case clTLegend:
                painter.paveDrawFunc = painter.drawLegend;
                break;
-            case 'TPaletteAxis':
+            case clTPaletteAxis:
                painter.paveDrawFunc = painter.drawPaletteAxis;
                break;
          }
@@ -57700,7 +57709,7 @@ async function produceLegend(dom, opt) {
 
    if (!pad) return null;
 
-   let leg = create$1('TLegend');
+   let leg = create$1(clTLegend);
 
    for (let k = 0; k < pp.painters.length; ++k) {
       let painter = pp.painters[k],
@@ -59195,7 +59204,7 @@ class THistPainter extends ObjectPainter {
        if (func._typename === 'TF1')
           return !func.TestBit(BIT(9));
 
-       return func._typename !== 'TPaletteAxis';
+       return func._typename !== clTPaletteAxis;
    }
 
    /** @summary Method draws next function from the functions list
@@ -59647,14 +59656,14 @@ class THistPainter extends ObjectPainter {
             return null;
       }
 
-      let pal = this.findFunction('TPaletteAxis'),
+      let pal = this.findFunction(clTPaletteAxis),
           pp = this.getPadPainter(),
           pal_painter = pp?.findPainterFor(pal);
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
       if (!pal_painter && !pal) {
-         pal_painter = pp?.findPainterFor(undefined, undefined, 'TPaletteAxis');
+         pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);
          if (pal_painter) {
             pal = pal_painter.getObject();
             // add to list of functions
@@ -59679,8 +59688,8 @@ class THistPainter extends ObjectPainter {
 
          pal = create$1(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
-                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
+         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
+                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
@@ -64967,8 +64976,8 @@ const drawFuncs = { lst: [
    { name: clTPaveStats, sameas: clTPave },
    { name: 'TPaveLabel', sameas: clTPave },
    { name: 'TDiamond', sameas: clTPave },
-   { name: 'TLegend', icon: 'img_pavelabel', sameas: clTPave },
-   { name: 'TPaletteAxis', icon: 'img_colz', sameas: clTPave },
+   { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
+   { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
    { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
@@ -64994,9 +65003,9 @@ const drawFuncs = { lst: [
    { name: 'TGraphPolar', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
    { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP' },
-   { name: 'TCutG', sameas: 'TGraph' },
-   { name: /^RooHist/, sameas: 'TGraph' },
-   { name: /^RooCurve/, sameas: 'TGraph' },
+   { name: clTCutG, sameas: clTGraph },
+   { name: /^RooHist/, sameas: clTGraph },
+   { name: /^RooCurve/, sameas: clTGraph },
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
@@ -65016,16 +65025,16 @@ const drawFuncs = { lst: [
    { name: 'TPie', icon: 'img_graph', draw: () => import_more().then(h => h.drawPie), direct: true },
    { name: 'TPieSlice', icon: 'img_graph', dummy: true },
    { name: 'TExec', icon: 'img_graph', dummy: true },
-   { name: 'TLine', icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
+   { name: clTLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
    { name: 'TArrow', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TArrowPainter$1; }).then(h => h.TArrowPainter) },
    { name: clTPolyLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
    { name: 'TCurlyLine', sameas: clTPolyLine },
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
    { name: clTGaxis, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTGaxis) },
-   { name: 'TBox', icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
-   { name: 'TWbox', sameas: 'TBox' },
-   { name: 'TSliderBox', sameas: 'TBox' },
+   { name: clTBox, icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
+   { name: 'TWbox', sameas: clTBox },
+   { name: 'TSliderBox', sameas: clTBox },
    { name: 'TMarker', icon: 'img_graph', draw: () => import_more().then(h => h.drawMarker), direct: true },
    { name: 'TPolyMarker', icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyMarker), direct: true },
    { name: 'TASImage', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TASImagePainter$1; }).then(h => h.TASImagePainter), opt: ';z' },
@@ -80952,13 +80961,13 @@ function buildOverlapVolume(overlap) {
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   let node1 = create$1('TGeoNodeMatrix');
+   let node1 = create$1(clTGeoNodeMatrix);
    node1.fName = overlap.fVolume1.fName || 'Overlap1';
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
    // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-   let node2 = create$1('TGeoNodeMatrix');
+   let node2 = create$1(clTGeoNodeMatrix);
    node2.fName = overlap.fVolume2.fName || 'Overlap2';
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
@@ -80998,14 +81007,14 @@ function buildCompositeVolume(comp, maxlvl, side) {
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   let node1 = create$1('TGeoNodeMatrix');
+   let node1 = create$1(clTGeoNodeMatrix);
    setGeoBit(node1, geoBITS.kVisThis, true);
    setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = 'Left';
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + 'Left');
 
-   let node2 = create$1('TGeoNodeMatrix');
+   let node2 = create$1(clTGeoNodeMatrix);
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = 'Right';
@@ -87961,7 +87970,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename === 'TCutG') && (npoints > 3)) npoints--;
+      if ((gr._typename === clTCutG) && (npoints > 3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphMultiErrors') kind = 2; else
@@ -88241,7 +88250,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (options.Line || options.Fill) {
 
          let close_symbol = '';
-         if (graph._typename == 'TCutG') options.Fill = 1;
+         if (graph._typename == clTCutG) options.Fill = 1;
 
          if (options.Fill) {
             close_symbol = 'Z'; // always close area if we want to fill it
@@ -88996,14 +89005,14 @@ class TGraphPainter$1 extends ObjectPainter {
                bin.x = funcs.revertAxis('x', funcs.grx(bin.x) + this.pos_dx);
                bin.y = funcs.revertAxis('y', funcs.gry(bin.y) + this.pos_dy);
                exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               if ((bin.indx == 0) && this.matchObjectType('TCutG'))
+               if ((bin.indx == 0) && this.matchObjectType(clTCutG))
                   exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
             }
             this.drawGraph();
          }
       } else {
          exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
-         if ((this.move_bin.indx == 0) && this.matchObjectType('TCutG'))
+         if ((this.move_bin.indx == 0) && this.matchObjectType(clTCutG))
             exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
          delete this.move_binindx;
       }
@@ -89949,7 +89958,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  let line = create$1('TLine');
+                  let line = create$1(clTLine);
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;
@@ -91381,8 +91390,8 @@ class TASImagePainter extends ObjectPainter {
       if (!this.draw_palette) {
          let pal = create$1(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
-                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
+         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
+                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 });
 
          pal.fAxis.fChopt = '+';
 
@@ -91554,7 +91563,7 @@ async function drawTreeDrawResult(dom, obj, opt) {
       return TH2Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH3') == 0)
       return TH3Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TGraph') == 0)
+   if (typ.indexOf(clTGraph) == 0)
       return TGraphPainter.draw(dom, obj, opt);
    if ((typ == 'TPolyMarker3D') && obj.$hist) {
       return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
@@ -105245,14 +105254,20 @@ exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.clTAttCanvas = clTAttCanvas;
 exports.clTAxis = clTAxis;
+exports.clTBox = clTBox;
 exports.clTCanvas = clTCanvas;
 exports.clTClonesArray = clTClonesArray;
 exports.clTColor = clTColor;
+exports.clTCutG = clTCutG;
 exports.clTGaxis = clTGaxis;
 exports.clTGeoNode = clTGeoNode;
+exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
 exports.clTGeoVolume = clTGeoVolume;
+exports.clTGraph = clTGraph;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
+exports.clTLegend = clTLegend;
+exports.clTLine = clTLine;
 exports.clTList = clTList;
 exports.clTMap = clTMap;
 exports.clTMathText = clTMathText;
@@ -105262,6 +105277,7 @@ exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;
 exports.clTObject = clTObject;
 exports.clTPad = clTPad;
+exports.clTPaletteAxis = clTPaletteAxis;
 exports.clTPave = clTPave;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;

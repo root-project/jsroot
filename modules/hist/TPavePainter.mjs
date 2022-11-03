@@ -1,5 +1,6 @@
 import { gStyle, browser, settings, clone, create, isBatchMode,
-         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex } from '../core.mjs';
+         clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
+         clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
@@ -11,6 +12,7 @@ import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
+const clTDiamond = 'TDiamond', clTPavesText = 'TPavesText', clTPaveLabel = 'TPaveLabel';
 
 /**
  * @summary painter for TPave-derived classes
@@ -49,7 +51,7 @@ class TPavePainter extends ObjectPainter {
          pt.fInit = 1;
          let pad = pp.getRootPad(true);
 
-         if ((pt._typename == 'TPaletteAxis') && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
+         if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -88,7 +90,7 @@ class TPavePainter extends ObjectPainter {
             pt.fX2NDC = pt.fY2NDC = 0.9;
          }
 
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == 'TLegend')) {
+         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
             pt.fX1NDC = Math.max(pad ? pad.fLeftMargin : 0, pt.fX2NDC - 0.3);
             pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, pad ? 1 - pad.fRightMargin : 1);
             let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
@@ -138,7 +140,7 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttFill({ attr: pt });
 
-      if (pt._typename == 'TDiamond') {
+      if (pt._typename == clTDiamond) {
          let h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
@@ -212,7 +214,7 @@ class TPavePainter extends ObjectPainter {
          if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
-         if (pt._typename == 'TPaletteAxis')
+         if (pt._typename == clTPaletteAxis)
             this.interactivePaletteAxis(width, height);
 
          return this;
@@ -421,7 +423,7 @@ class TPavePainter extends ObjectPainter {
                }
                break;
 
-            case 'TLine':
+            case clTLine:
                let lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    lx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
@@ -432,7 +434,7 @@ class TPavePainter extends ObjectPainter {
                      .call(lineatt.func);
                break;
 
-            case 'TBox':
+            case clTBox:
                let bx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
                    bx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                    by1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty),
@@ -1080,18 +1082,18 @@ class TPavePainter extends ObjectPainter {
          case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;
-         case 'TPavesText':
+         case clTPavesText:
             pave.fLines = clone(obj.fLines);
             pave.fNpaves = obj.fNpaves;
             return true;
-         case 'TPaveLabel':
+         case clTPaveLabel:
             pave.fLabel = obj.fLabel;
             return true;
          case clTPaveStats:
             pave.fOptStat = obj.fOptStat;
             pave.fOptFit = obj.fOptFit;
             return true;
-         case 'TLegend':
+         case clTLegend:
             let oldprim = pave.fPrimitives;
             pave.fPrimitives = obj.fPrimitives;
             pave.fNColumns = obj.fNColumns;
@@ -1106,7 +1108,7 @@ class TPavePainter extends ObjectPainter {
                }
             }
             return true;
-         case 'TPaletteAxis':
+         case clTPaletteAxis:
             pave.fBorderSize = 1;
             pave.fShadowColor = 0;
             return true;
@@ -1133,8 +1135,8 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       let typ = obj?._typename;
-      return typ == clTPave || typ == 'TPaveLabel' || typ == clTPaveStats || typ == clTPaveText
-             || typ == 'TPavesText' || typ == 'TDiamond' || typ == 'TLegend' || typ == 'TPaletteAxis';
+      return typ == clTPave || typ == clTPaveLabel || typ == clTPaveStats || typ == clTPaveText ||
+             typ == clTPavesText || typ == clTDiamond || typ == clTLegend || typ == clTPaletteAxis;
    }
 
    /** @summary Draw TPave */
@@ -1163,7 +1165,7 @@ class TPavePainter extends ObjectPainter {
                   pave.fInit = 1;
                }
             }
-         } else if (pave._typename === 'TPaletteAxis') {
+         } else if (pave._typename === clTPaletteAxis) {
             pave.fBorderSize = 1;
             pave.fShadowColor = 0;
 
@@ -1183,7 +1185,7 @@ class TPavePainter extends ObjectPainter {
          painter.NoFillStats = (opt == 'nofillstats');
 
          switch (pave._typename) {
-            case 'TPaveLabel':
+            case clTPaveLabel:
                painter.paveDrawFunc = painter.drawPaveLabel;
                break;
             case clTPaveStats:
@@ -1191,14 +1193,14 @@ class TPavePainter extends ObjectPainter {
                painter.$secondary = true; // indicates that painter created from others
                break;
             case clTPaveText:
-            case 'TPavesText':
-            case 'TDiamond':
+            case clTPavesText:
+            case clTDiamond:
                painter.paveDrawFunc = painter.drawPaveText;
                break;
-            case 'TLegend':
+            case clTLegend:
                painter.paveDrawFunc = painter.drawLegend;
                break;
-            case 'TPaletteAxis':
+            case clTPaletteAxis:
                painter.paveDrawFunc = painter.drawPaletteAxis;
                break;
          }
@@ -1221,7 +1223,7 @@ async function produceLegend(dom, opt) {
 
    if (!pad) return null;
 
-   let leg = create('TLegend');
+   let leg = create(clTLegend);
 
    for (let k = 0; k < pp.painters.length; ++k) {
       let painter = pp.painters[k],

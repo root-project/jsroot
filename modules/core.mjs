@@ -971,12 +971,12 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph',
-      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
-      clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode';
+      clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1020,19 +1020,19 @@ function create(typename, target) {
       case clTAttMarker:
          extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
-      case 'TLine':
+      case clTLine:
          create(clTObject, obj);
          create(clTAttLine, obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
-      case 'TBox':
+      case clTBox:
          create(clTObject, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case clTPave:
-         create('TBox', obj);
+         create(clTBox, obj);
          extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
@@ -1052,7 +1052,7 @@ function create(typename, target) {
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
-      case 'TLegend':
+      case clTLegend:
          create(clTPave, obj);
          create(clTAttText, obj);
          extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList),
@@ -1167,7 +1167,7 @@ function create(typename, target) {
          extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case clTGaxis:
-         create('TLine', obj);
+         create(clTLine, obj);
          create(clTAttText, obj);
          extend(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
@@ -1238,7 +1238,7 @@ function create(typename, target) {
          create(clTNamed, obj);
          extend(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
-      case 'TGeoNodeMatrix':
+      case clTGeoNodeMatrix:
          create(clTGeoNode, obj);
          extend(obj, { fMatrix: null });
          break;
@@ -1459,7 +1459,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1697,9 +1697,9 @@ async function _ensureJSROOT() {
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText, clTMultiGraph,
-         clTColor, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis, clTAxis,
-         clTGeoVolume, clTGeoNode,
+         clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis, clTText, clTLatex, clTMathText, clTMultiGraph,
+         clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis, clTAxis,
+         clTGraph, clTCutG, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

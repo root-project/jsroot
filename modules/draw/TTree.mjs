@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString } from '../core.mjs';
+import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString, clTGraph } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
 import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
@@ -69,7 +69,7 @@ async function drawTreeDrawResult(dom, obj, opt) {
       return TH2Painter.draw(dom, obj, opt);
    if (typ.indexOf('TH3') == 0)
       return TH3Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TGraph') == 0)
+   if (typ.indexOf(clTGraph) == 0)
       return TGraphPainter.draw(dom, obj, opt);
    if ((typ == 'TPolyMarker3D') && obj.$hist) {
       return TH3Painter.draw(dom, obj.$hist, opt).then(() => {

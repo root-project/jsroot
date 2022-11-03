@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, internals, create,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTGaxis } from '../core.mjs';
+         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1459,7 +1459,7 @@ class THistPainter extends ObjectPainter {
        if (func._typename === 'TF1')
           return !func.TestBit(BIT(9));
 
-       return func._typename !== 'TPaletteAxis';
+       return func._typename !== clTPaletteAxis;
    }
 
    /** @summary Method draws next function from the functions list
@@ -1911,14 +1911,14 @@ class THistPainter extends ObjectPainter {
             return null;
       }
 
-      let pal = this.findFunction('TPaletteAxis'),
+      let pal = this.findFunction(clTPaletteAxis),
           pp = this.getPadPainter(),
           pal_painter = pp?.findPainterFor(pal);
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
       if (!pal_painter && !pal) {
-         pal_painter = pp?.findPainterFor(undefined, undefined, 'TPaletteAxis');
+         pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);
          if (pal_painter) {
             pal = pal_painter.getObject();
             // add to list of functions
@@ -1943,8 +1943,8 @@ class THistPainter extends ObjectPainter {
 
          pal = create(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create(clTGaxis),
-                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
+         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create(clTGaxis),
+                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
