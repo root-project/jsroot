@@ -64974,7 +64974,8 @@ async function import_geo() {
    });
 }
 
-const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly';
+const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
+      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot';
 
 // list of registered draw functions
 const drawFuncs = { lst: [
@@ -65023,17 +65024,17 @@ const drawFuncs = { lst: [
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
    { name: 'TStreamerInfoList', icon: 'img_question', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TWebPaintingPainter$1; }).then(h => h.TWebPaintingPainter) },
-   { name: 'TCanvasWebSnapshot', icon: 'img_canvas', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTPadSnapshot) },
-   { name: 'TPadWebSnapshot', sameas: 'TCanvasWebSnapshot' },
+   { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTPadSnapshot) },
+   { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
    { name: clTF1, icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TF1Painter$1; }).then(h => h.TF1Painter) },
    { name: clTF2, icon: 'img_tf2', draw: () => Promise.resolve().then(function () { return TF2; }).then(h => h.drawTF2) },
-   { name: 'TSpline3', icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TSplinePainter$1; }).then(h => h.TSplinePainter) },
-   { name: 'TSpline5', sameas: 'TSpline3' },
-   { name: 'TEllipse', icon: 'img_graph', draw: () => import_more().then(h => h.drawEllipse), direct: true },
-   { name: 'TArc', sameas: 'TEllipse' },
-   { name: 'TCrown', sameas: 'TEllipse' },
+   { name: clTSpline3, icon: 'img_tf1', class: () => Promise.resolve().then(function () { return TSplinePainter$1; }).then(h => h.TSplinePainter) },
+   { name: 'TSpline5', sameas: clTSpline3 },
+   { name: clTEllipse, icon: 'img_graph', draw: () => import_more().then(h => h.drawEllipse), direct: true },
+   { name: 'TArc', sameas: clTEllipse },
+   { name: 'TCrown', sameas: clTEllipse },
    { name: 'TPie', icon: 'img_graph', draw: () => import_more().then(h => h.drawPie), direct: true },
    { name: 'TPieSlice', icon: 'img_graph', dummy: true },
    { name: 'TExec', icon: 'img_graph', dummy: true },
@@ -65063,9 +65064,9 @@ const drawFuncs = { lst: [
    { name: 'kind:Command', icon: 'img_execute', execute: true },
    { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.folderHierarchy) },
    { name: 'TTask', icon: 'img_task', get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.taskHierarchy), for_derived: true },
-   { name: 'TTree', icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
-   { name: 'TNtuple', sameas: 'TTree' },
-   { name: 'TNtupleD', sameas: 'TTree' },
+   { name: clTTree, icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
+   { name: 'TNtuple', sameas: clTTree },
+   { name: 'TNtupleD', sameas: clTTree },
    { name: 'TBranchFunc', icon: 'img_leaf_method', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', noinspect: true },
    { name: /^TBranch/, icon: 'img_branch', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
@@ -65145,7 +65146,7 @@ function getDrawHandle(kind, selector) {
          if (!search.match(h.name)) continue;
       }
 
-      if (h.sameas !== undefined) {
+      if (h.sameas) {
          let hs = getDrawHandle('ROOT.' + h.sameas, selector);
          if (hs) {
             for (let key in hs)
