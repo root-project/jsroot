@@ -1235,9 +1235,9 @@ async function produceLegend(dom, opt) {
       entry.fOption = '';
       if (!entry.fLabel) continue;
 
-      if (painter.lineatt && painter.lineatt.used) entry.fOption+='l';
-      if (painter.fillatt && painter.fillatt.used) entry.fOption+='f';
-      if (painter.markeratt && painter.markeratt.used) entry.fOption+='m';
+      if (painter.lineatt?.used) entry.fOption += 'l';
+      if (painter.fillatt?.used) entry.fOption += 'f';
+      if (painter.markeratt?.used) entry.fOption += 'm';
       if (!entry.fOption) entry.fOption = 'l';
 
       leg.fPrimitives.Add(entry);

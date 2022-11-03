@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode, browser } from '../core.mjs';
+import { gStyle, settings, isBatchMode, browser, clTAxis } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
@@ -2749,7 +2749,7 @@ class TFramePainter extends ObjectPainter {
     * @desc method called normally when mouse enter main object element
     * @private */
    showAxisStatus(axis_name, evnt) {
-      let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = 'TAxis',
+      let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = clTAxis,
           m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name == 'x') ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ('TAxis object for ' + axis_name); }

@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, internals, create,
-         clTList, clTPaveText, clTPaveStats } from '../core.mjs';
+         clTList, clTPave, clTPaveText, clTPaveStats, clTGaxis } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1941,9 +1941,9 @@ class THistPainter extends ObjectPainter {
          if (this.options.PadPalette)
             return null;
 
-         pal = create('TPave');
+         pal = create(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: 'TPave', fH: null, fAxis: create('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create(clTGaxis),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)

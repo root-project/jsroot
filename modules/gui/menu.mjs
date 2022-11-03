@@ -1,4 +1,4 @@
-import { loadScript, source_dir, settings, gStyle, internals } from '../core.mjs';
+import { loadScript, source_dir, settings, gStyle, internals, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -587,7 +587,7 @@ class JSRootMenu {
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.add('endsub:');
       this.add('sub:Ticks');
-      if (faxis._typename == 'TGaxis') {
+      if (faxis._typename == clTGaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
                   arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad'); });
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickSize,

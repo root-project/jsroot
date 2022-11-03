@@ -1,4 +1,4 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, clTMultiGraph } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -360,7 +360,7 @@ class TH2Painter extends THistPainter {
 
             xx = yy = numpoints = 0;
             gr = bin.fPoly; numgraphs = 1;
-            if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+            if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
             for (ngr = 0; ngr < numgraphs; ++ngr) {
                if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -999,7 +999,7 @@ class TH2Painter extends THistPainter {
    createPolyBin(funcs, bin, text_pos) {
       let cmd = '', grcmd = '', acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
 
-      if (bin.fPoly._typename == 'TMultiGraph')
+      if (bin.fPoly._typename == clTMultiGraph)
          ngraphs = bin.fPoly.fGraphs.arr.length;
       else
          gr = bin.fPoly;
@@ -2329,7 +2329,7 @@ class TH2Painter extends THistPainter {
       if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
-         if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+         if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
          for (let ngr = 0; ngr < numgraphs; ++ngr) {
             if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -2394,7 +2394,7 @@ class TH2Painter extends THistPainter {
                if ((bin.fContent === 0) && !this.options.Zero) continue;
 
                let gr = bin.fPoly, numgraphs = 1;
-               if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+               if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
                for (let ngr = 0; ngr < numgraphs; ++ngr) {
                   if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];

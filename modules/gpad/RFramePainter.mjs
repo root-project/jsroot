@@ -1,4 +1,4 @@
-import { gStyle, settings, create, isBatchMode } from '../core.mjs';
+import { gStyle, settings, create, isBatchMode, clTAxis } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
@@ -313,8 +313,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (xaxis?._typename != 'TAxis') xaxis = create('TAxis');
-      if (yaxis?._typename != 'TAxis') yaxis = create('TAxis');
+      if (xaxis?._typename != clTAxis) xaxis = create(clTAxis);
+      if (yaxis?._typename != clTAxis) yaxis = create(clTAxis);
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());

@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, isBatchMode } from '../core.mjs';
+import { gStyle, settings, constants, isBatchMode, clTGaxis, clTAxis } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
@@ -373,7 +373,7 @@ class TAxisPainter extends ObjectPainter {
    }
 
    /** @summary Use in GED to identify kind of axis */
-   getAxisType() { return 'TAxis'; }
+   getAxisType() { return clTAxis; }
 
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
@@ -447,7 +447,7 @@ class TAxisPainter extends ObjectPainter {
       else
          this.gr = this.func;
 
-      let is_gaxis = (axis?._typename === 'TGaxis');
+      let is_gaxis = (axis?._typename === clTGaxis);
 
       delete this.format;// remove formatting func
 
@@ -998,7 +998,7 @@ class TAxisPainter extends ObjectPainter {
      * @private  */
    extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === 'TGaxis',
+          is_gaxis = axis?._typename === clTGaxis,
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || 10,
           pad_h = pp?.getPadHeight() || 10,
@@ -1071,7 +1071,7 @@ class TAxisPainter extends ObjectPainter {
    async drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === 'TGaxis',
+          is_gaxis = axis?._typename === clTGaxis,
           axis_g = layer,
           draw_lines = true,
           pp = this.getPadPainter(),

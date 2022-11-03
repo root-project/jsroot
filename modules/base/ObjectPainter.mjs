@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -1269,7 +1269,7 @@ class ObjectPainter extends BasePainter {
 
          item.fClassName = execp.getClassName();
          if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
-            item.fClassName = 'TAxis';
+            item.fClassName = clTAxis;
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;

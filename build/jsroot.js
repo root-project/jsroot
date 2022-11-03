@@ -976,9 +976,11 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas';
+      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1002,14 +1004,14 @@ function create$1(typename, target) {
       case clTHashList:
          extend$1(obj, { name: typename, arr: [], opt: [] });
          break;
-      case 'TAttAxis':
+      case clTAttAxis:
          extend$1(obj, { fNdivisions: 510, fAxisColor: 1,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
-      case 'TAxis':
+      case clTAxis:
          create$1(clTNamed, obj);
-         create$1('TAttAxis', obj);
+         create$1(clTAttAxis, obj);
          extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
@@ -1082,13 +1084,13 @@ function create$1(typename, target) {
          create$1(clTObject, obj);
          extend$1(obj, { fString: '' });
          break;
-      case 'TH1':
+      case clTH1:
          create$1(clTNamed, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          create$1(clTAttMarker, obj);
          extend$1(obj, { fBits: 8, fNcells: 0,
-                       fXaxis: create$1('TAxis'), fYaxis: create$1('TAxis'), fZaxis: create$1('TAxis'),
+                       fXaxis: create$1(clTAxis), fYaxis: create$1(clTAxis), fZaxis: create$1(clTAxis),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
@@ -1103,11 +1105,11 @@ function create$1(typename, target) {
       case 'TH1D':
       case 'TH1S':
       case 'TH1C':
-         create$1('TH1', obj);
+         create$1(clTH1, obj);
          obj.fArray = [];
          break;
-      case 'TH2':
-         create$1('TH1', obj);
+      case clTH2:
+         create$1(clTH1, obj);
          extend$1(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case 'TH2I':
@@ -1116,11 +1118,11 @@ function create$1(typename, target) {
       case 'TH2D':
       case 'TH2S':
       case 'TH2C':
-         create$1('TH2', obj);
+         create$1(clTH2, obj);
          obj.fArray = [];
          break;
-      case 'TH3':
-         create$1('TH1', obj);
+      case clTH3:
+         create$1(clTH1, obj);
          extend$1(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
@@ -1129,7 +1131,7 @@ function create$1(typename, target) {
       case 'TH3D':
       case 'TH3S':
       case 'TH3C':
-         create$1('TH3', obj);
+         create$1(clTH3, obj);
          obj.fArray = [];
          break;
       case clTHStack:
@@ -1148,7 +1150,7 @@ function create$1(typename, target) {
          create$1(clTGraph, obj);
          extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
-      case 'TMultiGraph':
+      case clTMultiGraph:
          create$1(clTNamed, obj);
          extend$1(obj, { fFunctions: create$1(clTList), fGraphs: create$1(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
@@ -1168,7 +1170,7 @@ function create$1(typename, target) {
          create$1(clTAttFill, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
-      case 'TGaxis':
+      case clTGaxis:
          create$1('TLine', obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
@@ -1370,7 +1372,7 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   let mgraph = create$1('TMultiGraph');
+   let mgraph = create$1(clTMultiGraph);
    for (let i = 0; i < arguments.length; ++i)
        mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
@@ -1479,7 +1481,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('TH1') == 0 || typename.indexOf('TH2') == 0 || typename.indexOf('TH3') == 0) {
+   if (typename.indexOf(clTH1) == 0 || typename.indexOf(clTH2) == 0 || typename.indexOf(clTH3) == 0) {
       m.getBinError = function(bin) {
          //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
          //    if the sum of squares of weights has been defined (via Sumw2),
@@ -1500,7 +1502,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('TH1') == 0) {
+   if (typename.indexOf(clTH1) == 0) {
       m.getBin = function(x) { return x; };
       m.getBinContent = function(bin) { return this.fArray[bin]; };
       m.Fill = function(x, weight) {
@@ -1513,7 +1515,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('TH2') == 0) {
+   if (typename.indexOf(clTH2) == 0) {
       m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; };
       m.Fill = function(x, y, weight) {
@@ -1529,7 +1531,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('TH3') == 0) {
+   if (typename.indexOf(clTH3) == 0) {
       m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
       m.Fill = function(x, y, z, weight) {
@@ -1611,7 +1613,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename == 'TAxis') {
+   if (typename == clTAxis) {
       m.GetBinLowEdge = function(bin) {
          if (this.fNbins <= 0) return 0;
          if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
@@ -1727,10 +1729,13 @@ clTPaveStats: clTPaveStats,
 clTText: clTText,
 clTLatex: clTLatex,
 clTMathText: clTMathText,
+clTMultiGraph: clTMultiGraph,
 clTColor: clTColor,
 clTPolyLine: clTPolyLine,
 clTPad: clTPad,
 clTCanvas: clTCanvas,
+clTGaxis: clTGaxis,
+clTAxis: clTAxis,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -11989,7 +11994,7 @@ class ObjectPainter extends BasePainter {
 
          item.fClassName = execp.getClassName();
          if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
-            item.fClassName = 'TAxis';
+            item.fClassName = clTAxis;
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
@@ -44021,7 +44026,7 @@ class TAxisPainter extends ObjectPainter {
    }
 
    /** @summary Use in GED to identify kind of axis */
-   getAxisType() { return 'TAxis'; }
+   getAxisType() { return clTAxis; }
 
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
@@ -44095,7 +44100,7 @@ class TAxisPainter extends ObjectPainter {
       else
          this.gr = this.func;
 
-      let is_gaxis = (axis?._typename === 'TGaxis');
+      let is_gaxis = (axis?._typename === clTGaxis);
 
       delete this.format;// remove formatting func
 
@@ -44646,7 +44651,7 @@ class TAxisPainter extends ObjectPainter {
      * @private  */
    extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === 'TGaxis',
+          is_gaxis = axis?._typename === clTGaxis,
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || 10,
           pad_h = pp?.getPadHeight() || 10,
@@ -44719,7 +44724,7 @@ class TAxisPainter extends ObjectPainter {
    async drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === 'TGaxis',
+          is_gaxis = axis?._typename === clTGaxis,
           axis_g = layer,
           draw_lines = true,
           pp = this.getPadPainter(),
@@ -48195,7 +48200,7 @@ class JSRootMenu {
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.add('endsub:');
       this.add('sub:Ticks');
-      if (faxis._typename == 'TGaxis') {
+      if (faxis._typename == clTGaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
                   arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad'); });
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickSize,
@@ -51895,7 +51900,7 @@ class TFramePainter extends ObjectPainter {
     * @desc method called normally when mouse enter main object element
     * @private */
    showAxisStatus(axis_name, evnt) {
-      let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = 'TAxis',
+      let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = clTAxis,
           m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name == 'x') ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ('TAxis object for ' + axis_name); }
@@ -57705,9 +57710,9 @@ async function produceLegend(dom, opt) {
       entry.fOption = '';
       if (!entry.fLabel) continue;
 
-      if (painter.lineatt && painter.lineatt.used) entry.fOption+='l';
-      if (painter.fillatt && painter.fillatt.used) entry.fOption+='f';
-      if (painter.markeratt && painter.markeratt.used) entry.fOption+='m';
+      if (painter.lineatt?.used) entry.fOption += 'l';
+      if (painter.fillatt?.used) entry.fOption += 'f';
+      if (painter.markeratt?.used) entry.fOption += 'm';
       if (!entry.fOption) entry.fOption = 'l';
 
       leg.fPrimitives.Add(entry);
@@ -59668,9 +59673,9 @@ class THistPainter extends ObjectPainter {
          if (this.options.PadPalette)
             return null;
 
-         pal = create$1('TPave');
+         pal = create$1(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: 'TPave', fH: null, fAxis: create$1('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)
@@ -61588,7 +61593,7 @@ class TH2Painter$2 extends THistPainter {
 
             xx = yy = numpoints = 0;
             gr = bin.fPoly; numgraphs = 1;
-            if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+            if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
             for (ngr = 0; ngr < numgraphs; ++ngr) {
                if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -62224,7 +62229,7 @@ class TH2Painter$2 extends THistPainter {
    createPolyBin(funcs, bin, text_pos) {
       let cmd = '', grcmd = '', acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
 
-      if (bin.fPoly._typename == 'TMultiGraph')
+      if (bin.fPoly._typename == clTMultiGraph)
          ngraphs = bin.fPoly.fGraphs.arr.length;
       else
          gr = bin.fPoly;
@@ -63554,7 +63559,7 @@ class TH2Painter$2 extends THistPainter {
       if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
-         if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+         if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
          for (let ngr = 0; ngr < numgraphs; ++ngr) {
             if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -63619,7 +63624,7 @@ class TH2Painter$2 extends THistPainter {
                if ((bin.fContent === 0) && !this.options.Zero) continue;
 
                let gr = bin.fPoly, numgraphs = 1;
-               if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+               if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
                for (let ngr = 0; ngr < numgraphs; ++ngr) {
                   if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -63955,7 +63960,7 @@ function drawTH2PolyLego(painter) {
       let all_pnts = [], all_faces = [],
           ngraphs = 1, gr = bin.fPoly, nfaces = 0;
 
-      if (gr._typename == 'TMultiGraph') {
+      if (gr._typename == clTMultiGraph) {
          ngraphs = bin.fPoly.fGraphs.arr.length;
          gr = null;
       }
@@ -64990,7 +64995,7 @@ const drawFuncs = { lst: [
    { name: /^RooCurve/, sameas: 'TGraph' },
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
-   { name: 'TMultiGraph', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
+   { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
    { name: 'TStreamerInfoList', icon: 'img_question', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TWebPaintingPainter$1; }).then(h => h.TWebPaintingPainter) },
    { name: 'TCanvasWebSnapshot', icon: 'img_canvas', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTPadSnapshot) },
@@ -65013,7 +65018,7 @@ const drawFuncs = { lst: [
    { name: 'TCurlyLine', sameas: clTPolyLine },
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
-   { name: 'TGaxis', icon: 'img_graph', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTGaxis) },
+   { name: clTGaxis, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTGaxis) },
    { name: 'TBox', icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
    { name: 'TWbox', sameas: 'TBox' },
    { name: 'TSliderBox', sameas: 'TBox' },
@@ -91312,7 +91317,7 @@ class TASImagePainter extends ObjectPainter {
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.setAxesRanges(create$1('TAxis'), 0, 1, create$1('TAxis'), 0, 1, null, 0, 0);
+            fp.setAxesRanges(create$1(clTAxis), 0, 1, create$1(clTAxis), 0, 1, null, 0, 0);
             fp.createXY({ ndim: 2, check_pad_range: false });
             return fp.addInteractivity();
          })
@@ -91343,7 +91348,7 @@ class TASImagePainter extends ObjectPainter {
       if (!this.draw_palette) {
          let pal = create$1(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = '+';
@@ -93658,8 +93663,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (xaxis?._typename != 'TAxis') xaxis = create$1('TAxis');
-      if (yaxis?._typename != 'TAxis') yaxis = create$1('TAxis');
+      if (xaxis?._typename != clTAxis) xaxis = create$1(clTAxis);
+      if (yaxis?._typename != clTAxis) yaxis = create$1(clTAxis);
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -105371,14 +105376,17 @@ exports.browser = browser$1;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
+exports.clTAxis = clTAxis;
 exports.clTCanvas = clTCanvas;
 exports.clTClonesArray = clTClonesArray;
 exports.clTColor = clTColor;
+exports.clTGaxis = clTGaxis;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
 exports.clTList = clTList;
 exports.clTMap = clTMap;
 exports.clTMathText = clTMathText;
+exports.clTMultiGraph = clTMultiGraph;
 exports.clTNamed = clTNamed;
 exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;

@@ -971,9 +971,11 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
-      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas';
+      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -997,14 +999,14 @@ function create(typename, target) {
       case clTHashList:
          extend(obj, { name: typename, arr: [], opt: [] });
          break;
-      case 'TAttAxis':
+      case clTAttAxis:
          extend(obj, { fNdivisions: 510, fAxisColor: 1,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
-      case 'TAxis':
+      case clTAxis:
          create(clTNamed, obj);
-         create('TAttAxis', obj);
+         create(clTAttAxis, obj);
          extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
@@ -1077,13 +1079,13 @@ function create(typename, target) {
          create(clTObject, obj);
          extend(obj, { fString: '' });
          break;
-      case 'TH1':
+      case clTH1:
          create(clTNamed, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
          create(clTAttMarker, obj);
          extend(obj, { fBits: 8, fNcells: 0,
-                       fXaxis: create('TAxis'), fYaxis: create('TAxis'), fZaxis: create('TAxis'),
+                       fXaxis: create(clTAxis), fYaxis: create(clTAxis), fZaxis: create(clTAxis),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
@@ -1098,11 +1100,11 @@ function create(typename, target) {
       case 'TH1D':
       case 'TH1S':
       case 'TH1C':
-         create('TH1', obj);
+         create(clTH1, obj);
          obj.fArray = [];
          break;
-      case 'TH2':
-         create('TH1', obj);
+      case clTH2:
+         create(clTH1, obj);
          extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case 'TH2I':
@@ -1111,11 +1113,11 @@ function create(typename, target) {
       case 'TH2D':
       case 'TH2S':
       case 'TH2C':
-         create('TH2', obj);
+         create(clTH2, obj);
          obj.fArray = [];
          break;
-      case 'TH3':
-         create('TH1', obj);
+      case clTH3:
+         create(clTH1, obj);
          extend(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
@@ -1124,7 +1126,7 @@ function create(typename, target) {
       case 'TH3D':
       case 'TH3S':
       case 'TH3C':
-         create('TH3', obj);
+         create(clTH3, obj);
          obj.fArray = [];
          break;
       case clTHStack:
@@ -1143,7 +1145,7 @@ function create(typename, target) {
          create(clTGraph, obj);
          extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
-      case 'TMultiGraph':
+      case clTMultiGraph:
          create(clTNamed, obj);
          extend(obj, { fFunctions: create(clTList), fGraphs: create(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
@@ -1163,7 +1165,7 @@ function create(typename, target) {
          create(clTAttFill, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
-      case 'TGaxis':
+      case clTGaxis:
          create('TLine', obj);
          create(clTAttText, obj);
          extend(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
@@ -1365,7 +1367,7 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   let mgraph = create('TMultiGraph');
+   let mgraph = create(clTMultiGraph);
    for (let i = 0; i < arguments.length; ++i)
        mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
@@ -1474,7 +1476,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf('TH1') == 0 || typename.indexOf('TH2') == 0 || typename.indexOf('TH3') == 0) {
+   if (typename.indexOf(clTH1) == 0 || typename.indexOf(clTH2) == 0 || typename.indexOf(clTH3) == 0) {
       m.getBinError = function(bin) {
          //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
          //    if the sum of squares of weights has been defined (via Sumw2),
@@ -1495,7 +1497,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf('TH1') == 0) {
+   if (typename.indexOf(clTH1) == 0) {
       m.getBin = function(x) { return x; }
       m.getBinContent = function(bin) { return this.fArray[bin]; }
       m.Fill = function(x, weight) {
@@ -1508,7 +1510,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf('TH2') == 0) {
+   if (typename.indexOf(clTH2) == 0) {
       m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
       m.Fill = function(x, y, weight) {
@@ -1524,7 +1526,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf('TH3') == 0) {
+   if (typename.indexOf(clTH3) == 0) {
       m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; }
       m.Fill = function(x, y, z, weight) {
@@ -1606,7 +1608,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename == 'TAxis') {
+   if (typename == clTAxis) {
       m.GetBinLowEdge = function(bin) {
          if (this.fNbins <= 0) return 0;
          if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
@@ -1694,8 +1696,8 @@ async function _ensureJSROOT() {
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText,
-         clTColor, clTPolyLine, clTPad, clTCanvas,
+         clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText, clTMultiGraph,
+         clTColor, clTPolyLine, clTPad, clTCanvas, clTGaxis, clTAxis,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
