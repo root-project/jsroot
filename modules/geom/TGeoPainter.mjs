@@ -22,11 +22,11 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve,
-         clTGeoCompositeShape,
+         clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
-         getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
+         getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape, getShapeIcon } from './geobase.mjs';
 
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
@@ -264,36 +264,6 @@ function updateBrowserIcons(obj, hpainter) {
          hpainter.updateTreeNode(m);
       }
    });
-}
-
-
-/** @summary provide icon name for the shape
-  * @private */
-function getShapeIcon(shape) {
-   switch (shape._typename) {
-      case 'TGeoArb8': return 'img_geoarb8';
-      case 'TGeoCone': return 'img_geocone';
-      case 'TGeoConeSeg': return 'img_geoconeseg';
-      case clTGeoCompositeShape: return 'img_geocomposite';
-      case 'TGeoTube': return 'img_geotube';
-      case 'TGeoTubeSeg': return 'img_geotubeseg';
-      case 'TGeoPara': return 'img_geopara';
-      case 'TGeoParaboloid': return 'img_geoparab';
-      case 'TGeoPcon': return 'img_geopcon';
-      case 'TGeoPgon': return 'img_geopgon';
-      case 'TGeoShapeAssembly': return 'img_geoassembly';
-      case 'TGeoSphere': return 'img_geosphere';
-      case 'TGeoTorus': return 'img_geotorus';
-      case 'TGeoTrd1': return 'img_geotrd1';
-      case 'TGeoTrd2': return 'img_geotrd2';
-      case 'TGeoXtru': return 'img_geoxtru';
-      case 'TGeoTrap': return 'img_geotrap';
-      case 'TGeoGtra': return 'img_geogtra';
-      case 'TGeoEltu': return 'img_geoeltu';
-      case 'TGeoHype': return 'img_geohype';
-      case 'TGeoCtub': return 'img_geoctub';
-   }
-   return 'img_geotube';
 }
 
 
@@ -5046,7 +5016,7 @@ async function drawDummy3DGeom(painter) {
 
 
    let shape = create(clTNamed);
-   shape._typename = 'TGeoBBox';
+   shape._typename = clTGeoBBox;
    shape.fDX = max[0] - min[0];
    shape.fDY = max[1] - min[1];
    shape.fDZ = max[2] - min[2];
