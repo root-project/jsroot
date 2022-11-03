@@ -2,7 +2,8 @@
 
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
-         clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray } from './core.mjs';
+         clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
+         clTPad, clTCanvas } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
@@ -157,8 +158,8 @@ const CustomStreamers = {
    },
 
    TCanvas(buf, obj) {
-      obj._typename = 'TCanvas';
-      buf.classStreamer(obj, 'TPad');
+      obj._typename = clTCanvas;
+      buf.classStreamer(obj, clTPad);
       obj.fDISPLAY = buf.readTString();
       obj.fDoubleBuffer = buf.ntoi4();
       obj.fRetained = (buf.ntou1() !== 0);

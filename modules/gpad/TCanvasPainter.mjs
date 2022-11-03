@@ -1,4 +1,4 @@
-import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode } from '../core.mjs';
+import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -160,7 +160,7 @@ class TCanvasPainter extends TPadPainter {
 
       if (this.proj_painter === 1) {
 
-         let canv = create('TCanvas'),
+         let canv = create(clTCanvas),
              pad = this.pad,
              main = this.getFramePainter(), drawopt;
 
@@ -666,7 +666,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary draw TCanvas */
    static async draw(dom, can, opt) {
       let nocanvas = !can;
-      if (nocanvas) can = create('TCanvas');
+      if (nocanvas) can = create(clTCanvas);
 
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
@@ -726,7 +726,7 @@ async function ensureTCanvas(painter, frame_kind) {
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt*/) {
-   let can = create('TCanvas'),
+   let can = create(clTCanvas),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();

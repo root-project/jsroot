@@ -1,4 +1,4 @@
-import { BIT, isBatchMode, clTLatex, clTMathText } from '../core.mjs';
+import { BIT, isBatchMode, clTLatex, clTMathText, clTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -127,7 +127,8 @@ function drawPolyLine() {
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
-   if (polyline._typename != 'TPolyLine') fillatt.setSolidColor('none');
+   if (polyline._typename != clTPolyLine)
+      fillatt.setSolidColor('none');
 
    if (!fillatt.empty()) cmd += 'Z';
 

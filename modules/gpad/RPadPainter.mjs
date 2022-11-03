@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode, btoa_func } from '../core.mjs';
+import { gStyle, settings, constants, internals, addMethods, isPromise, isBatchMode, btoa_func, clTPad } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -1553,7 +1553,7 @@ class RPadPainter extends RObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType('TPad') && (!painter.has_canvas || painter.hasObjectsToDraw())) {
+      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw())) {
          painter.addPadButtons();
       }
 

@@ -1,5 +1,6 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray, clTPaveText, clTColor } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray,
+         clTPaveText, clTColor, clTPad } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -800,7 +801,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Return true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
       let arr = this.pad?.fPrimitives?.arr;
-      return arr && arr.find(obj => obj._typename != 'TPad') ? true : false;
+      return arr && arr.find(obj => obj._typename != clTPad) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -909,8 +910,8 @@ class TPadPainter extends ObjectPainter {
                 x2 = x1 +dx -2*xmargin;
             if (x1 > x2) continue;
             n++;
-            let pad = create('TPad');
-            pad.fName = pad.fTitle = this.pad.fName + '_' + n;
+            let pad = create(clTPad);
+            pad.fName = pad.fTitle = `${this.pad.fName}_${n}`;
             pad.fNumber = n;
             if (!this.iscan) {
                pad.fAbsWNDC = (x2-x1) * this.pad.fAbsWNDC;
@@ -1345,7 +1346,7 @@ class TPadPainter extends ObjectPainter {
 
          padpainter.createPadSvg();
 
-         if (padpainter.matchObjectType('TPad') && (snap.fPrimitives.length > 0))
+         if (padpainter.matchObjectType(clTPad) && (snap.fPrimitives.length > 0))
             padpainter.addPadButtons(true);
 
          // we select current pad, where all drawing is performed
@@ -2060,7 +2061,7 @@ class TPadPainter extends ObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType('TPad') && (!painter.has_canvas || painter.hasObjectsToDraw()))
+      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
       // we select current pad, where all drawing is performed

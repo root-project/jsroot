@@ -977,7 +977,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
-      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTColor = 'TColor';
+      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
+      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1161,7 +1162,7 @@ function create$1(typename, target) {
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
-      case 'TPolyLine':
+      case clTPolyLine:
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
@@ -1176,7 +1177,7 @@ function create$1(typename, target) {
                        fTitle: '', fTitleOffset: 1, fTitleSize: 0.035,
                        fWmax: 100, fWmin: 0 });
          break;
-      case 'TAttPad':
+      case clTAttPad:
          extend$1(obj, { fLeftMargin: gStyle.fPadLeftMargin,
                        fRightMargin: gStyle.fPadRightMargin,
                        fBottomMargin: gStyle.fPadBottomMargin,
@@ -1190,11 +1191,11 @@ function create$1(typename, target) {
                        fFrameBorderSize: gStyle.fFrameBorderSize,
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
-      case 'TPad':
+      case clTPad:
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
-         create$1('TAttPad', obj);
+         create$1(clTAttPad, obj);
          extend$1(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
@@ -1218,8 +1219,8 @@ function create$1(typename, target) {
          extend$1(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
                        fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
          break;
-      case 'TCanvas':
-         create$1('TPad', obj);
+      case clTCanvas:
+         create$1(clTPad, obj);
          extend$1(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
                        fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: '$DISPLAY',
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
@@ -1257,7 +1258,7 @@ function create$1(typename, target) {
       case 'TPolyMarker3D':
          create$1(clTObject, obj);
          create$1(clTAttMarker, obj);
-         extend$1(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: "", fP: [] });
+         extend$1(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: '', fP: [] });
          break;
    }
 
@@ -1310,7 +1311,7 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   let poly = create$1('TPolyLine');
+   let poly = create$1(clTPolyLine);
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1727,6 +1728,9 @@ clTText: clTText,
 clTLatex: clTLatex,
 clTMathText: clTMathText,
 clTColor: clTColor,
+clTPolyLine: clTPolyLine,
+clTPad: clTPad,
+clTCanvas: clTCanvas,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -54431,7 +54435,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Return true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
       let arr = this.pad?.fPrimitives?.arr;
-      return arr && arr.find(obj => obj._typename != 'TPad') ? true : false;
+      return arr && arr.find(obj => obj._typename != clTPad) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -54540,8 +54544,8 @@ class TPadPainter extends ObjectPainter {
                 x2 = x1 +dx -2*xmargin;
             if (x1 > x2) continue;
             n++;
-            let pad = create$1('TPad');
-            pad.fName = pad.fTitle = this.pad.fName + '_' + n;
+            let pad = create$1(clTPad);
+            pad.fName = pad.fTitle = `${this.pad.fName}_${n}`;
             pad.fNumber = n;
             if (!this.iscan) {
                pad.fAbsWNDC = (x2-x1) * this.pad.fAbsWNDC;
@@ -54976,7 +54980,7 @@ class TPadPainter extends ObjectPainter {
 
          padpainter.createPadSvg();
 
-         if (padpainter.matchObjectType('TPad') && (snap.fPrimitives.length > 0))
+         if (padpainter.matchObjectType(clTPad) && (snap.fPrimitives.length > 0))
             padpainter.addPadButtons(true);
 
          // we select current pad, where all drawing is performed
@@ -55691,7 +55695,7 @@ class TPadPainter extends ObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType('TPad') && (!painter.has_canvas || painter.hasObjectsToDraw()))
+      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
       // we select current pad, where all drawing is performed
@@ -55869,7 +55873,7 @@ class TCanvasPainter extends TPadPainter {
 
       if (this.proj_painter === 1) {
 
-         let canv = create$1('TCanvas'),
+         let canv = create$1(clTCanvas),
              pad = this.pad,
              main = this.getFramePainter(), drawopt;
 
@@ -56375,7 +56379,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary draw TCanvas */
    static async draw(dom, can, opt) {
       let nocanvas = !can;
-      if (nocanvas) can = create$1('TCanvas');
+      if (nocanvas) can = create$1(clTCanvas);
 
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
@@ -56435,7 +56439,7 @@ async function ensureTCanvas(painter, frame_kind) {
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt*/) {
-   let can = create$1('TCanvas'),
+   let can = create$1(clTCanvas),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();
@@ -64944,8 +64948,8 @@ async function import_geo() {
 
 // list of registered draw functions
 const drawFuncs = { lst: [
-   { name: 'TCanvas', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
-   { name: 'TPad', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
+   { name: clTCanvas, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
+   { name: clTPad, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: 'TSlider', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
@@ -65005,9 +65009,9 @@ const drawFuncs = { lst: [
    { name: 'TExec', icon: 'img_graph', dummy: true },
    { name: 'TLine', icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
    { name: 'TArrow', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TArrowPainter$1; }).then(h => h.TArrowPainter) },
-   { name: 'TPolyLine', icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
-   { name: 'TCurlyLine', sameas: 'TPolyLine' },
-   { name: 'TCurlyArc', sameas: 'TPolyLine' },
+   { name: clTPolyLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
+   { name: 'TCurlyLine', sameas: clTPolyLine },
+   { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
    { name: 'TGaxis', icon: 'img_graph', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTGaxis) },
    { name: 'TBox', icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
@@ -65696,8 +65700,8 @@ const CustomStreamers = {
    },
 
    TCanvas(buf, obj) {
-      obj._typename = 'TCanvas';
-      buf.classStreamer(obj, 'TPad');
+      obj._typename = clTCanvas;
+      buf.classStreamer(obj, clTPad);
       obj.fDISPLAY = buf.readTString();
       obj.fDoubleBuffer = buf.ntoi4();
       obj.fRetained = (buf.ntou1() !== 0);
@@ -76162,7 +76166,8 @@ function drawPolyLine() {
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
-   if (polyline._typename != 'TPolyLine') fillatt.setSolidColor('none');
+   if (polyline._typename != clTPolyLine)
+      fillatt.setSolidColor('none');
 
    if (!fillatt.empty()) cmd += 'Z';
 
@@ -89812,7 +89817,7 @@ class TRatioPlotPainter extends ObjectPainter {
    setGridsRange(xmin, xmax) {
       let ratio = this.getObject();
       if (xmin === xmax) {
-         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', 'TPad')?.getFramePainter()?.x_handle;
+         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
          if (!x_handle) return;
          xmin = x_handle.full_min;
          xmax = x_handle.full_max;
@@ -89829,13 +89834,13 @@ class TRatioPlotPainter extends ObjectPainter {
       let ratio = this.getObject(),
           pp = this.getPadPainter();
 
-      let top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', 'TPad');
+      let top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
       if (top_p) top_p.disablePadDrawing();
 
-      let up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', 'TPad'),
+      let up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
           up_main = up_p?.getMainPainter(),
           up_fp = up_p?.getFramePainter(),
-          low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', 'TPad'),
+          low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
           low_main = low_p?.getMainPainter(),
           low_fp = low_p?.getFramePainter(),
           lbl_size = 20, promise_up = Promise.resolve(true);
@@ -96082,7 +96087,7 @@ class RPadPainter extends RObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType('TPad') && (!painter.has_canvas || painter.hasObjectsToDraw())) {
+      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw())) {
          painter.addPadButtons();
       }
 
@@ -105366,6 +105371,7 @@ exports.browser = browser$1;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
+exports.clTCanvas = clTCanvas;
 exports.clTClonesArray = clTClonesArray;
 exports.clTColor = clTColor;
 exports.clTHashList = clTHashList;
@@ -105377,9 +105383,11 @@ exports.clTNamed = clTNamed;
 exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;
 exports.clTObject = clTObject;
+exports.clTPad = clTPad;
 exports.clTPave = clTPave;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;
+exports.clTPolyLine = clTPolyLine;
 exports.clTString = clTString;
 exports.clTText = clTText;
 exports.cleanup = cleanup;

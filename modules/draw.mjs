@@ -2,7 +2,7 @@ import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText,
-         clTColor } from './core.mjs';
+         clTColor, clTPolyLine, clTPad, clTCanvas } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -22,8 +22,8 @@ async function import_geo() {
 
 // list of registered draw functions
 const drawFuncs = { lst: [
-   { name: 'TCanvas', icon: 'img_canvas', class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
-   { name: 'TPad', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
+   { name: clTCanvas, icon: 'img_canvas', class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
+   { name: clTPad, icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: 'TSlider', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
@@ -83,9 +83,9 @@ const drawFuncs = { lst: [
    { name: 'TExec', icon: 'img_graph', dummy: true },
    { name: 'TLine', icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
    { name: 'TArrow', icon: 'img_graph', class: () => import('./draw/TArrowPainter.mjs').then(h => h.TArrowPainter) },
-   { name: 'TPolyLine', icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
-   { name: 'TCurlyLine', sameas: 'TPolyLine' },
-   { name: 'TCurlyArc', sameas: 'TPolyLine' },
+   { name: clTPolyLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
+   { name: 'TCurlyLine', sameas: clTPolyLine },
+   { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
    { name: 'TGaxis', icon: 'img_graph', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTGaxis) },
    { name: 'TBox', icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },

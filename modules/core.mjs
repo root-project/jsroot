@@ -972,7 +972,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
-      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTColor = 'TColor';
+      clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
+      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1156,7 +1157,7 @@ function create(typename, target) {
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
-      case 'TPolyLine':
+      case clTPolyLine:
          create(clTObject, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
@@ -1171,7 +1172,7 @@ function create(typename, target) {
                        fTitle: '', fTitleOffset: 1, fTitleSize: 0.035,
                        fWmax: 100, fWmin: 0 });
          break;
-      case 'TAttPad':
+      case clTAttPad:
          extend(obj, { fLeftMargin: gStyle.fPadLeftMargin,
                        fRightMargin: gStyle.fPadRightMargin,
                        fBottomMargin: gStyle.fPadBottomMargin,
@@ -1185,11 +1186,11 @@ function create(typename, target) {
                        fFrameBorderSize: gStyle.fFrameBorderSize,
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
-      case 'TPad':
+      case clTPad:
          create(clTObject, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
-         create('TAttPad', obj);
+         create(clTAttPad, obj);
          extend(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
@@ -1213,8 +1214,8 @@ function create(typename, target) {
          extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
                        fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
          break;
-      case 'TCanvas':
-         create('TPad', obj);
+      case clTCanvas:
+         create(clTPad, obj);
          extend(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
                        fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: '$DISPLAY',
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
@@ -1305,7 +1306,7 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   let poly = create('TPolyLine');
+   let poly = create(clTPolyLine);
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1694,7 +1695,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText,
-         clTColor,
+         clTColor, clTPolyLine, clTPad, clTCanvas,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
