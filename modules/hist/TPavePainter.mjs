@@ -1,4 +1,5 @@
-import { gStyle, browser, settings, clone, create, isBatchMode } from '../core.mjs';
+import { gStyle, browser, settings, clone, create, isBatchMode,
+         clTPave, clTPaveText, clTPaveStats } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
@@ -196,7 +197,7 @@ class TPavePainter extends ObjectPainter {
 
       return promise.then(() => {
 
-         if (isBatchMode() || (pt._typename === 'TPave')) return this;
+         if (isBatchMode() || (pt._typename === clTPave)) return this;
 
          // here all kind of interactive settings
          if (rect)
@@ -991,7 +992,7 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Returns true when stat box is drawn */
    isStats() {
-      return this.matchObjectType('TPaveStats');
+      return this.matchObjectType(clTPaveStats);
    }
 
    /** @summary Clear text in the pave */
@@ -1076,7 +1077,7 @@ class TPavePainter extends ObjectPainter {
       pave.fBorderSize = obj.fBorderSize;
 
       switch (obj._typename) {
-         case 'TPaveText':
+         case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;
          case 'TPavesText':
@@ -1086,7 +1087,7 @@ class TPavePainter extends ObjectPainter {
          case 'TPaveLabel':
             pave.fLabel = obj.fLabel;
             return true;
-         case 'TPaveStats':
+         case clTPaveStats:
             pave.fOptStat = obj.fOptStat;
             pave.fOptFit = obj.fOptFit;
             return true;
@@ -1132,7 +1133,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       let typ = obj?._typename;
-      return typ == 'TPave' || typ == 'TPaveLabel' || typ == 'TPaveStats' || typ == 'TPaveText'
+      return typ == clTPave || typ == 'TPaveLabel' || typ == clTPaveStats || typ == clTPaveText
              || typ == 'TPavesText' || typ == 'TDiamond' || typ == 'TLegend' || typ == 'TPaletteAxis';
    }
 
@@ -1142,7 +1143,7 @@ class TPavePainter extends ObjectPainter {
 
       return ensureTCanvas(painter, false).then(() => {
 
-         if ((pave.fName === 'title') && (pave._typename === 'TPaveText')) {
+         if ((pave.fName === 'title') && (pave._typename === clTPaveText)) {
             let tpainter = painter.getPadPainter().findPainterFor(null, 'title');
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
@@ -1185,11 +1186,11 @@ class TPavePainter extends ObjectPainter {
             case 'TPaveLabel':
                painter.paveDrawFunc = painter.drawPaveLabel;
                break;
-            case 'TPaveStats':
+            case clTPaveStats:
                painter.paveDrawFunc = painter.drawPaveStats;
                painter.$secondary = true; // indicates that painter created from others
                break;
-            case 'TPaveText':
+            case clTPaveText:
             case 'TPavesText':
             case 'TDiamond':
                painter.paveDrawFunc = painter.drawPaveText;

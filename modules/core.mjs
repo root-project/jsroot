@@ -970,7 +970,8 @@ async function httpRequest(url, kind, post_data) {
 const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
-      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
+      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1025,7 +1026,7 @@ function create(typename, target) {
          create(clTAttFill, obj);
          extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
-      case 'TPave':
+      case clTPave:
          create('TBox', obj);
          extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
@@ -1034,20 +1035,20 @@ function create(typename, target) {
       case clTAttText:
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
          break;
-      case 'TPaveText':
-         create('TPave', obj);
+      case clTPaveText:
+         create(clTPave, obj);
          create(clTAttText, obj);
          extend(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create(clTList) });
          break;
-      case 'TPaveStats':
-         create('TPaveText', obj);
+      case clTPaveStats:
+         create(clTPaveText, obj);
          extend(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case 'TLegend':
-         create('TPave', obj);
+         create(clTPave, obj);
          create(clTAttText, obj);
          extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
@@ -1124,11 +1125,11 @@ function create(typename, target) {
          create('TH3', obj);
          obj.fArray = [];
          break;
-      case 'THStack':
+      case clTHStack:
          create(clTNamed, obj);
          extend(obj, { fHists: create(clTList), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
-      case 'TGraph':
+      case clTGraph:
          create(clTNamed, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
@@ -1137,7 +1138,7 @@ function create(typename, target) {
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
-         create('TGraph', obj);
+         create(clTGraph, obj);
          extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
@@ -1322,7 +1323,7 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend(create('TGraph'), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
+   let graph = extend(create(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
@@ -1348,7 +1349,7 @@ function createTGraph(npoints, xpts, ypts) {
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   let stack = create('THStack');
+   let stack = create(clTHStack);
    for (let i = 0; i < arguments.length; ++i)
       stack.fHists.Add(arguments[i], '');
    return stack;
@@ -1410,7 +1411,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if ((typename === 'TPaveText') || (typename === 'TPaveStats')) {
+   if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
          let line = create('TLatex');
          line.fTitle = txt;
@@ -1453,7 +1454,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (((typename.indexOf('TGraph') == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1691,6 +1692,7 @@ async function _ensureJSROOT() {
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         clTPave, clTPaveText, clTPaveStats,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

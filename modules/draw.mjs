@@ -1,6 +1,7 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
-         clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray } from './core.mjs';
+         clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         clTPave, clTPaveText, clTPaveStats } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -24,14 +25,14 @@ const drawFuncs = { lst: [
    { name: 'TPad', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: 'TSlider', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
-   { name: 'TPave', icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
-   { name: 'TPaveText', sameas: 'TPave' },
-   { name: 'TPavesText', sameas: 'TPave' },
-   { name: 'TPaveStats', sameas: 'TPave' },
-   { name: 'TPaveLabel', sameas: 'TPave' },
-   { name: 'TDiamond', sameas: 'TPave' },
-   { name: 'TLegend', icon: 'img_pavelabel', sameas: 'TPave' },
-   { name: 'TPaletteAxis', icon: 'img_colz', sameas: 'TPave' },
+   { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
+   { name: clTPaveText, sameas: clTPave },
+   { name: 'TPavesText', sameas: clTPave },
+   { name: clTPaveStats, sameas: clTPave },
+   { name: 'TPaveLabel', sameas: clTPave },
+   { name: 'TDiamond', sameas: clTPave },
+   { name: 'TLegend', icon: 'img_pavelabel', sameas: clTPave },
+   { name: 'TPaletteAxis', icon: 'img_colz', sameas: clTPave },
    { name: 'TLatex', icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
    { name: 'TMathText', sameas: 'TLatex' },
    { name: 'TText', sameas: 'TLatex' },

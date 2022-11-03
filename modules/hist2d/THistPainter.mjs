@@ -1,4 +1,5 @@
-import { gStyle, BIT, settings, constants, internals, create, clTList } from '../core.mjs';
+import { gStyle, BIT, settings, constants, internals, create,
+         clTList, clTPaveText, clTPaveStats } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1259,14 +1260,14 @@ class THistPainter extends ObjectPainter {
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       if (!pt && typeof pp?.findInPrimitives == 'function')
-         pt = pp.findInPrimitives('title', 'TPaveText');
+         pt = pp.findInPrimitives('title', clTPaveText);
 
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
-         pt = create('TPaveText');
+         pt = create(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
@@ -1314,9 +1315,9 @@ class THistPainter extends ObjectPainter {
      * @desc either in list of functions or as object of correspondent painter */
    findStat() {
       if (this.options.PadStats)
-         return this.getPadPainter()?.findPainterFor(null, 'stats', 'TPaveStats')?.getObject();
+         return this.getPadPainter()?.findPainterFor(null, 'stats', clTPaveStats)?.getObject();
 
-      return this.findFunction('TPaveStats', 'stats');
+      return this.findFunction(clTPaveStats, 'stats');
    }
 
    /** @summary Toggle stat box drawing
@@ -1404,7 +1405,7 @@ class THistPainter extends ObjectPainter {
 
       if (stats) return stats;
 
-      stats = create('TPaveStats');
+      stats = create(clTPaveStats);
       Object.assign(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
@@ -1452,7 +1453,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Check if such function should be drawn directly */
    needDrawFunc(histo, func) {
-      if (func._typename === 'TPaveStats')
+      if (func._typename === clTPaveStats)
           return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
 
        if (func._typename === 'TF1')

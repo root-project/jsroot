@@ -1,4 +1,4 @@
-import { create, isNodeJs, btoa_func } from '../core.mjs';
+import { create, isNodeJs, btoa_func, clTPave } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
@@ -239,9 +239,9 @@ class TASImagePainter extends ObjectPainter {
          return null;
 
       if (!this.draw_palette) {
-         let pal = create('TPave');
+         let pal = create(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: 'TPave', fH: null, fAxis: create('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = '+';

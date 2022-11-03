@@ -975,7 +975,8 @@ async function httpRequest(url, kind, post_data) {
 const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
-      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
+      clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
+      clTHStack = 'THStack', clTGraph = 'TGraph', clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1030,7 +1031,7 @@ function create$1(typename, target) {
          create$1(clTAttFill, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
-      case 'TPave':
+      case clTPave:
          create$1('TBox', obj);
          extend$1(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
@@ -1039,20 +1040,20 @@ function create$1(typename, target) {
       case clTAttText:
          extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
          break;
-      case 'TPaveText':
-         create$1('TPave', obj);
+      case clTPaveText:
+         create$1(clTPave, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1(clTList) });
          break;
-      case 'TPaveStats':
-         create$1('TPaveText', obj);
+      case clTPaveStats:
+         create$1(clTPaveText, obj);
          extend$1(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case 'TLegend':
-         create$1('TPave', obj);
+         create$1(clTPave, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
@@ -1129,11 +1130,11 @@ function create$1(typename, target) {
          create$1('TH3', obj);
          obj.fArray = [];
          break;
-      case 'THStack':
+      case clTHStack:
          create$1(clTNamed, obj);
          extend$1(obj, { fHists: create$1(clTList), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
-      case 'TGraph':
+      case clTGraph:
          create$1(clTNamed, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
@@ -1142,7 +1143,7 @@ function create$1(typename, target) {
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
-         create$1('TGraph', obj);
+         create$1(clTGraph, obj);
          extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
@@ -1327,7 +1328,7 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend$1(create$1('TGraph'), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
+   let graph = extend$1(create$1(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
@@ -1353,7 +1354,7 @@ function createTGraph(npoints, xpts, ypts) {
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   let stack = create$1('THStack');
+   let stack = create$1(clTHStack);
    for (let i = 0; i < arguments.length; ++i)
       stack.fHists.Add(arguments[i], '');
    return stack;
@@ -1415,7 +1416,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if ((typename === 'TPaveText') || (typename === 'TPaveStats')) {
+   if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
          let line = create$1('TLatex');
          line.fTitle = txt;
@@ -1458,7 +1459,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (((typename.indexOf('TGraph') == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == 'TCutG')) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1718,6 +1719,9 @@ clTHashList: clTHashList,
 clTMap: clTMap,
 clTObjArray: clTObjArray,
 clTClonesArray: clTClonesArray,
+clTPave: clTPave,
+clTPaveText: clTPaveText,
+clTPaveStats: clTPaveStats,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -55110,7 +55114,7 @@ class TPadPainter extends ObjectPainter {
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       MatchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
-      MatchPrimitive(this.painters, snap.fPrimitives, 'TPaveText', 'title');
+      MatchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
 
       let isanyfound = false, isanyremove = false;
 
@@ -56654,7 +56658,7 @@ class TPavePainter extends ObjectPainter {
 
       return promise.then(() => {
 
-         if (isBatchMode() || (pt._typename === 'TPave')) return this;
+         if (isBatchMode() || (pt._typename === clTPave)) return this;
 
          // here all kind of interactive settings
          if (rect)
@@ -57449,7 +57453,7 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Returns true when stat box is drawn */
    isStats() {
-      return this.matchObjectType('TPaveStats');
+      return this.matchObjectType(clTPaveStats);
    }
 
    /** @summary Clear text in the pave */
@@ -57534,7 +57538,7 @@ class TPavePainter extends ObjectPainter {
       pave.fBorderSize = obj.fBorderSize;
 
       switch (obj._typename) {
-         case 'TPaveText':
+         case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;
          case 'TPavesText':
@@ -57544,7 +57548,7 @@ class TPavePainter extends ObjectPainter {
          case 'TPaveLabel':
             pave.fLabel = obj.fLabel;
             return true;
-         case 'TPaveStats':
+         case clTPaveStats:
             pave.fOptStat = obj.fOptStat;
             pave.fOptFit = obj.fOptFit;
             return true;
@@ -57590,7 +57594,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       let typ = obj?._typename;
-      return typ == 'TPave' || typ == 'TPaveLabel' || typ == 'TPaveStats' || typ == 'TPaveText'
+      return typ == clTPave || typ == 'TPaveLabel' || typ == clTPaveStats || typ == clTPaveText
              || typ == 'TPavesText' || typ == 'TDiamond' || typ == 'TLegend' || typ == 'TPaletteAxis';
    }
 
@@ -57600,7 +57604,7 @@ class TPavePainter extends ObjectPainter {
 
       return ensureTCanvas(painter, false).then(() => {
 
-         if ((pave.fName === 'title') && (pave._typename === 'TPaveText')) {
+         if ((pave.fName === 'title') && (pave._typename === clTPaveText)) {
             let tpainter = painter.getPadPainter().findPainterFor(null, 'title');
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
@@ -57643,11 +57647,11 @@ class TPavePainter extends ObjectPainter {
             case 'TPaveLabel':
                painter.paveDrawFunc = painter.drawPaveLabel;
                break;
-            case 'TPaveStats':
+            case clTPaveStats:
                painter.paveDrawFunc = painter.drawPaveStats;
                painter.$secondary = true; // indicates that painter created from others
                break;
-            case 'TPaveText':
+            case clTPaveText:
             case 'TPavesText':
             case 'TDiamond':
                painter.paveDrawFunc = painter.drawPaveText;
@@ -58974,14 +58978,14 @@ class THistPainter extends ObjectPainter {
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       if (!pt && typeof pp?.findInPrimitives == 'function')
-         pt = pp.findInPrimitives('title', 'TPaveText');
+         pt = pp.findInPrimitives('title', clTPaveText);
 
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
-         pt = create$1('TPaveText');
+         pt = create$1(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
@@ -59029,9 +59033,9 @@ class THistPainter extends ObjectPainter {
      * @desc either in list of functions or as object of correspondent painter */
    findStat() {
       if (this.options.PadStats)
-         return this.getPadPainter()?.findPainterFor(null, 'stats', 'TPaveStats')?.getObject();
+         return this.getPadPainter()?.findPainterFor(null, 'stats', clTPaveStats)?.getObject();
 
-      return this.findFunction('TPaveStats', 'stats');
+      return this.findFunction(clTPaveStats, 'stats');
    }
 
    /** @summary Toggle stat box drawing
@@ -59119,7 +59123,7 @@ class THistPainter extends ObjectPainter {
 
       if (stats) return stats;
 
-      stats = create$1('TPaveStats');
+      stats = create$1(clTPaveStats);
       Object.assign(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
@@ -59167,7 +59171,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Check if such function should be drawn directly */
    needDrawFunc(histo, func) {
-      if (func._typename === 'TPaveStats')
+      if (func._typename === clTPaveStats)
           return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
 
        if (func._typename === 'TF1')
@@ -64939,14 +64943,14 @@ const drawFuncs = { lst: [
    { name: 'TPad', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: 'TSlider', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTFrame) },
-   { name: 'TPave', icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
-   { name: 'TPaveText', sameas: 'TPave' },
-   { name: 'TPavesText', sameas: 'TPave' },
-   { name: 'TPaveStats', sameas: 'TPave' },
-   { name: 'TPaveLabel', sameas: 'TPave' },
-   { name: 'TDiamond', sameas: 'TPave' },
-   { name: 'TLegend', icon: 'img_pavelabel', sameas: 'TPave' },
-   { name: 'TPaletteAxis', icon: 'img_colz', sameas: 'TPave' },
+   { name: clTPave, icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
+   { name: clTPaveText, sameas: clTPave },
+   { name: 'TPavesText', sameas: clTPave },
+   { name: clTPaveStats, sameas: clTPave },
+   { name: 'TPaveLabel', sameas: clTPave },
+   { name: 'TDiamond', sameas: clTPave },
+   { name: 'TLegend', icon: 'img_pavelabel', sameas: clTPave },
+   { name: 'TPaletteAxis', icon: 'img_colz', sameas: clTPave },
    { name: 'TLatex', icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
    { name: 'TMathText', sameas: 'TLatex' },
    { name: 'TText', sameas: 'TLatex' },
@@ -89077,7 +89081,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
-            if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
+            if ((func._typename == clTPaveStats) && (func.fName == 'stats')) return func;
          }
       return null;
    }
@@ -89097,7 +89101,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       const st = gStyle;
 
-      stats = create$1('TPaveStats');
+      stats = create$1(clTPaveStats);
       Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
@@ -91327,9 +91331,9 @@ class TASImagePainter extends ObjectPainter {
          return null;
 
       if (!this.draw_palette) {
-         let pal = create$1('TPave');
+         let pal = create$1(clTPave);
 
-         Object.assign(pal, { _typename: 'TPaletteAxis', fName: 'TPave', fH: null, fAxis: create$1('TGaxis'),
+         Object.assign(pal, { _typename: 'TPaletteAxis', fName: clTPave, fH: null, fAxis: create$1('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = '+';
@@ -97335,7 +97339,7 @@ class RCanvasPainter extends RPadPainter {
    static async draw(dom, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
-         can = create$1('ROOT::Experimental::TCanvas');
+         can = create$1('ROOT::Experimental::RCanvas');
 
       let painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
@@ -105365,6 +105369,9 @@ exports.clTNamed = clTNamed;
 exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;
 exports.clTObject = clTObject;
+exports.clTPave = clTPave;
+exports.clTPaveStats = clTPaveStats;
+exports.clTPaveText = clTPaveText;
 exports.clTString = clTString;
 exports.cleanup = cleanup;
 exports.clone = clone;

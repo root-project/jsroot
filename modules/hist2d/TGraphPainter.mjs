@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, create, createHistogram, isBatchMode } from '../core.mjs';
+import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -1382,7 +1382,7 @@ class TGraphPainter extends ObjectPainter {
       if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
-            if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
+            if ((func._typename == clTPaveStats) && (func.fName == 'stats')) return func;
          }
       return null;
    }
@@ -1402,7 +1402,7 @@ class TGraphPainter extends ObjectPainter {
 
       const st = gStyle;
 
-      stats = create('TPaveStats');
+      stats = create(clTPaveStats);
       Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;

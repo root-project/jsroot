@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray, clTPaveText } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -1488,7 +1488,7 @@ class TPadPainter extends ObjectPainter {
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       MatchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
-      MatchPrimitive(this.painters, snap.fPrimitives, 'TPaveText', 'title');
+      MatchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
 
       let isanyfound = false, isanyremove = false;
 
