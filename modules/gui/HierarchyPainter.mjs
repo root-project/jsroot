@@ -89,9 +89,9 @@ function drawList(dom, lst, opt) {
       return Promise.resolve(null);
 
    let obj = {
-     divid: dom,
-     lst: lst,
-     opt: opt,
+     dom,
+     lst,
+     opt,
      indx: -1,
      painter: null,
      draw_next() {
@@ -99,7 +99,7 @@ function drawList(dom, lst, opt) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
            if (!item) continue;
-           return draw(this.getDom(), item, opt).then(p => {
+           return draw(this.dom, item, opt).then(p => {
               if (p && !this.painter) this.painter = p;
               return this.draw_next(); // reenter loop
            });
