@@ -972,7 +972,7 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const clTObject$1 = 'TObject', clTNamed$1 = 'TNamed', clTList$1 = 'TList',
+const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
 
 /** @summary Create some ROOT classes
@@ -987,13 +987,13 @@ function create$1(typename, target) {
    let obj = target || {};
 
    switch (typename) {
-      case clTObject$1:
+      case clTObject:
           extend$1(obj, { fUniqueID: 0, fBits: 0 });
           break;
-      case clTNamed$1:
+      case clTNamed:
          extend$1(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
-      case clTList$1:
+      case clTList:
       case 'THashList':
          extend$1(obj, { name: typename, arr: [], opt: [] });
          break;
@@ -1003,7 +1003,7 @@ function create$1(typename, target) {
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case 'TAxis':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1('TAttAxis', obj);
          extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
@@ -1018,12 +1018,12 @@ function create$1(typename, target) {
          extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
          break;
       case 'TLine':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case 'TBox':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
@@ -1040,7 +1040,7 @@ function create$1(typename, target) {
       case 'TPaveText':
          create$1('TPave', obj);
          create$1(clTAttText, obj);
-         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1(clTList$1) });
+         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1(clTList) });
          break;
       case 'TPaveStats':
          create$1('TPaveText', obj);
@@ -1052,11 +1052,11 @@ function create$1(typename, target) {
       case 'TLegend':
          create$1('TPave', obj);
          create$1(clTAttText, obj);
-         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList$1),
+         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case 'TLegendEntry':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttText, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
@@ -1064,7 +1064,7 @@ function create$1(typename, target) {
          extend$1(obj, { fLabel: '', fObject: null, fOption: '' });
          break;
       case 'TText':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1(clTAttText, obj);
          extend$1(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
@@ -1074,11 +1074,11 @@ function create$1(typename, target) {
          extend$1(obj, { fX: 0, fY: 0 });
          break;
       case 'TObjString':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          extend$1(obj, { fString: '' });
          break;
       case 'TH1':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          create$1(clTAttMarker, obj);
@@ -1089,7 +1089,7 @@ function create$1(typename, target) {
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
                        fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
                        fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
-                       fSumw2: [], fOption: '', fFunctions: create$1(clTList$1),
+                       fSumw2: [], fOption: '', fFunctions: create$1(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case 'TH1I':
@@ -1128,15 +1128,15 @@ function create$1(typename, target) {
          obj.fArray = [];
          break;
       case 'THStack':
-         create$1(clTNamed$1, obj);
-         extend$1(obj, { fHists: create$1(clTList$1), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+         create$1(clTNamed, obj);
+         extend$1(obj, { fHists: create$1(clTList), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraph':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          create$1(clTAttMarker, obj);
-         extend$1(obj, { fFunctions: create$1(clTList$1), fHistogram: null,
+         extend$1(obj, { fFunctions: create$1(clTList), fHistogram: null,
                        fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
@@ -1144,12 +1144,12 @@ function create$1(typename, target) {
          extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
          break;
       case 'TMultiGraph':
-         create$1(clTNamed$1, obj);
-         extend$1(obj, { fFunctions: create$1(clTList$1), fGraphs: create$1(clTList$1),
+         create$1(clTNamed, obj);
+         extend$1(obj, { fFunctions: create$1(clTList), fGraphs: create$1(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
       case 'TGraphPolargram':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1(clTAttText, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
@@ -1158,7 +1158,7 @@ function create$1(typename, target) {
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case 'TPolyLine':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
@@ -1187,7 +1187,7 @@ function create$1(typename, target) {
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
       case 'TPad':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          create$1('TAttPad', obj);
@@ -1206,7 +1206,7 @@ function create$1(typename, target) {
                        fBorderMode: 0, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
-                       fPrimitives: create$1(clTList$1), fExecs: null,
+                       fPrimitives: create$1(clTList), fExecs: null,
                        fName: 'pad', fTitle: 'canvas' });
 
          break;
@@ -1226,13 +1226,13 @@ function create$1(typename, target) {
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
       case 'TGeoVolume':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          extend$1(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
       case 'TGeoNode':
-         create$1(clTNamed$1, obj);
+         create$1(clTNamed, obj);
          extend$1(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case 'TGeoNodeMatrix':
@@ -1240,18 +1240,18 @@ function create$1(typename, target) {
          extend$1(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          create$1(clTAttMarker, obj);
          extend$1(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
       case 'TPolyLine3D':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: "", fP: [] });
          break;
       case 'TPolyMarker3D':
-         create$1(clTObject$1, obj);
+         create$1(clTObject, obj);
          create$1(clTAttMarker, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fName: "", fOption: "", fP: [] });
          break;
@@ -1386,7 +1386,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == clTObject$1) || (typename == clTNamed$1) || (obj && (obj.fBits !== undefined)))
+   if ((typename == clTObject) || (typename == clTNamed) || (obj && (obj.fBits !== undefined)))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1394,7 +1394,7 @@ function getMethods(typename, obj) {
 
    if (has_methods) return m;
 
-   if ((typename === clTList$1) || (typename === 'THashList')) {
+   if ((typename === clTList) || (typename === 'THashList')) {
       m.Clear = function() {
          this.arr = [];
          this.opt = [];
@@ -1666,11 +1666,11 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === clTList$1) || (lst.$kind === 'TObjArray')) return true;
+      if ((lst.$kind === clTList) || (lst.$kind === 'TObjArray')) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
-   return (typename === clTList$1) || (typename === 'THashList') || (typename === 'TMap') ||
+   return (typename === clTList) || (typename === 'THashList') || (typename === 'TMap') ||
           (typename === 'TObjArray') || (typename === 'TClonesArray');
 }
 
@@ -1707,6 +1707,9 @@ settings: settings,
 gStyle: gStyle,
 atob_func: atob_func,
 btoa_func: btoa_func,
+clTObject: clTObject,
+clTNamed: clTNamed,
+clTList: clTList,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -59146,7 +59149,7 @@ class THistPainter extends ObjectPainter {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = create$1('TList');
+         histo.fFunctions = create$1(clTList);
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);
@@ -65017,11 +65020,11 @@ const drawFuncs = { lst: [
    { name: 'TBranchFunc', icon: 'img_leaf_method', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', noinspect: true },
    { name: /^TBranch/, icon: 'img_branch', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
-   { name: 'TList', icon: 'img_list', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: 'expand' },
-   { name: 'THashList', sameas: 'TList' },
-   { name: 'TObjArray', sameas: 'TList' },
-   { name: 'TClonesArray', sameas: 'TList' },
-   { name: 'TMap', sameas: 'TList' },
+   { name: clTList, icon: 'img_list', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: 'expand' },
+   { name: 'THashList', sameas: clTList },
+   { name: 'TObjArray', sameas: clTList },
+   { name: 'TClonesArray', sameas: clTList },
+   { name: 'TMap', sameas: clTList },
    { name: 'TColor', icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
@@ -65525,8 +65528,8 @@ async function drawRooPlot(dom, plot) {
 
 /// I/O methods of JavaScript ROOT
 
-const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
-      clTList = 'TList', clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
+const clTObjString = 'TObjString', clTString = 'TString',
+      clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
       kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
@@ -69591,7 +69594,7 @@ function keysHierarchy(folder, keys, file, dirname) {
                return keysHierarchy(node, obj.fKeys);
             };
          }
-      } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
+      } else if ((key.fClassName == clTList) && (key.fName == 'StreamerInfo')) {
          if (settings.SkipStreamerInfos) continue;
          item._name = 'StreamerInfo';
          item._kind = 'ROOT.TStreamerInfoList';
@@ -69855,7 +69858,7 @@ function createStreamerInfoContent(lst) {
    for (let i = 0; i < lst.arr.length; ++i) {
       let entry = lst.arr[i];
 
-      if (entry._typename == 'TList') continue;
+      if (entry._typename == clTList) continue;
 
       if (typeof entry.fName == 'undefined') {
          console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
@@ -69903,7 +69906,7 @@ function createStreamerInfoContent(lst) {
   * as fictional TStreamerInfoList class, which has special draw function
   * @private */
 function markAsStreamerInfo(h, item, obj) {
-   if (obj && (obj._typename == 'TList'))
+   if (obj?._typename == clTList)
       obj._typename = 'TStreamerInfoList';
 }
 
@@ -73501,7 +73504,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    if (branch.fType === kObjectNode) {
       if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
          return s_elem.fTypeName;
-      return 'TObject';
+      return clTObject;
    }
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
@@ -74986,7 +74989,7 @@ async function treeProcess(tree, selector, args) {
             if (chld_kind > 0) {
                chld_direct = '$child$';
                let pp = subname.indexOf('.');
-               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || 'TObject';
+               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || clTObject;
             }
 
             if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -75016,7 +75019,7 @@ async function treeProcess(tree, selector, args) {
 
             member = {
                name: target_name,
-               conttype: branch.fClonesName || 'TObject',
+               conttype: branch.fClonesName || clTObject,
                reallocate: args.reallocate_objects,
                func(buf, obj) {
                   let size = buf.ntoi4(), n = 0, arr = obj[this.name];
@@ -80878,7 +80881,7 @@ function buildOverlapVolume(overlap) {
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-   vol.fNodes = create$1('TList');
+   vol.fNodes = create$1(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -80926,7 +80929,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + 'Right');
 
-   vol.fNodes = create$1('TList');
+   vol.fNodes = create$1(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -80944,7 +80947,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: 'ROOT.TList',
+       _kind: 'ROOT.' + clTList,
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -83835,7 +83838,7 @@ class TGeoPainter extends ObjectPainter {
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = create$1('TList');
+         this._extraObjects = create$1(clTList);
 
       if (this._extraObjects.arr.indexOf(obj) >= 0) return false;
 
@@ -83901,7 +83904,7 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === 'TList') || (obj._typename === 'TObjArray')) {
+      if ((obj._typename === clTList) || (obj._typename === 'TObjArray')) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
@@ -85864,7 +85867,7 @@ async function drawDummy3DGeom(painter) {
          }
 
 
-   let shape = create$1('TNamed');
+   let shape = create$1(clTNamed);
    shape._typename = 'TGeoBBox';
    shape.fDX = max[0] - min[0];
    shape.fDY = max[1] - min[1];
@@ -86117,7 +86120,7 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      let lst = create$1('TList');
+      let lst = create$1(clTList);
       lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          let hnext = clone(stack.fHists.arr[i]),
@@ -105351,6 +105354,9 @@ exports.browser = browser$1;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
+exports.clTList = clTList;
+exports.clTNamed = clTNamed;
+exports.clTObject = clTObject;
 exports.cleanup = cleanup;
 exports.clone = clone;
 exports.compressSVG = compressSVG;

@@ -1,6 +1,6 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isPromise } from '../core.mjs';
+         findFunction, isBatchMode, isNodeJs, getDocument, isPromise, clTNamed, clTList } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -50,7 +50,7 @@ function buildOverlapVolume(overlap) {
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-   vol.fNodes = create('TList');
+   vol.fNodes = create(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -98,7 +98,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + 'Right');
 
-   vol.fNodes = create('TList');
+   vol.fNodes = create(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -116,7 +116,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: 'ROOT.TList',
+       _kind: 'ROOT.' + clTList,
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -3007,7 +3007,7 @@ class TGeoPainter extends ObjectPainter {
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = create('TList');
+         this._extraObjects = create(clTList);
 
       if (this._extraObjects.arr.indexOf(obj) >= 0) return false;
 
@@ -3073,7 +3073,7 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === 'TList') || (obj._typename === 'TObjArray')) {
+      if ((obj._typename === clTList) || (obj._typename === 'TObjArray')) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
@@ -5036,7 +5036,7 @@ async function drawDummy3DGeom(painter) {
          }
 
 
-   let shape = create('TNamed');
+   let shape = create(clTNamed);
    shape._typename = 'TGeoBBox';
    shape.fDX = max[0] - min[0];
    shape.fDY = max[1] - min[1];

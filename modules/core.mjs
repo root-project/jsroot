@@ -1688,6 +1688,7 @@ async function _ensureJSROOT() {
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
+         clTObject, clTNamed, clTList,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

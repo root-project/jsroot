@@ -1,7 +1,8 @@
 /// TTree functionality
 
 import { BIT, isArrayProto, isRootCollection, getMethods,
-         create, createHistogram, createTGraph } from './core.mjs';
+         create, createHistogram, createTGraph,
+         clTObject } from './core.mjs';
 
 import { kChar, kShort, kInt, kFloat,
          kCharStar, kDouble, kDouble32,
@@ -272,7 +273,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    if (branch.fType === kObjectNode) {
       if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
          return s_elem.fTypeName;
-      return 'TObject';
+      return clTObject;
    }
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
@@ -1773,7 +1774,7 @@ async function treeProcess(tree, selector, args) {
             if (chld_kind > 0) {
                chld_direct = '$child$';
                let pp = subname.indexOf('.');
-               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || 'TObject';
+               if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || clTObject;
             }
 
             if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -1803,7 +1804,7 @@ async function treeProcess(tree, selector, args) {
 
             member = {
                name: target_name,
-               conttype: branch.fClonesName || 'TObject',
+               conttype: branch.fClonesName || clTObject,
                reallocate: args.reallocate_objects,
                func(buf, obj) {
                   let size = buf.ntoi4(), n = 0, arr = obj[this.name];

@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, constants, internals, create } from '../core.mjs';
+import { gStyle, BIT, settings, constants, internals, create, clTList } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1442,7 +1442,7 @@ class THistPainter extends ObjectPainter {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = create('TList');
+         histo.fFunctions = create(clTList);
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);

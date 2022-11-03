@@ -1,4 +1,4 @@
-import { clone, create, createHistogram, gStyle } from '../core.mjs';
+import { clone, create, createHistogram, gStyle, clTList } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -38,7 +38,7 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      let lst = create('TList');
+      let lst = create(clTList);
       lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          let hnext = clone(stack.fHists.arr[i]),

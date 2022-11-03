@@ -1,10 +1,11 @@
 /// I/O methods of JavaScript ROOT
 
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
-         create, getMethods, addMethods, isNodeJs } from './core.mjs';
+         create, getMethods, addMethods, isNodeJs,
+         clTObject, clTNamed, clTList } from './core.mjs';
 
-const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
-      clTList = 'TList', clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
+const clTObjString = 'TObjString', clTString = 'TString',
+      clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
       kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,

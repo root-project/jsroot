@@ -1,6 +1,6 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT } from '../core.mjs';
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT, clTList } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -277,7 +277,7 @@ function keysHierarchy(folder, keys, file, dirname) {
                return keysHierarchy(node, obj.fKeys);
             };
          }
-      } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
+      } else if ((key.fClassName == clTList) && (key.fName == 'StreamerInfo')) {
          if (settings.SkipStreamerInfos) continue;
          item._name = 'StreamerInfo';
          item._kind = 'ROOT.TStreamerInfoList';
@@ -541,7 +541,7 @@ function createStreamerInfoContent(lst) {
    for (let i = 0; i < lst.arr.length; ++i) {
       let entry = lst.arr[i];
 
-      if (entry._typename == 'TList') continue;
+      if (entry._typename == clTList) continue;
 
       if (typeof entry.fName == 'undefined') {
          console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
@@ -589,7 +589,7 @@ function createStreamerInfoContent(lst) {
   * as fictional TStreamerInfoList class, which has special draw function
   * @private */
 function markAsStreamerInfo(h, item, obj) {
-   if (obj && (obj._typename == 'TList'))
+   if (obj?._typename == clTList)
       obj._typename = 'TStreamerInfoList';
 }
 
