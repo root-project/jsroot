@@ -1,4 +1,4 @@
-import { clone, create, createHistogram, gStyle, clTList } from '../core.mjs';
+import { clone, create, createHistogram, gStyle, clTList, clTH2 } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -90,7 +90,7 @@ class THStackPainter extends ObjectPainter {
             i2 = hist.fXaxis.fLast;
          }
 
-         if (hist._typename.indexOf('TH2') === 0) {
+         if (hist._typename.indexOf(clTH2) === 0) {
             j2 = hist.fYaxis.fNbins;
             if (hist.fYaxis.TestBit(EAxisBits.kAxisRange)) {
                j1 = hist.fYaxis.fFirst;
@@ -212,9 +212,11 @@ class THStackPainter extends ObjectPainter {
          return false;
       };
 
-      if (hist && (hist._typename.indexOf('TH2') == 0)) this.options.ndim = 2;
+      if (hist && (hist._typename.indexOf(clTH2) == 0))
+         this.options.ndim = 2;
 
-      if ((this.options.ndim == 2) && !opt) opt = 'lego1';
+      if ((this.options.ndim == 2) && !opt)
+         opt = 'lego1';
 
       if (stack.fHists && !this.options.nostack)
          for (let k = 0; k < stack.fHists.arr.length; ++k)

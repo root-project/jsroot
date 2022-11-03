@@ -1,4 +1,5 @@
-import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString, clTGraph } from '../core.mjs';
+import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString,
+         clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
 import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
@@ -63,15 +64,15 @@ async function drawTreeDrawResult(dom, obj, opt) {
    if (!typ || (typeof typ !== 'string'))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
 
-   if (typ.indexOf('TH1') == 0)
+   if (typ.indexOf(clTH1) == 0)
       return TH1Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TH2') == 0)
+   if (typ.indexOf(clTH2) == 0)
       return TH2Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TH3') == 0)
+   if (typ.indexOf(clTH3) == 0)
       return TH3Painter.draw(dom, obj, opt);
    if (typ.indexOf(clTGraph) == 0)
       return TGraphPainter.draw(dom, obj, opt);
-   if ((typ == 'TPolyMarker3D') && obj.$hist) {
+   if ((typ == clTPolyMarker3D) && obj.$hist) {
       return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
          let p2 = new ObjectPainter(dom, obj, opt);
          p2.addToPadPrimitives();

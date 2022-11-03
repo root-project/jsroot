@@ -1,6 +1,6 @@
 import { BIT, isArrayProto, isRootCollection, getMethods,
          create, createHistogram, createTGraph,
-         clTObject, clTObjString, clTHashList } from './core.mjs';
+         clTObject, clTObjString, clTHashList, clTPolyMarker3D, clTH1, clTH2, clTH3 } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
          kCharStar, kDouble, kDouble32,
          kUChar, kUShort, kUInt,
@@ -1066,9 +1066,9 @@ class TDrawSelector extends TSelector {
           hist = null;
 
       switch (this.ndim) {
-         case 1: hist = createHistogram('TH1' + this.htype, x.nbins); break;
-         case 2: hist = createHistogram('TH2' + this.htype, x.nbins, y.nbins); break;
-         case 3: hist = createHistogram('TH3' + this.htype, x.nbins, y.nbins, z.nbins); break;
+         case 1: hist = createHistogram(clTH1 + this.htype, x.nbins); break;
+         case 2: hist = createHistogram(clTH2 + this.htype, x.nbins, y.nbins); break;
+         case 3: hist = createHistogram(clTH3 + this.htype, x.nbins, y.nbins, z.nbins); break;
       }
 
       hist.fXaxis.fTitle = x.title;
@@ -1128,7 +1128,7 @@ class TDrawSelector extends TSelector {
             res.fTitle = this.hist_title;
             delete this.vars[1].buf;
          } else if (this.ndim == 3) {
-            res = create('TPolyMarker3D');
+            res = create(clTPolyMarker3D);
             res.fN = N;
             res.fLastPoint = N - 1;
             let arr = new Array(N*3);

@@ -979,7 +979,9 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
+      clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
+      clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
@@ -1253,12 +1255,12 @@ function create$1(typename, target) {
          create$1(clTAttMarker, obj);
          extend$1(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
-      case 'TPolyLine3D':
+      case clTPolyLine3D:
          create$1(clTObject, obj);
          create$1(clTAttLine, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fP: [] });
          break;
-      case 'TPolyMarker3D':
+      case clTPolyMarker3D:
          create$1(clTObject, obj);
          create$1(clTAttMarker, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: '', fP: [] });
@@ -1742,8 +1744,13 @@ clTCanvas: clTCanvas,
 clTAttCanvas: clTAttCanvas,
 clTGaxis: clTGaxis,
 clTAxis: clTAxis,
+clTH1: clTH1,
+clTH2: clTH2,
+clTH3: clTH3,
 clTGraph: clTGraph,
 clTCutG: clTCutG,
+clTPolyLine3D: clTPolyLine3D,
+clTPolyMarker3D: clTPolyMarker3D,
 clTGeoVolume: clTGeoVolume,
 clTGeoNode: clTGeoNode,
 clTGeoNodeMatrix: clTGeoNodeMatrix,
@@ -64964,6 +64971,8 @@ async function import_geo() {
    });
 }
 
+const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly';
+
 // list of registered draw functions
 const drawFuncs = { lst: [
    { name: clTCanvas, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
@@ -64983,22 +64992,22 @@ const drawFuncs = { lst: [
    { name: clTText, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
    { name: 'TProfile', icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
-   { name: 'TH2Poly', icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
-   { name: 'TProfile2Poly', sameas: 'TH2Poly' },
+   { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
+   { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
    { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
-   { name: 'TProfile2D', sameas: 'TH2' },
+   { name: 'TProfile2D', sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
    { name: 'THStack', icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
-   { name: 'TPolyMarker3D', icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
-   { name: 'TPolyLine3D', icon: 'img_graph', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
+   { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
+   { name: clTPolyLine3D, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
    { name: 'TGraphStruct' },
    { name: 'TGraphNode' },
    { name: 'TGraphEdge' },
    { name: 'TGraphTime', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphTimePainter$1; }).then(h => h.TGraphTimePainter), opt: 'once;repeat;first', theonly: true },
-   { name: 'TGraph2D', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraph2DPainter$1; }).then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
-   { name: 'TGraph2DErrors', sameas: 'TGraph2D', opt: ';P;PCOL;ERR', theonly: true },
-   { name: 'TGraph2DAsymmErrors', sameas: 'TGraph2D', opt: ';P;PCOL;ERR', theonly: true },
+   { name: clTGraph2D, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraph2DPainter$1; }).then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
+   { name: 'TGraph2DErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
+   { name: 'TGraph2DAsymmErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
    { name: 'TGraphPolargram', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
    { name: 'TGraphPolar', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
@@ -65768,7 +65777,7 @@ const CustomStreamers = {
       marker.fN = buf.ntoi4();
       marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
       marker.fOption = buf.readTString();
-      marker.fName = (ver > 1) ? buf.readTString() : 'TPolyMarker3D';
+      marker.fName = (ver > 1) ? buf.readTString() : clTPolyMarker3D;
    },
 
    TPolyLine3D(buf, obj) {
@@ -74319,9 +74328,9 @@ class TDrawSelector extends TSelector {
           hist = null;
 
       switch (this.ndim) {
-         case 1: hist = createHistogram('TH1' + this.htype, x.nbins); break;
-         case 2: hist = createHistogram('TH2' + this.htype, x.nbins, y.nbins); break;
-         case 3: hist = createHistogram('TH3' + this.htype, x.nbins, y.nbins, z.nbins); break;
+         case 1: hist = createHistogram(clTH1 + this.htype, x.nbins); break;
+         case 2: hist = createHistogram(clTH2 + this.htype, x.nbins, y.nbins); break;
+         case 3: hist = createHistogram(clTH3 + this.htype, x.nbins, y.nbins, z.nbins); break;
       }
 
       hist.fXaxis.fTitle = x.title;
@@ -74381,7 +74390,7 @@ class TDrawSelector extends TSelector {
             res.fTitle = this.hist_title;
             delete this.vars[1].buf;
          } else if (this.ndim == 3) {
-            res = create$1('TPolyMarker3D');
+            res = create$1(clTPolyMarker3D);
             res.fN = N;
             res.fLastPoint = N - 1;
             let arr = new Array(N*3);
@@ -79656,9 +79665,9 @@ class ClonedNodes {
       let sortarr = [];
 
       // first create nodes objects
-      for (let n = 0; n < this.origin.length; ++n) {
-         // let obj = this.origin[n];
-         let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
+      for (let id = 0; id < this.origin.length; ++id) {
+         // let obj = this.origin[id];
+         let node = { id, kind, vol: 0, nfaces: 0 };
          this.nodes.push(node);
          sortarr.push(node); // array use to produce sortmap
       }
@@ -83883,7 +83892,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== 'TPolyMarker3D')) return;
+      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== clTPolyMarker3D)) return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -83982,13 +83991,13 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === 'TGeoTrack') {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawGeoTrack(obj, itemname);
-      } else if (obj._typename === 'TPolyLine3D') {
+      } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
       } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === 'TPolyMarker3D')) {
+      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
@@ -86236,7 +86245,7 @@ class THStackPainter extends ObjectPainter {
             i2 = hist.fXaxis.fLast;
          }
 
-         if (hist._typename.indexOf('TH2') === 0) {
+         if (hist._typename.indexOf(clTH2) === 0) {
             j2 = hist.fYaxis.fNbins;
             if (hist.fYaxis.TestBit(EAxisBits.kAxisRange)) {
                j1 = hist.fYaxis.fFirst;
@@ -86358,9 +86367,11 @@ class THStackPainter extends ObjectPainter {
          return false;
       };
 
-      if (hist && (hist._typename.indexOf('TH2') == 0)) this.options.ndim = 2;
+      if (hist && (hist._typename.indexOf(clTH2) == 0))
+         this.options.ndim = 2;
 
-      if ((this.options.ndim == 2) && !opt) opt = 'lego1';
+      if ((this.options.ndim == 2) && !opt)
+         opt = 'lego1';
 
       if (stack.fHists && !this.options.nostack)
          for (let k = 0; k < stack.fHists.arr.length; ++k)
@@ -89810,9 +89821,9 @@ class TEfficiencyPainter extends ObjectPainter {
       opt = opt.toLowerCase();
 
       let ndim = 0;
-      if (eff.fTotalHistogram._typename.indexOf('TH1') == 0)
+      if (eff.fTotalHistogram._typename.indexOf(clTH1) == 0)
          ndim = 1;
-      else if (eff.fTotalHistogram._typename.indexOf('TH2') == 0)
+      else if (eff.fTotalHistogram._typename.indexOf(clTH2) == 0)
          ndim = 2;
       else
          return null;
@@ -91557,15 +91568,15 @@ async function drawTreeDrawResult(dom, obj, opt) {
    if (!typ || (typeof typ !== 'string'))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
 
-   if (typ.indexOf('TH1') == 0)
+   if (typ.indexOf(clTH1) == 0)
       return TH1Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TH2') == 0)
+   if (typ.indexOf(clTH2) == 0)
       return TH2Painter.draw(dom, obj, opt);
-   if (typ.indexOf('TH3') == 0)
+   if (typ.indexOf(clTH3) == 0)
       return TH3Painter.draw(dom, obj, opt);
    if (typ.indexOf(clTGraph) == 0)
       return TGraphPainter.draw(dom, obj, opt);
-   if ((typ == 'TPolyMarker3D') && obj.$hist) {
+   if ((typ == clTPolyMarker3D) && obj.$hist) {
       return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
          let p2 = new ObjectPainter(dom, obj, opt);
          p2.addToPadPrimitives();
@@ -105264,6 +105275,9 @@ exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
 exports.clTGeoVolume = clTGeoVolume;
 exports.clTGraph = clTGraph;
+exports.clTH1 = clTH1;
+exports.clTH2 = clTH2;
+exports.clTH3 = clTH3;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
 exports.clTLegend = clTLegend;
@@ -105282,6 +105296,8 @@ exports.clTPave = clTPave;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;
 exports.clTPolyLine = clTPolyLine;
+exports.clTPolyLine3D = clTPolyLine3D;
+exports.clTPolyMarker3D = clTPolyMarker3D;
 exports.clTString = clTString;
 exports.clTText = clTText;
 exports.cleanup = cleanup;

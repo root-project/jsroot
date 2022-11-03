@@ -1,7 +1,7 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isPromise,
-         clTNamed, clTList, clTObjArray, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
+         clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -2966,7 +2966,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== 'TPolyMarker3D')) return;
+      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== clTPolyMarker3D)) return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -3065,13 +3065,13 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === 'TGeoTrack') {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawGeoTrack(obj, itemname);
-      } else if (obj._typename === 'TPolyLine3D') {
+      } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
       } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === 'TPolyMarker3D')) {
+      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {

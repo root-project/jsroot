@@ -3,7 +3,7 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
-         clTPad, clTCanvas, clTAttCanvas } from './core.mjs';
+         clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
@@ -208,7 +208,7 @@ const CustomStreamers = {
       marker.fN = buf.ntoi4();
       marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
       marker.fOption = buf.readTString();
-      marker.fName = (ver > 1) ? buf.readTString() : 'TPolyMarker3D';
+      marker.fName = (ver > 1) ? buf.readTString() : clTPolyMarker3D;
    },
 
    TPolyLine3D(buf, obj) {

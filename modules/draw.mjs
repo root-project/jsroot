@@ -2,8 +2,8 @@ import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
-         clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph,
-         clTColor, clTGraph, clTCutG, clTPolyLine, clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
+         clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2,
+         clTColor, clTGraph, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D, clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -20,6 +20,8 @@ async function import_geo() {
       return geo;
    });
 }
+
+const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly';
 
 // list of registered draw functions
 const drawFuncs = { lst: [
@@ -40,22 +42,22 @@ const drawFuncs = { lst: [
    { name: clTText, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
    { name: 'TProfile', icon: 'img_profile', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
-   { name: 'TH2Poly', icon: 'img_histo2d', class: () => import('./hist/TH2Painter.mjs').then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
-   { name: 'TProfile2Poly', sameas: 'TH2Poly' },
+   { name: clTH2Poly, icon: 'img_histo2d', class: () => import('./hist/TH2Painter.mjs').then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
+   { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
    { name: /^TH2/, icon: 'img_histo2d', class: () => import('./hist/TH2Painter.mjs').then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
-   { name: 'TProfile2D', sameas: 'TH2' },
+   { name: 'TProfile2D', sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => import('./hist/TH3Painter.mjs').then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
    { name: 'THStack', icon: 'img_histo1d', class: () => import('./hist/THStackPainter.mjs').then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
-   { name: 'TPolyMarker3D', icon: 'img_histo3d', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
-   { name: 'TPolyLine3D', icon: 'img_graph', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
+   { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
+   { name: clTPolyLine3D, icon: 'img_graph', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
    { name: 'TGraphStruct' },
    { name: 'TGraphNode' },
    { name: 'TGraphEdge' },
    { name: 'TGraphTime', icon: 'img_graph', class: () => import('./hist/TGraphTimePainter.mjs').then(h => h.TGraphTimePainter), opt: 'once;repeat;first', theonly: true },
-   { name: 'TGraph2D', icon: 'img_graph', class: () => import('./hist/TGraph2DPainter.mjs').then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
-   { name: 'TGraph2DErrors', sameas: 'TGraph2D', opt: ';P;PCOL;ERR', theonly: true },
-   { name: 'TGraph2DAsymmErrors', sameas: 'TGraph2D', opt: ';P;PCOL;ERR', theonly: true },
+   { name: clTGraph2D, icon: 'img_graph', class: () => import('./hist/TGraph2DPainter.mjs').then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
+   { name: 'TGraph2DErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
+   { name: 'TGraph2DAsymmErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
    { name: 'TGraphPolargram', icon: 'img_graph', class: () => import('./draw/TGraphPolarPainter.mjs').then(h => h.TGraphPolargramPainter), theonly: true },
    { name: 'TGraphPolar', icon: 'img_graph', class: () => import('./draw/TGraphPolarPainter.mjs').then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => import('./hist2d/TGraphPainter.mjs').then(h => h.TGraphPainter), opt: ';L;P' },

@@ -974,7 +974,9 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
+      clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
+      clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
@@ -1248,12 +1250,12 @@ function create(typename, target) {
          create(clTAttMarker, obj);
          extend(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
-      case 'TPolyLine3D':
+      case clTPolyLine3D:
          create(clTObject, obj);
          create(clTAttLine, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fOption: '', fP: [] });
          break;
-      case 'TPolyMarker3D':
+      case clTPolyMarker3D:
          create(clTObject, obj);
          create(clTAttMarker, obj);
          extend(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: '', fP: [] });
@@ -1698,8 +1700,9 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis, clTText, clTLatex, clTMathText, clTMultiGraph,
-         clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis, clTAxis,
-         clTGraph, clTCutG, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
+         clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis,
+         clTAxis, clTH1, clTH2, clTH3,
+         clTGraph, clTCutG, clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

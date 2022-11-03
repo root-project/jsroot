@@ -2432,9 +2432,9 @@ class ClonedNodes {
       let sortarr = [];
 
       // first create nodes objects
-      for (let n = 0; n < this.origin.length; ++n) {
-         // let obj = this.origin[n];
-         let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
+      for (let id = 0; id < this.origin.length; ++id) {
+         // let obj = this.origin[id];
+         let node = { id, kind, vol: 0, nfaces: 0 };
          this.nodes.push(node);
          sortarr.push(node); // array use to produce sortmap
       }

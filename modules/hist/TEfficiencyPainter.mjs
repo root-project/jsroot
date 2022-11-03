@@ -1,4 +1,4 @@
-import { BIT, create, createHistogram } from '../core.mjs';
+import { BIT, create, createHistogram, clTH1, clTH2 } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TGraphPainter } from '../hist2d/TGraphPainter.mjs';
 import { TF1Painter } from '../hist/TF1Painter.mjs';
@@ -183,9 +183,9 @@ class TEfficiencyPainter extends ObjectPainter {
       opt = opt.toLowerCase();
 
       let ndim = 0;
-      if (eff.fTotalHistogram._typename.indexOf('TH1') == 0)
+      if (eff.fTotalHistogram._typename.indexOf(clTH1) == 0)
          ndim = 1;
-      else if (eff.fTotalHistogram._typename.indexOf('TH2') == 0)
+      else if (eff.fTotalHistogram._typename.indexOf(clTH2) == 0)
          ndim = 2;
       else
          return null;
