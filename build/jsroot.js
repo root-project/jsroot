@@ -972,8 +972,9 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
+const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
+      clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
 
 /** @summary Create some ROOT classes
@@ -995,7 +996,7 @@ function create$1(typename, target) {
          extend$1(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
       case clTList:
-      case 'THashList':
+      case clTHashList:
          extend$1(obj, { name: typename, arr: [], opt: [] });
          break;
       case 'TAttAxis':
@@ -1395,7 +1396,7 @@ function getMethods(typename, obj) {
 
    if (has_methods) return m;
 
-   if ((typename === clTList) || (typename === 'THashList')) {
+   if ((typename === clTList) || (typename === clTHashList)) {
       m.Clear = function() {
          this.arr = [];
          this.opt = [];
@@ -1667,12 +1668,12 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === clTList) || (lst.$kind === 'TObjArray')) return true;
+      if ((lst.$kind === clTList) || (lst.$kind === clTObjArray)) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
-   return (typename === clTList) || (typename === 'THashList') || (typename === 'TMap') ||
-          (typename === 'TObjArray') || (typename === 'TClonesArray');
+   return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
+          (typename === clTObjArray) || (typename === clTClonesArray);
 }
 
 /** @summary Check if object is a Promise
@@ -1710,9 +1711,13 @@ atob_func: atob_func,
 btoa_func: btoa_func,
 clTObject: clTObject,
 clTNamed: clTNamed,
-clTList: clTList,
 clTString: clTString,
 clTObjString: clTObjString,
+clTList: clTList,
+clTHashList: clTHashList,
+clTMap: clTMap,
+clTObjArray: clTObjArray,
+clTClonesArray: clTClonesArray,
 isArrayProto: isArrayProto,
 getDocument: getDocument,
 BIT: BIT,
@@ -54331,7 +54336,7 @@ class TPadPainter extends ObjectPainter {
          return true;
       }
 
-      if ((obj._typename == 'TObjArray') && (obj.name == 'ListOfColors')) {
+      if ((obj._typename == clTObjArray) && (obj.name == 'ListOfColors')) {
 
          if (this.options && this.options.CreatePalette) {
             let arr = [];
@@ -54352,7 +54357,7 @@ class TPadPainter extends ObjectPainter {
          return true;
       }
 
-      if ((obj._typename == 'TObjArray') && (obj.name == 'CurrentColorPalette')) {
+      if ((obj._typename == clTObjArray) && (obj.name == 'CurrentColorPalette')) {
          let arr = [], missing = false;
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
@@ -65022,10 +65027,10 @@ const drawFuncs = { lst: [
    { name: /^TBranch/, icon: 'img_branch', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
    { name: clTList, icon: 'img_list', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: 'expand' },
-   { name: 'THashList', sameas: clTList },
-   { name: 'TObjArray', sameas: clTList },
-   { name: 'TClonesArray', sameas: clTList },
-   { name: 'TMap', sameas: clTList },
+   { name: clTHashList, sameas: clTList },
+   { name: clTObjArray, sameas: clTList },
+   { name: clTClonesArray, sameas: clTList },
+   { name: clTMap, sameas: clTList },
    { name: 'TColor', icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
@@ -65602,8 +65607,8 @@ const CustomStreamers = {
    ],
 
    TClonesArray(buf, list) {
-      if (!list._typename) list._typename = 'TClonesArray';
-      list.$kind = 'TClonesArray';
+      if (!list._typename) list._typename = clTClonesArray;
+      list.$kind = clTClonesArray;
       list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2) buf.classStreamer(list, clTObject);
@@ -65641,7 +65646,7 @@ const CustomStreamers = {
    },
 
    TMap(buf, map) {
-      if (!map._typename) map._typename = 'TMap';
+      if (!map._typename) map._typename = clTMap;
       map.name = '';
       map.arr = [];
       const ver = buf.last_read_version;
@@ -65708,8 +65713,8 @@ const CustomStreamers = {
    },
 
    TObjArray(buf, list) {
-      if (!list._typename) list._typename = 'TObjArray';
-      list.$kind = 'TObjArray';
+      if (!list._typename) list._typename = clTObjArray;
+      list.$kind = clTObjArray;
       list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2)
@@ -69491,7 +69496,7 @@ function listHierarchy(folder, lst) {
    }
 
    // if list has objects with similar names, create cycle number for them
-   let ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
+   let ismap = (lst._typename == clTMap), names = [], cnt = [], cycle = [];
 
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i];
@@ -74160,7 +74165,7 @@ class TDrawSelector extends TSelector {
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = create$1('THashList');
+      res.fLabels = create$1(clTHashList);
       for (let k = 0; k < nbits; ++k) {
          let s = create$1(clTObjString);
          s.fString = k.toString();
@@ -74214,7 +74219,7 @@ class TDrawSelector extends TSelector {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = create$1('THashList');
+         res.fLabels = create$1(clTHashList);
          for (let k = 0; k < res.lbls.length; ++k) {
             let s = create$1(clTObjString);
             s.fString = res.lbls[k];
@@ -83902,7 +83907,7 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === clTList) || (obj._typename === 'TObjArray')) {
+      if ((obj._typename === clTList) || (obj._typename === clTObjArray)) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
@@ -90095,7 +90100,7 @@ class TMultiGraphPainter$2 extends ObjectPainter {
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
             xaxis.fNbins = graphs.arr.length;
-            xaxis.fLabels = create$1('THashList');
+            xaxis.fLabels = create$1(clTHashList);
             for (let i = 0; i < graphs.arr.length; i++) {
                let lbl = create$1(clTObjString);
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
@@ -105352,8 +105357,12 @@ exports.browser = browser$1;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
+exports.clTClonesArray = clTClonesArray;
+exports.clTHashList = clTHashList;
 exports.clTList = clTList;
+exports.clTMap = clTMap;
 exports.clTNamed = clTNamed;
+exports.clTObjArray = clTObjArray;
 exports.clTObjString = clTObjString;
 exports.clTObject = clTObject;
 exports.clTString = clTString;

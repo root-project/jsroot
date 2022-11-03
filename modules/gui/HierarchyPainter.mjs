@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT,
-         clTList, clTObjString } from '../core.mjs';
+         clTList, clTMap, clTObjString } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -175,7 +175,7 @@ function listHierarchy(folder, lst) {
    }
 
    // if list has objects with similar names, create cycle number for them
-   let ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
+   let ismap = (lst._typename == clTMap), names = [], cnt = [], cycle = [];
 
    for (let i = 0; i < lst.arr.length; ++i) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i];

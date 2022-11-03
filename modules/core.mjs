@@ -967,8 +967,9 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const clTObject = 'TObject', clTNamed = 'TNamed', clTList = 'TList',
+const clTObject = 'TObject', clTNamed = 'TNamed',
       clTString = 'TString', clTObjString = 'TObjString',
+      clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText';
 
 /** @summary Create some ROOT classes
@@ -990,7 +991,7 @@ function create(typename, target) {
          extend(obj, { fUniqueID: 0, fBits: 0, fName: '', fTitle: '' });
          break;
       case clTList:
-      case 'THashList':
+      case clTHashList:
          extend(obj, { name: typename, arr: [], opt: [] });
          break;
       case 'TAttAxis':
@@ -1390,7 +1391,7 @@ function getMethods(typename, obj) {
 
    if (has_methods) return m;
 
-   if ((typename === clTList) || (typename === 'THashList')) {
+   if ((typename === clTList) || (typename === clTHashList)) {
       m.Clear = function() {
          this.arr = [];
          this.opt = [];
@@ -1662,12 +1663,12 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (lst && (typeof lst === 'object')) {
-      if ((lst.$kind === clTList) || (lst.$kind === 'TObjArray')) return true;
+      if ((lst.$kind === clTList) || (lst.$kind === clTObjArray)) return true;
       if (!typename) typename = lst._typename;
    }
    if (!typename) return false;
-   return (typename === clTList) || (typename === 'THashList') || (typename === 'TMap') ||
-          (typename === 'TObjArray') || (typename === 'TClonesArray');
+   return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
+          (typename === clTObjArray) || (typename === clTClonesArray);
 }
 
 /** @summary Check if object is a Promise
@@ -1689,7 +1690,7 @@ async function _ensureJSROOT() {
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
-         clTObject, clTNamed, clTList, clTString, clTObjString,
+         clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

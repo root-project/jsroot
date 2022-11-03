@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -714,7 +714,7 @@ class TPadPainter extends ObjectPainter {
          return true;
       }
 
-      if ((obj._typename == 'TObjArray') && (obj.name == 'ListOfColors')) {
+      if ((obj._typename == clTObjArray) && (obj.name == 'ListOfColors')) {
 
          if (this.options && this.options.CreatePalette) {
             let arr = [];
@@ -735,7 +735,7 @@ class TPadPainter extends ObjectPainter {
          return true;
       }
 
-      if ((obj._typename == 'TObjArray') && (obj.name == 'CurrentColorPalette')) {
+      if ((obj._typename == clTObjArray) && (obj.name == 'CurrentColorPalette')) {
          let arr = [], missing = false;
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];

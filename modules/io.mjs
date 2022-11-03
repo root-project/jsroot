@@ -2,7 +2,7 @@
 
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
-         clTObject, clTNamed, clTList, clTString, clTObjString  } from './core.mjs';
+         clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
@@ -77,8 +77,8 @@ const CustomStreamers = {
    ],
 
    TClonesArray(buf, list) {
-      if (!list._typename) list._typename = 'TClonesArray';
-      list.$kind = 'TClonesArray';
+      if (!list._typename) list._typename = clTClonesArray;
+      list.$kind = clTClonesArray;
       list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2) buf.classStreamer(list, clTObject);
@@ -116,7 +116,7 @@ const CustomStreamers = {
    },
 
    TMap(buf, map) {
-      if (!map._typename) map._typename = 'TMap';
+      if (!map._typename) map._typename = clTMap;
       map.name = '';
       map.arr = [];
       const ver = buf.last_read_version;
@@ -183,8 +183,8 @@ const CustomStreamers = {
    },
 
    TObjArray(buf, list) {
-      if (!list._typename) list._typename = 'TObjArray';
-      list.$kind = 'TObjArray';
+      if (!list._typename) list._typename = clTObjArray;
+      list.$kind = clTObjArray;
       list.name = '';
       const ver = buf.last_read_version;
       if (ver > 2)

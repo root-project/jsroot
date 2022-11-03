@@ -1,5 +1,6 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT, clTList, clTObjString } from './core.mjs';
+import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
+         clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray } from './core.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -111,10 +112,10 @@ const drawFuncs = { lst: [
    { name: /^TBranch/, icon: 'img_branch', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
    { name: clTList, icon: 'img_list', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawList), get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.listHierarchy), dflt: 'expand' },
-   { name: 'THashList', sameas: clTList },
-   { name: 'TObjArray', sameas: clTList },
-   { name: 'TClonesArray', sameas: clTList },
-   { name: 'TMap', sameas: clTList },
+   { name: clTHashList, sameas: clTList },
+   { name: clTObjArray, sameas: clTList },
+   { name: clTClonesArray, sameas: clTList },
+   { name: clTMap, sameas: clTList },
    { name: 'TColor', icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },

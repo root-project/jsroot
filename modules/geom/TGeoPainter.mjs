@@ -1,6 +1,7 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isPromise, clTNamed, clTList } from '../core.mjs';
+         findFunction, isBatchMode, isNodeJs, getDocument, isPromise,
+         clTNamed, clTList, clTObjArray } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -3073,7 +3074,7 @@ class TGeoPainter extends ObjectPainter {
 
       let promise = false;
 
-      if ((obj._typename === clTList) || (obj._typename === 'TObjArray')) {
+      if ((obj._typename === clTList) || (obj._typename === clTObjArray)) {
          if (!obj.arr) return false;
          let parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {

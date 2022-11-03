@@ -1,6 +1,6 @@
 import { BIT, isArrayProto, isRootCollection, getMethods,
          create, createHistogram, createTGraph,
-         clTObject, clTObjString } from './core.mjs';
+         clTObject, clTObjString, clTHashList } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
          kCharStar, kDouble, kDouble32,
          kUChar, kUShort, kUInt,
@@ -943,7 +943,7 @@ class TDrawSelector extends TSelector {
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = create('THashList');
+      res.fLabels = create(clTHashList);
       for (let k = 0; k < nbits; ++k) {
          let s = create(clTObjString);
          s.fString = k.toString();
@@ -997,7 +997,7 @@ class TDrawSelector extends TSelector {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = create('THashList');
+         res.fLabels = create(clTHashList);
          for (let k = 0; k < res.lbls.length; ++k) {
             let s = create(clTObjString);
             s.fString = res.lbls[k];
