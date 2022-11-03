@@ -974,8 +974,9 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
-      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas',
-      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3';
+      clTColor = 'TColor', clTPolyLine = 'TPolyLine', clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3',
+      clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode';
 
 /** @summary Create some ROOT classes
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
@@ -1212,7 +1213,7 @@ function create(typename, target) {
                        fName: 'pad', fTitle: 'canvas' });
 
          break;
-      case 'TAttCanvas':
+      case clTAttCanvas:
          extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
                        fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
          break;
@@ -1223,22 +1224,22 @@ function create(typename, target) {
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
-                       fCw: 500, fCh: 300, fCatt: create('TAttCanvas'),
+                       fCw: 500, fCh: 300, fCatt: create(clTAttCanvas),
                        kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
-      case 'TGeoVolume':
+      case clTGeoVolume:
          create(clTNamed, obj);
          create(clTAttLine, obj);
          create(clTAttFill, obj);
          extend(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
-      case 'TGeoNode':
+      case clTGeoNode:
          create(clTNamed, obj);
          extend(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case 'TGeoNodeMatrix':
-         create('TGeoNode', obj);
+         create(clTGeoNode, obj);
          extend(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
@@ -1697,7 +1698,8 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          browser, internals, constants, settings, gStyle, atob_func, btoa_func,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTText, clTLatex, clTMathText, clTMultiGraph,
-         clTColor, clTPolyLine, clTPad, clTCanvas, clTGaxis, clTAxis,
+         clTColor, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis, clTAxis,
+         clTGeoVolume, clTGeoNode,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

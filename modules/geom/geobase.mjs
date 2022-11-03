@@ -41,6 +41,8 @@ const geoBITS = {
    kVisRaytrace   : JSROOT_BIT(15)  // raytracing flag
 };
 
+const clTGeoCompositeShape = 'TGeoCompositeShape';
+
 /** @summary Test fGeoAtt bits
   * @private */
 function testGeoBit(volume, f) {
@@ -104,7 +106,7 @@ function getNodeKind(obj) {
   * @private */
 function countNumShapes(shape) {
    if (!shape) return 0;
-   if (shape._typename !== 'TGeoCompositeShape') return 1;
+   if (shape._typename !== clTGeoCompositeShape) return 1;
    return countNumShapes(shape.fNode.fLeft) + countNumShapes(shape.fNode.fRight);
 }
 
@@ -1971,7 +1973,7 @@ function createGeometry(shape, limit) {
          case 'TGeoParaboloid': return createParaboloidBuffer( shape, limit );
          case 'TGeoHype': return createHypeBuffer( shape, limit );
          case 'TGeoTessellated': return createTessellatedBuffer( shape, limit );
-         case 'TGeoCompositeShape': return createComposite( shape, limit );
+         case clTGeoCompositeShape: return createComposite( shape, limit );
          case 'TGeoShapeAssembly': break;
          case 'TGeoScaledShape': {
             let res = createGeometry(shape.fShape, limit);
@@ -2165,7 +2167,7 @@ function provideObjectInfo(obj) {
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
                    `StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
-      case 'TGeoCompositeShape': break;
+      case clTGeoCompositeShape: break;
       case 'TGeoShapeAssembly': break;
       case 'TGeoScaledShape':
          info = provideObjectInfo(shape.fShape);
@@ -3669,6 +3671,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 }
 
 export { kindGeo, kindEve, kindShape,
+         clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh, cleanupShape,
          createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry,

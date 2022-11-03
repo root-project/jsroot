@@ -3,7 +3,7 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
-         clTPad, clTCanvas } from './core.mjs';
+         clTPad, clTCanvas, clTAttCanvas } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
@@ -173,7 +173,7 @@ const CustomStreamers = {
       obj.fWindowHeight = buf.ntoi4();
       obj.fCw = buf.ntou4();
       obj.fCh = buf.ntou4();
-      obj.fCatt = buf.classStreamer({}, 'TAttCanvas');
+      obj.fCatt = buf.classStreamer({}, clTAttCanvas);
       buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
       buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
       obj.fHighLightColor = buf.ntoi2();

@@ -1,7 +1,7 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isPromise,
-         clTNamed, clTList, clTObjArray } from '../core.mjs';
+         clTNamed, clTList, clTObjArray, clTGeoVolume, clTGeoNode } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -21,19 +21,24 @@ import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-import { kindGeo, kindEve, geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
+import { kindGeo, kindEve,
+         clTGeoCompositeShape,
+         geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape } from './geobase.mjs';
 
 
-const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
+const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
+      clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
+      clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
+      clREveGeoShapeExtract = 'ROOT::Experimental::REveGeoShapeExtract';
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
 function buildOverlapVolume(overlap) {
 
-   let vol = create('TGeoVolume');
+   let vol = create(clTGeoVolume);
 
    setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
@@ -70,11 +75,11 @@ function buildCompositeVolume(comp, maxlvl, side) {
       side = '';
    }
 
-   let vol = create('TGeoVolume');
+   let vol = create(clTGeoVolume);
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
-   if ((side && (comp._typename !== 'TGeoCompositeShape')) || (maxlvl <= 0)) {
+   if ((side && (comp._typename !== clTGeoCompositeShape)) || (maxlvl <= 0)) {
       vol.fName = side;
       vol.fLineColor = ($comp_col_cnt++ % 8) + 2;
       vol.fShape = comp;
@@ -157,11 +162,11 @@ function expandGeoObject(parent, obj) {
 
    if (!parent || !obj) return false;
 
-   let isnode = (obj._typename.indexOf('TGeoNode') === 0),
-       isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
-       ismanager = (obj._typename === 'TGeoManager'),
-       iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')),
-       isoverlap = (obj._typename === 'TGeoOverlap');
+   let isnode = (obj._typename.indexOf(clTGeoNode) === 0),
+       isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
+       ismanager = (obj._typename === clTGeoManager),
+       iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
+       isoverlap = (obj._typename === clTGeoOverlap);
 
    if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
 
@@ -194,7 +199,7 @@ function expandGeoObject(parent, obj) {
       shape = volume?.fShape;
    }
 
-   if (!subnodes && (shape?._typename === 'TGeoCompositeShape') && shape?.fNode) {
+   if (!subnodes && (shape?._typename === clTGeoCompositeShape) && shape?.fNode) {
       if (!parent._childs) {
          createItem(parent, shape.fNode.fLeft, 'Left');
          createItem(parent, shape.fNode.fRight, 'Right');
@@ -231,7 +236,7 @@ function findItemWithPainter(hitem, funcname) {
 /** @summary provide css style for geo object
   * @private */
 function provideVisStyle(obj) {
-   if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
+   if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
       return obj.fRnrSelf ? ' geovis_this' : '';
 
    let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
@@ -269,7 +274,7 @@ function getShapeIcon(shape) {
       case 'TGeoArb8': return 'img_geoarb8';
       case 'TGeoCone': return 'img_geocone';
       case 'TGeoConeSeg': return 'img_geoconeseg';
-      case 'TGeoCompositeShape': return 'img_geocomposite';
+      case clTGeoCompositeShape: return 'img_geocomposite';
       case 'TGeoTube': return 'img_geotube';
       case 'TGeoTubeSeg': return 'img_geotubeseg';
       case 'TGeoPara': return 'img_geopara';
@@ -449,13 +454,13 @@ class TGeoPainter extends ObjectPainter {
    constructor(dom, obj) {
 
       let gm;
-      if (obj?._typename === 'TGeoManager') {
+      if (obj?._typename === clTGeoManager) {
          gm = obj;
          obj = obj.fMasterVolume;
       }
 
-      if (obj?._typename && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename: 'TGeoNode', fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      if (obj?._typename && (obj._typename.indexOf(clTGeoVolume) === 0))
+         obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       super(dom, obj);
 
@@ -3099,7 +3104,7 @@ class TGeoPainter extends ObjectPainter {
       } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === 'TPolyMarker3D')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
-      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
+      } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawExtraShape(obj, itemname);
       }
@@ -4579,9 +4584,9 @@ class TGeoPainter extends ObjectPainter {
       if (!obj?._typename) return false;
       if (obj === this.getObject()) return true;
 
-      if (this.geo_manager && (obj._typename == 'TGeoManager')) {
+      if (this.geo_manager && (obj._typename == clTGeoManager)) {
          this.geo_manager = obj;
-         this.assignObject({ _typename: 'TGeoNode', fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
+         this.assignObject({ _typename: clTGeoNode, fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
          return true;
       }
 
@@ -4645,13 +4650,13 @@ class TGeoPainter extends ObjectPainter {
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
-      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume)) {
          shape = obj.fShape;
-      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
+      } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          shape = obj.fShape; is_eve = true;
-      } else if (obj._typename === 'TGeoManager') {
+      } else if (obj._typename === clTGeoManager) {
          shape = obj.fMasterVolume.fShape;
-      } else if (obj._typename === 'TGeoOverlap') {
+      } else if (obj._typename === clTGeoOverlap) {
          extras = obj.fMarker; extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
          if (!opt) opt = 'wire';
@@ -4661,7 +4666,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == 'string') && opt.indexOf('comp') == 0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == 'string') && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
@@ -4669,8 +4674,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj && shape)
-         obj = Object.assign(create('TEveGeoShapeExtract'),
-                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+         obj = Object.assign(create(clTNamed),
+                   { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
 
@@ -4788,7 +4793,7 @@ function provideMenu(menu, item, hpainter) {
    if (!item._geoobj) return false;
 
    let obj = item._geoobj, vol = item._volume,
-       iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'));
+       iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract));
 
    if (!vol && !iseve) return false;
 
@@ -4846,7 +4851,7 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf('TGeoNode') === 0) && findItemWithPainter(item))
+   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && findItemWithPainter(item))
       menu.add('Focus', function() {
 
         let drawitem = findItemWithPainter(item);
@@ -4893,7 +4898,7 @@ function browserIconClick(hitem, hpainter) {
       return false; // no need to update icon - we did it ourself
    }
 
-   if (hitem._geoobj && ((hitem._geoobj._typename == 'TEveGeoShapeExtract') || (hitem._geoobj._typename == 'ROOT::Experimental::REveGeoShapeExtract'))) {
+   if (hitem._geoobj && ((hitem._geoobj._typename == clTEveGeoShapeExtract) || (hitem._geoobj._typename == clREveGeoShapeExtract))) {
       hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
       updateBrowserIcons(hitem._geoobj, hpainter);
@@ -4946,16 +4951,19 @@ function createItem(node, obj, name) {
       }
    }, volume, shape, subnodes, iseve = false;
 
-   if (obj._typename == 'TGeoMaterial') sub._icon = 'img_geomaterial'; else
-   if (obj._typename == 'TGeoMedium') sub._icon = 'img_geomedium'; else
-   if (obj._typename == 'TGeoMixture') sub._icon = 'img_geomixture'; else
-   if ((obj._typename.indexOf('TGeoNode') === 0) && obj.fVolume) {
+   if (obj._typename == 'TGeoMaterial')
+      sub._icon = 'img_geomaterial';
+   else if (obj._typename == 'TGeoMedium')
+      sub._icon = 'img_geomedium';
+   else if (obj._typename == 'TGeoMixture')
+      sub._icon = 'img_geomixture';
+   else if ((obj._typename.indexOf(clTGeoNode) === 0) && obj.fVolume) {
       sub._title = 'node:'  + obj._typename;
       if (obj.fTitle.length > 0) sub._title += ' ' + obj.fTitle;
       volume = obj.fVolume;
-   } else if (obj._typename.indexOf('TGeoVolume') === 0) {
+   } else if (obj._typename.indexOf(clTGeoVolume) === 0) {
       volume = obj;
-   } else if ((obj._typename == 'TEveGeoShapeExtract') || (obj._typename == 'ROOT::Experimental::REveGeoShapeExtract')) {
+   } else if ((obj._typename == clTEveGeoShapeExtract) || (obj._typename == clREveGeoShapeExtract)) {
       iseve = true;
       shape = obj.fShape;
       subnodes = obj.fElements ? obj.fElements.arr : null;
@@ -4975,7 +4983,7 @@ function createItem(node, obj, name) {
          sub._more = true;
          sub._expand = expandGeoObject;
       } else
-      if (shape && (shape._typename === 'TGeoCompositeShape') && shape.fNode) {
+      if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
          sub._expand = function(node /*, obj */) {
@@ -4985,7 +4993,7 @@ function createItem(node, obj, name) {
          };
       }
 
-      if (!sub._title && (obj._typename != 'TGeoVolume')) sub._title = obj._typename;
+      if (!sub._title && (obj._typename != clTGeoVolume)) sub._title = obj._typename;
 
       if (shape) {
          if (sub._title == '')
@@ -5046,10 +5054,10 @@ async function drawDummy3DGeom(painter) {
    shape.fShapeBits = 0;
    shape.fOrigin = [0,0,0];
 
-   let obj = create('TEveGeoShapeExtract');
-
-   Object.assign(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
-                        fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
+   let obj = Object.assign(create(clTNamed),
+                { _typename: clTEveGeoShapeExtract,
+                  fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
+                  fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
    let opt = '', pp = painter.getPadPainter();
 
@@ -5134,11 +5142,11 @@ function build(obj, opt) {
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
-      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume)) {
          shape = obj.fShape;
-      } else if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract')) {
+      } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          shape = obj.fShape;
-      } else if (obj._typename === 'TGeoManager') {
+      } else if (obj._typename === clTGeoManager) {
          obj = obj.fMasterVolume;
          hide_top = !opt.showtop;
          shape = obj.fShape;
@@ -5148,17 +5156,16 @@ function build(obj, opt) {
          obj = null;
       }
 
-      if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
+      if (opt.composite && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode)
          obj = buildCompositeVolume(shape);
 
       if (!obj && shape)
-         obj = Object.assign(create('TEveGeoShapeExtract'),
-                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+         obj = Object.assign(create(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
 
-      if (obj._typename.indexOf('TGeoVolume') === 0)
-         obj = { _typename: 'TGeoNode', fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+      if (obj._typename.indexOf(clTGeoVolume) === 0)
+         obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       clones = new ClonedNodes(obj);
       clones.setVisLevel(opt.vislevel);
