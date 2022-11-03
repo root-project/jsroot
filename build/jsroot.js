@@ -11,7 +11,7 @@ let version_id = "7.2.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "19/10/2022";
+let version_date = "3/11/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -6249,6 +6249,7 @@ defaultLocale({
 function defaultLocale(definition) {
   locale = formatLocale(definition);
   timeFormat = locale.format;
+  locale.parse;
   utcFormat = locale.utcFormat;
   utcParse = locale.utcParse;
   return locale;
@@ -74052,9 +74053,9 @@ function drawList(dom, lst, opt) {
       return Promise.resolve(null);
 
    let obj = {
-     divid: dom,
-     lst: lst,
-     opt: opt,
+     dom,
+     lst,
+     opt,
      indx: -1,
      painter: null,
      draw_next() {
@@ -74062,7 +74063,7 @@ function drawList(dom, lst, opt) {
            let item = this.lst.arr[this.indx],
                opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
            if (!item) continue;
-           return draw(this.getDom(), item, opt).then(p => {
+           return draw(this.dom, item, opt).then(p => {
               if (p && !this.painter) this.painter = p;
               return this.draw_next(); // reenter loop
            });
