@@ -9,6 +9,8 @@ import { FontHandler } from './FontHandler.mjs';
 import { getRootColors } from './colors.mjs';
 
 
+function isFunc(arg) { return typeof arg === 'function'; }
+
 /**
  * @summary Painter class for ROOT objects
  *
@@ -140,7 +142,7 @@ class ObjectPainter extends BasePainter {
    getDrawOpt() {
       if (!this.options) return '';
 
-      if (typeof this.options.asString == 'function') {
+      if (isFunc(this.options.asString)) {
          let changed = false, pp = this.getPadPainter();
          if (!this.options_store || pp?._interactively_changed) {
             changed  = true;
@@ -708,11 +710,11 @@ class ObjectPainter extends BasePainter {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 
-         if (typeof canp?.producePadEvent == 'function')
+         if (isFunc(canp?.producePadEvent))
             canp.producePadEvent('redraw', this.getPadPainter(), this, null, subelem);
 
          // inform server that drawopt changes
-         if (typeof canp?.processChanges == 'function')
+         if (isFunc(canp?.processChanges))
             canp.processChanges(info, this, subelem);
 
          return this;
@@ -749,7 +751,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (typeof canp?.submitExec == 'function')
+      if (isFunc(canp?.submitExec))
          canp.submitExec(this, exec, snapid);
    }
 
@@ -791,9 +793,9 @@ class ObjectPainter extends BasePainter {
    showObjectStatus(name, title, info, info2) {
       let cp = this.getCanvPainter();
 
-      if (cp && (typeof cp.showCanvasStatus !== 'function')) cp = null;
+      if (cp && !isFunc(cp.showCanvasStatus)) cp = null;
 
-      if (!cp && (typeof internals.showStatus !== 'function')) return false;
+      if (!cp && !isFunc(internals.showStatus)) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
 
@@ -872,7 +874,7 @@ class ObjectPainter extends BasePainter {
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
       if (missing > 0) {
-         if (typeof resolveFunc == 'function') {
+         if (isFunc(resolveFunc)) {
             draw_g.node().textResolveFunc = resolveFunc;
             draw_g.node().try_optimize = try_optimize;
          }
@@ -1056,7 +1058,7 @@ class ObjectPainter extends BasePainter {
       arg.result_width = arg.box.width;
       arg.result_height = arg.box.height;
 
-      if (typeof arg.post_process == 'function')
+      if (isFunc(arg.post_process))
          arg.post_process(this);
 
       return arg.box.width;
@@ -1222,7 +1224,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} fillmenu_func - function to fill custom context menu for oabject */
    configureUserContextMenu(fillmenu_func) {
 
-      if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
+      if (!fillmenu_func || !isFunc(fillmenu_func))
          delete this._userContextMenuFunc;
       else
          this._userContextMenuFunc = fillmenu_func;
@@ -1249,12 +1251,12 @@ class ObjectPainter extends BasePainter {
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == 'Show:Editor') {
-            if (typeof cp?.activateGed == 'function')
+            if (isFunc(cp?.activateGed))
                cp.activateGed(execp);
             return;
          }
 
-         if (typeof cp?.executeObjectMethod == 'function')
+         if (isFunc(cp?.executeObjectMethod))
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
          if (execp.executeMenuCommand(item)) return;
@@ -1355,7 +1357,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when tooltip is produced
      * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
    configureUserTooltipHandler(handler, tmout) {
-      if (!handler || (typeof handler !== 'function')) {
+      if (!handler || !isFunc(handler)) {
          delete this._user_tooltip_handler;
          delete this._user_tooltip_timeout;
       } else {
@@ -1371,7 +1373,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserClickHandler == 'function')
+      if (isFunc(fp?.configureUserClickHandler))
          fp.configureUserClickHandler(handler);
    }
 
@@ -1382,14 +1384,14 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (typeof fp?.configureUserDblclickHandler == 'function')
+      if (isFunc(fp?.configureUserDblclickHandler))
          fp.configureUserDblclickHandler(handler);
    }
 
    /** @summary Check if user-defined tooltip function was configured
      * @return {boolean} flag is user tooltip handler was configured */
    hasUserTooltip() {
-      return typeof this._user_tooltip_handler == 'function';
+      return isFunc(this._user_tooltip_handler);
    }
 
    /** @summary Provide tooltips data to user-defined function
@@ -1437,7 +1439,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (this._special_draw_area && (typeof canp?.drawProjection == 'function'))
+      if (this._special_draw_area && isFunc(canp?.drawProjection))
          return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return false;
@@ -1457,12 +1459,12 @@ class ObjectPainter extends BasePainter {
       let pos = d3_pointer(evnt, layer.node()),
           pnt = { touch: false, x: pos[0], y: pos[1] };
 
-      if (typeof this.extractToolTip == 'function')
+      if (isFunc(this.extractToolTip))
          return this.extractToolTip(pnt);
 
       pnt.disabled = true;
 
-      let res = (typeof this.processTooltipEvent == 'function') ? this.processTooltipEvent(pnt) : null;
+      let res = isFunc(this.processTooltipEvent) ? this.processTooltipEvent(pnt) : null;
 
       return res?.user_info || res;
    }
@@ -1583,7 +1585,7 @@ function resize(dom, arg) {
       arg = null;
    let done = false;
    new ObjectPainter(dom).forEachPainter(painter => {
-      if (!done && (typeof painter.checkResize == 'function'))
+      if (!done && isFunc(painter.checkResize))
          done = painter.checkResize(arg);
    });
    return done;
