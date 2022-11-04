@@ -2882,10 +2882,10 @@ class ClonedNodes {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
             _opacity = entry.opacity || 1;
          prop.fillcolor = new Color( entry.color ? `rgb(${entry.color})` : 'blue' );
-         prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
+         prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
-                          depthWrite: _opacity == 1 } );
+                          depthWrite: _opacity == 1 });
          prop.material.inherentOpacity = _opacity;
 
          return prop;
@@ -2906,13 +2906,12 @@ class ClonedNodes {
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
          if (visible) {
-            let _opacity = Math.min(1, node.fRGBA[3]);
+            let opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new MeshLambertMaterial( { transparent: _opacity < 1,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: FrontSide, vertexColors: false,
-                             depthWrite:  _opacity == 1 } );
-            prop.material.inherentOpacity = _opacity;
+            prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
+                             opacity, wireframe: false, color: prop.fillcolor,
+                             side: FrontSide, vertexColors: false, depthWrite: opacity == 1 });
+            prop.material.inherentOpacity = opacity;
          }
 
          return prop;

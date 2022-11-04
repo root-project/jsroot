@@ -1053,7 +1053,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (item) itemname = this.itemFullName(item);
-           else item = this.findItem( { name: itemname, allow_index: true, check_keys: true } );
+           else item = this.findItem({ name: itemname, allow_index: true, check_keys: true });
 
       // if item not found, try to find nearest parent which could allow us to get inside
 
@@ -1345,7 +1345,7 @@ class HierarchyPainter extends BasePainter {
                        .attr('class','jsroot_fastcmd_btn')
                        .attr('item', this.itemFullName(factcmds[n]))
                        .attr('title', factcmds[n]._title)
-                       .on('click', function() { h.executeCommand(d3_select(this).attr('item'), this); } );
+                       .on('click', function() { h.executeCommand(d3_select(this).attr('item'), this); });
 
             if (factcmds[n]._icon)
                btn.style('background-image', `url('${factcmds[n]._icon}')`);

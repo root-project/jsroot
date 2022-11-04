@@ -1018,7 +1018,7 @@ function create(typename, target) {
          extend(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
          break;
       case clTAttFill:
-         extend(obj, { fFillColor: 0, fFillStyle: 0 } );
+         extend(obj, { fFillColor: 0, fFillStyle: 0 });
          break;
       case clTAttMarker:
          extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });

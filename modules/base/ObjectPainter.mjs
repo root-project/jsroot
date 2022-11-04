@@ -1574,7 +1574,7 @@ function getActivePad() {
   * the element even after minimal resize
   * Or one just supply object with exact sizes like { width:300, height:200, force:true };
   * @example
-  * resize('drawing', { width: 500, height: 200 } );
+  * resize('drawing', { width: 500, height: 200 });
   * resize(document.querySelector('#drawing'), true); */
 function resize(dom, arg) {
    if (arg === true)

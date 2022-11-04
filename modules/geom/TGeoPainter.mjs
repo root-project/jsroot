@@ -1385,7 +1385,7 @@ class TGeoPainter extends ObjectPainter {
    createSSAO() {
       if (!this._webgl) return;
 
-      // this._depthRenderTarget = new WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: LinearFilter, magFilter: LinearFilter } );
+      // this._depthRenderTarget = new WebGLRenderTarget(this._scene_width, this._scene_height, { minFilter: LinearFilter, magFilter: LinearFilter });
       // Setup SSAO pass
       if (!this._ssaoPass) {
          if (!this._effectComposer) {

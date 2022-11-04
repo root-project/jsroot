@@ -1916,7 +1916,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments*6 - gindx}`);
 
       const material = (painter.options.Surf === 1)
-                      ? new LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
+                      ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
                       : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) }),
            line = createLineSegments(grid, material);
       line.painter = painter;

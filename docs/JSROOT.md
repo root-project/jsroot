@@ -742,7 +742,7 @@ resize("drawing");
  As second argument one could specify exact size for draw elements like:
 
 ```javascript
-resize("drawing", { width: 500, height: 200 } );
+resize("drawing", { width: 500, height: 200 });
 ```
 
 To correctly cleanup JSROOT drawings from HTML element, one should call:
