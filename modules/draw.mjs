@@ -5,6 +5,7 @@ import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph,
          clTH2, clTF1, clTF2,
          clTColor, clTGraph, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D, clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
+import { clTStreamerInfoList } from './io.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -70,7 +71,7 @@ const drawFuncs = { lst: [
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
-   { name: 'TStreamerInfoList', icon: 'img_question', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
+   { name: clTStreamerInfoList, icon: 'img_question', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
    { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },

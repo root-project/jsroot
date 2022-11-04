@@ -3,7 +3,7 @@ import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT,
          clTList, clTMap, clTObjString, clTText, clTLatex, clTColor } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
-import { openFile } from '../io.mjs';
+import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
 import { BasePainter, getElementRect, _loadJSDOM } from '../base/BasePainter.mjs';
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -265,7 +265,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       if (key.fRealName)
          item._realname = key.fRealName + ';' + key.fCycle;
 
-      if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
+      if (key.fClassName == clTDirectory || key.fClassName == clTDirectoryFile) {
          let dir = (dirname && file) ? file.getDir(dirname + key.fName) : null;
          if (dir) {
             // remove cycle number - we have already directory
@@ -278,10 +278,10 @@ function keysHierarchy(folder, keys, file, dirname) {
                return keysHierarchy(node, obj.fKeys);
             };
          }
-      } else if ((key.fClassName == clTList) && (key.fName == 'StreamerInfo')) {
+      } else if ((key.fClassName == clTList) && (key.fName == nameStreamerInfo)) {
          if (settings.SkipStreamerInfos) continue;
-         item._name = 'StreamerInfo';
-         item._kind = 'ROOT.TStreamerInfoList';
+         item._name = nameStreamerInfo;
+         item._kind = 'ROOT.' + clTStreamerInfoList;
          item._title = 'List of streamer infos for binary I/O';
          item._readobj = file.fStreamerInfos;
       }
@@ -529,7 +529,8 @@ function objectHierarchy(top, obj, args = undefined) {
          top._childs.push(item);
    }
 
-   if (compress && lastitem && (cnt > 0)) lastitem._name += '..' + lastkey;
+   if (compress && lastitem && (cnt > 0))
+      lastitem._name += '..' + lastkey;
 
    return true;
 }
@@ -537,7 +538,7 @@ function objectHierarchy(top, obj, args = undefined) {
 /** @summary Create hierarchy for streamer info object
   * @private */
 function createStreamerInfoContent(lst) {
-   let h = { _name: 'StreamerInfo', _childs: [] };
+   let h = { _name: nameStreamerInfo, _childs: [] };
 
    for (let i = 0; i < lst.arr.length; ++i) {
       let entry = lst.arr[i];
@@ -550,10 +551,10 @@ function createStreamerInfoContent(lst) {
       }
 
       let item = {
-         _name : entry.fName + ';' + entry.fClassVersion,
-         _kind : "class " + entry.fName,
-         _title : "class:" + entry.fName + ' version:' + entry.fClassVersion + ' checksum:' + entry.fCheckSum,
-         _icon: "img_class",
+         _name : `${entry.fName};${entry.fClassVersion}`,
+         _kind : `class ${entry.fName}`,
+         _title : `class:${entry.fName} version:${entry.fClassVersion} checksum:${entry.fCheckSum}`,
+         _icon: 'img_class',
          _childs : []
       };
 
@@ -591,7 +592,7 @@ function createStreamerInfoContent(lst) {
   * @private */
 function markAsStreamerInfo(h, item, obj) {
    if (obj?._typename == clTList)
-      obj._typename = 'TStreamerInfoList';
+      obj._typename = clTStreamerInfoList;
 }
 
 
@@ -3451,9 +3452,9 @@ class HierarchyPainter extends BasePainter {
                     '<div style="display:inline; vertical-align:middle; white-space: nowrap;">' +
                     '<label style="margin-right:5px"><input type="checkbox" name="monitoring" class="gui_monitoring"/>Monitoring</label>';
       } else if (!this.no_select) {
-         let myDiv = d3_select("#"+this.gui_div),
-             files = myDiv.attr("files") || "../files/hsimple.root",
-             path = decodeUrl().get("path") || myDiv.attr("path") || '',
+         let myDiv = d3_select('#'+this.gui_div),
+             files = myDiv.attr('files') || '../files/hsimple.root',
+             path = decodeUrl().get('path') || myDiv.attr('path') || '',
              arrFiles = files.split(';');
 
          guiCode += '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>' +

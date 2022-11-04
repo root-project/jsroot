@@ -5,6 +5,9 @@ import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
+      clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
+      clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
+      nameStreamerInfo = 'StreamerInfo',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
       kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
@@ -309,7 +312,7 @@ const CustomStreamers = {
 
    TStreamerSTLstring(buf, elem) {
       if (buf.last_read_version > 0)
-         buf.classStreamer(elem, 'TStreamerSTL');
+         buf.classStreamer(elem, clTStreamerSTL);
    },
 
    TList(buf, obj) {
@@ -689,7 +692,7 @@ function createStreamerElement(name, typename, file) {
          }
 
    if (stltype !== kNotSTL) {
-      elem._typename = 'TStreamerSTL';
+      elem._typename = clTStreamerSTL;
       elem.fType = kStreamer;
       elem.fSTLtype = stltype;
       elem.fCtype = 0;
@@ -1179,7 +1182,7 @@ function createMemberStreamer(element, file) {
          }
 
          if (!member.readelem) {
-            console.error(`'failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
+            console.error(`failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
             member.func = function(buf, obj) {
                const ver = buf.readVersion();
                buf.checkByteCount(ver);
@@ -1220,7 +1223,7 @@ function createMemberStreamer(element, file) {
                   for (let n = 0; n < cnt; ++n)
                      arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
-                  if (ver) buf.checkByteCount(ver, 'branch ' + this.typename);
+                  if (ver) buf.checkByteCount(ver, `branch ${this.typename}`);
 
                   obj[this.name] = arr;
                }
@@ -1245,7 +1248,7 @@ function createMemberStreamer(element, file) {
                      obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                   }
 
-                  if (ver) buf.checkByteCount(ver, 'branch ' + this.typename);
+                  if (ver) buf.checkByteCount(ver, `branch ${this.typename}`);
                }
             }
          break;
@@ -2602,7 +2605,7 @@ class TDirectory {
    /** @summary constructor */
    constructor(file, dirname, cycle) {
       this.fFile = file;
-      this._typename = 'TDirectory';
+      this._typename = clTDirectory;
       this.dir_name = dirname;
       this.dir_cycle = cycle;
       this.fKeys = [];
@@ -2629,14 +2632,14 @@ class TDirectory {
              subname = keyname.slice(pos+1),
              dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf('TDirectory') == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
             return this.fFile.readObject(this.dir_name + '/' + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf('/', pos-1);
       }
 
-      return only_direct ? null : Promise.reject(Error('Key not found ' + keyname));
+      return only_direct ? null : Promise.reject(Error(`Key not found ${keyname}`));
    }
 
    /** @summary Read object from the directory
@@ -2651,7 +2654,7 @@ class TDirectory {
      * @return {Promise} with TDirectory object */
    async readKeys(objbuf) {
 
-      objbuf.classStreamer(this, 'TDirectory');
+      objbuf.classStreamer(this, clTDirectory);
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
          return this;
@@ -3036,13 +3039,13 @@ class TFile {
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
          let dirkey = this.getKey(dirname, undefined, true);
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf('TDirectory') == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
             return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf('/', pos - 1);
       }
 
-      return only_direct ? null : Promise.reject(Error('Key not found ' + keyname));
+      return only_direct ? null : Promise.reject(Error(`Key not found ${keyname}`));
    }
 
    /** @summary Read and inflate object buffer described by its key
@@ -3093,12 +3096,12 @@ class TFile {
       // in such situation calls are asynchrone
       return this.getKey(obj_name, cycle).then(key => {
 
-         if ((obj_name == 'StreamerInfo') && (key.fClassName == clTList))
+         if ((obj_name == nameStreamerInfo) && (key.fClassName == clTList))
             return this.fStreamerInfos;
 
          let isdir = false;
 
-         if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
+         if ((key.fClassName == clTDirectory || key.fClassName == clTDirectoryFile)) {
             let dir = this.getDir(obj_name, cycle);
             if (dir) return dir;
             isdir = true;
@@ -3152,7 +3155,7 @@ class TFile {
       buf.mapObject(1, lst);
       buf.classStreamer(lst, clTList);
 
-      lst._typename = 'TStreamerInfoList';
+      lst._typename = clTStreamerInfoList;
 
       this.fStreamerInfos = lst;
 
@@ -3170,7 +3173,7 @@ class TFile {
             let typ = elem.fType, typname = elem.fTypeName;
 
             if (typ >= 60) {
-               if ((typ === kStreamer) && (elem._typename == 'TStreamerSTL') && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+               if ((typ === kStreamer) && (elem._typename == clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
                   let prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
                   if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == '>')) {
                      typ = elem.fCtype;
@@ -3264,7 +3267,7 @@ class TFile {
          buf3.locate(this.fNbytesName);
 
          // we read TDirectory part of TFile
-         buf3.classStreamer(this, 'TDirectory');
+         buf3.classStreamer(this, clTDirectory);
 
          if (!this.fSeekKeys)
             return Promise.reject(Error(`Empty keys list in ${this.fURL}`));
@@ -3524,7 +3527,7 @@ function readVectorElement(buf) {
       for (i = 0; i < n; ++i)
          res[i] = { _typename: this.conttype }; // create objects
       if (!streamer) {
-         console.error('Fail to create split streamer for', this.conttype, 'need to read ', n, 'objects version', ver);
+         console.error(`Fail to create split streamer for ${this.conttype} need to read ${n} objects version ${ver}`);
       } else {
          for (k = 0; k < streamer.length; ++k) {
             member = streamer[k];
@@ -3861,6 +3864,7 @@ export {
    kLong64, kULong64, kBool, kFloat16,
    kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
+   clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
    openFile, reconstructObject, FileProxy,
    TBuffer /*, TDirectory, TFile, TLocalFile, TNodejsFile */
