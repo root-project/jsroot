@@ -2019,14 +2019,11 @@ class HierarchyPainter extends BasePainter {
     * @private */
    async dropItem(itemname, divid, opt) {
 
-      let call_back = null;
-      if (isFunc(opt)) { call_back = opt; opt = ''; }
-      if (opt === undefined) opt = '';
+      if (!opt || (typeof opt != 'string')) opt = '';
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && isFunc(drop_painter?.setItemName))
             drop_painter.setItemName(itemname, null, this);
-         if (call_back) call_back();
          return drop_painter;
       }
 
