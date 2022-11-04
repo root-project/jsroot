@@ -1,6 +1,6 @@
 import { BIT, create, createHistogram, clTH1, clTH2 } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { TGraphPainter } from '../hist2d/TGraphPainter.mjs';
+import { TGraphPainter, clTGraphAsymmErrors } from '../hist2d/TGraphPainter.mjs';
 import { TF1Painter } from '../hist/TF1Painter.mjs';
 import { TH2Painter } from '../hist2d/TH2Painter.mjs';
 import { getTEfficiencyBoundaryFunc } from '../base/math.mjs';
@@ -103,7 +103,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
    /** @summary Create graph for the drawing of 1-dim TEfficiency */
    createGraph(/*eff*/) {
-      let gr = create('TGraphAsymmErrors');
+      let gr = create(clTGraphAsymmErrors);
       gr.fName = 'eff_graph';
       return gr;
    }

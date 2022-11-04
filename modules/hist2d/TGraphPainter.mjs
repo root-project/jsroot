@@ -8,7 +8,11 @@ import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 
 
-const kNotEditable = BIT(18);   // bit set if graph is non editable
+const kNotEditable = BIT(18),   // bit set if graph is non editable
+      clTGraphErrors = 'TGraphErrors',
+      clTGraphAsymmErrors = 'TGraphAsymmErrors',
+      clTGraphBentErrors = 'TGraphBentErrors',
+      clTGraphMultiErrors = 'TGraphMultiErrors';
 
 /**
  * @summary Painter for TGraph object.
@@ -24,10 +28,10 @@ class TGraphPainter extends ObjectPainter {
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
       this.wheel_zoomy = true;
-      this.is_bent = (graph._typename == 'TGraphBentErrors');
-      this.has_errors = (graph._typename == 'TGraphErrors') ||
-                        (graph._typename == 'TGraphMultiErrors') ||
-                        (graph._typename == 'TGraphAsymmErrors') ||
+      this.is_bent = (graph._typename == clTGraphBentErrors);
+      this.has_errors = (graph._typename == clTGraphErrors) ||
+                        (graph._typename == clTGraphMultiErrors) ||
+                        (graph._typename == clTGraphAsymmErrors) ||
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
@@ -57,7 +61,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Returns object if this drawing TGraphMultiErrors object */
    get_gme() {
       let graph = this.getObject();
-      return graph?._typename == 'TGraphMultiErrors' ? graph : null;
+      return graph?._typename == clTGraphMultiErrors ? graph : null;
    }
 
    /** @summary Decode options */
@@ -168,7 +172,7 @@ class TGraphPainter extends ObjectPainter {
          if (d.empty()) res.Line = 1;
       }
 
-      if (graph._typename == 'TGraphErrors') {
+      if (graph._typename == clTGraphErrors) {
          let len = graph.fEX.length, m = 0;
          for (let k = 0; k < len; ++k)
             m = Math.max(m, graph.fEX[k], graph.fEY[k]);
@@ -216,10 +220,12 @@ class TGraphPainter extends ObjectPainter {
       let kind = 0, npoints = gr.fNpoints;
       if ((gr._typename === clTCutG) && (npoints > 3)) npoints--;
 
-      if (gr._typename == 'TGraphErrors') kind = 1; else
-      if (gr._typename == 'TGraphMultiErrors') kind = 2; else
-      if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
-          || gr._typename.match(/^RooHist/)) kind = 3;
+      if (gr._typename == clTGraphErrors)
+         kind = 1;
+      else if (gr._typename == clTGraphMultiErrors)
+         kind = 2;
+      else if (gr._typename == clTGraphAsymmErrors || gr._typename == clTGraphBentErrors || gr._typename.match(/^RooHist/))
+         kind = 3;
 
       this.bins = new Array(npoints);
 
@@ -1498,4 +1504,4 @@ class TGraphPainter extends ObjectPainter {
 
 } // class TGraphPainter
 
-export { TGraphPainter };
+export { clTGraphAsymmErrors, TGraphPainter };
