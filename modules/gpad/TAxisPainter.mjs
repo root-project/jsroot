@@ -474,11 +474,11 @@ class TAxisPainter extends ObjectPainter {
              tf1 = (idF >= 0) ? axis.fTimeFormat.slice(0, idF) : axis.fTimeFormat,
              tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
-         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+         if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = d3_timeFormat(tf1);
-         if (tf2!==tf1)
+         if (tf2 !== tf1)
             this.tfunc2 = d3_timeFormat(tf2);
 
          this.format = this.formatTime;

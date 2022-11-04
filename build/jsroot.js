@@ -32,7 +32,7 @@ let internals = {
 
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = 'nojsroot';
 
-const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && (typeof src == 'string')) {
+const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && isStr(src)) {
    const pos = src.indexOf('modules/core.mjs');
    if (pos >= 0) {
       exports.source_dir = src.slice(0, pos);
@@ -139,7 +139,7 @@ let constants$1 = {
       AlwaysMathJax: 4,
       /** @summary Convert string values into number */
       fromString(s) {
-         if (!s || (typeof s !== 'string'))
+         if (!s || !isStr(s))
             return this.Normal;
          switch(s){
             case 'off': return this.Off;
@@ -426,10 +426,10 @@ async function loadScript(url) {
    if (!url)
       return true;
 
-   if ((typeof url == 'string') && (url.indexOf(';') >= 0))
+   if (isStr(url) && (url.indexOf(';') >= 0))
       url = url.split(';');
 
-   if (typeof url != 'string') {
+   if (!isStr(url)) {
       let scripts = url, loadNext = () => {
          if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
@@ -574,13 +574,13 @@ function parse(json) {
 
    if (!json) return null;
 
-   let obj = (typeof json == 'string') ? JSON.parse(json) : json,
+   let obj = isStr(json) ? JSON.parse(json) : json,
        map = [], newfmt = undefined;
 
    const unref_value = value => {
       if ((value === null) || (value === undefined)) return;
 
-      if (typeof value === 'string') {
+      if (isStr(value)) {
          if (newfmt || (value.length < 6) || (value.indexOf('$ref:') !== 0)) return;
          let ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
@@ -780,7 +780,7 @@ function decodeUrl(url) {
       get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
-   if (!url || (typeof url !== 'string')) {
+   if (!url || !isStr(url)) {
       if (settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
       url = document.URL;
    }
@@ -790,7 +790,7 @@ function decodeUrl(url) {
    if (p1 < 0) return res;
    url = decodeURI(url.slice(p1+1));
 
-   while (url.length > 0) {
+   while (url) {
 
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
@@ -823,7 +823,7 @@ function decodeUrl(url) {
   * @private */
 function findFunction(name) {
    if (isFunc$1(name)) return name;
-   if (typeof name !== 'string') return null;
+   if (!isStr(name)) return null;
    let names = name.split('.'), elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
@@ -1412,11 +1412,11 @@ function getMethods(typename, obj) {
       };
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt == 'string') ? opt : '');
+         this.opt.push(isStr(opt) ? opt : '');
       };
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt == 'string') ? opt : '');
+         this.opt.unshift(isStr(opt) ? opt : '');
       };
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);
@@ -1689,6 +1689,10 @@ function isRootCollection(lst, typename) {
   * @private */
 function isFunc$1(arg) { return typeof arg === 'function'; }
 
+/** @summary Check if argument is a atring
+  * @private */
+function isStr(arg) { return typeof arg === 'string'; }
+
 /** @summary Check if object is a Promise
   * @private */
 function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc$1(obj.then); }
@@ -1787,6 +1791,7 @@ getMethods: getMethods,
 registerMethods: registerMethods,
 isRootCollection: isRootCollection,
 isFunc: isFunc$1,
+isStr: isStr,
 isPromise: isPromise,
 _ensureJSROOT: _ensureJSROOT
 });
@@ -7697,7 +7702,7 @@ function getElementRect(elem, sizearg) {
 
    const styleValue = name => {
       let value = elem.style(name);
-      if (!value || (typeof value !== 'string')) return 0;
+      if (!value || !isStr(value)) return 0;
       value = parseFloat(value.replace('px', ''));
       return !Number.isFinite(value) ? 0 : Math.round(value);
    };
@@ -7819,7 +7824,7 @@ function floatToString(value, fmt, ret_fmt) {
 class DrawOptions {
 
    constructor(opt) {
-      this.opt = opt && (typeof opt == 'string') ? opt.toUpperCase().trim() : '';
+      this.opt = isStr(opt) ? opt.toUpperCase().trim() : '';
       this.part = '';
    }
 
@@ -8108,7 +8113,7 @@ class BasePainter {
 
       let res = this._selected_main;
       if (!res) {
-         if (typeof this.divid == 'string') {
+         if (isStr(this.divid)) {
             let id = this.divid;
             if (id[0] != '#') id = '#' + id;
             res = select(id);
@@ -8313,12 +8318,13 @@ class BasePainter {
      * @desc Used by {@link HierarchyPainter}
      * @private */
    setItemName(name, opt, hpainter) {
-      if (typeof name === 'string')
+      if (isStr(name))
          this._hitemname = name;
       else
          delete this._hitemname;
       // only upate draw option, never delete.
-      if (typeof opt === 'string') this._hdrawopt = opt;
+      if (isStr(opt))
+         this._hdrawopt = opt;
 
       this._hpainter = hpainter;
    }
@@ -8391,7 +8397,7 @@ class FontHandler {
          let indx = Math.floor(fontIndex / 10),
              fontName = root_fonts[indx] || 'Arial';
 
-         while (fontName.length > 0) {
+         while (fontName) {
             if (fontName[0] === 'b')
                this.weight = 'bold';
             else if (fontName[0] === 'i')
@@ -8900,7 +8906,7 @@ function parseLatex(node, arg, label, curr) {
          nelements++;
 
          let s = translateLaTeX(label.slice(0, best));
-         if ((s.length > 0) || alone) {
+         if (s || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
                 elem = g.append('svg:text');
@@ -9041,15 +9047,15 @@ function parseLatex(node, arg, label, curr) {
             res[name] = extractSubLabel();
             if (res[name] === -1) return false;
          }
-         while (label.length > 0) {
-            if (label.charAt(0) == '_') {
+         while (label) {
+            if (label[0] == '_') {
                label = label.slice(1);
                res.low = !res.low ? extractSubLabel(true) : -1;
                if (res.low === -1) {
                   console.log(`error with ${found.name} low limit`);
                   return false;
                }
-            } else if (label.charAt(0) == '^') {
+            } else if (label[0] == '^') {
                label = label.slice(1);
                res.up = !res.up ? extractSubLabel(true) : -1;
                if (res.up === -1) {
@@ -9685,7 +9691,7 @@ function translateMath(str, kind, color, painter) {
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
-   if (typeof color != 'string') return str;
+   if (!isStr(color)) return str;
 
    // MathJax SVG converter use colors in normal form
    //if (color.indexOf('rgb(') >= 0)
@@ -9699,7 +9705,7 @@ function translateMath(str, kind, color, painter) {
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
-      if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
+      if (!value || !isStr(value) || (value.length < 3)) return null;
       let p = value.indexOf('ex');
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));
@@ -10358,7 +10364,7 @@ class TAttFillHandler {
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets
      * @private */
    verifyDirectChange(painter) {
-      if (typeof this.pattern == 'string')
+      if (isStr(this.pattern))
          this.pattern = parseInt(this.pattern);
       if (!Number.isInteger(this.pattern))
          this.pattern = 0;
@@ -10412,7 +10418,7 @@ class TAttFillHandler {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
       }
 
-      if (typeof this.color != 'string') this.color = 'none';
+      if (!isStr(this.color)) this.color = 'none';
 
       if (this.isSolid()) return true;
 
@@ -10635,7 +10641,7 @@ class TAttLineHandler {
          args.color = args.color0 || (args.painter ? args.painter.getColor(this.color_index) : getColor(this.color_index));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          if (args.style === undefined) args.style = args.attr.fLineStyle;
-      } else if (typeof args.color == 'string') {
+      } else if (isStr(args.color)) {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
          this.color_index = args.color;
@@ -10779,7 +10785,7 @@ class ObjectPainter extends BasePainter {
       // this._main_painter = undefined;  // main painter in the correspondent pad
       this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
       this.assignObject(obj);
-      if (typeof opt == 'string')
+      if (isStr(opt))
          this.options = { original: opt };
    }
 
@@ -10797,7 +10803,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current
      * @protected */
    setPadName(pad_name) {
-      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.selectCurrentPad();
+      this.pad_name = isStr(pad_name) ? pad_name : this.selectCurrentPad();
    }
 
    /** @summary Returns pad name where object is drawn */
@@ -10858,8 +10864,8 @@ class ObjectPainter extends BasePainter {
      * @protected */
    matchObjectType(arg) {
       if (!arg || !this.draw_object) return false;
-      if (typeof arg === 'string') return (this.draw_object._typename === arg);
-      if (arg._typename) return (this.draw_object._typename === arg._typename);
+      if (isStr(arg)) return this.draw_object._typename === arg;
+      if (arg._typename) return this.draw_object._typename === arg._typename;
       return this.draw_object._typename.match(arg);
    }
 
@@ -11046,7 +11052,7 @@ class ObjectPainter extends BasePainter {
             console.error('Not found frame to create g element inside');
             return frame;
          }
-         if (typeof frame_layer != 'string') frame_layer = 'main_layer';
+         if (!isStr(frame_layer)) frame_layer = 'main_layer';
          layer = frame.select('.' + frame_layer);
       } else {
          layer = this.getLayerSvg('primitives_layer');
@@ -11145,7 +11151,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] pad name or use current pad by default
      * @protected */
    getPadPainter(pad_name) {
-      let elem = this.getPadSvg(typeof pad_name == 'string' ? pad_name : undefined);
+      let elem = this.getPadSvg(isStr(pad_name) ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -11446,7 +11452,7 @@ class ObjectPainter extends BasePainter {
    async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == 'string') && (info.indexOf('exec:') != 0))
+      if (isStr(info) && (info.indexOf('exec:') != 0))
          reason = info;
 
       if (arg == 'pad')
@@ -11499,7 +11505,7 @@ class ObjectPainter extends BasePainter {
      * Many methods call can be chained with 'Print();;Update();;Clear()'
      * @private */
    submitCanvExec(exec, snapid) {
-      if (!exec || (typeof exec != 'string')) return;
+      if (!exec || !isStr(exec)) return;
 
       let canp = this.getCanvPainter();
       if (isFunc$1(canp?.submitExec))
@@ -11851,7 +11857,7 @@ class ObjectPainter extends BasePainter {
 
       let align = ['start', 'middle'];
 
-      if (typeof arg.align == 'string') {
+      if (isStr(arg.align)) {
          align = arg.align.split(';');
          if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
@@ -12238,7 +12244,7 @@ function drawRawText(dom, txt /*, opt*/) {
 
    painter.drawText = async function() {
       let txt = (this.txt._typename && (this.txt._typename == clTObjString)) ? this.txt.fString : this.txt.value;
-      if (typeof txt != 'string') txt = '<undefined>';
+      if (!isStr(txt)) txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants$1.Latex.AlwaysMathJax);
 
@@ -41340,7 +41346,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (tip) {
          let name = '', title = '', coord = '', info = '';
          if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
-         if (typeof tip == 'string') {
+         if (isStr(tip)) {
             info = tip;
          } else {
             name = tip.name; title = tip.title;
@@ -41683,7 +41689,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    if (!painter || !arg) return null;
 
    let lcolor, lstyle, lwidth;
-   if ((typeof arg == 'string') || is_v7) {
+   if (isStr(arg) || is_v7) {
       lcolor = painter.v7EvalColor(arg+'color', 'black');
       lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
       lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));
@@ -44152,11 +44158,11 @@ class TAxisPainter extends ObjectPainter {
              tf1 = (idF >= 0) ? axis.fTimeFormat.slice(0, idF) : axis.fTimeFormat,
              tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
-         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+         if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = timeFormat(tf1);
-         if (tf2!==tf1)
+         if (tf2 !== tf1)
             this.tfunc2 = timeFormat(tf2);
 
          this.format = this.formatTime;
@@ -47141,7 +47147,7 @@ function showProgress(msg, tmout) {
 
    box.property('with_timeout', false);
 
-   if (typeof msg === 'string') {
+   if (isStr(msg)) {
       box.select('p').html(msg);
    } else {
       box.html('');
@@ -47237,7 +47243,7 @@ async function loadOpenui5(args) {
        openui5_dflt = 'https://openui5.hana.ondemand.com/1.98.0/',
        openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
-   if (typeof args.openui5src == 'string') {
+   if (isStr(args.openui5src)) {
       switch (args.openui5src) {
          case 'nodefault': openui5_dflt = ''; break;
          case 'default': openui5_sources.push(openui5_dflt); openui5_dflt = ''; break;
@@ -47619,7 +47625,7 @@ function setSaveFile(func) {
   * @private */
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
-   if (typeof col == 'string') {
+   if (isStr(col)) {
       if (!col || (col == 'none')) {
          id = 0;
       } else {
@@ -47733,10 +47739,9 @@ class JSRootMenu {
       if (!without_sub) this.add('sub:' + top_name, opts[0], call_back);
 
       for (let i = 0; i < opts.length; ++i) {
-         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;');
-
-         let group = i+1;
-         if ((opts.length > 5) && (name.length > 0)) {
+         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
+             group = i+1;
+         if ((opts.length > 5) && name) {
             // check if there are similar options, which can be grouped once again
             while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }
@@ -47760,7 +47765,7 @@ class JSRootMenu {
      * @protected */
    addColorMenu(name, value, set_func, fill_kind) {
       if (value === undefined) return;
-      let useid = (typeof value !== 'string');
+      let useid = !isStr(value);
       this.add('sub:' + name, () => {
          this.input('Enter color ' + (useid ? '(only id number)' : '(name or id)'), value, useid ? 'int' : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             let id = parseInt(col);
@@ -47975,7 +47980,7 @@ class JSRootMenu {
             bkgr = 'background-color:' + coltxt;
             fillcol = (coltxt == 'white') ? 'black' : 'white';
 
-            if ((typeof value === 'string') && value && (value != 'auto') && (value[0] != '['))
+            if (isStr(value) && value && (value != 'auto') && (value[0] != '['))
                match = (rgb(value).toString() == rgb(coltxt).toString());
          } else {
             match = !value;
@@ -51878,7 +51883,7 @@ class TFramePainter extends ObjectPainter {
          });
 
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
+      if (isStr(dox)) { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
@@ -52284,7 +52289,7 @@ class GridDisplay extends MDIDisplay {
 
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
-            if (typeof this.frameid === 'string')
+            if (isStr(this.frameid))
                elem.attr('id', `${this.frameid}_${group.drawid}`);
          } else {
             elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
@@ -52591,7 +52596,7 @@ class TabsDisplay extends MDIDisplay {
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
-      if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
+      if (!lbl || !isStr(lbl)) lbl = `frame_${frame_id}`;
 
       if (lbl.length > 15) {
          let p = lbl.lastIndexOf('/');
@@ -53367,7 +53372,7 @@ class BrowserLayout {
       if (browser$1.touches && !main.on('touchmove'))
          main.on('touchmove', function() { });
 
-      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
+      if (!height || isStr(height)) height = this.last_hsepar_height || 20;
 
       this.adjustSeparators(null, height, true);
 
@@ -53397,7 +53402,7 @@ class BrowserLayout {
       if ((hsepar === null) && first_time && !main.select('.jsroot_h_separator').empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select('.jsroot_h_separator').style('bottom');
-         if ((typeof hsepar == 'string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
+         if (isStr(hsepar) && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
             hsepar = hsepar.slice(0,hsepar.length-2);
          else
             hsepar = null;
@@ -53461,7 +53466,7 @@ class BrowserLayout {
 
    /** @summary Toggle browser visibility */
    toggleBrowserVisisbility(fast_close) {
-      if (!this.gui_div || (typeof this.browser_visible === 'string')) return;
+      if (!this.gui_div || isStr(this.browser_visible)) return;
 
       let main = this.browser(), area = main.select('.jsroot_browser_area');
 
@@ -53782,7 +53787,7 @@ let PadButtonsHandler = {
          for (let k = 0; k < this._buttons.length; ++k) {
             let item = this._buttons[k], btn = item.btn;
 
-            if (typeof btn == 'string')
+            if (isStr(btn))
                btn = ToolbarIcons[btn];
             if (!btn)
                btn = ToolbarIcons.circle;
@@ -55086,7 +55091,7 @@ class TPadPainter extends ObjectPainter {
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind('float');
@@ -55104,7 +55109,7 @@ class TPadPainter extends ObjectPainter {
 
          let pr = Promise.resolve(true);
 
-         if ((typeof snap.fScripts == 'string') && snap.fScripts) {
+         if (isStr(snap.fScripts) && snap.fScripts) {
             let src = '';
 
             if (snap.fScripts.indexOf('load:') == 0)
@@ -55158,7 +55163,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
-         if (typeof sub.snapid !== 'string') continue; // look only for painters with snapid
+         if (!isStr(sub.snapid)) continue; // look only for painters with snapid
 
          let snapid = sub.snapid, p = snapid.indexOf('#');
          if (p > 0) snapid = snapid.slice(0, p);
@@ -55987,9 +55992,9 @@ class TCanvasPainter extends TPadPainter {
       if (this._readonly || !painter) return;
 
       if (!snapid) snapid = painter.snapid;
-      if (!snapid || (typeof snapid != 'string')) return;
+      if (!snapid || !isStr(snapid)) return;
 
-      this.sendWebsocket('OBJEXEC:' + snapid + ':' + exec);
+      this.sendWebsocket(`OBJEXEC:${snapid}:${exec}`);
    }
 
    /** @summary Send text message with web socket
@@ -56290,7 +56295,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
+      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || !isStr(kind)) return;
 
       let msg = '';
       if (!painter) painter = this;
@@ -56563,7 +56568,7 @@ class TPavePainter extends ObjectPainter {
          } else if (opt.indexOf('NDC') >= 0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
-         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == 'string') && (arg.indexOf('postpone') >= 0)) {
+         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && isStr(arg) && (arg.indexOf('postpone') >= 0)) {
             // special case when pad not yet initialized
             pt.fInit = 0; // do not init until axes drawn
             pt.fX1NDC = pt.fY1NDC = 0.99;
@@ -57116,7 +57121,7 @@ class TPavePainter extends ObjectPainter {
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
-         if (lopt.length > 0)
+         if (lopt)
             any_opt = true;
          else if (!any_opt)
             pos_x = x0 + padding_x;
@@ -57134,9 +57139,9 @@ class TPavePainter extends ObjectPainter {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
-          can_move = (typeof arg == 'string') && (arg.indexOf('can_move') >= 0),
-          postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone') >= 0),
-          cjust = (typeof arg == 'string') && (arg.indexOf('cjust') >= 0),
+          can_move = isStr(arg) && (arg.indexOf('can_move') >= 0),
+          postpone_draw = isStr(arg) && (arg.indexOf('postpone') >= 0),
+          cjust = isStr(arg) && (arg.indexOf('cjust') >= 0),
           pp = this.getPadPainter(),
           width = pp.getPadWidth(),
           height = pp.getPadHeight(),
@@ -60726,7 +60731,7 @@ class TH1Painter$2 extends THistPainter {
       let close_path = `L${currx},${h0}H${startx}Z`;
 
       if (draw_markers || show_line) {
-         if ((path_fill !== null) && (path_fill.length > 0))
+         if (path_fill)
             this.draw_g.append('svg:path')
                        .attr('d', path_fill)
                        .call(this.fillatt.func);
@@ -61291,7 +61296,7 @@ class TH2Painter$2 extends THistPainter {
 
       if ((kind == 'Projections') || (kind == 'Off')) kind = '';
 
-      if ((typeof kind == 'string') && (kind.length>1)) {
+      if (isStr(kind) && (kind.length > 1)) {
           width = parseInt(kind.slice(1));
           kind = kind[0];
       }
@@ -62630,7 +62635,7 @@ class TH2Painter$2 extends THistPainter {
          }
       }
 
-      if (res.length > 0) {
+      if (res) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', res)
                                .call(this.fillatt.func);
@@ -62638,19 +62643,19 @@ class TH2Painter$2 extends THistPainter {
             elem.call(this.lineatt.func);
       }
 
-      if ((btn1.length > 0) && this.fillatt.hasColor())
+      if (btn1 && this.fillatt.hasColor())
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
                     .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
 
-      if (btn2.length > 0)
+      if (btn2)
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
                     .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatHex());
 
-      if (cross.length > 0) {
+      if (cross) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', cross)
                                .style('fill', 'none');
@@ -63061,7 +63066,7 @@ class TH2Painter$2 extends THistPainter {
          }
       }
 
-      if ((hlines.length > 0) && (histo.fFillColor > 0))
+      if (hlines && (histo.fFillColor > 0))
          this.draw_g.append('svg:path')
              .attr('d', hlines)
              .style('stroke', this.getColor(histo.fFillColor));
@@ -65608,7 +65613,7 @@ function getTypeId(typname, norecursion) {
 
    if (!norecursion) {
       let replace = CustomStreamers[typname];
-      if (typeof replace === 'string') return getTypeId(replace, true);
+      if (isStr(replace)) return getTypeId(replace, true);
    }
 
    return -1;
@@ -65623,7 +65628,7 @@ function createStreamerElement(name, typename, file) {
       fXmin: 0, fXmax: 0, fFactor: 0
    };
 
-   if (typeof typename === 'string') {
+   if (isStr(typename)) {
       elem.fType = getTypeId(typename);
       if ((elem.fType < 0) && file && file.fBasicTypes[typename])
          elem.fType = file.fBasicTypes[typename];
@@ -67660,7 +67665,7 @@ class TFile {
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
-      if (typeof this.fURL != 'string') return this;
+      if (!isStr(this.fURL)) return this;
 
       if (this.fURL[this.fURL.length - 1] === '+') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
@@ -67724,7 +67729,7 @@ class TFile {
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
           first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
-      if (filename && (typeof filename === 'string') && (filename.length > 0)) {
+      if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
          fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
       }
@@ -67786,7 +67791,7 @@ class TFile {
          if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
-            file.fFileContent = new TBuffer((typeof res == 'string') ? res : new DataView(res));
+            file.fFileContent = new TBuffer(isStr(res) ? res : new DataView(res));
 
             if (!file.fAcceptRanges)
                file.fEND = file.fFileContent.length;
@@ -67826,7 +67831,7 @@ class TFile {
 
          // object to access response data
          let hdr = this.getResponseHeader('Content-Type'),
-            ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart') >= 0),
+            ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
             view = new DataView(res);
 
          if (!ismulti) {
@@ -67950,7 +67955,7 @@ class TFile {
     * @private */
    getDir(dirname, cycle) {
 
-      if ((cycle === undefined) && (typeof dirname == 'string')) {
+      if ((cycle === undefined) && isStr(dirname)) {
          const pos = dirname.lastIndexOf(';');
          if (pos > 0) { cycle = parseInt(dirname.slice(pos + 1)); dirname = dirname.slice(0, pos); }
       }
@@ -68308,7 +68313,7 @@ class TFile {
       let custom = CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
-      if (typeof custom === 'string')
+      if (isStr(custom))
          return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
@@ -68689,7 +68694,7 @@ class TProxyFile extends TFile {
          if (!res) return false;
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
-         if (typeof this.fFileName == 'string') {
+         if (isStr(this.fFileName)) {
             let p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
                this.fFileName = this.fFileName.slice(p+1);
@@ -68737,7 +68742,7 @@ function openFile(arg) {
 
    let file;
 
-   if (isNodeJs() && (typeof arg == 'string')) {
+   if (isNodeJs() && isStr(arg)) {
       if (arg.indexOf('file://') == 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf('http') !== 0)
@@ -68807,7 +68812,7 @@ class TSelector {
     * @param {boolean} [direct] - if only branch without any children should be read */
    addBranch(branch, name, direct) {
       if (!name)
-         name = (typeof branch === 'string') ? branch : ('br' + this._branches.length);
+         name = isStr(branch) ? branch : `br${this._branches.length}`;
       this._branches.push(branch);
       this._names.push(name);
       this._directs.push(direct);
@@ -68942,7 +68947,7 @@ class ArrayIterator {
             return true;
          }
 
-         if ((typ == 'any') && (typeof this.select[cnt + 1] === 'string')) {
+         if ((typ == 'any') && isStr(this.select[cnt + 1])) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
@@ -69126,7 +69131,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
   * @private */
 function findBranch(tree, name) {
    let res = findBranchComplex(tree, name, tree.fBranches, true);
-   return (!res || (res.rest.length > 0)) ? null : res.branch;
+   return (!res || res.rest) ? null : res.branch;
 }
 
 
@@ -69442,7 +69447,7 @@ class TDrawSelector extends TSelector {
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
 
-      if (!expr || (typeof expr !== 'string')) return '';
+      if (!expr || !isStr(expr)) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(';');
@@ -70336,7 +70341,7 @@ async function treeProcess(tree, selector, args) {
       // read_mode == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created
       // read_mode == '.member_name' select only reading of member_name instead of complete object
 
-      if (typeof branch === 'string')
+      if (isStr(branch))
          branch = findBranch(handle.tree, branch);
 
       if (!branch) { console.error('Did not found branch'); return null; }
@@ -70477,7 +70482,7 @@ async function treeProcess(tree, selector, args) {
 
          let match_prefix = branch.fName;
          if (match_prefix[match_prefix.length - 1] === '.') match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if ((typeof read_mode === 'string') && (read_mode[0] == '.')) match_prefix += read_mode;
+         if (isStr(read_mode) && (read_mode[0] == '.')) match_prefix += read_mode;
          match_prefix += '.';
 
          for (let k = 0; k < lst.arr.length; ++k) {
@@ -70538,7 +70543,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createStreamerElement(target_name, kInt);
 
-         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === '.')) || (read_mode === 1)) {
+         if (!read_mode || (isStr(read_mode) && (read_mode[0] === '.')) || (read_mode === 1)) {
             handle.process_arrays = false;
 
             member = {
@@ -70558,7 +70563,7 @@ async function treeProcess(tree, selector, args) {
                }
             };
 
-            if ((typeof read_mode === 'string') && (read_mode[0] === '.')) {
+            if (isStr(read_mode) && (read_mode[0] === '.')) {
                member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                if (!member.conttype) {
                   console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
@@ -70667,7 +70672,7 @@ async function treeProcess(tree, selector, args) {
          }
       }
 
-      if (item_cnt && (typeof read_mode === 'string')) {
+      if (item_cnt && isStr(read_mode)) {
 
          member.name0 = item_cnt.name;
 
@@ -71316,7 +71321,7 @@ async function treeProcess(tree, selector, args) {
   * @return {Promise} with object like { obj: draw_object, opt: draw_options } */
 async function treeDraw(tree, args) {
 
-   if (typeof args === 'string') args = { expr: args };
+   if (isStr(args)) args = { expr: args };
 
    if (!args.expr) args.expr = '';
 
@@ -71384,7 +71389,7 @@ function treeIOTest(tree, args) {
       };
 
       selector.Terminate = function(res) {
-         if (typeof res !== 'string')
+         if (!isStr(res))
             res = (!res || this.fails) ? 'FAIL' : 'ok';
 
          names[nbr] = res + ' ' + names[nbr];
@@ -71719,7 +71724,7 @@ function addDrawFunc(args) {
   * @private */
 function getDrawHandle(kind, selector) {
 
-   if (typeof kind != 'string') return null;
+   if (!isStr(kind)) return null;
    if (selector === '') selector = null;
 
    let first = null;
@@ -71730,7 +71735,7 @@ function getDrawHandle(kind, selector) {
    let search = (kind.indexOf('ROOT.') == 0) ? kind.slice(5) : 'kind:' + kind, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
-      if (typeof h.name == 'string') {
+      if (isStr(h.name)) {
          if (h.name != search) continue;
       } else {
          if (!search.match(h.name)) continue;
@@ -71751,7 +71756,7 @@ function getDrawHandle(kind, selector) {
          // store found handle in cache, can reuse later
          if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
          return h;
-      } else if (typeof selector == 'string') {
+      } else if (isStr(selector)) {
          if (!first) first = h;
          // if drawoption specified, check it present in the list
 
@@ -71775,7 +71780,7 @@ function getDrawHandle(kind, selector) {
 /** @summary Returns true if handle can be potentially drawn
   * @private */
 function canDrawHandle(h) {
-   if (typeof h == 'string')
+   if (isStr(h))
       h = getDrawHandle(h);
    if (!h || (typeof h !== 'object')) return false;
    return h.func || h.class || h.draw || h.draw_field ? true : false;
@@ -71785,9 +71790,9 @@ function canDrawHandle(h) {
   * @private */
 function getDrawSettings(kind, selector) {
    let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
-   if (typeof kind != 'string') return res;
+   if (!isStr(kind)) return res;
    let isany = false, noinspect = false, canexpand = false;
-   if (typeof selector !== 'string') selector = '';
+   if (!isStr(selector)) selector = '';
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
       let h = getDrawHandle(kind, cnt);
@@ -71821,7 +71826,7 @@ function getDrawSettings(kind, selector) {
 
    res.inspect = !noinspect;
    res.expand = canexpand;
-   res.draw = res.opts && (res.opts.length > 0);
+   res.draw = !!res.opts;
 
    return res;
 }
@@ -71926,7 +71931,7 @@ async function draw(dom, obj, opt) {
    } else if (isFunc$1(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
-   } else if (!handle.func || typeof handle.func !== 'string') {
+   } else if (!handle.func || !isStr(handle.func)) {
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
    } else if (!handle.prereq && !handle.script) {
       return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
@@ -72480,7 +72485,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = '0'+val;
-         if (item._value.length > 0)
+         if (item._value)
             item._value += (k%4 === 0) ? ' | ' : ' ';
 
          item._value += val;
@@ -72664,7 +72669,7 @@ function objectHierarchy(top, obj, args = undefined) {
          else
             item._value = fld.toString();
          item._vclass = 'h_value_num';
-      } else if (typeof fld === 'string') {
+      } else if (isStr(fld)) {
          simple = true;
          item._value = '&quot;' + fld.replace(/\&/g, '&amp;').replace(/\"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '&quot;';
          item._vclass = 'h_value_str';
@@ -72753,10 +72758,10 @@ function markAsStreamerInfo(h, item, obj) {
 function createInspectorContent(obj) {
    let h = { _name: 'Object', _title: '', _click_action: 'expand', _nosimple: false, _do_context: true };
 
-   if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
+   if (isStr(obj.fName) && obj.fName)
       h._name = obj.fName;
 
-   if ((typeof obj.fTitle === 'string') && (obj.fTitle.length > 0))
+   if (isStr(obj.fTitle) && obj.fTitle)
       h._title = obj.fTitle;
 
    if (obj._typename)
@@ -72781,7 +72786,7 @@ function parseAsArray(val) {
 
    let res = [];
 
-   if (typeof val != 'string') return res;
+   if (!isStr(val)) return res;
 
    val = val.trim();
    if (!val) return res;
@@ -73084,13 +73089,16 @@ class HierarchyPainter extends BasePainter {
       let top = this.h, itemname = '';
 
       if (arg === null) return null; else
-      if (typeof arg == 'string') { itemname = arg; arg = {}; } else
-      if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
+      if (isStr(arg)) {
+         itemname = arg; arg = {};
+      } else if (typeof arg == 'object') {
+         itemname = arg.name; if ('top' in arg) top = arg.top;
+      } else
          return null;
 
       if (itemname === '__top_folder__') return top;
 
-      if ((typeof itemname == 'string') && (itemname.indexOf('img:') == 0)) return null;
+      if (isStr(itemname) && (itemname.indexOf('img:') == 0)) return null;
 
       return find_in_hierarchy(top, itemname);
    }
@@ -73113,7 +73121,7 @@ class HierarchyPainter extends BasePainter {
 
          if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
-         if (res.length > 0) res = '/' + res;
+         if (res) res = '/' + res;
          res = node._name + res;
          node = node._parent;
       }
@@ -73190,7 +73198,7 @@ class HierarchyPainter extends BasePainter {
       if (arg === null)
          return result;
 
-      if (typeof arg === 'string') {
+      if (isStr(arg)) {
          itemname = arg;
       } else if (typeof arg === 'object') {
          if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined)) item = arg; else
@@ -73199,7 +73207,7 @@ class HierarchyPainter extends BasePainter {
          if (arg.item !== undefined) item = arg.item;
       }
 
-      if ((typeof itemname == 'string') && (itemname.indexOf('img:') == 0)) {
+      if (isStr(itemname) && (itemname.indexOf('img:') == 0)) {
          // artificial class, can be created by users
          result.obj = { _typename: 'TJSImage', fName: itemname.slice(4) };
          return result;
@@ -73226,7 +73234,7 @@ class HierarchyPainter extends BasePainter {
          return this.expandItem(parentname, undefined, options != 'hierarchy_expand_verbose').then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
-            if (newparentname.length > 0) newparentname += '/';
+            if (newparentname) newparentname += '/';
             return this.getObject( { name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
@@ -73274,7 +73282,7 @@ class HierarchyPainter extends BasePainter {
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if ((img1.length == 0) && isFunc$1(handle.icon_get))
+         if (!img1 && isFunc$1(handle.icon_get))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
@@ -73282,21 +73290,21 @@ class HierarchyPainter extends BasePainter {
 
       if ('_icon' in hitem) img1 = hitem._icon;
       if ('_icon2' in hitem) img2 = hitem._icon2;
-      if ((img1.length == 0) && ('_online' in hitem))
+      if (!img1 && ('_online' in hitem))
          hitem._icon = img1 = 'img_globe';
-      if ((img1.length == 0) && isroot)
+      if (!img1 && isroot)
          hitem._icon = img1 = 'img_base';
 
       if (hitem._more || hitem._expand || hitem._player || hitem._can_draw)
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf('ROOT.') == 0))
+      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf('ROOT.') == 0))
          can_menu = can_click = true;
 
-      if (img2.length == 0) img2 = img1;
-      if (img1.length == 0) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
-      if (img2.length == 0) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
+      if (!img2) img2 = img1;
+      if (!img1) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
+      if (!img2) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
 
       if (arg === 'update') {
          d3prnt.selectAll('*').remove();
@@ -73334,7 +73342,7 @@ class HierarchyPainter extends BasePainter {
 
       let h = this;
 
-      if (icon_class.length > 0) {
+      if (icon_class) {
          if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
          let d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
@@ -73599,7 +73607,7 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when done
      * @private */
    async focusOnItem(hitem) {
-      if (typeof hitem == 'string')
+      if (isStr(hitem))
          hitem = this.findItem(hitem);
 
       let name = hitem ? this.itemFullName(hitem) : '';
@@ -73742,7 +73750,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === 'string') && (hitem._kind.indexOf('ROOT.') === 0) && sett.inspect && (can_draw !== false))
+         if (isStr(hitem._kind) && (hitem._kind.indexOf('ROOT.') === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, 'inspect', true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -73919,7 +73927,7 @@ class HierarchyPainter extends BasePainter {
                if (filepath.indexOf(exports.source_dir) == 0)
                   filepath = filepath.slice(exports.source_dir.length);
                filepath = fileprop.kind + '=' + filepath;
-               if (fileprop.itemname.length > 0) {
+               if (fileprop.itemname) {
                   let name = fileprop.itemname;
                   if (name.search(/\+| |\,/) >= 0) name = `'${name}'`;
                   filepath += '&item=' + name;
@@ -73959,7 +73967,7 @@ class HierarchyPainter extends BasePainter {
    async player(itemname, option) {
       let item = this.findItem(itemname);
 
-      if (!item || !item._player || (typeof item._player != 'string'))
+      if (!item || !item._player || !isStr(item._player))
          return null;
 
       let player_func = null;
@@ -74039,7 +74047,7 @@ class HierarchyPainter extends BasePainter {
          if (item && ('_player' in item))
             return this.player(display_itemname, drawopt).then(res => complete(res));
 
-         updating = (typeof drawopt == 'string') && (drawopt.indexOf('update:') == 0);
+         updating = isStr(drawopt) && (drawopt.indexOf('update:') == 0);
 
          if (updating) {
             drawopt = drawopt.slice(7);
@@ -74050,7 +74058,7 @@ class HierarchyPainter extends BasePainter {
          if (item && !this.canDisplay(item, drawopt)) return complete();
 
          let divid = '', use_dflt_opt = false;
-         if ((typeof drawopt == 'string') && (drawopt.indexOf('divid:') >= 0)) {
+         if (isStr(drawopt) && (drawopt.indexOf('divid:') >= 0)) {
             let pos = drawopt.indexOf('divid:');
             divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
@@ -74085,7 +74093,7 @@ class HierarchyPainter extends BasePainter {
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
                drawopt = handle.dflt;
 
-            if (divid.length > 0) {
+            if (divid) {
                let func = updating ? redraw : draw;
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
@@ -74145,7 +74153,7 @@ class HierarchyPainter extends BasePainter {
       select(frame).on('dragover', function(ev) {
          let itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
-         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf('ROOT.') == 0))
+         if (isStr(ditem?._kind) && (ditem._kind.indexOf('ROOT.') == 0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
       }).on('dragenter', function() {
          select(this).classed('jsroot_drag_area', true);
@@ -74169,7 +74177,7 @@ class HierarchyPainter extends BasePainter {
     * @private */
    async dropItem(itemname, divid, opt) {
 
-      if (!opt || (typeof opt != 'string')) opt = '';
+      if (!opt || !isStr(opt)) opt = '';
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && isFunc$1(drop_painter?.setItemName))
@@ -74208,7 +74216,7 @@ class HierarchyPainter extends BasePainter {
 
       let allitems = [], options = [], only_auto_items = false, want_update_all = false;
 
-      if (typeof arg == 'string')
+      if (isStr(arg))
          arg = [ arg ];
       else if (typeof arg != 'object') {
          if (arg === undefined) arg = !this.isMonitoring();
@@ -74220,7 +74228,7 @@ class HierarchyPainter extends BasePainter {
       this.disp.forEachPainter(p => {
          let itemname = p.getItemName();
 
-         if ((typeof itemname != 'string') || (allitems.indexOf(itemname) >= 0)) return;
+         if (!isStr(itemname) || (allitems.indexOf(itemname) >= 0)) return;
 
          if (want_update_all) {
             let item = this.findItem(itemname);
@@ -74431,7 +74439,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    activateItems(items, force) {
 
-      if (typeof items == 'string') items = [ items ];
+      if (isStr(items)) items = [ items ];
 
       let active = [], // array of elements to activate
           update = []; // array of elements to update
@@ -74468,7 +74476,7 @@ class HierarchyPainter extends BasePainter {
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
                   let newname = this.itemFullName(d.last);
-                  if (newname.length > 0) newname+='/';
+                  if (newname) newname += '/';
                   find_next(newname + d.rest, d.now_found);
                });
             }
@@ -74529,7 +74537,7 @@ class HierarchyPainter extends BasePainter {
 
       async function doExpandItem(_item, _obj){
 
-         if (typeof _item._expand == 'string')
+         if (isStr(_item._expand))
             _item._expand = findFunction(item._expand);
 
          if (!isFunc$1(_item._expand)) {
@@ -74543,7 +74551,7 @@ class HierarchyPainter extends BasePainter {
             if (handle?.expand || handle?.get_expand) {
                if (isFunc$1(handle.expand))
                   _item._expand = handle.expand;
-               else if (typeof handle.expand == 'string') {
+               else if (isStr(handle.expand)) {
                   if (!internals.ignore_v6) {
                      let v6 = await _ensureJSROOT();
                      await v6.require(handle.prereq);
@@ -74696,7 +74704,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachRootFile(item => { if (item._fullurl === filepath) isfileopened = true; });
       if (isfileopened) return;
 
-      let msg = typeof filepath == 'string' ? filepath : 'file';
+      let msg = isStr(filepath) ? filepath : 'file';
 
       showProgress(`Opening ${msg} ...`);
 
@@ -74734,7 +74742,7 @@ class HierarchyPainter extends BasePainter {
 
       let pr = Promise.resolve(style);
 
-      if (typeof style === 'string') {
+      if (isStr(style)) {
          let item = this.findItem({ name: style, allow_index: true, check_keys: true });
          if (item !== null)
             pr = this.getObject(item).then(res => res.obj);
@@ -74774,7 +74782,7 @@ class HierarchyPainter extends BasePainter {
      * @return string or null if item is not online
      * @private */
    getOnlineItemUrl(item) {
-      if (typeof item == 'string') item = this.findItem(item);
+      if (isStr(item)) item = this.findItem(item);
       let prnt = item;
       while (prnt && (prnt._online === undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
@@ -74805,7 +74813,7 @@ class HierarchyPainter extends BasePainter {
 
       let url = itemname, h_get = false, req = '', req_kind = 'object', draw_handle = null;
 
-      if ((typeof option == 'string') && (option.indexOf('hierarchy_expand') == 0)) {
+      if (isStr(option) && (option.indexOf('hierarchy_expand') == 0)) {
          h_get = true;
          option = undefined;
       }
@@ -74834,7 +74842,7 @@ class HierarchyPainter extends BasePainter {
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
             if (dreq) {
-               if (typeof dreq == 'string') {
+               if (isStr(dreq)) {
                   req = dreq;
                } else {
                   if ('req' in dreq) req = dreq.req;
@@ -74843,21 +74851,21 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if ((req.length == 0) && (item._kind.indexOf('ROOT.') != 0))
+         if (!req && (item._kind.indexOf('ROOT.') != 0))
            req = 'item.json.gz?compact=3';
       }
 
-      if (!itemname && item && ('_cached_draw_object' in this) && (req.length == 0)) {
+      if (!itemname && item && ('_cached_draw_object' in this) && !req) {
          // special handling for online draw when cashed
          let obj = this._cached_draw_object;
          delete this._cached_draw_object;
          return obj;
       }
 
-      if (req.length == 0)
+      if (!req)
          req = 'root.json.gz?compact=23';
 
-      if (url.length > 0) url += '/';
+      if (url) url += '/';
       url += req;
 
       return new Promise(resolveFunc => {
@@ -74985,7 +74993,7 @@ class HierarchyPainter extends BasePainter {
       let node = this.findItem(itemname),
           sett = getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = getDrawHandle(node._kind),
-          root_type = (typeof node._kind == 'string') ? node._kind.indexOf('ROOT.') == 0 : false;
+          root_type = isStr(node._kind) ? node._kind.indexOf('ROOT.') == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push('inspect');
@@ -75294,7 +75302,7 @@ class HierarchyPainter extends BasePainter {
 
          let res = [];
 
-         while (opt.length > 0) {
+         while (opt) {
             let separ = opt.indexOf(';'),
                 part = (separ > 0) ? opt.slice(0, separ) : opt;
 
@@ -75316,7 +75324,7 @@ class HierarchyPainter extends BasePainter {
       let GetOptionAsArray = opt => {
          let res = GetUrlOptionAsArray(opt);
          if (res.length > 0 || !gui_div || gui_div.empty()) return res;
-         while (opt.length > 0) {
+         while (opt) {
             let separ = opt.indexOf(';');
             let part = separ > 0 ? opt.slice(0, separ) : opt;
             if (separ > 0) opt = opt.slice(separ+1); else opt = '';
@@ -75384,7 +75392,7 @@ class HierarchyPainter extends BasePainter {
       if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length == 0)) itemsarr.push('');
 
       if (!this.disp_kind) {
-         if ((typeof layout == 'string') && (layout.length > 0))
+         if (isStr(layout) && layout)
             this.disp_kind = layout;
          else
          switch (itemsarr.length) {
@@ -75516,7 +75524,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    prepareGuiDiv(myDiv, layout) {
 
-      this.gui_div = (typeof myDiv == 'string') ? myDiv : myDiv.attr('id');
+      this.gui_div = isStr(myDiv) ? myDiv : myDiv.attr('id');
 
       this.brlayout = new BrowserLayout(this.gui_div, this);
 
@@ -75723,7 +75731,7 @@ class HierarchyPainter extends BasePainter {
          let found = false;
          for (let i in selects.options) {
             let s = selects.options[i].text;
-            if (typeof s !== 'string') continue;
+            if (!isStr(s)) continue;
             if ((s == this.getLayout()) || (s.replace(/ /g, '') == this.getLayout())) {
                selects.selectedIndex = i; found = true;
                break;
@@ -76023,7 +76031,7 @@ function readStyleFromURL(url) {
   * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
   * buildGUI('guiDiv'); */
 async function buildGUI(gui_element, gui_kind = '') {
-   let myDiv = (typeof gui_element == 'string') ? select('#' + gui_element) : select(gui_element);
+   let myDiv = isStr(gui_element) ? select('#' + gui_element) : select(gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));
 
@@ -76782,10 +76790,10 @@ class Node {
 
       if (nodeid !== undefined) this.maxnodeid = nodeid;
 
-      if ( front.length > 0 )
+      if (front.length > 0)
          this.front = new Node( front );
 
-      if ( back.length > 0 )
+      if (back.length > 0)
          this.back = new Node( back );
    }
 
@@ -76810,12 +76818,12 @@ class Node {
       for (let i = first; i < polygon_count; ++i )
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
 
-      if ( front.length > 0 ) {
+      if (front.length > 0) {
          if ( !this.front ) this.front = new Node();
          this.front.build( front );
       }
 
-      if ( back.length > 0 ) {
+      if (back.length > 0) {
          if ( !this.back ) this.back = new Node();
          this.back.build( back );
       }
@@ -80967,6 +80975,7 @@ function getShapeIcon(shape) {
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
+      clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
       clREveGeoShapeExtract = 'ROOT::Experimental::REveGeoShapeExtract';
 
 /** @summary Function used to build hierarchy of elements of overlap object
@@ -81680,7 +81689,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (typeof opt != 'string') opt = '';
+      if (!isStr(opt)) opt = '';
 
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
@@ -81839,7 +81848,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
 
-      if (typeof names == 'string') names = [ names ];
+      if (isStr(names)) names = [ names ];
 
       if (this._hpainter) {
          // show browser if it not visible
@@ -82029,7 +82038,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method should be called when changing axes drawing */
    changedAxes() {
-      if (typeof this.ctrl._axis == 'string')
+      if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
       this.drawSimpleAxis();
@@ -82373,7 +82382,7 @@ class TGeoPainter extends ObjectPainter {
                   hdr = this.getItemName();
                   if (name.indexOf('Nodes/') === 0)
                      hdr = name.slice(6);
-                  else if (name.length > 0)
+                  else if (name)
                      hdr = name;
                   else if (!hdr)
                      hdr = 'header';
@@ -82698,7 +82707,7 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == 'string'))
+                  if ((geo_index !== undefined) && isStr(tooltip))
                      tooltip += ' indx:' + JSON.stringify(geo_index);
                }
                if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
@@ -83464,7 +83473,7 @@ class TGeoPainter extends ObjectPainter {
       dataUrl.replace('image/png', 'image/octet-stream');
       let doc = getDocument(),
           link = doc.createElement('a');
-      if (typeof link.download === 'string') {
+      if (isStr(link.download)) {
          doc.body.appendChild(link); //Firefox requires the link to be in the body
          link.download = filename || 'geometry.png';
          link.href = dataUrl;
@@ -83902,7 +83911,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== clTPolyMarker3D)) return;
+      if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -84004,10 +84013,10 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
-      } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
+      } else if ((obj._typename === clTEveTrack) || (obj._typename === 'ROOT::Experimental::REveTrack')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === clTPolyMarker3D)) {
+      } else if ((obj._typename === clTEvePointSet) || (obj._typename === 'ROOT::Experimental::REvePointSet') || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
@@ -84248,7 +84257,7 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname.length > 0) itemname += '/';
+         if (itemname) itemname += '/';
          itemname += prnt.fName;
       }
 
@@ -85572,7 +85581,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == 'string') && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
+      if (isStr(opt) && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
@@ -85618,8 +85627,8 @@ function injectGeoStyle() {
    if (!add_settings && isFunc$1(internals.addDrawFunc)) {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
-      internals.addDrawFunc({ name: 'TEvePointSet', icon_get: getBrowserIcon, icon_click: browserIconClick });
-      internals.addDrawFunc({ name: 'TEveTrack', icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: clTEvePointSet, icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: clTEveTrack, icon_get: getBrowserIcon, icon_click: browserIconClick });
    }
 
    function img(name,code) {
@@ -85828,14 +85837,15 @@ function browserIconClick(hitem, hpainter) {
   * @private */
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
-   if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
-   if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
-   if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
-   if (icon.length > 0) {
+   switch(hitem._kind) {
+      case 'ROOT.' + clTEveTrack: icon = 'img_evetrack'; break;
+      case 'ROOT.' + clTEvePointSet: icon = 'img_evepoints'; break;
+      case 'ROOT.' + clTPolyMarker3D: icon = 'img_evepoints'; break;
+   }
+   if (icon) {
       let drawitem = findItemWithPainter(hitem);
-      if (drawitem)
-         if (drawitem._painter.extraObjectVisible(hpainter, hitem))
-            icon += ' geovis_this';
+      if (drawitem?._painter && drawitem._painter.extraObjectVisible(hpainter, hitem))
+         icon += ' geovis_this';
    }
    return icon;
 }
@@ -85865,7 +85875,7 @@ function createItem(node, obj, name) {
       sub._icon = 'img_geomixture';
    else if ((obj._typename.indexOf(clTGeoNode) === 0) && obj.fVolume) {
       sub._title = 'node:'  + obj._typename;
-      if (obj.fTitle.length > 0) sub._title += ' ' + obj.fTitle;
+      if (obj.fTitle) sub._title += ' ' + obj.fTitle;
       volume = obj.fVolume;
    } else if (obj._typename.indexOf(clTGeoVolume) === 0) {
       volume = obj;
@@ -85922,7 +85932,7 @@ function createItem(node, obj, name) {
    if (!node._childs) node._childs = [];
 
    if (!sub._name)
-      if (typeof node._name === 'string') {
+      if (isStr(node._name)) {
          sub._name = node._name;
          if (sub._name.lastIndexOf('s')===sub._name.length-1)
             sub._name = sub._name.slice(0, sub._name.length-1);
@@ -87844,7 +87854,7 @@ class TGraphPainter$1 extends ObjectPainter {
    /** @summary Decode options */
    decodeOptions(opt, first_time) {
 
-      if ((typeof opt == 'string') && (opt.indexOf('same ') == 0))
+      if (isStr(opt) && (opt.indexOf('same ') == 0))
          opt = opt.slice(5);
 
       let graph = this.getObject(),
@@ -88533,7 +88543,7 @@ class TGraphPainter$1 extends ObjectPainter {
             }
          }
 
-         if (path.length > 0) {
+         if (path) {
             draw_g.append('svg:path')
                   .attr('d', path)
                   .call(this.markeratt.func);
@@ -89293,7 +89303,7 @@ function proivdeEvalPar(obj) {
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
    if (_func === 'gaus') _func = 'gaus(0)';
-   if (obj.fFormula && typeof obj.fFormula.fFormula == 'string') {
+   if (obj.fFormula && isStr(obj.fFormula.fFormula)) {
      if (obj.fFormula.fFormula.indexOf('[](double*x,double*p)') == 0) {
         isformula = true; pprefix = 'p[';
         _func = obj.fFormula.fFormula.slice(21);
@@ -89831,7 +89841,7 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff || !eff.fTotalHistogram)
          return null;
 
-      if (!opt || (typeof opt != 'string')) opt = '';
+      if (!opt || !isStr(opt)) opt = '';
       opt = opt.toLowerCase();
 
       let ndim = 0;
@@ -90868,7 +90878,7 @@ class TSplinePainter extends ObjectPainter {
              .property('current_xx', xx);
 
       let name = this.getObjectHint();
-      if (name.length > 0) res.lines.push(name);
+      if (name) res.lines.push(name);
       res.lines.push('x = ' + funcs.axisAsText('x', xx));
       res.lines.push('y = ' + funcs.axisAsText('y', yy));
       if (knot !== null) {
@@ -91301,7 +91311,7 @@ class TASImagePainter extends ObjectPainter {
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = '';
 
-      if (typeof buf == 'string')
+      if (isStr(buf))
          pngbuf = buf;
       else
          for (let k = 0; k < buf.length; ++k)
@@ -91579,7 +91589,7 @@ async function drawTreeDrawResult(dom, obj, opt) {
 
    let typ = obj?._typename;
 
-   if (!typ || (typeof typ !== 'string'))
+   if (!typ || !isStr(typ))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
 
    if (typ.indexOf(clTH1) == 0)
@@ -91942,13 +91952,13 @@ async function drawTree(dom, obj, opt) {
       tree = obj.$tree;
    } else {
       if (!args) args = 'player';
-      if (typeof args === 'string') args = { expr: args };
+      if (isStr(args)) args = { expr: args };
    }
 
    if (!tree)
       throw Error('No TTree object available for TTree::Draw');
 
-   if (typeof args.expr == 'string') {
+   if (isStr(args.expr)) {
       let p = args.expr.indexOf('player');
       if (p == 0) {
          args.player = true;
@@ -92075,7 +92085,7 @@ class RObjectPainter extends ObjectPainter {
 
       let norm = 0, px = 0, val = value, operand = 0, pos = 0;
 
-      while (val.length > 0) {
+      while (val) {
          // skip empty spaces
          while ((pos < val.length) && ((val[pos] == ' ') || (val[pos] == '\t')))
             ++pos;
@@ -92106,7 +92116,7 @@ class RObjectPainter extends ObjectPainter {
          val = val.slice(pos);
          pos = 0;
          if (!operand) operand = 1;
-         if ((val.length > 0) && (val[0] == '%')) {
+         if (val && (val[0] == '%')) {
             val = val.slice(1);
             norm += operand*v*0.01;
          } else if ((val.length > 1) && (val[0] == 'p') && (val[1] == 'x')) {
@@ -92125,7 +92135,7 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Evaluate RColor using attribute storage and configured RStyle */
    v7EvalColor(name, dflt) {
       let val = this.v7EvalAttr(name, '');
-      if (!val || (typeof val != 'string')) return dflt;
+      if (!val || !isStr(val)) return dflt;
 
       if (val == 'auto') {
          let pp = this.getPadPainter();
@@ -92172,7 +92182,7 @@ class RObjectPainter extends ObjectPainter {
           font_style  = this.v7EvalAttr(name + '_font_style', rfont.fStyle || ''),
           font_weight = this.v7EvalAttr(name + '_font_weight', rfont.fWeight || '');
 
-       if (typeof text_size == 'string') text_size = parseFloat(text_size);
+       if (isStr(text_size)) text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = pp?.getPadHeight() || 100;
 
@@ -92187,7 +92197,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = 'fill_';
+      if (!prefix || !isStr(prefix)) prefix = 'fill_';
 
       let color = this.v7EvalColor(prefix + 'color', ''),
           pattern = this.v7EvalAttr(prefix + 'style', 0);
@@ -92197,7 +92207,7 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.lineatt object based on v7 line attributes */
    createv7AttLine(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = 'line_';
+      if (!prefix || !isStr(prefix)) prefix = 'line_';
 
       let color = this.v7EvalColor(prefix + 'color', 'black'),
           width = this.v7EvalAttr(prefix + 'width', 1),
@@ -92212,7 +92222,7 @@ class RObjectPainter extends ObjectPainter {
 
     /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
-      if (!prefix || (typeof prefix != 'string')) prefix = 'marker_';
+      if (!prefix || !isStr(prefix)) prefix = 'marker_';
 
       let color = this.v7EvalColor(prefix + 'color', 'black'),
           size = this.v7EvalAttr(prefix + 'size', 0.01),
@@ -92262,7 +92272,7 @@ class RObjectPainter extends ObjectPainter {
          case 'boolean': obj._typename += 'BoolValue_t'; obj.v = value ? true : false; break;
          case 'int': obj._typename += 'IntValue_t'; obj.v = parseInt(value); break;
          case 'double': obj._typename += 'DoubleValue_t'; obj.v = parseFloat(value); break;
-         default: obj._typename += 'StringValue_t'; obj.v = (typeof value == 'string') ? value : JSON.stringify(value); break;
+         default: obj._typename += 'StringValue_t'; obj.v = isStr(value) ? value : JSON.stringify(value); break;
       }
 
       req.values.push(obj);
@@ -93584,7 +93594,7 @@ class RFramePainter extends RObjectPainter {
             else
                grid += `M${this.x_handle.ticks[n]},0v${h}`;
 
-         if (grid.length > 0)
+         if (grid)
             layer.append('svg:path')
                  .attr('class', 'xgrid')
                  .attr('d', grid)
@@ -93605,7 +93615,7 @@ class RFramePainter extends RObjectPainter {
             else
                grid += `M0,${h+this.y_handle.ticks[n]}h${w}`;
 
-         if (grid.length > 0)
+         if (grid)
           layer.append('svg:path')
                .attr('class', 'ygrid')
                .attr('d', grid)
@@ -94436,7 +94446,7 @@ class RFramePainter extends RObjectPainter {
          });
 
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
+      if (isStr(dox)) { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
@@ -95608,7 +95618,7 @@ class RPadPainter extends RObjectPainter {
    findSnap(snapid, onlyid) {
 
       function check(checkid) {
-         if (!checkid || (typeof checkid != 'string')) return false;
+         if (!checkid || !isStr(checkid)) return false;
          if (checkid == snapid) return true;
          return onlyid && (checkid.length > snapid.length) &&
                 (checkid.indexOf(snapid) == (checkid.length - snapid.length));
@@ -95663,7 +95673,7 @@ class RPadPainter extends RObjectPainter {
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
@@ -96277,7 +96287,7 @@ class LongPollSocket {
             this.handle.processRequest(res, 0);
          } else {
             // text reply
-            if (res && typeof res !== 'string') {
+            if (res && !isStr(res)) {
                let str = '', u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
@@ -96426,7 +96436,7 @@ class WebWindowHandle {
      * @param {string} [field] - if specified and user args is object, returns correspondent object member
      * @return user arguments object */
    getUserArgs(field) {
-      if (field && (typeof field == 'string'))
+      if (field && isStr(field))
          return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
 
       return this.user_args;
@@ -96588,10 +96598,10 @@ class WebWindowHandle {
 
       if (Array.isArray(msg)) {
          for (let k = 0; k < msg.length; ++k)
-            this.provideData(chid, (typeof msg[k] == 'string') ? msg[k] : JSON.stringify(msg[k]), -1);
+            this.provideData(chid, isStr(msg[k]) ? msg[k] : JSON.stringify(msg[k]), -1);
          this.processQueue();
       } else if (msg) {
-         this.provideData(chid, typeof msg == 'string' ? msg : JSON.stringify(msg));
+         this.provideData(chid, isStr(msg) ? msg : JSON.stringify(msg));
       }
    }
 
@@ -96739,7 +96749,7 @@ class WebWindowHandle {
                return;
             }
 
-            if (typeof msg != 'string')
+            if (!isStr(msg))
                return console.log(`unsupported message kind: ${typeof msg}`);
 
             let i1 = msg.indexOf(':'),
@@ -97138,7 +97148,7 @@ class RCanvasPainter extends RPadPainter {
    submitDrawableRequest(kind, req, painter, method) {
 
       if (!this._websocket || !req || !req._typename ||
-          !painter.snapid || (typeof painter.snapid != 'string')) return null;
+          !painter.snapid || !isStr(painter.snapid)) return null;
 
       if (kind && method) {
          // if kind specified - check if such request already was submitted
@@ -97202,7 +97212,7 @@ class RCanvasPainter extends RPadPainter {
       // snapid is intentionally ignored - only painter.snapid has to be used
       if (!this._websocket) return;
 
-      if (subelem && (typeof subelem == 'string')) {
+      if (subelem && isStr(subelem)) {
          let len = subelem.length;
          if ((len > 2) && (subelem.indexOf('#x') == len - 2)) subelem = 'x'; else
          if ((len > 2) && (subelem.indexOf('#y') == len - 2)) subelem = 'y'; else
@@ -97261,7 +97271,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
+      if (!this._websocket || !this._websocket.canSend(2) || !isStr(kind)) return;
       if (!painter) painter = this;
       switch (kind) {
          case 'sbits':
@@ -97467,7 +97477,7 @@ async function ensureRCanvas(painter, frame_kind) {
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select('.main_layer').empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : '');
+         return RFramePainter.draw(painter.getDom(), null, isStr(frame_kind) ? frame_kind : '');
    }).then(() => {
       painter.addToPadPrimitives();
       return painter;
@@ -98546,7 +98556,7 @@ class RHistStatsPainter extends RPavePainter {
 
    /** @summary Redraw stats box */
    async redraw(reason) {
-      if (reason && (typeof reason == 'string') && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
+      if (reason && isStr(reason) && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
          let req = {
             _typename: 'ROOT::Experimental::RHistStatBoxBase::RRequest',
             mask: this.getObject().fShowMask // lines to show in stat box
@@ -99003,7 +99013,7 @@ class RHistPainter extends RObjectPainter {
    async drawingBins(reason) {
 
       let is_axes_zoomed = false;
-      if (reason && (typeof reason == 'string') && (reason.indexOf('zoom') == 0)) {
+      if (reason && isStr(reason) && (reason.indexOf('zoom') == 0)) {
          if (reason.indexOf('0') > 0) is_axes_zoomed = true;
          if ((this.getDimension() > 1) && (reason.indexOf('1') > 0)) is_axes_zoomed = true;
          if ((this.getDimension() > 2) && (reason.indexOf('2') > 0)) is_axes_zoomed = true;
@@ -99678,18 +99688,18 @@ class RH1Painter$2 extends RHistPainter {
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor('blue');
 
-      if (bars.length > 0)
+      if (bars)
          this.draw_g.append('svg:path')
                     .attr('d', bars)
                     .call(this.fillatt.func);
 
-      if (barsl.length > 0)
+      if (barsl)
          this.draw_g.append('svg:path')
                .attr('d', barsl)
                .call(this.fillatt.func)
                .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
 
-      if (barsr.length > 0)
+      if (barsr)
          this.draw_g.append('svg:path')
                .attr('d', barsr)
                .call(this.fillatt.func)
@@ -99977,27 +99987,27 @@ class RH1Painter$2 extends RHistPainter {
                h0 = gry0;
          }
          close_path = `L${currx},${h0}H${startx}Z`;
-         if (res.length > 0) res += close_path;
+         if (res) res += close_path;
       }
 
       if (draw_markers || show_line) {
-         if ((path_fill !== null) && (path_fill.length > 0))
+         if (path_fill)
             this.draw_g.append('svg:path')
                        .attr('d', path_fill)
                        .call(this.fillatt.func);
 
-         if ((path_err !== null) && (path_err.length > 0))
+         if (path_err)
                this.draw_g.append('svg:path')
                    .attr('d', path_err)
                    .call(this.lineatt.func);
 
-         if ((hints_err !== null) && (hints_err.length > 0))
+         if (hints_err)
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
                    .style('fill', 'none')
                    .style('pointer-events', isBatchMode() ? null : 'visibleFill');
 
-         if ((path_line !== null) && (path_line.length > 0)) {
+         if (path_line) {
             if (!this.fillatt.empty())
                this.draw_g.append('svg:path')
                      .attr('d', options.Fill ? (path_line + close_path) : res)
@@ -100009,7 +100019,7 @@ class RH1Painter$2 extends RHistPainter {
                    .call(this.lineatt.func);
          }
 
-         if ((path_marker !== null) && (path_marker.length > 0))
+         if (path_marker)
             this.draw_g.append('svg:path')
                 .attr('d', path_marker)
                 .call(this.markeratt.func);
@@ -100521,7 +100531,7 @@ class RH2Painter$2 extends RHistPainter {
 
       if (kind == 'Projections') kind = '';
 
-      if ((typeof kind == 'string') && (kind.length>1)) {
+      if (isStr(kind) && (kind.length > 1)) {
           width = parseInt(kind.slice(1));
           kind = kind[0];
       }
@@ -101411,7 +101421,7 @@ class RH2Painter$2 extends RHistPainter {
          }
       }
 
-      if (res.length > 0) {
+      if (res) {
          let elem = this.draw_g
                         .append('svg:path')
                         .attr('d', res)
@@ -101420,19 +101430,19 @@ class RH2Painter$2 extends RHistPainter {
             elem.call(this.lineatt.func);
       }
 
-      if ((btn1.length > 0) && this.fillatt.hasColor())
+      if (btn1 && this.fillatt.hasColor())
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
                     .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
 
-      if (btn2.length > 0)
+      if (btn2)
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
                     .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatHex());
 
-      if (cross.length > 0) {
+      if (cross) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', cross)
                                .style('fill', 'none');
@@ -101532,7 +101542,7 @@ class RH2Painter$2 extends RHistPainter {
 
       let cntr = handle.palette.getContour();
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx<cntr.length)) {
            let pattern_class = 'scatter_' + colindx,
                pattern = defs.select('.' + pattern_class);
@@ -105357,6 +105367,7 @@ exports.isFunc = isFunc$1;
 exports.isNodeJs = isNodeJs;
 exports.isPromise = isPromise;
 exports.isRootCollection = isRootCollection;
+exports.isStr = isStr;
 exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
 exports.makeSVG = makeSVG;

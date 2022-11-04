@@ -1125,7 +1125,7 @@ class HierarchyPainter extends BasePainter {
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if ((img1.length == 0) && isFunc(handle.icon_get))
+         if (!img1 && isFunc(handle.icon_get))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
@@ -1133,9 +1133,9 @@ class HierarchyPainter extends BasePainter {
 
       if ('_icon' in hitem) img1 = hitem._icon;
       if ('_icon2' in hitem) img2 = hitem._icon2;
-      if ((img1.length == 0) && ('_online' in hitem))
+      if (!img1 && ('_online' in hitem))
          hitem._icon = img1 = 'img_globe';
-      if ((img1.length == 0) && isroot)
+      if (!img1 && isroot)
          hitem._icon = img1 = 'img_base';
 
       if (hitem._more || hitem._expand || hitem._player || hitem._can_draw)
@@ -1145,9 +1145,9 @@ class HierarchyPainter extends BasePainter {
       if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf('ROOT.') == 0))
          can_menu = can_click = true;
 
-      if (img2.length == 0) img2 = img1;
-      if (img1.length == 0) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
-      if (img2.length == 0) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
+      if (!img2) img2 = img1;
+      if (!img1) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
+      if (!img2) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
 
       if (arg === 'update') {
          d3prnt.selectAll('*').remove();
