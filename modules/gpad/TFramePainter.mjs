@@ -55,13 +55,14 @@ function addDragHandler(_painter, arg) {
    }
 
    const complete_drag = (newx, newy, newwidth, newheight) => {
-      drag_rect.style('cursor', 'auto');
-
-      if (!painter.draw_g) {
+      if (drag_rect) {
+         drag_rect.style('cursor', 'auto');
          drag_rect.remove();
          drag_rect = null;
-         return false;
       }
+
+      if (!painter.draw_g)
+         return false;
 
       let oldx = arg.x, oldy = arg.y;
 
@@ -74,9 +75,6 @@ function addDragHandler(_painter, arg) {
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
       painter.draw_g.attr('transform', `translate(${newx},${newy})`);
-
-      drag_rect.remove();
-      drag_rect = null;
 
       setPainterTooltipEnabled(painter, true);
 
@@ -113,7 +111,7 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on('start', function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_rect) return;
 
          closeMenu(); // close menu
 
@@ -591,9 +589,12 @@ function injectFrameStyle(draw_g) {
 .jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
 }
 
+/** @summary Set of frame interactivity methods
+  * @private */
 
 const FrameInteractive = {
 
+   /** @summary Adding basic interactivity */
    addBasicInteractivity() {
 
       TooltipHandler.assign(this);
@@ -862,13 +863,12 @@ const FrameInteractive = {
    startLabelsMove() {
       if (this.zoom_rect) return;
 
-      let handle = this.zoom_kind == 2 ? this.x_handle : this.y_handle;
+      let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
       if (!handle || (typeof handle.processLabelsMove != 'function') || !this.zoom_lastpos) return;
 
-      if (handle.processLabelsMove('start', this.zoom_lastpos)) {
+      if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
-      }
    },
 
    /** @summary Process mouse rect zooming */
@@ -979,14 +979,12 @@ const FrameInteractive = {
          case 1:
             this.processFrameClick(pnt);
             break;
-         case 2: {
+         case 2:
             this.getPadPainter()?.selectObjectPainter(this, null, 'xaxis');
             break;
-         }
-         case 3: {
+         case 3:
             this.getPadPainter()?.selectObjectPainter(this, null, 'yaxis');
             break;
-         }
       }
 
    },
