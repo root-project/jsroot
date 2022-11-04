@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc } from '../core.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -492,7 +492,7 @@ class BasePainter {
       this.divid = null;
       delete this._selected_main;
 
-      if (typeof this._hpainter?.removePainter === 'function')
+      if (isFunc(this._hpainter?.removePainter))
          this._hpainter.removePainter(this);
 
       delete this._hitemname;

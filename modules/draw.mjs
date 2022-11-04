@@ -1,5 +1,5 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT,
+import { loadScript, findFunction, internals, isPromise, isNodeJs, isFunc, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph,
@@ -337,7 +337,7 @@ async function draw(dom, obj, opt) {
 
          let main_painter = getElementMainPainter(dom);
 
-         if (typeof main_painter?.performDrop === 'function')
+         if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(obj, '', null, opt);
       }
 
@@ -374,16 +374,16 @@ async function draw(dom, obj, opt) {
       });
    }
 
-   if (typeof handle.func == 'function')
+   if (isFunc(handle.func))
       return performDraw();
 
    let promise;
 
-   if (handle.class && (typeof handle.class == 'function')) {
+   if (isFunc(handle.class)) {
       // class coded as async function which returns class handle
       // simple extract class and access class.draw method
       promise = handle.class().then(cl => { handle.func = cl.draw; });
-   } else if (handle.draw && (typeof handle.draw == 'function')) {
+   } else if (isFunc(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
    } else if (!handle.func || typeof handle.func !== 'string') {
@@ -403,7 +403,7 @@ async function draw(dom, obj, opt) {
       promise = init_promise.then(() => {
          let func = findFunction(handle.func);
 
-         if (!func || (typeof func != 'function'))
+         if (!isFunc(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
          handle.func = func;
@@ -452,7 +452,7 @@ async function redraw(dom, obj, opt) {
       let top = new BasePainter(dom).getTopPainter();
       // base painter do not have this method, if it there use it
       // it can be object painter here or can be specially introduce method to handling redraw!
-      if (typeof top?.redrawObject == 'function') {
+      if (isFunc(top?.redrawObject)) {
          redraw_res = top.redrawObject(obj, opt);
          if (redraw_res) res_painter = top;
       }

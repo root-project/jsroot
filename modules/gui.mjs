@@ -1,4 +1,4 @@
-import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { readSettings, readStyle } from './gui/utils.mjs';
@@ -192,7 +192,7 @@ async function buildGUI(gui_element, gui_kind = '') {
       if (!drawing)
          return;
       let obj = null, func = internals.getCachedObject || findFunction('GetCachedObject');
-      if (typeof func == 'function')
+      if (isFunc(func))
          obj = parse(func());
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get('opt', '');

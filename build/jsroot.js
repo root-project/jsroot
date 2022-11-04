@@ -547,7 +547,7 @@ function clone(src, map, nofunc) {
    for (let k in src) {
       if (typeof src[k] === 'object')
          tgt[k] = clone(src[k], map);
-      else if (!map.nofunc || !isFunc(src[k]))
+      else if (!map.nofunc || !isFunc$1(src[k]))
          tgt[k] = src[k];
    }
 
@@ -721,7 +721,7 @@ function toJSON(obj, spacing) {
    let map = []; // map of stored objects
 
    const copy_value = value => {
-      if (isFunc(value)) return undefined;
+      if (isFunc$1(value)) return undefined;
 
       if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 
@@ -822,22 +822,22 @@ function decodeUrl(url) {
 /** @summary Find function with given name
   * @private */
 function findFunction(name) {
-   if (isFunc(name)) return name;
+   if (isFunc$1(name)) return name;
    if (typeof name !== 'string') return null;
    let names = name.split('.'), elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
       elem = elem[names[n]];
 
-   return isFunc(elem) ? elem : null;
+   return isFunc$1(elem) ? elem : null;
 }
 
 
 /** @summary Assign methods to request
   * @private */
 function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback) {
-   xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : function() {};
-   xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
+   xhr.http_callback = isFunc$1(user_accept_callback) ? user_accept_callback.bind(xhr) : function() {};
+   xhr.error_callback = isFunc$1(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
    if (!kind) kind = 'buf';
 
@@ -853,7 +853,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
    xhr.kind = kind;
 
-   if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
+   if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc$1(xhr.addEventListener))
       xhr.addEventListener('progress', function(oEvent) {
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
@@ -1687,11 +1687,11 @@ function isRootCollection(lst, typename) {
 
 /** @summary Check if argument is a Function
   * @private */
-function isFunc(arg) { return typeof arg === 'function'; }
+function isFunc$1(arg) { return typeof arg === 'function'; }
 
 /** @summary Check if object is a Promise
   * @private */
-function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
+function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc$1(obj.then); }
 
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
@@ -1786,7 +1786,7 @@ createTMultiGraph: createTMultiGraph,
 getMethods: getMethods,
 registerMethods: registerMethods,
 isRootCollection: isRootCollection,
-isFunc: isFunc,
+isFunc: isFunc$1,
 isPromise: isPromise,
 _ensureJSROOT: _ensureJSROOT
 });
@@ -8173,7 +8173,7 @@ class BasePainter {
       this.divid = null;
       delete this._selected_main;
 
-      if (typeof this._hpainter?.removePainter === 'function')
+      if (isFunc$1(this._hpainter?.removePainter))
          this._hpainter.removePainter(this);
 
       delete this._hitemname;
@@ -10893,7 +10893,7 @@ class ObjectPainter extends BasePainter {
    getDrawOpt() {
       if (!this.options) return '';
 
-      if (isFunc(this.options.asString)) {
+      if (isFunc$1(this.options.asString)) {
          let changed = false, pp = this.getPadPainter();
          if (!this.options_store || pp?._interactively_changed) {
             changed  = true;
@@ -11461,11 +11461,11 @@ class ObjectPainter extends BasePainter {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 
-         if (isFunc(canp?.producePadEvent))
+         if (isFunc$1(canp?.producePadEvent))
             canp.producePadEvent('redraw', this.getPadPainter(), this, null, subelem);
 
          // inform server that drawopt changes
-         if (isFunc(canp?.processChanges))
+         if (isFunc$1(canp?.processChanges))
             canp.processChanges(info, this, subelem);
 
          return this;
@@ -11502,7 +11502,7 @@ class ObjectPainter extends BasePainter {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (isFunc(canp?.submitExec))
+      if (isFunc$1(canp?.submitExec))
          canp.submitExec(this, exec, snapid);
    }
 
@@ -11544,9 +11544,9 @@ class ObjectPainter extends BasePainter {
    showObjectStatus(name, title, info, info2) {
       let cp = this.getCanvPainter();
 
-      if (cp && !isFunc(cp.showCanvasStatus)) cp = null;
+      if (cp && !isFunc$1(cp.showCanvasStatus)) cp = null;
 
-      if (!cp && !isFunc(internals.showStatus)) return false;
+      if (!cp && !isFunc$1(internals.showStatus)) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
 
@@ -11625,7 +11625,7 @@ class ObjectPainter extends BasePainter {
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
       if (missing > 0) {
-         if (isFunc(resolveFunc)) {
+         if (isFunc$1(resolveFunc)) {
             draw_g.node().textResolveFunc = resolveFunc;
             draw_g.node().try_optimize = try_optimize;
          }
@@ -11809,7 +11809,7 @@ class ObjectPainter extends BasePainter {
       arg.result_width = arg.box.width;
       arg.result_height = arg.box.height;
 
-      if (isFunc(arg.post_process))
+      if (isFunc$1(arg.post_process))
          arg.post_process(this);
 
       return arg.box.width;
@@ -11975,7 +11975,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} fillmenu_func - function to fill custom context menu for oabject */
    configureUserContextMenu(fillmenu_func) {
 
-      if (!fillmenu_func || !isFunc(fillmenu_func))
+      if (!fillmenu_func || !isFunc$1(fillmenu_func))
          delete this._userContextMenuFunc;
       else
          this._userContextMenuFunc = fillmenu_func;
@@ -12002,12 +12002,12 @@ class ObjectPainter extends BasePainter {
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == 'Show:Editor') {
-            if (isFunc(cp?.activateGed))
+            if (isFunc$1(cp?.activateGed))
                cp.activateGed(execp);
             return;
          }
 
-         if (isFunc(cp?.executeObjectMethod))
+         if (isFunc$1(cp?.executeObjectMethod))
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
          if (execp.executeMenuCommand(item)) return;
@@ -12108,7 +12108,7 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when tooltip is produced
      * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
    configureUserTooltipHandler(handler, tmout) {
-      if (!handler || !isFunc(handler)) {
+      if (!handler || !isFunc$1(handler)) {
          delete this._user_tooltip_handler;
          delete this._user_tooltip_timeout;
       } else {
@@ -12124,7 +12124,7 @@ class ObjectPainter extends BasePainter {
       * @param {function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       let fp = this.getFramePainter();
-      if (isFunc(fp?.configureUserClickHandler))
+      if (isFunc$1(fp?.configureUserClickHandler))
          fp.configureUserClickHandler(handler);
    }
 
@@ -12135,14 +12135,14 @@ class ObjectPainter extends BasePainter {
      * @param {function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       let fp = this.getFramePainter();
-      if (isFunc(fp?.configureUserDblclickHandler))
+      if (isFunc$1(fp?.configureUserDblclickHandler))
          fp.configureUserDblclickHandler(handler);
    }
 
    /** @summary Check if user-defined tooltip function was configured
      * @return {boolean} flag is user tooltip handler was configured */
    hasUserTooltip() {
-      return isFunc(this._user_tooltip_handler);
+      return isFunc$1(this._user_tooltip_handler);
    }
 
    /** @summary Provide tooltips data to user-defined function
@@ -12190,7 +12190,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async drawInSpecialArea(obj, opt) {
       let canp = this.getCanvPainter();
-      if (this._special_draw_area && isFunc(canp?.drawProjection))
+      if (this._special_draw_area && isFunc$1(canp?.drawProjection))
          return canp.drawProjection(this._special_draw_area, obj, opt);
 
       return false;
@@ -12210,12 +12210,12 @@ class ObjectPainter extends BasePainter {
       let pos = pointer(evnt, layer.node()),
           pnt = { touch: false, x: pos[0], y: pos[1] };
 
-      if (isFunc(this.extractToolTip))
+      if (isFunc$1(this.extractToolTip))
          return this.extractToolTip(pnt);
 
       pnt.disabled = true;
 
-      let res = isFunc(this.processTooltipEvent) ? this.processTooltipEvent(pnt) : null;
+      let res = isFunc$1(this.processTooltipEvent) ? this.processTooltipEvent(pnt) : null;
 
       return res?.user_info || res;
    }
@@ -12336,7 +12336,7 @@ function resize(dom, arg) {
       arg = null;
    let done = false;
    new ObjectPainter(dom).forEachPainter(painter => {
-      if (!done && isFunc(painter.checkResize))
+      if (!done && isFunc$1(painter.checkResize))
          done = painter.checkResize(arg);
    });
    return done;
@@ -40737,15 +40737,15 @@ function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (isNodeJs()) {
-      let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null,
+      let ctxt = isFunc$1(renderer.getContext) ? renderer.getContext() : null,
           ext = ctxt?.getExtension('STACKGL_destroy_context');
       if (ext) ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (browser$1.isChrome && (typeof renderer.forceContextLoss == 'function'))
+      if (browser$1.isChrome && isFunc$1(renderer.forceContextLoss))
          renderer.forceContextLoss();
 
-      if (typeof renderer.dispose == 'function')
+      if (isFunc$1(renderer.dispose))
          renderer.dispose();
    }
 }
@@ -40957,7 +40957,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    let control = null,
        enable_zoom = settings.Zooming && settings.ZoomMouse,
-       enable_select = (typeof painter.processMouseClick == 'function');
+       enable_select = isFunc$1(painter.processMouseClick);
 
    function control_mousedown(evnt) {
       if (!control) return;
@@ -41051,7 +41051,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       evnt.stopPropagation();
       evnt.stopImmediatePropagation();
 
-      if (typeof control.painter?.analyzeMouseWheelEvent == 'function') {
+      if (isFunc$1(control.painter?.analyzeMouseWheelEvent)) {
          let kind = intersect.object.zoom,
              position = intersect.point[kind],
              item = { name: kind, ignore: false };
@@ -41155,7 +41155,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       this.raycaster.set(origin, direction);
       let intersects = this.raycaster.intersectObjects(this.scene.children, true);
       // painter may want to filter intersects
-      if (typeof this.painter.filterIntersects == 'function')
+      if (isFunc$1(this.painter.filterIntersects))
          intersects = this.painter.filterIntersects(intersects);
       return intersects;
    };
@@ -41173,7 +41173,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       let intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
       // painter may want to filter intersects
-      if (typeof this.painter.filterIntersects == 'function')
+      if (isFunc$1(this.painter.filterIntersects))
          intersects = this.painter.filterIntersects(intersects);
 
       return intersects;
@@ -41218,7 +41218,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // then check if double-click handler assigned
       let fp = this.painter ? this.painter.getFramePainter() : null;
-      if (typeof fp?._dblclick_handler == 'function') {
+      if (isFunc$1(fp?._dblclick_handler)) {
          let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
             fp._dblclick_handler(info);
@@ -41375,7 +41375,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          delete this.tmout_handle;
       }
       this.tooltip.hide();
-      if (typeof this.processMouseLeave === 'function')
+      if (isFunc$1(this.processMouseLeave))
          this.processMouseLeave();
       if (this.cursor_changed) {
          document.body.style.cursor = 'auto';
@@ -41397,7 +41397,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (kind == 1) {
          let fp = this.painter ? this.painter.getFramePainter() : null;
-         if (typeof fp?._click_handler == 'function') {
+         if (isFunc$1(fp?._click_handler)) {
             let info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
                fp._click_handler(info);
@@ -41407,7 +41407,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // method assigned in the Eve7 and used for object selection
-      if ((kind == 2) && (typeof this.processSingleClick == 'function')) {
+      if ((kind == 2) && isFunc$1(this.processSingleClick)) {
          let intersects = this.getMouseIntersects(mouse_pos);
          this.processSingleClick(intersects);
       }
@@ -41423,7 +41423,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       let kind = 0, fp = this.painter?.getFramePainter();
-      if (typeof fp?._click_handler == 'function')
+      if (isFunc$1(fp?._click_handler))
          kind = 1; // user click handler
       else if (this.processSingleClick && this.painter?.options?.mouse_click)
          kind = 2;  // eve7 click handler
@@ -66248,7 +66248,7 @@ function addClassMethods(clname, streamer) {
 
    if (methods)
       for (let key in methods)
-         if ((typeof methods[key] === 'function') || (key.indexOf('_') == 0))
+         if (isFunc$1(methods[key]) || (key.indexOf('_') == 0))
             streamer.push({
                name: key,
                method: methods[key],
@@ -67758,7 +67758,7 @@ class TFile {
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
 
-            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+            if (progress_callback && isFunc$1(xhr.addEventListener)) {
                let sum1 = 0, sum2 = 0, sum_total = 0;
                for (let n = 1; n < place.length; n += 2) {
                   sum_total += place[n];
@@ -68315,7 +68315,7 @@ class TFile {
          return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
-      if (typeof custom === 'function') {
+      if (isFunc$1(custom)) {
          streamer = [{ typename: clname, func: custom }];
          return addClassMethods(clname, streamer);
       }
@@ -70172,7 +70172,7 @@ class TDrawSelector extends TSelector {
 
       this.ShowProgress();
 
-      if (typeof this.result_callback == 'function')
+      if (isFunc(this.result_callback))
          this.result_callback(this.hist);
    }
 
@@ -70925,7 +70925,7 @@ async function treeProcess(tree, selector, args) {
       if (max < handle.process_max) handle.process_max = max;
    }
 
-   if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
+   if (isFunc(selector.ProcessArrays) && handle.simple_read) {
       // this is indication that selector can process arrays of values
       // only strictly-matched tree structure can be used for that
 
@@ -71496,7 +71496,7 @@ function treeHierarchy(node, obj) {
 
             if (methods && (bobj.fBranches.arr.length > 0))
                for (let key in methods) {
-                  if (typeof methods[key] !== 'function') continue;
+                  if (!isFunc(methods[key])) continue;
                   let s = methods[key].toString();
                   if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
                      bnode._childs.push({
@@ -71880,7 +71880,7 @@ async function draw(dom, obj, opt) {
 
          let main_painter = getElementMainPainter(dom);
 
-         if (typeof main_painter?.performDrop === 'function')
+         if (isFunc$1(main_painter?.performDrop))
             return main_painter.performDrop(obj, '', null, opt);
       }
 
@@ -71917,16 +71917,16 @@ async function draw(dom, obj, opt) {
       });
    }
 
-   if (typeof handle.func == 'function')
+   if (isFunc$1(handle.func))
       return performDraw();
 
    let promise;
 
-   if (handle.class && (typeof handle.class == 'function')) {
+   if (isFunc$1(handle.class)) {
       // class coded as async function which returns class handle
       // simple extract class and access class.draw method
       promise = handle.class().then(cl => { handle.func = cl.draw; });
-   } else if (handle.draw && (typeof handle.draw == 'function')) {
+   } else if (isFunc$1(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
    } else if (!handle.func || typeof handle.func !== 'string') {
@@ -71946,7 +71946,7 @@ async function draw(dom, obj, opt) {
       promise = init_promise.then(() => {
          let func = findFunction(handle.func);
 
-         if (!func || (typeof func != 'function'))
+         if (!isFunc$1(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
          handle.func = func;
@@ -71995,7 +71995,7 @@ async function redraw(dom, obj, opt) {
       let top = new BasePainter(dom).getTopPainter();
       // base painter do not have this method, if it there use it
       // it can be object painter here or can be specially introduce method to handling redraw!
-      if (typeof top?.redrawObject == 'function') {
+      if (isFunc$1(top?.redrawObject)) {
          redraw_res = top.redrawObject(obj, opt);
          if (redraw_res) res_painter = top;
       }
@@ -76074,7 +76074,7 @@ async function buildGUI(gui_element, gui_kind = '') {
       if (!drawing)
          return;
       let obj = null, func = internals.getCachedObject || findFunction('GetCachedObject');
-      if (typeof func == 'function')
+      if (isFunc$1(func))
          obj = parse(func());
       if (obj) hpainter._cached_draw_object = obj;
       let opt = d.get('opt', '');
@@ -92288,7 +92288,7 @@ class RObjectPainter extends ObjectPainter {
     * @param method is method of painter object which will be called when getting reply */
    v7SubmitRequest(kind, req, method) {
       let canp = this.getCanvPainter();
-      if (typeof canp?.submitDrawableRequest != 'function') return null;
+      if (!isFunc(canp?.submitDrawableRequest)) return null;
 
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
@@ -96304,9 +96304,9 @@ class LongPollSocket {
    /** @summary Process request */
    processRequest(res, _offset) {
       if (res === null) {
-         if (typeof this.onerror === 'function')
+         if (isFunc$1(this.onerror))
             this.onerror('receive data with connid ' + (this.connid || '---'));
-         if ((_offset == 'error') && (typeof this.onclose === 'function'))
+         if ((_offset == 'error') && isFunc$1(this.onclose))
             this.onclose('force_close');
          this.connid = null;
          return;
@@ -96319,7 +96319,7 @@ class LongPollSocket {
       if (this.connid === 'connect') {
          if (!res) {
             this.connid = null;
-            if (typeof this.onerror === 'function')
+            if (isFunc$1(this.onerror))
                this.onerror('connection rejected');
             return;
          }
@@ -96327,13 +96327,14 @@ class LongPollSocket {
          this.connid = parseInt(res);
          dummy_tmout = 100; // when establishing connection, wait a bit longer to submit dummy package
          console.log(`Get new longpoll connection with id ${this.connid}`);
-         if (typeof this.onopen == 'function') this.onopen();
+         if (isFunc$1(this.onopen))
+            this.onopen();
       } else if (this.connid === 'close') {
-         if (typeof this.onclose == 'function')
+         if (isFunc$1(this.onclose))
             this.onclose();
          return;
       } else {
-         if ((typeof this.onmessage === 'function') && res)
+         if (isFunc$1(this.onmessage) && res)
             this.onmessage({ data: res, offset: _offset });
       }
 
@@ -96371,7 +96372,7 @@ class FileDumpSocket {
    getProtocol(res) {
       if (!res) return;
       this.protocol = JSON.parse(res);
-      if (typeof this.onopen == 'function') this.onopen();
+      if (isFunc$1(this.onopen)) this.onopen();
       this.nextOperation();
    }
 
@@ -96455,7 +96456,7 @@ class WebWindowHandle {
    /** @summary Invoke method in the receiver.
     * @private */
    invokeReceiver(brdcst, method, arg, arg2) {
-      if (this.receiver && (typeof this.receiver[method] == 'function'))
+      if (this.receiver && isFunc$1(this.receiver[method]))
          this.receiver[method](this, arg, arg2);
 
       if (brdcst && this.channels) {
@@ -105355,7 +105356,7 @@ exports.injectCode = injectCode;
 exports.internals = internals;
 exports.isArrayProto = isArrayProto;
 exports.isBatchMode = isBatchMode;
-exports.isFunc = isFunc;
+exports.isFunc = isFunc$1;
 exports.isNodeJs = isNodeJs;
 exports.isPromise = isPromise;
 exports.isRootCollection = isRootCollection;

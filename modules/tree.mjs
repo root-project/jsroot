@@ -1,4 +1,4 @@
-import { BIT, isArrayProto, isRootCollection, getMethods,
+import { BIT, isArrayProto, isRootCollection, isFunc, getMethods,
          create, createHistogram, createTGraph,
          clTObject, clTObjString, clTHashList, clTPolyMarker3D, clTH1, clTH2, clTH3 } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
@@ -1430,7 +1430,7 @@ class TDrawSelector extends TSelector {
 
       this.ShowProgress();
 
-      if (typeof this.result_callback == 'function')
+      if (isFunc(this.result_callback))
          this.result_callback(this.hist);
    }
 
@@ -2183,7 +2183,7 @@ async function treeProcess(tree, selector, args) {
       if (max < handle.process_max) handle.process_max = max;
    }
 
-   if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
+   if (isFunc(selector.ProcessArrays) && handle.simple_read) {
       // this is indication that selector can process arrays of values
       // only strictly-matched tree structure can be used for that
 
@@ -2754,7 +2754,7 @@ function treeHierarchy(node, obj) {
 
             if (methods && (bobj.fBranches.arr.length > 0))
                for (let key in methods) {
-                  if (typeof methods[key] !== 'function') continue;
+                  if (!isFunc(methods[key])) continue;
                   let s = methods[key].toString();
                   if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
                      bnode._childs.push({

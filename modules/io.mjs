@@ -1,5 +1,5 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
-         create, getMethods, addMethods, isNodeJs,
+         create, getMethods, addMethods, isNodeJs, isFunc,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
@@ -1294,7 +1294,7 @@ function addClassMethods(clname, streamer) {
 
    if (methods)
       for (let key in methods)
-         if ((typeof methods[key] === 'function') || (key.indexOf('_') == 0))
+         if (isFunc(methods[key]) || (key.indexOf('_') == 0))
             streamer.push({
                name: key,
                method: methods[key],
@@ -2804,7 +2804,7 @@ class TFile {
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
 
-            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+            if (progress_callback && isFunc(xhr.addEventListener)) {
                let sum1 = 0, sum2 = 0, sum_total = 0;
                for (let n = 1; n < place.length; n += 2) {
                   sum_total += place[n];
@@ -3361,7 +3361,7 @@ class TFile {
          return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
-      if (typeof custom === 'function') {
+      if (isFunc(custom)) {
          streamer = [{ typename: clname, func: custom }];
          return addClassMethods(clname, streamer);
       }
