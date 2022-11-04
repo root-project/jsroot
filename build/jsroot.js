@@ -11,7 +11,7 @@ let version_id = "7.2.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "3/11/2022";
+let version_date = "4/11/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -53935,7 +53935,7 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on("start", function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_rect) return;
 
          closeMenu(); // close menu
 
@@ -75985,8 +75985,8 @@ class HierarchyPainter extends BasePainter {
     * @private */
    dropItem(itemname, divid, opt) {
 
-      if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
-      if (opt===undefined) opt = "";
+      if ((opt === undefined) || (typeof opt === 'function'))
+         opt = "";
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
