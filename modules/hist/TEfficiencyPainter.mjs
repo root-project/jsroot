@@ -1,4 +1,4 @@
-import { BIT, create, createHistogram, clTH1, clTH2 } from '../core.mjs';
+import { BIT, create, createHistogram, isStr, clTH1, clTH2 } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TGraphPainter, clTGraphAsymmErrors } from '../hist2d/TGraphPainter.mjs';
 import { TF1Painter } from '../hist/TF1Painter.mjs';
@@ -179,7 +179,7 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff || !eff.fTotalHistogram)
          return null;
 
-      if (!opt || (typeof opt != 'string')) opt = '';
+      if (!opt || !isStr(opt)) opt = '';
       opt = opt.toLowerCase();
 
       let ndim = 0;

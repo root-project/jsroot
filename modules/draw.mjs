@@ -1,5 +1,5 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, findFunction, internals, isPromise, isNodeJs, isFunc, _ensureJSROOT,
+import { loadScript, findFunction, internals, isPromise, isNodeJs, isFunc, isStr, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph,
@@ -179,7 +179,7 @@ function addDrawFunc(args) {
   * @private */
 function getDrawHandle(kind, selector) {
 
-   if (typeof kind != 'string') return null;
+   if (!isStr(kind)) return null;
    if (selector === '') selector = null;
 
    let first = null;
@@ -190,7 +190,7 @@ function getDrawHandle(kind, selector) {
    let search = (kind.indexOf('ROOT.') == 0) ? kind.slice(5) : 'kind:' + kind, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
-      if (typeof h.name == 'string') {
+      if (isStr(h.name)) {
          if (h.name != search) continue;
       } else {
          if (!search.match(h.name)) continue;
@@ -211,7 +211,7 @@ function getDrawHandle(kind, selector) {
          // store found handle in cache, can reuse later
          if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
          return h;
-      } else if (typeof selector == 'string') {
+      } else if (isStr(selector)) {
          if (!first) first = h;
          // if drawoption specified, check it present in the list
 
@@ -235,7 +235,7 @@ function getDrawHandle(kind, selector) {
 /** @summary Returns true if handle can be potentially drawn
   * @private */
 function canDrawHandle(h) {
-   if (typeof h == 'string')
+   if (isStr(h))
       h = getDrawHandle(h);
    if (!h || (typeof h !== 'object')) return false;
    return h.func || h.class || h.draw || h.draw_field ? true : false;
@@ -245,9 +245,9 @@ function canDrawHandle(h) {
   * @private */
 function getDrawSettings(kind, selector) {
    let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
-   if (typeof kind != 'string') return res;
+   if (!isStr(kind)) return res;
    let isany = false, noinspect = false, canexpand = false;
-   if (typeof selector !== 'string') selector = '';
+   if (!isStr(selector)) selector = '';
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
       let h = getDrawHandle(kind, cnt);
@@ -386,7 +386,7 @@ async function draw(dom, obj, opt) {
    } else if (isFunc(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
-   } else if (!handle.func || typeof handle.func !== 'string') {
+   } else if (!handle.func || !isStr(handle.func)) {
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
    } else if (!handle.prereq && !handle.script) {
       return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));

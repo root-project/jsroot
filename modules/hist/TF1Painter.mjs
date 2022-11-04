@@ -1,4 +1,4 @@
-import { create, gStyle, clTF2 } from '../core.mjs';
+import { create, gStyle, isStr, clTF2 } from '../core.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -11,7 +11,7 @@ function proivdeEvalPar(obj) {
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
    if (_func === 'gaus') _func = 'gaus(0)';
-   if (obj.fFormula && typeof obj.fFormula.fFormula == 'string') {
+   if (obj.fFormula && isStr(obj.fFormula.fFormula)) {
      if (obj.fFormula.fFormula.indexOf('[](double*x,double*p)') == 0) {
         isformula = true; pprefix = 'p[';
         _func = obj.fFormula.fFormula.slice(21);

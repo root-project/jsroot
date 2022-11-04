@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, create, isBatchMode, isFunc,
+import { gStyle, browser, settings, clone, create, isBatchMode, isFunc, isStr,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -66,7 +66,7 @@ class TPavePainter extends ObjectPainter {
          } else if (opt.indexOf('NDC') >= 0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
-         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == 'string') && (arg.indexOf('postpone') >= 0)) {
+         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && isStr(arg) && (arg.indexOf('postpone') >= 0)) {
             // special case when pad not yet initialized
             pt.fInit = 0; // do not init until axes drawn
             pt.fX1NDC = pt.fY1NDC = 0.99;
@@ -637,9 +637,9 @@ class TPavePainter extends ObjectPainter {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
-          can_move = (typeof arg == 'string') && (arg.indexOf('can_move') >= 0),
-          postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone') >= 0),
-          cjust = (typeof arg == 'string') && (arg.indexOf('cjust') >= 0),
+          can_move = isStr(arg) && (arg.indexOf('can_move') >= 0),
+          postpone_draw = isStr(arg) && (arg.indexOf('postpone') >= 0),
+          cjust = isStr(arg) && (arg.indexOf('cjust') >= 0),
           pp = this.getPadPainter(),
           width = pp.getPadWidth(),
           height = pp.getPadHeight(),

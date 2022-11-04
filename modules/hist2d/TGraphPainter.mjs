@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc,
+import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc, isStr,
          clTPaveStats, clTCutG, clTF1, clTF2 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
@@ -68,7 +68,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Decode options */
    decodeOptions(opt, first_time) {
 
-      if ((typeof opt == 'string') && (opt.indexOf('same ') == 0))
+      if (isStr(opt) && (opt.indexOf('same ') == 0))
          opt = opt.slice(5);
 
       let graph = this.getObject(),

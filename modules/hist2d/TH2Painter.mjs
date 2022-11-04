@@ -1,4 +1,4 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, clTMultiGraph, clTF2 } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr, clTMultiGraph, clTF2 } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -34,7 +34,7 @@ class TH2Painter extends THistPainter {
 
       if ((kind == 'Projections') || (kind == 'Off')) kind = '';
 
-      if ((typeof kind == 'string') && (kind.length>1)) {
+      if (isStr(kind) && (kind.length > 1)) {
           width = parseInt(kind.slice(1));
           kind = kind[0];
       }

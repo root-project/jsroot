@@ -1,4 +1,4 @@
-import { gStyle, internals, isFunc, createTPolyLine } from '../core.mjs';
+import { gStyle, internals, isFunc, isStr, createTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { floatToString, TRandom } from '../base/BasePainter.mjs';
@@ -35,7 +35,7 @@ class RH2Painter extends RHistPainter {
 
       if (kind == 'Projections') kind = '';
 
-      if ((typeof kind == 'string') && (kind.length>1)) {
+      if (isStr(kind) && (kind.length > 1)) {
           width = parseInt(kind.slice(1));
           kind = kind[0];
       }
