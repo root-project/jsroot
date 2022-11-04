@@ -427,7 +427,7 @@ async function redraw(dom, obj, opt) {
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
       handle = getDrawHandle('ROOT.' + obj._typename);
-   if (handle && handle.draw_field && obj[handle.draw_field])
+   if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
    if (can_painter) {

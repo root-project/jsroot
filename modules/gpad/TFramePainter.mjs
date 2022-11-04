@@ -2384,7 +2384,7 @@ class TFramePainter extends ObjectPainter {
          if (this.swap_xy && axis === 'x') axis = 'y'; else
          if (this.swap_xy && axis === 'y') axis = 'x';
          let handle = this[axis + '_handle'];
-         if (handle && (handle.kind === 'labels')) return;
+         if (handle?.kind === 'labels') return;
       }
 
       if ((value == 'toggle') || (value === undefined))
@@ -2755,7 +2755,10 @@ class TFramePainter extends ObjectPainter {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = clTAxis,
           m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name == 'x') ? 0 : 1;
 
-      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ('TAxis object for ' + axis_name); }
+      if (taxis) {
+         hint_name = taxis.fName;
+         hint_title = taxis.fTitle || `TAxis object for ${axis_name}`;
+      }
       if (this.swap_xy) id = 1-id;
 
       let axis_value = this.revertAxis(axis_name, m[id]);

@@ -251,7 +251,7 @@ function registerForResize(handle, delay) {
       document.body.style.cursor = 'wait';
       if (typeof handle == 'function')
          handle();
-      else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
+      else if (typeof handle?.checkResize == 'function') {
          handle.checkResize();
       } else {
          let node = new BasePainter(handle).selectDom();

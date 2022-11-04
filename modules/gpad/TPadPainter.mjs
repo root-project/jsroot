@@ -45,8 +45,8 @@ function toggleButtonsVisibility(handler, action) {
    }
 
    group.selectAll('svg').each(function() {
-      if (this===btn.node()) return;
-      d3_select(this).style('display', is_visible ? '' : 'none');
+      if (this !== btn.node())
+         d3_select(this).style('display', is_visible ? '' : 'none');
    });
 }
 
@@ -110,11 +110,12 @@ let PadButtonsHandler = {
              .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
 
          for (let k = 0; k < this._buttons.length; ++k) {
-            let item = this._buttons[k],
-                 btn = item.btn;
+            let item = this._buttons[k], btn = item.btn;
 
-            if (typeof btn == 'string') btn = ToolbarIcons[btn];
-            if (!btn) btn = ToolbarIcons.circle;
+            if (typeof btn == 'string')
+               btn = ToolbarIcons[btn];
+            if (!btn)
+               btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
                         item.tooltip + (iscan ? '' : (' on pad ' + this.this_pad_name)) + (item.keyname ? ' (keyshortcut ' + item.keyname + ')' : ''));
@@ -125,7 +126,7 @@ let PadButtonsHandler = {
                svg.attr('x', x).attr('y', y);
 
             svg.attr('name', item.funcname)
-               .style('display', (ctrl.property('buttons_state') ? '' : 'none'))
+               .style('display', ctrl.property('buttons_state') ? '' : 'none')
                .on('mouseenter', () => toggleButtonsVisibility(this, 'enterbtn'))
                .on('mouseleave', () => toggleButtonsVisibility(this, 'leavebtn'));
 
@@ -343,18 +344,18 @@ class TPadPainter extends ObjectPainter {
    /** @summary Generate pad events, normally handled by GED
     * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   producePadEvent(_what, _padpainter, _painter, _position, _place) {
+   producePadEvent(what, padpainter, painter, position, place) {
 
-      if ((_what == 'select') && (typeof this.selectActivePad == 'function'))
-         this.selectActivePad(_padpainter, _painter, _position);
+      if ((what == 'select') && (typeof this.selectActivePad == 'function'))
+         this.selectActivePad(padpainter, painter, position);
 
-      if (this.pad_events_receiver)
-         this.pad_events_receiver({ what: _what, padpainter:  _padpainter, painter: _painter, position: _position, place: _place });
+      if (typeof this.pad_events_receiver == 'function')
+         this.pad_events_receiver({ what, padpainter, painter, position, place });
    }
 
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(_painter, pos, _place) {
-      let istoppad = (this.iscan || !this.has_canvas),
+      let istoppad = this.iscan || !this.has_canvas,
           canp = istoppad ? this : this.getCanvPainter();
 
       if (_painter === undefined) _painter = this;
@@ -479,23 +480,13 @@ class TPadPainter extends ObjectPainter {
          svg.style('display', null);
       }
 
-      if (this._fixed_size) {
-         svg.attr('x', 0)
-            .attr('y', 0)
-            .attr('width', rect.width)
-            .attr('height', rect.height)
-            .style('position', 'absolute');
-      } else {
-        svg.attr('x', 0)
-           .attr('y', 0)
-           .style('width', '100%')
-           .style('height', '100%')
-           .style('position', 'absolute')
-           .style('left', 0)
-           .style('top', 0)
-           .style('right', 0)
-           .style('bottom', 0);
-      }
+      svg.attr('x', 0).attr('y', 0).style('position', 'absolute');
+
+      if (this._fixed_size)
+         svg.attr('width', rect.width).attr('height', rect.height);
+      else
+        svg.style('width', '100%').style('height', '100%')
+           .style('left', 0).style('top', 0).style('right', 0).style('bottom', 0);
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
@@ -984,7 +975,7 @@ class TPadPainter extends ObjectPainter {
    fillContextMenu(menu) {
 
       if (this.pad)
-         menu.add('header:' + this.pad._typename + '::' + this.pad.fName);
+         menu.add(`header:${this.pad._typename}::${this.pad.fName}`);
       else
          menu.add('header:Canvas');
 
@@ -1593,7 +1584,7 @@ class TPadPainter extends ObjectPainter {
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky,
                   mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
                   mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
-                  zx1:0, zx2:0, zy1:0, zy2:0, zz1:0, zz2:0 };
+                  zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0 };
 
          if (this.iscan) elem.bits = this.getStatusBits();
 
