@@ -1,4 +1,4 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, clTMultiGraph, clTF2 } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, clTMultiGraph, clTF2 } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -1170,7 +1170,7 @@ class TH2Painter extends THistPainter {
           rotate = -1*this.options.TextAngle,
           draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
           text_size = 20, text_offset = 0,
-          profile2d = this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function'),
+          profile2d = this.matchObjectType('TProfile2D') && isFunc(histo.getBinEntries),
           show_err = (this.options.TextKind == 'E'),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 

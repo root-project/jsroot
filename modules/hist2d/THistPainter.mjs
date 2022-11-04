@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, constants, internals, create,
+import { gStyle, BIT, settings, constants, internals, create, isFunc,
          clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1 } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -776,7 +776,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (typeof fp?.create3DScene === 'function')
+      if (isFunc(fp?.create3DScene))
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -840,7 +840,7 @@ class THistPainter extends ObjectPainter {
    /** @summary copy draw options to all other histograms in the pad */
    copyOptionsToOthers() {
       this.forEachPainter(painter => {
-         if ((painter !== this) && (typeof painter.copyOptionsFrom == 'function'))
+         if ((painter !== this) && isFunc(painter.copyOptionsFrom))
             painter.copyOptionsFrom(this);
       }, 'objects');
    }
@@ -892,7 +892,7 @@ class THistPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
@@ -1259,7 +1259,7 @@ class THistPainter extends ObjectPainter {
           pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      if (!pt && typeof pp?.findInPrimitives == 'function')
+      if (!pt && isFunc(pp?.findInPrimitives))
          pt = pp.findInPrimitives('title', clTPaveText);
 
       if (pt) {
@@ -1657,7 +1657,7 @@ class THistPainter extends ObjectPainter {
             menu.add('endsub:');
          }
 
-         if (typeof this.fillHistContextMenu == 'function')
+         if (isFunc(this.fillHistContextMenu))
             this.fillHistContextMenu(menu);
       }
 
@@ -1678,7 +1678,7 @@ class THistPainter extends ObjectPainter {
             if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
-         if (typeof fp?.render3D == 'function') {
+         if (isFunc(fp?.render3D)) {
             menu.addchk(main.options.FrontBox, 'Front box', function() {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -1701,7 +1701,7 @@ class THistPainter extends ObjectPainter {
             }
          }
 
-         if (typeof main.control?.reset === 'function')
+         if (isFunc(main.control?.reset))
             menu.add('Reset camera', function() {
                main.control.reset();
             });
@@ -1884,7 +1884,7 @@ class THistPainter extends ObjectPainter {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
          let pp = this.getPadPainter();
-         if (typeof pp?.getCustomPalette == 'function')
+         if (isFunc(pp?.getCustomPalette))
             this.fPalette = pp.getCustomPalette();
       }
       if (!this.fPalette)

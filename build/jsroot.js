@@ -58532,7 +58532,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (typeof fp?.create3DScene === 'function')
+      if (isFunc$1(fp?.create3DScene))
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -58596,7 +58596,7 @@ class THistPainter extends ObjectPainter {
    /** @summary copy draw options to all other histograms in the pad */
    copyOptionsToOthers() {
       this.forEachPainter(painter => {
-         if ((painter !== this) && (typeof painter.copyOptionsFrom == 'function'))
+         if ((painter !== this) && isFunc$1(painter.copyOptionsFrom))
             painter.copyOptionsFrom(this);
       }, 'objects');
    }
@@ -58648,7 +58648,7 @@ class THistPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc$1(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
@@ -59015,7 +59015,7 @@ class THistPainter extends ObjectPainter {
           pt = tpainter?.getObject(),
           draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      if (!pt && typeof pp?.findInPrimitives == 'function')
+      if (!pt && isFunc$1(pp?.findInPrimitives))
          pt = pp.findInPrimitives('title', clTPaveText);
 
       if (pt) {
@@ -59413,7 +59413,7 @@ class THistPainter extends ObjectPainter {
             menu.add('endsub:');
          }
 
-         if (typeof this.fillHistContextMenu == 'function')
+         if (isFunc$1(this.fillHistContextMenu))
             this.fillHistContextMenu(menu);
       }
 
@@ -59434,7 +59434,7 @@ class THistPainter extends ObjectPainter {
             if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
-         if (typeof fp?.render3D == 'function') {
+         if (isFunc$1(fp?.render3D)) {
             menu.addchk(main.options.FrontBox, 'Front box', function() {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -59457,7 +59457,7 @@ class THistPainter extends ObjectPainter {
             }
          }
 
-         if (typeof main.control?.reset === 'function')
+         if (isFunc$1(main.control?.reset))
             menu.add('Reset camera', function() {
                main.control.reset();
             });
@@ -59640,7 +59640,7 @@ class THistPainter extends ObjectPainter {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
          let pp = this.getPadPainter();
-         if (typeof pp?.getCustomPalette == 'function')
+         if (isFunc$1(pp?.getCustomPalette))
             this.fPalette = pp.getCustomPalette();
       }
       if (!this.fPalette)
@@ -62424,7 +62424,7 @@ class TH2Painter$2 extends THistPainter {
           rotate = -1*this.options.TextAngle,
           draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
           text_size = 20, text_offset = 0,
-          profile2d = this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function'),
+          profile2d = this.matchObjectType('TProfile2D') && isFunc$1(histo.getBinEntries),
           show_err = (this.options.TextKind == 'E'),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
@@ -88126,7 +88126,7 @@ class TGraphPainter$1 extends ObjectPainter {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       let selbins = null;
-      if (typeof filter_func == 'function') {
+      if (isFunc$1(filter_func)) {
          for (let n = 0; n < this.bins.length; ++n) {
             if (filter_func(this.bins[n],n)) {
                if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
@@ -88611,7 +88611,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc$1(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
@@ -90264,7 +90264,7 @@ class TMultiGraphPainter$2 extends ObjectPainter {
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc$1(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor(graphs.arr.length);
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;

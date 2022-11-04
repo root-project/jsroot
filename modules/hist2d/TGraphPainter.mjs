@@ -1,4 +1,5 @@
-import { gStyle, BIT, settings, create, createHistogram, isBatchMode, clTPaveStats, clTCutG, clTF1, clTF2 } from '../core.mjs';
+import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc,
+         clTPaveStats, clTCutG, clTF1, clTF2 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -349,7 +350,7 @@ class TGraphPainter extends ObjectPainter {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       let selbins = null;
-      if (typeof filter_func == 'function') {
+      if (isFunc(filter_func)) {
          for (let n = 0; n < this.bins.length; ++n) {
             if (filter_func(this.bins[n],n)) {
                if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
@@ -834,7 +835,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
