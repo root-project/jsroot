@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isNodeJs, isFunc, source_dir, atob_func, btoa_func } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isNodeJs, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -33,7 +33,7 @@ function showProgress(msg, tmout) {
 
    box.property('with_timeout', false);
 
-   if (typeof msg === 'string') {
+   if (isStr(msg)) {
       box.select('p').html(msg);
    } else {
       box.html('');
@@ -129,7 +129,7 @@ async function loadOpenui5(args) {
        openui5_dflt = 'https://openui5.hana.ondemand.com/1.98.0/',
        openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
-   if (typeof args.openui5src == 'string') {
+   if (isStr(args.openui5src)) {
       switch (args.openui5src) {
          case 'nodefault': openui5_dflt = ''; break;
          case 'default': openui5_sources.push(openui5_dflt); openui5_dflt = ''; break;
@@ -511,7 +511,7 @@ function setSaveFile(func) {
   * @private */
 function getColorExec(col, method) {
    let id = -1, arr = getRootColors();
-   if (typeof col == 'string') {
+   if (isStr(col)) {
       if (!col || (col == 'none')) {
          id = 0;
       } else {

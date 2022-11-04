@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode, isFunc, browser, clTAxis } from '../core.mjs';
+import { gStyle, settings, isBatchMode, isFunc, isStr, browser, clTAxis } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
@@ -2702,7 +2702,7 @@ class TFramePainter extends ObjectPainter {
          });
 
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
+      if (isStr(dox)) { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,

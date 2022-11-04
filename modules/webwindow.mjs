@@ -1,5 +1,5 @@
 import { httpRequest, createHttpRequest, loadScript, decodeUrl,
-         browser, setBatchMode, isBatchMode, isFunc, btoa_func } from './core.mjs';
+         browser, setBatchMode, isBatchMode, isFunc, isStr, btoa_func } from './core.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';
 
 
@@ -101,7 +101,7 @@ class LongPollSocket {
             this.handle.processRequest(res, 0);
          } else {
             // text reply
-            if (res && typeof res !== 'string') {
+            if (res && !isStr(res)) {
                let str = '', u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
@@ -250,7 +250,7 @@ class WebWindowHandle {
      * @param {string} [field] - if specified and user args is object, returns correspondent object member
      * @return user arguments object */
    getUserArgs(field) {
-      if (field && (typeof field == 'string'))
+      if (field && isStr(field))
          return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
 
       return this.user_args;
@@ -412,10 +412,10 @@ class WebWindowHandle {
 
       if (Array.isArray(msg)) {
          for (let k = 0; k < msg.length; ++k)
-            this.provideData(chid, (typeof msg[k] == 'string') ? msg[k] : JSON.stringify(msg[k]), -1);
+            this.provideData(chid, isStr(msg[k]) ? msg[k] : JSON.stringify(msg[k]), -1);
          this.processQueue();
       } else if (msg) {
-         this.provideData(chid, typeof msg == 'string' ? msg : JSON.stringify(msg));
+         this.provideData(chid, isStr(msg) ? msg : JSON.stringify(msg));
       }
    }
 
@@ -563,7 +563,7 @@ class WebWindowHandle {
                return;
             }
 
-            if (typeof msg != 'string')
+            if (!isStr(msg))
                return console.log(`unsupported message kind: ${typeof msg}`);
 
             let i1 = msg.indexOf(':'),

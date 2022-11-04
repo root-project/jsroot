@@ -1,4 +1,4 @@
-import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode } from '../core.mjs';
+import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode, isStr } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -316,7 +316,7 @@ class RCanvasPainter extends RPadPainter {
    submitDrawableRequest(kind, req, painter, method) {
 
       if (!this._websocket || !req || !req._typename ||
-          !painter.snapid || (typeof painter.snapid != 'string')) return null;
+          !painter.snapid || !isStr(painter.snapid)) return null;
 
       if (kind && method) {
          // if kind specified - check if such request already was submitted
@@ -380,7 +380,7 @@ class RCanvasPainter extends RPadPainter {
       // snapid is intentionally ignored - only painter.snapid has to be used
       if (!this._websocket) return;
 
-      if (subelem && (typeof subelem == 'string')) {
+      if (subelem && isStr(subelem)) {
          let len = subelem.length;
          if ((len > 2) && (subelem.indexOf('#x') == len - 2)) subelem = 'x'; else
          if ((len > 2) && (subelem.indexOf('#y') == len - 2)) subelem = 'y'; else
@@ -439,7 +439,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
+      if (!this._websocket || !this._websocket.canSend(2) || !isStr(kind)) return;
 
       let msg = '';
       if (!painter) painter = this;
@@ -651,7 +651,7 @@ async function ensureRCanvas(painter, frame_kind) {
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select('.main_layer').empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === 'string') ? frame_kind : '');
+         return RFramePainter.draw(painter.getDom(), null, isStr(frame_kind) ? frame_kind : '');
    }).then(() => {
       painter.addToPadPrimitives();
       return painter;

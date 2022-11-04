@@ -657,7 +657,7 @@ function getTypeId(typname, norecursion) {
 
    if (!norecursion) {
       let replace = CustomStreamers[typname];
-      if (typeof replace === 'string') return getTypeId(replace, true);
+      if (isStr(replace)) return getTypeId(replace, true);
    }
 
    return -1;

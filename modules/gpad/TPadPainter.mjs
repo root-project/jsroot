@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, isFunc,
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
@@ -112,7 +112,7 @@ let PadButtonsHandler = {
          for (let k = 0; k < this._buttons.length; ++k) {
             let item = this._buttons[k], btn = item.btn;
 
-            if (typeof btn == 'string')
+            if (isStr(btn))
                btn = ToolbarIcons[btn];
             if (!btn)
                btn = ToolbarIcons.circle;
@@ -1416,7 +1416,7 @@ class TPadPainter extends ObjectPainter {
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind('float');
@@ -1434,7 +1434,7 @@ class TPadPainter extends ObjectPainter {
 
          let pr = Promise.resolve(true);
 
-         if ((typeof snap.fScripts == 'string') && snap.fScripts) {
+         if (isStr(snap.fScripts) && snap.fScripts) {
             let src = '';
 
             if (snap.fScripts.indexOf('load:') == 0)
@@ -1488,7 +1488,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
-         if (typeof sub.snapid !== 'string') continue; // look only for painters with snapid
+         if (!isStr(sub.snapid)) continue; // look only for painters with snapid
 
          let snapid = sub.snapid, p = snapid.indexOf('#');
          if (p > 0) snapid = snapid.slice(0, p);

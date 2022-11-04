@@ -1,6 +1,6 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isFunc, isPromise,
+         findFunction, isBatchMode, isNodeJs, getDocument, isFunc, isStr, isPromise,
          clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -746,7 +746,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (typeof opt != 'string') opt = '';
+      if (!isStr(opt)) opt = '';
 
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
@@ -905,7 +905,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
 
-      if (typeof names == 'string') names = [ names ];
+      if (isStr(names)) names = [ names ];
 
       if (this._hpainter) {
          // show browser if it not visible
@@ -1095,7 +1095,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method should be called when changing axes drawing */
    changedAxes() {
-      if (typeof this.ctrl._axis == 'string')
+      if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
       this.drawSimpleAxis();
@@ -1764,7 +1764,7 @@ class TGeoPainter extends ObjectPainter {
                geo_object = obj.geo_object;
                if (obj.get_ctrl) {
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
-                  if ((geo_index !== undefined) && (typeof tooltip == 'string'))
+                  if ((geo_index !== undefined) && isStr(tooltip))
                      tooltip += ' indx:' + JSON.stringify(geo_index);
                }
                if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
@@ -2530,7 +2530,7 @@ class TGeoPainter extends ObjectPainter {
       dataUrl.replace('image/png', 'image/octet-stream');
       let doc = getDocument(),
           link = doc.createElement('a');
-      if (typeof link.download === 'string') {
+      if (isStr(link.download)) {
          doc.body.appendChild(link); //Firefox requires the link to be in the body
          link.download = filename || 'geometry.png';
          link.href = dataUrl;
@@ -4638,7 +4638,7 @@ class TGeoPainter extends ObjectPainter {
          obj = null;
       }
 
-      if ((typeof opt == 'string') && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
+      if (isStr(opt) && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
          if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
@@ -4988,7 +4988,7 @@ function createItem(node, obj, name) {
    if (!node._childs) node._childs = [];
 
    if (!sub._name)
-      if (typeof node._name === 'string') {
+      if (isStr(node._name)) {
          sub._name = node._name;
          if (sub._name.lastIndexOf('s')===sub._name.length-1)
             sub._name = sub._name.slice(0, sub._name.length-1);

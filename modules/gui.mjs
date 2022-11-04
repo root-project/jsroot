@@ -1,4 +1,4 @@
-import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc, isStr } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { readSettings, readStyle } from './gui/utils.mjs';
@@ -145,7 +145,7 @@ function readStyleFromURL(url) {
   * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
   * buildGUI('guiDiv'); */
 async function buildGUI(gui_element, gui_kind = '') {
-   let myDiv = (typeof gui_element == 'string') ? d3_select('#' + gui_element) : d3_select(gui_element);
+   let myDiv = isStr(gui_element) ? d3_select('#' + gui_element) : d3_select(gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));
 

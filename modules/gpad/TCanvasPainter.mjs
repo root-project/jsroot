@@ -1,4 +1,4 @@
-import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, isFunc, clTCanvas } from '../core.mjs';
+import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, isFunc, isStr, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -247,9 +247,9 @@ class TCanvasPainter extends TPadPainter {
       if (this._readonly || !painter) return;
 
       if (!snapid) snapid = painter.snapid;
-      if (!snapid || (typeof snapid != 'string')) return;
+      if (!snapid || !isStr(snapid)) return;
 
-      this.sendWebsocket('OBJEXEC:' + snapid + ':' + exec);
+      this.sendWebsocket(`OBJEXEC:${snapid}:${exec}`);
    }
 
    /** @summary Send text message with web socket
@@ -550,7 +550,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== 'string')) return;
+      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || !isStr(kind)) return;
 
       let msg = '';
       if (!painter) painter = this;

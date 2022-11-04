@@ -1,5 +1,5 @@
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
-import { browser, internals, toJSON, settings, isFunc } from '../core.mjs';
+import { browser, internals, toJSON, settings, isFunc, isStr } from '../core.mjs';
 import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
@@ -328,7 +328,7 @@ class GridDisplay extends MDIDisplay {
 
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
-            if (typeof this.frameid === 'string')
+            if (isStr(this.frameid))
                elem.attr('id', `${this.frameid}_${group.drawid}`);
          } else {
             elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
@@ -635,7 +635,7 @@ class TabsDisplay extends MDIDisplay {
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
-      if (!lbl || typeof lbl != 'string') lbl = `frame_${frame_id}`;
+      if (!lbl || !isStr(lbl)) lbl = `frame_${frame_id}`;
 
       if (lbl.length > 15) {
          let p = lbl.lastIndexOf('/');
@@ -1411,7 +1411,7 @@ class BrowserLayout {
       if (browser.touches && !main.on('touchmove'))
          main.on('touchmove', function() { });
 
-      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
+      if (!height || isStr(height)) height = this.last_hsepar_height || 20;
 
       this.adjustSeparators(null, height, true);
 
@@ -1441,7 +1441,7 @@ class BrowserLayout {
       if ((hsepar === null) && first_time && !main.select('.jsroot_h_separator').empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select('.jsroot_h_separator').style('bottom');
-         if ((typeof hsepar == 'string') && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
+         if (isStr(hsepar) && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
             hsepar = hsepar.slice(0,hsepar.length-2);
          else
             hsepar = null;
@@ -1505,7 +1505,7 @@ class BrowserLayout {
 
    /** @summary Toggle browser visibility */
    toggleBrowserVisisbility(fast_close) {
-      if (!this.gui_div || (typeof this.browser_visible === 'string')) return;
+      if (!this.gui_div || isStr(this.browser_visible)) return;
 
       let main = this.browser(), area = main.select('.jsroot_browser_area');
 

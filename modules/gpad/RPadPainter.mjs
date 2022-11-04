@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, addMethods,
-         isPromise, isBatchMode, isFunc, btoa_func, clTPad } from '../core.mjs';
+         isPromise, isBatchMode, isFunc, isStr, btoa_func, clTPad } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -1003,7 +1003,7 @@ class RPadPainter extends RObjectPainter {
    findSnap(snapid, onlyid) {
 
       function check(checkid) {
-         if (!checkid || (typeof checkid != 'string')) return false;
+         if (!checkid || !isStr(checkid)) return false;
          if (checkid == snapid) return true;
          return onlyid && (checkid.length > snapid.length) &&
                 (checkid.indexOf(snapid) == (checkid.length - snapid.length));
@@ -1058,7 +1058,7 @@ class RPadPainter extends RObjectPainter {
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == 'string')) {
+         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas

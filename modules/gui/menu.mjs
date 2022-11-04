@@ -1,4 +1,4 @@
-import { loadScript, source_dir, settings, gStyle, internals, isFunc, clTGaxis } from '../core.mjs';
+import { loadScript, source_dir, settings, gStyle, internals, isFunc, isStr, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -122,7 +122,7 @@ class JSRootMenu {
      * @protected */
    addColorMenu(name, value, set_func, fill_kind) {
       if (value === undefined) return;
-      let useid = (typeof value !== 'string');
+      let useid = !isStr(value);
       this.add('sub:' + name, () => {
          this.input('Enter color ' + (useid ? '(only id number)' : '(name or id)'), value, useid ? 'int' : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             let id = parseInt(col);
@@ -337,7 +337,7 @@ class JSRootMenu {
             bkgr = 'background-color:' + coltxt;
             fillcol = (coltxt == 'white') ? 'black' : 'white';
 
-            if ((typeof value === 'string') && value && (value != 'auto') && (value[0] != '['))
+            if (isStr(value) && value && (value != 'auto') && (value[0] != '['))
                match = (d3_rgb(value).toString() == d3_rgb(coltxt).toString());
          } else {
             match = !value;
