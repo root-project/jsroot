@@ -1,4 +1,4 @@
-import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, clTCanvas } from '../core.mjs';
+import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, isFunc, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -319,7 +319,7 @@ class TCanvasPainter extends TPadPainter {
       } else if (msg.slice(0,5) == 'MENU:') {
          // this is menu with exact identifier for object
          let lst = parse(msg.slice(5));
-         if (typeof this._getmenu_callback == 'function') {
+         if (isFunc(this._getmenu_callback)) {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
          }
@@ -562,7 +562,7 @@ class TCanvasPainter extends TPadPainter {
          case 'zoom':  // when changing zoom inside frame
             if (!painter.getWebPadOptions)
                painter = painter.getPadPainter();
-            if (typeof painter.getWebPadOptions == 'function')
+            if (isFunc(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
             break;
          case 'pave_moved':

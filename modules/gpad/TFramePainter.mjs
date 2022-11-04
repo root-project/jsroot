@@ -13,12 +13,12 @@ function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
    let fp = painter.getFramePainter();
-   if (typeof fp?.setTooltipEnabled == 'function') {
+   if (isFunc(fp?.setTooltipEnabled)) {
       fp.setTooltipEnabled(on);
       fp.processFrameTooltipEvent(null);
    }
    // this is 3D control object
-   if (painter.control && (typeof painter.control.setTooltipEnabled == 'function'))
+   if (isFunc(painter.control?.setTooltipEnabled))
       painter.control.setTooltipEnabled(on);
 }
 
@@ -583,7 +583,7 @@ const TooltipHandler = {
 
       hintsg.property('startx', posx);
 
-      if (cp._highlight_connect && (typeof cp.processHighlightConnect == 'function'))
+      if (cp._highlight_connect && isFunc(cp.processHighlightConnect))
          cp.processHighlightConnect(hints);
    },
 
@@ -879,7 +879,7 @@ const FrameInteractive = {
 
       let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
-      if (!handle || (typeof handle.processLabelsMove != 'function') || !this.zoom_lastpos) return;
+      if (!handle || !isFunc(handle.processLabelsMove) || !this.zoom_lastpos) return;
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
@@ -1337,7 +1337,7 @@ const FrameInteractive = {
          } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
             exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
 
-            if (this.v7_frame && typeof exec_painter?.v7EvalAttr === 'function')
+            if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
                exec_painter = null;
          }
       } else if ((kind == 'painter') && obj) {
@@ -2219,7 +2219,7 @@ class TFramePainter extends ObjectPainter {
    cleanFrameDrawings() {
 
       // cleanup all 3D drawings if any
-      if (typeof this.create3DScene === 'function')
+      if (isFunc(this.create3DScene))
          this.create3DScene(-1);
 
       this.cleanAxesDrawings();
@@ -2424,7 +2424,7 @@ class TFramePainter extends ObjectPainter {
          menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent',
                () => { faxis.InvertBit(EAxisBits.kNoExponent); this.redrawPad(); });
 
-         if ((kind === 'z') && main?.options?.Zscale && (typeof main?.fillPaletteMenu == 'function'))
+         if ((kind === 'z') && main?.options?.Zscale && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu);
 
          if (faxis) {
@@ -2468,7 +2468,7 @@ class TFramePainter extends ObjectPainter {
          menu.addchk(pad.fLogx, 'SetLogx', () => this.toggleAxisLog('x'));
          menu.addchk(pad.fLogy, 'SetLogy', () => this.toggleAxisLog('y'));
 
-         if (main && (typeof main.getDimension === 'function') && (main.getDimension() > 1))
+         if (isFunc(main?.getDimension) && (main.getDimension() > 1))
             menu.addchk(pad.fLogz, 'SetLogz', () => this.toggleAxisLog('z'));
          menu.add('separator');
       }
@@ -2528,7 +2528,7 @@ class TFramePainter extends ObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._click_handler = isFunc(handler) ? handler : null;
    }
 
    /** @summary Configure user-defined dblclick handler
@@ -2536,7 +2536,7 @@ class TFramePainter extends ObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._dblclick_handler = isFunc(handler) ? handler : null;
    }
 
     /** @summary Function can be used for zooming into specified range
@@ -2592,7 +2592,7 @@ class TFramePainter extends ObjectPainter {
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
          this.forEachPainter(obj => {
-            if (typeof obj.canZoomInside != 'function') return;
+            if (!isFunc(obj.canZoomInside)) return;
             if (zoom_x && obj.canZoomInside('x', xmin, xmax)) {
                this.zoom_xmin = xmin;
                this.zoom_xmax = xmax;
@@ -2631,7 +2631,7 @@ class TFramePainter extends ObjectPainter {
          // than try to unzoom all overlapped objects
          if (!changed)
             this.getPadPainter()?.painters?.forEach(painter => {
-               if (typeof painter?.unzoomUserRange == 'function')
+               if (isFunc(painter?.unzoomUserRange))
                   if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
                      changed = true;
             });
@@ -2664,7 +2664,7 @@ class TFramePainter extends ObjectPainter {
       // first process zooming
       if (zoom_v)
          this.forEachPainter(obj => {
-            if (typeof obj.canZoomInside != 'function') return;
+            if (!isFunc(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
                this['zoom_' + name + 'min'] = vmin;
                this['zoom_' + name + 'max'] = vmax;

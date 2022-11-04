@@ -1,4 +1,4 @@
-import { create, clTPad, clTLine } from '../core.mjs';
+import { create, clTPad, clTLine, isFunc } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { drawTLine } from './more.mjs';
@@ -97,7 +97,7 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p.getRootPad().fTicky = 1;
 
          low_p.forEachPainterInPad(objp => {
-            if (typeof objp?.testEditable == 'function')
+            if (isFunc(objp?.testEditable))
                objp.testEditable(false);
          });
 

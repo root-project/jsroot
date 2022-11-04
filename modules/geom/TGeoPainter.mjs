@@ -1,6 +1,6 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isPromise,
+         findFunction, isBatchMode, isNodeJs, getDocument, isFunc, isPromise,
          clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -224,7 +224,7 @@ function expandGeoObject(parent, obj) {
 function findItemWithPainter(hitem, funcname) {
    while (hitem) {
       if (hitem._painter?._camera) {
-         if (funcname && typeof hitem._painter[funcname] == 'function')
+         if (funcname && isFunc(hitem._painter[funcname]))
             hitem._painter[funcname]();
          return hitem;
       }
@@ -309,7 +309,7 @@ class Toolbar {
 
          let title = buttonConfig.title || buttonConfig.name;
 
-         if (typeof buttonConfig.click !== 'function')
+         if (!isFunc(buttonConfig.click))
             throw new Error('must provide button click() function in button config');
 
          let button = this.element.append('a')
@@ -1011,7 +1011,7 @@ class TGeoPainter extends ObjectPainter {
      * @param {number|Function} transparency - one could provide function
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
    changedGlobalTransparency(transparency, skip_render) {
-      let func = (typeof transparency == 'function') ? transparency : null;
+      let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
       this._toplevel.traverse( node => {
          if (node?.material?.inherentOpacity !== undefined) {
@@ -1605,8 +1605,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
      * @desc Handler should have highlightMesh function with same arguments as TGeoPainter  */
    addHighlightHandler(handler) {
-      if (typeof handler?.highlightMesh != 'function') return;
-      if (!this._highlight_handlers) this._highlight_handlers = [];
+      if (!isFunc(handler?.highlightMesh)) return;
+      if (!this._highlight_handlers)
+         this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
 
@@ -2375,7 +2376,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
-         if (this.ctrl.outline && (typeof this.createOutline == 'function')) {
+         if (this.ctrl.outline && isFunc(this.createOutline)) {
             this._effectComposer = new EffectComposer( this._renderer );
             this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
@@ -4293,12 +4294,12 @@ class TGeoPainter extends ObjectPainter {
 
          this.setAsMainPainter();
 
-         if (typeof this._resolveFunc == 'function') {
+         if (isFunc(this._resolveFunc)) {
             this._resolveFunc(this);
             delete this._resolveFunc;
          }
 
-         if (typeof this._complete_handler == 'function')
+         if (isFunc(this._complete_handler))
             this._complete_handler(this);
 
          if (this._draw_nodes_again)
@@ -4679,7 +4680,7 @@ let add_settings = false;
   * @private */
 function injectGeoStyle() {
 
-   if (!add_settings && typeof internals.addDrawFunc == 'function') {
+   if (!add_settings && isFunc(internals.addDrawFunc)) {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
       internals.addDrawFunc({ name: 'TEvePointSet', icon_get: getBrowserIcon, icon_click: browserIconClick });
@@ -4830,7 +4831,7 @@ function provideMenu(menu, item, hpainter) {
 
         let fullname = hpainter.itemFullName(item, drawitem);
 
-        if (typeof drawitem._painter?.focusOnItem == 'function')
+        if (isFunc(drawitem._painter?.focusOnItem))
            drawitem._painter.focusOnItem(fullname);
       });
 
@@ -5043,7 +5044,7 @@ async function drawDummy3DGeom(painter) {
 function drawAxis3D() {
    let main = this.getMainPainter();
 
-   if (typeof main?.setAxesDraw == 'function')
+   if (isFunc(main?.setAxesDraw))
       return main.setAxesDraw(true);
 
    console.error('no geometry painter found to toggle TAxis3D drawing');

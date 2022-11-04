@@ -1,6 +1,7 @@
 import { FrontSide, Object3D, Box3, Mesh, Vector2, Vector3, Matrix4,
          MeshLambertMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
+import { isFunc } from '../core.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
 
@@ -2000,7 +2001,7 @@ function createGeometry(shape, limit) {
          case clTGeoShapeAssembly: break;
          case clTGeoScaledShape: {
             let res = createGeometry(shape.fShape, limit);
-            if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
+            if (shape.fScale && (limit >= 0) && isFunc(res?.scale))
                res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
@@ -3490,10 +3491,10 @@ function getBoundingBox(node, box3, local_coordinates) {
 function cleanupShape(shape) {
    if (!shape) return;
 
-   if (shape.geom && (typeof shape.geom.dispose == 'function'))
+   if (isFunc(shape.geom?.dispose))
       shape.geom.dispose();
 
-   if (shape.geomZ && (typeof shape.geomZ.dispose == 'function'))
+   if (isFunc(shape.geomZ?.dispose))
       shape.geomZ.dispose();
 
    delete shape.geom;

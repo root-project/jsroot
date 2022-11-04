@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString,
+import { internals, httpRequest, isBatchMode, isFunc, create, toJSON, clTObjString,
          clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
@@ -100,7 +100,7 @@ async function treeDrawProgress(obj, final) {
          painter.selectDom().property('_json_object_', obj);
          return painter;
       }
-      if (typeof internals.drawInspector == 'function')
+      if (isFunc(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
       let str = create(clTObjString);
       str.fString = toJSON(obj,2);

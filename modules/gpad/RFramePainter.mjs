@@ -1,4 +1,4 @@
-import { gStyle, settings, create, isBatchMode, clTAxis } from '../core.mjs';
+import { gStyle, settings, create, isBatchMode, isFunc, clTAxis } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
@@ -610,7 +610,7 @@ class RFramePainter extends RObjectPainter {
      * @private */
    cleanFrameDrawings() {
       // cleanup all 3D drawings if any
-      if (typeof this.create3DScene === 'function')
+      if (isFunc(this.create3DScene))
          this.create3DScene(-1);
 
       this.cleanupAxes();
@@ -808,7 +808,7 @@ class RFramePainter extends RObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._click_handler = isFunc(handler) ? handler : null;
    }
 
    /** @summary Configure user-defined dblclick handler
@@ -816,7 +816,7 @@ class RFramePainter extends RObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._dblclick_handler = isFunc(handler) ? handler : null;
    }
 
    /** @summary function can be used for zooming into specified range
@@ -871,7 +871,7 @@ class RFramePainter extends RObjectPainter {
          };
 
       const checkZooming = (painter, force) => {
-         if (!force && (typeof painter.canZoomInside != 'function')) return;
+         if (!force && !isFunc(painter.canZoomInside)) return;
 
          is_any_check = true;
 
@@ -965,7 +965,7 @@ class RFramePainter extends RObjectPainter {
           };
 
       let checkZooming = (painter, force) => {
-         if (!force && (typeof painter?.canZoomInside != 'function')) return;
+         if (!force && !isFunc(painter?.canZoomInside)) return;
 
          is_any_check = true;
 
