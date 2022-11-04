@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '3/11/2022';
+let version_date = '4/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1727,6 +1727,10 @@ clTHashList: clTHashList,
 clTMap: clTMap,
 clTObjArray: clTObjArray,
 clTClonesArray: clTClonesArray,
+clTAttLine: clTAttLine,
+clTAttFill: clTAttFill,
+clTAttMarker: clTAttMarker,
+clTAttText: clTAttText,
 clTPave: clTPave,
 clTPaveText: clTPaveText,
 clTPaveStats: clTPaveStats,
@@ -49194,18 +49198,27 @@ function setPainterTooltipEnabled(painter, on) {
       painter.control.setTooltipEnabled(on);
 }
 
+// global, allow single drag at once
+let drag_rect = null, drag_kind = '', drag_painter = null;
+
+/** @summary Check if dragging performed currently
+  * @private */
+function is_dragging(painter, kind) {
+   return drag_rect && (drag_painter === painter) && (drag_kind === kind);
+}
+
 /** @summary Add drag for interactive rectangular elements for painter
   * @private */
 function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 
-   let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
+   let painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing) return;
 
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
-            elem = group.select('.' + clname);
+             elem = group.select('.' + clname);
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
@@ -49227,13 +49240,15 @@ function addDragHandler(_painter, arg) {
    }
 
    const complete_drag = (newx, newy, newwidth, newheight) => {
-      drag_rect.style('cursor', 'auto');
-
-      if (!painter.draw_g) {
+      drag_painter = null;
+      drag_kind = '';
+      if (drag_rect) {
          drag_rect.remove();
          drag_rect = null;
-         return false;
       }
+
+      if (!painter.draw_g)
+         return false;
 
       let oldx = arg.x, oldy = arg.y;
 
@@ -49246,9 +49261,6 @@ function addDragHandler(_painter, arg) {
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
       painter.draw_g.attr('transform', `translate(${newx},${newy})`);
-
-      drag_rect.remove();
-      drag_rect = null;
 
       setPainterTooltipEnabled(painter, true);
 
@@ -49285,7 +49297,7 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on('start', function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
 
          closeMenu(); // close menu
 
@@ -49305,6 +49317,8 @@ function addDragHandler(_painter, arg) {
             path: `v${arg.height}h${arg.width}v${-arg.height}z`
          };
 
+         drag_painter = painter;
+         drag_kind = 'move';
          drag_rect = select(painter.draw_g.node().parentNode).append('path')
             .classed('zoom', true)
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
@@ -49312,9 +49326,8 @@ function addDragHandler(_painter, arg) {
             .style('pointer-events', 'none') // let forward double click to underlying elements
             .property('drag_handle', handle);
 
-
       }).on('drag', function(evnt) {
-         if (!drag_rect) return;
+         if (!is_dragging(painter, 'move')) return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -49332,7 +49345,7 @@ function addDragHandler(_painter, arg) {
          drag_rect.attr('d', `M${handle.x},${handle.y}${handle.path}`);
 
       }).on('end', function(evnt) {
-         if (!drag_rect) return;
+         if (!is_dragging(painter, 'move')) return;
 
          evnt.sourceEvent.preventDefault();
 
@@ -49353,7 +49366,7 @@ function addDragHandler(_painter, arg) {
 
    drag_resize
       .on('start', function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
 
          evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
@@ -49365,13 +49378,12 @@ function addDragHandler(_painter, arg) {
          let handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
             acc_x1: arg.x, acc_y1: arg.y,
-            pad_w: pad_rect.width,
-            pad_h: pad_rect.height
+            acc_x2: arg.x + arg.width, acc_y2: arg.y + arg.height,
+            pad_w: pad_rect.width, pad_h: pad_rect.height
          };
 
-         handle.acc_x2 = handle.acc_x1 + arg.width;
-         handle.acc_y2 = handle.acc_y1 + arg.height;
-
+         drag_painter = painter;
+         drag_kind = 'resize';
          drag_rect = select(painter.draw_g.node().parentNode)
             .append('rect')
             .classed('zoom', true)
@@ -49383,7 +49395,7 @@ function addDragHandler(_painter, arg) {
             .property('drag_handle', handle);
 
       }).on('drag', function(evnt) {
-         if (!drag_rect) return;
+         if (!is_dragging(painter, 'resize')) return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -49414,7 +49426,8 @@ function addDragHandler(_painter, arg) {
          drag_rect.attr('x', handle.x).attr('y', handle.y).attr('width', handle.width).attr('height', handle.height);
 
       }).on('end', function(evnt) {
-         if (!drag_rect) return;
+         if (!is_dragging(painter, 'resize')) return;
+
          evnt.sourceEvent.preventDefault();
 
          let handle = drag_rect.property('drag_handle');
@@ -49506,8 +49519,7 @@ const TooltipHandler = {
 
          if (hint.exact) nexact++;
 
-         for (let l = 0; l < hint.lines.length; ++l)
-            maxlen = Math.max(maxlen, hint.lines[l].length);
+         hint.lines.forEach(line => { maxlen = Math.max(maxlen, line.length); });
 
          hint.height = Math.round(hint.lines.length * textheight * hstep + 2 * hmargin - textheight * (hstep - 1));
 
@@ -49524,7 +49536,7 @@ const TooltipHandler = {
           coordinates = pnt ? Math.round(pnt.x) + ',' + Math.round(pnt.y) : '';
 
       // try to select hint with exact match of the position when several hints available
-      for (let k = 0; k < (hints ? hints.length : 0); ++k) {
+      for (let k = 0; k < (hints?.length || 0); ++k) {
          if (!hints[k]) continue;
          if (!hint) hint = hints[k];
 
@@ -49571,8 +49583,8 @@ const TooltipHandler = {
 
       // copy transform attributes from frame itself
       hintsg.attr('transform', trans)
-         .property('last_point', pnt)
-         .property('hints_pad', this.getPadName());
+            .property('last_point', pnt)
+            .property('hints_pad', this.getPadName());
 
       let viewmode = hintsg.property('viewmode') || '',
          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
@@ -49767,9 +49779,12 @@ function injectFrameStyle(draw_g) {
 .jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
 }
 
+/** @summary Set of frame interactivity methods
+  * @private */
 
 const FrameInteractive = {
 
+   /** @summary Adding basic interactivity */
    addBasicInteractivity() {
 
       TooltipHandler.assign(this);
@@ -50038,13 +50053,12 @@ const FrameInteractive = {
    startLabelsMove() {
       if (this.zoom_rect) return;
 
-      let handle = this.zoom_kind == 2 ? this.x_handle : this.y_handle;
+      let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
       if (!handle || (typeof handle.processLabelsMove != 'function') || !this.zoom_lastpos) return;
 
-      if (handle.processLabelsMove('start', this.zoom_lastpos)) {
+      if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
-      }
    },
 
    /** @summary Process mouse rect zooming */
@@ -50155,14 +50169,12 @@ const FrameInteractive = {
          case 1:
             this.processFrameClick(pnt);
             break;
-         case 2: {
+         case 2:
             this.getPadPainter()?.selectObjectPainter(this, null, 'xaxis');
             break;
-         }
-         case 3: {
+         case 3:
             this.getPadPainter()?.selectObjectPainter(this, null, 'yaxis');
             break;
-         }
       }
 
    },
@@ -50200,7 +50212,8 @@ const FrameInteractive = {
    /** @summary Start touch zoom */
    startTouchZoom(evnt) {
       // in case when zooming was started, block any other kind of events
-      if (this.zoom_kind != 0) {
+      // also prevent zooming together with active drggaing
+      if ((this.zoom_kind != 0) || drag_kind) {
          evnt.preventDefault();
          evnt.stopPropagation();
          return;
@@ -50269,6 +50282,8 @@ const FrameInteractive = {
       } else {
          this.zoom_kind = 101; // x and y
       }
+
+      drag_kind = 'zoom'; // block other possible dragging
 
       setPainterTooltipEnabled(this, false);
 
@@ -50343,6 +50358,8 @@ const FrameInteractive = {
       }
 
       if (this.zoom_kind < 100) return;
+
+      drag_kind = ''; // reset global flag
 
       evnt.preventDefault();
       select(window).on('touchmove.zoomRect', null)
@@ -65575,8 +65592,6 @@ async function drawRooPlot(dom, plot) {
    });
 }
 
-/// I/O methods of JavaScript ROOT
-
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
@@ -65776,7 +65791,7 @@ const CustomStreamers = {
    TPolyMarker3D(buf, marker) {
       const ver = buf.last_read_version;
       buf.classStreamer(marker, clTObject);
-      buf.classStreamer(marker, 'TAttMarker');
+      buf.classStreamer(marker, clTAttMarker);
       marker.fN = buf.ntoi4();
       marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
       marker.fOption = buf.readTString();
@@ -65785,7 +65800,7 @@ const CustomStreamers = {
 
    TPolyLine3D(buf, obj) {
       buf.classStreamer(obj, clTObject);
-      buf.classStreamer(obj, 'TAttLine');
+      buf.classStreamer(obj, clTAttLine);
       obj.fN = buf.ntoi4();
       obj.fP = buf.readFastArray(obj.fN * 3, kFloat);
       obj.fOption = buf.readTString();
@@ -66027,7 +66042,7 @@ const CustomStreamers = {
       obj.fZ = buf.ntof();
       obj.fDensity = buf.ntof();
       if (v > 2) {
-         buf.classStreamer(obj, 'TAttFill');
+         buf.classStreamer(obj, clTAttFill);
          obj.fRadLength = buf.ntof();
          obj.fInterLength = buf.ntof();
       } else {
@@ -105264,6 +105279,10 @@ exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgPath = buildSvgPath;
 exports.clTAttCanvas = clTAttCanvas;
+exports.clTAttFill = clTAttFill;
+exports.clTAttLine = clTAttLine;
+exports.clTAttMarker = clTAttMarker;
+exports.clTAttText = clTAttText;
 exports.clTAxis = clTAxis;
 exports.clTBox = clTBox;
 exports.clTCanvas = clTCanvas;
