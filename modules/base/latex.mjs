@@ -416,7 +416,7 @@ function parseLatex(node, arg, label, curr) {
          nelements++;
 
          let s = translateLaTeX(label.slice(0, best));
-         if ((s.length > 0) || alone) {
+         if (s || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
                 elem = g.append('svg:text');
@@ -557,15 +557,15 @@ function parseLatex(node, arg, label, curr) {
             res[name] = extractSubLabel();
             if (res[name] === -1) return false;
          }
-         while (label.length > 0) {
-            if (label.charAt(0) == '_') {
+         while (label) {
+            if (label[0] == '_') {
                label = label.slice(1);
                res.low = !res.low ? extractSubLabel(true) : -1;
                if (res.low === -1) {
                   console.log(`error with ${found.name} low limit`);
                   return false;
                }
-            } else if (label.charAt(0) == '^') {
+            } else if (label[0] == '^') {
                label = label.slice(1);
                res.up = !res.up ? extractSubLabel(true) : -1;
                if (res.up === -1) {

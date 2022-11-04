@@ -1439,7 +1439,7 @@ class TGeoPainter extends ObjectPainter {
                   hdr = this.getItemName();
                   if (name.indexOf('Nodes/') === 0)
                      hdr = name.slice(6);
-                  else if (name.length > 0)
+                  else if (name)
                      hdr = name;
                   else if (!hdr)
                      hdr = 'header';
@@ -3314,7 +3314,7 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname.length > 0) itemname += '/';
+         if (itemname) itemname += '/';
          itemname += prnt.fName;
       }
 
@@ -4894,14 +4894,15 @@ function browserIconClick(hitem, hpainter) {
   * @private */
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
-   if (hitem._kind == 'ROOT.' + clTEveTrack) icon = 'img_evetrack'; else
-   if (hitem._kind == 'ROOT.' + clTEvePointSet) icon = 'img_evepoints'; else
-   if (hitem._kind == 'ROOT.' + clTPolyMarker3D) icon = 'img_evepoints';
-   if (icon.length > 0) {
+   switch(hitem._kind) {
+      case 'ROOT.' + clTEveTrack: icon = 'img_evetrack'; break;
+      case 'ROOT.' + clTEvePointSet: icon = 'img_evepoints'; break;
+      case 'ROOT.' + clTPolyMarker3D: icon = 'img_evepoints'; break;
+   }
+   if (icon) {
       let drawitem = findItemWithPainter(hitem);
-      if (drawitem)
-         if (drawitem._painter.extraObjectVisible(hpainter, hitem))
-            icon += ' geovis_this';
+      if (drawitem?._painter && drawitem._painter.extraObjectVisible(hpainter, hitem))
+         icon += ' geovis_this';
    }
    return icon;
 }
@@ -4931,7 +4932,7 @@ function createItem(node, obj, name) {
       sub._icon = 'img_geomixture';
    else if ((obj._typename.indexOf(clTGeoNode) === 0) && obj.fVolume) {
       sub._title = 'node:'  + obj._typename;
-      if (obj.fTitle.length > 0) sub._title += ' ' + obj.fTitle;
+      if (obj.fTitle) sub._title += ' ' + obj.fTitle;
       volume = obj.fVolume;
    } else if (obj._typename.indexOf(clTGeoVolume) === 0) {
       volume = obj;

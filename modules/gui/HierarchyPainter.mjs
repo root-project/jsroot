@@ -328,7 +328,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = '0'+val;
-         if (item._value.length > 0)
+         if (item._value)
             item._value += (k%4 === 0) ? ' | ' : ' ';
 
          item._value += val;
@@ -964,7 +964,7 @@ class HierarchyPainter extends BasePainter {
 
          if ((node === uptoparent) || (node._kind === 'TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
-         if (res.length > 0) res = '/' + res;
+         if (res) res = '/' + res;
          res = node._name + res;
          node = node._parent;
       }
@@ -1077,7 +1077,7 @@ class HierarchyPainter extends BasePainter {
          return this.expandItem(parentname, undefined, options != 'hierarchy_expand_verbose').then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
-            if (newparentname.length > 0) newparentname += '/';
+            if (newparentname) newparentname += '/';
             return this.getObject( { name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
@@ -1187,7 +1187,7 @@ class HierarchyPainter extends BasePainter {
 
       let h = this;
 
-      if (icon_class.length > 0) {
+      if (icon_class) {
          if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
          let d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
@@ -1772,7 +1772,7 @@ class HierarchyPainter extends BasePainter {
                if (filepath.indexOf(source_dir) == 0)
                   filepath = filepath.slice(source_dir.length);
                filepath = fileprop.kind + '=' + filepath;
-               if (fileprop.itemname.length > 0) {
+               if (fileprop.itemname) {
                   let name = fileprop.itemname;
                   if (name.search(/\+| |\,/) >= 0) name = `'${name}'`;
                   filepath += '&item=' + name;
@@ -1938,7 +1938,7 @@ class HierarchyPainter extends BasePainter {
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
                drawopt = handle.dflt;
 
-            if (divid.length > 0) {
+            if (divid) {
                let func = updating ? redraw : draw;
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
@@ -2321,7 +2321,7 @@ class HierarchyPainter extends BasePainter {
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
                   let newname = this.itemFullName(d.last);
-                  if (newname.length > 0) newname+='/';
+                  if (newname) newname += '/';
                   find_next(newname + d.rest, d.now_found);
                });
             }
@@ -2697,21 +2697,21 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if ((req.length == 0) && (item._kind.indexOf('ROOT.') != 0))
+         if (!req && (item._kind.indexOf('ROOT.') != 0))
            req = 'item.json.gz?compact=3';
       }
 
-      if (!itemname && item && ('_cached_draw_object' in this) && (req.length == 0)) {
+      if (!itemname && item && ('_cached_draw_object' in this) && !req) {
          // special handling for online draw when cashed
          let obj = this._cached_draw_object;
          delete this._cached_draw_object;
          return obj;
       }
 
-      if (req.length == 0)
+      if (!req)
          req = 'root.json.gz?compact=23';
 
-      if (url.length > 0) url += '/';
+      if (url) url += '/';
       url += req;
 
       return new Promise(resolveFunc => {
@@ -3148,7 +3148,7 @@ class HierarchyPainter extends BasePainter {
 
          let res = [];
 
-         while (opt.length > 0) {
+         while (opt) {
             let separ = opt.indexOf(';'),
                 part = (separ > 0) ? opt.slice(0, separ) : opt;
 
@@ -3170,7 +3170,7 @@ class HierarchyPainter extends BasePainter {
       let GetOptionAsArray = opt => {
          let res = GetUrlOptionAsArray(opt);
          if (res.length > 0 || !gui_div || gui_div.empty()) return res;
-         while (opt.length > 0) {
+         while (opt) {
             let separ = opt.indexOf(';');
             let part = separ > 0 ? opt.slice(0, separ) : opt;
             if (separ > 0) opt = opt.slice(separ+1); else opt = '';

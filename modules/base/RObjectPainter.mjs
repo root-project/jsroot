@@ -80,7 +80,7 @@ class RObjectPainter extends ObjectPainter {
 
       let norm = 0, px = 0, val = value, operand = 0, pos = 0;
 
-      while (val.length > 0) {
+      while (val) {
          // skip empty spaces
          while ((pos < val.length) && ((val[pos] == ' ') || (val[pos] == '\t')))
             ++pos;
@@ -111,7 +111,7 @@ class RObjectPainter extends ObjectPainter {
          val = val.slice(pos);
          pos = 0;
          if (!operand) operand = 1;
-         if ((val.length > 0) && (val[0] == '%')) {
+         if (val && (val[0] == '%')) {
             val = val.slice(1);
             norm += operand*v*0.01;
          } else if ((val.length > 1) && (val[0] == 'p') && (val[1] == 'x')) {

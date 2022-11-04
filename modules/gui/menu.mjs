@@ -95,10 +95,9 @@ class JSRootMenu {
       if (!without_sub) this.add('sub:' + top_name, opts[0], call_back);
 
       for (let i = 0; i < opts.length; ++i) {
-         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;');
-
-         let group = i+1;
-         if ((opts.length > 5) && (name.length > 0)) {
+         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
+             group = i+1;
+         if ((opts.length > 5) && name) {
             // check if there are similar options, which can be grouped once again
             while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }

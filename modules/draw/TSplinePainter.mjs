@@ -168,7 +168,7 @@ class TSplinePainter extends ObjectPainter {
              .property('current_xx', xx);
 
       let name = this.getObjectHint();
-      if (name.length > 0) res.lines.push(name);
+      if (name) res.lines.push(name);
       res.lines.push('x = ' + funcs.axisAsText('x', xx));
       res.lines.push('y = ' + funcs.axisAsText('y', yy));
       if (knot !== null) {

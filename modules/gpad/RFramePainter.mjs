@@ -167,7 +167,7 @@ class RFramePainter extends RObjectPainter {
             else
                grid += `M${this.x_handle.ticks[n]},0v${h}`;
 
-         if (grid.length > 0)
+         if (grid)
             layer.append('svg:path')
                  .attr('class', 'xgrid')
                  .attr('d', grid)
@@ -188,7 +188,7 @@ class RFramePainter extends RObjectPainter {
             else
                grid += `M0,${h+this.y_handle.ticks[n]}h${w}`;
 
-         if (grid.length > 0)
+         if (grid)
           layer.append('svg:path')
                .attr('class', 'ygrid')
                .attr('d', grid)

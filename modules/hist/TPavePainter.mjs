@@ -619,7 +619,7 @@ class TPavePainter extends ObjectPainter {
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
-         if (lopt.length > 0)
+         if (lopt)
             any_opt = true;
          else if (!any_opt)
             pos_x = x0 + padding_x;
