@@ -6,6 +6,7 @@ import { loadScript, findFunction, internals, isPromise, isNodeJs, _ensureJSROOT
          clTH2, clTF1, clTF2,
          clTColor, clTGraph, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D, clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
 import { clTStreamerInfoList } from './io.mjs';
+import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter } from './gpad/TPadPainter.mjs';
@@ -116,7 +117,7 @@ const drawFuncs = { lst: [
    { name: clTTree, icon: 'img_tree', get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
    { name: 'TNtuple', sameas: clTTree },
    { name: 'TNtupleD', sameas: clTTree },
-   { name: 'TBranchFunc', icon: 'img_leaf_method', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', noinspect: true },
+   { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', noinspect: true },
    { name: /^TBranch/, icon: 'img_branch', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
    { name: clTList, icon: 'img_list', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawList), get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.listHierarchy), dflt: 'expand' },

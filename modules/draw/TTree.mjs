@@ -2,7 +2,7 @@ import { internals, httpRequest, isBatchMode, create, toJSON, clTObjString,
          clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
-import { kClonesNode, kSTLNode, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
+import { kClonesNode, kSTLNode, clTBranchFunc, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { cleanup, resize, drawRawText, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist/TH1Painter.mjs';
@@ -395,7 +395,7 @@ async function drawTree(dom, obj, opt) {
 
    let tree = obj, args = opt;
 
-   if (obj._typename == 'TBranchFunc') {
+   if (obj._typename == clTBranchFunc) {
       // fictional object, created only in browser
       args = { expr: `.${obj.func}()`, branch: obj.branch };
       if (opt && opt.indexOf('dump') == 0)

@@ -19,7 +19,8 @@ const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
       // kBranchObject = BIT(12), // branch is a TObject*
       // kBranchAny = BIT(17), // branch is an object*
       // kAutoDelete = BIT(15),
-      kDoNotUseBufferMap = BIT(22); // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
+      kDoNotUseBufferMap = BIT(22), // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
+      clTBranchElement = 'TBranchElement', clTBranchFunc = 'TBranchFunc';
 
 /**
  * @summary Class to read data from TTree
@@ -251,7 +252,7 @@ class ArrayIterator {
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
 
-   if (!branch || (branch._typename !== 'TBranchElement')) return '';
+   if (!branch || (branch._typename !== clTBranchElement)) return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
       // object where all sub-branches will be collected
@@ -1270,7 +1271,10 @@ class TDrawSelector extends TSelector {
       }
 
       if (this.cut.is_dummy()) {
-         if (this.ndim === 1) obj = v1; else delete obj.weight;
+         if (this.ndim === 1)
+            obj = v1;
+         else
+            delete obj.weight;
       }
 
       this.hist.push(obj);
@@ -1437,7 +1441,7 @@ class TDrawSelector extends TSelector {
   * @desc unfortunately, branch.fID is not number of element in streamer info
   * @private */
 function findBrachStreamerElement(branch, file) {
-   if (!branch || !file || (branch._typename !== 'TBranchElement') || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
+   if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
    let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
       arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
@@ -1679,7 +1683,7 @@ async function treeProcess(tree, selector, args) {
          leaf = (nb_leaves > 0) ? branch.fLeaves.arr[0] : null,
          elem = null, // TStreamerElement used to create reader
          member = null, // member for actual reading of the branch
-         is_brelem = (branch._typename === 'TBranchElement'),
+         is_brelem = (branch._typename === clTBranchElement),
          child_scan = 0, // scan child branches after main branch is appended
          item_cnt = null, item_cnt2 = null, object_class = '';
 
@@ -1857,7 +1861,7 @@ async function treeProcess(tree, selector, args) {
                member = {
                   name: target_name,
                   typename: branch.fClassName,
-                  streamer: streamer,
+                  streamer,
                   func(buf, obj) {
                      let res = { _typename: this.typename };
                      for (let n = 0; n < this.streamer.length; ++n)
@@ -2718,7 +2722,7 @@ function treeHierarchy(node, obj) {
 
       node._childs.push(subitem);
 
-      if (branch._typename === 'TBranchElement')
+      if (branch._typename === clTBranchElement)
          subitem._title += ` from ${branch.fClassName};${branch.fClassVersion}`;
 
       if (nb_branches > 0) {
@@ -2756,8 +2760,8 @@ function treeHierarchy(node, obj) {
                      bnode._childs.push({
                         _name: key+'()',
                         _title: `function ${key} of class ${object_class}`,
-                        _kind: 'ROOT.TBranchFunc', // fictional class, only for drawing
-                        _obj: { _typename: 'TBranchFunc', branch: bobj, func: key },
+                        _kind: 'ROOT.' + clTBranchFunc, // fictional class, only for drawing
+                        _obj: { _typename: clTBranchFunc, branch: bobj, func: key },
                         _more: false
                      });
 
@@ -2794,4 +2798,5 @@ function treeHierarchy(node, obj) {
    return true;
 }
 
-export { kClonesNode, kSTLNode, TSelector, TDrawVariable, TDrawSelector, treeHierarchy, treeProcess, treeDraw, treeIOTest };
+export { kClonesNode, kSTLNode, clTBranchFunc,
+         TSelector, TDrawVariable, TDrawSelector, treeHierarchy, treeProcess, treeDraw, treeIOTest };
