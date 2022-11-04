@@ -27,7 +27,7 @@ let internals = {
 //openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = 'nojsroot';
 
 const src = import.meta?.url;
-if (src && (typeof src == 'string')) {
+if (src && isStr(src)) {
    const pos = src.indexOf('modules/core.mjs');
    if (pos >= 0) {
       source_dir = src.slice(0, pos);
@@ -134,7 +134,7 @@ let constants = {
       AlwaysMathJax: 4,
       /** @summary Convert string values into number */
       fromString(s) {
-         if (!s || (typeof s !== 'string'))
+         if (!s || !isStr(s))
             return this.Normal;
          switch(s){
             case 'off': return this.Off;
@@ -421,10 +421,10 @@ async function loadScript(url) {
    if (!url)
       return true;
 
-   if ((typeof url == 'string') && (url.indexOf(';') >= 0))
+   if (isStr(url) && (url.indexOf(';') >= 0))
       url = url.split(';');
 
-   if (typeof url != 'string') {
+   if (!isStr(url)) {
       let scripts = url, loadNext = () => {
          if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
@@ -569,13 +569,13 @@ function parse(json) {
 
    if (!json) return null;
 
-   let obj = (typeof json == 'string') ? JSON.parse(json) : json,
+   let obj = isStr(json) ? JSON.parse(json) : json,
        map = [], newfmt = undefined;
 
    const unref_value = value => {
       if ((value === null) || (value === undefined)) return;
 
-      if (typeof value === 'string') {
+      if (isStr(value)) {
          if (newfmt || (value.length < 6) || (value.indexOf('$ref:') !== 0)) return;
          let ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
@@ -775,7 +775,7 @@ function decodeUrl(url) {
       get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
-   if (!url || (typeof url !== 'string')) {
+   if (!url || !isStr(url)) {
       if (settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
       url = document.URL;
    }
@@ -818,7 +818,7 @@ function decodeUrl(url) {
   * @private */
 function findFunction(name) {
    if (isFunc(name)) return name;
-   if (typeof name !== 'string') return null;
+   if (!isStr(name)) return null;
    let names = name.split('.'), elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
@@ -1407,11 +1407,11 @@ function getMethods(typename, obj) {
       }
       m.Add = function(obj,opt) {
          this.arr.push(obj);
-         this.opt.push((opt && typeof opt == 'string') ? opt : '');
+         this.opt.push(isStr(opt) ? opt : '');
       }
       m.AddFirst = function(obj,opt) {
          this.arr.unshift(obj);
-         this.opt.unshift((opt && typeof opt == 'string') ? opt : '');
+         this.opt.unshift(isStr(opt) ? opt : '');
       }
       m.RemoveAt = function(indx) {
          this.arr.splice(indx, 1);
@@ -1684,6 +1684,10 @@ function isRootCollection(lst, typename) {
   * @private */
 function isFunc(arg) { return typeof arg === 'function'; }
 
+/** @summary Check if argument is a atring
+  * @private */
+function isStr(arg) { return typeof arg === 'string'; }
+
 /** @summary Check if object is a Promise
   * @private */
 function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
@@ -1710,4 +1714,4 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isFunc, isPromise, _ensureJSROOT };
+         getMethods, registerMethods, isRootCollection, isFunc, isStr, isPromise, _ensureJSROOT };

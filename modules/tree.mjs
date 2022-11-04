@@ -1,4 +1,4 @@
-import { BIT, isArrayProto, isRootCollection, isFunc, getMethods,
+import { BIT, isArrayProto, isRootCollection, isFunc, isStr, getMethods,
          create, createHistogram, createTGraph,
          clTObject, clTObjString, clTHashList, clTPolyMarker3D, clTH1, clTH2, clTH3 } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
@@ -52,7 +52,7 @@ class TSelector {
     * @param {boolean} [direct] - if only branch without any children should be read */
    addBranch(branch, name, direct) {
       if (!name)
-         name = (typeof branch === 'string') ? branch : ('br' + this._branches.length);
+         name = isStr(branch) ? branch : `br${this._branches.length}`;
       this._branches.push(branch);
       this._names.push(name);
       this._directs.push(direct);
@@ -187,7 +187,7 @@ class ArrayIterator {
             return true;
          }
 
-         if ((typ == 'any') && (typeof this.select[cnt + 1] === 'string')) {
+         if ((typ == 'any') && isStr(this.select[cnt + 1])) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
@@ -703,7 +703,7 @@ class TDrawSelector extends TSelector {
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
 
-      if (!expr || (typeof expr !== 'string')) return '';
+      if (!expr || !isStr(expr)) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(';');
@@ -1597,7 +1597,7 @@ async function treeProcess(tree, selector, args) {
       // read_mode == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created
       // read_mode == '.member_name' select only reading of member_name instead of complete object
 
-      if (typeof branch === 'string')
+      if (isStr(branch))
          branch = findBranch(handle.tree, branch);
 
       if (!branch) { console.error('Did not found branch'); return null; }
@@ -1738,7 +1738,7 @@ async function treeProcess(tree, selector, args) {
 
          let match_prefix = branch.fName;
          if (match_prefix[match_prefix.length - 1] === '.') match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if ((typeof read_mode === 'string') && (read_mode[0] == '.')) match_prefix += read_mode;
+         if (isStr(read_mode) && (read_mode[0] == '.')) match_prefix += read_mode;
          match_prefix += '.';
 
          for (let k = 0; k < lst.arr.length; ++k) {
@@ -1799,7 +1799,7 @@ async function treeProcess(tree, selector, args) {
 
          elem = createStreamerElement(target_name, kInt);
 
-         if (!read_mode || ((typeof read_mode === 'string') && (read_mode[0] === '.')) || (read_mode === 1)) {
+         if (!read_mode || (isStr(read_mode) && (read_mode[0] === '.')) || (read_mode === 1)) {
             handle.process_arrays = false;
 
             member = {
@@ -1819,7 +1819,7 @@ async function treeProcess(tree, selector, args) {
                }
             };
 
-            if ((typeof read_mode === 'string') && (read_mode[0] === '.')) {
+            if (isStr(read_mode) && (read_mode[0] === '.')) {
                member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                if (!member.conttype) {
                   console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
@@ -1928,7 +1928,7 @@ async function treeProcess(tree, selector, args) {
          }
       }
 
-      if (item_cnt && (typeof read_mode === 'string')) {
+      if (item_cnt && isStr(read_mode)) {
 
          member.name0 = item_cnt.name;
 
@@ -2577,7 +2577,7 @@ async function treeProcess(tree, selector, args) {
   * @return {Promise} with object like { obj: draw_object, opt: draw_options } */
 async function treeDraw(tree, args) {
 
-   if (typeof args === 'string') args = { expr: args };
+   if (isStr(args)) args = { expr: args };
 
    if (!args.expr) args.expr = '';
 
@@ -2645,7 +2645,7 @@ function treeIOTest(tree, args) {
       }
 
       selector.Terminate = function(res) {
-         if (typeof res !== 'string')
+         if (!isStr(res))
             res = (!res || this.fails) ? 'FAIL' : 'ok';
 
          names[nbr] = res + ' ' + names[nbr];

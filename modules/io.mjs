@@ -1,5 +1,5 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
-         create, getMethods, addMethods, isNodeJs, isFunc,
+         create, getMethods, addMethods, isNodeJs, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
@@ -672,7 +672,7 @@ function createStreamerElement(name, typename, file) {
       fXmin: 0, fXmax: 0, fFactor: 0
    };
 
-   if (typeof typename === 'string') {
+   if (isStr(typename)) {
       elem.fType = getTypeId(typename);
       if ((elem.fType < 0) && file && file.fBasicTypes[typename])
          elem.fType = file.fBasicTypes[typename];
@@ -2709,7 +2709,7 @@ class TFile {
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
-      if (typeof this.fURL != 'string') return this;
+      if (!isStr(this.fURL)) return this;
 
       if (this.fURL[this.fURL.length - 1] === '+') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
@@ -2773,7 +2773,7 @@ class TFile {
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
           first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
-      if (filename && (typeof filename === 'string') && (filename.length > 0)) {
+      if (isStr(filename) && (filename.length > 0)) {
          const pos = fileurl.lastIndexOf('/');
          fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
       }
@@ -2835,7 +2835,7 @@ class TFile {
          if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
-            file.fFileContent = new TBuffer((typeof res == 'string') ? res : new DataView(res));
+            file.fFileContent = new TBuffer(isStr(res) ? res : new DataView(res));
 
             if (!file.fAcceptRanges)
                file.fEND = file.fFileContent.length;
@@ -2875,7 +2875,7 @@ class TFile {
 
          // object to access response data
          let hdr = this.getResponseHeader('Content-Type'),
-            ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart') >= 0),
+            ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
             view = new DataView(res);
 
          if (!ismulti) {
@@ -2999,7 +2999,7 @@ class TFile {
     * @private */
    getDir(dirname, cycle) {
 
-      if ((cycle === undefined) && (typeof dirname == 'string')) {
+      if ((cycle === undefined) && isStr(dirname)) {
          const pos = dirname.lastIndexOf(';');
          if (pos > 0) { cycle = parseInt(dirname.slice(pos + 1)); dirname = dirname.slice(0, pos); }
       }
@@ -3357,7 +3357,7 @@ class TFile {
       let custom = CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
-      if (typeof custom === 'string')
+      if (isStr(custom))
          return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
@@ -3781,7 +3781,7 @@ class TProxyFile extends TFile {
          if (!res) return false;
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
-         if (typeof this.fFileName == 'string') {
+         if (isStr(this.fFileName)) {
             let p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
                this.fFileName = this.fFileName.slice(p+1);
@@ -3829,7 +3829,7 @@ function openFile(arg) {
 
    let file;
 
-   if (isNodeJs() && (typeof arg == 'string')) {
+   if (isNodeJs() && isStr(arg)) {
       if (arg.indexOf('file://') == 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf('http') !== 0)
