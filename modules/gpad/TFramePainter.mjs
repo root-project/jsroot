@@ -113,7 +113,7 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on("start", function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_rect) return;
 
          closeMenu(); // close menu
 
