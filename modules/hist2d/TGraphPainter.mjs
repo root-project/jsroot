@@ -757,7 +757,7 @@ class TGraphPainter extends ObjectPainter {
             }
          }
 
-         if (path.length > 0) {
+         if (path) {
             draw_g.append('svg:path')
                   .attr('d', path)
                   .call(this.markeratt.func);

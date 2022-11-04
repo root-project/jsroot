@@ -371,7 +371,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
   * @private */
 function findBranch(tree, name) {
    let res = findBranchComplex(tree, name, tree.fBranches, true);
-   return (!res || (res.rest.length > 0)) ? null : res.branch;
+   return (!res || res.rest) ? null : res.branch;
 }
 
 

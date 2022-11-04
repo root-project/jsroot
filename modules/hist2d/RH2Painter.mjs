@@ -933,7 +933,7 @@ class RH2Painter extends RHistPainter {
          }
       }
 
-      if (res.length > 0) {
+      if (res) {
          let elem = this.draw_g
                         .append('svg:path')
                         .attr('d', res)
@@ -942,19 +942,19 @@ class RH2Painter extends RHistPainter {
             elem.call(this.lineatt.func);
       }
 
-      if ((btn1.length > 0) && this.fillatt.hasColor())
+      if (btn1 && this.fillatt.hasColor())
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
                     .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
-      if (btn2.length > 0)
+      if (btn2)
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
                     .style('fill', !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatHex());
 
-      if (cross.length > 0) {
+      if (cross) {
          let elem = this.draw_g.append('svg:path')
                                .attr('d', cross)
                                .style('fill', 'none');
@@ -1054,7 +1054,7 @@ class RH2Painter extends RHistPainter {
 
       let cntr = handle.palette.getContour();
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx<cntr.length)) {
            let pattern_class = 'scatter_' + colindx,
                pattern = defs.select('.' + pattern_class);

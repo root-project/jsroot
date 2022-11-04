@@ -281,7 +281,7 @@ function getDrawSettings(kind, selector) {
 
    res.inspect = !noinspect;
    res.expand = canexpand;
-   res.draw = res.opts && (res.opts.length > 0);
+   res.draw = !!res.opts;
 
    return res;
 }

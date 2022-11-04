@@ -2773,7 +2773,7 @@ class TFile {
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
           first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
-      if (isStr(filename) && (filename.length > 0)) {
+      if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
          fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
       }

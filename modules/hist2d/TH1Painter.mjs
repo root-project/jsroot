@@ -685,7 +685,7 @@ class TH1Painter extends THistPainter {
       let close_path = `L${currx},${h0}H${startx}Z`;
 
       if (draw_markers || show_line) {
-         if ((path_fill !== null) && (path_fill.length > 0))
+         if (path_fill)
             this.draw_g.append('svg:path')
                        .attr('d', path_fill)
                        .call(this.fillatt.func);
