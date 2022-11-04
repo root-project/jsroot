@@ -10,6 +10,7 @@
 7. Improve geometry clipping
 8. 3-dimensional TTree::Draw now produces TPolyMarker3D by default
 9. Fix - multipart message handling (#250)
+10. Fix - interactive move/resize on touch devices
 
 
 ## Changes in 7.2.0

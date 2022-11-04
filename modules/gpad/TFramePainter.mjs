@@ -27,7 +27,7 @@ function setPainterTooltipEnabled(painter, on) {
 function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 
-   let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
+   let painter = _painter, drag_rect = null, drag_kind = '', pp = painter.getPadPainter();
    if (pp?._fast_drawing) return;
 
    function makeResizeElements(group, handler) {
@@ -56,10 +56,10 @@ function addDragHandler(_painter, arg) {
 
    const complete_drag = (newx, newy, newwidth, newheight) => {
       if (drag_rect) {
-         drag_rect.style('cursor', 'auto');
          drag_rect.remove();
          drag_rect = null;
       }
+      drag_kind = '';
 
       if (!painter.draw_g)
          return false;
@@ -131,6 +131,8 @@ function addDragHandler(_painter, arg) {
             path: `v${arg.height}h${arg.width}v${-arg.height}z`
          };
 
+         drag_kind = 'move';
+
          drag_rect = d3_select(painter.draw_g.node().parentNode).append('path')
             .classed('zoom', true)
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
@@ -140,7 +142,7 @@ function addDragHandler(_painter, arg) {
 
 
       }).on('drag', function(evnt) {
-         if (!drag_rect) return;
+         if (!drag_rect || (drag_kind != 'move')) return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -158,7 +160,7 @@ function addDragHandler(_painter, arg) {
          drag_rect.attr('d', `M${handle.x},${handle.y}${handle.path}`);
 
       }).on('end', function(evnt) {
-         if (!drag_rect) return;
+         if (!drag_rect || (drag_kind != 'move')) return;
 
          evnt.sourceEvent.preventDefault();
 
@@ -179,7 +181,7 @@ function addDragHandler(_painter, arg) {
 
    drag_resize
       .on('start', function(evnt) {
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_rect) return;
 
          evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
@@ -195,6 +197,8 @@ function addDragHandler(_painter, arg) {
             pad_w: pad_rect.width, pad_h: pad_rect.height
          };
 
+         drag_kind = 'resize';
+
          drag_rect = d3_select(painter.draw_g.node().parentNode)
             .append('rect')
             .classed('zoom', true)
@@ -206,7 +210,7 @@ function addDragHandler(_painter, arg) {
             .property('drag_handle', handle);
 
       }).on('drag', function(evnt) {
-         if (!drag_rect) return;
+         if (!drag_rect || (drag_kind != 'resize')) return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -237,7 +241,8 @@ function addDragHandler(_painter, arg) {
          drag_rect.attr('x', handle.x).attr('y', handle.y).attr('width', handle.width).attr('height', handle.height);
 
       }).on('end', function(evnt) {
-         if (!drag_rect) return;
+         if (!drag_rect || (drag_kind != 'resize')) return;
+
          evnt.sourceEvent.preventDefault();
 
          let handle = drag_rect.property('drag_handle');
