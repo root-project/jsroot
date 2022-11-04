@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isNodeJs, source_dir, atob_func, btoa_func } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isNodeJs, isFunc, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -249,15 +249,15 @@ function registerForResize(handle, delay) {
       myInterval = null;
 
       document.body.style.cursor = 'wait';
-      if (typeof handle == 'function')
+      if (isFunc(handle))
          handle();
-      else if (typeof handle?.checkResize == 'function') {
+      else if (isFunc(handle?.checkResize)) {
          handle.checkResize();
       } else {
          let node = new BasePainter(handle).selectDom();
          if (!node.empty()) {
             let mdi = node.property('mdi');
-            if (mdi && typeof mdi.checkMDIResize == 'function') {
+            if (isFunc(mdi?.checkMDIResize)) {
                mdi.checkMDIResize();
             } else {
                resize(node.node());
@@ -478,9 +478,9 @@ function getBinFileContent(content) {
 /** @summary Function store content as file with filename
   * @private */
 async function saveFile(filename, content) {
-   if (typeof _saveFileFunc == 'function') {
+   if (isFunc(_saveFileFunc))
       return _saveFileFunc(filename, getBinFileContent(content));
-   } else if (isNodeJs()) {
+   if (isNodeJs()) {
       return import('fs').then(fs => {
          fs.writeFileSync(filename, getBinFileContent(content));
          return true;

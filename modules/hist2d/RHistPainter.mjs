@@ -1,4 +1,4 @@
-import { gStyle, settings } from '../core.mjs';
+import { gStyle, settings, isFunc } from '../core.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 
@@ -213,7 +213,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary copy draw options to all other histograms in the pad*/
    copyOptionsToOthers() {
       this.forEachPainter(painter => {
-         if ((painter !== this) && (typeof painter.copyOptionsFrom == 'function'))
+         if ((painter !== this) && isFunc(painter.copyOptionsFrom))
             painter.copyOptionsFrom(this);
       }, 'objects');
    }
@@ -221,7 +221,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (typeof fp?.create3DScene === 'function')
+      if (isFunc(fp?.create3DScene))
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -625,7 +625,7 @@ class RHistPainter extends RObjectPainter {
          if (this.getDimension() == 2)
              menu.add('Values range', () => this.changeValuesRange(menu, 'z'));
 
-         if (typeof this.fillHistContextMenu == 'function')
+         if (isFunc(this.fillHistContextMenu))
             this.fillHistContextMenu(menu);
       }
 
@@ -646,7 +646,7 @@ class RHistPainter extends RObjectPainter {
             if (!fp.enable_highlight && main.highlightBin3D && main.mode3d) main.highlightBin3D(null);
          });
 
-         if (typeof fp?.render3D == 'function') {
+         if (isFunc(fp?.render3D)) {
             menu.addchk(main.options.FrontBox, 'Front box', () => {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -669,7 +669,7 @@ class RHistPainter extends RObjectPainter {
             }
          }
 
-         if (typeof main.control?.reset === 'function')
+         if (isFunc(main.control?.reset))
             menu.add('Reset camera', () => main.control.reset());
       }
 

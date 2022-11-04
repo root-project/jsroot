@@ -1,4 +1,4 @@
-import { gStyle, internals, createTPolyLine } from '../core.mjs';
+import { gStyle, internals, isFunc, createTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { floatToString, TRandom } from '../base/BasePainter.mjs';
@@ -741,7 +741,7 @@ class RH2Painter extends RHistPainter {
           text_g = this.draw_g.append('svg:g').attr('class','th2_text'),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == 'E') &&
-                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function');
+                      this.matchObjectType('TProfile2D') && isFunc(histo.getBinEntries);
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 

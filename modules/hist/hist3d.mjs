@@ -1,6 +1,4 @@
-/// 3D TH2 drawing
-
-import { constants, isBatchMode, getDocument } from '../core.mjs';
+import { constants, isBatchMode, isFunc, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -267,13 +265,13 @@ function create3DScene(render3d, x3dscale, y3dscale) {
             for (let n = 0; n < intersects.length; ++n) {
                let mesh = intersects[n].object;
                if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (typeof mesh.painter?.fillContextMenu === 'function') {
+               if (isFunc(mesh.painter?.fillContextMenu)) {
                   p = mesh.painter; break;
                }
             }
 
          let fp = obj_painter.getFramePainter();
-         if (typeof fp?.showContextMenu == 'function')
+         if (isFunc(fp?.showContextMenu))
             fp.showContextMenu(kind, pos, p);
       };
 
@@ -451,7 +449,7 @@ function highlightBin3D(tip, selfmesh) {
 
    if (changed) this.render3D();
 
-   if (changed && (typeof tip.$painter?.redrawProjection == 'function'))
+   if (changed && isFunc(tip.$painter?.redrawProjection))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
    if (changed && mainp?.getObject())

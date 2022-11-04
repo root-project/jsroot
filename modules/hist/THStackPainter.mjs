@@ -1,4 +1,4 @@
-import { clone, create, createHistogram, gStyle, clTList, clTH2 } from '../core.mjs';
+import { clone, create, createHistogram, isFunc, gStyle, clTList, clTH2 } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -163,7 +163,7 @@ class THStackPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor(nhists);
             if (this.options._pfc) hist.fFillColor = icolor;
             if (this.options._plc) hist.fLineColor = icolor;

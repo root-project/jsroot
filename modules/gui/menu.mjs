@@ -1,4 +1,4 @@
-import { loadScript, source_dir, settings, gStyle, internals, clTGaxis } from '../core.mjs';
+import { loadScript, source_dir, settings, gStyle, internals, isFunc, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -64,7 +64,7 @@ class JSRootMenu {
      * @param {function} func - func called when item is selected */
    addchk(flag, name, arg, func, title) {
       let handler = func;
-      if (typeof arg == 'function') {
+      if (isFunc(arg)) {
          title = func;
          func = arg;
          handler = res => func(res == '1');
@@ -972,7 +972,7 @@ class StandaloneMenu extends JSRootMenu {
       if ((name == 'endsub:') || (name == 'endcolumn:'))
          return this.stack.pop();
 
-      if (typeof arg == 'function') { title = func; func = arg; arg = name; }
+      if (isFunc(arg)) { title = func; func = arg; arg = name; }
 
       let elem = {};
       curr.push(elem);
@@ -1353,7 +1353,7 @@ class BootstrapMenu extends JSRootMenu {
       }
       if (name.indexOf('sub:') == 0) { name = name.slice(4); newlevel = true; }
 
-      if (typeof arg == 'function') { func = arg; arg = name; }
+      if (isFunc(arg)) { func = arg; arg = name; }
 
       if (name.indexOf('chk:') == 0) {
          checked = '\u2713';
@@ -1378,7 +1378,7 @@ class BootstrapMenu extends JSRootMenu {
          this.lvl++;
       }
 
-      if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
+      if (isFunc(func)) this.funcs[this.cnt] = func; // keep call-back function
 
       this.cnt++;
    }
@@ -1421,7 +1421,7 @@ class BootstrapMenu extends JSRootMenu {
                    cnt = this.getAttribute('id').slice(menu.menuname.length),
                    func = cnt ? menu.funcs[cnt] : null;
                menu.remove();
-               if (typeof func == 'function') {
+               if (isFunc(func)) {
                   if (menu.painter)
                      func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
                   else

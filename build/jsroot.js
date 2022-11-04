@@ -41706,9 +41706,6 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    return material;
 }
 
-/// 3D TH2 drawing
-
-
 /** @summary Text 3d axis visibility
   * @private */
 function testAxisVisibility(camera, toplevel, fb, bb) {
@@ -41963,13 +41960,13 @@ function create3DScene(render3d, x3dscale, y3dscale) {
             for (let n = 0; n < intersects.length; ++n) {
                let mesh = intersects[n].object;
                if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (typeof mesh.painter?.fillContextMenu === 'function') {
+               if (isFunc$1(mesh.painter?.fillContextMenu)) {
                   p = mesh.painter; break;
                }
             }
 
          let fp = obj_painter.getFramePainter();
-         if (typeof fp?.showContextMenu == 'function')
+         if (isFunc$1(fp?.showContextMenu))
             fp.showContextMenu(kind, pos, p);
       };
 
@@ -42147,7 +42144,7 @@ function highlightBin3D(tip, selfmesh) {
 
    if (changed) this.render3D();
 
-   if (changed && (typeof tip.$painter?.redrawProjection == 'function'))
+   if (changed && isFunc$1(tip.$painter?.redrawProjection))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
    if (changed && mainp?.getObject())
@@ -47360,15 +47357,15 @@ function registerForResize(handle, delay) {
       myInterval = null;
 
       document.body.style.cursor = 'wait';
-      if (typeof handle == 'function')
+      if (isFunc$1(handle))
          handle();
-      else if (typeof handle?.checkResize == 'function') {
+      else if (isFunc$1(handle?.checkResize)) {
          handle.checkResize();
       } else {
          let node = new BasePainter(handle).selectDom();
          if (!node.empty()) {
             let mdi = node.property('mdi');
-            if (mdi && typeof mdi.checkMDIResize == 'function') {
+            if (isFunc$1(mdi?.checkMDIResize)) {
                mdi.checkMDIResize();
             } else {
                resize(node.node());
@@ -47589,9 +47586,9 @@ function getBinFileContent(content) {
 /** @summary Function store content as file with filename
   * @private */
 async function saveFile(filename, content) {
-   if (typeof _saveFileFunc == 'function') {
+   if (isFunc$1(_saveFileFunc))
       return _saveFileFunc(filename, getBinFileContent(content));
-   } else if (isNodeJs()) {
+   if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
          fs.writeFileSync(filename, getBinFileContent(content));
          return true;
@@ -47705,7 +47702,7 @@ class JSRootMenu {
      * @param {function} func - func called when item is selected */
    addchk(flag, name, arg, func, title) {
       let handler = func;
-      if (typeof arg == 'function') {
+      if (isFunc$1(arg)) {
          title = func;
          func = arg;
          handler = res => func(res == '1');
@@ -48613,7 +48610,7 @@ class StandaloneMenu extends JSRootMenu {
       if ((name == 'endsub:') || (name == 'endcolumn:'))
          return this.stack.pop();
 
-      if (typeof arg == 'function') { title = func; func = arg; arg = name; }
+      if (isFunc$1(arg)) { title = func; func = arg; arg = name; }
 
       let elem = {};
       curr.push(elem);
@@ -48994,7 +48991,7 @@ class BootstrapMenu extends JSRootMenu {
       }
       if (name.indexOf('sub:') == 0) { name = name.slice(4); newlevel = true; }
 
-      if (typeof arg == 'function') { func = arg; arg = name; }
+      if (isFunc$1(arg)) { func = arg; arg = name; }
 
       if (name.indexOf('chk:') == 0) {
          checked = '\u2713';
@@ -49019,7 +49016,7 @@ class BootstrapMenu extends JSRootMenu {
          this.lvl++;
       }
 
-      if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
+      if (isFunc$1(func)) this.funcs[this.cnt] = func; // keep call-back function
 
       this.cnt++;
    }
@@ -49062,7 +49059,7 @@ class BootstrapMenu extends JSRootMenu {
                    cnt = this.getAttribute('id').slice(menu.menuname.length),
                    func = cnt ? menu.funcs[cnt] : null;
                menu.remove();
-               if (typeof func == 'function') {
+               if (isFunc$1(func)) {
                   if (menu.painter)
                      func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
                   else
@@ -49192,12 +49189,12 @@ function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
    let fp = painter.getFramePainter();
-   if (typeof fp?.setTooltipEnabled == 'function') {
+   if (isFunc$1(fp?.setTooltipEnabled)) {
       fp.setTooltipEnabled(on);
       fp.processFrameTooltipEvent(null);
    }
    // this is 3D control object
-   if (painter.control && (typeof painter.control.setTooltipEnabled == 'function'))
+   if (isFunc$1(painter.control?.setTooltipEnabled))
       painter.control.setTooltipEnabled(on);
 }
 
@@ -49762,7 +49759,7 @@ const TooltipHandler = {
 
       hintsg.property('startx', posx);
 
-      if (cp._highlight_connect && (typeof cp.processHighlightConnect == 'function'))
+      if (cp._highlight_connect && isFunc$1(cp.processHighlightConnect))
          cp.processHighlightConnect(hints);
    },
 
@@ -50058,7 +50055,7 @@ const FrameInteractive = {
 
       let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
-      if (!handle || (typeof handle.processLabelsMove != 'function') || !this.zoom_lastpos) return;
+      if (!handle || !isFunc$1(handle.processLabelsMove) || !this.zoom_lastpos) return;
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
@@ -50516,7 +50513,7 @@ const FrameInteractive = {
          } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
             exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
 
-            if (this.v7_frame && typeof exec_painter?.v7EvalAttr === 'function')
+            if (this.v7_frame && isFunc$1(exec_painter?.v7EvalAttr))
                exec_painter = null;
          }
       } else if ((kind == 'painter') && obj) {
@@ -51398,7 +51395,7 @@ class TFramePainter extends ObjectPainter {
    cleanFrameDrawings() {
 
       // cleanup all 3D drawings if any
-      if (typeof this.create3DScene === 'function')
+      if (isFunc$1(this.create3DScene))
          this.create3DScene(-1);
 
       this.cleanAxesDrawings();
@@ -51603,7 +51600,7 @@ class TFramePainter extends ObjectPainter {
          menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent',
                () => { faxis.InvertBit(EAxisBits.kNoExponent); this.redrawPad(); });
 
-         if ((kind === 'z') && main?.options?.Zscale && (typeof main?.fillPaletteMenu == 'function'))
+         if ((kind === 'z') && main?.options?.Zscale && isFunc$1(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu);
 
          if (faxis) {
@@ -51647,7 +51644,7 @@ class TFramePainter extends ObjectPainter {
          menu.addchk(pad.fLogx, 'SetLogx', () => this.toggleAxisLog('x'));
          menu.addchk(pad.fLogy, 'SetLogy', () => this.toggleAxisLog('y'));
 
-         if (main && (typeof main.getDimension === 'function') && (main.getDimension() > 1))
+         if (isFunc$1(main?.getDimension) && (main.getDimension() > 1))
             menu.addchk(pad.fLogz, 'SetLogz', () => this.toggleAxisLog('z'));
          menu.add('separator');
       }
@@ -51707,7 +51704,7 @@ class TFramePainter extends ObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._click_handler = isFunc$1(handler) ? handler : null;
    }
 
    /** @summary Configure user-defined dblclick handler
@@ -51715,7 +51712,7 @@ class TFramePainter extends ObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._dblclick_handler = isFunc$1(handler) ? handler : null;
    }
 
     /** @summary Function can be used for zooming into specified range
@@ -51771,7 +51768,7 @@ class TFramePainter extends ObjectPainter {
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
          this.forEachPainter(obj => {
-            if (typeof obj.canZoomInside != 'function') return;
+            if (!isFunc$1(obj.canZoomInside)) return;
             if (zoom_x && obj.canZoomInside('x', xmin, xmax)) {
                this.zoom_xmin = xmin;
                this.zoom_xmax = xmax;
@@ -51810,7 +51807,7 @@ class TFramePainter extends ObjectPainter {
          // than try to unzoom all overlapped objects
          if (!changed)
             this.getPadPainter()?.painters?.forEach(painter => {
-               if (typeof painter?.unzoomUserRange == 'function')
+               if (isFunc$1(painter?.unzoomUserRange))
                   if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
                      changed = true;
             });
@@ -51843,7 +51840,7 @@ class TFramePainter extends ObjectPainter {
       // first process zooming
       if (zoom_v)
          this.forEachPainter(obj => {
-            if (typeof obj.canZoomInside != 'function') return;
+            if (!isFunc$1(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
                this['zoom_' + name + 'min'] = vmin;
                this['zoom_' + name + 'max'] = vmax;
@@ -52009,7 +52006,7 @@ class MDIDisplay extends BasePainter {
    /** @summary method called after new frame is created
      * @private */
    afterCreateFrame(frame) {
-      if (typeof this.initFrame == 'function')
+      if (isFunc$1(this.initFrame))
          this.initFrame(frame);
       return frame;
    }
@@ -52068,7 +52065,7 @@ class MDIDisplay extends BasePainter {
 
          if (only_frame_id && (select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.getItemName() !== null) && (typeof painter.checkResize == 'function')) {
+         if ((painter.getItemName() !== null) && isFunc$1(painter.checkResize)) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.checkResize(size);
@@ -52498,7 +52495,7 @@ class TabsDisplay extends MDIDisplay {
 
    /** @summary call function for each frame */
    forEachFrame(userfunc,  only_visible) {
-      if (typeof userfunc != 'function') return;
+      if (!isFunc$1(userfunc)) return;
 
       if (only_visible) {
          let active = this.getActiveFrame();
@@ -52662,7 +52659,7 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary call function for each frame */
    forEachFrame(userfunc,  only_visible) {
-      if (typeof userfunc != 'function') return;
+      if (!isFunc$1(userfunc)) return;
 
       let mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
@@ -53173,9 +53170,9 @@ class BrowserLayout {
 
    /** @summary Check resize action */
    checkResize() {
-      if (typeof this.hpainter?.checkResize == 'function')
+      if (isFunc$1(this.hpainter?.checkResize))
          this.hpainter.checkResize();
-      else if (typeof this.objpainter?.checkResize == 'function') {
+      else if (isFunc$1(this.objpainter?.checkResize)) {
          this.objpainter.checkResize(true);
       }
    }
@@ -53972,7 +53969,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
    cleanPrimitives(selector) {
-      if (!selector || (typeof selector !== 'function')) return;
+      if (!isFunc$1(selector)) return;
 
       for (let k = this.painters.length-1; k >= 0; --k)
          if (selector(this.painters[k])) {
@@ -54000,7 +53997,7 @@ class TPadPainter extends ObjectPainter {
       if (kind != 'objects') userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (typeof sub.forEachPainterInPad === 'function') {
+         if (isFunc$1(sub.forEachPainterInPad)) {
             if (kind != 'objects') sub.forEachPainterInPad(userfunc, kind);
          } else if (kind != 'pads') {
             userfunc(sub);
@@ -54019,10 +54016,10 @@ class TPadPainter extends ObjectPainter {
      * @private */
    producePadEvent(what, padpainter, painter, position, place) {
 
-      if ((what == 'select') && (typeof this.selectActivePad == 'function'))
+      if ((what == 'select') && isFunc$1(this.selectActivePad))
          this.selectActivePad(padpainter, painter, position);
 
-      if (typeof this.pad_events_receiver == 'function')
+      if (isFunc$1(this.pad_events_receiver))
          this.pad_events_receiver({ what, padpainter, painter, position, place });
    }
 
@@ -54607,7 +54604,7 @@ class TPadPainter extends ObjectPainter {
    getSubPadPainter(n) {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (sub.pad && (typeof sub.forEachPainterInPad === 'function') && (sub.pad.fNumber === n)) return sub;
+         if (sub.pad && isFunc$1(sub.forEachPainterInPad) && (sub.pad.fNumber === n)) return sub;
       }
       return null;
    }
@@ -54621,7 +54618,7 @@ class TPadPainter extends ObjectPainter {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if (typeof obj.processTooltipEvent == 'function')
+            if (isFunc$1(obj.processTooltipEvent))
                painters.push(obj);
          });
 
@@ -54694,10 +54691,10 @@ class TPadPainter extends ObjectPainter {
 
       menu.add('separator');
 
-      if (typeof this.hasMenuBar == 'function' && typeof this.actiavteMenuBar == 'function')
+      if (isFunc$1(this.hasMenuBar) && isFunc$1(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
-      if (typeof this.hasEventStatus == 'function' && typeof this.activateStatusBar == 'function')
+      if (isFunc$1(this.hasEventStatus) && isFunc$1(this.activateStatusBar))
          menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
@@ -54783,7 +54780,7 @@ class TPadPainter extends ObjectPainter {
       if (!elem.empty() && elem.property('can3d') === constants$1.Embed3D.Overlay) return true;
 
       return this.painters.findIndex(objp => {
-         if (typeof objp.needRedrawByResize === 'function')
+         if (isFunc$1(objp.needRedrawByResize))
             return objp.needRedrawByResize();
       }) >= 0;
    }
@@ -54892,7 +54889,7 @@ class TPadPainter extends ObjectPainter {
          let pi = this.painters.indexOf(objpainter);
          if (pi < 0) this.painters.push(objpainter);
 
-         if (typeof objpainter.setSnapId == 'function')
+         if (isFunc$1(objpainter.setSnapId))
             objpainter.setSnapId(lst[indx].fObjectID);
          else
             objpainter.snapid = lst[indx].fObjectID;
@@ -55044,7 +55041,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
-         if (typeof sub.findSnap === 'function')
+         if (isFunc$1(sub.findSnap))
             sub = sub.findSnap(snapid);
          else if (sub.snapid !== snapid)
             sub = null;
@@ -55268,11 +55265,11 @@ class TPadPainter extends ObjectPainter {
       }
 
       this.painters.forEach(sub => {
-         if (typeof sub.getWebPadOptions == 'function') {
+         if (isFunc$1(sub.getWebPadOptions)) {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
-            if (typeof sub.fillWebObjectOptions == 'function')
+            if (isFunc$1(sub.fillWebObjectOptions))
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }
@@ -55369,7 +55366,7 @@ class TPadPainter extends ObjectPainter {
           }
        }
 
-       if (typeof selp?.fillContextMenu !== 'function') return;
+       if (!isFunc$1(selp?.fillContextMenu)) return;
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -55426,7 +55423,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          let main = pp.getFramePainter();
-         if ((typeof main?.render3D !== 'function') || (typeof main?.access3dKind !== 'function')) return;
+         if (!isFunc$1(main?.render3D) || !isFunc$1(main?.access3dKind)) return;
 
          let can3d = main.access3dKind();
 
@@ -55573,7 +55570,7 @@ class TPadPainter extends ObjectPainter {
             if (main) {
                menu.add('X axis', 'xaxis', this.itemContextMenu);
                menu.add('Y axis', 'yaxis', this.itemContextMenu);
-               if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
+               if (isFunc$1(main.getDimension) && (main.getDimension() > 1))
                   menu.add('Z axis', 'zaxis', this.itemContextMenu);
             }
 
@@ -55602,10 +55599,10 @@ class TPadPainter extends ObjectPainter {
       let done = false;
 
       this.painters.forEach(pp => {
-         if (typeof pp.clickPadButton == 'function')
+         if (isFunc$1(pp.clickPadButton))
             pp.clickPadButton(funcname);
 
-         if (!done && (typeof pp.clickButton == 'function'))
+         if (!done && isFunc$1(pp.clickButton))
             done = pp.clickButton(funcname);
       });
    }
@@ -56062,7 +56059,7 @@ class TCanvasPainter extends TPadPainter {
       } else if (msg.slice(0,5) == 'MENU:') {
          // this is menu with exact identifier for object
          let lst = parse(msg.slice(5));
-         if (typeof this._getmenu_callback == 'function') {
+         if (isFunc$1(this._getmenu_callback)) {
             this._getmenu_callback(lst);
             delete this._getmenu_callback;
          }
@@ -56305,7 +56302,7 @@ class TCanvasPainter extends TPadPainter {
          case 'zoom':  // when changing zoom inside frame
             if (!painter.getWebPadOptions)
                painter = painter.getPadPainter();
-            if (typeof painter.getWebPadOptions == 'function')
+            if (isFunc$1(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
             break;
          case 'pave_moved':
@@ -56604,7 +56601,7 @@ class TPavePainter extends ObjectPainter {
 
          let main = pt.$main_painter || this.getMainPainter();
 
-         if (typeof main?.fillStatistic == 'function') {
+         if (isFunc$1(main?.fillStatistic)) {
 
             let dostat = parseInt(pt.fOptStat), dofit = parseInt(pt.fOptFit);
             if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
@@ -57478,7 +57475,7 @@ class TPavePainter extends ObjectPainter {
    paveContextMenu(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
-         if (typeof fp?.showContextMenu == 'function')
+         if (isFunc$1(fp?.showContextMenu))
              fp.showContextMenu('z', evnt);
          return;
       }
@@ -70172,7 +70169,7 @@ class TDrawSelector extends TSelector {
 
       this.ShowProgress();
 
-      if (isFunc(this.result_callback))
+      if (isFunc$1(this.result_callback))
          this.result_callback(this.hist);
    }
 
@@ -70925,7 +70922,7 @@ async function treeProcess(tree, selector, args) {
       if (max < handle.process_max) handle.process_max = max;
    }
 
-   if (isFunc(selector.ProcessArrays) && handle.simple_read) {
+   if (isFunc$1(selector.ProcessArrays) && handle.simple_read) {
       // this is indication that selector can process arrays of values
       // only strictly-matched tree structure can be used for that
 
@@ -71496,7 +71493,7 @@ function treeHierarchy(node, obj) {
 
             if (methods && (bobj.fBranches.arr.length > 0))
                for (let key in methods) {
-                  if (!isFunc(methods[key])) continue;
+                  if (!isFunc$1(methods[key])) continue;
                   let s = methods[key].toString();
                   if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
                      bnode._childs.push({
@@ -72570,7 +72567,7 @@ function objectHierarchy(top, obj, args = undefined) {
    for (let key in obj) {
       if ((key == '_typename') || (key[0] == '$')) continue;
       let fld = obj[key];
-      if (typeof fld == 'function') continue;
+      if (isFunc$1(fld)) continue;
       if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
 
       if (compress && lastitem) {
@@ -72984,7 +72981,7 @@ class HierarchyPainter extends BasePainter {
                each_item(item._childs[n], item);
       }
 
-      if (typeof func == 'function')
+      if (isFunc$1(func))
          each_item(top || this.h);
    }
 
@@ -73244,7 +73241,7 @@ class HierarchyPainter extends BasePainter {
       // normally search _get method in the parent items
       let curr = item;
       while (curr) {
-         if (typeof curr._get == 'function')
+         if (isFunc$1(curr._get))
             return curr._get(item, null, options).then(obj => { result.obj = obj; return result; });
          curr = ('_parent' in curr) ? curr._parent : null;
       }
@@ -73277,7 +73274,7 @@ class HierarchyPainter extends BasePainter {
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if ((img1.length == 0) && (typeof handle.icon_get == 'function'))
+         if ((img1.length == 0) && isFunc$1(handle.icon_get))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
@@ -73513,7 +73510,7 @@ class HierarchyPainter extends BasePainter {
       d3btns.append('a').attr('class', 'h_button').text('close all')
             .attr('title','close all items in the browser').on('click', () => this.toggleOpenState(false));
 
-      if (typeof this.removeInspector == 'function') {
+      if (isFunc$1(this.removeInspector)) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('remove')
                .attr('title','remove inspector').on('click', () => this.removeInspector());
@@ -73552,7 +73549,7 @@ class HierarchyPainter extends BasePainter {
 
       if (status_item && !this.status_disabled && !decodeUrl().has('nostatus')) {
          let func = findFunction(status_item._status);
-         if (typeof func == 'function')
+         if (isFunc$1(func))
             return this.createStatusLine().then(sdiv => {
                if (sdiv) func(sdiv, this.itemFullName(status_item));
             });
@@ -73675,9 +73672,9 @@ class HierarchyPainter extends BasePainter {
 
       if (place == 'icon') {
          let func = null;
-         if (typeof hitem._icon_click == 'function')
+         if (isFunc$1(hitem._icon_click))
             func = hitem._icon_click;
-         else if (typeof handle?.icon_click == 'function')
+         else if (isFunc$1(handle?.icon_click))
             func = handle.icon_click;
          if (func && func(hitem,this))
             this.updateTreeNode(hitem, d3cont);
@@ -73773,7 +73770,7 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (typeof painter?.mouseOverHierarchy === 'function')
+      if (isFunc$1(painter?.mouseOverHierarchy))
          painter.mouseOverHierarchy(on, itemname, hitem);
    }
 
@@ -73785,7 +73782,7 @@ class HierarchyPainter extends BasePainter {
            hitem = this.findItem(itemname);
       if (!hitem) return;
 
-      if (typeof this.fill_context == 'function')
+      if (isFunc$1(this.fill_context))
          createMenu$1(evnt, this).then(menu => {
             this.fill_context(menu, hitem);
             if (menu.size() > 0) {
@@ -73807,7 +73804,7 @@ class HierarchyPainter extends BasePainter {
             if (this.disp)
                this.disp.forEachFrame(frame => {
                   let canvp = getElementCanvPainter(frame);
-                  if (typeof canvp?.changeDarkMode == 'function')
+                  if (isFunc$1(canvp?.changeDarkMode))
                      canvp.changeDarkMode();
                });
          }
@@ -73939,7 +73936,7 @@ class HierarchyPainter extends BasePainter {
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
-         if (typeof hitem._menu == 'function')
+         if (isFunc$1(hitem._menu))
             hitem._menu(menu, hitem, this);
 
          if (menu.size() > 0) {
@@ -73976,7 +73973,7 @@ class HierarchyPainter extends BasePainter {
          player_func = findFunction(item._player);
       }
 
-      if (typeof player_func != 'function')
+      if (!isFunc$1(player_func))
          return null;
 
       await this.createDisplay();
@@ -74025,7 +74022,7 @@ class HierarchyPainter extends BasePainter {
 
          if (updating && item) delete item._doing_update;
          if (!updating) showProgress();
-         if (typeof respainter?.setItemName === 'function') {
+         if (isFunc$1(respainter?.setItemName)) {
             respainter.setItemName(display_itemname, updating ? null : drawopt, this); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
@@ -74110,7 +74107,7 @@ class HierarchyPainter extends BasePainter {
 
                }
 
-               if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
+               if (isFunc$1(p.redrawObject) && p.redrawObject(obj, drawopt)) painter = p;
             });
 
             if (painter) return complete();
@@ -74172,11 +74169,10 @@ class HierarchyPainter extends BasePainter {
     * @private */
    async dropItem(itemname, divid, opt) {
 
-      if (opt && typeof opt === 'function') { call_back = opt; opt = ''; }
-      if (opt === undefined) opt = '';
+      if (!opt || (typeof opt != 'string')) opt = '';
 
       let drop_complete = (drop_painter, is_main_painter) => {
-         if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
+         if (!is_main_painter && isFunc$1(drop_painter?.setItemName))
             drop_painter.setItemName(itemname, null, this);
          return drop_painter;
       };
@@ -74190,7 +74186,7 @@ class HierarchyPainter extends BasePainter {
 
          let main_painter = getElementMainPainter(divid);
 
-         if (typeof main_painter?.performDrop === 'function')
+         if (isFunc$1(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
          if (main_painter?.accept_drops)
@@ -74536,7 +74532,7 @@ class HierarchyPainter extends BasePainter {
          if (typeof _item._expand == 'string')
             _item._expand = findFunction(item._expand);
 
-         if (typeof _item._expand !== 'function') {
+         if (!isFunc$1(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
 
             if (handle?.expand_item) {
@@ -74545,7 +74541,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             if (handle?.expand || handle?.get_expand) {
-               if (typeof handle.expand == 'function')
+               if (isFunc$1(handle.expand))
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
                   if (!internals.ignore_v6) {
@@ -74554,14 +74550,14 @@ class HierarchyPainter extends BasePainter {
                      await v6._complete_loading();
                   }
                   _item._expand = handle.expand = findFunction(handle.expand);
-               } else if (typeof handle.get_expand == 'function') {
+               } else if (isFunc$1(handle.get_expand)) {
                   _item._expand = handle.expand = await handle.get_expand();
                }
             }
          }
 
          // try to use expand function
-         if (_obj && _item && (typeof _item._expand === 'function')) {
+         if (_obj && isFunc$1(_item?._expand)) {
             if (_item._expand(_item, _obj)) {
                _item._isopen = true;
                if (_item._parent && !_item._parent._isopen) {
@@ -74833,7 +74829,7 @@ class HierarchyPainter extends BasePainter {
             func = draw_handle.make_request;
          }
 
-         if (typeof func == 'function') {
+         if (isFunc$1(func)) {
             // ask to make request
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
@@ -74871,7 +74867,7 @@ class HierarchyPainter extends BasePainter {
          createHttpRequest(url, req_kind, obj => {
 
             let handleAfterRequest = func => {
-               if (typeof func == 'function') {
+               if (isFunc$1(func)) {
                   let res = func(this, item, obj, option, itemreq);
                   if (res && (typeof res == 'object')) obj = res;
                }
@@ -75119,7 +75115,7 @@ class HierarchyPainter extends BasePainter {
             // delete painter reference
             delete item._painter;
             // also clear data which could be associated with item
-            if (typeof item.clear == 'function') item.clear();
+            if (isFunc$1(item.clear)) item.clear();
          }
       });
    }
@@ -75137,7 +75133,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachItem(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
-         if (!withbrowser && (typeof item.clear == 'function')) item.clear();
+         if (!withbrowser && isFunc$1(item.clear)) item.clear();
          if (withbrowser) plainarr.push(item);
       });
 
@@ -75253,7 +75249,7 @@ class HierarchyPainter extends BasePainter {
 
          // do not actiavte frame when doing update
          // mdi.activateFrame(frame);
-         if ((typeof p.redrawObject == 'function') && p.redrawObject(obj)) isany = true;
+         if (isFunc$1(p.redrawObject) && p.redrawObject(obj)) isany = true;
       });
       return isany;
    }
@@ -75449,7 +75445,7 @@ class HierarchyPainter extends BasePainter {
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
             promise = this.openRootFile(filesarr.shift());
-         else if ((localfile !== null) && (typeof this.selectLocalFile == 'function')) {
+         else if ((localfile !== null) && isFunc$1(this.selectLocalFile)) {
             localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
             promise = this.expandItem(expanditems.shift());
@@ -75470,7 +75466,7 @@ class HierarchyPainter extends BasePainter {
       let h0 = null;
       if (this.is_online) {
          let func = internals.getCachedHierarchy || findFunction('GetCachedHierarchy');
-         if (typeof func == 'function')
+         if (isFunc$1(func))
             h0 = func();
          if (typeof h0 !== 'object') h0 = '';
 
@@ -79259,7 +79255,7 @@ function createGeometry(shape, limit) {
          case clTGeoShapeAssembly: break;
          case clTGeoScaledShape: {
             let res = createGeometry(shape.fShape, limit);
-            if (shape.fScale && (limit >= 0) && (typeof res === 'object') && (typeof res.scale === 'function'))
+            if (shape.fScale && (limit >= 0) && isFunc$1(res?.scale))
                res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
          }
@@ -80737,10 +80733,10 @@ function getBoundingBox(node, box3, local_coordinates) {
 function cleanupShape(shape) {
    if (!shape) return;
 
-   if (shape.geom && (typeof shape.geom.dispose == 'function'))
+   if (isFunc$1(shape.geom?.dispose))
       shape.geom.dispose();
 
-   if (shape.geomZ && (typeof shape.geomZ.dispose == 'function'))
+   if (isFunc$1(shape.geomZ?.dispose))
       shape.geomZ.dispose();
 
    delete shape.geom;
@@ -81163,7 +81159,7 @@ function expandGeoObject(parent, obj) {
 function findItemWithPainter(hitem, funcname) {
    while (hitem) {
       if (hitem._painter?._camera) {
-         if (funcname && typeof hitem._painter[funcname] == 'function')
+         if (funcname && isFunc$1(hitem._painter[funcname]))
             hitem._painter[funcname]();
          return hitem;
       }
@@ -81248,7 +81244,7 @@ class Toolbar {
 
          let title = buttonConfig.title || buttonConfig.name;
 
-         if (typeof buttonConfig.click !== 'function')
+         if (!isFunc$1(buttonConfig.click))
             throw new Error('must provide button click() function in button config');
 
          let button = this.element.append('a')
@@ -81950,7 +81946,7 @@ class TGeoPainter extends ObjectPainter {
      * @param {number|Function} transparency - one could provide function
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
    changedGlobalTransparency(transparency, skip_render) {
-      let func = (typeof transparency == 'function') ? transparency : null;
+      let func = isFunc$1(transparency) ? transparency : null;
       if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
       this._toplevel.traverse( node => {
          if (node?.material?.inherentOpacity !== undefined) {
@@ -82544,8 +82540,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
      * @desc Handler should have highlightMesh function with same arguments as TGeoPainter  */
    addHighlightHandler(handler) {
-      if (typeof handler?.highlightMesh != 'function') return;
-      if (!this._highlight_handlers) this._highlight_handlers = [];
+      if (!isFunc$1(handler?.highlightMesh)) return;
+      if (!this._highlight_handlers)
+         this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
 
@@ -83314,7 +83311,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
-         if (this.ctrl.outline && (typeof this.createOutline == 'function')) {
+         if (this.ctrl.outline && isFunc$1(this.createOutline)) {
             this._effectComposer = new EffectComposer( this._renderer );
             this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
@@ -85232,12 +85229,12 @@ class TGeoPainter extends ObjectPainter {
 
          this.setAsMainPainter();
 
-         if (typeof this._resolveFunc == 'function') {
+         if (isFunc$1(this._resolveFunc)) {
             this._resolveFunc(this);
             delete this._resolveFunc;
          }
 
-         if (typeof this._complete_handler == 'function')
+         if (isFunc$1(this._complete_handler))
             this._complete_handler(this);
 
          if (this._draw_nodes_again)
@@ -85618,7 +85615,7 @@ let add_settings = false;
   * @private */
 function injectGeoStyle() {
 
-   if (!add_settings && typeof internals.addDrawFunc == 'function') {
+   if (!add_settings && isFunc$1(internals.addDrawFunc)) {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
       internals.addDrawFunc({ name: 'TEvePointSet', icon_get: getBrowserIcon, icon_click: browserIconClick });
@@ -85769,7 +85766,7 @@ function provideMenu(menu, item, hpainter) {
 
         let fullname = hpainter.itemFullName(item, drawitem);
 
-        if (typeof drawitem._painter?.focusOnItem == 'function')
+        if (isFunc$1(drawitem._painter?.focusOnItem))
            drawitem._painter.focusOnItem(fullname);
       });
 
@@ -85982,7 +85979,7 @@ async function drawDummy3DGeom(painter) {
 function drawAxis3D() {
    let main = this.getMainPainter();
 
-   if (typeof main?.setAxesDraw == 'function')
+   if (isFunc$1(main?.setAxesDraw))
       return main.setAxesDraw(true);
 
    console.error('no geometry painter found to toggle TAxis3D drawing');
@@ -86331,7 +86328,7 @@ class THStackPainter extends ObjectPainter {
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
-         if (typeof mp?.createAutoColor == 'function') {
+         if (isFunc$1(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor(nhists);
             if (this.options._pfc) hist.fFillColor = icolor;
             if (this.options._plc) hist.fLineColor = icolor;
@@ -86679,7 +86676,7 @@ function before3DDraw(painter, obj) {
    let geop = painter.getMainPainter();
    if(!geop)
       return drawDummy3DGeom(painter);
-   if (typeof geop.drawExtras == 'function')
+   if (isFunc$1(geop.drawExtras))
       return geop.drawExtras(obj);
 
    return null;
@@ -89973,7 +89970,7 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p.getRootPad().fTicky = 1;
 
          low_p.forEachPainterInPad(objp => {
-            if (typeof objp?.testEditable == 'function')
+            if (isFunc$1(objp?.testEditable))
                objp.testEditable(false);
          });
 
@@ -91621,7 +91618,7 @@ async function treeDrawProgress(obj, final) {
          painter.selectDom().property('_json_object_', obj);
          return painter;
       }
-      if (typeof internals.drawInspector == 'function')
+      if (isFunc$1(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
       let str = create$1(clTObjString);
       str.fString = toJSON(obj,2);
@@ -93237,7 +93234,7 @@ class RAxisPainter extends RObjectPainter {
 
          return this.drawTitle(this.axis_g, side, lgaps);
       }).then(() => {
-         if (typeof this._afterDrawAgain == 'function')
+         if (isFunc$1(this._afterDrawAgain))
             this._afterDrawAgain();
       });
    }
@@ -94030,7 +94027,7 @@ class RFramePainter extends RObjectPainter {
      * @private */
    cleanFrameDrawings() {
       // cleanup all 3D drawings if any
-      if (typeof this.create3DScene === 'function')
+      if (isFunc$1(this.create3DScene))
          this.create3DScene(-1);
 
       this.cleanupAxes();
@@ -94228,7 +94225,7 @@ class RFramePainter extends RObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._click_handler = isFunc$1(handler) ? handler : null;
    }
 
    /** @summary Configure user-defined dblclick handler
@@ -94236,7 +94233,7 @@ class RFramePainter extends RObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
+      this._dblclick_handler = isFunc$1(handler) ? handler : null;
    }
 
    /** @summary function can be used for zooming into specified range
@@ -94291,7 +94288,7 @@ class RFramePainter extends RObjectPainter {
          };
 
       const checkZooming = (painter, force) => {
-         if (!force && (typeof painter.canZoomInside != 'function')) return;
+         if (!force && !isFunc$1(painter.canZoomInside)) return;
 
          is_any_check = true;
 
@@ -94385,7 +94382,7 @@ class RFramePainter extends RObjectPainter {
           };
 
       let checkZooming = (painter, force) => {
-         if (!force && (typeof painter?.canZoomInside != 'function')) return;
+         if (!force && !isFunc$1(painter?.canZoomInside)) return;
 
          is_any_check = true;
 
@@ -94752,7 +94749,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove
     * @private */
    cleanPrimitives(selector) {
-      if (!selector || (typeof selector !== 'function')) return;
+      if (!isFunc$1(selector)) return;
 
       for (let k = this.painters.length-1; k >= 0; --k)
          if (selector(this.painters[k])) {
@@ -94819,7 +94816,7 @@ class RPadPainter extends RObjectPainter {
       if (kind != 'objects') userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (typeof sub.forEachPainterInPad === 'function') {
+         if (isFunc$1(sub.forEachPainterInPad)) {
             if (kind!='objects') sub.forEachPainterInPad(userfunc, kind);
          } else if (kind != 'pads') userfunc(sub);
       }
@@ -94836,7 +94833,7 @@ class RPadPainter extends RObjectPainter {
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
    producePadEvent(_what, _padpainter, _painter, _position, _place) {
-      if ((_what == 'select') && (typeof this.selectActivePad == 'function'))
+      if ((_what == 'select') && isFunc$1(this.selectActivePad))
          this.selectActivePad(_padpainter, _painter, _position);
 
       if (this.pad_events_receiver)
@@ -95216,7 +95213,7 @@ class RPadPainter extends RObjectPainter {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if (typeof obj.processTooltipEvent == 'function') painters.push(obj);
+            if (isFunc$1(obj.processTooltipEvent)) painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;
@@ -95258,10 +95255,10 @@ class RPadPainter extends RObjectPainter {
 
       menu.add('separator');
 
-      if (typeof this.hasMenuBar == 'function' && typeof this.actiavteMenuBar == 'function')
+      if (isFunc$1(this.hasMenuBar) && isFunc$1(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
-      if (typeof this.hasEventStatus == 'function' && typeof this.activateStatusBar == 'function')
+      if (isFunc$1(this.hasEventStatus) && isFunc$1(this.activateStatusBar))
          menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
@@ -95346,7 +95343,7 @@ class RPadPainter extends RObjectPainter {
       if (!elem.empty() && elem.property('can3d') === constants$1.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.painters.length; ++i)
-         if (typeof this.painters[i].needRedrawByResize === 'function')
+         if (isFunc$1(this.painters[i].needRedrawByResize))
             if (this.painters[i].needRedrawByResize()) return true;
 
       return false;
@@ -95624,7 +95621,7 @@ class RPadPainter extends RObjectPainter {
       for (let k=0;k<this.painters.length;++k) {
          let sub = this.painters[k];
 
-         if (!onlyid && (typeof sub.findSnap === 'function'))
+         if (!onlyid && isFunc$1(sub.findSnap))
             sub = sub.findSnap(snapid);
          else if (!check(sub.snapid))
             sub = null;
@@ -95791,7 +95788,7 @@ class RPadPainter extends RObjectPainter {
           }
        }
 
-       if (typeof selp?.fillContextMenu !== 'function') return;
+       if (!isFunc$1(selp?.fillContextMenu)) return;
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -95841,7 +95838,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          let main = pp.getFramePainter();
-         if (!main || (typeof main.render3D !== 'function') || (typeof main.access3dKind != 'function')) return;
+         if (!main || !isFunc$1(main.render3D) || !isFunc$1(main.access3dKind)) return;
 
          let can3d = main.access3dKind();
 
@@ -95987,7 +95984,7 @@ class RPadPainter extends RObjectPainter {
             if (main) {
                menu.add('X axis', 'xaxis', this.itemContextMenu);
                menu.add('Y axis', 'yaxis', this.itemContextMenu);
-               if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
+               if (isFunc$1(main.getDimension) && (main.getDimension() > 1))
                   menu.add('Z axis', 'zaxis', this.itemContextMenu);
             }
 
@@ -96018,10 +96015,10 @@ class RPadPainter extends RObjectPainter {
       for (let i = 0; i < this.painters.length; ++i) {
          let pp = this.painters[i];
 
-         if (typeof pp.clickPadButton == 'function')
+         if (isFunc$1(pp.clickPadButton))
             pp.clickPadButton(funcname);
 
-         if (!done && (typeof pp.clickButton == 'function'))
+         if (!done && isFunc$1(pp.clickButton))
             done = pp.clickButton(funcname);
       }
    }
@@ -98389,7 +98386,7 @@ class RHistStatsPainter extends RPavePainter {
 
       if (this.v7OfflineMode()) {
          let main = this.getMainPainter();
-         if (typeof main?.fillStatistic !== 'function') return false;
+         if (!isFunc$1(main?.fillStatistic)) return false;
          // we take statistic from main painter
          return main.fillStatistic(this, gStyle.fOptStat, gStyle.fOptFit);
       }
@@ -98788,7 +98785,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary copy draw options to all other histograms in the pad*/
    copyOptionsToOthers() {
       this.forEachPainter(painter => {
-         if ((painter !== this) && (typeof painter.copyOptionsFrom == 'function'))
+         if ((painter !== this) && isFunc$1(painter.copyOptionsFrom))
             painter.copyOptionsFrom(this);
       }, 'objects');
    }
@@ -98796,7 +98793,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Clear 3d drawings - if any */
    clear3DScene() {
       let fp = this.getFramePainter();
-      if (typeof fp?.create3DScene === 'function')
+      if (isFunc$1(fp?.create3DScene))
          fp.create3DScene(-1);
       this.mode3d = false;
    }
@@ -99200,7 +99197,7 @@ class RHistPainter extends RObjectPainter {
          if (this.getDimension() == 2)
              menu.add('Values range', () => this.changeValuesRange(menu, 'z'));
 
-         if (typeof this.fillHistContextMenu == 'function')
+         if (isFunc$1(this.fillHistContextMenu))
             this.fillHistContextMenu(menu);
       }
 
@@ -99221,7 +99218,7 @@ class RHistPainter extends RObjectPainter {
             if (!fp.enable_highlight && main.highlightBin3D && main.mode3d) main.highlightBin3D(null);
          });
 
-         if (typeof fp?.render3D == 'function') {
+         if (isFunc$1(fp?.render3D)) {
             menu.addchk(main.options.FrontBox, 'Front box', () => {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
@@ -99244,7 +99241,7 @@ class RHistPainter extends RObjectPainter {
             }
          }
 
-         if (typeof main.control?.reset === 'function')
+         if (isFunc$1(main.control?.reset))
             menu.add('Reset camera', () => main.control.reset());
       }
 
@@ -101224,7 +101221,7 @@ class RH2Painter$2 extends RHistPainter {
           text_g = this.draw_g.append('svg:g').attr('class','th2_text'),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == 'E') &&
-                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries == 'function');
+                      this.matchObjectType('TProfile2D') && isFunc$1(histo.getBinEntries);
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 

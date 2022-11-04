@@ -1,4 +1,4 @@
-import { settings, isBatchMode, gStyle } from '../core.mjs';
+import { settings, isBatchMode, isFunc, gStyle } from '../core.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
@@ -315,7 +315,7 @@ class RHistStatsPainter extends RPavePainter {
 
       if (this.v7OfflineMode()) {
          let main = this.getMainPainter();
-         if (typeof main?.fillStatistic !== 'function') return false;
+         if (!isFunc(main?.fillStatistic)) return false;
          // we take statistic from main painter
          return main.fillStatistic(this, gStyle.fOptStat, gStyle.fOptFit);
       }

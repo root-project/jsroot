@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, create, isBatchMode,
+import { gStyle, browser, settings, clone, create, isBatchMode, isFunc,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -104,7 +104,7 @@ class TPavePainter extends ObjectPainter {
 
          let main = pt.$main_painter || this.getMainPainter();
 
-         if (typeof main?.fillStatistic == 'function') {
+         if (isFunc(main?.fillStatistic)) {
 
             let dostat = parseInt(pt.fOptStat), dofit = parseInt(pt.fOptFit);
             if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
@@ -978,7 +978,7 @@ class TPavePainter extends ObjectPainter {
    paveContextMenu(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
-         if (typeof fp?.showContextMenu == 'function')
+         if (isFunc(fp?.showContextMenu))
              fp.showContextMenu('z', evnt);
          return;
       }
