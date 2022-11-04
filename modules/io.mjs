@@ -1,8 +1,7 @@
-/// I/O methods of JavaScript ROOT
-
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
+         clTAttLine, clTAttFill, clTAttMarker,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
@@ -204,7 +203,7 @@ const CustomStreamers = {
    TPolyMarker3D(buf, marker) {
       const ver = buf.last_read_version;
       buf.classStreamer(marker, clTObject);
-      buf.classStreamer(marker, 'TAttMarker');
+      buf.classStreamer(marker, clTAttMarker);
       marker.fN = buf.ntoi4();
       marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
       marker.fOption = buf.readTString();
@@ -213,7 +212,7 @@ const CustomStreamers = {
 
    TPolyLine3D(buf, obj) {
       buf.classStreamer(obj, clTObject);
-      buf.classStreamer(obj, 'TAttLine');
+      buf.classStreamer(obj, clTAttLine);
       obj.fN = buf.ntoi4();
       obj.fP = buf.readFastArray(obj.fN * 3, kFloat);
       obj.fOption = buf.readTString();
@@ -455,7 +454,7 @@ const CustomStreamers = {
       obj.fZ = buf.ntof();
       obj.fDensity = buf.ntof();
       if (v > 2) {
-         buf.classStreamer(obj, 'TAttFill');
+         buf.classStreamer(obj, clTAttFill);
          obj.fRadLength = buf.ntof();
          obj.fInterLength = buf.ntof();
       } else {
