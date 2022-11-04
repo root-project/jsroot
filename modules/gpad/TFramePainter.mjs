@@ -1294,16 +1294,8 @@ const FrameInteractive = {
 
    /** @summary Show frame context menu */
    showContextMenu(kind, evnt, obj) {
-
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
-
-      // this is for debug purposes only, when context menu is where, close is and show normal menu
-      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
-      //   let elem = document.getElementById('root_ctx_menu');
-      //   elem.parentNode.removeChild(elem);
-      //   return;
-      //}
 
       let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
 
@@ -1311,7 +1303,7 @@ const FrameInteractive = {
          evnt.preventDefault();
          evnt.stopPropagation(); // disable main context menu
 
-         if (kind == 'painter' && obj) {
+         if ((kind == 'painter') && obj) {
             menu_painter = obj;
             kind = '';
          } else if (!kind) {
@@ -1348,7 +1340,7 @@ const FrameInteractive = {
             if (this.v7_frame && typeof exec_painter?.v7EvalAttr === 'function')
                exec_painter = null;
          }
-      } else if (kind == 'painter' && obj) {
+      } else if ((kind == 'painter') && obj) {
          // this is used in 3D context menu to show special painter
          menu_painter = obj;
          kind = '';
@@ -1379,8 +1371,6 @@ const FrameInteractive = {
   /** @summary Activate context menu handler via touch events
     * @private */
    startTouchMenu(kind, evnt) {
-      // method to let activate context menu via touch handler
-
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
@@ -1416,7 +1406,7 @@ const FrameInteractive = {
       if (diff > 500) {
          let rect = this.getFrameSvg().node().getBoundingClientRect();
          this.showContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] } );
+                                      clientY: rect.top + this[fld].pos[1] });
       }
 
       delete this[fld];
