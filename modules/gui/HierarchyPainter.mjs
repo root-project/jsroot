@@ -2023,8 +2023,8 @@ class HierarchyPainter extends BasePainter {
     * @private */
    dropItem(itemname, divid, opt) {
 
-      if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
-      if (opt===undefined) opt = "";
+      if ((opt === undefined) || (typeof opt === 'function'))
+         opt = "";
 
       let drop_complete = (drop_painter, is_main_painter) => {
          if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
