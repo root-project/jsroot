@@ -32,6 +32,7 @@ import { kindGeo, kindEve,
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
+      clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
       clREveGeoShapeExtract = 'ROOT::Experimental::REveGeoShapeExtract';
 
 /** @summary Function used to build hierarchy of elements of overlap object
@@ -2967,7 +2968,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== 'TEveTrack' && obj._typename !== 'TEvePointSet' && obj._typename !== clTPolyMarker3D)) return;
+      if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -3069,10 +3070,10 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
-      } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
+      } else if ((obj._typename === clTEveTrack) || (obj._typename === 'ROOT::Experimental::REveTrack')) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === 'ROOT::Experimental::TEvePointSet') || (obj._typename === clTPolyMarker3D)) {
+      } else if ((obj._typename === clTEvePointSet) || (obj._typename === 'ROOT::Experimental::REvePointSet') || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
@@ -4683,8 +4684,8 @@ function injectGeoStyle() {
    if (!add_settings && isFunc(internals.addDrawFunc)) {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
-      internals.addDrawFunc({ name: 'TEvePointSet', icon_get: getBrowserIcon, icon_click: browserIconClick });
-      internals.addDrawFunc({ name: 'TEveTrack', icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: clTEvePointSet, icon_get: getBrowserIcon, icon_click: browserIconClick });
+      internals.addDrawFunc({ name: clTEveTrack, icon_get: getBrowserIcon, icon_click: browserIconClick });
    }
 
    function img(name,code) {
@@ -4893,9 +4894,9 @@ function browserIconClick(hitem, hpainter) {
   * @private */
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
-   if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
-   if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
-   if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
+   if (hitem._kind == 'ROOT.' + clTEveTrack) icon = 'img_evetrack'; else
+   if (hitem._kind == 'ROOT.' + clTEvePointSet) icon = 'img_evepoints'; else
+   if (hitem._kind == 'ROOT.' + clTPolyMarker3D) icon = 'img_evepoints';
    if (icon.length > 0) {
       let drawitem = findItemWithPainter(hitem);
       if (drawitem)
