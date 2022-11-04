@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode, browser, clTAxis } from '../core.mjs';
+import { gStyle, settings, isBatchMode, isFunc, browser, clTAxis } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';

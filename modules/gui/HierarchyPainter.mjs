@@ -2036,7 +2036,7 @@ class HierarchyPainter extends BasePainter {
 
          let main_painter = getElementMainPainter(divid);
 
-         if (typeof main_painter?.performDrop === 'function')
+         if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
          if (main_painter?.accept_drops)
@@ -2382,7 +2382,7 @@ class HierarchyPainter extends BasePainter {
          if (typeof _item._expand == 'string')
             _item._expand = findFunction(item._expand);
 
-         if (typeof _item._expand !== 'function') {
+         if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
 
             if (handle?.expand_item) {
@@ -2391,7 +2391,7 @@ class HierarchyPainter extends BasePainter {
             }
 
             if (handle?.expand || handle?.get_expand) {
-               if (typeof handle.expand == 'function')
+               if (isFunc(handle.expand))
                   _item._expand = handle.expand;
                else if (typeof handle.expand == 'string') {
                   if (!internals.ignore_v6) {
@@ -2400,14 +2400,14 @@ class HierarchyPainter extends BasePainter {
                      await v6._complete_loading();
                   }
                   _item._expand = handle.expand = findFunction(handle.expand);
-               } else if (typeof handle.get_expand == 'function') {
+               } else if (isFunc(handle.get_expand)) {
                   _item._expand = handle.expand = await handle.get_expand();
                }
             }
          }
 
          // try to use expand function
-         if (_obj && _item && (typeof _item._expand === 'function')) {
+         if (_obj && isFunc(_item?._expand)) {
             if (_item._expand(_item, _obj)) {
                _item._isopen = true;
                if (_item._parent && !_item._parent._isopen) {
@@ -2680,7 +2680,7 @@ class HierarchyPainter extends BasePainter {
             func = draw_handle.make_request;
          }
 
-         if (typeof func == 'function') {
+         if (isFunc(func)) {
             // ask to make request
             let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
@@ -2718,7 +2718,7 @@ class HierarchyPainter extends BasePainter {
          createHttpRequest(url, req_kind, obj => {
 
             let handleAfterRequest = func => {
-               if (typeof func == 'function') {
+               if (isFunc(func)) {
                   let res = func(this, item, obj, option, itemreq);
                   if (res && (typeof res == 'object')) obj = res;
                }
@@ -2966,7 +2966,7 @@ class HierarchyPainter extends BasePainter {
             // delete painter reference
             delete item._painter;
             // also clear data which could be associated with item
-            if (typeof item.clear == 'function') item.clear();
+            if (isFunc(item.clear)) item.clear();
          }
       });
    }
@@ -2984,7 +2984,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachItem(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
-         if (!withbrowser && (typeof item.clear == 'function')) item.clear();
+         if (!withbrowser && isFunc(item.clear)) item.clear();
          if (withbrowser) plainarr.push(item);
       });
 
@@ -3100,7 +3100,7 @@ class HierarchyPainter extends BasePainter {
 
          // do not actiavte frame when doing update
          // mdi.activateFrame(frame);
-         if ((typeof p.redrawObject == 'function') && p.redrawObject(obj)) isany = true;
+         if (isFunc(p.redrawObject) && p.redrawObject(obj)) isany = true;
       });
       return isany;
    }
@@ -3296,7 +3296,7 @@ class HierarchyPainter extends BasePainter {
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
             promise = this.openRootFile(filesarr.shift());
-         else if ((localfile !== null) && (typeof this.selectLocalFile == 'function')) {
+         else if ((localfile !== null) && isFunc(this.selectLocalFile)) {
             localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
             promise = this.expandItem(expanditems.shift());
@@ -3317,7 +3317,7 @@ class HierarchyPainter extends BasePainter {
       let h0 = null;
       if (this.is_online) {
          let func = internals.getCachedHierarchy || findFunction('GetCachedHierarchy');
-         if (typeof func == 'function')
+         if (isFunc(func))
             h0 = func();
          if (typeof h0 !== 'object') h0 = '';
 
