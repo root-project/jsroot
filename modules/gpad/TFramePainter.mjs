@@ -33,7 +33,7 @@ function addDragHandler(_painter, arg) {
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
-            elem = group.select('.' + clname);
+             elem = group.select('.' + clname);
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
@@ -193,12 +193,9 @@ function addDragHandler(_painter, arg) {
          let handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
             acc_x1: arg.x, acc_y1: arg.y,
-            pad_w: pad_rect.width,
-            pad_h: pad_rect.height
+            acc_x2: arg.x + arg.width, acc_y2: arg.y + arg.height,
+            pad_w: pad_rect.width, pad_h: pad_rect.height
          };
-
-         handle.acc_x2 = handle.acc_x1 + arg.width;
-         handle.acc_y2 = handle.acc_y1 + arg.height;
 
          drag_rect = d3_select(painter.draw_g.node().parentNode)
             .append('rect')
@@ -334,8 +331,7 @@ const TooltipHandler = {
 
          if (hint.exact) nexact++;
 
-         for (let l = 0; l < hint.lines.length; ++l)
-            maxlen = Math.max(maxlen, hint.lines[l].length);
+         hint.lines.forEach(line => { maxlen = Math.max(maxlen, line.length); });
 
          hint.height = Math.round(hint.lines.length * textheight * hstep + 2 * hmargin - textheight * (hstep - 1));
 
@@ -352,7 +348,7 @@ const TooltipHandler = {
           coordinates = pnt ? Math.round(pnt.x) + ',' + Math.round(pnt.y) : '';
 
       // try to select hint with exact match of the position when several hints available
-      for (let k = 0; k < (hints ? hints.length : 0); ++k) {
+      for (let k = 0; k < (hints?.length || 0); ++k) {
          if (!hints[k]) continue;
          if (!hint) hint = hints[k];
 
@@ -399,8 +395,8 @@ const TooltipHandler = {
 
       // copy transform attributes from frame itself
       hintsg.attr('transform', trans)
-         .property('last_point', pnt)
-         .property('hints_pad', this.getPadName());
+            .property('last_point', pnt)
+            .property('hints_pad', this.getPadName());
 
       let viewmode = hintsg.property('viewmode') || '',
          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
