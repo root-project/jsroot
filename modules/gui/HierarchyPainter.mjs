@@ -1,6 +1,6 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs, _ensureJSROOT,
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, isFunc, _ensureJSROOT,
          clTList, clTMap, clTObjString, clTText, clTLatex, clTColor } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo } from '../io.mjs';
@@ -415,7 +415,7 @@ function objectHierarchy(top, obj, args = undefined) {
    for (let key in obj) {
       if ((key == '_typename') || (key[0] == '$')) continue;
       let fld = obj[key];
-      if (typeof fld == 'function') continue;
+      if (isFunc(fld)) continue;
       if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
 
       if (compress && lastitem) {
@@ -829,7 +829,7 @@ class HierarchyPainter extends BasePainter {
                each_item(item._childs[n], item);
       }
 
-      if (typeof func == 'function')
+      if (isFunc(func))
          each_item(top || this.h);
    }
 
@@ -1089,7 +1089,7 @@ class HierarchyPainter extends BasePainter {
       // normally search _get method in the parent items
       let curr = item;
       while (curr) {
-         if (typeof curr._get == 'function')
+         if (isFunc(curr._get))
             return curr._get(item, null, options).then(obj => { result.obj = obj; return result; });
          curr = ('_parent' in curr) ? curr._parent : null;
       }
@@ -1122,7 +1122,7 @@ class HierarchyPainter extends BasePainter {
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if ((img1.length == 0) && (typeof handle.icon_get == 'function'))
+         if ((img1.length == 0) && isFunc(handle.icon_get))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
              (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
@@ -1360,7 +1360,7 @@ class HierarchyPainter extends BasePainter {
       d3btns.append('a').attr('class', 'h_button').text('close all')
             .attr('title','close all items in the browser').on('click', () => this.toggleOpenState(false));
 
-      if (typeof this.removeInspector == 'function') {
+      if (isFunc(this.removeInspector)) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('remove')
                .attr('title','remove inspector').on('click', () => this.removeInspector());
@@ -1399,7 +1399,7 @@ class HierarchyPainter extends BasePainter {
 
       if (status_item && !this.status_disabled && !decodeUrl().has('nostatus')) {
          let func = findFunction(status_item._status);
-         if (typeof func == 'function')
+         if (isFunc(func))
             return this.createStatusLine().then(sdiv => {
                if (sdiv) func(sdiv, this.itemFullName(status_item));
             });
@@ -1522,9 +1522,9 @@ class HierarchyPainter extends BasePainter {
 
       if (place == 'icon') {
          let func = null;
-         if (typeof hitem._icon_click == 'function')
+         if (isFunc(hitem._icon_click))
             func = hitem._icon_click;
-         else if (typeof handle?.icon_click == 'function')
+         else if (isFunc(handle?.icon_click))
             func = handle.icon_click;
          if (func && func(hitem,this))
             this.updateTreeNode(hitem, d3cont);
@@ -1620,7 +1620,7 @@ class HierarchyPainter extends BasePainter {
          prnt = prnt._parent;
       }
 
-      if (typeof painter?.mouseOverHierarchy === 'function')
+      if (isFunc(painter?.mouseOverHierarchy))
          painter.mouseOverHierarchy(on, itemname, hitem);
    }
 
@@ -1632,7 +1632,7 @@ class HierarchyPainter extends BasePainter {
            hitem = this.findItem(itemname);
       if (!hitem) return;
 
-      if (typeof this.fill_context == 'function')
+      if (isFunc(this.fill_context))
          createMenu(evnt, this).then(menu => {
             this.fill_context(menu, hitem);
             if (menu.size() > 0) {
@@ -1654,7 +1654,7 @@ class HierarchyPainter extends BasePainter {
             if (this.disp)
                this.disp.forEachFrame(frame => {
                   let canvp = getElementCanvPainter(frame);
-                  if (typeof canvp?.changeDarkMode == 'function')
+                  if (isFunc(canvp?.changeDarkMode))
                      canvp.changeDarkMode();
                });
          }
@@ -1786,7 +1786,7 @@ class HierarchyPainter extends BasePainter {
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
-         if (typeof hitem._menu == 'function')
+         if (isFunc(hitem._menu))
             hitem._menu(menu, hitem, this);
 
          if (menu.size() > 0) {
@@ -1823,7 +1823,7 @@ class HierarchyPainter extends BasePainter {
          player_func = findFunction(item._player);
       }
 
-      if (typeof player_func != 'function')
+      if (!isFunc(player_func))
          return null;
 
       await this.createDisplay();
@@ -1872,7 +1872,7 @@ class HierarchyPainter extends BasePainter {
 
          if (updating && item) delete item._doing_update;
          if (!updating) showProgress();
-         if (typeof respainter?.setItemName === 'function') {
+         if (isFunc(respainter?.setItemName)) {
             respainter.setItemName(display_itemname, updating ? null : drawopt, this); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
@@ -1957,7 +1957,7 @@ class HierarchyPainter extends BasePainter {
 
                }
 
-               if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
+               if (isFunc(p.redrawObject) && p.redrawObject(obj, drawopt)) painter = p;
             });
 
             if (painter) return complete();
@@ -2019,12 +2019,14 @@ class HierarchyPainter extends BasePainter {
     * @private */
    async dropItem(itemname, divid, opt) {
 
-      if (opt && typeof opt === 'function') { call_back = opt; opt = ''; }
+      let call_back = null;
+      if (isFunc(opt)) { call_back = opt; opt = ''; }
       if (opt === undefined) opt = '';
 
       let drop_complete = (drop_painter, is_main_painter) => {
-         if (!is_main_painter && (typeof drop_painter?.setItemName == 'function'))
+         if (!is_main_painter && isFunc(drop_painter?.setItemName))
             drop_painter.setItemName(itemname, null, this);
+         if (call_back) call_back();
          return drop_painter;
       }
 

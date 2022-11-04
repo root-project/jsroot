@@ -1,5 +1,5 @@
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
-import { browser, internals, toJSON, settings } from '../core.mjs';
+import { browser, internals, toJSON, settings, isFunc } from '../core.mjs';
 import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
@@ -50,7 +50,7 @@ class MDIDisplay extends BasePainter {
    /** @summary method called after new frame is created
      * @private */
    afterCreateFrame(frame) {
-      if (typeof this.initFrame == 'function')
+      if (isFunc(this.initFrame))
          this.initFrame(frame);
       return frame;
    }
@@ -109,7 +109,7 @@ class MDIDisplay extends BasePainter {
 
          if (only_frame_id && (d3_select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.getItemName() !== null) && (typeof painter.checkResize == 'function')) {
+         if ((painter.getItemName() !== null) && isFunc(painter.checkResize)) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.checkResize(size);
@@ -539,7 +539,7 @@ class TabsDisplay extends MDIDisplay {
 
    /** @summary call function for each frame */
    forEachFrame(userfunc,  only_visible) {
-      if (typeof userfunc != 'function') return;
+      if (!isFunc(userfunc)) return;
 
       if (only_visible) {
          let active = this.getActiveFrame();
@@ -703,7 +703,7 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary call function for each frame */
    forEachFrame(userfunc,  only_visible) {
-      if (typeof userfunc != 'function') return;
+      if (!isFunc(userfunc)) return;
 
       let mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
@@ -1214,9 +1214,9 @@ class BrowserLayout {
 
    /** @summary Check resize action */
    checkResize() {
-      if (typeof this.hpainter?.checkResize == 'function')
+      if (isFunc(this.hpainter?.checkResize))
          this.hpainter.checkResize();
-      else if (typeof this.objpainter?.checkResize == 'function') {
+      else if (isFunc(this.objpainter?.checkResize)) {
          this.objpainter.checkResize(true);
       }
    }

@@ -1,6 +1,6 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, clTObjArray,
-         clTPaveText, clTColor, clTPad } from '../core.mjs';
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, isFunc,
+         clTObjArray, clTPaveText, clTColor, clTPad } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -299,7 +299,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
    cleanPrimitives(selector) {
-      if (!selector || (typeof selector !== 'function')) return;
+      if (!isFunc(selector)) return;
 
       for (let k = this.painters.length-1; k >= 0; --k)
          if (selector(this.painters[k])) {
@@ -327,7 +327,7 @@ class TPadPainter extends ObjectPainter {
       if (kind != 'objects') userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (typeof sub.forEachPainterInPad === 'function') {
+         if (isFunc(sub.forEachPainterInPad)) {
             if (kind != 'objects') sub.forEachPainterInPad(userfunc, kind);
          } else if (kind != 'pads') {
             userfunc(sub);
@@ -346,10 +346,10 @@ class TPadPainter extends ObjectPainter {
      * @private */
    producePadEvent(what, padpainter, painter, position, place) {
 
-      if ((what == 'select') && (typeof this.selectActivePad == 'function'))
+      if ((what == 'select') && isFunc(this.selectActivePad))
          this.selectActivePad(padpainter, painter, position);
 
-      if (typeof this.pad_events_receiver == 'function')
+      if (isFunc(this.pad_events_receiver))
          this.pad_events_receiver({ what, padpainter, painter, position, place });
    }
 
@@ -934,7 +934,7 @@ class TPadPainter extends ObjectPainter {
    getSubPadPainter(n) {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (sub.pad && (typeof sub.forEachPainterInPad === 'function') && (sub.pad.fNumber === n)) return sub;
+         if (sub.pad && isFunc(sub.forEachPainterInPad) && (sub.pad.fNumber === n)) return sub;
       }
       return null;
    }
@@ -948,7 +948,7 @@ class TPadPainter extends ObjectPainter {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if (typeof obj.processTooltipEvent == 'function')
+            if (isFunc(obj.processTooltipEvent))
                painters.push(obj);
          });
 
@@ -1021,10 +1021,10 @@ class TPadPainter extends ObjectPainter {
 
       menu.add('separator');
 
-      if (typeof this.hasMenuBar == 'function' && typeof this.actiavteMenuBar == 'function')
+      if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
-      if (typeof this.hasEventStatus == 'function' && typeof this.activateStatusBar == 'function')
+      if (isFunc(this.hasEventStatus) && isFunc(this.activateStatusBar))
          menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
@@ -1110,7 +1110,7 @@ class TPadPainter extends ObjectPainter {
       if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
 
       return this.painters.findIndex(objp => {
-         if (typeof objp.needRedrawByResize === 'function')
+         if (isFunc(objp.needRedrawByResize))
             return objp.needRedrawByResize();
       }) >= 0;
    }
@@ -1219,7 +1219,7 @@ class TPadPainter extends ObjectPainter {
          let pi = this.painters.indexOf(objpainter);
          if (pi < 0) this.painters.push(objpainter);
 
-         if (typeof objpainter.setSnapId == 'function')
+         if (isFunc(objpainter.setSnapId))
             objpainter.setSnapId(lst[indx].fObjectID);
          else
             objpainter.snapid = lst[indx].fObjectID;
@@ -1371,7 +1371,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
-         if (typeof sub.findSnap === 'function')
+         if (isFunc(sub.findSnap))
             sub = sub.findSnap(snapid);
          else if (sub.snapid !== snapid)
             sub = null;
@@ -1595,11 +1595,11 @@ class TPadPainter extends ObjectPainter {
       }
 
       this.painters.forEach(sub => {
-         if (typeof sub.getWebPadOptions == 'function') {
+         if (isFunc(sub.getWebPadOptions)) {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
-            if (typeof sub.fillWebObjectOptions == 'function')
+            if (isFunc(sub.fillWebObjectOptions))
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }
@@ -1696,7 +1696,7 @@ class TPadPainter extends ObjectPainter {
           }
        }
 
-       if (typeof selp?.fillContextMenu !== 'function') return;
+       if (!isFunc(selp?.fillContextMenu)) return;
 
        createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
@@ -1753,7 +1753,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          let main = pp.getFramePainter();
-         if ((typeof main?.render3D !== 'function') || (typeof main?.access3dKind !== 'function')) return;
+         if (!isFunc(main?.render3D) || !isFunc(main?.access3dKind)) return;
 
          let can3d = main.access3dKind();
 
@@ -1900,7 +1900,7 @@ class TPadPainter extends ObjectPainter {
             if (main) {
                menu.add('X axis', 'xaxis', this.itemContextMenu);
                menu.add('Y axis', 'yaxis', this.itemContextMenu);
-               if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
+               if (isFunc(main.getDimension) && (main.getDimension() > 1))
                   menu.add('Z axis', 'zaxis', this.itemContextMenu);
             }
 
@@ -1929,10 +1929,10 @@ class TPadPainter extends ObjectPainter {
       let done = false;
 
       this.painters.forEach(pp => {
-         if (typeof pp.clickPadButton == 'function')
+         if (isFunc(pp.clickPadButton))
             pp.clickPadButton(funcname);
 
-         if (!done && (typeof pp.clickButton == 'function'))
+         if (!done && isFunc(pp.clickButton))
             done = pp.clickButton(funcname);
       });
    }
