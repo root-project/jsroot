@@ -1,4 +1,4 @@
-import { create, isNodeJs, btoa_func, clTPave, clTGaxis, clTAxis, clTPaletteAxis } from '../core.mjs';
+import { create, isNodeJs, isStr, btoa_func, clTPave, clTGaxis, clTAxis, clTPaletteAxis } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
@@ -127,7 +127,7 @@ class TASImagePainter extends ObjectPainter {
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = '';
 
-      if (typeof buf == 'string')
+      if (isStr(buf))
          pngbuf = buf;
       else
          for (let k = 0; k < buf.length; ++k)

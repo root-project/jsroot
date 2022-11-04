@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, isFunc, create, toJSON, clTObjString,
+import { internals, httpRequest, isBatchMode, isFunc, isStr, create, toJSON, clTObjString,
          clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
@@ -61,7 +61,7 @@ async function drawTreeDrawResult(dom, obj, opt) {
 
    let typ = obj?._typename;
 
-   if (!typ || (typeof typ !== 'string'))
+   if (!typ || !isStr(typ))
       return Promise.reject(Error(`Object without type cannot be draw with TTree`));
 
    if (typ.indexOf(clTH1) == 0)
@@ -424,13 +424,13 @@ async function drawTree(dom, obj, opt) {
       tree = obj.$tree;
    } else {
       if (!args) args = 'player';
-      if (typeof args === 'string') args = { expr: args };
+      if (isStr(args)) args = { expr: args };
    }
 
    if (!tree)
       throw Error('No TTree object available for TTree::Draw');
 
-   if (typeof args.expr == 'string') {
+   if (isStr(args.expr)) {
       let p = args.expr.indexOf('player');
       if (p == 0) {
          args.player = true;

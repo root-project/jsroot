@@ -5,7 +5,7 @@ import { HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from '../three.mjs';
-import { browser, settings, constants, internals, isBatchMode, isNodeJs, isFunc, getDocument } from '../core.mjs';
+import { browser, settings, constants, internals, isBatchMode, isNodeJs, isFunc, isStr, getDocument } from '../core.mjs';
 import { getElementRect, getAbsPosInCanvas } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
@@ -1077,7 +1077,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (tip) {
          let name = '', title = '', coord = '', info = '';
          if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
-         if (typeof tip == 'string') {
+         if (isStr(tip)) {
             info = tip;
          } else {
             name = tip.name; title = tip.title;
@@ -1501,7 +1501,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    if (!painter || !arg) return null;
 
    let lcolor, lstyle, lwidth;
-   if ((typeof arg == 'string') || is_v7) {
+   if (isStr(arg) || is_v7) {
       lcolor = painter.v7EvalColor(arg+'color', 'black');
       lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
       lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));

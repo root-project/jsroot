@@ -1,4 +1,4 @@
-import { gStyle } from '../core.mjs';
+import { gStyle, isStr } from '../core.mjs';
 import { color as d3_color, rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { getColor, findColor } from './colors.mjs';
 
@@ -94,7 +94,7 @@ class TAttFillHandler {
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets
      * @private */
    verifyDirectChange(painter) {
-      if (typeof this.pattern == 'string')
+      if (isStr(this.pattern))
          this.pattern = parseInt(this.pattern);
       if (!Number.isInteger(this.pattern))
          this.pattern = 0;
@@ -148,7 +148,7 @@ class TAttFillHandler {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
       }
 
-      if (typeof this.color != 'string') this.color = 'none';
+      if (!isStr(this.color)) this.color = 'none';
 
       if (this.isSolid()) return true;
 

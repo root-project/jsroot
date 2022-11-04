@@ -1,4 +1,4 @@
-import { loadScript, settings, isNodeJs, source_dir } from '../core.mjs';
+import { loadScript, settings, isNodeJs, isStr, source_dir } from '../core.mjs';
 import { getElementRect, _loadJSDOM } from './BasePainter.mjs';
 import { FontHandler } from './FontHandler.mjs';
 
@@ -1201,7 +1201,7 @@ function translateMath(str, kind, color, painter) {
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
-   if (typeof color != 'string') return str;
+   if (!isStr(color)) return str;
 
    // MathJax SVG converter use colors in normal form
    //if (color.indexOf('rgb(') >= 0)
@@ -1215,7 +1215,7 @@ function translateMath(str, kind, color, painter) {
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    let transform = value => {
-      if (!value || (typeof value !== 'string') || (value.length < 3)) return null;
+      if (!value || !isStr(value) || (value.length < 3)) return null;
       let p = value.indexOf('ex');
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));

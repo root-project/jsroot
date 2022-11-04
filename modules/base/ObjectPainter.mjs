@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis, isFunc } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis, isFunc, isStr } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -26,7 +26,7 @@ class ObjectPainter extends BasePainter {
       // this._main_painter = undefined;  // main painter in the correspondent pad
       this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
       this.assignObject(obj);
-      if (typeof opt == 'string')
+      if (isStr(opt))
          this.options = { original: opt };
    }
 
@@ -44,7 +44,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current
      * @protected */
    setPadName(pad_name) {
-      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.selectCurrentPad();
+      this.pad_name = isStr(pad_name) ? pad_name : this.selectCurrentPad();
    }
 
    /** @summary Returns pad name where object is drawn */
@@ -105,8 +105,8 @@ class ObjectPainter extends BasePainter {
      * @protected */
    matchObjectType(arg) {
       if (!arg || !this.draw_object) return false;
-      if (typeof arg === 'string') return (this.draw_object._typename === arg);
-      if (arg._typename) return (this.draw_object._typename === arg._typename);
+      if (isStr(arg)) return this.draw_object._typename === arg;
+      if (arg._typename) return this.draw_object._typename === arg._typename;
       return this.draw_object._typename.match(arg);
    }
 
@@ -293,7 +293,7 @@ class ObjectPainter extends BasePainter {
             console.error('Not found frame to create g element inside');
             return frame;
          }
-         if (typeof frame_layer != 'string') frame_layer = 'main_layer';
+         if (!isStr(frame_layer)) frame_layer = 'main_layer';
          layer = frame.select('.' + frame_layer);
       } else {
          layer = this.getLayerSvg('primitives_layer');
@@ -392,7 +392,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [pad_name] pad name or use current pad by default
      * @protected */
    getPadPainter(pad_name) {
-      let elem = this.getPadSvg(typeof pad_name == 'string' ? pad_name : undefined);
+      let elem = this.getPadSvg(isStr(pad_name) ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -693,7 +693,7 @@ class ObjectPainter extends BasePainter {
    async interactiveRedraw(arg, info, subelem) {
 
       let reason, res;
-      if ((typeof info == 'string') && (info.indexOf('exec:') != 0))
+      if (isStr(info) && (info.indexOf('exec:') != 0))
          reason = info;
 
       if (arg == 'pad')
@@ -746,7 +746,7 @@ class ObjectPainter extends BasePainter {
      * Many methods call can be chained with 'Print();;Update();;Clear()'
      * @private */
    submitCanvExec(exec, snapid) {
-      if (!exec || (typeof exec != 'string')) return;
+      if (!exec || !isStr(exec)) return;
 
       let canp = this.getCanvPainter();
       if (isFunc(canp?.submitExec))
@@ -1098,7 +1098,7 @@ class ObjectPainter extends BasePainter {
 
       let align = ['start', 'middle'];
 
-      if (typeof arg.align == 'string') {
+      if (isStr(arg.align)) {
          align = arg.align.split(';');
          if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
@@ -1485,7 +1485,7 @@ function drawRawText(dom, txt /*, opt*/) {
 
    painter.drawText = async function() {
       let txt = (this.txt._typename && (this.txt._typename == clTObjString)) ? this.txt.fString : this.txt.value;
-      if (typeof txt != 'string') txt = '<undefined>';
+      if (!isStr(txt)) txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants.Latex.AlwaysMathJax);
 
