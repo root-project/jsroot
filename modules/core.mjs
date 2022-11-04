@@ -542,7 +542,7 @@ function clone(src, map, nofunc) {
    for (let k in src) {
       if (typeof src[k] === 'object')
          tgt[k] = clone(src[k], map);
-      else if (!map.nofunc || (typeof src[k] !== 'function'))
+      else if (!map.nofunc || !isFunc(src[k]))
          tgt[k] = src[k];
    }
 
@@ -716,7 +716,7 @@ function toJSON(obj, spacing) {
    let map = []; // map of stored objects
 
    const copy_value = value => {
-      if (typeof value === 'function') return undefined;
+      if (isFunc(value)) return undefined;
 
       if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
 
@@ -817,22 +817,22 @@ function decodeUrl(url) {
 /** @summary Find function with given name
   * @private */
 function findFunction(name) {
-   if (typeof name === 'function') return name;
+   if (isFunc(name)) return name;
    if (typeof name !== 'string') return null;
    let names = name.split('.'), elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
       elem = elem[names[n]];
 
-   return (typeof elem == 'function') ? elem : null;
+   return isFunc(elem) ? elem : null;
 }
 
 
 /** @summary Assign methods to request
   * @private */
 function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback) {
-   xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
-   xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
+   xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : function() {};
+   xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
    if (!kind) kind = 'buf';
 
@@ -848,7 +848,7 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
    xhr.kind = kind;
 
-   if (settings.HandleWrongHttpResponse && (method == 'GET') && (typeof xhr.addEventListener === 'function'))
+   if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
       xhr.addEventListener('progress', function(oEvent) {
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
@@ -1680,11 +1680,13 @@ function isRootCollection(lst, typename) {
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
 
+/** @summary Check if argument is a Function
+  * @private */
+function isFunc(arg) { return typeof arg === 'function'; }
+
 /** @summary Check if object is a Promise
   * @private */
-function isPromise(obj) {
-   return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
-}
+function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
 
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
@@ -1708,4 +1710,4 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isPromise, _ensureJSROOT };
+         getMethods, registerMethods, isRootCollection, isFunc, isPromise, _ensureJSROOT };

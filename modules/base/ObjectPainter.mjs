@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis, isFunc } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -8,8 +8,6 @@ import { TAttLineHandler } from './TAttLineHandler.mjs';
 import { FontHandler } from './FontHandler.mjs';
 import { getRootColors } from './colors.mjs';
 
-
-function isFunc(arg) { return typeof arg === 'function'; }
 
 /**
  * @summary Painter class for ROOT objects
