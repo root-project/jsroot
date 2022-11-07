@@ -524,8 +524,7 @@ class RCanvasPainter extends RPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      this.brlayout?.deleteContent();
-
+      this.brlayout?.deleteContent(true);
       this.processChanges('sbits', this);
    }
 

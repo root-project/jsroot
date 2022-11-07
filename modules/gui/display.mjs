@@ -513,7 +513,6 @@ class GridDisplay extends MDIDisplay {
 } // class GridDisplay
 
 
-
 // ================================================
 
 /**
@@ -1297,9 +1296,11 @@ class BrowserLayout {
    }
 
    /** @summary Delete content */
-   deleteContent() {
+   deleteContent(keep_status) {
       let main = this.browser();
       if (main.empty()) return;
+
+      let had_status = keep_status ? this.hasStatus() : false;
 
       this.createStatusLine(0, 'delete');
 
@@ -1310,6 +1311,9 @@ class BrowserLayout {
       delete this.browser_kind;
 
       this.checkResize();
+
+      if (had_status)
+         this.createStatusLine(this.last_hsepar_height || 23, true);
    }
 
    /** @summary Returns true when status line exists */

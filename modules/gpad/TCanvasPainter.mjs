@@ -412,7 +412,7 @@ class TCanvasPainter extends TPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      this.brlayout?.deleteContent();
+      this.brlayout?.deleteContent(true);
 
       this.processChanges('sbits', this);
    }
@@ -498,7 +498,7 @@ class TCanvasPainter extends TPadPainter {
       if (this.testUI5())
          return false;
 
-      console.log(`Show section ${that} flag = ${on}`);
+      console.log(` ****************** Show section ${that} flag = ${on}`);
 
       switch(that) {
          case 'Menu': break;
