@@ -248,7 +248,9 @@ let settings = {
    /** @summary Show only last cycle for objects in TFile */
    OnlyLastCycle: false,
    /** @summary Configures dark mode for the GUI */
-   DarkMode: false
+   DarkMode: false,
+   /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
+   PreferSavedPoints: false
 };
 
 

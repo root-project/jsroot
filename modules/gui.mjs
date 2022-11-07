@@ -43,6 +43,9 @@ function readStyleFromURL(url) {
    if (d.has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true;
 
+   if (d.has('prefer_saved_points'))
+      settings.PreferSavedPoints = true;
+
    let inter = d.get('interactive');
    if (inter === 'nomenu')
       settings.ContextMenu = false;
