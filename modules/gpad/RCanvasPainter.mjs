@@ -496,6 +496,16 @@ class RCanvasPainter extends RPadPainter {
       this.processChanges('sbits', this);
    }
 
+   /** @summary Show online canvas status
+     * @private */
+   showCanvasStatus(msg1, msg2, msg3, msg4) {
+      if (this.testUI5()) return;
+
+      let br = this.brlayout || getHPainter()?.brlayout;
+
+      br?.showStatus(msg1, msg2, msg3, msg4);
+   }
+
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
       if (this.testUI5()) return false;
