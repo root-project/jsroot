@@ -7,6 +7,7 @@ import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
+      clTQObject = 'TQObject', clTBasket = 'TBasket',
       nameStreamerInfo = 'StreamerInfo',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
@@ -3344,7 +3345,7 @@ class TFile {
    getStreamer(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == 'TBasket') return null;
+      if (clname == clTQObject || clname == clTBasket) return null;
 
       let streamer, fullname = clname;
 
@@ -3864,7 +3865,7 @@ export {
    kLong64, kULong64, kBool, kFloat16,
    kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
-   clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo,
+   clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, clTBasket,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
    openFile, reconstructObject, FileProxy,
    TBuffer /*, TDirectory, TFile, TLocalFile, TNodejsFile */

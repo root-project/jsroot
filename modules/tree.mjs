@@ -6,7 +6,7 @@ import { kChar, kShort, kInt, kFloat,
          kUChar, kUShort, kUInt,
          kLong64, kULong64, kBool, kFloat16,
          kOffsetL, kOffsetP, kObject, kAny, kObjectp, kTString,
-         kStreamer, kStreamLoop, kSTLp, kSTL,
+         kStreamer, kStreamLoop, kSTLp, kSTL, clTBasket,
          R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 import * as jsroot_math from './base/math.mjs';
 
@@ -2272,7 +2272,7 @@ async function treeProcess(tree, selector, args) {
 
                let blob = blobs.shift(),
                   buf = new TBuffer(blob, 0, handle.file),
-                  basket = buf.classStreamer({}, 'TBasket');
+                  basket = buf.classStreamer({}, clTBasket);
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                   console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
