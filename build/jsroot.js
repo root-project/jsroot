@@ -11,7 +11,7 @@ let version_id = "7.2.x";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "4/11/2022";
+let version_date = "7/11/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -253,7 +253,9 @@ let settings = {
    /** @summary Show only last cycle for objects in TFile */
    OnlyLastCycle: false,
    /** @summary Configures dark mode for the GUI */
-   DarkMode: false
+   DarkMode: false,
+   /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
+   PreferSavedPoints: false
 };
 
 
@@ -93714,9 +93716,13 @@ class TF1Painter extends ObjectPainter {
       let np = Math.max(tf1.fNpx, 101),
           dx = (xmax - xmin) / (np - 1),
           res = [], iserror = false,
-          force_use_save = (tf1.fSave.length > 3) && ignore_zoom;
+          has_saved_points = (tf1.fSave.length > 3),
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
 
-      if (!force_use_save)
+      if (!force_use_save) {
+         if (!tf1.evalPar)
+            proivdeEvalPar(tf1);
+
          for (let n = 0; n < np; n++) {
             let xx = xmin + n*dx, yy = 0;
             if (logx) xx = Math.exp(xx);
@@ -93731,10 +93737,11 @@ class TF1Painter extends ObjectPainter {
             if (Number.isFinite(yy))
                res.push({ x: xx, y: yy });
          }
+      }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-      if ((iserror || ignore_zoom || !res.length) && (tf1.fSave.length > 3)) {
+      if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
@@ -93804,8 +93811,9 @@ class TF1Painter extends ObjectPainter {
 
    updateObject(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
-      Object.assign(this.getObject(), obj);
-      proivdeEvalPar(this.getObject());
+      let tf1 = this.getObject();
+      Object.assign(tf1, obj);
+      delete tf1.evalPar;
       return true;
    }
 
@@ -93959,8 +93967,6 @@ class TF1Painter extends ObjectPainter {
       if (d.check('Y+')) { aopt += "Y+"; painter.second_y = has_main; }
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
-
-      proivdeEvalPar(tf1);
 
       let pr = Promise.resolve(true);
 
