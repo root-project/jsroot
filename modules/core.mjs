@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '4/11/2022';
+let version_date = '7/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -972,6 +972,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
+      clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
@@ -1154,7 +1155,7 @@ function create(typename, target) {
          extend(obj, { fFunctions: create(clTList), fGraphs: create(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
-      case 'TGraphPolargram':
+      case clTGraphPolargram:
          create(clTNamed, obj);
          create(clTAttText, obj);
          create(clTAttLine, obj);
@@ -1462,7 +1463,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != clTGraphPolargram) && (typename != clTGraphTime)) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1710,7 +1711,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis, clTText, clTLatex, clTMathText, clTMultiGraph,
          clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis,
          clTAxis, clTH1, clTH2, clTH3, clTF1, clTF2,
-         clTGraph, clTCutG, clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
+         clTGraph, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
