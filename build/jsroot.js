@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '4/11/2022';
+let version_date = '7/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -977,12 +977,13 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
+      clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
-      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis',
+      clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
       clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
@@ -1159,7 +1160,7 @@ function create$1(typename, target) {
          extend$1(obj, { fFunctions: create$1(clTList), fGraphs: create$1(clTList),
                        fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
          break;
-      case 'TGraphPolargram':
+      case clTGraphPolargram:
          create$1(clTNamed, obj);
          create$1(clTAttText, obj);
          create$1(clTAttLine, obj);
@@ -1467,7 +1468,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != 'TGraphPolargram') && (typename != 'TGraphTime')) {
+   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != clTGraphPolargram) && (typename != clTGraphTime)) {
       // check if point inside figure specified by the TGraph
       m.IsInside = function(xp,yp) {
          let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
@@ -1755,12 +1756,15 @@ clTCanvas: clTCanvas,
 clTAttCanvas: clTAttCanvas,
 clTGaxis: clTGaxis,
 clTAxis: clTAxis,
+clTStyle: clTStyle,
 clTH1: clTH1,
 clTH2: clTH2,
 clTH3: clTH3,
 clTF1: clTF1,
 clTF2: clTF2,
 clTGraph: clTGraph,
+clTGraphPolargram: clTGraphPolargram,
+clTGraphTime: clTGraphTime,
 clTCutG: clTCutG,
 clTPolyLine3D: clTPolyLine3D,
 clTPolyMarker3D: clTPolyMarker3D,
@@ -54376,7 +54380,7 @@ class TPadPainter extends ObjectPainter {
 
       if (!obj) return false;
 
-      if (obj._typename == 'TStyle') {
+      if (obj._typename == clTStyle) {
          Object.assign(gStyle, obj);
          return true;
       }
@@ -64970,6 +64974,7 @@ TH3Painter: TH3Painter
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
+      clTQObject = 'TQObject', clTBasket = 'TBasket',
       nameStreamerInfo = 'StreamerInfo',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
@@ -68300,12 +68305,12 @@ class TFile {
    getStreamer(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == 'TBasket') return null;
+      if (clname == clTQObject || clname == clTBasket) return null;
 
       let streamer, fullname = clname;
 
       if (ver) {
-         fullname += (ver.checksum ? ('$chksum' + ver.checksum) : ('$ver' + ver.val));
+         fullname += (ver.checksum ? `$chksum${ver.checksum}` : `$ver${ver.val}`);
          streamer = this.fStreamers[fullname];
          if (streamer !== undefined) return streamer;
       }
@@ -68340,7 +68345,7 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == 'TStyle') && s_i.fElements)
+      if ((s_i.fName == clTStyle) && s_i.fElements)
          s_i.fElements.arr.forEach(elem => {
             if (elem.fName == 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
@@ -71016,7 +71021,7 @@ async function treeProcess(tree, selector, args) {
 
                let blob = blobs.shift(),
                   buf = new TBuffer(blob, 0, handle.file),
-                  basket = buf.classStreamer({}, 'TBasket');
+                  basket = buf.classStreamer({}, clTBasket);
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                   console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
@@ -71603,11 +71608,11 @@ const drawFuncs = { lst: [
    { name: 'TGraphStruct' },
    { name: 'TGraphNode' },
    { name: 'TGraphEdge' },
-   { name: 'TGraphTime', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphTimePainter$1; }).then(h => h.TGraphTimePainter), opt: 'once;repeat;first', theonly: true },
+   { name: clTGraphTime, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphTimePainter$1; }).then(h => h.TGraphTimePainter), opt: 'once;repeat;first', theonly: true },
    { name: clTGraph2D, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraph2DPainter$1; }).then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
    { name: 'TGraph2DErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
    { name: 'TGraph2DAsymmErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
-   { name: 'TGraphPolargram', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
+   { name: clTGraphPolargram, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
    { name: 'TGraphPolar', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
    { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP' },
@@ -71673,7 +71678,7 @@ const drawFuncs = { lst: [
    { name: clTColor, icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
-   { name: 'TStyle', icon: 'img_question', noexpand: true },
+   { name: clTStyle, icon: 'img_question', noexpand: true },
    { name: 'Session', icon: 'img_globe' },
    { name: 'kind:TopFolder', icon: 'img_base' },
    { name: 'kind:Folder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true },
@@ -73916,7 +73921,8 @@ class HierarchyPainter extends BasePainter {
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
                if (!sett.opts) sett.opts = [''];
-               if (sett.opts.indexOf('') < 0) sett.opts.unshift('');
+               if (sett.opts.indexOf('') < 0)
+                  sett.opts.unshift('');
             }
 
             if (sett.opts)
@@ -73940,7 +73946,7 @@ class HierarchyPainter extends BasePainter {
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add('Expand', () => this.expandItem(itemname));
 
-            if (hitem._kind === 'ROOT.TStyle')
+            if (hitem._kind === 'ROOT.' + clTStyle)
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
@@ -74751,7 +74757,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       return pr.then(st => {
-         if (st && (typeof st === 'object') && (st._typename === 'TStyle'))
+         if (st?._typename === clTStyle)
             Object.assign(gStyle, st);
       });
    }
@@ -105306,6 +105312,8 @@ exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
 exports.clTGeoVolume = clTGeoVolume;
 exports.clTGraph = clTGraph;
+exports.clTGraphPolargram = clTGraphPolargram;
+exports.clTGraphTime = clTGraphTime;
 exports.clTH1 = clTH1;
 exports.clTH2 = clTH2;
 exports.clTH3 = clTH3;
@@ -105330,6 +105338,7 @@ exports.clTPolyLine = clTPolyLine;
 exports.clTPolyLine3D = clTPolyLine3D;
 exports.clTPolyMarker3D = clTPolyMarker3D;
 exports.clTString = clTString;
+exports.clTStyle = clTStyle;
 exports.clTText = clTText;
 exports.cleanup = cleanup;
 exports.clone = clone;
