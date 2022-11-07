@@ -4,7 +4,7 @@ import { loadScript, findFunction, internals, isPromise, isNodeJs, isFunc, isStr
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2, clTF1, clTF2,
          clTColor, clTGraph, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
-         clTPad, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
+         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
 import { clTStreamerInfoList } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
@@ -128,7 +128,7 @@ const drawFuncs = { lst: [
    { name: clTColor, icon: 'img_color' },
    { name: 'TFile', icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
-   { name: 'TStyle', icon: 'img_question', noexpand: true },
+   { name: clTStyle, icon: 'img_question', noexpand: true },
    { name: 'Session', icon: 'img_globe' },
    { name: 'kind:TopFolder', icon: 'img_base' },
    { name: 'kind:Folder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true },

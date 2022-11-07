@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isFunc, isStr, _ensureJSROOT,
-         clTList, clTMap, clTObjString, clTText, clTLatex, clTColor } from '../core.mjs';
+         clTList, clTMap, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -1761,7 +1761,8 @@ class HierarchyPainter extends BasePainter {
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
                if (!sett.opts) sett.opts = [''];
-               if (sett.opts.indexOf('') < 0) sett.opts.unshift('');
+               if (sett.opts.indexOf('') < 0)
+                  sett.opts.unshift('');
             }
 
             if (sett.opts)
@@ -1785,7 +1786,7 @@ class HierarchyPainter extends BasePainter {
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add('Expand', () => this.expandItem(itemname));
 
-            if (hitem._kind === 'ROOT.TStyle')
+            if (hitem._kind === 'ROOT.' + clTStyle)
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
@@ -2597,7 +2598,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       return pr.then(st => {
-         if (st && (typeof st === 'object') && (st._typename === 'TStyle'))
+         if (st?._typename === clTStyle)
             Object.assign(gStyle, st);
       });
    }

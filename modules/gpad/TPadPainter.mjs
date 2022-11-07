@@ -1,6 +1,6 @@
 import { gStyle, settings, constants, internals, btoa_func,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, isFunc, isStr,
-         clTObjArray, clTPaveText, clTColor, clTPad } from '../core.mjs';
+         clTObjArray, clTPaveText, clTColor, clTPad, clTStyle } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
@@ -701,7 +701,7 @@ class TPadPainter extends ObjectPainter {
 
       if (!obj) return false;
 
-      if (obj._typename == 'TStyle') {
+      if (obj._typename == clTStyle) {
          Object.assign(gStyle, obj);
          return true;
       }

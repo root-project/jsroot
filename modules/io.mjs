@@ -1,7 +1,7 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
-         clTAttLine, clTAttFill, clTAttMarker,
+         clTAttLine, clTAttFill, clTAttMarker, clTStyle,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
@@ -3385,7 +3385,7 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == 'TStyle') && s_i.fElements)
+      if ((s_i.fName == clTStyle) && s_i.fElements)
          s_i.fElements.arr.forEach(elem => {
             if (elem.fName == 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
