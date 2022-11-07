@@ -52478,7 +52478,6 @@ class GridDisplay extends MDIDisplay {
 } // class GridDisplay
 
 
-
 // ================================================
 
 /**
@@ -53206,7 +53205,7 @@ class BrowserLayout {
           .jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }
           .jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }
           .jsroot_float_browser { border: solid 3px white; }
-          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; }
+          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }
           .jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }
           .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }
           .jsroot_h_separator { cursor: ns-resize; background-color: azure; }
@@ -53262,15 +53261,23 @@ class BrowserLayout {
    }
 
    /** @summary Delete content */
-   deleteContent() {
+   deleteContent(keep_status) {
       let main = this.browser();
       if (main.empty()) return;
 
-      this.createStatusLine(0, 'delete');
+      if (!keep_status)
+         this.createStatusLine(0, 'delete');
 
       this.toggleBrowserVisisbility(true);
 
-      main.selectAll('*').remove();
+      if (keep_status) {
+         // try to delete only content, not status
+         main.select('.jsroot_browser_area').remove();
+         main.select('.jsroot_browser_btns').remove();
+         main.select('.jsroot_v_separator').remove();
+      } else {
+         main.selectAll('*').remove();
+      }
       delete this.browser_visible;
       delete this.browser_kind;
 
@@ -53280,9 +53287,7 @@ class BrowserLayout {
    /** @summary Returns true when status line exists */
    hasStatus() {
       let main = this.browser();
-      if (main.empty()) return false;
-
-      return !this.status().empty();
+      return main.empty() ? false : !this.status().empty();
    }
 
    /** @summary Set browser title text
@@ -53451,14 +53456,14 @@ class BrowserLayout {
    }
 
    /** @summary Show status information inside special fields of browser layout */
-   showStatus(/*name, title, info, coordinates*/) {
+   showStatus(...msgs) {
       if (!this.status_layout) return;
 
       let maxh = 0;
       for (let n = 0; n < 4; ++n) {
          let lbl = this.status_layout.getGridFrame(n).querySelector('label');
          maxh = Math.max(maxh, lbl.clientHeight);
-         lbl.innerHTML = arguments[n] || '';
+         lbl.innerHTML = msgs[n] || '';
       }
 
       if (!this.status_layout.first_check) {
@@ -53636,7 +53641,6 @@ class BrowserLayout {
            this._float_height = area.node().clientHeight;
            this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
            this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
-
         }).on('drag', evnt => {
            this._float_width += evnt.dx;
            this._float_height += evnt.dy;
@@ -56124,12 +56128,23 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
       if (this.brlayout)
          this.brlayout.createStatusLine(23, state);
       else
          getHPainter()?.createStatusLine(23, state);
       this.processChanges('sbits', this);
+   }
+
+   /** @summary Show online canvas status
+     * @private */
+   showCanvasStatus(...msgs) {
+      if (this.testUI5()) return;
+
+      let br = this.brlayout || getHPainter()?.brlayout;
+
+      br?.showStatus(...msgs);
    }
 
    /** @summary Returns true if GED is present on the canvas */
@@ -56150,7 +56165,7 @@ class TCanvasPainter extends TPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      this.brlayout?.deleteContent();
+      this.brlayout?.deleteContent(true);
 
       this.processChanges('sbits', this);
    }
@@ -56235,8 +56250,6 @@ class TCanvasPainter extends TPadPainter {
    async showSection(that, on) {
       if (this.testUI5())
          return false;
-
-      console.log(`Show section ${that} flag = ${on}`);
 
       switch(that) {
          case 'Menu': break;
@@ -97328,6 +97341,16 @@ class RCanvasPainter extends RPadPainter {
       this.processChanges('sbits', this);
    }
 
+   /** @summary Show online canvas status
+     * @private */
+   showCanvasStatus(...msgs) {
+      if (this.testUI5()) return;
+
+      let br = this.brlayout || getHPainter()?.brlayout;
+
+      br?.showStatus(...msgs);
+   }
+
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
       if (this.testUI5()) return false;
@@ -97346,8 +97369,7 @@ class RCanvasPainter extends RPadPainter {
          this.ged_view.destroy();
          delete this.ged_view;
       }
-      this.brlayout?.deleteContent();
-
+      this.brlayout?.deleteContent(true);
       this.processChanges('sbits', this);
    }
 
