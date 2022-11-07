@@ -1315,9 +1315,7 @@ class BrowserLayout {
    /** @summary Returns true when status line exists */
    hasStatus() {
       let main = this.browser();
-      if (main.empty()) return false;
-
-      return !this.status().empty();
+      return main.empty() ? false : !this.status().empty();
    }
 
    /** @summary Set browser title text
