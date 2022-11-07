@@ -1,4 +1,4 @@
-import { create, gStyle } from '../core.mjs';
+import { create, gStyle, settings } from '../core.mjs';
 import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -108,9 +108,13 @@ class TF1Painter extends ObjectPainter {
       let np = Math.max(tf1.fNpx, 101),
           dx = (xmax - xmin) / (np - 1),
           res = [], iserror = false,
-          force_use_save = (tf1.fSave.length > 3) && ignore_zoom;
+          has_saved_points = (tf1.fSave.length > 3),
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
 
-      if (!force_use_save)
+      if (!force_use_save) {
+         if (!tf1.evalPar)
+            proivdeEvalPar(tf1);
+
          for (let n = 0; n < np; n++) {
             let xx = xmin + n*dx, yy = 0;
             if (logx) xx = Math.exp(xx);
@@ -125,10 +129,11 @@ class TF1Painter extends ObjectPainter {
             if (Number.isFinite(yy))
                res.push({ x: xx, y: yy });
          }
+      }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-      if ((iserror || ignore_zoom || !res.length) && (tf1.fSave.length > 3)) {
+      if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
@@ -198,8 +203,9 @@ class TF1Painter extends ObjectPainter {
 
    updateObject(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
-      Object.assign(this.getObject(), obj);
-      proivdeEvalPar(this.getObject());
+      let tf1 = this.getObject();
+      Object.assign(tf1, obj);
+      delete tf1.evalPar;
       return true;
    }
 
@@ -353,8 +359,6 @@ class TF1Painter extends ObjectPainter {
       if (d.check('Y+')) { aopt += "Y+"; painter.second_y = has_main; }
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
-
-      proivdeEvalPar(tf1);
 
       let pr = Promise.resolve(true);
 
