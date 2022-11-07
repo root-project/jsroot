@@ -3350,7 +3350,7 @@ class TFile {
       let streamer, fullname = clname;
 
       if (ver) {
-         fullname += (ver.checksum ? ('$chksum' + ver.checksum) : ('$ver' + ver.val));
+         fullname += (ver.checksum ? `$chksum${ver.checksum}` : `$ver${ver.val}`);
          streamer = this.fStreamers[fullname];
          if (streamer !== undefined) return streamer;
       }
