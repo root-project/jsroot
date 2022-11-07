@@ -253,7 +253,9 @@ let settings = {
    /** @summary Show only last cycle for objects in TFile */
    OnlyLastCycle: false,
    /** @summary Configures dark mode for the GUI */
-   DarkMode: false
+   DarkMode: false,
+   /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
+   PreferSavedPoints: false
 };
 
 
@@ -75948,6 +75950,9 @@ function readStyleFromURL(url) {
    if (d.has('wrong_http_response'))
       settings.HandleWrongHttpResponse = true;
 
+   if (d.has('prefer_saved_points'))
+      settings.PreferSavedPoints = true;
+
    let inter = d.get('interactive');
    if (inter === 'nomenu')
       settings.ContextMenu = false;
@@ -89330,13 +89335,13 @@ function proivdeEvalPar(obj) {
         _func = obj.fFormula.fFormula;
         pprefix = '[p';
      }
+
      if (obj.fFormula.fClingParameters && obj.fFormula.fParams)
         obj.fFormula.fParams.forEach(pair => {
            let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
                parvalue = obj.fFormula.fClingParameters[pair.second];
            _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
         });
-
   }
 
   if ('formulas' in obj)
@@ -89419,9 +89424,13 @@ class TF1Painter extends ObjectPainter {
       let np = Math.max(tf1.fNpx, 101),
           dx = (xmax - xmin) / (np - 1),
           res = [], iserror = false,
-          force_use_save = (tf1.fSave.length > 3) && ignore_zoom;
+          has_saved_points = tf1.fSave.length > 3,
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
 
-      if (!force_use_save)
+      if (!force_use_save) {
+         if (!tf1.evalPar)
+            proivdeEvalPar(tf1);
+
          for (let n = 0; n < np; n++) {
             let x = xmin + n*dx, y = 0;
             if (logx) x = Math.exp(x);
@@ -89436,10 +89445,11 @@ class TF1Painter extends ObjectPainter {
             if (Number.isFinite(y))
                res.push({ x, y });
          }
+      }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-      if ((iserror || ignore_zoom || !res.length) && (tf1.fSave.length > 3)) {
+      if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
@@ -89509,8 +89519,9 @@ class TF1Painter extends ObjectPainter {
 
    updateObject(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
-      Object.assign(this.getObject(), obj);
-      proivdeEvalPar(this.getObject());
+      let tf1 = this.getObject();
+      Object.assign(tf1, obj);
+      delete tf1.evalPar;
       return true;
    }
 
@@ -89664,8 +89675,6 @@ class TF1Painter extends ObjectPainter {
       if (d.check('Y+')) { aopt += 'Y+'; painter.second_y = has_main; }
       if (d.check('RX')) aopt += 'RX';
       if (d.check('RY')) aopt += 'RY';
-
-      proivdeEvalPar(tf1);
 
       let pr = Promise.resolve(true);
 
@@ -90615,28 +90624,36 @@ function createTF2Histogram(func, hist = undefined) {
        iserr = false, isany = false,
        dx = (func.fXmax - func.fXmin) / (use_middle ? npx : (npx-1)),
        dy = (func.fYmax - func.fYmin) / (use_middle ? npy : (npy-1)),
-       extra = use_middle ? 0.5 : 0;
+       extra = use_middle ? 0.5 : 0,
+       use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
 
-   for (let j = 0; j < npy; ++j)
-     for (let i = 0; (i < npx) && !iserr; ++i) {
-         let x = func.fXmin + (i + extra) * dx,
-             y = func.fYmin + (j + extra) * dy,
-             z = 0;
+   if (!use_saved_points) {
+      if (!func.evalPar)
+         proivdeEvalPar(func);
 
-         try {
-            z = func.evalPar(x, y);
-         } catch {
-            iserr = true;
+      for (let j = 0; j < npy; ++j)
+        for (let i = 0; (i < npx) && !iserr; ++i) {
+            let x = func.fXmin + (i + extra) * dx,
+                y = func.fYmin + (j + extra) * dy,
+                z = 0;
+
+            try {
+               z = func.evalPar(x, y);
+            } catch {
+               iserr = true;
+            }
+
+            if (!iserr && Number.isFinite(z)) {
+               if (!hist) hist = createHistogram('TH2F', npx, npy);
+               isany = true;
+               hist.setBinContent(hist.getBin(i+1,j+1), z);
+            }
          }
 
-         if (!iserr && Number.isFinite(z)) {
-            if (!hist) hist = createHistogram('TH2F', npx, npy);
-            isany = true;
-            hist.setBinContent(hist.getBin(i+1,j+1), z);
-         }
-      }
+      if ((iserr || !isany) && (nsave > 6))
+         use_saved_points = true;
+   }
 
-   let use_saved_points = (iserr || !isany) && (nsave > 6);
    if (!use_saved_points && !hist)
       hist = createHistogram('TH2F', npx, npy);
 
@@ -90692,8 +90709,6 @@ function createTF2Histogram(func, hist = undefined) {
   * @private */
 function drawTF2(dom, func, opt) {
 
-   proivdeEvalPar(func);
-
    let hist = createTF2Histogram(func);
    if (!hist) return;
 
@@ -90719,7 +90734,7 @@ function drawTF2(dom, func, opt) {
 
       hpainter.updateObject = function(obj /*, opt*/) {
          if (!obj || (this.tf2_typename != obj._typename)) return false;
-         proivdeEvalPar(obj);
+         delete obj.evalPar;
          createTF2Histogram(obj, this.getHisto());
          return true;
       };
