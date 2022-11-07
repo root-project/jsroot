@@ -1240,7 +1240,7 @@ class BrowserLayout {
           .jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }
           .jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }
           .jsroot_float_browser { border: solid 3px white; }
-          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; }
+          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }
           .jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }
           .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }
           .jsroot_h_separator { cursor: ns-resize; background-color: azure; }
@@ -1676,7 +1676,6 @@ class BrowserLayout {
            this._float_height = area.node().clientHeight;
            this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
            this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
-
         }).on('drag', evnt => {
            this._float_width += evnt.dx;
            this._float_height += evnt.dy;
