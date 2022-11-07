@@ -1300,20 +1300,23 @@ class BrowserLayout {
       let main = this.browser();
       if (main.empty()) return;
 
-      let had_status = keep_status ? this.hasStatus() : false;
-
-      this.createStatusLine(0, 'delete');
+      if (!keep_status)
+         this.createStatusLine(0, 'delete');
 
       this.toggleBrowserVisisbility(true);
 
-      main.selectAll('*').remove();
+      if (keep_status) {
+         // try to delete only content, not status
+         main.select('.jsroot_browser_area').remove();
+         main.select('.jsroot_browser_btns').remove();
+         main.select('.jsroot_v_separator').remove();
+      } else {
+         main.selectAll('*').remove();
+      }
       delete this.browser_visible;
       delete this.browser_kind;
 
       this.checkResize();
-
-      if (had_status)
-         this.createStatusLine(this.last_hsepar_height || 23, true);
    }
 
    /** @summary Returns true when status line exists */
