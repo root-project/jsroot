@@ -1484,14 +1484,14 @@ class BrowserLayout {
    }
 
    /** @summary Show status information inside special fields of browser layout */
-   showStatus(/*name, title, info, coordinates*/) {
+   showStatus(...msgs) {
       if (!this.status_layout) return;
 
       let maxh = 0;
       for (let n = 0; n < 4; ++n) {
          let lbl = this.status_layout.getGridFrame(n).querySelector('label');
          maxh = Math.max(maxh, lbl.clientHeight);
-         lbl.innerHTML = arguments[n] || '';
+         lbl.innerHTML = msgs[n] || '';
       }
 
       if (!this.status_layout.first_check) {

@@ -498,12 +498,12 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Show online canvas status
      * @private */
-   showCanvasStatus(msg1, msg2, msg3, msg4) {
+   showCanvasStatus(...msgs) {
       if (this.testUI5()) return;
 
       let br = this.brlayout || getHPainter()?.brlayout;
 
-      br?.showStatus(msg1, msg2, msg3, msg4);
+      br?.showStatus(...msgs);
    }
 
    /** @summary Returns true if GED is present on the canvas */
