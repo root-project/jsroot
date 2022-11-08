@@ -697,6 +697,8 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
+const kindTFile = 'ROOT.TFile';
+
 /**
   * @summary Painter of hierarchical structures
   *
@@ -754,7 +756,7 @@ class HierarchyPainter extends BasePainter {
       let folder = {
          _name: file.fFileName,
          _title: (file.fTitle ? file.fTitle + ', path ' : '')  + file.fFullURL,
-         _kind: 'ROOT.TFile',
+         _kind: kindTFile,
          _file: file,
          _fullurl: file.fFullURL,
          _localfile: file.fLocalFile,
@@ -2531,13 +2533,13 @@ class HierarchyPainter extends BasePainter {
      * @private */
    forEachRootFile(func) {
       if (!this.h) return;
-      if ((this.h._kind == 'ROOT.TFile') && this.h._file)
+      if ((this.h._kind == kindTFile) && this.h._file)
          return func(this.h);
 
       if (this.h._childs)
          for (let n = 0; n < this.h._childs.length; ++n) {
             let item = this.h._childs[n];
-            if ((item._kind == 'ROOT.TFile') && ('_fullurl' in item))
+            if ((item._kind == kindTFile) && ('_fullurl' in item))
                func(item);
          }
    }
@@ -2565,7 +2567,7 @@ class HierarchyPainter extends BasePainter {
          } else if (this.h._kind == 'TopFolder') {
             this.h._childs.push(h1);
          }  else {
-            let h0 = this.h, topname = (h0._kind == 'ROOT.TFile') ? 'Files' : 'Items';
+            let h0 = this.h, topname = (h0._kind == kindTFile) ? 'Files' : 'Items';
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
