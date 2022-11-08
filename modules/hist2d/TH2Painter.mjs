@@ -1556,6 +1556,7 @@ class TH2Painter extends THistPainter {
                maxContent = Math.max(maxContent, histo.getBinContent(i + 1, j + 1));
 
       const make_path = (...a) => {
+         if (a[1] === 'array') a = a[0];
          let l = a.length, i = 2, xx = a[0], yy = a[1],
              res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
          while (i < l) {
@@ -1754,7 +1755,7 @@ class TH2Painter extends THistPainter {
 
             arr.push('H', center); // complete histogram
 
-            hists += make_path(...arr);
+            hists += make_path(arr, 'array');
 
             if (!this.fillatt.empty()) hists += 'Z';
          }
