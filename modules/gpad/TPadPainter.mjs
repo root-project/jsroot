@@ -1570,12 +1570,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary Collects pad information for TWebCanvas
      * @desc need to update different states
      * @private */
-   getWebPadOptions(arg) {
+   getWebPadOptions(arg, cp) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
       if (is_top && this._readonly) return '';
       if (arg === 'only_this') { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
+      if (!cp) cp = this.iscan ? this : this.getCanvPainter();
+
 
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
@@ -1586,9 +1588,18 @@ class TPadPainter extends ObjectPainter {
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky,
                   mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
                   mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
+                  xlow: 0, ylow: 0, xup: 1, yup: 1,
                   zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0 };
 
-         if (this.iscan) elem.bits = this.getStatusBits();
+         if (this.iscan) {
+            elem.bits = this.getStatusBits();
+         } else if (cp) {
+            let cw = cp.getPadWidth(), ch = cp.getPadHeight(), rect = this.getPadRect();
+            elem.xlow = rect.x / cw;
+            elem.ylow = rect.y / ch;
+            elem.xup = (rect.x + rect.width) / cw;
+            elem.yup = (rect.y + rect.height) / ch;
+         }
 
          if (this.getPadRanges(elem))
             arg.push(elem);
@@ -1598,7 +1609,7 @@ class TPadPainter extends ObjectPainter {
 
       this.painters.forEach(sub => {
          if (isFunc(sub.getWebPadOptions)) {
-            if (scan_subpads) sub.getWebPadOptions(arg);
+            if (scan_subpads) sub.getWebPadOptions(arg, cp);
          } else if (sub.snapid) {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
             if (isFunc(sub.fillWebObjectOptions))
