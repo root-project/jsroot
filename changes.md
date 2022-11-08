@@ -1,10 +1,10 @@
 # JSROOT changelog
 
-## Changes in 7.2.x
+## Changes in 7.2.1
 1. Fix - prevent glitch when enabling projection via context menu
 2. Fix - multi.json parsing
 3. Fix - decoding of multipart message (#250)
-4. Improve - let specify `settings.PreferSavedPoints` to force usage of saved TF1 points
+4. Backport - let specify `settings.PreferSavedPoints` to force usage of saved TF1 points
 
 
 ## Changes in 7.2.0

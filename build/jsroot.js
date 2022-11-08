@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.2.0
+// https://root.cern/js/ v7.2.1
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "7.0.0" */
-let version_id = "7.2.x";
+let version_id = "7.2.1";
 
 /** @summary version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "7/11/2022";
+let version_date = "8/11/2022";
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
