@@ -1334,6 +1334,8 @@ class TPadPainter extends ObjectPainter {
          padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
+         padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
+         padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
 
          padpainter.createPadSvg();
 
@@ -1394,7 +1396,7 @@ class TPadPainter extends ObjectPainter {
          return this;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
-      this._readonly = (snap.fReadOnly === undefined) ? true : snap.fReadOnly; // readonly flag
+      this._readonly = snap.fReadOnly ?? false; // readonly flag
 
       let first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
