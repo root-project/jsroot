@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, internals, create, isFunc,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1 } from '../core.mjs';
+         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -760,7 +760,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if TProfile */
    isTProfile() {
-      return this.matchObjectType('TProfile');
+      return this.matchObjectType(clTProfile);
    }
 
    /** @summary Returns true if TH1K */

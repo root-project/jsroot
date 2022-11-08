@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '7/11/2022';
+let version_date = '8/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -986,7 +986,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
-      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2',
+      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
@@ -1557,8 +1557,8 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('TProfile') == 0) {
-      if (typename.indexOf('TProfile2D') == 0) {
+   if (typename.indexOf(clTProfile) == 0) {
+      if (typename.indexOf(clTProfile2D) == 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
          m.getBinContent = function(x, y) {
             let bin = this.getBin(x, y);
@@ -1764,6 +1764,8 @@ clTH2: clTH2,
 clTH3: clTH3,
 clTF1: clTF1,
 clTF2: clTF2,
+clTProfile: clTProfile,
+clTProfile2D: clTProfile2D,
 clTGraph: clTGraph,
 clTGraphPolargram: clTGraphPolargram,
 clTGraphTime: clTGraphTime,
@@ -58540,7 +58542,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if TProfile */
    isTProfile() {
-      return this.matchObjectType('TProfile');
+      return this.matchObjectType(clTProfile);
    }
 
    /** @summary Returns true if TH1K */
@@ -62448,7 +62450,7 @@ class TH2Painter$2 extends THistPainter {
           rotate = -1*this.options.TextAngle,
           draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
           text_size = 20, text_offset = 0,
-          profile2d = this.matchObjectType('TProfile2D') && isFunc$1(histo.getBinEntries),
+          profile2d = this.matchObjectType(clTProfile2D) && isFunc$1(histo.getBinEntries),
           show_err = (this.options.TextKind == 'E'),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
@@ -63563,7 +63565,7 @@ class TH2Painter$2 extends THistPainter {
 
       lines.push('entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
 
-      if ((this.options.TextKind == 'E') || this.matchObjectType('TProfile2D')) {
+      if ((this.options.TextKind == 'E') || this.matchObjectType(clTProfile2D)) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
          lines.push('error = ' + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
       }
@@ -71610,12 +71612,12 @@ const drawFuncs = { lst: [
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
-   { name: 'TProfile', icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
+   { name: clTProfile, icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
    { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
    { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
-   { name: 'TProfile2D', sameas: clTH2 },
+   { name: clTProfile2D, sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
    { name: 'THStack', icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
    { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
@@ -101272,9 +101274,7 @@ class RH2Painter$2 extends RHistPainter {
       let textFont  = this.v7EvalFont('text', { size: 20, color: 'black', align: 22 }),
           text_offset = 0,
           text_g = this.draw_g.append('svg:g').attr('class','th2_text'),
-          di = handle.stepi, dj = handle.stepj,
-          profile2d = (this.options.TextKind == 'E') &&
-                      this.matchObjectType('TProfile2D') && isFunc$1(histo.getBinEntries);
+          di = handle.stepi, dj = handle.stepj;
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 
@@ -101287,9 +101287,6 @@ class RH2Painter$2 extends RHistPainter {
 
             binw = handle.grx[i+di] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+dj];
-
-            if (profile2d)
-               binz = histo.getBinEntries(i+1, j+1);
 
             text = (binz === Math.round(binz)) ? binz.toString() :
                       floatToString(binz, gStyle.fPaintTextFormat);
@@ -105374,6 +105371,8 @@ exports.clTPaveText = clTPaveText;
 exports.clTPolyLine = clTPolyLine;
 exports.clTPolyLine3D = clTPolyLine3D;
 exports.clTPolyMarker3D = clTPolyMarker3D;
+exports.clTProfile = clTProfile;
+exports.clTProfile2D = clTProfile2D;
 exports.clTString = clTString;
 exports.clTStyle = clTStyle;
 exports.clTText = clTText;

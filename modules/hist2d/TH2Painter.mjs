@@ -1,4 +1,5 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr, clTMultiGraph, clTF2 } from '../core.mjs';
+import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr,
+         clTMultiGraph, clTF2, clTProfile2D } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -1170,7 +1171,7 @@ class TH2Painter extends THistPainter {
           rotate = -1*this.options.TextAngle,
           draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
           text_size = 20, text_offset = 0,
-          profile2d = this.matchObjectType('TProfile2D') && isFunc(histo.getBinEntries),
+          profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries),
           show_err = (this.options.TextKind == 'E'),
           latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
@@ -2285,7 +2286,7 @@ class TH2Painter extends THistPainter {
 
       lines.push('entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
 
-      if ((this.options.TextKind == 'E') || this.matchObjectType('TProfile2D')) {
+      if ((this.options.TextKind == 'E') || this.matchObjectType(clTProfile2D)) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
          lines.push('error = ' + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
       }

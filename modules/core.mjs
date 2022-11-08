@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '7/11/2022';
+let version_date = '8/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -981,7 +981,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
-      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2',
+      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix';
 
 /** @summary Create some ROOT classes
@@ -1552,8 +1552,8 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf('TProfile') == 0) {
-      if (typename.indexOf('TProfile2D') == 0) {
+   if (typename.indexOf(clTProfile) == 0) {
+      if (typename.indexOf(clTProfile2D) == 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
          m.getBinContent = function(x, y) {
             let bin = this.getBin(x, y);
@@ -1712,7 +1712,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis, clTText, clTLatex, clTMathText, clTMultiGraph,
          clTColor, clTLine, clTBox, clTPolyLine, clTPad, clTCanvas, clTAttCanvas, clTGaxis,
-         clTAxis, clTStyle, clTH1, clTH2, clTH3, clTF1, clTF2,
+         clTAxis, clTStyle, clTH1, clTH2, clTH3, clTF1, clTF2, clTProfile, clTProfile2D,
          clTGraph, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,

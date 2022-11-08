@@ -740,8 +740,7 @@ class RH2Painter extends RHistPainter {
           text_offset = 0,
           text_g = this.draw_g.append('svg:g').attr('class','th2_text'),
           di = handle.stepi, dj = handle.stepj,
-          profile2d = (this.options.TextKind == 'E') &&
-                      this.matchObjectType('TProfile2D') && isFunc(histo.getBinEntries);
+          profile2d = false;
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 
