@@ -813,11 +813,23 @@ class TAxisPainter extends ObjectPainter {
                   set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                }
 
+               this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset})`);
+
                drag_rect.remove();
                drag_rect = null;
             });
 
       title_g.style('cursor', 'move').call(drag_move);
+   }
+
+   /** @summary Submit exec for the axis - if possible */
+   submitAxisExec(exec) {
+       let id = this.getMainPainter(true)?.snapid;
+       if (!id) return;
+       if (this.name == 'xaxis')
+          this.submitCanvExec(exec, id + '#x');
+       else if (this.name == 'yaxis')
+          this.submitCanvExec(exec, id + '#y');
    }
 
    /** @summary Produce svg path for axis ticks */
