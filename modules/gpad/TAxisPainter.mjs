@@ -795,9 +795,8 @@ class TAxisPainter extends ObjectPainter {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.getObject(), abits = EAxisBits;
-
-               const set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
+               const axis = this.getObject(), abits = EAxisBits,
+                     set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
                this.titleOffset = (vertical ? new_x : new_y) / offset_k;
                axis.fTitleOffset = this.titleOffset / this.titleSize;
@@ -813,7 +812,7 @@ class TAxisPainter extends ObjectPainter {
                   set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                }
 
-               this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset})`);
+               this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset});;SetBit(${abits.kCenterTitle},${this.titleCenter?1:0})`);
 
                drag_rect.remove();
                drag_rect = null;
