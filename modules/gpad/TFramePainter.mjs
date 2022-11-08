@@ -1613,18 +1613,18 @@ class TFramePainter extends ObjectPainter {
       if (!pad) return;
 
       // seems to be, not allways user range calculated
-      let umin = pad['fU' + name + 'min'],
-          umax = pad['fU' + name + 'max'],
+      let umin = pad[`fU${name}min`],
+          umax = pad[`fU${name}max`],
           eps = 1e-7;
 
       if (name == 'x') {
-         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2-1) > eps)) {
+         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2 - 1) > eps)) {
             let dx = pad.fX2 - pad.fX1;
             umin = pad.fX1 + dx*pad.fLeftMargin;
             umax = pad.fX2 - dx*pad.fRightMargin;
          }
       } else {
-         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2-1) > eps)) {
+         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2 - 1) > eps)) {
             let dy = pad.fY2 - pad.fY1;
             umin = pad.fY1 + dy*pad.fBottomMargin;
             umax = pad.fY2 - dy*pad.fTopMargin;
@@ -1633,21 +1633,21 @@ class TFramePainter extends ObjectPainter {
 
       if ((umin >= umax) || (Math.abs(umin) < eps && Math.abs(umax-1) < eps)) return;
 
-      if (pad['fLog' + name] > 0) {
+      if (pad[`fLog${name}`] > 0) {
          umin = Math.exp(umin * Math.log(10));
          umax = Math.exp(umax * Math.log(10));
       }
 
       let aname = name;
       if (this.swap_xy) aname = (name == 'x') ? 'y' : 'x';
-      let smin = 'scale_' + aname + 'min',
-          smax = 'scale_' + aname + 'max';
+      let smin = `scale_${aname}min`,
+          smax = `scale_${aname}max`;
 
       eps = (this[smax] - this[smin]) * 1e-7;
 
       if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
-         this['zoom_' + aname + 'min'] = umin;
-         this['zoom_' + aname + 'max'] = umax;
+         this[`zoom_${aname}min`] = umin;
+         this[`zoom_${aname}max`] = umax;
       }
    }
 
