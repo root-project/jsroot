@@ -44487,9 +44487,8 @@ class TAxisPainter extends ObjectPainter {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.getObject(), abits = EAxisBits;
-
-               const set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
+               const axis = this.getObject(), abits = EAxisBits,
+                     set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
                this.titleOffset = (vertical ? new_x : new_y) / offset_k;
                axis.fTitleOffset = this.titleOffset / this.titleSize;
@@ -44505,11 +44504,23 @@ class TAxisPainter extends ObjectPainter {
                   set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
                }
 
+               this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset});;SetBit(${abits.kCenterTitle},${this.titleCenter?1:0})`);
+
                drag_rect.remove();
                drag_rect = null;
             });
 
       title_g.style('cursor', 'move').call(drag_move);
+   }
+
+   /** @summary Submit exec for the axis - if possible */
+   submitAxisExec(exec) {
+       let id = this.getMainPainter(true)?.snapid;
+       if (!id) return;
+       if (this.name == 'xaxis')
+          this.submitCanvExec(exec, id + '#x');
+       else if (this.name == 'yaxis')
+          this.submitCanvExec(exec, id + '#y');
    }
 
    /** @summary Produce svg path for axis ticks */
@@ -50802,18 +50813,18 @@ class TFramePainter extends ObjectPainter {
       if (!pad) return;
 
       // seems to be, not allways user range calculated
-      let umin = pad['fU' + name + 'min'],
-          umax = pad['fU' + name + 'max'],
+      let umin = pad[`fU${name}min`],
+          umax = pad[`fU${name}max`],
           eps = 1e-7;
 
       if (name == 'x') {
-         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2-1) > eps)) {
+         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2 - 1) > eps)) {
             let dx = pad.fX2 - pad.fX1;
             umin = pad.fX1 + dx*pad.fLeftMargin;
             umax = pad.fX2 - dx*pad.fRightMargin;
          }
       } else {
-         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2-1) > eps)) {
+         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2 - 1) > eps)) {
             let dy = pad.fY2 - pad.fY1;
             umin = pad.fY1 + dy*pad.fBottomMargin;
             umax = pad.fY2 - dy*pad.fTopMargin;
@@ -50822,21 +50833,21 @@ class TFramePainter extends ObjectPainter {
 
       if ((umin >= umax) || (Math.abs(umin) < eps && Math.abs(umax-1) < eps)) return;
 
-      if (pad['fLog' + name] > 0) {
+      if (pad[`fLog${name}`] > 0) {
          umin = Math.exp(umin * Math.log(10));
          umax = Math.exp(umax * Math.log(10));
       }
 
       let aname = name;
       if (this.swap_xy) aname = (name == 'x') ? 'y' : 'x';
-      let smin = 'scale_' + aname + 'min',
-          smax = 'scale_' + aname + 'max';
+      let smin = `scale_${aname}min`,
+          smax = `scale_${aname}max`;
 
       eps = (this[smax] - this[smin]) * 1e-7;
 
       if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
-         this['zoom_' + aname + 'min'] = umin;
-         this['zoom_' + aname + 'max'] = umax;
+         this[`zoom_${aname}min`] = umin;
+         this[`zoom_${aname}max`] = umax;
       }
    }
 
@@ -55021,6 +55032,8 @@ class TPadPainter extends ObjectPainter {
          padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
+         padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
+         padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
 
          padpainter.createPadSvg();
 
@@ -55081,7 +55094,7 @@ class TPadPainter extends ObjectPainter {
          return this;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
-      this._readonly = (snap.fReadOnly === undefined) ? true : snap.fReadOnly; // readonly flag
+      this._readonly = snap.fReadOnly ?? false; // readonly flag
 
       let first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
@@ -55255,12 +55268,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary Collects pad information for TWebCanvas
      * @desc need to update different states
      * @private */
-   getWebPadOptions(arg) {
+   getWebPadOptions(arg, cp) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
       if (is_top && this._readonly) return '';
       if (arg === 'only_this') { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
+      if (!cp) cp = this.iscan ? this : this.getCanvPainter();
+
 
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
@@ -55271,9 +55286,18 @@ class TPadPainter extends ObjectPainter {
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky,
                   mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
                   mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
+                  xlow: 0, ylow: 0, xup: 1, yup: 1,
                   zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0 };
 
-         if (this.iscan) elem.bits = this.getStatusBits();
+         if (this.iscan) {
+            elem.bits = this.getStatusBits();
+         } else if (cp) {
+            let cw = cp.getPadWidth(), ch = cp.getPadHeight(), rect = this.getPadRect();
+            elem.xlow = rect.x / cw;
+            elem.ylow = rect.y / ch;
+            elem.xup = (rect.x + rect.width) / cw;
+            elem.yup = (rect.y + rect.height) / ch;
+         }
 
          if (this.getPadRanges(elem))
             arg.push(elem);
@@ -55283,7 +55307,7 @@ class TPadPainter extends ObjectPainter {
 
       this.painters.forEach(sub => {
          if (isFunc$1(sub.getWebPadOptions)) {
-            if (scan_subpads) sub.getWebPadOptions(arg);
+            if (scan_subpads) sub.getWebPadOptions(arg, cp);
          } else if (sub.snapid) {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
             if (isFunc$1(sub.fillWebObjectOptions))
@@ -55331,26 +55355,27 @@ class TPadPainter extends ObjectPainter {
       const same = x => x,
             direct_funcs = [same, Math.log10, x => Math.log10(x)/Math.log10(2)],
             revert_funcs = [same, x => Math.pow(10, x), x => Math.pow(2, x)],
-            match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1;
+            match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1,
+            frect = main.getFrameRect();
 
       let func = direct_funcs[main.logx],
           func2 = revert_funcs[main.logx],
-          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property('draw_width'),
-          x1 = func(main.scale_xmin) - k*p.property('draw_x'),
-          x2 = x1 + k*p.property('draw_width');
+          k = (func(main.scale_xmax) - func(main.scale_xmin))/frect.width,
+          x1 = func(main.scale_xmin) - k*frect.x,
+          x2 = x1 + k*this.getPadWidth();
 
-      r.ux1 = match(func2(x1), r.ux1, r.px2-r.px1);
-      r.ux2 = match(func2(x2), r.ux2, r.px2-r.px1);
+      r.px1 = match(func2(x1), r.px1, r.ux2-r.ux1);
+      r.px2 = match(func2(x2), r.px2, r.ux2-r.ux1);
 
       func = direct_funcs[main.logy];
       func2 = revert_funcs[main.logy];
 
-      k = (func(main.scale_ymax) - func(main.scale_ymin))/p.property('draw_height');
-      let y2 = func(main.scale_ymax) + k*p.property('draw_y'),
-          y1 = y2 - k*p.property('draw_height');
+      k = (func(main.scale_ymax) - func(main.scale_ymin))/frect.height;
+      let y2 = func(main.scale_ymax) + k*frect.y,
+          y1 = y2 - k*this.getPadHeight();
 
-      r.uy1 = match(func2(y1), r.uy1, r.py2-r.py1);
-      r.uy2 = match(func2(y2), r.uy2, r.py2-r.py1);
+      r.py1 = match(func2(y1), r.py1, r.uy2-r.uy1);
+      r.py2 = match(func2(y2), r.py2, r.uy2-r.uy1);
 
       return true;
    }
@@ -62835,6 +62860,7 @@ class TH2Painter$2 extends THistPainter {
                maxContent = Math.max(maxContent, histo.getBinContent(i + 1, j + 1));
 
       const make_path = (...a) => {
+         if (a[1] === 'array') a = a[0];
          let l = a.length, i = 2, xx = a[0], yy = a[1],
              res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
          while (i < l) {
@@ -63033,7 +63059,7 @@ class TH2Painter$2 extends THistPainter {
 
             arr.push('H', center); // complete histogram
 
-            hists += make_path(...arr);
+            hists += make_path(arr, 'array');
 
             if (!this.fillatt.empty()) hists += 'Z';
          }
@@ -72876,6 +72902,8 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
+const kindTFile = 'ROOT.TFile';
+
 /**
   * @summary Painter of hierarchical structures
   *
@@ -72933,7 +72961,7 @@ class HierarchyPainter extends BasePainter {
       let folder = {
          _name: file.fFileName,
          _title: (file.fTitle ? file.fTitle + ', path ' : '')  + file.fFullURL,
-         _kind: 'ROOT.TFile',
+         _kind: kindTFile,
          _file: file,
          _fullurl: file.fFullURL,
          _localfile: file.fLocalFile,
@@ -74707,13 +74735,13 @@ class HierarchyPainter extends BasePainter {
      * @private */
    forEachRootFile(func) {
       if (!this.h) return;
-      if ((this.h._kind == 'ROOT.TFile') && this.h._file)
+      if ((this.h._kind == kindTFile) && this.h._file)
          return func(this.h);
 
       if (this.h._childs)
          for (let n = 0; n < this.h._childs.length; ++n) {
             let item = this.h._childs[n];
-            if ((item._kind == 'ROOT.TFile') && ('_fullurl' in item))
+            if ((item._kind == kindTFile) && ('_fullurl' in item))
                func(item);
          }
    }
@@ -74741,7 +74769,7 @@ class HierarchyPainter extends BasePainter {
          } else if (this.h._kind == 'TopFolder') {
             this.h._childs.push(h1);
          }  else {
-            let h0 = this.h, topname = (h0._kind == 'ROOT.TFile') ? 'Files' : 'Items';
+            let h0 = this.h, topname = (h0._kind == kindTFile) ? 'Files' : 'Items';
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
@@ -90806,8 +90834,8 @@ class TSplinePainter extends ObjectPainter {
          }
       } else {
          // Non equidistant knots, binary search
-         while(khig-klow>1) {
-            let khalf = Math.round((klow+khig)/2);
+         while(khig - klow > 1) {
+            let khalf = Math.round((klow + khig)/2);
             if(x > spline.fPoly[khalf].fX) klow = khalf;
                                       else khig = khalf;
          }
@@ -90961,14 +90989,14 @@ class TSplinePainter extends ObjectPainter {
          }
 
          for (let n = 0; n < npx; ++n) {
-            let xx = xmin + (xmax-xmin)/npx*(n-1);
-            if (pmain.logx) xx = Math.exp(xx);
+            let x = xmin + (xmax-xmin)/npx*(n-1);
+            if (pmain.logx) x = Math.exp(x);
 
-            while ((indx < spline.fNp-1) && (xx > spline.fPoly[indx+1].fX)) ++indx;
+            while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX)) ++indx;
 
-            let yy = this.eval(spline.fPoly[indx], xx);
+            let y = this.eval(spline.fPoly[indx], x);
 
-            bins.push({ x: xx, y: yy, grx: funcs.grx(xx), gry: funcs.gry(yy) });
+            bins.push({ x, y, grx: funcs.grx(x), gry: funcs.gry(y) });
          }
 
          let h0 = h;  // use maximal frame height for filling
