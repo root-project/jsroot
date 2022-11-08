@@ -1644,26 +1644,27 @@ class TPadPainter extends ObjectPainter {
       const same = x => x,
             direct_funcs = [same, Math.log10, x => Math.log10(x)/Math.log10(2)],
             revert_funcs = [same, x => Math.pow(10, x), x => Math.pow(2, x)],
-            match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1;
+            match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1,
+            frect = main.getFrameRect();
 
       let func = direct_funcs[main.logx],
           func2 = revert_funcs[main.logx],
-          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property('draw_width'),
-          x1 = func(main.scale_xmin) - k*p.property('draw_x'),
-          x2 = x1 + k*p.property('draw_width');
+          k = (func(main.scale_xmax) - func(main.scale_xmin))/frect.width,
+          x1 = func(main.scale_xmin) - k*frect.x,
+          x2 = x1 + k*this.getPadWidth();
 
-      r.ux1 = match(func2(x1), r.ux1, r.px2-r.px1);
-      r.ux2 = match(func2(x2), r.ux2, r.px2-r.px1);
+      r.px1 = match(func2(x1), r.px1, r.ux2-r.ux1);
+      r.px2 = match(func2(x2), r.px2, r.ux2-r.ux1);
 
       func = direct_funcs[main.logy];
       func2 = revert_funcs[main.logy];
 
-      k = (func(main.scale_ymax) - func(main.scale_ymin))/p.property('draw_height');
-      let y2 = func(main.scale_ymax) + k*p.property('draw_y'),
-          y1 = y2 - k*p.property('draw_height');
+      k = (func(main.scale_ymax) - func(main.scale_ymin))/frect.height;
+      let y2 = func(main.scale_ymax) + k*frect.y,
+          y1 = y2 - k*this.getPadHeight();
 
-      r.uy1 = match(func2(y1), r.uy1, r.py2-r.py1);
-      r.uy2 = match(func2(y2), r.uy2, r.py2-r.py1);
+      r.py1 = match(func2(y1), r.py1, r.uy2-r.uy1);
+      r.py2 = match(func2(y2), r.py2, r.uy2-r.uy1);
 
       return true;
    }
