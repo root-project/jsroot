@@ -1,4 +1,4 @@
-import { isStr } from '../core.mjs';
+import { isStr, isFunc } from '../core.mjs';
 import { FontHandler } from './FontHandler.mjs';
 import { ObjectPainter } from './ObjectPainter.mjs';
 
