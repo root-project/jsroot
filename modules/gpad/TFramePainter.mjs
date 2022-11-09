@@ -1348,11 +1348,12 @@ const FrameInteractive = {
 
       if (!exec_painter) exec_painter = menu_painter;
 
-      if (!menu_painter || !menu_painter.fillContextMenu) return;
+      if (!isFunc(menu_painter?.fillContextMenu)) return;
 
       this.clearInteractiveElements();
 
       createMenu(evnt, menu_painter).then(menu => {
+
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner

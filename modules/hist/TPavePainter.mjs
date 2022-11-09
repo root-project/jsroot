@@ -857,6 +857,10 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill context menu for the TPave object */
    fillContextMenu(menu) {
+
+      console.log('fill context menu', this.snapid);
+      console.trace();
+
       let pave = this.getObject();
 
       menu.add('header: ' + pave._typename + '::' + pave.fName);
@@ -988,13 +992,18 @@ class TPavePainter extends ObjectPainter {
 
       createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
-         return this.fillObjectExecMenu(menu, 'title');
+         return this.fillObjectExecMenu(menu, this.isTitle() ? 'title' : undefined);
        }).then(menu => menu.show());
    }
 
    /** @summary Returns true when stat box is drawn */
    isStats() {
       return this.matchObjectType(clTPaveStats);
+   }
+
+   /** @summary Returns true when title is drawn */
+   isTitle() {
+      return this.matchObjectType(clTPaveText) && (this.getObject()?.fName == 'title');
    }
 
    /** @summary Clear text in the pave */
