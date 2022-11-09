@@ -1032,7 +1032,7 @@ class THistPainter extends ObjectPainter {
                }, 'objects');
 
             if (obj.fFunctions)
-               for (let n=0;n<obj.fFunctions.arr.length;++n) {
+               for (let n = 0; n < obj.fFunctions.arr.length; ++n) {
                   let func = obj.fFunctions.arr[n];
                   if (!func || !func._typename) continue;
 
@@ -1069,17 +1069,9 @@ class THistPainter extends ObjectPainter {
             if (pp && (painters.length > 0))
                pp.cleanPrimitives(p => painters.indexOf(p) >= 0);
 
-            // plot new objects on the same pad - will works only for simple drawings already loaded
-            if (pp && (newfuncs.length > 0)) {
-               let arr = [], prev_name = pp.has_canvas ? pp.selectCurrentPad(pp.this_pad_name) : undefined;
-               for (let k = 0; k < newfuncs.length; ++k)
-                  arr.push(pp.drawObject(this.getDom(), newfuncs[k]));
-               Promise.all(arr).then(parr => {
-                  for (let k = 0; k < parr.length; ++k)
-                     if (parr[k]) parr[k].child_painter_id = pid;
-                  pp.selectCurrentPad(prev_name);
-               });
-            }
+            // plot new objects on the same pad with next redraw
+            if (newfuncs.length > 0)
+               this._extraFunctions = newfuncs;
          }
 
          let changed_opt = (histo.fOption != obj.fOption);
@@ -1466,14 +1458,24 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Method draws next function from the functions list
      * @return {Promise} fulfilled when drawing is ready */
-   async drawNextFunction(indx) {
-      let histo = this.getHisto();
-      if (!this.options.Func || !histo.fFunctions || (indx >= histo.fFunctions.arr.length))
-          return true;
+   async drawNextFunction(indx, only_extra) {
+      let histo = this.getHisto(), func = null, opt = '';
 
-      let func = histo.fFunctions.arr[indx],
-          opt = histo.fFunctions.opt[indx],
-          pp = this.getPadPainter(),
+      if (only_extra) {
+         if (this._extraFunctions && (indx < this._extraFunctions.length))
+            func = this._extraFunctions[indx];
+         else
+            delete this._extraFunctions;
+      } else {
+         if (this.options.Func && histo.fFunctions && (indx < histo.fFunctions.arr.length)) {
+            func = histo.fFunctions.arr[indx];
+            opt = histo.fFunctions.opt[indx];
+         }
+      }
+
+      if (!func) return true;
+
+      let pp = this.getPadPainter(),
           do_draw = false,
           func_painter = pp?.findPainterFor(func);
 
@@ -1483,7 +1485,7 @@ class THistPainter extends ObjectPainter {
          do_draw = this.needDrawFunc(histo, func);
 
       if (!do_draw)
-         return this.drawNextFunction(indx+1);
+         return this.drawNextFunction(indx+1, only_extra);
 
       func.$histo = histo; // required to draw TF1 correctly
 
@@ -1494,7 +1496,7 @@ class THistPainter extends ObjectPainter {
          if (painter && (typeof painter == 'object'))
             painter.child_painter_id = this.hist_painter_id;
 
-         return this.drawNextFunction(indx+1);
+         return this.drawNextFunction(indx+1, only_extra);
       });
    }
 

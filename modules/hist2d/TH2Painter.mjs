@@ -2662,9 +2662,11 @@ class TH2Painter extends THistPainter {
          }
 
          return pr.then(() => this.completePalette(pp));
-      }).then(() => this.drawHistTitle()).then(() => {
-         this.updateStatWebCanvas();
-         return this.addInteractivity();
+      }).then(() => this.drawHistTitle())
+        .then(() => this.drawNextFunction(0, true))
+        .then(() => {
+            this.updateStatWebCanvas();
+            return this.addInteractivity();
       });
    }
 
