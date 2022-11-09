@@ -821,14 +821,19 @@ class TAxisPainter extends ObjectPainter {
       title_g.style('cursor', 'move').call(drag_move);
    }
 
-   /** @summary Submit exec for the axis - if possible */
+   /** @summary Configure hist painter which creates axis - to be able submit execs
+     * @private */
+   setHistPainter(hist_painter, axis_name) {
+      this.hist_painter = hist_painter;
+      this.hist_axis = axis_name;
+   }
+
+   /** @summary Submit exec for the axis - if possible
+     * @private */
    submitAxisExec(exec) {
-       let id = this.getMainPainter(true)?.snapid;
-       if (!id) return;
-       if (this.name == 'xaxis')
-          this.submitCanvExec(exec, id + '#x');
-       else if (this.name == 'yaxis')
-          this.submitCanvExec(exec, id + '#y');
+      let snapid = this.hist_painter?.snapid;
+      if (snapid && this.hist_axis)
+         this.submitCanvExec(exec, snapid + '#' + this.hist_axis);
    }
 
    /** @summary Produce svg path for axis ticks */

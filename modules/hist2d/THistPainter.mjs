@@ -1170,7 +1170,8 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter()) {
          let opts = {
             second_x: (this.options.AxisPos >= 10),
-            second_y: (this.options.AxisPos % 10) == 1
+            second_y: (this.options.AxisPos % 10) == 1,
+            hist_painter: this
          };
 
          if ((!opts.second_x && !opts.second_y) || fp.hasDrawnAxes(opts.second_x, opts.second_y))
@@ -1224,7 +1225,8 @@ class THistPainter extends ObjectPainter {
                     symlog_x: this.options.SymlogX,
                     symlog_y: this.options.SymlogY,
                     Proj: this.options.Proj,
-                    extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
+                    extra_y_space: this.options.Text && (this.options.BarStyle > 0),
+                    hist_painter: this });
       delete this.check_pad_range;
 
       if (this.options.Same)

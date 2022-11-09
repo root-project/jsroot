@@ -1741,6 +1741,7 @@ class TFramePainter extends ObjectPainter {
 
       this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
+      this.x_handle.setHistPainter(opts.hist_painter, 'x');
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
@@ -1753,6 +1754,7 @@ class TFramePainter extends ObjectPainter {
 
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
+      this.y_handle.setHistPainter(opts.hist_painter, 'y');
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
@@ -1813,6 +1815,7 @@ class TFramePainter extends ObjectPainter {
       if (opts.second_x) {
          this.x2_handle = new TAxisPainter(this.getDom(), this.x2axis, true);
          this.x2_handle.setPadName(this.getPadName());
+         this.x2_handle.setHistPainter(opts.hist_painter, 'x');
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                          { reverse: this.reverse_x2,
@@ -1825,6 +1828,7 @@ class TFramePainter extends ObjectPainter {
       if (opts.second_y) {
          this.y2_handle = new TAxisPainter(this.getDom(), this.y2axis, true);
          this.y2_handle.setPadName(this.getPadName());
+         this.y2_handle.setHistPainter(opts.hist_painter, 'y');
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                          { reverse: this.reverse_y2,
