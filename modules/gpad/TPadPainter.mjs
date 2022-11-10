@@ -1247,38 +1247,7 @@ class TPadPainter extends ObjectPainter {
          return this;
       }
 
-      let snap = lst[indx],
-          snapid = snap.fObjectID,
-          cnt = this._snaps_map[snapid],
-          objpainter = null;
-
-      if (cnt) cnt++; else cnt = 1;
-      this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
-
-      // first appropriate painter for the object
-      // if same object drawn twice, two painters will exists
-      for (let k = 0;  k < this.painters.length; ++k) {
-         if (this.painters[k].snapid === snapid)
-            if (--cnt === 0) { objpainter = this.painters[k]; break; }
-      }
-
-      if (objpainter) {
-
-         if (snap.fKind === webSnapIds.kSubPad) // subpad
-            return objpainter.redrawPadSnap(snap).then(() => this.drawNextSnap(lst, indx));
-
-         let promise;
-
-         if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.updateObject(snap.fSnapshot, snap.fOption, true))
-               promise = objpainter.redraw();
-         } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
-            if (objpainter.updateObject(snap.fSnapshot))
-               promise = objpainter.redraw();
-         }
-
-         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
-      }
+      let snap = lst[indx];
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
@@ -1320,6 +1289,37 @@ class TPadPainter extends ObjectPainter {
          return this.drawNextSnap(lst, indx); // call next
       }
 
+      let snapid = snap.fObjectID,
+          cnt = (this._snaps_map[snapid] || 0) + 1,
+          objpainter = null;
+
+      this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
+
+      // first appropriate painter for the object
+      // if same object drawn twice, two painters will exists
+      for (let k = 0;  k < this.painters.length; ++k) {
+         if (this.painters[k].snapid === snapid)
+            if (--cnt === 0) { objpainter = this.painters[k]; break; }
+      }
+
+      if (objpainter) {
+
+         if (snap.fKind === webSnapIds.kSubPad) // subpad
+            return objpainter.redrawPadSnap(snap).then(() => this.drawNextSnap(lst, indx));
+
+         let promise;
+
+         if (snap.fKind === webSnapIds.kObject) { // object itself
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption, true))
+               promise = objpainter.redraw();
+         } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
+            if (objpainter.updateObject(snap.fSnapshot))
+               promise = objpainter.redraw();
+         }
+
+         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
+      }
+
       if (snap.fKind === webSnapIds.kSubPad) { // subpad
 
          let subpad = snap.fSnapshot;
@@ -1352,6 +1352,7 @@ class TPadPainter extends ObjectPainter {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
          });
+
 
       return this.drawNextSnap(lst, indx);
    }
@@ -1496,8 +1497,6 @@ class TPadPainter extends ObjectPainter {
 
          if (sub) {
             // remove painter which does not found in the list of snaps
-            console.log('remove painter which is not found');
-
             this.painters.splice(k--, 1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;

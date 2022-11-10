@@ -569,21 +569,19 @@ class TCanvasPainter extends TPadPainter {
             break;
          case 'frame': // when moving frame
          case 'zoom':  // when changing zoom inside frame
-            if (!painter.getWebPadOptions)
+            if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
             if (isFunc(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
             break;
          case 'pave_moved':
-            if (painter.fillWebObjectOptions) {
+            if (isFunc(painter.fillWebObjectOptions)) {
                let info = painter.fillWebObjectOptions();
                if (info) msg = 'PRIMIT6:' + toJSON(info);
             }
             break;
          default:
             if ((kind.slice(0,5) == 'exec:') && painter?.snapid) {
-               console.log(`Call exec for ${painter.snapid}`);
-
                msg = 'PRIMIT6:' + toJSON({
                   _typename: 'TWebObjectOptions',
                   snapid: painter.snapid.toString() + (subelem ? '#'+subelem : ''),
