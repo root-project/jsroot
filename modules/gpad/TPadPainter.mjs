@@ -1272,7 +1272,7 @@ class TPadPainter extends ObjectPainter {
          let promise;
 
          if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.updateObject(snap.fSnapshot, snap.fOption))
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption, true))
                promise = objpainter.redraw();
          } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
             if (objpainter.updateObject(snap.fSnapshot))
@@ -1500,6 +1500,8 @@ class TPadPainter extends ObjectPainter {
 
          if (sub) {
             // remove painter which does not found in the list of snaps
+            console.log('remove painter which is not found');
+
             this.painters.splice(k--, 1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;

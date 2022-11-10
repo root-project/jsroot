@@ -917,7 +917,7 @@ class RPadPainter extends RObjectPainter {
 
          let promise;
 
-         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ''))
+         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
 
          if (!isPromise(promise)) promise = Promise.resolve(true);

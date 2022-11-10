@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, constants, internals, create, isFunc,
+import { gStyle, BIT, settings, constants, internals, create, isFunc, isPromise,
          clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -923,8 +923,9 @@ class THistPainter extends ObjectPainter {
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
+     * @param is_online - if update from online canvas, need to redraw functions
      * @return {Boolean} - true if histogram was successfully updated */
-   updateObject(obj, opt) {
+   updateObject(obj, opt, is_online) {
 
       let histo = this.getHisto(),
           fp = this.getFramePainter(),
@@ -1022,7 +1023,7 @@ class THistPainter extends ObjectPainter {
 
          if (this.options.Func) {
 
-            let painters = [], newfuncs = [], pid = this.hist_painter_id;
+            let painters = [], newfuncs = [], update_painters = [], pid = this.hist_painter_id;
 
             // find painters associated with histogram
             if (pp)
@@ -1034,14 +1035,12 @@ class THistPainter extends ObjectPainter {
             if (obj.fFunctions)
                for (let n = 0; n < obj.fFunctions.arr.length; ++n) {
                   let func = obj.fFunctions.arr[n];
-                  if (!func || !func._typename) continue;
-
-                  if (!this.needDrawFunc(histo, func)) continue;
+                  if (!func?._typename || !this.needDrawFunc(histo, func)) continue;
 
                   let funcpainter = null, func_indx = -1;
 
                   // try to find matching object in associated list of painters
-                  for (let i=0;i<painters.length;++i)
+                  for (let i = 0; i < painters.length; ++i)
                      if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
                         funcpainter = painters[i];
                         func_indx = i;
@@ -1053,7 +1052,10 @@ class THistPainter extends ObjectPainter {
 
                   if (funcpainter) {
                      funcpainter.updateObject(func);
-                     if (func_indx >= 0) painters.splice(func_indx, 1);
+                     if (func_indx >= 0) {
+                        painters.splice(func_indx, 1);
+                        update_painters.push(funcpainter);
+                      }
                   } else {
                      newfuncs.push(func);
                   }
@@ -1072,6 +1074,9 @@ class THistPainter extends ObjectPainter {
             // plot new objects on the same pad with next redraw
             if (newfuncs.length > 0)
                this._extraFunctions = newfuncs;
+
+            if (is_online && (update_painters.length > 0))
+               this._extraPainters = update_painters;
          }
 
          let changed_opt = (histo.fOption != obj.fOption);
@@ -1462,6 +1467,15 @@ class THistPainter extends ObjectPainter {
       let histo = this.getHisto(), func = null, opt = '';
 
       if (only_extra) {
+         if (this._extraPainters) {
+             let p = this._extraPainters.shift();
+             if (this._extraPainters.length == 0)
+                delete this._extraPainters;
+             let pr = p.redraw();
+             if (!isPromise(pr))
+                pr = Promise.resolve(true);
+             return pr.then(() => this.drawNextFunction(indx, only_extra));
+         }
          if (this._extraFunctions && (indx < this._extraFunctions.length))
             func = this._extraFunctions[indx];
          else
