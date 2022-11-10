@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, constants, internals, create, isFunc, isPromise,
+import { gStyle, BIT, settings, constants, internals, create, isFunc, getPromise,
          clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -1471,10 +1471,7 @@ class THistPainter extends ObjectPainter {
              let p = this._extraPainters.shift();
              if (this._extraPainters.length == 0)
                 delete this._extraPainters;
-             let pr = p.redraw();
-             if (!isPromise(pr))
-                pr = Promise.resolve(true);
-             return pr.then(() => this.drawNextFunction(indx, only_extra));
+             return getPromise(p.redraw()).then(() => this.drawNextFunction(indx, only_extra));
          }
          if (this._extraFunctions && (indx < this._extraFunctions.length))
             func = this._extraFunctions[indx];

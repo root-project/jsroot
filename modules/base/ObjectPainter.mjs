@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, constants, internals, isNodeJs, isPromise, BIT, clTObjString, clTAxis, isFunc, isStr } from '../core.mjs';
+import { settings, constants, internals, isNodeJs, getPromise, BIT, clTObjString, clTAxis, isFunc, isStr } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -701,10 +701,7 @@ class ObjectPainter extends BasePainter {
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!isPromise(res))
-         res = Promise.resolve(false);
-
-      return res.then(() => {
+      return getPromise(res).then(() => {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 

@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, addMethods,
-         isPromise, isBatchMode, isFunc, isStr, btoa_func, clTPad } from '../core.mjs';
+         isPromise, getPromise, isBatchMode, isFunc, isStr, btoa_func, clTPad } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -765,9 +765,7 @@ class RPadPainter extends RObjectPainter {
                 return changed;
              }
 
-             let res = this.painters[indx].redraw(force ? 'redraw' : 'resize');
-             if (!isPromise(res)) res = Promise.resolve();
-             return res.then(() => redrawNext(indx+1));
+             return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -920,9 +918,7 @@ class RPadPainter extends RObjectPainter {
          if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
 
-         if (!isPromise(promise)) promise = Promise.resolve(true);
-
-         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
+         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
       if (snap._typename == 'ROOT::Experimental::RPadDisplayItem') { // subpad

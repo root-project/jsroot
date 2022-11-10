@@ -1695,6 +1695,10 @@ function isStr(arg) { return typeof arg === 'string'; }
   * @private */
 function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
 
+/** @summary Provide promise in any case
+  * @private */
+function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
+
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
 async function _ensureJSROOT() {
@@ -1717,4 +1721,4 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isFunc, isStr, isPromise, _ensureJSROOT };
+         getMethods, registerMethods, isRootCollection, isFunc, isStr, isPromise, getPromise, _ensureJSROOT };

@@ -1,6 +1,6 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isFunc, isStr, isPromise,
+         findFunction, isBatchMode, isNodeJs, getDocument, isFunc, isStr, getPromise,
          clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -3081,14 +3081,8 @@ class TGeoPainter extends ObjectPainter {
             promise = this.drawExtraShape(obj, itemname);
       }
 
-      if (!isPromise(promise))
-         promise = Promise.resolve(promise);
-
-      if (!do_render)
-         return promise;
-
-      return promise.then(is_any => {
-         if (!is_any) return false;
+      return getPromise(promise).then(is_any => {
+         if (!is_any || !do_render) return is_any;
 
          this.updateClipping(true);
          return this.render3D(100);

@@ -1,5 +1,5 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, findFunction, internals, isPromise, isNodeJs, isFunc, isStr, _ensureJSROOT,
+import { loadScript, findFunction, internals, getPromise, isNodeJs, isFunc, isStr, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
@@ -359,9 +359,7 @@ async function draw(dom, obj, opt) {
                            .then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
                            .then(() => painter.redraw());
       } else {
-         promise = handle.func(dom, obj, opt);
-         if (!isPromise(promise))
-            promise = Promise.resolve(promise);
+         promise = getPromise(handle.func(dom, obj, opt));
       }
 
       return promise.then(p => {
@@ -458,11 +456,8 @@ async function redraw(dom, obj, opt) {
       }
    }
 
-   if (res_painter) {
-      if (!isPromise(redraw_res))
-         redraw_res = Promise.resolve(true);
-      return redraw_res.then(() => res_painter);
-   }
+   if (res_painter)
+      return getPromise(redraw_res).then(() => res_painter);
 
    cleanup(dom);
 

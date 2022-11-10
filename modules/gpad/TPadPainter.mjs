@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, isFunc, isStr,
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
@@ -1137,9 +1137,7 @@ class TPadPainter extends ObjectPainter {
                 return changed;
              }
 
-             let res = this.painters[indx].redraw(force ? 'redraw' : 'resize');
-             if (!isPromise(res)) res = Promise.resolve();
-             return res.then(() => redrawNext(indx+1));
+             return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -1279,9 +1277,7 @@ class TPadPainter extends ObjectPainter {
                promise = objpainter.redraw();
          }
 
-         if (!isPromise(promise)) promise = Promise.resolve(true);
-
-         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
+         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
       // gStyle object
@@ -1536,10 +1532,8 @@ class TPadPainter extends ObjectPainter {
          // redraw secondaries like stat box
          let promises = [];
          this.painters.forEach(sub => {
-            if ((sub.snapid === undefined) || sub.$secondary) {
-               let res = sub.redraw();
-               if (isPromise(res)) promises.push(res);
-            }
+            if ((sub.snapid === undefined) || sub.$secondary)
+               promises.push(sub.redraw());
          });
          return Promise.all(promises);
       }).then(() => {
