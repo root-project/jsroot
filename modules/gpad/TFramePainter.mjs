@@ -2141,6 +2141,8 @@ class TFramePainter extends ObjectPainter {
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && pp?.iscan)
             this.fillatt.setSolidColor('white');
+         else if ((pad?.fFillStyle === 4000) && !this.fillatt.empty()) // special case of transpad.C macro, which set transparent pad
+            this.fillatt.setOpacity(0);
       }
 
       if (!tframe && (pad?.fFrameLineColor !== undefined))

@@ -84,6 +84,11 @@ class TAttFillHandler {
       this.pattern = 1001;
    }
 
+   /** @summary Set fill color opacity */
+   setOpacity(o) {
+      this.opacity = o;
+   }
+
    /** @summary Check if solid fill is used, also color can be checked
      * @param {string} [solid_color] - when specified, checks if fill color matches */
    isSolid(solid_color) {
