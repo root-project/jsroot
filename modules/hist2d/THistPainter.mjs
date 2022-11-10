@@ -1086,8 +1086,10 @@ class THistPainter extends ObjectPainter {
             this.decodeOptions(opt || histo.fOption);
       }
 
-      if (!this.options.ominimum) this.options.minimum = histo.fMinimum;
-      if (!this.options.omaximum) this.options.maximum = histo.fMaximum;
+      if (!this.options.ominimum)
+         this.options.minimum = histo.fMinimum;
+      if (!this.options.omaximum)
+         this.options.maximum = histo.fMaximum;
 
       if (this.snapid || !fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
@@ -1625,9 +1627,9 @@ class THistPainter extends ObjectPainter {
    changeValuesRange(menu) {
       let curr;
       if ((this.options.minimum != -1111) && (this.options.maximum != -1111))
-         curr = '[' + this.options.minimum + ',' + this.options.maximum + ']';
+         curr = `[${this.options.minimum},${this.options.maximum}]`;
       else
-         curr = '[' + this.gminbin + ',' + this.gmaxbin + ']';
+         curr = `[${this.gminbin},${this.gmaxbin}]`;
 
       menu.input('Enter min/max hist values or empty string to reset', curr).then(res => {
          res = res ? JSON.parse(res) : [];

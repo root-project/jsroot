@@ -128,15 +128,23 @@ class TH1Painter extends THistPainter {
          this.ymax = hmax;
       } else {
          if (hmin != -1111) {
-            if (hmin < this.ymin) this.ymin = hmin; else set_zoom = true;
+            if (hmin < this.ymin)
+               this.ymin = hmin;
+             set_zoom = true;
          }
          if (hmax != -1111) {
-            if (hmax > this.ymax) this.ymax = hmax; else set_zoom = true;
+            if (hmax > this.ymax)
+               this.ymax = hmax;
+            set_zoom = true;
          }
       }
 
+      // always set zoom when hmin/hmax is configured
+      // fMinimum/fMaximum values is a way how ROOT handles Y scale zooming for TH1
+
       if (!when_axis_changed) {
-         if (set_zoom && this.draw_content) {
+
+         if (set_zoom) {
             this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
             this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
          } else {
