@@ -1573,7 +1573,6 @@ class TPadPainter extends ObjectPainter {
       if (is_top) arg = [];
       if (!cp) cp = this.iscan ? this : this.getCanvPainter();
 
-
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
                   active: !!this.is_active_pad,

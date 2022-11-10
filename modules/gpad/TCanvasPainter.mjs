@@ -580,23 +580,34 @@ class TCanvasPainter extends TPadPainter {
                if (info) msg = 'PRIMIT6:' + toJSON(info);
             }
             break;
-         default:
-            if ((kind.slice(0,5) == 'exec:') && painter?.snapid) {
-               msg = 'PRIMIT6:' + toJSON({
+         case 'logx':
+         case 'logy':
+         case 'logz': {
+            let pp = painter.getPadPainter();
+
+            if (pp?.snapid && pp?.pad) {
+               let name = 'SetLog' + kind[3], value = pp.pad['fLog' + kind[3]];
+               painter = pp;
+               kind = `exec:${name}(${value})`;
+            }
+            break;
+         }
+      }
+
+      if (!msg && painter?.snapid && (kind.slice(0,5) == 'exec:'))
+         msg = 'PRIMIT6:' + toJSON({
                   _typename: 'TWebObjectOptions',
                   snapid: painter.snapid.toString() + (subelem ? '#'+subelem : ''),
                   opt: kind.slice(5),
                   fcust: 'exec',
                   fopt: []
                });
-            } else {
-               console.log(`UNPROCESSED CHANGES ${kind}`);
-            }
-      }
 
       if (msg) {
          console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
+      } else {
+         console.log(`Unprocessed changes ${kind}`)
       }
    }
 
