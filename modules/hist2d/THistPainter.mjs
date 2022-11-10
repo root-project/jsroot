@@ -1425,14 +1425,13 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Find function in histogram list of functions */
    findFunction(type_name, obj_name) {
-      let histo = this.getHisto(),
-          funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
-
+      let funcs = this.getHisto()?.fFunctions?.arr;
       if (!funcs) return null;
 
       for (let i = 0; i < funcs.length; ++i) {
-         if (obj_name && (funcs[i].fName !== obj_name)) continue;
-         if (funcs[i]._typename === type_name) return funcs[i];
+         let f = funcs[i];
+         if (obj_name && (f.fName !== obj_name)) continue;
+         if (f._typename === type_name) return f;
       }
 
       return null;
@@ -1930,7 +1929,8 @@ class THistPainter extends ObjectPainter {
 
       let pal = this.findFunction(clTPaletteAxis),
           pp = this.getPadPainter(),
-          pal_painter = pp?.findPainterFor(pal);
+          pal_painter = pp?.findPainterFor(pal),
+          found_in_func = !!pal;
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
@@ -2023,6 +2023,8 @@ class THistPainter extends ObjectPainter {
          pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
             pal_painter = _palp;
             this.selectCurrentPad(prev);
+            if (found_in_func)
+               pal_painter._hist_painter = this;
          });
       } else {
          pal_painter.Enabled = true;
@@ -2038,7 +2040,7 @@ class THistPainter extends ObjectPainter {
          this.options.Zvert = pal_painter._palette_vertical;
 
          // make dummy redraw, palette will be updated only from histogram painter
-         pal_painter.redraw = function() {};
+         pal_painter.redraw = () => {};
 
          let need_redraw = false;
 

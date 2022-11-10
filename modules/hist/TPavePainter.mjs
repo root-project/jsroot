@@ -223,14 +223,19 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (!res) {
-         if (!this.snapid) return null;
-         res = { _typename: 'TWebObjectOptions', snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
-      }
 
       let pave = this.getObject();
 
-      if (pave && pave.fInit) {
+      if (!res) {
+         let snapid = this.snapid;
+         if (!snapid && this._hist_painter?.snapid && pave?.fName)
+            snapid = this._hist_painter.snapid + '#func_' + pave.fName;
+
+         if (!snapid) return null;
+         res = { _typename: 'TWebObjectOptions', snapid: snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
+      }
+
+      if (pave?.fInit) {
          res.fcust = 'pave';
          res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
       }

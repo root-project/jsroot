@@ -271,9 +271,9 @@ class TMultiGraphPainter extends ObjectPainter {
               pp = painter.getPadPainter(),
               histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp?.getRootPad(true));
 
-         promise = painter.drawAxisHist(histo, hopt).then(fp => {
-            painter.firstpainter = fp;
-            fp.$secondary = true; // mark histogram painter as secondary
+         promise = painter.drawAxisHist(histo, hopt).then(ap => {
+            painter.firstpainter = ap;
+            ap.$secondary = true; // mark histogram painter as secondary
          });
       }
 

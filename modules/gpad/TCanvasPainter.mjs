@@ -655,7 +655,7 @@ class TCanvasPainter extends TPadPainter {
             if (p.$secondary) return; // ignore all secondary painters
 
             let subobj = p.getObject();
-            if (subobj && subobj._typename)
+            if (subobj?._typename)
                canv.fPrimitives.Add(subobj, p.getDrawOpt());
          }, 'objects');
       }
