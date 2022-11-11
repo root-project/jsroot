@@ -1708,7 +1708,7 @@ class TPadPainter extends ObjectPainter {
 
        createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
-             setTimeout(() => menu.show(), 50);
+             selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
    }
 
