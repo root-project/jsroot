@@ -10,6 +10,7 @@
 7. 3-dimensional TTree::Draw now produces TPolyMarker3D by default
 8. Fix - interactive move/resize on touch devices
 9. Provide `settings.PreferSavedPoints` to exclude function evaluation when there are saved points
+10. Improve TWebCanvas support
 
 
 ## Changes in 7.2.1

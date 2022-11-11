@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '9/11/2022';
+let version_date = '11/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1700,6 +1700,10 @@ function isStr(arg) { return typeof arg === 'string'; }
   * @private */
 function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
 
+/** @summary Provide promise in any case
+  * @private */
+function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
+
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
 async function _ensureJSROOT() {
@@ -1801,6 +1805,7 @@ isRootCollection: isRootCollection,
 isFunc: isFunc,
 isStr: isStr,
 isPromise: isPromise,
+getPromise: getPromise,
 _ensureJSROOT: _ensureJSROOT
 });
 
@@ -10362,6 +10367,11 @@ class TAttFillHandler {
       this.pattern = 1001;
    }
 
+   /** @summary Set fill color opacity */
+   setOpacity(o) {
+      this.opacity = o;
+   }
+
    /** @summary Check if solid fill is used, also color can be checked
      * @param {string} [solid_color] - when specified, checks if fill color matches */
    isSolid(solid_color) {
@@ -11468,10 +11478,7 @@ class ObjectPainter extends BasePainter {
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!isPromise(res))
-         res = Promise.resolve(false);
-
-      return res.then(() => {
+      return getPromise(res).then(() => {
          // inform GED that something changes
          let canp = this.getCanvPainter();
 
@@ -51346,6 +51353,8 @@ class TFramePainter extends ObjectPainter {
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && pp?.iscan)
             this.fillatt.setSolidColor('white');
+         else if ((pad?.fFillStyle === 4000) && !this.fillatt.empty()) // special case of transpad.C macro, which set transparent pad
+            this.fillatt.setOpacity(0);
       }
 
       if (!tframe && (pad?.fFrameLineColor !== undefined))
@@ -54845,9 +54854,7 @@ class TPadPainter extends ObjectPainter {
                 return changed;
              }
 
-             let res = this.painters[indx].redraw(force ? 'redraw' : 'resize');
-             if (!isPromise(res)) res = Promise.resolve();
-             return res.then(() => redrawNext(indx+1));
+             return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -54957,40 +54964,7 @@ class TPadPainter extends ObjectPainter {
          return this;
       }
 
-      let snap = lst[indx],
-          snapid = snap.fObjectID,
-          cnt = this._snaps_map[snapid],
-          objpainter = null;
-
-      if (cnt) cnt++; else cnt = 1;
-      this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
-
-      // first appropriate painter for the object
-      // if same object drawn twice, two painters will exists
-      for (let k = 0;  k < this.painters.length; ++k) {
-         if (this.painters[k].snapid === snapid)
-            if (--cnt === 0) { objpainter = this.painters[k]; break; }
-      }
-
-      if (objpainter) {
-
-         if (snap.fKind === webSnapIds.kSubPad) // subpad
-            return objpainter.redrawPadSnap(snap).then(() => this.drawNextSnap(lst, indx));
-
-         let promise;
-
-         if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.updateObject(snap.fSnapshot, snap.fOption))
-               promise = objpainter.redraw();
-         } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
-            if (objpainter.updateObject(snap.fSnapshot))
-               promise = objpainter.redraw();
-         }
-
-         if (!isPromise(promise)) promise = Promise.resolve(true);
-
-         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
-      }
+      let snap = lst[indx];
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
@@ -55032,6 +55006,37 @@ class TPadPainter extends ObjectPainter {
          return this.drawNextSnap(lst, indx); // call next
       }
 
+      let snapid = snap.fObjectID,
+          cnt = (this._snaps_map[snapid] || 0) + 1,
+          objpainter = null;
+
+      this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
+
+      // first appropriate painter for the object
+      // if same object drawn twice, two painters will exists
+      for (let k = 0;  k < this.painters.length; ++k) {
+         if (this.painters[k].snapid === snapid)
+            if (--cnt === 0) { objpainter = this.painters[k]; break; }
+      }
+
+      if (objpainter) {
+
+         if (snap.fKind === webSnapIds.kSubPad) // subpad
+            return objpainter.redrawPadSnap(snap).then(() => this.drawNextSnap(lst, indx));
+
+         let promise;
+
+         if (snap.fKind === webSnapIds.kObject) { // object itself
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption, true))
+               promise = objpainter.redraw();
+         } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
+            if (objpainter.updateObject(snap.fSnapshot))
+               promise = objpainter.redraw();
+         }
+
+         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
+      }
+
       if (snap.fKind === webSnapIds.kSubPad) { // subpad
 
          let subpad = snap.fSnapshot;
@@ -55064,6 +55069,7 @@ class TPadPainter extends ObjectPainter {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
          });
+
 
       return this.drawNextSnap(lst, indx);
    }
@@ -55242,10 +55248,8 @@ class TPadPainter extends ObjectPainter {
          // redraw secondaries like stat box
          let promises = [];
          this.painters.forEach(sub => {
-            if ((sub.snapid === undefined) || sub.$secondary) {
-               let res = sub.redraw();
-               if (isPromise(res)) promises.push(res);
-            }
+            if ((sub.snapid === undefined) || sub.$secondary)
+               promises.push(sub.redraw());
          });
          return Promise.all(promises);
       }).then(() => {
@@ -55285,7 +55289,6 @@ class TPadPainter extends ObjectPainter {
       if (arg === 'only_this') { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
       if (!cp) cp = this.iscan ? this : this.getCanvPainter();
-
 
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
@@ -56361,36 +56364,45 @@ class TCanvasPainter extends TPadPainter {
             break;
          case 'frame': // when moving frame
          case 'zoom':  // when changing zoom inside frame
-            if (!painter.getWebPadOptions)
+            if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
             if (isFunc(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
             break;
          case 'pave_moved':
-            if (painter.fillWebObjectOptions) {
+            if (isFunc(painter.fillWebObjectOptions)) {
                let info = painter.fillWebObjectOptions();
                if (info) msg = 'PRIMIT6:' + toJSON(info);
             }
             break;
-         default:
-            if ((kind.slice(0,5) == 'exec:') && painter?.snapid) {
-               console.log(`Call exec for ${painter.snapid}`);
+         case 'logx':
+         case 'logy':
+         case 'logz': {
+            let pp = painter.getPadPainter();
 
-               msg = 'PRIMIT6:' + toJSON({
+            if (pp?.snapid && pp?.pad) {
+               let name = 'SetLog' + kind[3], value = pp.pad['fLog' + kind[3]];
+               painter = pp;
+               kind = `exec:${name}(${value})`;
+            }
+            break;
+         }
+      }
+
+      if (!msg && painter?.snapid && (kind.slice(0,5) == 'exec:'))
+         msg = 'PRIMIT6:' + toJSON({
                   _typename: 'TWebObjectOptions',
                   snapid: painter.snapid.toString() + (subelem ? '#'+subelem : ''),
                   opt: kind.slice(5),
                   fcust: 'exec',
                   fopt: []
                });
-            } else {
-               console.log(`UNPROCESSED CHANGES ${kind}`);
-            }
-      }
 
       if (msg) {
          console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
+      } else {
+         console.log(`Unprocessed changes ${kind}`);
       }
    }
 
@@ -56449,7 +56461,7 @@ class TCanvasPainter extends TPadPainter {
             if (p.$secondary) return; // ignore all secondary painters
 
             let subobj = p.getObject();
-            if (subobj && subobj._typename)
+            if (subobj?._typename)
                canv.fPrimitives.Add(subobj, p.getDrawOpt());
          }, 'objects');
       }
@@ -56781,14 +56793,19 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (!res) {
-         if (!this.snapid) return null;
-         res = { _typename: 'TWebObjectOptions', snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
-      }
 
       let pave = this.getObject();
 
-      if (pave && pave.fInit) {
+      if (!res) {
+         let snapid = this.snapid;
+         if (!snapid && this._hist_painter?.snapid && pave?.fName)
+            snapid = this._hist_painter.snapid + '#func_' + pave.fName;
+
+         if (!snapid) return null;
+         res = { _typename: 'TWebObjectOptions', snapid: snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
+      }
+
+      if (pave?.fInit) {
          res.fcust = 'pave';
          res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
       }
@@ -58749,8 +58766,9 @@ class THistPainter extends ObjectPainter {
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
+     * @param is_online - if update from online canvas, need to redraw functions
      * @return {Boolean} - true if histogram was successfully updated */
-   updateObject(obj, opt) {
+   updateObject(obj, opt, is_online) {
 
       let histo = this.getHisto(),
           fp = this.getFramePainter(),
@@ -58848,7 +58866,7 @@ class THistPainter extends ObjectPainter {
 
          if (this.options.Func) {
 
-            let painters = [], newfuncs = [], pid = this.hist_painter_id;
+            let painters = [], newfuncs = [], update_painters = [], pid = this.hist_painter_id;
 
             // find painters associated with histogram
             if (pp)
@@ -58860,14 +58878,12 @@ class THistPainter extends ObjectPainter {
             if (obj.fFunctions)
                for (let n = 0; n < obj.fFunctions.arr.length; ++n) {
                   let func = obj.fFunctions.arr[n];
-                  if (!func || !func._typename) continue;
-
-                  if (!this.needDrawFunc(histo, func)) continue;
+                  if (!func?._typename || !this.needDrawFunc(histo, func)) continue;
 
                   let funcpainter = null, func_indx = -1;
 
                   // try to find matching object in associated list of painters
-                  for (let i=0;i<painters.length;++i)
+                  for (let i = 0; i < painters.length; ++i)
                      if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
                         funcpainter = painters[i];
                         func_indx = i;
@@ -58879,7 +58895,10 @@ class THistPainter extends ObjectPainter {
 
                   if (funcpainter) {
                      funcpainter.updateObject(func);
-                     if (func_indx >= 0) painters.splice(func_indx, 1);
+                     if (func_indx >= 0) {
+                        painters.splice(func_indx, 1);
+                        update_painters.push(funcpainter);
+                      }
                   } else {
                      newfuncs.push(func);
                   }
@@ -58898,6 +58917,9 @@ class THistPainter extends ObjectPainter {
             // plot new objects on the same pad with next redraw
             if (newfuncs.length > 0)
                this._extraFunctions = newfuncs;
+
+            if (is_online && (update_painters.length > 0))
+               this._extraPainters = update_painters;
          }
 
          let changed_opt = (histo.fOption != obj.fOption);
@@ -58907,8 +58929,10 @@ class THistPainter extends ObjectPainter {
             this.decodeOptions(opt || histo.fOption);
       }
 
-      if (!this.options.ominimum) this.options.minimum = histo.fMinimum;
-      if (!this.options.omaximum) this.options.maximum = histo.fMaximum;
+      if (!this.options.ominimum)
+         this.options.minimum = histo.fMinimum;
+      if (!this.options.omaximum)
+         this.options.maximum = histo.fMaximum;
 
       if (this.snapid || !fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
@@ -59244,14 +59268,13 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Find function in histogram list of functions */
    findFunction(type_name, obj_name) {
-      let histo = this.getHisto(),
-          funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
-
+      let funcs = this.getHisto()?.fFunctions?.arr;
       if (!funcs) return null;
 
       for (let i = 0; i < funcs.length; ++i) {
-         if (obj_name && (funcs[i].fName !== obj_name)) continue;
-         if (funcs[i]._typename === type_name) return funcs[i];
+         let f = funcs[i];
+         if (obj_name && (f.fName !== obj_name)) continue;
+         if (f._typename === type_name) return f;
       }
 
       return null;
@@ -59288,6 +59311,12 @@ class THistPainter extends ObjectPainter {
       let histo = this.getHisto(), func = null, opt = '';
 
       if (only_extra) {
+         if (this._extraPainters) {
+             let p = this._extraPainters.shift();
+             if (this._extraPainters.length == 0)
+                delete this._extraPainters;
+             return getPromise(p.redraw()).then(() => this.drawNextFunction(indx, only_extra));
+         }
          if (this._extraFunctions && (indx < this._extraFunctions.length))
             func = this._extraFunctions[indx];
          else
@@ -59440,9 +59469,9 @@ class THistPainter extends ObjectPainter {
    changeValuesRange(menu) {
       let curr;
       if ((this.options.minimum != -1111) && (this.options.maximum != -1111))
-         curr = '[' + this.options.minimum + ',' + this.options.maximum + ']';
+         curr = `[${this.options.minimum},${this.options.maximum}]`;
       else
-         curr = '[' + this.gminbin + ',' + this.gmaxbin + ']';
+         curr = `[${this.gminbin},${this.gmaxbin}]`;
 
       menu.input('Enter min/max hist values or empty string to reset', curr).then(res => {
          res = res ? JSON.parse(res) : [];
@@ -59743,7 +59772,8 @@ class THistPainter extends ObjectPainter {
 
       let pal = this.findFunction(clTPaletteAxis),
           pp = this.getPadPainter(),
-          pal_painter = pp?.findPainterFor(pal);
+          pal_painter = pp?.findPainterFor(pal),
+          found_in_func = !!pal;
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
@@ -59836,6 +59866,8 @@ class THistPainter extends ObjectPainter {
          pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
             pal_painter = _palp;
             this.selectCurrentPad(prev);
+            if (found_in_func)
+               pal_painter._hist_painter = this;
          });
       } else {
          pal_painter.Enabled = true;
@@ -59851,7 +59883,7 @@ class THistPainter extends ObjectPainter {
          this.options.Zvert = pal_painter._palette_vertical;
 
          // make dummy redraw, palette will be updated only from histogram painter
-         pal_painter.redraw = function() {};
+         pal_painter.redraw = () => {};
 
          let need_redraw = false;
 
@@ -60243,15 +60275,23 @@ class TH1Painter$2 extends THistPainter {
          this.ymax = hmax;
       } else {
          if (hmin != -1111) {
-            if (hmin < this.ymin) this.ymin = hmin; else set_zoom = true;
+            if (hmin < this.ymin)
+               this.ymin = hmin;
+             set_zoom = true;
          }
          if (hmax != -1111) {
-            if (hmax > this.ymax) this.ymax = hmax; else set_zoom = true;
+            if (hmax > this.ymax)
+               this.ymax = hmax;
+            set_zoom = true;
          }
       }
 
+      // always set zoom when hmin/hmax is configured
+      // fMinimum/fMaximum values is a way how ROOT handles Y scale zooming for TH1
+
       if (!when_axis_changed) {
-         if (set_zoom && this.draw_content) {
+
+         if (set_zoom) {
             this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
             this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
          } else {
@@ -61645,13 +61685,15 @@ class TH2Painter$2 extends THistPainter {
                else if (bin_content > this.gmaxbin)
                   this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+                  if ((this.gminposbin === null) || (this.gminposbin > bin_content))
+                     this.gminposbin = bin_content;
             }
          }
       }
 
       // this value used for logz scale drawing
-      if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
+      if (this.gminposbin === null)
+         this.gminposbin = this.gmaxbin*1e-4;
 
       if (this.options.Axis > 0) {
          // Paint histogram axis only
@@ -71978,9 +72020,7 @@ async function draw(dom, obj, opt) {
                            .then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
                            .then(() => painter.redraw());
       } else {
-         promise = handle.func(dom, obj, opt);
-         if (!isPromise(promise))
-            promise = Promise.resolve(promise);
+         promise = getPromise(handle.func(dom, obj, opt));
       }
 
       return promise.then(p => {
@@ -72077,11 +72117,8 @@ async function redraw(dom, obj, opt) {
       }
    }
 
-   if (res_painter) {
-      if (!isPromise(redraw_res))
-         redraw_res = Promise.resolve(true);
-      return redraw_res.then(() => res_painter);
-   }
+   if (res_painter)
+      return getPromise(redraw_res).then(() => res_painter);
 
    cleanup(dom);
 
@@ -84104,14 +84141,8 @@ class TGeoPainter extends ObjectPainter {
             promise = this.drawExtraShape(obj, itemname);
       }
 
-      if (!isPromise(promise))
-         promise = Promise.resolve(promise);
-
-      if (!do_render)
-         return promise;
-
-      return promise.then(is_any => {
-         if (!is_any) return false;
+      return getPromise(promise).then(is_any => {
+         if (!is_any || !do_render) return is_any;
 
          this.updateClipping(true);
          return this.render3D(100);
@@ -90395,9 +90426,9 @@ class TMultiGraphPainter$2 extends ObjectPainter {
               pp = painter.getPadPainter(),
               histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp?.getRootPad(true));
 
-         promise = painter.drawAxisHist(histo, hopt).then(fp => {
-            painter.firstpainter = fp;
-            fp.$secondary = true; // mark histogram painter as secondary
+         promise = painter.drawAxisHist(histo, hopt).then(ap => {
+            painter.firstpainter = ap;
+            ap.$secondary = true; // mark histogram painter as secondary
          });
       }
 
@@ -95470,9 +95501,7 @@ class RPadPainter extends RObjectPainter {
                 return changed;
              }
 
-             let res = this.painters[indx].redraw(force ? 'redraw' : 'resize');
-             if (!isPromise(res)) res = Promise.resolve();
-             return res.then(() => redrawNext(indx+1));
+             return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -95622,12 +95651,10 @@ class RPadPainter extends RObjectPainter {
 
          let promise;
 
-         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ''))
+         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
 
-         if (!isPromise(promise)) promise = Promise.resolve(true);
-
-         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
+         return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
       if (snap._typename == 'ROOT::Experimental::RPadDisplayItem') { // subpad
@@ -105457,6 +105484,7 @@ exports.getElementMainPainter = getElementMainPainter;
 exports.getElementRect = getElementRect;
 exports.getHPainter = getHPainter;
 exports.getMethods = getMethods;
+exports.getPromise = getPromise;
 exports.httpRequest = httpRequest;
 exports.injectCode = injectCode;
 exports.internals = internals;
