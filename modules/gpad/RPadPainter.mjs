@@ -1201,6 +1201,12 @@ class RPadPainter extends RObjectPainter {
       });
    }
 
+   /** @summary Search active pad
+     * @return {Object} pad painter for active pad */
+   findActivePad() {
+      return null;
+   }
+
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
