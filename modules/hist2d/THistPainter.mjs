@@ -1493,7 +1493,7 @@ class THistPainter extends ObjectPainter {
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
-      if (!func_painter && func)
+      if (!func_painter)
          do_draw = this.needDrawFunc(histo, func);
 
       if (!do_draw)
