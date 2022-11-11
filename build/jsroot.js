@@ -10266,7 +10266,7 @@ class TAttMarkerHandler {
    }
 
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
-    * @private */
+     * @private */
    verifyDirectChange(/* painter */) {
       this.change(this.color, parseInt(this.style), parseFloat(this.size));
    }
@@ -10754,6 +10754,12 @@ class TAttLineHandler {
          this.pattern = root_line_styles[this.style] || null;
       }
       this.changed = true;
+   }
+
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
+     * @private */
+   verifyDirectChange(/* painter */) {
+      this.change(this.color, parseInt(this.width), parseInt(this.style));
    }
 
    /** @summary Create sample element inside primitive SVG - used in context menu */
@@ -55425,7 +55431,7 @@ class TPadPainter extends ObjectPainter {
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
-             setTimeout(() => menu.show(), 50);
+             selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
    }
 
@@ -55443,6 +55449,17 @@ class TPadPainter extends ObjectPainter {
       });
    }
 
+   /** @summary Search active pad
+     * @return {Object} pad painter for active pad */
+   findActivePad() {
+      let active_pp;
+      painter.forEachPainterInPad(pp => {
+         if (pp.is_active_pad && !active_pp)
+            active_pp = pp;
+      }, 'pads');
+      return active_pp;
+   }
+
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
@@ -55458,10 +55475,10 @@ class TPadPainter extends ObjectPainter {
 
       painter.forEachPainterInPad(pp => {
 
-          if (pp.is_active_pad && !active_pp) {
-             active_pp = pp;
-             active_pp.drawActiveBorder(null, false);
-          }
+         if (pp.is_active_pad && !active_pp) {
+            active_pp = pp;
+            active_pp.drawActiveBorder(null, false);
+         }
 
          if (use_frame) return; // do not make transformations for the frame
 
@@ -57432,10 +57449,6 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill context menu for the TPave object */
    fillContextMenu(menu) {
-
-      console.log('fill context menu', this.snapid);
-      console.trace();
-
       let pave = this.getObject();
 
       menu.add('header: ' + pave._typename + '::' + pave.fName);
@@ -57738,10 +57751,12 @@ class TPavePainter extends ObjectPainter {
                let st = gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+
                   if (!h) h = (y2-fp.fY2NDC)*0.7;
                   if (!w) w = fp.fX2NDC - fp.fX1NDC;
                   if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
                   if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
+
                   pave.fX1NDC = midx - w/2;
                   pave.fY1NDC = y2 - h;
                   pave.fX2NDC = midx + w/2;
@@ -59113,7 +59128,7 @@ class THistPainter extends ObjectPainter {
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = create$1(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-                             fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
+                             fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
          pt.AddText(histo.fTitle);
          return TPavePainter.draw(this.getDom(), pt, 'postitle').then(tp => {
             if (tp) tp.$secondary = true;
@@ -59336,7 +59351,7 @@ class THistPainter extends ObjectPainter {
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
-      if (!func_painter && func)
+      if (!func_painter)
          do_draw = this.needDrawFunc(histo, func);
 
       if (!do_draw)
@@ -95919,7 +95934,7 @@ class RPadPainter extends RObjectPainter {
 
        createMenu$1(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
-             setTimeout(() => menu.show(), 50);
+             selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
    }
 
@@ -95935,6 +95950,12 @@ class RPadPainter extends RObjectPainter {
 
          saveFile(filename, (kind != 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
+   }
+
+   /** @summary Search active pad
+     * @return {Object} pad painter for active pad */
+   findActivePad() {
+      return null;
    }
 
    /** @summary Prodce image for the pad
