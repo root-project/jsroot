@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '11/11/2022';
+let version_date = '14/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8866,19 +8866,34 @@ function parseLatex(node, arg, label, curr) {
    };
 
    const extractSubLabel = (check_first, lbrace, rbrace) => {
-      let pos = 0, n = 1, err = false;
+      let pos = 0, n = 1, err = false, extra_braces = false;
       if (!lbrace) lbrace = '{';
       if (!rbrace) rbrace = '}';
 
       const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) == br);
 
       if (check_first) {
-         if(!match(lbrace)) err = true; else label = label.slice(lbrace.length);
+         if(!match(lbrace))
+            err = true;
+         else
+            label = label.slice(lbrace.length);
       }
 
       while (!err && (n != 0) && (pos < label.length)) {
-         if (match(lbrace)) { n++; pos += lbrace.length; } else
-         if (match(rbrace)) { n--; pos += rbrace.length; } else pos++;
+         if (match(lbrace)) {
+            n++;
+            pos += lbrace.length;
+         } else if (match(rbrace)) {
+            n--;
+            pos += rbrace.length;
+            if ((n == 0) && (typeof check_first == 'string') && match(check_first+lbrace)) {
+               // handle special case like a^{b}^{2} should mean a^{b^{2}}
+               n++;
+               pos += lbrace.length + check_first.length;
+               check_first = true;
+               extra_braces = true;
+            }
+         } else pos++;
       }
       if ((n != 0) || err) {
          console.log(`mismatch with open ${lbrace} and closing ${rbrace} in ${label}`);
@@ -8886,6 +8901,8 @@ function parseLatex(node, arg, label, curr) {
       }
 
       let sublabel = label.slice(0, pos - rbrace.length);
+
+      if (extra_braces) sublabel = lbrace + sublabel + rbrace;
 
       label = label.slice(pos);
 
@@ -9060,19 +9077,20 @@ function parseLatex(node, arg, label, curr) {
             res[name] = extractSubLabel();
             if (res[name] === -1) return false;
          }
+
          while (label) {
             if (label[0] == '_') {
                label = label.slice(1);
-               res.low = !res.low ? extractSubLabel(true) : -1;
+               res.low = !res.low ? extractSubLabel('_') : -1;
                if (res.low === -1) {
                   console.log(`error with ${found.name} low limit`);
                   return false;
                }
             } else if (label[0] == '^') {
                label = label.slice(1);
-               res.up = !res.up ? extractSubLabel(true) : -1;
+               res.up = !res.up ? extractSubLabel('^') : -1;
                if (res.up === -1) {
-                  console.log(`error with ${found.name} upper limit`);
+                  console.log(`error with ${found.name} upper limit ` + label);
                   return false;
                }
             } else break;
@@ -44721,8 +44739,9 @@ class TAxisPainter extends ObjectPainter {
       let axis = this.getObject(),
           is_gaxis = axis?._typename === clTGaxis,
           pp = this.getPadPainter(),
-          pad_w = pp?.getPadWidth() || 10,
-          pad_h = pp?.getPadHeight() || 10,
+          frect = pp?.getFrameRect(),
+          pad_w = Math.round((frect?.width || 8)/0.8), // use factor 0.8 as ratio between frame and pad size, frame size is visible and more obvios
+          pad_h = Math.round((frect?.height || 8)/0.8),
           tickSize = 0, tickScalingSize = 0, titleColor;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
