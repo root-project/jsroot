@@ -550,7 +550,7 @@ class TCanvasPainter extends TPadPainter {
 
       if (this._last_highlight_msg != msg) {
          this._last_highlight_msg = msg;
-         this.sendWebsocket('HIGHLIGHT:' + msg);
+         this.sendWebsocket(`HIGHLIGHT:${msg}`);
       }
    }
 

@@ -1398,6 +1398,9 @@ class TPadPainter extends ObjectPainter {
       let first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
 
+      // if there are execs in the pad, deliver events to the server
+      this._deliver_webcanvas_events = first.fExecs?.arr?.length ? true : false;
+
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
@@ -1405,6 +1408,7 @@ class TPadPainter extends ObjectPainter {
 
          this.draw_object = first;
          this.pad = first;
+
          // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
@@ -1547,6 +1551,22 @@ class TPadPainter extends ObjectPainter {
       });
    }
 
+   /** @summary Deliver mouse move or click event to the web canvas
+     * @private */
+   deliverWebCanvasEvent(kind, x, y, hints) {
+      if (!this._deliver_webcanvas_events || !this.is_active_pad || this.doingDraw() || x === undefined || y === undefined) return;
+      let cp = this.getCanvPainter();
+      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp._readonly) return;
+
+      let selobj_snapid = '';
+      if (hints && hints[0] && hints[0].painter?.snapid)
+         selobj_snapid = hints[0].painter.snapid.toString();
+
+      let msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), selobj_snapid]);
+
+      cp.sendWebsocket(`EVENT:${msg}`);
+   }
+
    /** @summary Create image for the pad
      * @desc Used with web-based canvas to create images for server side
      * @return {Promise} with image data, coded with btoa() function
@@ -1580,6 +1600,7 @@ class TPadPainter extends ObjectPainter {
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
                   active: !!this.is_active_pad,
+                  cw: 0, ch: 0,
                   bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
@@ -1591,8 +1612,12 @@ class TPadPainter extends ObjectPainter {
 
          if (this.iscan) {
             elem.bits = this.getStatusBits();
+            elem.cw = this.getPadWidth();
+            elem.ch = this.getPadHeight();
          } else if (cp) {
             let cw = cp.getPadWidth(), ch = cp.getPadHeight(), rect = this.getPadRect();
+            elem.cw = cw;
+            elem.ch = ch;
             elem.xlow = rect.x / cw;
             elem.ylow = rect.y / ch;
             elem.xup = (rect.x + rect.width) / cw;
