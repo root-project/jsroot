@@ -354,18 +354,18 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary method redirect call to pad events receiver */
-   selectObjectPainter(_painter, pos, _place) {
+   selectObjectPainter(painter, pos, place) {
       let istoppad = this.iscan || !this.has_canvas,
           canp = istoppad ? this : this.getCanvPainter();
 
-      if (_painter === undefined) _painter = this;
+      if (painter === undefined) painter = this;
 
       if (pos && !istoppad)
          pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
 
       selectActivePad({ pp: this, active: true });
 
-      if (canp) canp.producePadEvent('select', this, _painter, pos, _place);
+      canp?.producePadEvent('select', this, painter, pos, place);
    }
 
    /** @summary Draw pad active border
