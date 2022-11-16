@@ -1478,12 +1478,15 @@ class TPadPainter extends ObjectPainter {
 
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
-      MatchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
-      MatchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
+      if (!snap.fWithoutPrimitives) {
+         MatchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
+         MatchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
+      }
 
       let isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
+      if (!snap.fWithoutPrimitives)
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
@@ -1508,7 +1511,7 @@ class TPadPainter extends ObjectPainter {
       if (isanyremove)
          delete this.pads_cache;
 
-      if (!isanyfound) {
+      if (!isanyfound && !snap.fWithoutPrimitives) {
          // TODO: maybe just remove frame painter?
          let fp = this.getFramePainter();
          this.painters.forEach(objp => {
@@ -1530,10 +1533,11 @@ class TPadPainter extends ObjectPainter {
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          // redraw secondaries like stat box
          let promises = [];
-         this.painters.forEach(sub => {
-            if ((sub.snapid === undefined) || sub.$secondary)
-               promises.push(sub.redraw());
-         });
+         if (!snap.fWithoutPrimitives)
+            this.painters.forEach(sub => {
+               if ((sub.snapid === undefined) || sub.$secondary)
+                  promises.push(sub.redraw());
+            });
          return Promise.all(promises);
       }).then(() => {
          this.selectCurrentPad(prev_name);
