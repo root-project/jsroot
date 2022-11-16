@@ -617,7 +617,7 @@ class TPadPainter extends ObjectPainter {
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_can.select('.primitives_layer')
-             .append('svg:svg') // here was g before, svg used to blend all drawin outside
+             .append('svg:svg') // svg used to blend all drawings outside
              .classed('__root_pad_' + this.this_pad_name, true)
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
@@ -1619,9 +1619,9 @@ class TPadPainter extends ObjectPainter {
             elem.cw = cw;
             elem.ch = ch;
             elem.xlow = rect.x / cw;
-            elem.ylow = rect.y / ch;
-            elem.xup = (rect.x + rect.width) / cw;
-            elem.yup = (rect.y + rect.height) / ch;
+            elem.ylow = 1 - (rect.y + rect.height) / ch;
+            elem.xup = elem.xlow + rect.width / cw;
+            elem.yup = elem.ylow + rect.height / ch;
          }
 
          if (this.getPadRanges(elem))
