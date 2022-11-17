@@ -460,7 +460,7 @@ class RHistPainter extends RObjectPainter {
       return true;
    }
 
-   /** @summary Toggle stat box drawing
+   /** @summary Toggle statbox drawing
      * @desc Not yet implemented */
    toggleStat(/*arg*/) {}
 

@@ -1321,7 +1321,7 @@ class THistPainter extends ObjectPainter {
       return this.findFunction(clTPaveStats, 'stats');
    }
 
-   /** @summary Toggle stat box drawing
+   /** @summary Toggle statbox drawing
      * @private */
    toggleStat(arg) {
 
