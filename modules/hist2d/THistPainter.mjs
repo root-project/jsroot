@@ -1,4 +1,4 @@
-import { gStyle, BIT, settings, constants, internals, create, isFunc, getPromise,
+import { gStyle, BIT, settings, constants, internals, create, isObject, isFunc, getPromise,
          clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -1505,7 +1505,7 @@ class THistPainter extends ObjectPainter {
                                                : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (painter && (typeof painter == 'object'))
+         if (isObject(painter))
             painter.child_painter_id = this.hist_painter_id;
 
          return this.drawNextFunction(indx+1, only_extra);
