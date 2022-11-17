@@ -22,7 +22,7 @@ let version = version_id + ' ' + version_date;
   * @desc Automatically detected and used to load other scripts or modules */
 exports.source_dir = '';
 
-let nodejs = !!((typeof process == 'object') && process.version && (typeof process.versions == 'object') && process.versions.node && process.versions.v8);
+let nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
 
 /** @summary internal data
   * @private */
@@ -523,7 +523,7 @@ function clone(src, map, nofunc) {
       map.obj.push(src);
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
-         if (typeof src[i] === 'object')
+         if (isObject(src[i]))
             tgt.push(clone(src[i], map));
          else
             tgt.push(src[i]);
@@ -547,7 +547,7 @@ function clone(src, map, nofunc) {
    map.clones.push(tgt);
 
    for (let k in src) {
-      if (typeof src[k] === 'object')
+      if (isObject(src[k]))
          tgt[k] = clone(src[k], map);
       else if (!map.nofunc || !isFunc(src[k]))
          tgt[k] = src[k];
@@ -718,14 +718,14 @@ function parseMulti(json) {
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code */
 function toJSON(obj, spacing) {
-   if (!obj || typeof obj !== 'object') return '';
+   if (!isObject(obj)) return '';
 
    let map = []; // map of stored objects
 
    const copy_value = value => {
       if (isFunc(value)) return undefined;
 
-      if ((value === undefined) || (value === null) || (typeof value !== 'object')) return value;
+      if ((value === undefined) || (value === null) || !isObject(value)) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
@@ -1344,8 +1344,8 @@ function createTGraph(npoints, xpts, ypts) {
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
 
-      const usex = (typeof xpts == 'object') && (xpts.length === npoints);
-      const usey = (typeof ypts == 'object') && (ypts.length === npoints);
+      const usex = isObject(xpts) && (xpts.length === npoints);
+      const usey = isObject(ypts) && (ypts.length === npoints);
 
       for (let i = 0; i < npoints; ++i) {
          graph.fX.push(usex ? xpts[i] : i/npoints);
@@ -1679,7 +1679,7 @@ function registerMethods(typename, m) {
   * @param {string} [typename] - or just typename to check
   * @private */
 function isRootCollection(lst, typename) {
-   if (lst && (typeof lst === 'object')) {
+   if (isObject(lst)) {
       if ((lst.$kind === clTList) || (lst.$kind === clTObjArray)) return true;
       if (!typename) typename = lst._typename;
    }
@@ -1687,6 +1687,10 @@ function isRootCollection(lst, typename) {
    return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
+
+/** @summary Check if argument is a not-null Object
+  * @private */
+function isObject(arg) { return arg && typeof arg === 'object'; }
 
 /** @summary Check if argument is a Function
   * @private */
@@ -1698,7 +1702,7 @@ function isStr(arg) { return typeof arg === 'string'; }
 
 /** @summary Check if object is a Promise
   * @private */
-function isPromise(obj) { return obj && (typeof obj == 'object') && isFunc(obj.then); }
+function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
 
 /** @summary Provide promise in any case
   * @private */
@@ -1802,6 +1806,7 @@ createTMultiGraph: createTMultiGraph,
 getMethods: getMethods,
 registerMethods: registerMethods,
 isRootCollection: isRootCollection,
+isObject: isObject,
 isFunc: isFunc,
 isStr: isStr,
 isPromise: isPromise,
@@ -10066,7 +10071,7 @@ class TAttMarkerHandler {
      * @param {number} args.size - marker size
      * @param {number} [args.refsize] - when specified and marker size < 1, marker size will be calculated relative to that size */
    setArgs(args) {
-      if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
+      if (isObject(args) && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
          if (args.color === undefined)
@@ -10334,7 +10339,7 @@ class TAttFillHandler {
      * @param {object} [args.svg] - SVG element to store newly created patterns
      * @param {string} [args.color_as_svg] - color in SVG format */
    setArgs(args) {
-      if (args.attr && (typeof args.attr == 'object')) {
+      if (isObject(args.attr)) {
          if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
          if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
@@ -10834,7 +10839,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Assign object to the painter
      * @protected */
    assignObject(obj) {
-      if (obj && (typeof obj == 'object'))
+      if (isObject(obj))
          this.draw_object = obj;
       else
          delete this.draw_object;
@@ -11392,7 +11397,7 @@ class ObjectPainter extends BasePainter {
      * @return {object} created handler
      * @protected */
    createAttMarker(args) {
-      if (!args || (typeof args !== 'object'))
+      if (!isObject(args))
          args = { std: true };
       else if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined)
          args = { attr: args, std: false };
@@ -11418,7 +11423,7 @@ class ObjectPainter extends BasePainter {
      * @param {object} args - either TAttLine or see constructor arguments of {@link TAttLineHandler}
      * @protected */
    createAttLine(args) {
-      if (!args || (typeof args !== 'object'))
+      if (!isObject(args))
          args = { std: true };
       else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined)
          args = { attr: args, std: false };
@@ -11452,7 +11457,7 @@ class ObjectPainter extends BasePainter {
      * @return created handle
      * @protected */
    createAttFill(args) {
-      if (!args || (typeof args !== 'object'))
+      if (!isObject(args))
          args = { std: true };
       else if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined)
          args = { attr: args, std: false };
@@ -11910,7 +11915,7 @@ class ObjectPainter extends BasePainter {
             align[1] = 'bottom-base';
          else if ((arg.align % 10) == 3)
             align[1] = 'top';
-      } else if (arg.align && (typeof arg.align == 'object') && (arg.align.length == 2)) {
+      } else if (isObject(arg.align) && (arg.align.length == 2)) {
          align = arg.align;
       }
 
@@ -12377,7 +12382,7 @@ function getActivePad() {
 function resize(dom, arg) {
    if (arg === true)
       arg = { force: true };
-   else if (typeof arg !== 'object')
+   else if (!isObject(arg))
       arg = null;
    let done = false;
    new ObjectPainter(dom).forEachPainter(painter => {
@@ -40897,7 +40902,7 @@ class TooltipFor3D {
    /** @summary extract position from event
      * @desc can be used to process it later when event is gone */
    extract_pos(e) {
-      if (typeof e == 'object' && (e.u !== undefined) && (e.l !== undefined)) return e;
+      if (isObject(e) && (e.u !== undefined) && (e.l !== undefined)) return e;
       let res = { u: 0, l: 0 };
       if (this.abspos) {
          res.l = e.pageX;
@@ -40957,7 +40962,7 @@ class TooltipFor3D {
    show(v /*, mouse_pos, status_func*/) {
       if (!v) return this.hide();
 
-      if ((typeof v == 'object') && (v.lines || v.line)) {
+      if (isObject(v) && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
          if (v.line) {
@@ -41656,7 +41661,7 @@ class PointsCreator {
    /** @summary Create points */
    createPoints(args) {
 
-      if (typeof args !== 'object')
+      if (!isObject(args))
          args = { color: args };
       if (!args.color)
          args.color = 'black';
@@ -47575,7 +47580,7 @@ function readCookie(name) {
       if (c.indexOf(name) == 0) {
          let s = JSON.parse(atob_func(c.substring(name.length, c.length)));
 
-         return (s && typeof s == 'object') ? s : null;
+         return isObject(s) ? s : null;
       }
    }
    return null;
@@ -47717,8 +47722,7 @@ class JSRootMenu {
    constructor(painter, menuname, show_event) {
       this.painter = painter;
       this.menuname = menuname;
-      if (show_event && (typeof show_event == 'object') &&
-          (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
+      if (isObject(show_event) && (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
          this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
       this.remove_handler = () => this.remove();
@@ -47866,7 +47870,7 @@ class JSRootMenu {
       if (size_value === undefined) return;
 
       let values = [], miss_current = false;
-      if (typeof step == 'object') {
+      if (isObject(step)) {
          values = step; step = 1;
       } else for (let sz = min; sz <= max; sz += step)
          values.push(sz);
@@ -54615,7 +54619,7 @@ class TPadPainter extends ObjectPainter {
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
       return this.drawObject(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
-         if (op && (typeof op == 'object'))
+         if (isObject(op))
             op._primitive = true; // mark painter as belonging to primitives
 
          return this.drawPrimitives(indx+1);
@@ -54872,7 +54876,7 @@ class TPadPainter extends ObjectPainter {
 
       if ((size === true) || (size === false)) { force = size; size = null; }
 
-      if (size && (typeof size === 'object') && size.force) force = true;
+      if (isObject(size) && size.force) force = true;
 
       if (!force) force = this.needRedrawByResize();
 
@@ -57201,7 +57205,7 @@ class TPavePainter extends ObjectPainter {
                draw_error = lopt.indexOf('e') != -1,
                draw_marker = lopt.indexOf('p') != -1;
 
-         if ((mo !== null) && (typeof mo == 'object')) {
+         if (isObject(mo)) {
             if ('fLineColor' in mo) o_line = mo;
             if ('fFillColor' in mo) o_fill = mo;
             if ('fMarkerColor' in mo) o_marker = mo;
@@ -59416,7 +59420,7 @@ class THistPainter extends ObjectPainter {
                                                : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (painter && (typeof painter == 'object'))
+         if (isObject(painter))
             painter.child_painter_id = this.hist_painter_id;
 
          return this.drawNextFunction(indx+1, only_extra);
@@ -59544,7 +59548,7 @@ class THistPainter extends ObjectPainter {
       menu.input('Enter min/max hist values or empty string to reset', curr).then(res => {
          res = res ? JSON.parse(res) : [];
 
-         if (!res || (typeof res != 'object') || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
+         if (!isObject(res) || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
             this.options.minimum = this.options.maximum = -1111;
          } else {
             this.options.minimum = res[0];
@@ -68508,7 +68512,7 @@ class TFile {
 
       streamer = [];
 
-      if (typeof custom === 'object') {
+      if (isObject(custom)) {
          if (!custom.name && !custom.func) return custom;
          streamer.push(custom); // special read entry, add in the beginning of streamer
       }
@@ -68933,15 +68937,15 @@ function openFile(arg) {
          file = new TNodejsFile(arg);
    }
 
-   if (!file && (typeof arg === 'object') && (arg instanceof FileProxy))
+   if (!file && isObject(arg) && (arg instanceof FileProxy))
       file = new TProxyFile(arg);
 
-   if (!file && (typeof arg === 'object') && (arg instanceof ArrayBuffer)) {
+   if (!file && isObject(arg) && (arg instanceof ArrayBuffer)) {
       file = new TFile('localfile.root');
       file.assignFileContent(arg);
    }
 
-   if (!file && (typeof arg === 'object') && arg.size && arg.name)
+   if (!file && isObject(arg) && arg.size && arg.name)
       file = new TLocalFile(arg);
 
    if (!file)
@@ -69050,7 +69054,7 @@ class TSelector {
   * 2 - when plain (1-dim) array with same-type content
   * @private */
 function checkArrayPrototype(arr, check_content) {
-   if (typeof arr !== 'object') return 0;
+   if (!isObject(arr)) return 0;
 
    let arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
 
@@ -69061,7 +69065,7 @@ function checkArrayPrototype(arr, check_content) {
       let sub = typeof arr[k];
       if (!typ) typ = sub;
       if (sub !== typ) { plain = false; break; }
-      if ((sub == 'object') && checkArrayPrototype(arr[k])) { plain = false; break; }
+      if (isObject(sub) && checkArrayPrototype(arr[k])) { plain = false; break; }
    }
 
    return plain ? 2 : 1;
@@ -69084,7 +69088,7 @@ class ArrayIterator {
       this.cnt = -1; // current index counter
       this.tgtobj = tgtobj;
 
-      if (typeof select === 'object')
+      if (isObject(select))
          this.select = select; // remember indexes for selection
       else
          this.select = []; // empty array, undefined for each dimension means iterate over all indexes
@@ -71966,7 +71970,7 @@ function getDrawHandle(kind, selector) {
 function canDrawHandle(h) {
    if (isStr(h))
       h = getDrawHandle(h);
-   if (!h || (typeof h !== 'object')) return false;
+   if (!isObject(h)) return false;
    return h.func || h.class || h.draw || h.draw_field ? true : false;
 }
 
@@ -72035,7 +72039,7 @@ function setDefaultDrawOpt(classname, opt) {
   * await draw('drawing', obj, 'colz;logx;gridx;gridy'); */
 async function draw(dom, obj, opt) {
 
-   if (!obj || (typeof obj !== 'object'))
+   if (!isObject(obj))
       return Promise.reject(Error('not an object in draw call'));
 
    if (opt == 'inspect')
@@ -72095,7 +72099,7 @@ async function draw(dom, obj, opt) {
          if (!painter) painter = p;
          if (!painter)
              throw Error(`Fail to draw object ${type_info}`);
-         if ((typeof painter == 'object') && !painter.options)
+         if (isObject(painter) && !painter.options)
             painter.options = { original: opt || '' }; // keep original draw options
          return painter;
       });
@@ -72150,7 +72154,7 @@ async function draw(dom, obj, opt) {
   * @public */
 async function redraw(dom, obj, opt) {
 
-   if (!obj || (typeof obj !== 'object'))
+   if (!isObject(obj))
       return Promise.reject(Error('not an object in redraw'));
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
@@ -72771,7 +72775,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
       let simple = false;
 
-      if (typeof fld == 'object') {
+      if (isObject(fld)) {
 
          proto = Object.prototype.toString.apply(fld);
 
@@ -72830,7 +72834,7 @@ function objectHierarchy(top, obj, args = undefined) {
                   case clTLatex: item._value = fld.fTitle; break;
                   case clTObjString: item._value = fld.fString; break;
                   default:
-                     if (isRootCollection(fld) && (typeof fld.arr === 'object')) {
+                     if (isRootCollection(fld) && isObject(fld.arr)) {
                         item._value = fld.arr.length ? '[...]' : '[]';
                         item._title += ', size:'  + fld.arr.length;
                         if (fld.arr.length > 0) item._more = true;
@@ -73269,10 +73273,9 @@ class HierarchyPainter extends BasePainter {
 
       let top = this.h, itemname = '';
 
-      if (arg === null) return null; else
       if (isStr(arg)) {
          itemname = arg; arg = {};
-      } else if (typeof arg == 'object') {
+      } else if (isObject(arg)) {
          itemname = arg.name; if ('top' in arg) top = arg.top;
       } else
          return null;
@@ -73381,7 +73384,7 @@ class HierarchyPainter extends BasePainter {
 
       if (isStr(arg)) {
          itemname = arg;
-      } else if (typeof arg === 'object') {
+      } else if (isObject(arg)) {
          if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined)) item = arg; else
          if (arg.name !== undefined) itemname = arg.name; else
          if (arg.arg !== undefined) itemname = arg.arg; else
@@ -73408,7 +73411,7 @@ class HierarchyPainter extends BasePainter {
          let parentname = this.itemFullName(d.last);
 
          // this is indication that expand does not give us better path to searched item
-         if ((typeof arg == 'object') && ('rest' in arg))
+         if (isObject(arg) && ('rest' in arg))
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return result;
 
@@ -73422,7 +73425,7 @@ class HierarchyPainter extends BasePainter {
 
       result.item = item;
 
-      if ((item !== null) && (typeof item._obj == 'object')) {
+      if ((item !== null) && isObject(item._obj)) {
          result.obj = item._obj;
          return result;
       }
@@ -74400,8 +74403,9 @@ class HierarchyPainter extends BasePainter {
 
       if (isStr(arg))
          arg = [ arg ];
-      else if (typeof arg != 'object') {
-         if (arg === undefined) arg = !this.isMonitoring();
+      else if (!isObject(arg)) {
+         if (arg === undefined)
+           arg = !this.isMonitoring();
          want_update_all = true;
          only_auto_items = !!arg;
       }
@@ -75059,7 +75063,7 @@ class HierarchyPainter extends BasePainter {
             let handleAfterRequest = func => {
                if (isFunc(func)) {
                   let res = func(this, item, obj, option, itemreq);
-                  if (res && (typeof res == 'object')) obj = res;
+                  if (isObject(res)) obj = res;
                }
                resolveFunc(obj);
             };
@@ -75137,7 +75141,7 @@ class HierarchyPainter extends BasePainter {
 
       if (!server_address) server_address = '';
 
-      if (typeof server_address == 'object') {
+      if (isObject(server_address)) {
          let h = server_address;
          server_address = '';
          return AdoptHierarchy(h);
@@ -75277,7 +75281,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} layout - layout like 'simple' or 'grid2x2'
      * @param {string} frameid - DOM element id where object drawing will be performed */
    setDisplay(layout, frameid) {
-      if (!frameid && (typeof layout == 'object')) {
+      if (!frameid && isObject(layout)) {
          this.disp = layout;
          this.disp_kind = 'custom';
          this.disp_frameid = null;
@@ -75658,7 +75662,8 @@ class HierarchyPainter extends BasePainter {
          let func = internals.getCachedHierarchy || findFunction('GetCachedHierarchy');
          if (isFunc(func))
             h0 = func();
-         if (typeof h0 !== 'object') h0 = '';
+         if (!isObject(h0))
+            h0 = '';
 
          if ((this.is_online == 'draw') && !itemsarr.length)
             itemsarr.push('');
@@ -77585,7 +77590,7 @@ function geoWarn(msg) {
  * @return detected node kind
  * @private */
 function getNodeKind(obj) {
-   if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
+   if (!isObject(obj)) return -1;
    return ('fShape' in obj) && ('fTrans' in obj) ? kindEve : kindGeo;
 }
 
@@ -80410,9 +80415,9 @@ class ClonedNodes {
    createObject3D(stack, toplevel, options) {
 
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
-          force = (typeof options == 'object') || (options === 'force');
+          force = isObject(options) || (options === 'force');
 
-      for(let lvl=0; lvl<=stack.length; ++lvl) {
+      for(let lvl = 0; lvl <= stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
          if (lvl > 0)  node = this.nodes[node.chlds[nchld]];
@@ -80452,7 +80457,7 @@ class ClonedNodes {
          three_prnt.add(obj3d);
 
          // this is only for debugging - test inversion of whole geometry
-         if ((lvl == 0) && (typeof options == 'object') && options.scale) {
+         if ((lvl == 0) && isObject(options) && options.scale) {
             if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
                obj3d.scale.copy(options.scale);
                obj3d.updateMatrix();
@@ -84886,7 +84891,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._worker.onmessage = e => {
 
-         if (typeof e.data !== 'object') return;
+         if (!isObject(e.data)) return;
 
          if ('log' in e.data)
             return console.log(`geo: ${e.data.log}`);
@@ -86764,7 +86769,7 @@ async function drawPolyMarker3D$1() {
 
    delete this.$fp;
 
-   if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+   if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
       return this;
 
    let poly = this.getObject(), step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
@@ -86879,7 +86884,7 @@ async function drawPolyMarker3D() {
    let poly = this.getObject(),
        fp = before3DDraw(this, poly);
 
-   if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+   if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
       return fp;
 
    this.$fp = fp;
@@ -86896,7 +86901,7 @@ async function drawPolyLine3D() {
    let line = this.getObject(),
        fp = before3DDraw(this, line);
 
-   if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+   if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
       return fp;
 
    let limit = 3*line.fN, p = line.fP, pnts = [];
@@ -95399,7 +95404,7 @@ class RPadPainter extends RObjectPainter {
       // handle used to invoke callback only when necessary
       return this.drawObject(this.getDom(), this.pad.fPrimitives[indx], '').then(ppainter => {
          // mark painter as belonging to primitives
-         if (ppainter && (typeof ppainter == 'object'))
+         if (isObject(ppainter))
             ppainter._primitive = true;
 
          return this.drawPrimitives(indx+1);
@@ -95560,7 +95565,7 @@ class RPadPainter extends RObjectPainter {
 
       if ((size === true) || (size === false)) { force = size; size = null; }
 
-      if (size && (typeof size === 'object') && size.force) force = true;
+      if (isObject(size) && size.force) force = true;
 
       if (!force) force = this.needRedrawByResize();
 
@@ -96630,7 +96635,7 @@ class WebWindowHandle {
      * @return user arguments object */
    getUserArgs(field) {
       if (field && isStr(field))
-         return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
+         return isObject(this.user_args) ? this.user_args[field] : undefined;
 
       return this.user_args;
    }
@@ -99391,7 +99396,7 @@ class RHistPainter extends RObjectPainter {
           curr = '[' + pmain[prefix+'min'] + ',' + pmain[prefix+'max'] + ']';
       menu.input('Enter values range for axis ' + arg + ' like [0,100] or empty string to unzoom', curr).then(res => {
          res = res ? JSON.parse(res) : [];
-         if (!res || (typeof res != 'object') || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
+         if (!isObject(res) || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
             pmain.unzoom(arg);
          else
             pmain.zoom(arg, res[0], res[1]);
@@ -105568,6 +105573,7 @@ exports.isArrayProto = isArrayProto;
 exports.isBatchMode = isBatchMode;
 exports.isFunc = isFunc;
 exports.isNodeJs = isNodeJs;
+exports.isObject = isObject;
 exports.isPromise = isPromise;
 exports.isRootCollection = isRootCollection;
 exports.isStr = isStr;
