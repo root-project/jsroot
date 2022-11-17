@@ -2065,8 +2065,9 @@ class HierarchyPainter extends BasePainter {
 
       if (isStr(arg))
          arg = [ arg ];
-      else if (typeof arg != 'object') {
-         if (arg === undefined) arg = !this.isMonitoring();
+      else if (!isObject(arg)) {
+         if (arg === undefined)
+           arg = !this.isMonitoring();
          want_update_all = true;
          only_auto_items = !!arg;
       }

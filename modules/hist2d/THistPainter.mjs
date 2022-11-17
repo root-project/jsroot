@@ -1633,7 +1633,7 @@ class THistPainter extends ObjectPainter {
       menu.input('Enter min/max hist values or empty string to reset', curr).then(res => {
          res = res ? JSON.parse(res) : [];
 
-         if (!res || (typeof res != 'object') || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
+         if (!isObject(res) || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
             this.options.minimum = this.options.maximum = -1111;
          } else {
             this.options.minimum = res[0];

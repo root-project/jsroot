@@ -670,7 +670,7 @@ async function connectWebWindow(arg) {
 
    if (isFunc(arg))
       arg = { callback: arg };
-   else if (!arg || (typeof arg != 'object'))
+   else if (!isObject(arg))
       arg = {};
 
    let d = decodeUrl();
