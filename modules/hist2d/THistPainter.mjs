@@ -2286,7 +2286,7 @@ class THistPainter extends ObjectPainter {
                painter.options.Color = true; // default is color
          }
 
-         painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+         painter.checkPadRange(/*!painter.options.Mode3D && */ (painter.options.Contour != 14));
 
          painter.scanContent();
 
