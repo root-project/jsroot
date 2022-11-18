@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '17/11/2022';
+let version_date = '18/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -55,7 +55,7 @@ function setBatchMode(on) { batch_mode = !!on; }
 function isNodeJs() { return nodejs; }
 
 /** @summary atob function in all environments */
-const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
 
 /** @summary btoa function in all environments */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
@@ -42238,7 +42238,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    if (('zoom_ymin' in this) && ('zoom_ymax' in this) && (this.zoom_ymin !== this.zoom_ymax)) {
       ymin = this.zoom_ymin; ymax = this.zoom_ymax; y_zoomed = true;
    }
-
    if (('zoom_zmin' in this) && ('zoom_zmax' in this) && (this.zoom_zmin !== this.zoom_zmax)) {
       zmin = this.zoom_zmin; zmax = this.zoom_zmax; z_zoomed = true;
    }
@@ -50811,7 +50810,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Configure frame axes ranges */
-   setAxesRanges(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+   setAxesRanges(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax, hpainter) {
       this.ranges_set = true;
 
       this.xaxis = xaxis;
@@ -50825,6 +50824,16 @@ class TFramePainter extends ObjectPainter {
       this.zaxis = zaxis;
       this.zmin = zmin;
       this.zmax = zmax;
+
+      if (hpainter?.check_pad_range) {
+         delete hpainter.check_pad_range;
+         let ndim = hpainter.getDimension();
+         this.applyAxisZoom('x');
+         if (ndim > 1)
+            this.applyAxisZoom('y');
+         if (ndim > 2)
+            this.applyAxisZoom('z');
+      }
    }
 
    /** @summary Configure secondary frame axes ranges */
@@ -50897,6 +50906,24 @@ class TFramePainter extends ObjectPainter {
       }
    }
 
+   /** @summary Apply zooming from TAxis attributes */
+   applyAxisZoom(name) {
+      if (this.zoomChangedInteractive(name)) return;
+      this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
+
+      const axis = this.getAxis(name);
+
+      if (axis?.TestBit(EAxisBits.kAxisRange)) {
+         if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
+            this[`zoom_${name}min`] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
+            this[`zoom_${name}max`] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast + 1) : axis.fXmax;
+            // reset user range for main painter
+            axis.InvertBit(EAxisBits.kAxisRange);
+            axis.fFirst = 1; axis.fLast = axis.fNbins;
+         }
+      }
+   }
+
    /** @summary Create x,y objects which maps user coordinates into pixels
      * @desc While only first painter really need such object, all others just reuse it
      * following functions are introduced
@@ -50935,27 +50962,9 @@ class TFramePainter extends ObjectPainter {
 
       if (opts.check_pad_range) {
          // take zooming out of pad or axis attributes
-
-         const applyAxisZoom = name => {
-            if (this.zoomChangedInteractive(name)) return;
-            this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
-
-            const axis = this.getAxis(name);
-
-            if (axis && axis.TestBit(EAxisBits.kAxisRange)) {
-               if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
-                  this[`zoom_${name}min`] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
-                  this[`zoom_${name}max`] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast + 1) : axis.fXmax;
-                  // reset user range for main painter
-                  axis.InvertBit(EAxisBits.kAxisRange);
-                  axis.fFirst = 1; axis.fLast = axis.fNbins;
-               }
-            }
-         };
-
-         applyAxisZoom('x');
-         if (opts.ndim > 1) applyAxisZoom('y');
-         if (opts.ndim > 2) applyAxisZoom('z');
+         this.applyAxisZoom('x');
+         if (opts.ndim > 1) this.applyAxisZoom('y');
+         if (opts.ndim > 2) this.applyAxisZoom('z');
 
          if (opts.check_pad_range === 'pad_range') {
             let canp = this.getCanvPainter();
@@ -56289,7 +56298,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Get view data for ui5 panel
      * @private */
    getUi5PanelData(/* panel_name */) {
-      return { jsroot: { parse, toJSON, loadScript, EAxisBits, getColorExec } };
+      return { jsroot: { settings, create: create$1, parse, toJSON, loadScript, EAxisBits, getColorExec } };
    }
 
    /** @summary Function used to activate GED
@@ -56353,6 +56362,7 @@ class TCanvasPainter extends TPadPainter {
 
                   objpainter?.getPadPainter()?.selectObjectPainter(objpainter);
 
+                  console.log('activate GED');
                   this.processChanges('sbits', this);
 
                   resolveFunc(true);
@@ -59236,7 +59246,7 @@ class THistPainter extends ObjectPainter {
       return this.findFunction(clTPaveStats, 'stats');
    }
 
-   /** @summary Toggle stat box drawing
+   /** @summary Toggle statbox drawing
      * @private */
    toggleStat(arg) {
 
@@ -60201,7 +60211,7 @@ class THistPainter extends ObjectPainter {
                painter.options.Color = true; // default is color
          }
 
-         painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+         painter.checkPadRange(/*!painter.options.Mode3D && */ (painter.options.Contour != 14));
 
          painter.scanContent();
 
@@ -61416,7 +61426,7 @@ class TH1Painter extends TH1Painter$2 {
          if (is_main) {
             assignFrame3DMethods(main);
             pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
-               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, this);
                main.set3DOptions(this.options);
                main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
             });
@@ -64372,7 +64382,7 @@ class TH2Painter extends TH2Painter$2 {
          if (is_main) {
             assignFrame3DMethods(main);
             pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
-               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+               main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
                main.set3DOptions(this.options);
                main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
             });
@@ -65015,7 +65025,7 @@ class TH3Painter extends THistPainter {
       } else {
          assignFrame3DMethods(main);
          pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
-            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
             return this.draw3DBins();
@@ -76361,7 +76371,6 @@ async function drawText$1() {
 /** @summary Draw TLine
   * @private */
 async function drawTLine(dom, obj) {
-
    let painter = new ObjectPainter(dom, obj);
 
    painter.redraw = function() {
@@ -76370,12 +76379,11 @@ async function drawTLine(dom, obj) {
             lineatt = new TAttLineHandler(line),
             isndc = line.TestBit(kLineNDC);
 
-      // create svg:g container for line drawing
       this.createG();
 
       this.draw_g
           .append('svg:path')
-          .attr('d', `M${this.axisToSvg('x', line.fX1, isndc)},${this.axisToSvg('y', line.fY1, isndc)}L${this.axisToSvg('x', line.fX2, isndc)},${this.axisToSvg('y', line.fY2, isndc)}`)
+          .attr('d', `M${this.axisToSvg('x',line.fX1,isndc)},${this.axisToSvg('y',line.fY1,isndc)}L${this.axisToSvg('x',line.fX2,isndc)},${this.axisToSvg('y',line.fY2,isndc)}`)
           .call(lineatt.func);
 
       return this;
@@ -76388,7 +76396,6 @@ async function drawTLine(dom, obj) {
   * @private */
 function drawPolyLine() {
 
-   // create svg:g container for polyline drawing
    this.createG();
 
    let polyline = this.getObject(),
@@ -76422,7 +76429,6 @@ function drawEllipse() {
    this.createAttLine({ attr: ellipse });
    this.createAttFill({ attr: ellipse });
 
-   // create svg:g container for ellipse drawing
    this.createG();
 
    let funcs = this.getAxisToSvgFunc(),
@@ -76505,7 +76511,6 @@ function drawEllipse() {
 function drawPie() {
    let pie = this.getObject();
 
-   // create svg:g container for ellipse drawing
    this.createG();
 
    let xc = this.axisToSvg('x', pie.fX),
@@ -76513,12 +76518,13 @@ function drawPie() {
        rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
        ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
-   this.draw_g.attr('transform',`translate(${xc},${yc})`);
+   this.draw_g.attr('transform', `translate(${xc},${yc})`);
 
    // Draw the slices
    let nb = pie.fPieSlices.length, total = 0,
        af = (pie.fAngularOffset*Math.PI)/180,
-       x1 = Math.round(rx*Math.cos(af)), y1 = Math.round(ry*Math.sin(af));
+       x1 = Math.round(rx*Math.cos(af)),
+       y1 = Math.round(ry*Math.sin(af));
 
    for (let n = 0; n < nb; n++)
       total += pie.fPieSlices[n].fValue;
@@ -76543,14 +76549,12 @@ function drawPie() {
 /** @summary Draw TBox
   * @private */
 function drawBox$1() {
-
    let box = this.getObject(),
        opt = this.getDrawOpt(),
        draw_line = (opt.toUpperCase().indexOf('L') >= 0),
        lineatt = this.createAttLine(box),
        fillatt = this.createAttFill(box);
 
-   // create svg:g container for box drawing
    this.createG();
 
    let x1 = this.axisToSvg('x', box.fX1),
@@ -76591,17 +76595,16 @@ function drawBox$1() {
 /** @summary Draw TMarker
   * @private */
 function drawMarker$1() {
-   let marker = this.getObject(),
-       att = new TAttMarkerHandler(marker),
-       kMarkerNDC = BIT(14),
-       isndc = marker.TestBit(kMarkerNDC);
+   const marker = this.getObject(),
+         att = new TAttMarkerHandler(marker),
+         kMarkerNDC = BIT(14),
+         isndc = marker.TestBit(kMarkerNDC);
 
-   // create svg:g container for box drawing
    this.createG();
 
    let x = this.axisToSvg('x', marker.fX, isndc),
        y = this.axisToSvg('y', marker.fY, isndc),
-       path = att.create(x,y);
+       path = att.create(x, y);
 
    if (path)
       this.draw_g.append('svg:path')
@@ -76612,8 +76615,6 @@ function drawMarker$1() {
 /** @summary Draw TPolyMarker
   * @private */
 function drawPolyMarker() {
-
-   // create svg:g container for box drawing
    this.createG();
 
    let poly = this.getObject(),
@@ -86967,9 +86968,12 @@ class TGraphTimePainter extends ObjectPainter {
          return;
       }
 
-      return draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
+      return draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(p => {
 
-         if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
+         if (p) {
+            p.$grtimeid = this.selfid; // indicator that painter created by ourself
+            p.$grstep = this.step; // remember step
+         }
          return this.drawPrimitives(indx+1);
 
       });
@@ -86998,11 +87002,13 @@ class TGraphTimePainter extends ObjectPainter {
             return;
          }
 
-         // clear primitives produced by the TGraphTime
-         pp.cleanPrimitives(p => (p.$grtimeid === this.selfid));
-
          // draw ptrimitives again
-         this.drawPrimitives().then(() => this.continueDrawing());
+         this.drawPrimitives().then(() => {
+            // clear primitives produced by previous drawing to avoid flicking
+            pp.cleanPrimitives(p => { return (p.$grtimeid === this.selfid) && (p.$grstep !== this.step); });
+
+            this.continueDrawing();
+         });
       } else if (this.running_timeout) {
          clearTimeout(this.running_timeout);
          delete this.running_timeout;
@@ -87012,8 +87018,7 @@ class TGraphTimePainter extends ObjectPainter {
          requestAnimationFrame(() => this.continueDrawing());
       } else {
 
-         let sleeptime = gr.fSleepTime;
-         if (!sleeptime || (sleeptime<100)) sleeptime = 10;
+         let sleeptime = Math.max(gr.fSleepTime, 10);
 
          if (++this.step > gr.fSteps.arr.length) {
             if (this.options.repeat) {
@@ -87055,10 +87060,14 @@ class TGraphTimePainter extends ObjectPainter {
 
       painter.decodeOptions(opt);
 
-      if (!gr.fFrame.fTitle && gr.fTitle)
-         gr.fFrame.fTitle = gr.fTitle;
+      if (!gr.fFrame.fTitle && gr.fTitle) {
+         let arr = gr.fTitle.split(";");
+         gr.fFrame.fTitle = arr[0];
+         if (arr[1]) gr.fFrame.fXaxis.fTitle = arr[1];
+         if (arr[2]) gr.fFrame.fYaxis.fTitle = arr[2];
+      }
 
-      painter.selfid = 'grtime' + internals.id_counter++; // use to identify primitives which should be clean
+      painter.selfid = 'grtime_' + internals.id_counter++; // use to identify primitives which should be clean
 
       return TH1Painter$2.draw(dom, gr.fFrame, 'AXIS').then(() => {
          painter.addToPadPrimitives();
@@ -97284,7 +97293,7 @@ class RCanvasPainter extends RPadPainter {
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf('ADDPANEL:') == 0) {
             let relative_path = cmd.slice(9);
-            if (!this.showUI5Panel) {
+            if (!isFunc(this.showUI5Panel)) {
                handle.send(reply + 'false');
             } else {
 
@@ -97555,7 +97564,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Get view data for ui5 panel
      * @private */
    getUi5PanelData(/* panel_name */) {
-      return { jsroot: { parse, toJSON, loadScript, EAxisBits, getColorExec } };
+      return { jsroot: { settings, create: create$1, parse, toJSON, loadScript, EAxisBits, getColorExec } };
    }
 
    /** @summary Function used to activate GED
@@ -99249,7 +99258,7 @@ class RHistPainter extends RObjectPainter {
       return true;
    }
 
-   /** @summary Toggle stat box drawing
+   /** @summary Toggle statbox drawing
      * @desc Not yet implemented */
    toggleStat(/*arg*/) {}
 
