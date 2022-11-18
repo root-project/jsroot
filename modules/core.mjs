@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '19/11/2021' */
-let version_date = '17/11/2022';
+let version_date = '18/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -50,7 +50,7 @@ function setBatchMode(on) { batch_mode = !!on; }
 function isNodeJs() { return nodejs; }
 
 /** @summary atob function in all environments */
-const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
 
 /** @summary btoa function in all environments */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
