@@ -381,7 +381,9 @@ class THStackPainter extends ObjectPainter {
 
          if (painter.options.same) return;
 
-         if (!stack.fHistogram)
+         let no_histogram = !stack.fHistogram;
+
+         if (no_histogram)
              stack.fHistogram = painter.createHistogram(stack);
 
          let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
@@ -390,7 +392,10 @@ class THStackPainter extends ObjectPainter {
          if (mm) hopt += ';minimum:' + mm.min + ';maximum:' + mm.max;
 
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
+            painter.addToPadPrimitives();
             painter.firstpainter = subp;
+            subp.$secondary = 'hist'; // mark histogram painter as secondary
+            if (!no_histogram) painter.$primary = true; // mark stack as provider for histogram
          });
       }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));
    }

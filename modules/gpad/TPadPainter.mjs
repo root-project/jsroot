@@ -1214,20 +1214,21 @@ class TPadPainter extends ObjectPainter {
    addObjectPainter(objpainter, lst, indx) {
       if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
          // keep snap id in painter, will be used for the
-         let pi = this.painters.indexOf(objpainter);
-         if (pi < 0) this.painters.push(objpainter);
+         if (this.painters.indexOf(objpainter) < 0)
+            this.painters.push(objpainter);
 
          if (isFunc(objpainter.setSnapId))
             objpainter.setSnapId(lst[indx].fObjectID);
          else
             objpainter.snapid = lst[indx].fObjectID;
 
-         while (objpainter.$primary && (--pi >= 0))
-            if (this.painters[pi].$secondary == 'hist') {
-               this.painters[pi].snapid = objpainter.snapid + '#hist';
-               console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi].snapid}`);
-               break;
-            }
+         if (objpainter.$primary)
+            this.painters.forEach(sub => {
+               if ((sub !== objpainter) && (sub.$secondary === 'hist')) {
+                  sub.snapid = objpainter.snapid + '#hist';
+                  console.log(`ASSIGN SECONDARY HIST ID ${sub.snapid}`);
+               }
+            });
       }
    }
 
