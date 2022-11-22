@@ -1491,7 +1491,7 @@ class TGraphPainter extends ObjectPainter {
             if (hist_painter) {
                painter.axes_draw = true;
                if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = true;
+               hist_painter.$secondary = 'hist';
             }
          });
 

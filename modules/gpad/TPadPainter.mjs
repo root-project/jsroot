@@ -1222,10 +1222,12 @@ class TPadPainter extends ObjectPainter {
          else
             objpainter.snapid = lst[indx].fObjectID;
 
-         if (objpainter.$primary && (pi > 0) && this.painters[pi-1].$secondary) {
-            this.painters[pi-1].snapid = objpainter.snapid + '#hist';
-            console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi-1].snapid}`);
-         }
+         while (objpainter.$primary && (--pi >= 0))
+            if (this.painters[pi].$secondary == 'hist') {
+               this.painters[pi].snapid = objpainter.snapid + '#hist';
+               console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi].snapid}`);
+               break;
+            }
       }
    }
 

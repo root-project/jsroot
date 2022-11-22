@@ -2297,7 +2297,7 @@ class THistPainter extends ObjectPainter {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
       }).then(() => {
-         if (painter.options.Project && !painter.mode3d && painter.toggleProjection)
+         if (painter.options.Project && !painter.mode3d && isFunc(painter.toggleProjection))
              return painter.toggleProjection(painter.options.Project);
       }).then(() => {
           painter.fillToolbar();
