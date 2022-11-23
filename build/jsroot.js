@@ -54973,18 +54973,21 @@ class TPadPainter extends ObjectPainter {
    addObjectPainter(objpainter, lst, indx) {
       if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
          // keep snap id in painter, will be used for the
-         let pi = this.painters.indexOf(objpainter);
-         if (pi < 0) this.painters.push(objpainter);
+         if (this.painters.indexOf(objpainter) < 0)
+            this.painters.push(objpainter);
 
          if (isFunc(objpainter.setSnapId))
             objpainter.setSnapId(lst[indx].fObjectID);
          else
             objpainter.snapid = lst[indx].fObjectID;
 
-         if (objpainter.$primary && (pi > 0) && this.painters[pi-1].$secondary) {
-            this.painters[pi-1].snapid = objpainter.snapid + '#hist';
-            console.log(`ASSIGN SECONDARY HIST ID ${this.painters[pi-1].snapid}`);
-         }
+         if (objpainter.$primary)
+            this.painters.forEach(sub => {
+               if ((sub !== objpainter) && (sub.$secondary === 'hist')) {
+                  sub.snapid = objpainter.snapid + '#hist';
+                  console.log(`ASSIGN SECONDARY HIST ID ${sub.snapid}`);
+               }
+            });
       }
    }
 
@@ -55418,6 +55421,8 @@ class TPadPainter extends ObjectPainter {
       r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
       r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
       r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
+      r.uz1 = r.ranges ? (main.scale_zmin ?? 0) : 0;
+      r.uz2 = r.ranges ? (main.scale_zmax ?? 0) : 0;
 
       if (main) {
          if (main.zoom_xmin !== main.zoom_xmax) {
@@ -56486,7 +56491,7 @@ class TCanvasPainter extends TPadPainter {
          console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
       } else {
-         console.log(`Unprocessed changes ${kind}`);
+         console.log(`Unprocessed changes ${kind} for painter of ${painter?.getObject()?._typename} subelem ${subelem}`);
       }
    }
 
@@ -57934,6 +57939,8 @@ produceLegend: produceLegend
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
+const kNoZoom = -1111;
+
 function createDefaultPalette() {
    const hue2rgb = (p, q, t) => {
       if (t < 0) t += 1;
@@ -58152,7 +58159,7 @@ class THistDrawOptions {
               Render3D: constants$1.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0 });
    }
 
    /** @summary Decode histogram draw options */
@@ -59494,9 +59501,9 @@ class THistPainter extends ObjectPainter {
 
       let uzoomMinMax = ndim => {
          if (this.getDimension() !== ndim) return false;
-         if ((this.options.minimum===-1111) && (this.options.maximum===-1111)) return false;
+         if ((this.options.minimum === kNoZoom) && (this.options.maximum === kNoZoom)) return false;
          if (!this.draw_content) return false; // if not drawing content, not change min/max
-         this.options.minimum = this.options.maximum = -1111;
+         this.options.minimum = this.options.maximum = kNoZoom;
          this.scanContent(true); // to reset ymin/ymax
          return true;
       };
@@ -59550,7 +59557,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Start dialog to modify range of axis where histogram values are displayed */
    changeValuesRange(menu) {
       let curr;
-      if ((this.options.minimum != -1111) && (this.options.maximum != -1111))
+      if ((this.options.minimum != kNoZoom) && (this.options.maximum != kNoZoom))
          curr = `[${this.options.minimum},${this.options.maximum}]`;
       else
          curr = `[${this.gminbin},${this.gmaxbin}]`;
@@ -59559,7 +59566,7 @@ class THistPainter extends ObjectPainter {
          res = res ? JSON.parse(res) : [];
 
          if (!isObject(res) || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
-            this.options.minimum = this.options.maximum = -1111;
+            this.options.minimum = this.options.maximum = kNoZoom;
          } else {
             this.options.minimum = res[0];
             this.options.maximum = res[1];
@@ -59779,8 +59786,8 @@ class THistPainter extends ObjectPainter {
           custom_levels;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
       let gzmin = zmin, gzmax = zmax;
-      if (this.options.minimum !== -1111) { zmin = this.options.minimum; gzmin = Math.min(gzmin,zmin); apply_min = true; }
-      if (this.options.maximum !== -1111) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
+      if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin,zmin); apply_min = true; }
+      if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
       if (zmin >= zmax) {
          if (apply_min) zmax = zmin + 1; else zmin = zmax - 1;
       }
@@ -60222,7 +60229,7 @@ class THistPainter extends ObjectPainter {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
       }).then(() => {
-         if (painter.options.Project && !painter.mode3d && painter.toggleProjection)
+         if (painter.options.Project && !painter.mode3d && isFunc(painter.toggleProjection))
              return painter.toggleProjection(painter.options.Project);
       }).then(() => {
           painter.fillToolbar();
@@ -60352,7 +60359,8 @@ class TH1Painter$2 extends THistPainter {
          }
       }
 
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
+      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content &&
+          ((this.ymin == this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
          this.ymin = hmin;
          this.ymax = hmax;
       } else {
@@ -64369,8 +64377,14 @@ class TH2Painter extends TH2Painter$2 {
          let pad = this.getPadPainter().getRootPad(true),
              zmult = 1 + 2*gStyle.fHistTopMargin;
 
-         this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
-         this.zmax = this.gmaxbin;
+         if (this.draw_content || (this.gmaxbin != 0)) {
+            this.zmin = pad?.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+            this.zmax = this.gmaxbin;
+         } else {
+            this.zmin = histo.fZaxis.fXmin;
+            this.zmax = histo.fZaxis.fXmax;
+            zmult = 1;
+         }
 
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
@@ -86428,8 +86442,8 @@ class THStackPainter extends ObjectPainter {
    }
 
    /** @summary Returns stack min/max values */
-   getMinMax(iserr) {
-      let res = { min: 0, max: 0 },
+   setHistMinMax(hist, iserr) {
+      let min = 0, max = 0,
           stack = this.getObject(),
           pad = this.getPadPainter().getRootPad(true);
 
@@ -86477,33 +86491,58 @@ class THStackPainter extends ObjectPainter {
          for (let i = 0; i < stack.fHists.arr.length; ++i) {
             let resh = getHistMinMax(stack.fHists.arr[i], iserr);
             if (i == 0) {
-               res = resh;
+               min = resh.min; max = resh.max;
              } else {
-               res.min = Math.min(res.min, resh.min);
-               res.max = Math.max(res.max, resh.max);
+               min = Math.min(min, resh.min);
+               max = Math.max(max, resh.max);
             }
          }
       } else {
-         res.min = getHistMinMax(stack.fStack.arr[0], iserr).min;
-         res.max = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
+         min = getHistMinMax(stack.fStack.arr[0], iserr).min;
+         max = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
       }
 
-      if (stack.fMaximum != -1111) res.max = stack.fMaximum;
-      res.max *= (1 + gStyle.fHistTopMargin);
-      if (stack.fMinimum != -1111) res.min = stack.fMinimum;
+      const adjustRange = () => {
+         if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
+            if (max <= 0) max = 1;
+            if (min <= 0) min = 1e-4*max;
+            let kmin = 1/(1 + 0.5*Math.log10(max / min)),
+                kmax = 1 + 0.2*Math.log10(max / min);
+            min *= kmin;
+            max *= kmax;
+         } else if ((min > 0) && (min < 0.05*max)) {
+            min = 0;
+         }
+      };
 
-      if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
-         if (res.max <= 0) res.max = 1;
-         if (res.min <= 0) res.min = 1e-4*res.max;
-         let kmin = 1/(1 + 0.5*Math.log10(res.max / res.min)),
-             kmax = 1 + 0.2*Math.log10(res.max / res.min);
-         res.min *= kmin;
-         res.max *= kmax;
+      max *= (1 + gStyle.fHistTopMargin);
+
+      adjustRange();
+
+      let max0 = max, min0 = min, zoomed = false;
+
+      if (stack.fMaximum != -1111) {
+         max = stack.fMaximum*(1 + gStyle.fHistTopMargin);
+         max0 = Math.max(max, max0);
+         zoomed = true;
+      }
+
+      if (stack.fMinimum != -1111) {
+         min = stack.fMinimum;
+         min0 = Math.min(min, min0);
+         zoomed = true;
+      }
+
+      let axis = this.options.ndim == 1 ? hist.fYaxis : hist.fZaxis;
+      axis.fXmin = min0;
+      axis.fXmax = max0;
+      if (zoomed) {
+         adjustRange();
+         hist.fMinimum = min;
+         hist.fMaximum = max;
       } else {
-         if ((res.min > 0) && (res.min < 0.05*res.max)) res.min = 0;
+         hist.fMinimum = hist.fMaximum = -1111;
       }
-
-      return res;
    }
 
    /** @summary Draw next stack histogram */
@@ -86610,7 +86649,8 @@ class THStackPainter extends ObjectPainter {
       this.options.errors = d.check('E');
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check('HIST') && (this.options.hopt.indexOf('E') < 0)) this.options.draw_errors = true;
+      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check('HIST') && (this.options.hopt.indexOf('E') < 0))
+         this.options.draw_errors = true;
 
       this.options.horder = this.options.nostack || dolego;
    }
@@ -86662,6 +86702,8 @@ class THStackPainter extends ObjectPainter {
       stack.fHists = obj.fHists;
       stack.fStack = obj.fStack;
       stack.fTitle = obj.fTitle;
+      stack.fMinimum = obj.fMinimum;
+      stack.fMaximum = obj.fMaximum;
 
       if (!this.options.nostack)
          this.options.nostack = !this.buildStack(stack);
@@ -86671,17 +86713,9 @@ class THStackPainter extends ObjectPainter {
          if (!src)
             src = stack.fHistogram = this.createHistogram(stack);
 
+         this.setHistMinMax(src, this.options.errors || this.options.draw_errors);
+
          this.firstpainter.updateObject(src);
-
-         let mm = this.getMinMax(this.options.errors || this.options.draw_errors);
-
-         this.firstpainter.options.minimum = mm.min;
-         this.firstpainter.options.maximum = mm.max;
-
-         if (this.options.ndim == 1) {
-            this.firstpainter.ymin = mm.min;
-            this.firstpainter.ymax = mm.max;
-         }
       }
 
       // and now update histograms
@@ -86745,16 +86779,22 @@ class THStackPainter extends ObjectPainter {
 
          if (painter.options.same) return;
 
-         if (!stack.fHistogram)
+         let no_histogram = !stack.fHistogram;
+
+         if (no_histogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
-             hopt = painter.options.hopt + ' axis';
+         let hopt = painter.options.hopt + ' axis';
 
-         if (mm) hopt += ';minimum:' + mm.min + ';maximum:' + mm.max;
+         painter.setHistMinMax(stack.fHistogram, painter.options.errors || painter.options.draw_errors);
+
+         // if (mm) hopt += ';minimum:' + mm.min + ';maximum:' + mm.max;
 
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
+            painter.addToPadPrimitives();
             painter.firstpainter = subp;
+            subp.$secondary = 'hist'; // mark histogram painter as secondary
+            if (!no_histogram) painter.$primary = true; // mark stack as provider for histogram
          });
       }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));
    }
@@ -88255,10 +88295,12 @@ class TGraphPainter$1 extends ObjectPainter {
 
    /** @summary Create histogram for graph
      * @desc graph bins should be created when calling this function
-     * @param {object} histo - existing histogram instance
      * @param {boolean} [set_x] - set X axis range
      * @param {boolean} [set_y] - set Y axis range */
-   createHistogram(histo, set_x, set_y) {
+   createHistogram(set_x, set_y) {
+      if (!set_x && !set_y)
+         set_x = set_y = true;
+
       let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
       if (xmin >= xmax) xmax = xmin+1;
@@ -88270,23 +88312,24 @@ class TGraphPainter$1 extends ObjectPainter {
       if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.9;
       if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
-      let graph = this.getObject();
-
-      if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
-      if (graph.fMaximum != -1111) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
-
-      histo = graph.fHistogram;
-
-      if (!set_x && !set_y) set_x = set_y = true;
+      let graph = this.getObject(),
+          histo = graph.fHistogram,
+          minimum0 = minimum, maximum0 = maximum;
 
       if (!histo) {
          histo = graph.fHistogram = createHistogram('TH1F', 100);
          histo.fName = graph.fName + '_h';
-         let kNoStats = BIT(9);
+         const kNoStats = BIT(9);
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
+      } else if ((histo.fMaximum != -1111) && (histo.fMinimum != -1111)) {
+         minimum = histo.fMinimum;
+         maximum = histo.fMaximum;
       }
+
+      if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
+      if (graph.fMaximum != -1111) maximum = graph.fMaximum;
+      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
 
       histo.fTitle = graph.fTitle;
 
@@ -88296,8 +88339,8 @@ class TGraphPainter$1 extends ObjectPainter {
       }
 
       if (set_y) {
-         histo.fYaxis.fXmin = minimum;
-         histo.fYaxis.fXmax = maximum;
+         histo.fYaxis.fXmin = Math.min(minimum0, minimum);
+         histo.fYaxis.fXmax = Math.max(maximum0, maximum);
          histo.fMinimum = minimum;
          histo.fMaximum = maximum;
       }
@@ -88317,7 +88360,7 @@ class TGraphPainter$1 extends ObjectPainter {
       doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
       if (!dox && !doy) return false;
 
-      this.createHistogram(null, dox, doy);
+      this.createHistogram(dox, doy);
       this.getMainPainter()?.extractAxesProperties(1); // just to enforce ranges extraction
 
       return true;
@@ -89318,7 +89361,7 @@ class TGraphPainter$1 extends ObjectPainter {
 
       // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
-         let histo = this.createHistogram(obj.fHistogram);
+         let histo = this.createHistogram();
          histo.fTitle = graph.fTitle; // copy title
 
          let hist_painter = this.getMainPainter();
@@ -89474,7 +89517,7 @@ class TGraphPainter$1 extends ObjectPainter {
             if (hist_painter) {
                painter.axes_draw = true;
                if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = true;
+               hist_painter.$secondary = 'hist';
             }
          });
 
@@ -90287,7 +90330,8 @@ class TMultiGraphPainter$2 extends ObjectPainter {
          if (this.autorange && !histo)
             histo = this.scanGraphsRange(graphs);
 
-         if (this.firstpainter.updateObject(histo)) isany = true;
+         if (this.firstpainter.updateObject(histo))
+            isany = true;
       }
 
       for (let i = 0; i < graphs.arr.length; ++i)
@@ -90306,7 +90350,7 @@ class TMultiGraphPainter$2 extends ObjectPainter {
      * @return {object} histogram for axes drawing */
    scanGraphsRange(graphs, histo, pad) {
       let mgraph = this.getObject(),
-          maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
+          maximum, minimum, logx = false, logy = false,
           time_display = false, time_format = '',
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
@@ -90320,58 +90364,57 @@ class TMultiGraphPainter$2 extends ObjectPainter {
          rw.first = false;
       }
 
-      if (this._3d && histo && !histo.fXaxis.fLabels) histo = null;
+      // ignore existing histo in 3d case
+      if (this._3d && histo && !histo.fXaxis.fLabels)
+         histo = null;
 
-      if (histo) {
-         minimum = histo.fYaxis.fXmin;
-         maximum = histo.fYaxis.fXmax;
-         if (pad) {
-            const padtoX = x => (pad.fLogx && (x < 50)) ? Math.exp(2.302585092994 * x) : x;
-            uxmin = padtoX(rw.xmin);
-            uxmax = padtoX(rw.xmax);
-         }
-      } else {
+      if (!histo) {
          this.autorange = true;
 
-         graphs.arr.forEach(gr => {
-            if (gr.fNpoints == 0) return;
-            if (rw.first) {
-               rw.xmin = rw.xmax = gr.fX[0];
-               rw.ymin = rw.ymax = gr.fY[0];
-               rw.first = false;
-            }
-            for (let i = 0; i < gr.fNpoints; ++i) {
-               rw.xmin = Math.min(rw.xmin, gr.fX[i]);
-               rw.xmax = Math.max(rw.xmax, gr.fX[i]);
-               rw.ymin = Math.min(rw.ymin, gr.fY[i]);
-               rw.ymax = Math.max(rw.ymax, gr.fY[i]);
-            }
-         });
-
-         if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
+         if (graphs.arr[0]?.fHistogram?.fXaxis?.fTimeDisplay) {
             time_display = true;
             time_format = graphs.arr[0].fHistogram.fXaxis.fTimeFormat;
          }
-
-         if (rw.xmin == rw.xmax) rw.xmax += 1.;
-         if (rw.ymin == rw.ymax) rw.ymax += 1.;
-         dx = 0.05 * (rw.xmax - rw.xmin);
-         dy = 0.05 * (rw.ymax - rw.ymin);
-         uxmin = rw.xmin - dx;
-         uxmax = rw.xmax + dx;
-         if (logy) {
-            if (rw.ymin <= 0) rw.ymin = 0.001 * rw.ymax;
-            minimum = rw.ymin / (1 + 0.5 * Math.log10(rw.ymax / rw.ymin));
-            maximum = rw.ymax * (1 + 0.2 * Math.log10(rw.ymax / rw.ymin));
-         } else {
-            minimum = rw.ymin - dy;
-            maximum = rw.ymax + dy;
-         }
-         if (minimum < 0 && rw.ymin >= 0)
-            minimum = 0;
-         if (maximum > 0 && rw.ymax <= 0)
-            maximum = 0;
       }
+
+      graphs.arr.forEach(gr => {
+         if (gr.fNpoints == 0) return;
+         if (rw.first) {
+            rw.xmin = rw.xmax = gr.fX[0];
+            rw.ymin = rw.ymax = gr.fY[0];
+            rw.first = false;
+         }
+         for (let i = 0; i < gr.fNpoints; ++i) {
+            rw.xmin = Math.min(rw.xmin, gr.fX[i]);
+            rw.xmax = Math.max(rw.xmax, gr.fX[i]);
+            rw.ymin = Math.min(rw.ymin, gr.fY[i]);
+            rw.ymax = Math.max(rw.ymax, gr.fY[i]);
+         }
+      });
+
+      if (rw.xmin == rw.xmax)
+         rw.xmax += 1.;
+      if (rw.ymin == rw.ymax)
+         rw.ymax += 1.;
+      let dx = 0.05 * (rw.xmax - rw.xmin),
+          dy = 0.05 * (rw.ymax - rw.ymin),
+          uxmin = rw.xmin - dx,
+          uxmax = rw.xmax + dx;
+      if (logy) {
+         if (rw.ymin <= 0)
+            rw.ymin = 0.001 * rw.ymax;
+         minimum = rw.ymin / (1 + 0.5 * Math.log10(rw.ymax / rw.ymin));
+         maximum = rw.ymax * (1 + 0.2 * Math.log10(rw.ymax / rw.ymin));
+      } else {
+         minimum = rw.ymin - dy;
+         maximum = rw.ymax + dy;
+      }
+      if (minimum < 0 && rw.ymin >= 0)
+         minimum = 0;
+      if (maximum > 0 && rw.ymax <= 0)
+         maximum = 0;
+
+       let glob_minimum = minimum, glob_maximum = maximum;
 
       if (uxmin < 0 && rw.xmin >= 0)
          uxmin = logx ? 0.9 * rw.xmin : 0;
@@ -90383,10 +90426,14 @@ class TMultiGraphPainter$2 extends ObjectPainter {
       if (mgraph.fMaximum != -1111)
          rw.ymax = maximum = mgraph.fMaximum;
 
-      if (minimum < 0 && rw.ymin >= 0 && logy) minimum = 0.9 * rw.ymin;
-      if (maximum > 0 && rw.ymax <= 0 && logy) maximum = 1.1 * rw.ymax;
-      if (minimum <= 0 && logy) minimum = 0.001 * maximum;
-      if (!logy && minimum > 0 && minimum < 0.05*maximum) minimum = 0;
+      if (minimum < 0 && rw.ymin >= 0 && logy)
+         minimum = 0.9 * rw.ymin;
+      if (maximum > 0 && rw.ymax <= 0 && logy)
+         maximum = 1.1 * rw.ymax;
+      if (minimum <= 0 && logy)
+         minimum = 0.001 * maximum;
+      if (!logy && minimum > 0 && minimum < 0.05*maximum)
+         minimum = 0;
       if (uxmin <= 0 && logx)
          uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
 
@@ -90427,13 +90474,14 @@ class TMultiGraphPainter$2 extends ObjectPainter {
          if (time_display) xaxis.fTimeFormat = time_format;
       }
 
-      if (this._3d) {
+      if (this.autorange) {
          histo.fMinimum = minimum;
          histo.fMaximum = maximum;
-      } else {
-         histo.fYaxis.fXmin = minimum;
-         histo.fYaxis.fXmax = maximum;
       }
+
+      let axis = this._3d ? histo.fZaxis : histo.fYaxis;
+      axis.fXmin = Math.min(minimum, glob_minimum);
+      axis.fXmax = Math.max(maximum, glob_maximum);
 
       return histo;
    }
@@ -90516,7 +90564,8 @@ class TMultiGraphPainter$2 extends ObjectPainter {
 
          promise = painter.drawAxisHist(histo, hopt).then(ap => {
             painter.firstpainter = ap;
-            ap.$secondary = true; // mark histogram painter as secondary
+            ap.$secondary = 'hist'; // mark histogram painter as secondary
+            if (mgraph.fHistogram) painter.$primary = true; // mark mg painter as primary
          });
       }
 
@@ -90575,8 +90624,7 @@ class TGraphPainter extends TGraphPainter$1 {
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
-      let histo = this.createHistogram();
-      return TH1Painter.draw(this.getDom(), histo, this.options.Axis);
+      return TH1Painter.draw(this.getDom(), this.createHistogram(), this.options.Axis);
    }
 
    static async draw(dom, graph, opt) {
