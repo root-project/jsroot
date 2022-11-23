@@ -188,14 +188,11 @@ class TMultiGraphPainter extends ObjectPainter {
          if (time_display) xaxis.fTimeFormat = time_format;
       }
 
-      if (this.autorange) {
-         histo.fMinimum = minimum;
-         histo.fMaximum = maximum;
-      }
-
       let axis = this._3d ? histo.fZaxis : histo.fYaxis;
       axis.fXmin = Math.min(minimum, glob_minimum);
       axis.fXmax = Math.max(maximum, glob_maximum);
+      histo.fMinimum = minimum;
+      histo.fMaximum = maximum;
 
       return histo;
    }
