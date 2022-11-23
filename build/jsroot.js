@@ -50837,6 +50837,20 @@ class TFramePainter extends ObjectPainter {
          if (ndim > 2)
             this.applyAxisZoom('z');
       }
+
+      if (hpainter && !hpainter._checked_zooming) {
+         hpainter._checked_zooming = true;
+
+         if (hpainter.options.minimum !== kNoZoom) {
+            this.zoom_zmin = hpainter.options.minimum;
+            this.zoom_zmax = this.zmax;
+         }
+         if (hpainter.options.maximum !== kNoZoom) {
+            this.zoom_zmax = hpainter.options.maximum;
+            if (this.zoom_zmin === undefined) this.zoom_zmin = this.zmin;
+         }
+      }
+
    }
 
    /** @summary Configure secondary frame axes ranges */
@@ -58185,6 +58199,10 @@ class THistDrawOptions {
                                 else { this.ominimum = false; this.minimum = histo.fMinimum; }
       if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
                                 else { this.omaximum = false; this.maximum = histo.fMaximum; }
+      if (d.check('HMIN:', true)) { this.ohmin = true; this.hmin = parseFloat(d.part); }
+                             else { this.ohmin = false; delete this.hmin; }
+      if (d.check('HMAX:', true)) { this.ohmax = true; this.hmax = parseFloat(d.part); }
+                             else { this.ohmax = false; delete this.hmax; }
 
       // let configure histogram titles - only for debug purposes
       if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
@@ -59075,15 +59093,26 @@ class THistPainter extends ObjectPainter {
       this.ymin = histo.fYaxis.fXmin;
       this.ymax = histo.fYaxis.fXmax;
 
+      if ((ndim == 1) && this.options.ohmin && this.options.ohmax) {
+         this.ymin = this.options.hmin;
+         this.ymax = this.options.hmax;
+      }
+
       if (ndim > 1) {
          this.nbinsy = histo.fYaxis.fNbins;
          assignTAxisFuncs(histo.fYaxis);
+
+         this.zmin = histo.fZaxis.fXmin;
+         this.zmax = histo.fZaxis.fXmax;
+
+         if ((ndim == 2) && this.options.ohmin && this.options.ohmax) {
+            this.zmin = this.options.hmin;
+            this.zmax = this.options.hmax;
+         }
       }
 
       if (ndim > 2) {
          this.nbinsz = histo.fZaxis.fNbins;
-         this.zmin = histo.fZaxis.fXmin;
-         this.zmax = histo.fZaxis.fXmax;
          assignTAxisFuncs(histo.fZaxis);
        }
    }
@@ -60266,9 +60295,11 @@ class TH1Painter$2 extends THistPainter {
      * @param {boolean} when_axis_changed - true when zooming was changed, some checks may be skipped */
    scanContent(when_axis_changed) {
 
-      if (when_axis_changed && !this.nbinsx) when_axis_changed = false;
+      if (when_axis_changed && !this.nbinsx)
+         when_axis_changed = false;
 
-      if (this.isTH1K()) this.convertTH1K();
+      if (this.isTH1K())
+         this.convertTH1K();
 
       let histo = this.getHisto();
 
@@ -60278,9 +60309,8 @@ class TH1Painter$2 extends THistPainter {
       let left = this.getSelectIndex('x', 'left'),
           right = this.getSelectIndex('x', 'right');
 
-      if (when_axis_changed) {
-         if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
-      }
+      if (when_axis_changed && (left === this.scan_xleft) && (right === this.scan_xright))
+         return;
 
       // Paint histogram axis only
       this.draw_content = !(this.options.Axis > 0);
@@ -64382,15 +64412,11 @@ class TH2Painter extends TH2Painter$2 {
             this.zmin = pad?.fLogz ? this.gminposbin * 0.3 : this.gminbin;
             this.zmax = this.gmaxbin;
          } else {
-            this.zmin = histo.fZaxis.fXmin;
-            this.zmax = histo.fZaxis.fXmax;
             zmult = 1;
          }
 
-         if (this.options.minimum !== kNoZoom) this.zmin = this.options.minimum;
-         if (this.options.maximum !== kNoZoom) { this.zmax = this.options.maximum; zmult = 1; }
-
-         if (pad && pad.fLogz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
+         if (pad?.fLogz && (this.zmin <= 0)) 
+            this.zmin = this.zmax * 1e-5;
 
          this.deleteAttr();
 
@@ -86443,7 +86469,7 @@ class THStackPainter extends ObjectPainter {
    }
 
    /** @summary Returns stack min/max values */
-   setHistMinMax(hist, iserr) {
+   getMinMax(iserr) {
       let min = 0, max = 0,
           stack = this.getObject(),
           pad = this.getPadPainter().getRootPad(true);
@@ -86534,16 +86560,12 @@ class THStackPainter extends ObjectPainter {
          zoomed = true;
       }
 
-      let axis = this.options.ndim == 1 ? hist.fYaxis : hist.fZaxis;
-      axis.fXmin = min0;
-      axis.fXmax = max0;
-      if (zoomed) {
+      if (zoomed)
          adjustRange();
-         hist.fMinimum = min;
-         hist.fMaximum = max;
-      } else {
-         hist.fMinimum = hist.fMaximum = kNoZoom;
-      }
+      else
+         min = max = kNoZoom;
+
+      return { min, max, min0, max0, zoomed, hopt: `hmin:${min0};hmax:${max0};minimum:${min};maximum:${max}` };
    }
 
    /** @summary Draw next stack histogram */
@@ -86714,7 +86736,19 @@ class THStackPainter extends ObjectPainter {
          if (!src)
             src = stack.fHistogram = this.createHistogram(stack);
 
-         this.setHistMinMax(src, this.options.errors || this.options.draw_errors);
+         let mm = this.getMinMax(this.options.errors || this.options.draw_errors);
+
+         this.firstpainter.options.minimum = mm.min;
+         this.firstpainter.options.maximum = mm.max;
+         this.firstpainter._checked_zooming = false; // force to check 3d zooming
+
+         if (this.options.ndim == 1) {
+            this.firstpainter.ymin = mm.min0;
+            this.firstpainter.ymax = mm.max0;
+         } else {
+            this.firstpainter.zmin = mm.min0;
+            this.firstpainter.zmax = mm.max0;
+         }
 
          this.firstpainter.updateObject(src);
       }
@@ -86785,11 +86819,8 @@ class THStackPainter extends ObjectPainter {
          if (no_histogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let hopt = painter.options.hopt + ' axis';
-
-         painter.setHistMinMax(stack.fHistogram, painter.options.errors || painter.options.draw_errors);
-
-         // if (mm) hopt += ';minimum:' + mm.min + ';maximum:' + mm.max;
+         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
+             hopt = painter.options.hopt + ';axis;' + mm.hopt;
 
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
             painter.addToPadPrimitives();
