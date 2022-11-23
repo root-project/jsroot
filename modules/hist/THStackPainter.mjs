@@ -64,7 +64,7 @@ class THStackPainter extends ObjectPainter {
    }
 
    /** @summary Returns stack min/max values */
-   setHistMinMax(hist, iserr) {
+   getMinMax(iserr) {
       let min = 0, max = 0,
           stack = this.getObject(),
           pad = this.getPadPainter().getRootPad(true);
@@ -155,16 +155,12 @@ class THStackPainter extends ObjectPainter {
          zoomed = true;
       }
 
-      let axis = this.options.ndim == 1 ? hist.fYaxis : hist.fZaxis;
-      axis.fXmin = min0;
-      axis.fXmax = max0;
-      if (zoomed) {
+      if (zoomed)
          adjustRange();
-         hist.fMinimum = min;
-         hist.fMaximum = max;
-      } else {
-         hist.fMinimum = hist.fMaximum = kNoZoom;
-      }
+      else
+         min = max = kNoZoom;
+
+      return { min, max, min0, max0, zoomed, hopt: `hmin:${min0};hmax:${max0};minimum:${min};maximum:${max}` };
    }
 
    /** @summary Draw next stack histogram */
@@ -335,7 +331,19 @@ class THStackPainter extends ObjectPainter {
          if (!src)
             src = stack.fHistogram = this.createHistogram(stack);
 
-         this.setHistMinMax(src, this.options.errors || this.options.draw_errors);
+         let mm = this.getMinMax(this.options.errors || this.options.draw_errors);
+
+         this.firstpainter.options.minimum = mm.min;
+         this.firstpainter.options.maximum = mm.max;
+         this.firstpainter._checked_zooming = false; // force to check 3d zooming
+
+         if (this.options.ndim == 1) {
+            this.firstpainter.ymin = mm.min0;
+            this.firstpainter.ymax = mm.max0;
+         } else {
+            this.firstpainter.zmin = mm.min0;
+            this.firstpainter.zmax = mm.max0;
+         }
 
          this.firstpainter.updateObject(src);
       }
@@ -406,11 +414,8 @@ class THStackPainter extends ObjectPainter {
          if (no_histogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let hopt = painter.options.hopt + ' axis';
-
-         painter.setHistMinMax(stack.fHistogram, painter.options.errors || painter.options.draw_errors);
-
-         // if (mm) hopt += ';minimum:' + mm.min + ';maximum:' + mm.max;
+         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
+             hopt = painter.options.hopt + ';axis;' + mm.hopt;
 
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
             painter.addToPadPrimitives();

@@ -29,9 +29,11 @@ class TH1Painter extends THistPainter {
      * @param {boolean} when_axis_changed - true when zooming was changed, some checks may be skipped */
    scanContent(when_axis_changed) {
 
-      if (when_axis_changed && !this.nbinsx) when_axis_changed = false;
+      if (when_axis_changed && !this.nbinsx)
+         when_axis_changed = false;
 
-      if (this.isTH1K()) this.convertTH1K();
+      if (this.isTH1K())
+         this.convertTH1K();
 
       let histo = this.getHisto();
 
@@ -41,9 +43,8 @@ class TH1Painter extends THistPainter {
       let left = this.getSelectIndex('x', 'left'),
           right = this.getSelectIndex('x', 'right');
 
-      if (when_axis_changed) {
-         if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
-      }
+      if (when_axis_changed && (left === this.scan_xleft) && (right === this.scan_xright))
+         return;
 
       // Paint histogram axis only
       this.draw_content = !(this.options.Axis > 0);

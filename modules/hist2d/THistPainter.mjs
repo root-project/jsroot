@@ -252,6 +252,10 @@ class THistDrawOptions {
                                 else { this.ominimum = false; this.minimum = histo.fMinimum; }
       if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
                                 else { this.omaximum = false; this.maximum = histo.fMaximum; }
+      if (d.check('HMIN:', true)) { this.ohmin = true; this.hmin = parseFloat(d.part); }
+                             else { this.ohmin = false; delete this.hmin; }
+      if (d.check('HMAX:', true)) { this.ohmax = true; this.hmax = parseFloat(d.part); }
+                             else { this.ohmax = false; delete this.hmax; }
 
       // let configure histogram titles - only for debug purposes
       if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
@@ -1142,15 +1146,26 @@ class THistPainter extends ObjectPainter {
       this.ymin = histo.fYaxis.fXmin;
       this.ymax = histo.fYaxis.fXmax;
 
+      if ((ndim == 1) && this.options.ohmin && this.options.ohmax) {
+         this.ymin = this.options.hmin;
+         this.ymax = this.options.hmax;
+      }
+
       if (ndim > 1) {
          this.nbinsy = histo.fYaxis.fNbins;
          assignTAxisFuncs(histo.fYaxis);
+
+         this.zmin = histo.fZaxis.fXmin;
+         this.zmax = histo.fZaxis.fXmax;
+
+         if ((ndim == 2) && this.options.ohmin && this.options.ohmax) {
+            this.zmin = this.options.hmin;
+            this.zmax = this.options.hmax;
+         }
       }
 
       if (ndim > 2) {
          this.nbinsz = histo.fZaxis.fNbins;
-         this.zmin = histo.fZaxis.fXmin;
-         this.zmax = histo.fZaxis.fXmax;
          assignTAxisFuncs(histo.fZaxis);
        }
    }
