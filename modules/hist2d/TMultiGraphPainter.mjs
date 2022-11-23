@@ -77,7 +77,9 @@ class TMultiGraphPainter extends ObjectPainter {
          rw.first = false;
       }
 
-      if (this._3d && histo && !histo.fXaxis.fLabels) histo = null;
+      // ignore existing histo in 3d case
+      if (this._3d && histo && !histo.fXaxis.fLabels)
+         histo = null;
 
       if (histo) {
          minimum = histo.fYaxis.fXmin;
@@ -105,7 +107,7 @@ class TMultiGraphPainter extends ObjectPainter {
             }
          });
 
-         if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
+         if (graphs.arr[0]?.fHistogram?.fXaxis?.fTimeDisplay) {
             time_display = true;
             time_format = graphs.arr[0].fHistogram.fXaxis.fTimeFormat;
          }
