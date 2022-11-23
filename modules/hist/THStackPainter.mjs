@@ -1,4 +1,4 @@
-import { clone, create, createHistogram, isFunc, gStyle, clTList, clTH2 } from '../core.mjs';
+import { clone, create, createHistogram, isFunc, gStyle, clTList, clTH2, kNoZoom } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -72,11 +72,11 @@ class THStackPainter extends ObjectPainter {
       const getHistMinMax = (hist, witherr) => {
          let res = { min: 0, max: 0 },
              domin = true, domax = true;
-         if (hist.fMinimum !== -1111) {
+         if (hist.fMinimum !== kNoZoom) {
             res.min = hist.fMinimum;
             domin = false;
          }
-         if (hist.fMaximum !== -1111) {
+         if (hist.fMaximum !== kNoZoom) {
             res.max = hist.fMaximum;
             domax = false;
          }
@@ -143,13 +143,13 @@ class THStackPainter extends ObjectPainter {
 
       let max0 = max, min0 = min, zoomed = false;
 
-      if (stack.fMaximum != -1111) {
+      if (stack.fMaximum != kNoZoom) {
          max = stack.fMaximum*(1 + gStyle.fHistTopMargin);
          max0 = Math.max(max, max0);
          zoomed = true;
       }
 
-      if (stack.fMinimum != -1111) {
+      if (stack.fMinimum != kNoZoom) {
          min = stack.fMinimum;
          min0 = Math.min(min, min0);
          zoomed = true;
@@ -163,7 +163,7 @@ class THStackPainter extends ObjectPainter {
          hist.fMinimum = min;
          hist.fMaximum = max;
       } else {
-         hist.fMinimum = hist.fMaximum = -1111;
+         hist.fMinimum = hist.fMaximum = kNoZoom;
       }
    }
 

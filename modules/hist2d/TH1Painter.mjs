@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode, clTF1 } from '../core.mjs';
+import { gStyle, settings, isBatchMode, clTF1, kNoZoom } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, buildSvgPath } from '../base/BasePainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
@@ -114,7 +114,7 @@ class TH1Painter extends THistPainter {
       hmin = this.options.minimum;
       hmax = this.options.maximum;
 
-      if ((hmin === hmax) && (hmin !== -1111)) {
+      if ((hmin === hmax) && (hmin !== kNoZoom)) {
          if (hmin < 0) {
             hmin *= 2; hmax = 0;
          } else {
@@ -123,17 +123,17 @@ class TH1Painter extends THistPainter {
          }
       }
 
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content &&
+      if ((hmin != kNoZoom) && (hmax != kNoZoom) && !this.draw_content &&
           ((this.ymin == this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
          this.ymin = hmin;
          this.ymax = hmax;
       } else {
-         if (hmin != -1111) {
+         if (hmin != kNoZoom) {
             if (hmin < this.ymin)
                this.ymin = hmin;
              set_zoom = true;
          }
-         if (hmax != -1111) {
+         if (hmax != kNoZoom) {
             if (hmax > this.ymax)
                this.ymax = hmax;
             set_zoom = true;
@@ -146,8 +146,8 @@ class TH1Painter extends THistPainter {
       if (!when_axis_changed) {
 
          if (set_zoom) {
-            this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
-            this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
+            this.zoom_ymin = (hmin == kNoZoom) ? this.ymin : hmin;
+            this.zoom_ymax = (hmax == kNoZoom) ? this.ymax : hmax;
          } else {
             delete this.zoom_ymin;
             delete this.zoom_ymax;

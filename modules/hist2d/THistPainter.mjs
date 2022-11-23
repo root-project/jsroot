@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, internals, create, isObject, isFunc, getPromise,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile } from '../core.mjs';
+         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile, kNoZoom } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -8,8 +8,6 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
-
-const kNoZoom = -1111;
 
 function createDefaultPalette() {
    const hue2rgb = (p, q, t) => {
@@ -2309,4 +2307,4 @@ class THistPainter extends ObjectPainter {
 
 } // class THistPainter
 
-export { THistPainter };
+export { THistPainter, kNoZoom };

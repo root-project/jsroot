@@ -1,4 +1,4 @@
-import { create, isFunc, clTObjString, clTHashList } from '../core.mjs';
+import { create, isFunc, clTObjString, clTHashList, kNoZoom } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
@@ -135,9 +135,9 @@ class TMultiGraphPainter extends ObjectPainter {
       if (uxmax > 0 && rw.xmax <= 0)
          uxmax = logx? 1.1 * rw.xmax : 0;
 
-      if (mgraph.fMinimum != -1111)
+      if (mgraph.fMinimum != kNoZoom)
          rw.ymin = minimum = mgraph.fMinimum;
-      if (mgraph.fMaximum != -1111)
+      if (mgraph.fMaximum != kNoZoom)
          rw.ymax = maximum = mgraph.fMaximum;
 
       if (minimum < 0 && rw.ymin >= 0 && logy)
