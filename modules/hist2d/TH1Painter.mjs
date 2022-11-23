@@ -123,7 +123,8 @@ class TH1Painter extends THistPainter {
          }
       }
 
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
+      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content &&
+          ((this.ymin == this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
          this.ymin = hmin;
          this.ymax = hmax;
       } else {
