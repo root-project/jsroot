@@ -158,14 +158,13 @@ class THStackPainter extends ObjectPainter {
       let axis = this.options.ndim == 1 ? hist.fYaxis : hist.fZaxis;
       axis.fXmin = min0;
       axis.fXmax = max0;
-      if (zoomed)
+      if (zoomed) {
          adjustRange();
-
-      hist.fMinimum = min;
-      hist.fMaximum = max;
-//      } else {
-//         hist.fMinimum = hist.fMaximum = -1111;
-//      }
+         hist.fMinimum = min;
+         hist.fMaximum = max;
+      } else {
+         hist.fMinimum = hist.fMaximum = -1111;
+      }
    }
 
    /** @summary Draw next stack histogram */
