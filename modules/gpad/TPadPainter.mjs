@@ -1662,6 +1662,8 @@ class TPadPainter extends ObjectPainter {
       r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
       r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
       r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
+      r.uz1 = r.ranges ? (main.scale_zmin ?? 0) : 0;
+      r.uz2 = r.ranges ? (main.scale_zmax ?? 0) : 0;
 
       if (main) {
          if (main.zoom_xmin !== main.zoom_xmax) {
