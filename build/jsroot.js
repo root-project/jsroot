@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '23/11/2022';
+let version_date = '24/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -51659,8 +51659,10 @@ class TFramePainter extends ObjectPainter {
 
       // do not allow log scale for labels
       if (!pad[name]) {
-         if (this.swap_xy && axis === 'x') axis = 'y'; else
-         if (this.swap_xy && axis === 'y') axis = 'x';
+         if (this.swap_xy && axis === 'x')
+            axis = 'y';
+         else if (this.swap_xy && axis === 'y')
+            axis = 'x';
          let handle = this[axis + '_handle'];
          if (handle?.kind === 'labels') return;
       }
@@ -51698,9 +51700,21 @@ class TFramePainter extends ObjectPainter {
             menu.add('endsub:');
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log',
-               () => { faxis.InvertBit(EAxisBits.kMoreLogLabels); this.redrawPad(); });
+               flag => {
+                  faxis.InvertBit(EAxisBits.kMoreLogLabels);
+                  if (main?.snapid && (kind.length == 1))
+                     main.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
+                  else
+                     this.interactiveRedraw('pad');
+               });
          menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent',
-               () => { faxis.InvertBit(EAxisBits.kNoExponent); this.redrawPad(); });
+               flag => {
+                  faxis.InvertBit(EAxisBits.kNoExponent);
+                  if (main?.snapid && (kind.length == 1))
+                     main.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
+                  else
+                     this.interactiveRedraw('pad');
+               });
 
          if ((kind === 'z') && main?.options?.Zscale && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu);
@@ -56468,7 +56482,8 @@ class TCanvasPainter extends TPadPainter {
          case 'sbits':
             msg = 'STATUSBITS:' + this.getStatusBits();
             break;
-         case 'frame': // when moving frame
+         case 'frame': // when changing frame
+         case 'drawopt':  // when changing object draw option
          case 'zoom':  // when changing zoom inside frame
             if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
@@ -60086,7 +60101,7 @@ class THistPainter extends ObjectPainter {
       }
 
       this.copyOptionsToOthers();
-      this.interactiveRedraw('pad','drawopt');
+      this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Prepare handle for color draw */
@@ -61716,7 +61731,7 @@ class TH2Painter$2 extends THistPainter {
 
       this.copyOptionsToOthers();
 
-      this.redrawPad();
+      this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
@@ -64415,7 +64430,7 @@ class TH2Painter extends TH2Painter$2 {
             zmult = 1;
          }
 
-         if (pad?.fLogz && (this.zmin <= 0)) 
+         if (pad?.fLogz && (this.zmin <= 0))
             this.zmin = this.zmax * 1e-5;
 
          this.deleteAttr();
