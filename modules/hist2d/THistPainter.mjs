@@ -2139,7 +2139,7 @@ class THistPainter extends ObjectPainter {
       }
 
       this.copyOptionsToOthers();
-      this.interactiveRedraw('pad','drawopt');
+      this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Prepare handle for color draw */
