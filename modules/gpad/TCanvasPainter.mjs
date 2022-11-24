@@ -569,7 +569,7 @@ class TCanvasPainter extends TPadPainter {
          case 'sbits':
             msg = 'STATUSBITS:' + this.getStatusBits();
             break;
-         case 'frame': // when moving frame
+         case 'frame': // when changing frame
          case 'drawopt':  // when changing object draw option
          case 'zoom':  // when changing zoom inside frame
             if (!isFunc(painter.getWebPadOptions))
