@@ -1365,19 +1365,26 @@ class THistPainter extends ObjectPainter {
          return true;
       }
 
+      let has_stats;
+
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
          this.options.StatEnabled = statpainter.Enabled; // used only for interactive
          // when stat box is drawn, it always can be drawn individually while it
          // should be last for colz redrawPad is used
          statpainter.redraw();
-         return statpainter.Enabled;
+         has_stats = statpainter.Enabled;
+      } else {
+         let prev_name = this.selectCurrentPad(this.getPadName());
+         TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+         has_stats = true;
       }
 
-      let prev_name = this.selectCurrentPad(this.getPadName());
-      TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+      let cp = this.getCanvPainter();
+      if (isFunc(cp?.processChanges))
+         cp.processChanges(`exec:SetBit(TH1::kNoStats,${has_stats?0:1})`,this);
 
-      return true;
+      return has_stats;
    }
 
    /** @summary Returns true if stats box fill can be ingored */
