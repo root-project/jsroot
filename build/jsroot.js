@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '24/11/2022';
+let version_date = '25/11/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -56483,12 +56483,15 @@ class TCanvasPainter extends TPadPainter {
             msg = 'STATUSBITS:' + this.getStatusBits();
             break;
          case 'frame': // when changing frame
-         case 'drawopt':  // when changing object draw option
          case 'zoom':  // when changing zoom inside frame
             if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
             if (isFunc(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
+            break;
+         case 'drawopt':
+            if (painter.snapid)
+               msg = 'DRAWOPT:' + JSON.stringify([painter.snapid.toString(), painter.getDrawOpt() || '']);
             break;
          case 'pave_moved':
             if (isFunc(painter.fillWebObjectOptions)) {
@@ -59212,6 +59215,13 @@ class THistPainter extends ObjectPainter {
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
    }
 
+   /** @summary Inform web canvas that something changed in the histogram */
+   processOnlineChange(kind) {
+      let cp = this.getCanvPainter();
+      if (isFunc(cp?.processChanges))
+         cp.processChanges(kind, this);
+   }
+
    /** @summary Toggle histogram title drawing */
    toggleTitle(arg) {
       let histo = this.getHisto();
@@ -59220,7 +59230,7 @@ class THistPainter extends ObjectPainter {
       if (arg === 'only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
-      this.drawHistTitle();
+      this.drawHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(TH1StatusBits.kNoTitle)?1:0})`));
    }
 
    /** @summary Draw histogram title
@@ -59327,19 +59337,24 @@ class THistPainter extends ObjectPainter {
          return true;
       }
 
+      let has_stats;
+
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
          this.options.StatEnabled = statpainter.Enabled; // used only for interactive
          // when stat box is drawn, it always can be drawn individually while it
          // should be last for colz redrawPad is used
          statpainter.redraw();
-         return statpainter.Enabled;
+         has_stats = statpainter.Enabled;
+      } else {
+         let prev_name = this.selectCurrentPad(this.getPadName());
+         TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+         has_stats = true;
       }
 
-      let prev_name = this.selectCurrentPad(this.getPadName());
-      TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+      this.processOnlineChange(`exec:SetBit(TH1::kNoStats,${has_stats?0:1})`,this);
 
-      return true;
+      return has_stats;
    }
 
    /** @summary Returns true if stats box fill can be ingored */
@@ -60081,7 +60096,8 @@ class THistPainter extends ObjectPainter {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         return this.drawColorPalette(this.options.Zscale, false, true);
+         return this.drawColorPalette(this.options.Zscale, false, true)
+                    .then(() => this.processOnlineChange('drawopt'));
       }
    }
 
@@ -60091,7 +60107,7 @@ class THistPainter extends ObjectPainter {
 
       if (this.options.Mode3D) {
          if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
-            if ((this.nbinsx>=50) || (this.nbinsy>=50))
+            if ((this.nbinsx >= 50) || (this.nbinsy >= 50))
                this.options.Lego = this.options.Color ? 14 : 13;
             else
                this.options.Lego = this.options.Color ? 12 : 1;
