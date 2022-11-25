@@ -2126,7 +2126,9 @@ class THistPainter extends ObjectPainter {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         return this.drawColorPalette(this.options.Zscale, false, true);
+         return this.drawColorPalette(this.options.Zscale, false, true).then(() => {
+            this.getCanvPainter()?.processChanges('drawopt', this);
+         });
       }
    }
 
@@ -2136,7 +2138,7 @@ class THistPainter extends ObjectPainter {
 
       if (this.options.Mode3D) {
          if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
-            if ((this.nbinsx>=50) || (this.nbinsy>=50))
+            if ((this.nbinsx >= 50) || (this.nbinsy >= 50))
                this.options.Lego = this.options.Color ? 14 : 13;
             else
                this.options.Lego = this.options.Color ? 12 : 1;

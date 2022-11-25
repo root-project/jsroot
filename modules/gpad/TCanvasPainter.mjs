@@ -570,12 +570,15 @@ class TCanvasPainter extends TPadPainter {
             msg = 'STATUSBITS:' + this.getStatusBits();
             break;
          case 'frame': // when changing frame
-         case 'drawopt':  // when changing object draw option
          case 'zoom':  // when changing zoom inside frame
             if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
             if (isFunc(painter.getWebPadOptions))
                msg = 'OPTIONS6:' + painter.getWebPadOptions('only_this');
+            break;
+         case 'drawopt':
+            if (painter.snapid)
+               msg = 'DRAWOPT:' + JSON.stringify([painter.snapid.toString(), painter.getDrawOpt() || '']);
             break;
          case 'pave_moved':
             if (isFunc(painter.fillWebObjectOptions)) {
