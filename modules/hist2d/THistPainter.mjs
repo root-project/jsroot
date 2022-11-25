@@ -1258,7 +1258,12 @@ class THistPainter extends ObjectPainter {
       if (arg === 'only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
-      this.drawHistTitle();
+      this.drawHistTitle().then(() => {
+         let cp = this.getCanvPainter(),
+             flag = histo.TestBit(TH1StatusBits.kNoTitle);
+        if (isFunc(cp?.processChanges))
+            cp.processChanges(`exec:SetBit(TH1::kNoTitle,${flag?1:0})`, this);
+      });
    }
 
    /** @summary Draw histogram title
