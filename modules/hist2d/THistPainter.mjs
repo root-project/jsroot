@@ -1250,6 +1250,13 @@ class THistPainter extends ObjectPainter {
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
    }
 
+   /** @summary Inform web canvas that something changed in the histogram */
+   processOnlineChange(kind) {
+      let cp = this.getCanvPainter();
+      if (isFunc(cp?.processChanges))
+         cp.processChanges(kind, this);
+   }
+
    /** @summary Toggle histogram title drawing */
    toggleTitle(arg) {
       let histo = this.getHisto();
@@ -1258,12 +1265,7 @@ class THistPainter extends ObjectPainter {
       if (arg === 'only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
-      this.drawHistTitle().then(() => {
-         let cp = this.getCanvPainter(),
-             flag = histo.TestBit(TH1StatusBits.kNoTitle);
-        if (isFunc(cp?.processChanges))
-            cp.processChanges(`exec:SetBit(TH1::kNoTitle,${flag?1:0})`, this);
-      });
+      this.drawHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(TH1StatusBits.kNoTitle)?1:0})`));
    }
 
    /** @summary Draw histogram title
@@ -1385,9 +1387,7 @@ class THistPainter extends ObjectPainter {
          has_stats = true;
       }
 
-      let cp = this.getCanvPainter();
-      if (isFunc(cp?.processChanges))
-         cp.processChanges(`exec:SetBit(TH1::kNoStats,${has_stats?0:1})`,this);
+      this.processOnlineChange(`exec:SetBit(TH1::kNoStats,${has_stats?0:1})`,this);
 
       return has_stats;
    }
@@ -2131,9 +2131,8 @@ class THistPainter extends ObjectPainter {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         return this.drawColorPalette(this.options.Zscale, false, true).then(() => {
-            this.getCanvPainter()?.processChanges('drawopt', this);
-         });
+         return this.drawColorPalette(this.options.Zscale, false, true)
+                    .then(() => this.processOnlineChange('drawopt'));
       }
    }
 
