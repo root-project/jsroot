@@ -83,8 +83,8 @@ class TH2Painter extends THistPainter {
          canp.sendWebsocket(exec);
          return true;
       }
-      
-      if (this.doing_projection) 
+
+      if (this.doing_projection)
          return false;
 
       this.doing_projection = true;
@@ -146,7 +146,8 @@ class TH2Painter extends THistPainter {
    /** @summary Execute TH2 menu command
      * @desc Used to catch standard menu items and provide local implementation */
    executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method, args)) return true;
+      if (super.executeMenuCommand(method, args))
+         return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
          this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
