@@ -571,6 +571,27 @@ for (let n = 0; n < res.length; ++n) {
 Here argument "multi" identifies, that server response should be parsed with `parseMulti()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
 
 
+## Using unix sockets
+
+Starting from ROOT version 6.28, one can start server with unix socket. Just do:
+
+Just call:
+```cpp
+   [root] new THttpServer("socket:/tmp/root.socket")
+```
+Name of socket should be unique and not match any existing files.
+
+Most easy way to access `THttpServer` running via unix socket is to configure ssh tunnel:
+```
+   [shell] ssh -L 7654:/tmp/root.socket localhost
+```
+
+Once such tunnel is configured one can open following URL in web browser:
+```
+   [shell] xdg-open http://localhost:7654
+```
+
+
 ## Websockets supports
 
 Websockets support available starting from ROOT v6.12.
