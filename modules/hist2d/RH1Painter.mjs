@@ -134,7 +134,7 @@ class RH1Painter extends RHistPainter {
 
       res.integral = stat_sumw;
 
-      if (stat_sumw > 0) {
+      if (Math.abs(stat_sumw) > 1e-300) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
          res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));

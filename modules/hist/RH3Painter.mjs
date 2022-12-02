@@ -112,7 +112,7 @@ class RH3Painter extends RHistPainter {
          stat_sumz2 = histo.fTsumwz2;
       }
 
-      if (stat_sum0 > 0) {
+      if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
