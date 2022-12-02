@@ -125,13 +125,6 @@ class RH1Painter extends RHistPainter {
          stat_sumwx2 += w * xx**2;
       }
 
-      // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed('x') && histo.fTsumw) {
-         stat_sumw = histo.fTsumw;
-         stat_sumwx = histo.fTsumwx;
-         stat_sumwx2 = histo.fTsumwx2;
-      }
-
       res.integral = stat_sumw;
 
       if (Math.abs(stat_sumw) > 1e-300) {
