@@ -168,7 +168,8 @@ class TH1Painter extends THistPainter {
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
-          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
+          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 },
+          has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);
@@ -183,15 +184,20 @@ class TH1Painter extends THistPainter {
             w = histo.getBinContent(i + 1);
          }
 
-         if ((xmax === null) || (w > wmax)) { xmax = xx; wmax = w; }
+         if ((xmax === null) || (w > wmax)) {
+            xmax = xx;
+            wmax = w;
+         }
 
-         stat_sumw += w;
-         stat_sumwx += w * xx;
-         stat_sumwx2 += w * xx**2;
+         if (!has_counted_stat) {
+            stat_sumw += w;
+            stat_sumwx += w * xx;
+            stat_sumwx2 += w * xx**2;
+         }
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed('x') && (histo.fTsumw > 0)) {
+      if (has_counted_stat) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;

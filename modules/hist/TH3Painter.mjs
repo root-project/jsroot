@@ -57,7 +57,8 @@ class TH3Painter extends THistPainter {
           k2 = this.getSelectIndex('z', 'right'),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
-          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
+          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
+          has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
 
@@ -77,7 +78,7 @@ class TH3Painter extends THistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside == 1) && (yside == 1) && (zside == 1)) {
+               if (!has_counted_stat && (xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -90,7 +91,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z')) {
+      if (has_counted_stat) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -111,7 +112,8 @@ class TH3Painter extends THistPainter {
 
       res.integral = stat_sum0;
 
-      if (histo.fEntries > 1) res.entries = histo.fEntries;
+      if (histo.fEntries > 1)
+         res.entries = histo.fEntries;
 
       return res;
    }

@@ -351,7 +351,8 @@ class TH2Painter extends THistPainter {
           xside, yside, xx, yy, zz,
           fp = this.getFramePainter(),
           funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
+          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null },
+          has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300);
 
       if (this.isTH2Poly()) {
 
@@ -396,13 +397,19 @@ class TH2Painter extends THistPainter {
 
             if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax === null) || (zz > res.wmax)) {
+               res.wmax = zz;
+               res.xmax = xx;
+               res.ymax = yy;
+            }
 
-            stat_sum0 += zz;
-            stat_sumx1 += xx * zz;
-            stat_sumy1 += yy * zz;
-            stat_sumx2 += xx * xx * zz;
-            stat_sumy2 += yy * yy * zz;
+            if (!has_counted_stat) {
+               stat_sum0 += zz;
+               stat_sumx1 += xx * zz;
+               stat_sumy1 += yy * zz;
+               stat_sumx2 += xx * xx * zz;
+               stat_sumy2 += yy * yy * zz;
+            }
          }
       } else {
          let xleft = this.getSelectIndex('x', 'left'),
@@ -429,19 +436,25 @@ class TH2Painter extends THistPainter {
 
                if (cond && !cond(xx,yy)) continue;
 
-               if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+               if ((res.wmax === null) || (zz > res.wmax)) {
+                  res.wmax = zz;
+                  res.xmax = xx;
+                  res.ymax = yy;
+               }
 
-               stat_sum0 += zz;
-               stat_sumx1 += xx * zz;
-               stat_sumy1 += yy * zz;
-               stat_sumx2 += xx**2 * zz;
-               stat_sumy2 += yy**2 * zz;
+               if (!has_counted_stat) {
+                  stat_sum0 += zz;
+                  stat_sumx1 += xx * zz;
+                  stat_sumy1 += yy * zz;
+                  stat_sumx2 += xx**2 * zz;
+                  stat_sumy2 += yy**2 * zz;
+               }
                // stat_sumxy += xx * yy * zz;
             }
          }
       }
 
-      if (!fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (histo.fTsumw > 0)) {
+      if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -457,10 +470,12 @@ class TH2Painter extends THistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
-      if (res.wmax === null) res.wmax = 0;
+      if (res.wmax === null)
+         res.wmax = 0;
       res.integral = stat_sum0;
 
-      if (histo.fEntries > 1) res.entries = histo.fEntries;
+      if (histo.fEntries > 1)
+         res.entries = histo.fEntries;
 
       return res;
    }
