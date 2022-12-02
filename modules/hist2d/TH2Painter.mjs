@@ -393,9 +393,7 @@ class TH2Painter extends THistPainter {
 
             res.matrix[yside * 3 + xside] += zz;
 
-            if ((xside != 1) || (yside != 1)) continue;
-
-            if (cond && !cond(xx,yy)) continue;
+            if ((xside != 1) || (yside != 1) || (cond && !cond(xx,yy))) continue;
 
             if ((res.wmax === null) || (zz > res.wmax)) {
                res.wmax = zz;
@@ -432,9 +430,7 @@ class TH2Painter extends THistPainter {
 
                res.matrix[yside * 3 + xside] += zz;
 
-               if ((xside != 1) || (yside != 1)) continue;
-
-               if (cond && !cond(xx,yy)) continue;
+               if ((xside != 1) || (yside != 1) || (cond && !cond(xx,yy))) continue;
 
                if ((res.wmax === null) || (zz > res.wmax)) {
                   res.wmax = zz;
@@ -448,8 +444,8 @@ class TH2Painter extends THistPainter {
                   stat_sumy1 += yy * zz;
                   stat_sumx2 += xx**2 * zz;
                   stat_sumy2 += yy**2 * zz;
+                  // stat_sumxy += xx * yy * zz;
                }
-               // stat_sumxy += xx * yy * zz;
             }
          }
       }
@@ -1043,7 +1039,7 @@ class TH2Painter extends THistPainter {
          if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
       };
 
-      for (ngr = 0; ngr < ngraphs; ++ ngr) {
+      for (ngr = 0; ngr < ngraphs; ++ngr) {
          if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          const x = gr.fX, y = gr.fY;
@@ -1117,7 +1113,7 @@ class TH2Painter extends THistPainter {
 
       let cntr = this.getContour(true), palette = this.getHistPalette();
 
-      for (i = 0; i < len; ++ i) {
+      for (i = 0; i < len; ++i) {
          bin = histo.fBins.arr[i];
          colindx = cntr.getPaletteIndex(palette, bin.fContent);
          if (colindx === null) continue;
@@ -1163,7 +1159,7 @@ class TH2Painter extends THistPainter {
 
          this.startTextDrawing(42, text_size, text_g, text_size);
 
-         for (i = 0; i < textbins.length; ++ i) {
+         for (i = 0; i < textbins.length; ++i) {
             bin = textbins[i];
 
             let lbl = '';
@@ -1172,9 +1168,9 @@ class TH2Painter extends THistPainter {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
                           floatToString(bin.fContent, gStyle.fPaintTextFormat);
             } else {
-               if (bin.fPoly) lbl = bin.fPoly.fName;
-               if (lbl === 'Graph') lbl = '';
-               if (!lbl) lbl = bin.fNumber;
+               lbl = bin.fPoly?.fName;
+               if (!lbl || (lbl == 'Graph'))
+                  lbl = bin.fNumber.toString();
             }
 
             this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
