@@ -35,8 +35,10 @@ class TH3Painter extends THistPainter {
          for (let j = 0; j < this.nbinsy; ++j)
             for (let k = 0; k < this.nbinsz; ++k) {
                let bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content < this.gminbin) this.gminbin = bin_content; else
-               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+               if (bin_content < this.gminbin)
+                  this.gminbin = bin_content;
+               else if (bin_content > this.gmaxbin)
+                  this.gmaxbin = bin_content;
             }
 
       this.draw_content = this.gmaxbin > 0;
@@ -118,7 +120,8 @@ class TH3Painter extends THistPainter {
    fillStatistic(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
-      if (this.isIgnoreStatsFill()) return false;
+      if (this.isIgnoreStatsFill())
+         return false;
 
       let data = this.countStat(),
           print_name = dostat % 10,
@@ -130,6 +133,8 @@ class TH3Painter extends THistPainter {
           // print_over = Math.floor(dostat / 100000) % 10,
           // print_skew = Math.floor(dostat / 10000000) % 10,
           // print_kurt = Math.floor(dostat / 100000000) % 10;
+
+      console.log('count stat', JSON.stringify(data));
 
       stat.clearPave();
 
