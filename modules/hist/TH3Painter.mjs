@@ -134,8 +134,6 @@ class TH3Painter extends THistPainter {
           // print_skew = Math.floor(dostat / 10000000) % 10,
           // print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      console.log('count stat', JSON.stringify(data));
-
       stat.clearPave();
 
       if (print_name > 0)
