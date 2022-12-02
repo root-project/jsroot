@@ -1149,31 +1149,27 @@ class TH2Painter extends THistPainter {
       let pr = Promise.resolve(true);
 
       if (textbins.length > 0) {
-         let text_col = this.getColor(histo.fMarkerColor),
-             text_angle = -1*this.options.TextAngle,
+         let color = this.getColor(histo.fMarkerColor),
+             rotate = -1*this.options.TextAngle,
              text_g = this.draw_g.append('svg:g').attr('class', 'th2poly_text'),
-             text_size = 12;
-
-         if ((histo.fMarkerSize !== 1) && text_angle)
-             text_size = Math.round(0.02*h*histo.fMarkerSize);
+             text_size = ((histo.fMarkerSize !== 1) && rotate) ? Math.round(0.02*h*histo.fMarkerSize) : 12,
+             text;
 
          this.startTextDrawing(42, text_size, text_g, text_size);
 
          for (i = 0; i < textbins.length; ++i) {
             bin = textbins[i];
 
-            let lbl = '';
-
             if (!this.options.TextKind) {
-               lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
+               text = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
                           floatToString(bin.fContent, gStyle.fPaintTextFormat);
             } else {
-               lbl = bin.fPoly?.fName;
-               if (!lbl || (lbl == 'Graph'))
-                  lbl = bin.fNumber.toString();
+               text = bin.fPoly?.fName;
+               if (!text || (text == 'Graph'))
+                  text = bin.fNumber.toString();
             }
 
-            this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate, text, color, latex: 0, draw_g: text_g });
          }
 
          pr = this.finishTextDrawing(text_g, true);
