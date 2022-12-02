@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '29/11/2022';
+let version_date = '2/12/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -980,7 +980,8 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
       clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
-      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTLegend = 'TLegend', clTPaletteAxis = 'TPaletteAxis',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTLegend = 'TLegend', clTLegendEntry = 'TLegendEntry', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
@@ -1071,7 +1072,11 @@ function create$1(typename, target) {
          extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
-      case 'TLegendEntry':
+      case clTPaletteAxis:
+         create$1(clTPave, obj);
+         extend$1(obj, { fAxis: create$1(clTGaxis), fH: null, fName: clTPave });
+         break;
+      case clTLegendEntry:
          create$1(clTObject, obj);
          create$1(clTAttText, obj);
          create$1(clTAttLine, obj);
@@ -1754,6 +1759,7 @@ clTPave: clTPave,
 clTPaveText: clTPaveText,
 clTPaveStats: clTPaveStats,
 clTLegend: clTLegend,
+clTLegendEntry: clTLegendEntry,
 clTPaletteAxis: clTPaletteAxis,
 clTText: clTText,
 clTLatex: clTLatex,
@@ -57937,16 +57943,20 @@ async function produceLegend(dom, opt) {
 
       if (!obj) continue;
 
-      let entry = create$1('TLegendEntry');
+      let entry = create$1(clTLegendEntry);
       entry.fObject = obj;
       entry.fLabel = (opt == 'all') ? obj.fName : painter.getItemName();
       entry.fOption = '';
       if (!entry.fLabel) continue;
 
-      if (painter.lineatt?.used) entry.fOption += 'l';
-      if (painter.fillatt?.used) entry.fOption += 'f';
-      if (painter.markeratt?.used) entry.fOption += 'm';
-      if (!entry.fOption) entry.fOption = 'l';
+      if (painter.lineatt?.used)
+         entry.fOption += 'l';
+      if (painter.fillatt?.used)
+         entry.fOption += 'f';
+      if (painter.markeratt?.used)
+         entry.fOption += 'm';
+      if (!entry.fOption)
+         entry.fOption = 'l';
 
       leg.fPrimitives.Add(entry);
    }
@@ -60496,7 +60506,7 @@ class TH1Painter$2 extends THistPainter {
 
       res.integral = stat_sumw;
 
-      if (stat_sumw > 0) {
+      if (Math.abs(stat_sumw) > 1e-300) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
          res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));
@@ -61973,7 +61983,7 @@ class TH2Painter$2 extends THistPainter {
          // stat_sumxy = histo.fTsumwxy;
       }
 
-      if (stat_sum0 > 0) {
+      if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
@@ -64530,8 +64540,10 @@ class TH3Painter extends THistPainter {
          for (let j = 0; j < this.nbinsy; ++j)
             for (let k = 0; k < this.nbinsz; ++k) {
                let bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content < this.gminbin) this.gminbin = bin_content; else
-               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+               if (bin_content < this.gminbin)
+                  this.gminbin = bin_content;
+               else if (bin_content > this.gmaxbin)
+                  this.gmaxbin = bin_content;
             }
 
       this.draw_content = this.gmaxbin > 0;
@@ -64593,7 +64605,7 @@ class TH3Painter extends THistPainter {
          stat_sumz2 = histo.fTsumwz2;
       }
 
-      if (stat_sum0 > 0) {
+      if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
@@ -64613,7 +64625,8 @@ class TH3Painter extends THistPainter {
    fillStatistic(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
-      if (this.isIgnoreStatsFill()) return false;
+      if (this.isIgnoreStatsFill())
+         return false;
 
       let data = this.countStat(),
           print_name = dostat % 10,
@@ -76418,8 +76431,13 @@ async function drawText$1() {
 
    if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
-   if (text._typename == clTLatex) { arg.latex = 1; fact = 0.9; } else
-   if (text._typename == clTMathText) { arg.latex = 2; fact = 0.8; }
+   if (text._typename == clTLatex) {
+      arg.latex = 1;
+      fact = 0.9;
+   } else if (text._typename == clTMathText) {
+      arg.latex = 2;
+      fact = 0.8;
+   }
 
    this.startTextDrawing(text.fTextFont, Math.round((textsize > 1) ? textsize : textsize*Math.min(w,h)*fact));
 
@@ -76495,7 +76513,8 @@ function drawPolyLine() {
    if (polyline._typename != clTPolyLine)
       fillatt.setSolidColor('none');
 
-   if (!fillatt.empty()) cmd += 'Z';
+   if (!fillatt.empty())
+      cmd += 'Z';
 
    this.draw_g
        .append('svg:path')
@@ -86978,7 +86997,7 @@ function before3DDraw(painter, obj) {
    if (!fp?.mode3d || !obj)
       return null;
 
-   if (fp.toplevel)
+   if (fp?.toplevel)
       return fp;
 
    let geop = painter.getMainPainter();
@@ -87003,9 +87022,7 @@ async function drawPolyMarker3D() {
 
    this.$fp = fp;
 
-   this.plain_redraw = drawPolyMarker3D$1;
-
-   return this.plain_redraw();
+   return drawPolyMarker3D$1.bind(this)();
 }
 
 /** @summary Direct draw function for TPolyLine3D object
@@ -91746,13 +91763,9 @@ class TASImagePainter extends ObjectPainter {
          return null;
 
       if (!this.draw_palette) {
-         let pal = create$1(clTPave);
-
-         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
-                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 });
-
+         let pal = create$1(clTPaletteAxis);
+         Object.assign(pal, { fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 });
          pal.fAxis.fChopt = '+';
-
          this.draw_palette = pal;
          this.fPalette = true; // to emulate behaviour of hist painter
       }
@@ -99911,7 +99924,7 @@ class RH1Painter$2 extends RHistPainter {
 
       res.integral = stat_sumw;
 
-      if (stat_sumw > 0) {
+      if (Math.abs(stat_sumw) > 1e-300) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
          res.rmsx = Math.sqrt(Math.abs(stat_sumwx2 / stat_sumw - res.meanx**2));
@@ -101113,7 +101126,7 @@ class RH2Painter$2 extends RHistPainter {
          }
       }
 
-      if (stat_sum0 > 0) {
+      if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
@@ -102389,7 +102402,7 @@ class RH3Painter extends RHistPainter {
          stat_sumz2 = histo.fTsumwz2;
       }
 
-      if (stat_sum0 > 0) {
+      if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
@@ -105647,6 +105660,7 @@ exports.clTH3 = clTH3;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
 exports.clTLegend = clTLegend;
+exports.clTLegendEntry = clTLegendEntry;
 exports.clTLine = clTLine;
 exports.clTList = clTList;
 exports.clTMap = clTMap;
