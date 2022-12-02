@@ -60475,7 +60475,8 @@ class TH1Painter$2 extends THistPainter {
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
-          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
+          res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 },
+          has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);
@@ -60490,15 +60491,20 @@ class TH1Painter$2 extends THistPainter {
             w = histo.getBinContent(i + 1);
          }
 
-         if ((xmax === null) || (w > wmax)) { xmax = xx; wmax = w; }
+         if ((xmax === null) || (w > wmax)) {
+            xmax = xx;
+            wmax = w;
+         }
 
-         stat_sumw += w;
-         stat_sumwx += w * xx;
-         stat_sumwx2 += w * xx**2;
+         if (!has_counted_stat) {
+            stat_sumw += w;
+            stat_sumwx += w * xx;
+            stat_sumwx2 += w * xx**2;
+         }
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed('x') && (histo.fTsumw > 0)) {
+      if (has_counted_stat) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -61884,7 +61890,8 @@ class TH2Painter$2 extends THistPainter {
           xside, yside, xx, yy, zz,
           fp = this.getFramePainter(),
           funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
+          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null },
+          has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300);
 
       if (this.isTH2Poly()) {
 
@@ -61929,13 +61936,19 @@ class TH2Painter$2 extends THistPainter {
 
             if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax === null) || (zz > res.wmax)) {
+               res.wmax = zz;
+               res.xmax = xx;
+               res.ymax = yy;
+            }
 
-            stat_sum0 += zz;
-            stat_sumx1 += xx * zz;
-            stat_sumy1 += yy * zz;
-            stat_sumx2 += xx * xx * zz;
-            stat_sumy2 += yy * yy * zz;
+            if (!has_counted_stat) {
+               stat_sum0 += zz;
+               stat_sumx1 += xx * zz;
+               stat_sumy1 += yy * zz;
+               stat_sumx2 += xx * xx * zz;
+               stat_sumy2 += yy * yy * zz;
+            }
          }
       } else {
          let xleft = this.getSelectIndex('x', 'left'),
@@ -61962,19 +61975,25 @@ class TH2Painter$2 extends THistPainter {
 
                if (cond && !cond(xx,yy)) continue;
 
-               if ((res.wmax === null) || (zz > res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+               if ((res.wmax === null) || (zz > res.wmax)) {
+                  res.wmax = zz;
+                  res.xmax = xx;
+                  res.ymax = yy;
+               }
 
-               stat_sum0 += zz;
-               stat_sumx1 += xx * zz;
-               stat_sumy1 += yy * zz;
-               stat_sumx2 += xx**2 * zz;
-               stat_sumy2 += yy**2 * zz;
+               if (!has_counted_stat) {
+                  stat_sum0 += zz;
+                  stat_sumx1 += xx * zz;
+                  stat_sumy1 += yy * zz;
+                  stat_sumx2 += xx**2 * zz;
+                  stat_sumy2 += yy**2 * zz;
+               }
                // stat_sumxy += xx * yy * zz;
             }
          }
       }
 
-      if (!fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (histo.fTsumw > 0)) {
+      if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -61990,10 +62009,12 @@ class TH2Painter$2 extends THistPainter {
          res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
       }
 
-      if (res.wmax === null) res.wmax = 0;
+      if (res.wmax === null)
+         res.wmax = 0;
       res.integral = stat_sum0;
 
-      if (histo.fEntries > 1) res.entries = histo.fEntries;
+      if (histo.fEntries > 1)
+         res.entries = histo.fEntries;
 
       return res;
    }
@@ -64562,7 +64583,8 @@ class TH3Painter extends THistPainter {
           k2 = this.getSelectIndex('z', 'right'),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
-          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
+          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
+          has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
 
@@ -64582,7 +64604,7 @@ class TH3Painter extends THistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if ((xside == 1) && (yside == 1) && (zside == 1)) {
+               if (!has_counted_stat && (xside == 1) && (yside == 1) && (zside == 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -64595,7 +64617,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z')) {
+      if (has_counted_stat) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -64616,7 +64638,8 @@ class TH3Painter extends THistPainter {
 
       res.integral = stat_sum0;
 
-      if (histo.fEntries > 1) res.entries = histo.fEntries;
+      if (histo.fEntries > 1)
+         res.entries = histo.fEntries;
 
       return res;
    }
@@ -99897,9 +99920,9 @@ class RH1Painter$2 extends RHistPainter {
           left = this.getSelectIndex('x', 'left'),
           right = this.getSelectIndex('x', 'right'),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
-          i, xx = 0, w = 0, xmax = null, wmax = null,
-          fp = this.getFramePainter(),
-          res = { name: 'histo', meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
+          i, xx = 0, w = 0, xmax = null, wmax = null;
+          this.getFramePainter();
+          let res = { name: 'histo', meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 };
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i+0.5);
@@ -99913,13 +99936,6 @@ class RH1Painter$2 extends RHistPainter {
          stat_sumw += w;
          stat_sumwx += w * xx;
          stat_sumwx2 += w * xx**2;
-      }
-
-      // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed('x') && histo.fTsumw) {
-         stat_sumw = histo.fTsumw;
-         stat_sumwx = histo.fTsumwx;
-         stat_sumwx2 = histo.fTsumwx2;
       }
 
       res.integral = stat_sumw;
@@ -102356,9 +102372,9 @@ class RH3Painter extends RHistPainter {
           j1 = this.getSelectIndex('y', 'left'),
           j2 = this.getSelectIndex('y', 'right'),
           k1 = this.getSelectIndex('z', 'left'),
-          k2 = this.getSelectIndex('z', 'right'),
-          fp = this.getFramePainter(),
-          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+          k2 = this.getSelectIndex('z', 'right');
+          this.getFramePainter();
+          let res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
 
       for (xi = 1; xi <= this.nbinsx; ++xi) {
@@ -102392,16 +102408,6 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z')) {
-         stat_sum0  = histo.fTsumw;
-         stat_sumx1 = histo.fTsumwx;
-         stat_sumx2 = histo.fTsumwx2;
-         stat_sumy1 = histo.fTsumwy;
-         stat_sumy2 = histo.fTsumwy2;
-         stat_sumz1 = histo.fTsumwz;
-         stat_sumz2 = histo.fTsumwz2;
-      }
-
       if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
@@ -102413,7 +102419,8 @@ class RH3Painter extends RHistPainter {
 
       res.integral = stat_sum0;
 
-      if (histo.fEntries > 1) res.entries = histo.fEntries;
+      if (histo.fEntries > 1)
+         res.entries = histo.fEntries;
 
       return res;
    }
