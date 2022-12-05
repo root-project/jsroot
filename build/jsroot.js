@@ -42866,7 +42866,8 @@ function drawBinsLego(painter, is_v7 = false) {
          binz1 = painter.options.BaseLine;
       else
          binz1 = painter.options.Zero ? axis_zmin : 0;
-      if (binz2 < binz1) { let d = binz1; binz1 = binz2; binz2 = d; }
+      if (binz2 < binz1)
+         [binz1, binz2] = [binz2, binz1];
 
       if ((binz1 >= zmax) || (binz2 < zmin)) return false;
 
@@ -51586,7 +51587,7 @@ class TFramePainter extends ObjectPainter {
 
       if (rotate) {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
-         let d = w; w = h; h = d;
+         [w, h] = [h, w];
       } else {
          trans = `translate(${lm},${tm})`;
       }
@@ -58995,7 +58996,7 @@ class THistPainter extends ObjectPainter {
             histo.fBinEntries = obj.fBinEntries;
          } else if (this.isTH1K()) {
             histo.fNIn = obj.fNIn;
-            histo.fReady = false;
+            histo.fReady = 0;
          } else if (this.isTH2Poly()) {
             histo.fBins = obj.fBins;
          }
@@ -60327,7 +60328,7 @@ class TH1Painter$2 extends THistPainter {
       histo.fArray = new Float64Array(histo.fNcells).fill(0);
       for (let n = 0; n < histo.fNIn; ++n)
          histo.Fill(arr[n]);
-      histo.fReady = true;
+      histo.fReady = 1;
       histo.fEntries = entries;
    }
 
@@ -60702,8 +60703,7 @@ class TH1Painter$2 extends THistPainter {
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
-          i, x, grx, y, yerr, gry1, gry2,
-          bins1 = [], bins2 = [];
+          i, x, grx, y, yerr, bins1 = [], bins2 = [];
 
       for (i = left; i < right; ++i) {
          x = xaxis.GetBinCoord(i+0.5);
@@ -60714,11 +60714,8 @@ class TH1Painter$2 extends THistPainter {
          yerr = histo.getBinError(i+1);
          if (funcs.logy && (y-yerr < funcs.scale_ymin)) continue;
 
-         gry1 = Math.round(funcs.gry(y + yerr));
-         gry2 = Math.round(funcs.gry(y - yerr));
-
-         bins1.push({ grx, gry: gry1 });
-         bins2.unshift({ grx, gry: gry2 });
+         bins1.push({ grx, gry:  Math.round(funcs.gry(y + yerr)) });
+         bins2.unshift({ grx, gry: Math.round(funcs.gry(y - yerr)) });
       }
 
       let kind = (this.options.ErrorKind === 4) ? 'bezier' : 'line',
@@ -60944,8 +60941,10 @@ class TH1Painter$2 extends THistPainter {
             res = `M${currx},${curry}`;
          } else if (use_minmax) {
             if ((grx === currx) && !lastbin) {
-               if (gry < curry_min) bestimax = i; else
-               if (gry > curry_max) bestimin = i;
+               if (gry < curry_min)
+                  bestimax = i;
+               else if (gry > curry_max)
+                  bestimin = i;
 
                curry_min = Math.min(curry_min, gry);
                curry_max = Math.max(curry_max, gry);
@@ -60953,8 +60952,11 @@ class TH1Painter$2 extends THistPainter {
             } else {
 
                if (draw_any_but_hist) {
-                  if (bestimin === bestimax) { draw_bin(bestimin); } else
-                  if (bestimin < bestimax) { draw_bin(bestimin); draw_bin(bestimax); } else {
+                  if (bestimin === bestimax)
+                     draw_bin(bestimin);
+                  else if (bestimin < bestimax) {
+                     draw_bin(bestimin); draw_bin(bestimax);
+                  } else {
                      draw_bin(bestimax); draw_bin(bestimin);
                   }
                }
@@ -61003,7 +61005,10 @@ class TH1Painter$2 extends THistPainter {
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(funcs.gry(0));
-         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+         if (gry0 <= 0)
+            h0 = -3;
+         else if (gry0 < height)
+            h0 = gry0;
       }
       let close_path = `L${currx},${h0}H${startx}Z`;
 
@@ -61080,8 +61085,8 @@ class TH1Painter$2 extends THistPainter {
             tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push(`bin = ${bin+1}`, 'x = ' + xlbl);
-         if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
+         tips.push(`bin = ${bin+1}`, `x = ${xlbl}`);
+         if (histo.$baseh) cont -= histo.$baseh.getBinContent(bin+1);
          if (cont === Math.round(cont))
             tips.push('entries = ' + cont);
          else
@@ -61120,10 +61125,8 @@ class TH1Painter$2 extends THistPainter {
          return Math.round(funcs.gry(yy));
       };
 
-      if (funcs.swap_xy) {
-         let d = pnt.x; pnt_x = pnt_y; pnt_y = d;
-         d = height; height = width; width = d;
-      }
+      if (funcs.swap_xy)
+         [pnt_x, pnt_y, width, height] = [pnt_y, pnt_x, height, width];
 
       while (l < r-1) {
          let m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
@@ -61170,9 +61173,10 @@ class TH1Painter$2 extends THistPainter {
          grx2 = grx1 + Math.round(histo.fBarWidth/1000*w);
       }
 
-      if (grx1 > grx2) { let d = grx1; grx1 = grx2; grx2 = d; }
+      if (grx1 > grx2)
+         [grx1, grx2] = [grx2, grx1];
 
-      midx = Math.round((grx1+grx2)/2);
+      midx = Math.round((grx1 + grx2)/2);
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
@@ -61183,7 +61187,8 @@ class TH1Painter$2 extends THistPainter {
 
          gry1 = Math.round(funcs.gry(((this.options.BaseLine !== false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
-         if (gry1 > gry2) { let d = gry1; gry1 = gry2; gry2 = d; }
+         if (gry1 > gry2)
+            [gry1, gry2] = [gry2, gry1];
 
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
@@ -61216,7 +61221,7 @@ class TH1Painter$2 extends THistPainter {
          gry2 = Math.max(gry2, midy + msize);
 
          if (!pnt.touch && (pnt.nproc === 1))
-            if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
+            if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
 
       } else {
 
@@ -61228,9 +61233,9 @@ class TH1Painter$2 extends THistPainter {
             gry2 = height;
 
             if (!this.fillatt.empty()) {
-               gry2 = Math.round(funcs.gry(0));
-               if (gry2 < 0) gry2 = 0; else if (gry2 > height) gry2 = height;
-               if (gry2 < gry1) { let d = gry1; gry1 = gry2; gry2 = d; }
+               gry2 = Math.min(height, Math.max(0, Math.round(funcs.gry(0))));
+               if (gry2 < gry1)
+                 [gry1, gry2] = [gry2, gry1];
             }
 
             // for mouse events pointer should be between y1 and y2
@@ -63325,13 +63330,13 @@ class TH2Painter$2 extends THistPainter {
             for (let j = 0; j < this.nbinsy; ++j) {
                let sum = 0;
                for (let i = 0; i < this.nbinsx; ++i)
-                  sum += histo.getBinContent(i+1,j+1);
+                  sum += histo.getBinContent(i+1, j+1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
 
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
-               proj[i] = histo.getBinContent(i+1,j+1);
+               proj[i] = histo.getBinContent(i+1, j+1);
 
             produceCandlePoint(j, handle.gry[j+1], handle.gry[j], handle.i1, handle.i2);
          }
@@ -63347,14 +63352,14 @@ class TH2Painter$2 extends THistPainter {
             for (let i = 0; i < this.nbinsx; ++i) {
                let sum = 0;
                for (let j = 0; j < this.nbinsy; ++j)
-                  sum += histo.getBinContent(i+1,j+1);
+                  sum += histo.getBinContent(i+1, j+1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
 
          // loop over visible x-bins
          for (let i = handle.i1; i < handle.i2; ++i) {
             for (let j = 0; j < this.nbinsy; ++j)
-               proj[j] = histo.getBinContent(i+1,j+1);
+               proj[j] = histo.getBinContent(i+1, j+1);
 
             produceCandlePoint(i, handle.grx[i], handle.grx[i+1], handle.j1, handle.j2);
          }
@@ -63823,20 +63828,17 @@ class TH2Painter$2 extends THistPainter {
 
    /** @summary Provide text information (tooltips) for histogram bin */
    getBinTooltips(i, j) {
-      let lines = [],
-          histo = this.getHisto(),
+      let histo = this.getHisto(),
           binz = histo.getBinContent(i+1, j+1);
 
-      lines.push(this.getObjectHint());
+      if (histo.$baseh)
+         binz -= histo.$baseh.getBinContent(i+1, j+1);
 
-      lines.push('x = ' + this.getAxisBinTip('x', histo.fXaxis, i));
-      lines.push('y = ' + this.getAxisBinTip('y', histo.fYaxis, j));
-
-      lines.push(`bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`);
-
-      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1, j+1);
-
-      lines.push('entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
+      let lines = [this.getObjectHint(),
+                   'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
+                   'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
+                   `bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`,
+                   'entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
       if ((this.options.TextKind == 'E') || this.matchObjectType(clTProfile2D)) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
@@ -63848,22 +63850,16 @@ class TH2Painter$2 extends THistPainter {
 
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
-      let lines = [], pmain = this.getFramePainter(),
+      let pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           histo = this.getHisto();
 
-      lines.push(this.getObjectHint());
-
-      if (p.swapXY)
-         lines.push('y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1)));
-      else
-         lines.push('x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)));
-
-      lines.push('m-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat));
-      lines.push('median = ' + floatToString(p.fMedian, gStyle.fStatFormat));
-      lines.push('m+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat));
-
-      return lines;
+      return [this.getObjectHint(),
+              p.swapXY ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1))
+                       : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)),
+              'm-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat),
+              'median = ' + floatToString(p.fMedian, gStyle.fStatFormat),
+              'm+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat)];
    }
 
    /** @summary Provide text information (tooltips) for poly bin */
@@ -63903,7 +63899,8 @@ class TH2Painter$2 extends THistPainter {
       lines.push(this.getObjectHint(),
                  'x = ' + funcs.axisAsText('x', realx),
                  'y = ' + funcs.axisAsText('y', realy));
-      if (numpoints > 0) lines.push('npnts = ' + numpoints);
+      if (numpoints > 0)
+         lines.push('npnts = ' + numpoints);
       lines.push('bin = ' + binname);
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
@@ -94475,7 +94472,7 @@ class RFramePainter extends RObjectPainter {
 
       if (rotate) {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
-         let d = w; w = h; h = d;
+         [w, h] = [h, w];
       } else {
          trans = `translate(${lm},${tm})`;
       }
@@ -100509,9 +100506,10 @@ class RH1Painter$2 extends RHistPainter {
          grx2 = grx1 + Math.round(this.options.BarWidth*w);
       }
 
-      if (grx1 > grx2) { let d = grx1; grx1 = grx2; grx2 = d; }
+      if (grx1 > grx2)
+         [grx1, grx2] = [grx2, grx1];
 
-      midx = Math.round((grx1+grx2)/2);
+      midx = Math.round((grx1 + grx2)/2);
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
@@ -100522,10 +100520,11 @@ class RH1Painter$2 extends RHistPainter {
 
          gry1 = Math.round(funcs.gry(((this.options.BaseLine!==false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
-         if (gry1 > gry2) { let d = gry1; gry1 = gry2; gry2 = d; }
+         if (gry1 > gry2)
+            [gry1, gry2] = [gry2, gry1];
 
          if (!pnt.touch && (pnt.nproc === 1))
-            if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
+            if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
 
       } else if (this.options.Error || this.options.Mark) {
 
@@ -100569,9 +100568,9 @@ class RH1Painter$2 extends RHistPainter {
             gry2 = height;
 
             if (!this.fillatt.empty()) {
-               gry2 = Math.round(funcs.gry(0));
-               if (gry2 < 0) gry2 = 0; else if (gry2 > height) gry2 = height;
-               if (gry2 < gry1) { let d = gry1; gry1 = gry2; gry2 = d; }
+               gry2 = Math.min(height, Math.max(0, Math.round(funcs.gry(0))));
+               if (gry2 < gry1)
+                  [gry1, gry2] = [gry2, gry1];
             }
 
             // for mouse events pointer should be between y1 and y2
