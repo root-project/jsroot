@@ -2312,22 +2312,16 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
-      let lines = [], pmain = this.getFramePainter(),
+      let pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           histo = this.getHisto();
 
-      lines.push(this.getObjectHint());
-
-      if (p.swapXY)
-         lines.push('y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1)));
-      else
-         lines.push('x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)));
-
-      lines.push('m-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat))
-      lines.push('median = ' + floatToString(p.fMedian, gStyle.fStatFormat))
-      lines.push('m+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat))
-
-      return lines;
+      return [this.getObjectHint(),
+              p.swapXY ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1))
+                       : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)),
+              'm-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat),
+              'median = ' + floatToString(p.fMedian, gStyle.fStatFormat),
+              'm+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat)];
    }
 
    /** @summary Provide text information (tooltips) for poly bin */
@@ -2367,7 +2361,8 @@ class TH2Painter extends THistPainter {
       lines.push(this.getObjectHint(),
                  'x = ' + funcs.axisAsText('x', realx),
                  'y = ' + funcs.axisAsText('y', realy));
-      if (numpoints > 0) lines.push('npnts = ' + numpoints);
+      if (numpoints > 0)
+         lines.push('npnts = ' + numpoints);
       lines.push('bin = ' + binname);
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
