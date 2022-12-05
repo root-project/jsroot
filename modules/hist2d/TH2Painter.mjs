@@ -733,7 +733,7 @@ class TH2Painter extends THistPainter {
                //     Re-order endpoints
 
                count = 0;
-               for (ix=1; ix<=lj-5; ix +=2) {
+               for (ix = 1; ix <= lj - 5; ix += 2) {
                   //count = 0;
                   while (itarr[ix-1] != itarr[ix]) {
                      xsave = xarr[ix];
@@ -754,7 +754,7 @@ class TH2Painter extends THistPainter {
 
                if (count > kMAXCOUNT) continue;
 
-               for (ix=1; ix<=lj-2; ix +=2) {
+               for (ix = 1; ix <= lj - 2; ix += 2) {
 
                   ipoly = itarr[ix-1];
 
@@ -834,7 +834,7 @@ class TH2Painter extends THistPainter {
                contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
-            for (i=2;i<np;i+=2) {
+            for (i = 2; i < np; i += 2) {
                if (xx[i] !== xmin && yy[i] !== ymin) {
                   istart = i;
                   break;
@@ -927,7 +927,7 @@ class TH2Painter extends THistPainter {
 
          const points = [{x: 0, y: 0}, {x: frame_w, y: 0}, {x: frame_w, y: frame_h}, {x: 0, y: frame_h}];
 
-         const get_intersect = (i,di) => {
+         const get_intersect = (i, di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
             for (let i = 0; i < 4; ++i) {
                let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
@@ -1290,14 +1290,14 @@ class TH2Painter extends THistPainter {
                   dy = Math.round(y2-y1);
 
                   if (dx || dy) {
-                     cmd += 'M'+Math.round(x1)+','+Math.round(y1) + makeLine(dx,dy);
+                     cmd += `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx,dy)}`;
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                         anr = Math.sqrt(9/(dx**2 + dy**2));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
                         if (si || co)
-                           cmd += `m${-si},${co}` + makeLine(si,-co) + makeLine(-co,-si);
+                           cmd += `m${-si},${co}${makeLine(si,-co)}${makeLine(-co,-si)}`;
                      }
                   }
                }
@@ -1419,7 +1419,7 @@ class TH2Painter extends THistPainter {
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
          else
-            elem.style('stroke','black');
+            elem.style('stroke', 'black');
       }
 
       return handle;
@@ -1528,7 +1528,7 @@ class TH2Painter extends THistPainter {
             nextv = sum / integral;
             while ((prob[cnt] >= v) && (prob[cnt] < nextv)) {
                res.indx[cnt] = j;
-               res.quantiles[cnt] = x + ((prob[cnt] - v)/(nextv-v))*(xx[j+1]-x);
+               res.quantiles[cnt] = x + ((prob[cnt] - v) / (nextv - v)) * (xx[j + 1] - x);
                if (cnt++ == prob.length) return res;
                x = xx[j];
             }
