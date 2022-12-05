@@ -2287,20 +2287,17 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for histogram bin */
    getBinTooltips(i, j) {
-      let lines = [],
-          histo = this.getHisto(),
+      let histo = this.getHisto(),
           binz = histo.getBinContent(i+1, j+1);
 
-      lines.push(this.getObjectHint());
+      if (histo.$baseh)
+         binz -= histo.$baseh.getBinContent(i+1, j+1);
 
-      lines.push('x = ' + this.getAxisBinTip('x', histo.fXaxis, i));
-      lines.push('y = ' + this.getAxisBinTip('y', histo.fYaxis, j));
-
-      lines.push(`bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`);
-
-      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1, j+1);
-
-      lines.push('entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat)));
+      let lines = [this.getObjectHint(),
+                   'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
+                   'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
+                   `bin = ${histo.getBin(i+1,j+1)}  x: ${i+1}  y: ${j+1}`,
+                   'entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
       if ((this.options.TextKind == 'E') || this.matchObjectType(clTProfile2D)) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
