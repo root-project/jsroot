@@ -1789,13 +1789,13 @@ class TH2Painter extends THistPainter {
             for (let j = 0; j < this.nbinsy; ++j) {
                let sum = 0;
                for (let i = 0; i < this.nbinsx; ++i)
-                  sum += histo.getBinContent(i+1,j+1);
+                  sum += histo.getBinContent(i+1, j+1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
 
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
-               proj[i] = histo.getBinContent(i+1,j+1);
+               proj[i] = histo.getBinContent(i+1, j+1);
 
             produceCandlePoint(j, handle.gry[j+1], handle.gry[j], handle.i1, handle.i2);
          }
@@ -1811,14 +1811,14 @@ class TH2Painter extends THistPainter {
             for (let i = 0; i < this.nbinsx; ++i) {
                let sum = 0;
                for (let j = 0; j < this.nbinsy; ++j)
-                  sum += histo.getBinContent(i+1,j+1);
+                  sum += histo.getBinContent(i+1, j+1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
 
          // loop over visible x-bins
          for (let i = handle.i1; i < handle.i2; ++i) {
             for (let j = 0; j < this.nbinsy; ++j)
-               proj[j] = histo.getBinContent(i+1,j+1);
+               proj[j] = histo.getBinContent(i+1, j+1);
 
             produceCandlePoint(i, handle.grx[i], handle.grx[i+1], handle.j1, handle.j2);
          }
