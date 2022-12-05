@@ -352,7 +352,7 @@ class TH2Painter extends THistPainter {
           fp = this.getFramePainter(),
           funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null },
-          has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300);
+          has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
 
       if (this.isTH2Poly()) {
 
