@@ -696,7 +696,10 @@ class TH1Painter extends THistPainter {
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(funcs.gry(0));
-         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+         if (gry0 <= 0)
+            h0 = -3;
+         else if (gry0 < height)
+            h0 = gry0;
       }
       let close_path = `L${currx},${h0}H${startx}Z`;
 
@@ -813,10 +816,8 @@ class TH1Painter extends THistPainter {
          return Math.round(funcs.gry(yy));
       };
 
-      if (funcs.swap_xy) {
-         let d = pnt.x; pnt_x = pnt_y; pnt_y = d;
-         d = height; height = width; width = d;
-      }
+      if (funcs.swap_xy)
+         [pnt_x, pnt_y, width, height] = [pnt_y, pnt_x, height, width];
 
       while (l < r-1) {
          let m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
@@ -877,7 +878,8 @@ class TH1Painter extends THistPainter {
 
          gry1 = Math.round(funcs.gry(((this.options.BaseLine !== false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
-         if (gry1 > gry2) { let d = gry1; gry1 = gry2; gry2 = d; }
+         if (gry1 > gry2)
+            [gry1, gry2] = [gry2, gry1];
 
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
@@ -923,7 +925,8 @@ class TH1Painter extends THistPainter {
 
             if (!this.fillatt.empty()) {
                gry2 = Math.min(height, Math.max(0, Math.round(funcs.gry(0))));
-               if (gry2 < gry1) { let d = gry1; gry1 = gry2; gry2 = d; }
+               if (gry2 < gry1)
+                 [gry1, gry2] = [gry2, gry1];
             }
 
             // for mouse events pointer should be between y1 and y2
