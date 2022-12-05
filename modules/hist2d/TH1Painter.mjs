@@ -20,7 +20,7 @@ class TH1Painter extends THistPainter {
       histo.fArray = new Float64Array(histo.fNcells).fill(0);
       for (let n = 0; n < histo.fNIn; ++n)
          histo.Fill(arr[n]);
-      histo.fReady = true;
+      histo.fReady = 1;
       histo.fEntries = entries;
    }
 
@@ -395,8 +395,7 @@ class TH1Painter extends THistPainter {
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 1),
           histo = this.getHisto(), xaxis = histo.fXaxis,
-          i, x, grx, y, yerr, gry1, gry2,
-          bins1 = [], bins2 = [];
+          i, x, grx, y, yerr, bins1 = [], bins2 = [];
 
       for (i = left; i < right; ++i) {
          x = xaxis.GetBinCoord(i+0.5);
@@ -407,11 +406,8 @@ class TH1Painter extends THistPainter {
          yerr = histo.getBinError(i+1);
          if (funcs.logy && (y-yerr < funcs.scale_ymin)) continue;
 
-         gry1 = Math.round(funcs.gry(y + yerr));
-         gry2 = Math.round(funcs.gry(y - yerr));
-
-         bins1.push({ grx, gry: gry1 });
-         bins2.unshift({ grx, gry: gry2 });
+         bins1.push({ grx, gry:  Math.round(funcs.gry(y + yerr)) });
+         bins2.unshift({ grx, gry: Math.round(funcs.gry(y - yerr)) });
       }
 
       let kind = (this.options.ErrorKind === 4) ? 'bezier' : 'line',
@@ -637,8 +633,10 @@ class TH1Painter extends THistPainter {
             res = `M${currx},${curry}`;
          } else if (use_minmax) {
             if ((grx === currx) && !lastbin) {
-               if (gry < curry_min) bestimax = i; else
-               if (gry > curry_max) bestimin = i;
+               if (gry < curry_min)
+                  bestimax = i;
+               else if (gry > curry_max)
+                  bestimin = i;
 
                curry_min = Math.min(curry_min, gry);
                curry_max = Math.max(curry_max, gry);
@@ -646,8 +644,11 @@ class TH1Painter extends THistPainter {
             } else {
 
                if (draw_any_but_hist) {
-                  if (bestimin === bestimax) { draw_bin(bestimin); } else
-                  if (bestimin < bestimax) { draw_bin(bestimin); draw_bin(bestimax); } else {
+                  if (bestimin === bestimax)
+                     draw_bin(bestimin);
+                  else if (bestimin < bestimax) {
+                     draw_bin(bestimin); draw_bin(bestimax);
+                  } else {
                      draw_bin(bestimax); draw_bin(bestimin);
                   }
                }
