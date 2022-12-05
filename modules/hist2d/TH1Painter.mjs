@@ -773,8 +773,8 @@ class TH1Painter extends THistPainter {
             tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push(`bin = ${bin+1}`, 'x = ' + xlbl);
-         if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
+         tips.push(`bin = ${bin+1}`, `x = ${xlbl}`);
+         if (histo.$baseh) cont -= histo.$baseh.getBinContent(bin+1);
          if (cont === Math.round(cont))
             tips.push('entries = ' + cont);
          else
@@ -863,9 +863,10 @@ class TH1Painter extends THistPainter {
          grx2 = grx1 + Math.round(histo.fBarWidth/1000*w);
       }
 
-      if (grx1 > grx2) { let d = grx1; grx1 = grx2; grx2 = d; }
+      if (grx1 > grx2)
+         [grx1, grx2] = [grx2, grx1];
 
-      midx = Math.round((grx1+grx2)/2);
+      midx = Math.round((grx1 + grx2)/2);
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
@@ -909,7 +910,7 @@ class TH1Painter extends THistPainter {
          gry2 = Math.max(gry2, midy + msize);
 
          if (!pnt.touch && (pnt.nproc === 1))
-            if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
+            if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
 
       } else {
 
@@ -921,8 +922,7 @@ class TH1Painter extends THistPainter {
             gry2 = height;
 
             if (!this.fillatt.empty()) {
-               gry2 = Math.round(funcs.gry(0));
-               if (gry2 < 0) gry2 = 0; else if (gry2 > height) gry2 = height;
+               gry2 = Math.min(height, Math.max(0, Math.round(funcs.gry(0))));
                if (gry2 < gry1) { let d = gry1; gry1 = gry2; gry2 = d; }
             }
 
