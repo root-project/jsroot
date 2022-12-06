@@ -2365,7 +2365,7 @@ class TGeoPainter extends ObjectPainter {
       // Light - add default point light, adjust later
       let light = new PointLight(0xefefef, 1);
       light.position.set(10, 10, 10);
-      this._camera.add( light );
+      this._camera.add(light);
 
       this._scene.add(this._camera);
    }
@@ -2378,8 +2378,8 @@ class TGeoPainter extends ObjectPainter {
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
          if (this.ctrl.outline && isFunc(this.createOutline)) {
-            this._effectComposer = new EffectComposer( this._renderer );
-            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
+            this._effectComposer = new EffectComposer(this._renderer);
+            this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
          } else if (this.ctrl.ssao.enabled) {
             this.createSSAO();
@@ -2427,7 +2427,8 @@ class TGeoPainter extends ObjectPainter {
             this._renderer.domElement.style.width = '100%';
             this._renderer.domElement.style.height = '100%';
             let main = this.selectDom();
-            if (main.style('position') == 'static') main.style('position','relative');
+            if (main.style('position') == 'static')
+               main.style('position', 'relative');
          }
 
          this._animating = false;
@@ -2511,11 +2512,7 @@ class TGeoPainter extends ObjectPainter {
          // if detect of coordinates fails - ignore
          if (!Number.isFinite(box.min.x)) return 1000;
 
-         let sizex = box.max.x - box.min.x,
-             sizey = box.max.y - box.min.y,
-             sizez = box.max.z - box.min.z;
-
-         this._overall_size = 2 * Math.max(sizex, sizey, sizez);
+         this._overall_size = 2 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
       }
 
       return this._overall_size;
@@ -2548,10 +2545,7 @@ class TGeoPainter extends ObjectPainter {
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
-          len1 = pos1.length(), len2 = pos2.length(),
-          zoom = this.ctrl.zoom * len2 / len1 * 100;
-
-      if (zoom < 1) zoom = 1; else if (zoom>10000) zoom = 10000;
+          zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
 
       pos1.normalize();
       pos2.normalize();
@@ -2566,8 +2560,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
+      prec = prec || 0;
 
-      return 'roty' + roty.toFixed(prec || 0) + ',rotz' + rotz.toFixed(prec || 0) + ',zoom' + zoom.toFixed(prec || 0);
+      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
    }
 
    /** @summary Calculates current zoom factor */
