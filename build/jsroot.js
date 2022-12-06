@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '5/12/2022';
+let version_date = '6/12/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -83612,7 +83612,7 @@ class TGeoPainter extends ObjectPainter {
       // Light - add default point light, adjust later
       let light = new PointLight(0xefefef, 1);
       light.position.set(10, 10, 10);
-      this._camera.add( light );
+      this._camera.add(light);
 
       this._scene.add(this._camera);
    }
@@ -83625,8 +83625,8 @@ class TGeoPainter extends ObjectPainter {
       if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
          if (this.ctrl.outline && isFunc(this.createOutline)) {
-            this._effectComposer = new EffectComposer( this._renderer );
-            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
+            this._effectComposer = new EffectComposer(this._renderer);
+            this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
             this.createOutline(this._scene_width, this._scene_height);
          } else if (this.ctrl.ssao.enabled) {
             this.createSSAO();
@@ -83674,7 +83674,8 @@ class TGeoPainter extends ObjectPainter {
             this._renderer.domElement.style.width = '100%';
             this._renderer.domElement.style.height = '100%';
             let main = this.selectDom();
-            if (main.style('position') == 'static') main.style('position','relative');
+            if (main.style('position') == 'static')
+               main.style('position', 'relative');
          }
 
          this._animating = false;
@@ -83758,11 +83759,7 @@ class TGeoPainter extends ObjectPainter {
          // if detect of coordinates fails - ignore
          if (!Number.isFinite(box.min.x)) return 1000;
 
-         let sizex = box.max.x - box.min.x,
-             sizey = box.max.y - box.min.y,
-             sizez = box.max.z - box.min.z;
-
-         this._overall_size = 2 * Math.max(sizex, sizey, sizez);
+         this._overall_size = 2 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
       }
 
       return this._overall_size;
@@ -83795,10 +83792,7 @@ class TGeoPainter extends ObjectPainter {
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
-          len1 = pos1.length(), len2 = pos2.length(),
-          zoom = this.ctrl.zoom * len2 / len1 * 100;
-
-      if (zoom < 1) zoom = 1; else if (zoom>10000) zoom = 10000;
+          zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
 
       pos1.normalize();
       pos2.normalize();
@@ -83813,8 +83807,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
+      prec = prec || 0;
 
-      return 'roty' + roty.toFixed(prec || 0) + ',rotz' + rotz.toFixed(prec || 0) + ',zoom' + zoom.toFixed(prec || 0);
+      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -83956,11 +83951,8 @@ class TGeoPainter extends ObjectPainter {
 
       let stack = this._clones.findStackByName(itemname);
 
-      if (!stack) return;
-
-      let info = this._clones.resolveStack(stack, true);
-
-      this.focusCamera( info, false );
+      if (stack)
+         this.focusCamera(this._clones.resolveStack(stack, true), false);
    }
 
    /** @summary focus camera on speicifed position */
@@ -83977,7 +83969,7 @@ class TGeoPainter extends ObjectPainter {
       } else {
          let center = new Vector3().setFromMatrixPosition(focus.matrix),
              node = focus.node,
-             halfDelta = new Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
+             halfDelta = new Vector3(node.fDX, node.fDY, node.fDZ).multiplyScalar(0.5);
          box.min = center.clone().sub(halfDelta);
          box.max = center.clone().add(halfDelta);
       }
@@ -84020,20 +84012,20 @@ class TGeoPainter extends ObjectPainter {
 
       // Interpolate //
 
-      let animate = () => {
+      const animate = () => {
          if (this._animating === undefined) return;
 
          if (this._animating) {
-            requestAnimationFrame( animate );
+            requestAnimationFrame(animate);
          } else {
             if (!this._geom_viewer)
                this.startDrawGeometry();
          }
-         let smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
-         this._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
-         oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
+         let smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
+         this._camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
+         oldTarget.add(targetIncrement.clone().multiplyScalar(smoothFactor));
          this._lookat = oldTarget;
-         this._camera.lookAt( this._lookat );
+         this._camera.lookAt(this._lookat);
          this._camera.updateProjectionMatrix();
 
          let tm1 = new Date().getTime();
@@ -84066,7 +84058,8 @@ class TGeoPainter extends ObjectPainter {
 
          let current = new Date();
 
-         if ( this.ctrl.rotate ) requestAnimationFrame( animate );
+         if (this.ctrl.rotate)
+            requestAnimationFrame(animate);
 
          if (this._controls) {
             this._controls.autoRotate = this.ctrl.rotate;
@@ -84088,13 +84081,13 @@ class TGeoPainter extends ObjectPainter {
             let boxHelper = new BoxHelper(this._toplevel);
             this._scene.add( boxHelper );
          }
-         this._scene.add( new AxesHelper( 2 * this._overall_size ) );
-         this._scene.add( new GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
+         this._scene.add(new AxesHelper(2 * this._overall_size));
+         this._scene.add(new GridHelper(Math.ceil(this._overall_size), Math.ceil(this._overall_size)/50));
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
                "'T' translate | 'R' rotate | 'S' scale<br>" +
                "'+' increase size | '-' decrease size<br>" +
                "'W' toggle wireframe/solid display<br>"+
-         "keep 'Ctrl' down to snap to grid</center></font>");
+               "keep 'Ctrl' down to snap to grid</center></font>");
       }
    }
 
@@ -84130,14 +84123,14 @@ class TGeoPainter extends ObjectPainter {
           numvis = this._clones.scanVisible(arg),
           tm2 = new Date().getTime();
 
-      res.push('Total visible nodes: ' + numvis, 'Total shapes: ' + nshapes);
+      res.push(`Total visible nodes: ${numvis}`, `Total shapes: ${nshapes}`);
 
       for (let lvl = 0; lvl < arg.cnt.length; ++lvl) {
          if (arg.cnt[lvl] !== undefined)
-            res.push('  lvl' + lvl + ': ' + arg.cnt[lvl]);
+            res.push(`  lvl${lvl}: ${arg.cnt[lvl]}`);
       }
 
-      res.push('Time to scan: ' + makeTime(tm2-tm1), '', 'Check timing for matrix calculations ...');
+      res.push(`Time to scan: ${makeTime(tm2-tm1)}`, '', 'Check timing for matrix calculations ...');
 
       let elem = this.selectDom().style('overflow', 'auto');
 
@@ -84153,7 +84146,7 @@ class TGeoPainter extends ObjectPainter {
             numvis = this._clones.scanVisible(arg);
             tm2 = new Date().getTime();
 
-            let last_str = 'Time to scan with matrix: ' + makeTime(tm2-tm1);
+            let last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
             if (isBatchMode())
                res.push(last_str);
             else
@@ -84171,7 +84164,7 @@ class TGeoPainter extends ObjectPainter {
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
 
-      if (obj && (obj.$kind === 'TTree')) {
+      if (obj?.$kind === 'TTree') {
          // drop tree means function call which must extract tracks from provided tree
 
          let funcname = 'extract_geo_tracks';
@@ -84191,7 +84184,6 @@ class TGeoPainter extends ObjectPainter {
             // FIXME: probably tracks should be remembered?
             return this.drawExtras(tracks, '', false).then(()=> {
                this.updateClipping(true);
-
                return this.render3D(100);
             });
          });
@@ -84243,7 +84235,7 @@ class TGeoPainter extends ObjectPainter {
       return true;
    }
 
-   /** @summary manipulate visisbility of extra objects, used for HierarhcyPainter
+   /** @summary manipulate visisbility of extra objects, used for HierarchyPainter
      * @private */
    extraObjectVisible(hpainter, hitem, toggle) {
       if (!this._extraObjects) return;
@@ -84603,7 +84595,7 @@ class TGeoPainter extends ObjectPainter {
                // return proxy object with several methods, typically used in ROOT geom scripts
                return {
                    found: currnode,
-                   fVolume: currnode ? currnode.node.fVolume : null,
+                   fVolume: currnode?.node?.fVolume,
                    InvisibleAll(flag) {
                       setInvisibleAll(this.fVolume, flag);
                    },
@@ -84614,8 +84606,8 @@ class TGeoPainter extends ObjectPainter {
                       console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
                    },
                    SetTransparency(lvl) {
-                     if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
-                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000+lvl;
+                     if (this.fVolume?.fMedium?.fMaterial)
+                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000 + lvl;
                    },
                    SetLineColor(col) {
                       if (this.fVolume) this.fVolume.fLineColor = col;
@@ -84699,27 +84691,16 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
       } else if (this._main_painter) {
-
          this._clones_owner = false;
-
          this._clones = this._main_painter._clones;
-
          console.log(`Reuse clones ${this._clones.nodes.length} from main painter`);
-
       } else if (!draw_obj) {
-
          this._clones_owner = false;
-
          this._clones = null;
-
       } else {
-
          this._start_drawing_time = new Date().getTime();
-
          this._clones_owner = true;
-
          this._clones = new ClonedNodes(draw_obj);
-
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
          if (this.geo_manager) {
             if (!lvl && this.geo_manager.fVisLevel)
@@ -84727,7 +84708,6 @@ class TGeoPainter extends ObjectPainter {
             if (!maxnodes)
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
-
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes);
 
@@ -84779,7 +84759,8 @@ class TGeoPainter extends ObjectPainter {
 
          } else {
             // activate worker
-            if (this.ctrl.use_worker > 0) this.startWorker();
+            if (this.ctrl.use_worker > 0)
+               this.startWorker();
 
             assign3DHandler(this);
 
@@ -84829,7 +84810,7 @@ class TGeoPainter extends ObjectPainter {
          if (!info) {
             info = document.createElement('p');
             info.setAttribute('class', 'geo_info');
-            info.setAttribute('style',  'position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;');
+            info.setAttribute('style', 'position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;');
             main.append(info);
          }
          info.innerHTML = `${msg}, ${spent.toFixed(1)}s`;
@@ -84849,7 +84830,6 @@ class TGeoPainter extends ObjectPainter {
       while(true) {
 
          let res = this.nextDrawAction();
-
          if (!res) break;
 
          now = new Date().getTime();
@@ -85049,9 +85029,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this._worker) return false;
 
       this._worker_jobs++;
-
       job.tm0 = new Date().getTime();
-
       this._worker.postMessage(job);
    }
 
@@ -85368,7 +85346,6 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl.highlight)
          this.highlightMesh(null);
    }
-
 
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
@@ -85762,7 +85739,7 @@ class TGeoPainter extends ObjectPainter {
       let obj = child.parent;
       while (obj && !(obj instanceof TransformControls) )
          obj = obj.parent;
-      return (obj && (obj instanceof TransformControls));
+      return obj && (obj instanceof TransformControls);
    }
 
    /** @summary either change mesh wireframe or return current value
@@ -85836,9 +85813,7 @@ class TGeoPainter extends ObjectPainter {
       if (!main) return;
 
       let sz = main.getSizeFor3d(main.access3dKind());
-
       main.apply3dSize(sz);
-
       return this.performResize(sz.width, sz.height);
    }
 
@@ -86080,10 +86055,8 @@ function provideMenu(menu, item, hpainter) {
    if (iseve) {
       menu.addchk(obj.fRnrSelf, 'Visible', 'self', ToggleEveVisibility);
       let res = ScanEveVisible(obj, undefined, true);
-
       if (res.hidden + res.visible > 0)
          menu.addchk((res.hidden == 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
-
    } else {
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible',
             geoBITS.kVisNone, ToggleMenuBit);
@@ -86196,8 +86169,7 @@ function createItem(node, obj, name) {
       if (subnodes) {
          sub._more = true;
          sub._expand = expandGeoObject;
-      } else
-      if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
+      } else if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
          sub._expand = function(node /*, obj */) {
@@ -86207,7 +86179,8 @@ function createItem(node, obj, name) {
          };
       }
 
-      if (!sub._title && (obj._typename != clTGeoVolume)) sub._title = obj._typename;
+      if (!sub._title && (obj._typename != clTGeoVolume))
+         sub._title = obj._typename;
 
       if (shape) {
          if (sub._title == '')
@@ -86251,7 +86224,7 @@ async function drawDummy3DGeom(painter) {
    let extra = painter.getObject(),
        min = [-1, -1, -1], max = [1, 1, 1];
 
-   if (extra.fP && extra.fP.length)
+   if (extra.fP?.length)
       for(let k = 0; k < extra.fP.length; k += 3)
          for (let i = 0; i < 3; ++i) {
             min[i] = Math.min(min[i], extra.fP[k+i]);
@@ -86275,7 +86248,7 @@ async function drawDummy3DGeom(painter) {
 
    let opt = '', pp = painter.getPadPainter();
 
-   if (pp?.pad?.fFillColor && pp?.pad?.fFillStyle > 1000)
+   if (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000))
       opt = 'bkgr_' +  pp.pad.fFillColor;
 
    return TGeoPainter.draw(painter.getDom(), obj, opt)
