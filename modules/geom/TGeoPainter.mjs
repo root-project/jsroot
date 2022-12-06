@@ -3356,7 +3356,7 @@ class TGeoPainter extends ObjectPainter {
                // return proxy object with several methods, typically used in ROOT geom scripts
                return {
                    found: currnode,
-                   fVolume: currnode ? currnode.node.fVolume : null,
+                   fVolume: currnode?.node?.fVolume,
                    InvisibleAll(flag) {
                       setInvisibleAll(this.fVolume, flag);
                    },
@@ -3367,8 +3367,8 @@ class TGeoPainter extends ObjectPainter {
                       console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
                    },
                    SetTransparency(lvl) {
-                     if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
-                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000+lvl;
+                     if (this.fVolume?.fMedium?.fMaterial)
+                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000 + lvl;
                    },
                    SetLineColor(col) {
                       if (this.fVolume) this.fVolume.fLineColor = col;
