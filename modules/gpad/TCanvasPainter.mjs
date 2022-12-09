@@ -623,7 +623,7 @@ class TCanvasPainter extends TPadPainter {
 
       let arg = null, ischanged = false;
 
-      if ((pad_painter.snapid !== undefined) && this._websocket)
+      if (pad_painter.snapid && this._websocket)
          arg = { _typename: 'TWebPadClick', padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad) {
