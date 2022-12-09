@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '6/12/2022';
+let version_date = '9/12/2022';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -56539,11 +56539,11 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Select active pad on the canvas */
    selectActivePad(pad_painter, obj_painter, click_pos) {
-      if ((this.snapid === undefined) || !pad_painter) return; // only interactive canvas
+      if (!this.snapid || !pad_painter) return; // only interactive canvas
 
       let arg = null, ischanged = false;
 
-      if ((pad_painter.snapid !== undefined) && this._websocket)
+      if (pad_painter.snapid && this._websocket)
          arg = { _typename: 'TWebPadClick', padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad) {
