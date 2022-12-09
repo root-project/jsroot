@@ -619,7 +619,7 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Select active pad on the canvas */
    selectActivePad(pad_painter, obj_painter, click_pos) {
-      if ((this.snapid === undefined) || !pad_painter) return; // only interactive canvas
+      if (!this.snapid || !pad_painter) return; // only interactive canvas
 
       let arg = null, ischanged = false;
 
