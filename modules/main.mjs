@@ -15,7 +15,7 @@ export * from './hist/TH2Painter.mjs';
 
 export * from './hist/TH3Painter.mjs';
 
-export * from './geom/TGeoPainter.mjs';
+export { createGeoPainter, TGeoPainter } from './geom/TGeoPainter.mjs';
 
 export { loadOpenui5, registerForResize, setSaveFile } from './gui/utils.mjs';
 

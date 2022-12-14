@@ -3429,13 +3429,12 @@ class TGeoPainter extends ObjectPainter {
     /** @summary Extract shapes from draw message of geometry painter
       * @desc For the moment used in batch production */
    extractRawShapes(draw_msg, recreate) {
-
       let nodes = null, old_gradpersegm = 0;
 
       // array for descriptors for each node
       // if array too large (>1M), use JS object while only ~1K nodes are expected to be used
       if (recreate) {
-         if (draw_msg.kind !== "draw") return false;
+         // if (draw_msg.kind !== "draw") return false;
          nodes = (draw_msg.numnodes > 1e6) ? { length: draw_msg.numnodes } : new Array(draw_msg.numnodes); // array for all nodes
       }
 
@@ -3485,7 +3484,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Prepare drawings
      * @desc Return value used as promise for painter */
    async prepareObjectDraw(draw_obj, name_prefix) {
-
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
          return null;
