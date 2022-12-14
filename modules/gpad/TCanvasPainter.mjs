@@ -5,7 +5,7 @@ import { GridDisplay, getHPainter } from '../gui/display.mjs';
 import { cleanup, resize, selectActivePad, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
 import { TFramePainter } from './TFramePainter.mjs';
-import { TPadPainter } from './TPadPainter.mjs';
+import { TPadPainter, clTButton } from './TPadPainter.mjs';
 
 
 /** @summary direct draw of TFrame object,
@@ -621,7 +621,7 @@ class TCanvasPainter extends TPadPainter {
    selectActivePad(pad_painter, obj_painter, click_pos) {
       if (!this.snapid || !pad_painter) return; // only interactive canvas
 
-      let arg = null, ischanged = false, is_button = pad_painter.matchObjectType('TButton');
+      let arg = null, ischanged = false, is_button = pad_painter.matchObjectType(clTButton);
 
       if (pad_painter.snapid && this._websocket)
          arg = { _typename: 'TWebPadClick', padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
