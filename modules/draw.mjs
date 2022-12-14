@@ -32,6 +32,7 @@ const drawFuncs = { lst: [
    { name: clTCanvas, icon: 'img_canvas', class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: clTPad, icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
    { name: 'TSlider', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
+   { name: 'TButton', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },

@@ -178,7 +178,8 @@ class TPadPainter extends ObjectPainter {
       if (!this.iscan && pad?.fName) {
          this.this_pad_name = pad.fName.replace(' ', '_'); // avoid empty symbol in pad name
          let regexp = new RegExp('^[A-Za-z][A-Za-z0-9_]*$');
-         if (!regexp.test(this.this_pad_name)) this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
+         if (!regexp.test(this.this_pad_name) || ((this.this_pad_name == 'button') && (pad._typename == 'TButton')))
+            this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
       }
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
