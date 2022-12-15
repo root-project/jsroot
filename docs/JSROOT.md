@@ -28,7 +28,6 @@ To automate files loading and objects drawing, one can provide number of URL par
 
 - file - name of the file, which will be automatically open with page loading
 - files - array of file names for loading
-- localfile - automatically activate dialog for selecting local ROOT files
 - json - name of JSON file with stored ROOT object like histogram or canvas
 - item - item name to be displayed
 - opt - drawing option for the item
@@ -501,12 +500,6 @@ JSROOT can read files from local file system using HTML5 FileReader functionalit
 Main limitation here - user should interactively select files for reading.
 There is button __"..."__ on the main JSROOT page, which starts file selection dialog.
 If valid ROOT file is selected, JSROOT will be able to normally read content of such file.
-
-One could try to invoke such dialog with "localfile" parameter in URL string:
-
-   - <https://root.cern/js/latest/?localfile>
-
-It could happen, that due to security limitations automatic popup will be blocked.
 
 
 ## JSROOT with THttpServer
