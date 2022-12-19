@@ -74436,13 +74436,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!obj) return null;
 
-      console.log('draw geometry', obj._typename);
-
-
       let painter = createGeoPainter(dom, obj, opt);
-
-      console.log('draw geometry', obj._typename, 'from painter', painter.getClassName());
-
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
