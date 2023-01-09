@@ -1,9 +1,8 @@
 import {readFileSync} from "fs";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
-import ascii from "rollup-plugin-ascii";
-import {terser} from "rollup-plugin-terser";
-import * as meta from "./package.json";
+import terser from "@rollup/plugin-terser";
+import meta from "./package.json" assert {type: "json"};
 
 // Extract copyrights from the LICENSE.
 const copyright = readFileSync("./node_modules/d3-selection/LICENSE", "utf-8")
@@ -24,8 +23,7 @@ const config = {
   },
   plugins: [
     nodeResolve(),
-    json(),
-    ascii()
+    json()
   ],
   onwarn(message, warn) {
     if (message.code === "CIRCULAR_DEPENDENCY") return;
