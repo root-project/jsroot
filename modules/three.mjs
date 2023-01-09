@@ -17670,8 +17670,8 @@ function WebGLRenderer(parameters = {}) {
 		console.log('THREE.WebGLRenderer: Context Lost.');
 		_isContextLost = true;
 	}
-	function /* event */
-	onContextRestore() {
+	function onContextRestore( /* event */
+	) {
 		console.log('THREE.WebGLRenderer: Context Restored.');
 		_isContextLost = false;
 		const infoAutoReset = info.autoReset;
