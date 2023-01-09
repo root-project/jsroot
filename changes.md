@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Upgrade d3.js to v7.8.0
+
+
 ## Changes in 7.3.0
 1. Mark methods returning `Promise` as **async**
 2. Upgrade three.js to r146
