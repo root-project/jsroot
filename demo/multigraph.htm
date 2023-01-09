@@ -43,13 +43,13 @@
          graph2.fMarkerSize = 2;
 
          let mgraph = createTMultiGraph(graph1, graph2);
-         mgraph.fTitle = "Drawing " + cnt++;
+         mgraph.fTitle = 'Drawing ' + cnt++;
 
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
 
-         redraw('object_draw', mgraph, "").then(() => setTimeout(updateGUI, 3000));
+         redraw('object_draw', mgraph, '').then(() => setTimeout(updateGUI, 3000));
       }
 
       updateGUI();

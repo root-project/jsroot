@@ -15,28 +15,28 @@
 
    <script type='module'>
 
-      import { parse, openFile, draw, cleanup, drawingJSON  } from '../modules/main.mjs';
+      import { parse, openFile, draw, cleanup, drawingJSON } from '../modules/main.mjs';
 
       // absolute file path can be used as well
-      let file = await openFile("../../files/hsimple.root");
-      let obj = await file.readObject("hpxpy;1");
-      await draw("drawing", obj, "colz");
+      let file = await openFile('../../files/hsimple.root');
+      let obj = await file.readObject('hpxpy;1');
+      await draw('drawing', obj, 'colz');
 
       document.getElementById('btn1').addEventListener('click', () => {
          // produce JSON code
-         let json = drawingJSON("drawing");
+         let json = drawingJSON('drawing');
 
          // parse JSON and get new TCanvas
          let obj2 = parse(json);
 
          // cleanup previous drawing
-         cleanup("replica");
+         cleanup('replica');
 
          // draw canvas again
-         draw("replica", obj2);
+         draw('replica', obj2);
       });
 
-      document.getElementById('btn2').addEventListener('click', () => cleanup("replica"));
+      document.getElementById('btn2').addEventListener('click', () => cleanup('replica'));
 
    </script>
 

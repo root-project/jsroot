@@ -26,13 +26,13 @@
             this.sumpx = 0;
             this.sumpy = 0;
 
-            this.addBranch("px");
-            this.addBranch("py");
+            this.addBranch('px');
+            this.addBranch('py');
          }
 
          /** function called before reading of TTree starts */
          Begin() {
-            document.getElementById('p_start').innerHTML = "Start reading TTree";
+            document.getElementById('p_start').innerHTML = 'Start reading TTree';
          }
 
          /** function called for every entry */
@@ -46,7 +46,7 @@
          /** function called when processing finishes */
          Terminate(res) {
             if (!res || !this.cnt) {
-               res = "Fail to process TTree";
+               res = 'Fail to process TTree';
             } else {
                let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
                res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
@@ -55,8 +55,8 @@
          }
       }
 
-      let file = await openFile("../../files/hsimple.root");
-      let tree = await file.readObject("ntuple;1");
+      let file = await openFile('../../files/hsimple.root');
+      let tree = await file.readObject('ntuple;1');
 
       treeProcess(tree, new TExampleSelector());
    </script>

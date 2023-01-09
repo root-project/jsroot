@@ -11,22 +11,21 @@
    </body>
 
    <script type='module'>
-    import { httpRequest, openFile, draw } from '../modules/main.mjs';
+      import { httpRequest, openFile, draw } from '../modules/main.mjs';
 
-     // absolute file path can be used as well
-     let geom_file = "../../files/geom/evegeoshape.json.gz",
-         tracks_file = "../../files/geom/eve_tracks.root";
+      let geom_file = '../../files/geom/evegeoshape.json.gz',
+          tracks_file = '../../files/geom/eve_tracks.root';
 
-     let obj = await httpRequest(geom_file, "object");
-     let geo_painter = await draw("drawing", obj);
-     let file = await openFile(tracks_file);
-     let tracks = await file.readObject("tracks;1");
+      let obj = await httpRequest(geom_file, 'object');
+      let geo_painter = await draw('drawing', obj);
+      let file = await openFile(tracks_file);
+      let tracks = await file.readObject('tracks;1');
 
-     // one could simply draw list of tracks
-     // draw("drawing", tracks, "same");
+      // one could simply draw list of tracks
+      // draw('drawing', tracks, 'same');
 
-     // or use method of TGeoPainter to draw extras
-     geo_painter.drawExtras(tracks, "tracks");
+      // or use method of TGeoPainter to draw extras
+      geo_painter.drawExtras(tracks, 'tracks');
 
    </script>
 
