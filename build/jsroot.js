@@ -1728,99 +1728,99 @@ async function _ensureJSROOT() {
 
 var core = /*#__PURE__*/Object.freeze({
 __proto__: null,
-version_id: version_id,
-version_date: version_date,
-version: version,
-get source_dir () { return exports.source_dir; },
-isNodeJs: isNodeJs,
-isBatchMode: isBatchMode,
-setBatchMode: setBatchMode,
-browser: browser$1,
-internals: internals,
-constants: constants$1,
-settings: settings,
-gStyle: gStyle,
+BIT: BIT,
+_ensureJSROOT: _ensureJSROOT,
+addMethods: addMethods,
 atob_func: atob_func,
+browser: browser$1,
 btoa_func: btoa_func,
-clTObject: clTObject,
-clTNamed: clTNamed,
-clTString: clTString,
-clTObjString: clTObjString,
-clTList: clTList,
-clTHashList: clTHashList,
-clTMap: clTMap,
-clTObjArray: clTObjArray,
-clTClonesArray: clTClonesArray,
-clTAttLine: clTAttLine,
+clTAttCanvas: clTAttCanvas,
 clTAttFill: clTAttFill,
+clTAttLine: clTAttLine,
 clTAttMarker: clTAttMarker,
 clTAttText: clTAttText,
-clTPave: clTPave,
-clTPaveText: clTPaveText,
-clTPaveStats: clTPaveStats,
-clTLegend: clTLegend,
-clTLegendEntry: clTLegendEntry,
-clTPaletteAxis: clTPaletteAxis,
-clTText: clTText,
-clTLatex: clTLatex,
-clTMathText: clTMathText,
-clTMultiGraph: clTMultiGraph,
-clTColor: clTColor,
-clTLine: clTLine,
-clTBox: clTBox,
-clTPolyLine: clTPolyLine,
-clTPad: clTPad,
-clTCanvas: clTCanvas,
-clTAttCanvas: clTAttCanvas,
-clTGaxis: clTGaxis,
 clTAxis: clTAxis,
-clTStyle: clTStyle,
-clTH1: clTH1,
-clTH2: clTH2,
-clTH3: clTH3,
+clTBox: clTBox,
+clTCanvas: clTCanvas,
+clTClonesArray: clTClonesArray,
+clTColor: clTColor,
+clTCutG: clTCutG,
 clTF1: clTF1,
 clTF2: clTF2,
-clTProfile: clTProfile,
-clTProfile2D: clTProfile2D,
+clTGaxis: clTGaxis,
+clTGeoNode: clTGeoNode,
+clTGeoNodeMatrix: clTGeoNodeMatrix,
+clTGeoVolume: clTGeoVolume,
 clTGraph: clTGraph,
 clTGraphPolargram: clTGraphPolargram,
 clTGraphTime: clTGraphTime,
-clTCutG: clTCutG,
+clTH1: clTH1,
+clTH2: clTH2,
+clTH3: clTH3,
+clTHashList: clTHashList,
+clTLatex: clTLatex,
+clTLegend: clTLegend,
+clTLegendEntry: clTLegendEntry,
+clTLine: clTLine,
+clTList: clTList,
+clTMap: clTMap,
+clTMathText: clTMathText,
+clTMultiGraph: clTMultiGraph,
+clTNamed: clTNamed,
+clTObjArray: clTObjArray,
+clTObjString: clTObjString,
+clTObject: clTObject,
+clTPad: clTPad,
+clTPaletteAxis: clTPaletteAxis,
+clTPave: clTPave,
+clTPaveStats: clTPaveStats,
+clTPaveText: clTPaveText,
+clTPolyLine: clTPolyLine,
 clTPolyLine3D: clTPolyLine3D,
 clTPolyMarker3D: clTPolyMarker3D,
-clTGeoVolume: clTGeoVolume,
-clTGeoNode: clTGeoNode,
-clTGeoNodeMatrix: clTGeoNodeMatrix,
-kNoZoom: kNoZoom,
-isArrayProto: isArrayProto,
-getDocument: getDocument,
-BIT: BIT,
+clTProfile: clTProfile,
+clTProfile2D: clTProfile2D,
+clTString: clTString,
+clTStyle: clTStyle,
+clTText: clTText,
 clone: clone,
-addMethods: addMethods,
-parse: parse,
-parseMulti: parseMulti,
-toJSON: toJSON,
-decodeUrl: decodeUrl,
-findFunction: findFunction,
-createHttpRequest: createHttpRequest,
-httpRequest: httpRequest,
-loadScript: loadScript,
-injectCode: injectCode,
+constants: constants$1,
 create: create$1,
 createHistogram: createHistogram,
-createTPolyLine: createTPolyLine,
+createHttpRequest: createHttpRequest,
 createTGraph: createTGraph,
 createTHStack: createTHStack,
 createTMultiGraph: createTMultiGraph,
+createTPolyLine: createTPolyLine,
+decodeUrl: decodeUrl,
+findFunction: findFunction,
+gStyle: gStyle,
+getDocument: getDocument,
 getMethods: getMethods,
-registerMethods: registerMethods,
-isRootCollection: isRootCollection,
-isObject: isObject,
-isFunc: isFunc,
-isStr: isStr,
-isPromise: isPromise,
 getPromise: getPromise,
-_ensureJSROOT: _ensureJSROOT
+httpRequest: httpRequest,
+injectCode: injectCode,
+internals: internals,
+isArrayProto: isArrayProto,
+isBatchMode: isBatchMode,
+isFunc: isFunc,
+isNodeJs: isNodeJs,
+isObject: isObject,
+isPromise: isPromise,
+isRootCollection: isRootCollection,
+isStr: isStr,
+kNoZoom: kNoZoom,
+loadScript: loadScript,
+parse: parse,
+parseMulti: parseMulti,
+registerMethods: registerMethods,
+setBatchMode: setBatchMode,
+settings: settings,
+get source_dir () { return exports.source_dir; },
+toJSON: toJSON,
+version: version,
+version_date: version_date,
+version_id: version_id
 });
 
 // https://d3js.org v7.8.0 Copyright 2010-2021 Mike Bostock
@@ -2551,7 +2551,7 @@ function appendRound(digits) {
   };
 }
 
-class Path$1 {
+let Path$1 = class Path {
   constructor(digits) {
     this._x0 = this._y0 = // start of current subpath
     this._x1 = this._y1 = null; // end of current subpath
@@ -2670,7 +2670,7 @@ class Path$1 {
   toString() {
     return this._;
   }
-}
+};
 
 function path() {
   return new Path$1;
@@ -14007,7 +14007,7 @@ function toComponents( source, target ) {
 
 }
 
-class Color$1 {
+let Color$1 = class Color {
 
 	constructor( r, g, b ) {
 
@@ -14553,7 +14553,7 @@ class Color$1 {
 
 	}
 
-}
+};
 
 Color$1.NAMES = _colorKeywords;
 
@@ -55624,7 +55624,7 @@ let Handling3DDrawings = {
          if (chld && !chld.$jsroot)
             chld = chld.nextSibling;
 
-         if (chld && chld.$jsroot) {
+         if (chld?.$jsroot) {
             delete chld.painter;
             main.removeChild(chld);
          }
@@ -55690,16 +55690,16 @@ let Handling3DDrawings = {
      * @private */
    apply3dSize(size, onlyget) {
 
-      if (size.can3d < 0) return select(null);
+      if (size.can3d < 0)
+         return select(null);
 
       let elem;
 
       if (size.can3d > 1) {
 
          elem = this.getLayerSvg(size.clname);
-
-         // elem = layer.select('.' + size.clname);
-         if (onlyget) return elem;
+         if (onlyget)
+            return elem;
 
          let svg = this.getPadSvg();
 
@@ -55728,7 +55728,8 @@ let Handling3DDrawings = {
          let prnt = this.getCanvSvg().node().parentNode;
 
          elem = select(prnt).select('.' + size.clname);
-         if (onlyget) return elem;
+         if (onlyget)
+            return elem;
 
          // force redraw by resize
          this.getCanvSvg().property('redraw_by_resize', true);
@@ -55780,7 +55781,6 @@ function assign3DHandler(painter) {
   * @param {object} args - different arguments for creating 3D renderer
   * @return {Promise} with renderer object
   * @private */
-
 async function createRender3D(width, height, render3d, args) {
 
    let rc = constants$1.Render3D, promise, need_workaround = false, doc = getDocument();
@@ -55801,7 +55801,6 @@ async function createRender3D(width, height, render3d, args) {
          need_workaround = true;
       } else {
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-         // d3_select(r.jsroot_dom).attr('width', width).attr('height', height);
       }
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
@@ -56010,9 +56009,11 @@ class TooltipFor3D {
          let rect1 = this.parent.getBoundingClientRect(),
              rect2 = this.canvas.getBoundingClientRect();
 
-         if ((rect1.left !== undefined) && (rect2.left!== undefined)) pos.l += (rect2.left-rect1.left);
+         if ((rect1.left !== undefined) && (rect2.left!== undefined))
+            pos.l += (rect2.left-rect1.left);
 
-         if ((rect1.top !== undefined) && (rect2.top!== undefined)) pos.u += rect2.top-rect1.top;
+         if ((rect1.top !== undefined) && (rect2.top!== undefined))
+            pos.u += rect2.top-rect1.top;
 
          if (pos.l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
             pos.l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
@@ -56037,8 +56038,8 @@ class TooltipFor3D {
          }
       }
 
-      this.tt.style.top = (pos.u + 15) + 'px';
-      this.tt.style.left = (pos.l + 3) + 'px';
+      this.tt.style.top = `${pos.u+15}px`;
+      this.tt.style.left = `${pos.l+3}px`;
    }
 
    /** @summary Show tooltip */
@@ -56052,7 +56053,8 @@ class TooltipFor3D {
             v = v.line;
          } else {
             let res = v.lines[0];
-            for (let n=1;n<v.lines.length;++n) res+= '<br/>' + v.lines[n];
+            for (let n = 1; n < v.lines.length; ++n)
+               res += '<br/>' + v.lines[n];
             v = res;
          }
       }
@@ -56129,7 +56131,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
              pos1 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point, kind),
              pos2 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point2, kind);
 
-         if (pos1 > pos2) { let v = pos1; pos1 = pos2; pos2 = v; }
+         if (pos1 > pos2)
+            [pos1, pos2] = [pos2, pos1];
 
          if ((kind === 'z') && control.mouse_zoom_mesh.object.use_y_for_z) kind = 'y';
 
@@ -56655,8 +56658,8 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
       } else {
          distances = new Float32Array(arr.length/3);
          for (let n = 0; n < arr.length; n += 6) {
-            v1.set(arr[n],arr[n+1],arr[n+2]);
-            v2.set(arr[n+3],arr[n+4],arr[n+5]);
+            v1.set(arr[n], arr[n+1], arr[n+2]);
+            v2.set(arr[n+3], arr[n+4], arr[n+5]);
             distances[n/3] = d;
             d += v2.distanceTo(v1);
             distances[n/3+1] = d;
@@ -56815,13 +56818,13 @@ class PointsCreator {
 function create3DLineMaterial(painter, arg, is_v7 = false) {
    if (!painter || !arg) return null;
 
-   let lcolor, lstyle, lwidth;
+   let color, lstyle, lwidth;
    if (isStr(arg) || is_v7) {
-      lcolor = painter.v7EvalColor(arg+'color', 'black');
+      color = painter.v7EvalColor(arg+'color', 'black');
       lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
       lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));
    } else {
-      lcolor = painter.getColor(arg.fLineColor);
+      color = painter.getColor(arg.fLineColor);
       lstyle = arg.fLineStyle;
       lwidth = arg.fLineWidth;
    }
@@ -56830,9 +56833,9 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
        dash = style ? style.split(',') : [], material;
 
    if (dash && dash.length >= 2)
-      material = new LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
+      material = new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
    else
-      material = new LineBasicMaterial({ color: lcolor });
+      material = new LineBasicMaterial({ color });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
@@ -62168,89 +62171,13 @@ function getTEfficiencyBoundaryFunc(option, isbayessian) {
 
 var jsroot_math = /*#__PURE__*/Object.freeze({
 __proto__: null,
-gamma: gamma,
-tgamma: gamma,
-Gamma: gamma,
-Polynomialeval: Polynomialeval,
-Polynomial1eval: Polynomial1eval,
-stirf: stirf,
-gamma_pdf: gamma_pdf,
-ndtri: ndtri,
-normal_quantile: normal_quantile,
-normal_quantile_c: normal_quantile_c,
-lognormal_cdf_c: lognormal_cdf_c,
-lognormal_cdf: lognormal_cdf,
-igami: igami,
-igamc: igamc,
-igam: igam,
-lgam: lgam,
-lgamma: lgamma,
-erfc: erfc,
-erf: erf,
-beta_pdf: beta_pdf,
-inc_beta: inc_beta,
-BetaIncomplete: BetaIncomplete,
-pseries: pseries,
-incbet: incbet,
-incbi: incbi,
-beta_quantile: beta_quantile,
-chisquared_cdf_c: chisquared_cdf_c,
-beta: beta,
-inc_gamma: inc_gamma,
-inc_gamma_c: inc_gamma_c,
-landau_pdf: landau_pdf,
-beta_cdf_c: beta_cdf_c,
-Landau: Landau,
-fdistribution_pdf: fdistribution_pdf,
-FDist: fdistribution_pdf,
-fdistribution_cdf: fdistribution_cdf,
-FDistI: fdistribution_cdf,
-fdistribution_cdf_c: fdistribution_cdf_c,
-normal_cdf_c: normal_cdf_c,
-gaussian_cdf_c: normal_cdf_c,
-normal_cdf: normal_cdf,
-gaussian_cdf: normal_cdf,
-lognormal_pdf: lognormal_pdf,
-normal_pdf: normal_pdf,
-crystalball_function: crystalball_function,
-crystalball_pdf: crystalball_pdf,
-crystalball_cdf: crystalball_cdf,
-crystalball_cdf_c: crystalball_cdf_c,
-chisquared_cdf: chisquared_cdf,
-gamma_quantile_c: gamma_quantile_c,
-gamma_quantile: gamma_quantile,
-breitwigner_cdf_c: breitwigner_cdf_c,
-breitwigner_cdf: breitwigner_cdf,
-cauchy_cdf_c: cauchy_cdf_c,
-cauchy_cdf: cauchy_cdf,
-cauchy_pdf: cauchy_pdf,
-gaussian_pdf: gaussian_pdf,
-tdistribution_cdf_c: tdistribution_cdf_c,
-tdistribution_cdf: tdistribution_cdf,
-tdistribution_pdf: tdistribution_pdf,
-exponential_cdf_c: exponential_cdf_c,
-exponential_cdf: exponential_cdf,
-chisquared_pdf: chisquared_pdf,
 Beta: Beta,
-GammaDist: GammaDist,
-LaplaceDist: LaplaceDist,
-LaplaceDistI: LaplaceDistI,
-LogNormal: LogNormal,
-Student: Student,
-StudentI: StudentI,
-gaus: gaus,
-gausn: gausn,
-gausxy: gausxy,
-expo: expo,
-Prob: Prob,
-Gaus: Gaus,
-BreitWigner: BreitWigner,
 BetaDist: BetaDist,
 BetaDistI: BetaDistI,
-landau: landau,
-landaun: landaun,
-ChebyshevN: ChebyshevN,
+BetaIncomplete: BetaIncomplete,
+BreitWigner: BreitWigner,
 Chebyshev1: Chebyshev1,
+Chebyshev10: Chebyshev10,
 Chebyshev2: Chebyshev2,
 Chebyshev3: Chebyshev3,
 Chebyshev4: Chebyshev4,
@@ -62259,8 +62186,84 @@ Chebyshev6: Chebyshev6,
 Chebyshev7: Chebyshev7,
 Chebyshev8: Chebyshev8,
 Chebyshev9: Chebyshev9,
-Chebyshev10: Chebyshev10,
-getTEfficiencyBoundaryFunc: getTEfficiencyBoundaryFunc
+ChebyshevN: ChebyshevN,
+FDist: fdistribution_pdf,
+FDistI: fdistribution_cdf,
+Gamma: gamma,
+GammaDist: GammaDist,
+Gaus: Gaus,
+Landau: Landau,
+LaplaceDist: LaplaceDist,
+LaplaceDistI: LaplaceDistI,
+LogNormal: LogNormal,
+Polynomial1eval: Polynomial1eval,
+Polynomialeval: Polynomialeval,
+Prob: Prob,
+Student: Student,
+StudentI: StudentI,
+beta: beta,
+beta_cdf_c: beta_cdf_c,
+beta_pdf: beta_pdf,
+beta_quantile: beta_quantile,
+breitwigner_cdf: breitwigner_cdf,
+breitwigner_cdf_c: breitwigner_cdf_c,
+cauchy_cdf: cauchy_cdf,
+cauchy_cdf_c: cauchy_cdf_c,
+cauchy_pdf: cauchy_pdf,
+chisquared_cdf: chisquared_cdf,
+chisquared_cdf_c: chisquared_cdf_c,
+chisquared_pdf: chisquared_pdf,
+crystalball_cdf: crystalball_cdf,
+crystalball_cdf_c: crystalball_cdf_c,
+crystalball_function: crystalball_function,
+crystalball_pdf: crystalball_pdf,
+erf: erf,
+erfc: erfc,
+expo: expo,
+exponential_cdf: exponential_cdf,
+exponential_cdf_c: exponential_cdf_c,
+fdistribution_cdf: fdistribution_cdf,
+fdistribution_cdf_c: fdistribution_cdf_c,
+fdistribution_pdf: fdistribution_pdf,
+gamma: gamma,
+gamma_pdf: gamma_pdf,
+gamma_quantile: gamma_quantile,
+gamma_quantile_c: gamma_quantile_c,
+gaus: gaus,
+gausn: gausn,
+gaussian_cdf: normal_cdf,
+gaussian_cdf_c: normal_cdf_c,
+gaussian_pdf: gaussian_pdf,
+gausxy: gausxy,
+getTEfficiencyBoundaryFunc: getTEfficiencyBoundaryFunc,
+igam: igam,
+igamc: igamc,
+igami: igami,
+inc_beta: inc_beta,
+inc_gamma: inc_gamma,
+inc_gamma_c: inc_gamma_c,
+incbet: incbet,
+incbi: incbi,
+landau: landau,
+landau_pdf: landau_pdf,
+landaun: landaun,
+lgam: lgam,
+lgamma: lgamma,
+lognormal_cdf: lognormal_cdf,
+lognormal_cdf_c: lognormal_cdf_c,
+lognormal_pdf: lognormal_pdf,
+ndtri: ndtri,
+normal_cdf: normal_cdf,
+normal_cdf_c: normal_cdf_c,
+normal_pdf: normal_pdf,
+normal_quantile: normal_quantile,
+normal_quantile_c: normal_quantile_c,
+pseries: pseries,
+stirf: stirf,
+tdistribution_cdf: tdistribution_cdf,
+tdistribution_cdf_c: tdistribution_cdf_c,
+tdistribution_pdf: tdistribution_pdf,
+tgamma: gamma
 });
 
 /** @summary Display progress message in the left bottom corner.
@@ -71001,8 +71004,8 @@ class TPadPainter extends ObjectPainter {
 
 var TPadPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-TPadPainter: TPadPainter,
 PadButtonsHandler: PadButtonsHandler,
+TPadPainter: TPadPainter,
 clTButton: clTButton
 });
 
@@ -71783,12 +71786,12 @@ function drawTFrame(dom, obj, opt) {
 
 var TCanvasPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-ensureTCanvas: ensureTCanvas,
-drawTPadSnapshot: drawTPadSnapshot,
-drawTGaxis: drawTGaxis,
-drawTFrame: drawTFrame,
+TCanvasPainter: TCanvasPainter,
 TPadPainter: TPadPainter,
-TCanvasPainter: TCanvasPainter
+drawTFrame: drawTFrame,
+drawTGaxis: drawTGaxis,
+drawTPadSnapshot: drawTPadSnapshot,
+ensureTCanvas: ensureTCanvas
 });
 
 const clTDiamond = 'TDiamond', clTPavesText = 'TPavesText', clTPaveLabel = 'TPaveLabel';
@@ -75394,7 +75397,7 @@ class THistPainter extends ObjectPainter {
  * @private
  */
 
-class TH1Painter$2 extends THistPainter {
+let TH1Painter$2 = class TH1Painter extends THistPainter {
 
    /** @summary Convert TH1K into normal binned histogram */
    convertTH1K() {
@@ -76564,7 +76567,7 @@ class TH1Painter$2 extends THistPainter {
       return THistPainter._drawHist(new TH1Painter$2(dom, histo), opt);
    }
 
-} // class TH1Painter
+}; // class TH1Painter
 
 /** @summary Draw 1-D histogram in 3D
   * @private */
@@ -76634,7 +76637,7 @@ TH1Painter: TH1Painter
  * @private
  */
 
-class TH2Painter$2 extends THistPainter {
+let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary constructor
      * @param {object} histo - histogram object */
@@ -79325,7 +79328,7 @@ class TH2Painter$2 extends THistPainter {
       return THistPainter._drawHist(new TH2Painter$2(dom, histo), opt);
    }
 
-} // class TH2Painter
+}; // class TH2Painter
 
 /** @summary Draw TH2Poly histogram as lego
   * @private */
@@ -90085,13 +90088,13 @@ function build(obj, opt) {
 var TGeoPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 ClonedNodes: ClonedNodes,
-build: build,
-TGeoPainter: TGeoPainter,
 GeoDrawingControl: GeoDrawingControl,
-expandGeoObject: expandGeoObject,
+TGeoPainter: TGeoPainter,
+build: build,
 createGeoPainter: createGeoPainter,
 drawAxis3D: drawAxis3D,
 drawDummy3DGeom: drawDummy3DGeom,
+expandGeoObject: expandGeoObject,
 produceRenderOrder: produceRenderOrder
 });
 
@@ -96673,16 +96676,16 @@ function treeHierarchy(node, obj) {
 
 var tree = /*#__PURE__*/Object.freeze({
 __proto__: null,
+TDrawSelector: TDrawSelector,
+TDrawVariable: TDrawVariable,
+TSelector: TSelector,
+clTBranchFunc: clTBranchFunc,
 kClonesNode: kClonesNode,
 kSTLNode: kSTLNode,
-clTBranchFunc: clTBranchFunc,
-TSelector: TSelector,
-TDrawVariable: TDrawVariable,
-TDrawSelector: TDrawSelector,
-treeHierarchy: treeHierarchy,
-treeProcess: treeProcess,
 treeDraw: treeDraw,
-treeIOTest: treeIOTest
+treeHierarchy: treeHierarchy,
+treeIOTest: treeIOTest,
+treeProcess: treeProcess
 });
 
 // v7 namespace prefix
@@ -100993,17 +100996,17 @@ internals.drawInspector = drawInspector;
 
 var HierarchyPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-getHPainter: getHPainter,
 HierarchyPainter: HierarchyPainter,
 drawInspector: drawInspector,
-drawStreamerInfo: drawStreamerInfo,
 drawList: drawList,
-markAsStreamerInfo: markAsStreamerInfo,
+drawStreamerInfo: drawStreamerInfo,
 folderHierarchy: folderHierarchy,
-taskHierarchy: taskHierarchy,
+getHPainter: getHPainter,
+keysHierarchy: keysHierarchy,
 listHierarchy: listHierarchy,
+markAsStreamerInfo: markAsStreamerInfo,
 objectHierarchy: objectHierarchy,
-keysHierarchy: keysHierarchy
+taskHierarchy: taskHierarchy
 });
 
 /** @summary Read style and settings from URL
@@ -101210,7 +101213,7 @@ var _rollup_plugin_ignore_empty_module_placeholder = {};
 
 var _rollup_plugin_ignore_empty_module_placeholder$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-'default': _rollup_plugin_ignore_empty_module_placeholder
+default: _rollup_plugin_ignore_empty_module_placeholder
 });
 
 /**
@@ -103736,12 +103739,12 @@ var index = {
 
 var dat_gui = /*#__PURE__*/Object.freeze({
 __proto__: null,
+GUI: GUI$1,
 color: color,
 controllers: controllers,
+default: index,
 dom: dom$1,
-gui: gui,
-GUI: GUI$1,
-'default': index
+gui: gui
 });
 
 /** @summary Draw TText
@@ -104108,15 +104111,15 @@ function drawJSImage(dom, obj, opt) {
 
 var more = /*#__PURE__*/Object.freeze({
 __proto__: null,
-drawText: drawText$1,
-drawTLine: drawTLine,
-drawPolyLine: drawPolyLine,
-drawEllipse: drawEllipse,
-drawPie: drawPie,
 drawBox: drawBox$1,
+drawEllipse: drawEllipse,
+drawJSImage: drawJSImage,
 drawMarker: drawMarker$1,
+drawPie: drawPie,
+drawPolyLine: drawPolyLine,
 drawPolyMarker: drawPolyMarker,
-drawJSImage: drawJSImage
+drawTLine: drawTLine,
+drawText: drawText$1
 });
 
 /**
@@ -104702,8 +104705,8 @@ async function drawPolyLine3D() {
 
 var draw3d = /*#__PURE__*/Object.freeze({
 __proto__: null,
-drawPolyMarker3D: drawPolyMarker3D,
-drawPolyLine3D: drawPolyLine3D
+drawPolyLine3D: drawPolyLine3D,
+drawPolyMarker3D: drawPolyMarker3D
 });
 
 /**
@@ -105766,8 +105769,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
 var TGraphPolarPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-TGraphPolargramPainter: TGraphPolargramPainter,
-TGraphPolarPainter: TGraphPolarPainter
+TGraphPolarPainter: TGraphPolarPainter,
+TGraphPolargramPainter: TGraphPolargramPainter
 });
 
 const kNotEditable = BIT(18),   // bit set if graph is non editable
@@ -105782,7 +105785,7 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
  * @private
  */
 
-class TGraphPainter$1 extends ObjectPainter {
+let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -107269,12 +107272,12 @@ class TGraphPainter$1 extends ObjectPainter {
       return TGraphPainter$1._drawGraph(new TGraphPainter$1(dom, graph), opt);
    }
 
-} // class TGraphPainter
+}; // class TGraphPainter
 
 var TGraphPainter$2 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-clTGraphAsymmErrors: clTGraphAsymmErrors,
-TGraphPainter: TGraphPainter$1
+TGraphPainter: TGraphPainter$1,
+clTGraphAsymmErrors: clTGraphAsymmErrors
 });
 
 function proivdeEvalPar(obj) {
@@ -108034,7 +108037,7 @@ TRatioPlotPainter: TRatioPlotPainter
  * @private
  */
 
-class TMultiGraphPainter$2 extends ObjectPainter {
+let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
 
    /** @summary Create painter
      * @param {object|string} dom - DOM element for drawing or element id
@@ -108315,7 +108318,7 @@ class TMultiGraphPainter$2 extends ObjectPainter {
       return TMultiGraphPainter$2._drawMG(new TMultiGraphPainter$2(dom, mgraph), opt);
    }
 
-} // class TMultiGraphPainter
+}; // class TMultiGraphPainter
 
 class TGraphPainter extends TGraphPainter$1 {
 
@@ -109990,10 +109993,10 @@ async function drawTree(dom, obj, opt) {
 
 var TTree = /*#__PURE__*/Object.freeze({
 __proto__: null,
+drawLeafPlayer: drawLeafPlayer,
 drawTree: drawTree,
 drawTreePlayer: drawTreePlayer,
-drawTreePlayerKey: drawTreePlayerKey,
-drawLeafPlayer: drawLeafPlayer
+drawTreePlayerKey: drawTreePlayerKey
 });
 
 const kNormal = 1, /* kLessTraffic = 2, */ kOffline = 3;
@@ -115731,15 +115734,15 @@ function drawRFrame(dom, obj, opt) {
 
 var RCanvasPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-ensureRCanvas: ensureRCanvas,
-drawRPadSnapshot: drawRPadSnapshot,
-drawRFrameTitle: drawRFrameTitle,
-drawRFont: drawRFont,
-drawRAxis: drawRAxis,
-drawRFrame: drawRFrame,
+RCanvasPainter: RCanvasPainter,
 RObjectPainter: RObjectPainter,
 RPadPainter: RPadPainter,
-RCanvasPainter: RCanvasPainter
+drawRAxis: drawRAxis,
+drawRFont: drawRFont,
+drawRFrame: drawRFrame,
+drawRFrameTitle: drawRFrameTitle,
+drawRPadSnapshot: drawRPadSnapshot,
+ensureRCanvas: ensureRCanvas
 });
 
 /** @summary draw RText object
@@ -116083,10 +116086,10 @@ class RPalettePainter extends RObjectPainter {
 var v7more = /*#__PURE__*/Object.freeze({
 __proto__: null,
 RPalettePainter: RPalettePainter,
-drawText: drawText,
-drawLine: drawLine,
 drawBox: drawBox,
-drawMarker: drawMarker
+drawLine: drawLine,
+drawMarker: drawMarker,
+drawText: drawText
 });
 
 const ECorner = { kTopLeft: 1, kTopRight: 2, kBottomLeft: 3, kBottomRight: 4 };
@@ -116581,10 +116584,10 @@ class RHistStatsPainter extends RPavePainter {
 
 var RPavePainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
-RPavePainter: RPavePainter,
+RHistStatsPainter: RHistStatsPainter,
 RLegendPainter: RLegendPainter,
-RPaveTextPainter: RPaveTextPainter,
-RHistStatsPainter: RHistStatsPainter
+RPavePainter: RPavePainter,
+RPaveTextPainter: RPaveTextPainter
 });
 
 /** @summary assign methods for the RAxis objects
@@ -117452,7 +117455,7 @@ class RHistPainter extends RObjectPainter {
  * @private
  */
 
-class RH1Painter$2 extends RHistPainter {
+let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element or id
@@ -118439,7 +118442,7 @@ class RH1Painter$2 extends RHistPainter {
       return RH1Painter$2._draw(new RH1Painter$2(dom, histo), opt);
    }
 
-} // class RH1Painter
+}; // class RH1Painter
 
 class RH1Painter extends RH1Painter$2 {
 
@@ -118505,7 +118508,7 @@ RH1Painter: RH1Painter
  * @private
  */
 
-class RH2Painter$2 extends RHistPainter {
+let RH2Painter$2 = class RH2Painter extends RHistPainter {
 
    /** @summary constructor
      * @param {object|string} dom - DOM element or id
@@ -119864,7 +119867,7 @@ class RH2Painter$2 extends RHistPainter {
       return RH2Painter$2._draw(new RH2Painter$2(dom, obj), opt);
    }
 
-} //  class RH2Painter
+}; //  class RH2Painter
 
 class RH2Painter extends RH2Painter$2 {
 
@@ -120854,7 +120857,5 @@ exports.treeDraw = treeDraw;
 exports.version = version;
 exports.version_date = version_date;
 exports.version_id = version_id;
-
-Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
