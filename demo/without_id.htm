@@ -3,6 +3,7 @@
    <head>
       <meta charset="utf-8">
       <title>Example how element pointer can be used</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
    </head>
 
    <body>
@@ -12,9 +13,9 @@
    <script type='module'>
       import { httpRequest, draw } from '../modules/main.mjs';
 
-      let obj = await httpRequest("hpx.json", 'object');
+      let obj = await httpRequest('hpx.json', 'object');
 
       // here demonstrated that div can be used without id attribute
-      draw(document.getElementsByTagName("div")[0], obj, "hist");
+      draw(document.getElementsByTagName('div')[0], obj, 'hist');
    </script>
 </html>

@@ -3,6 +3,7 @@
    <head>
       <meta charset="utf-8">
       <title>Create and update THStack object</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
    </head>
    <body>
       <h3>Text Before </h3>
@@ -21,7 +22,7 @@
        for (let n = 0; n < 5; n++) {
            // time to time exclude one histogram to see how THStack update is working
            if ((loop % 5 == 3) && (n == 1)) continue;
-           let hist = createHistogram("TH1I", 11);
+           let hist = createHistogram('TH1I', 11);
            hist.fName ="hist"+n;
            hist.Fill(n*2+1,10);
            if (loop%5 === n) hist.Fill(n*2+1,2);
@@ -34,10 +35,10 @@
         return stack;
      }
 
-     draw("object_draw", createStack(0), "nostack");
+     draw('object_draw', createStack(0), 'nostack');
 
      let cnt = 0;
-     setInterval(() => redraw("object_draw", createStack(++cnt), "nostack"), 2000);
+     setInterval(() => redraw('object_draw', createStack(++cnt), 'nostack'), 2000);
 
    </script>
 

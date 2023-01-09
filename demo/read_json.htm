@@ -3,13 +3,14 @@
    <head>
       <meta charset="utf-8">
       <title>Reading object from the JSON file</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
    </head>
    <body>
       <div id="drawing" style="width:800px; height:600px"></div>
    </body>
    <script type='module'>
       import { draw, httpRequest } from '../modules/main.mjs';
-      let obj = await httpRequest("https://jsroot.gsi.de/files/hpx.json", 'object');
-      draw("drawing", obj, "hist");
+      let obj = await httpRequest('https://jsroot.gsi.de/files/hpx.json', 'object');
+      draw('drawing', obj, 'hist');
    </script>
 </html>
