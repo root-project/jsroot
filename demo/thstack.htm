@@ -23,7 +23,7 @@
            // time to time exclude one histogram to see how THStack update is working
            if ((loop % 5 == 3) && (n == 1)) continue;
            let hist = createHistogram('TH1I', 11);
-           hist.fName ="hist"+n;
+           hist.fName =`hist${n}`;
            hist.Fill(n*2+1,10);
            if (loop%5 === n) hist.Fill(n*2+1,2);
            hist.fLineColor = n+2;
@@ -31,7 +31,7 @@
         }
 
         let stack = createTHStack(...histos);
-        stack.fTitle = "Testing THStack update " + loop;
+        stack.fTitle = `Testing THStack update ${loop}`;
         return stack;
      }
 

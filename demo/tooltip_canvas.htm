@@ -31,7 +31,7 @@
 
       function UserHandler(kind, info) {
          if (!info)  {
-            document.getElementById("user_tooltip").innerHTML = "No info";
+            document.getElementById("user_tooltip").innerHTML = 'No info';
             last_hbin = -1;
             return false;
          }
@@ -39,24 +39,24 @@
          last_hbin = info.bin;
 
          // show info
-         document.getElementById("user_tooltip").innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
+         document.getElementById('user_tooltip').innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
 
-         let h1 = createHistogram("TH1I", 20);
+         let h1 = createHistogram('TH1I', 20);
          // copy content from TH2 to TH1
          for (let n = 0; n < 20; n++)
             h1.setBinContent(n+1, info.obj.getBinContent(n+1, info.biny));
-         h1.fName = "tooltip";
-         h1.fTitle = "Projection of biny=" + (info.biny-1);
-         redraw("tooltip_draw", h1);
+         h1.fName = 'tooltip';
+         h1.fTitle = `Projection of biny=${info.biny-1}`;
+         redraw('tooltip_draw', h1);
          return true; // means event is handled and can be ignored
       }
 
       function DoExecMenu(arg) {
          switch (arg) {
-            case "something":
+            case 'something':
                console.log('Execute something');
                break;
-            case "toggle":
+            case 'toggle':
                console.log('Toggle something');
                toggle_flag = !toggle_flag;
                break;
@@ -69,16 +69,16 @@
         * kind argument may indicate special element like "x" or "y" axis */
       function CustomContextMenu(menu, kind) {
          // optional separator
-         menu.add("separator");
+         menu.add('separator');
 
          // menu item which execute function when selected
          if (last_hbin > 0)
-            menu.add("Process bin " + last_hbin, last_hbin, DoExecMenu);
+            menu.add(`Process bin ${last_hbin}`, last_hbin, DoExecMenu);
          else
-            menu.add("Do something", "something", DoExecMenu);
+            menu.add('Do something', 'something', DoExecMenu);
 
          // checked menu item
-         menu.addchk(toggle_flag, "Toggle something", "toggle", DoExecMenu);
+         menu.addchk(toggle_flag, 'Toggle something', 'toggle', DoExecMenu);
 
          // return promise
          return Promise.resolve(menu);
@@ -89,9 +89,9 @@
          // let histo = parse(your_json_string);
 
          // this is just generation of histogram
-         let histo = createHistogram("TH2I", 20, 20);
-         for (let iy=0;iy<20;iy++)
-            for (let ix=0;ix<20;ix++) {
+         let histo = createHistogram('TH2I', 20, 20);
+         for (let iy = 0; iy < 20; iy++)
+            for (let ix = 0; ix < 20; ix++) {
                let bin = histo.getBin(ix+1, iy+1), val = 0;
                switch (cnt % 4) {
                   case 1: val = ix + 19 - iy; break;
@@ -102,12 +102,12 @@
                histo.setBinContent(bin, val);
             }
 
-         histo.fName = "generated";
-         histo.fTitle = "Drawing " + cnt++;
+         histo.fName = 'generated';
+         histo.fTitle = `Drawing ${cnt++}`;
 
-         let canv = create("TCanvas");
-         canv.fName = "c1";
-         canv.fPrimitives.Add(histo, "lego2");
+         let canv = create('TCanvas');
+         canv.fName = 'c1';
+         canv.fPrimitives.Add(histo, 'lego2');
 
          redraw('object_draw', canv).then(canvas_painter => {
             // one can find painter for any object if name and/or type name is known
@@ -116,16 +116,16 @@
             // if there is at least one histogram - it should be also main painter
             // let painter = canvas_painter.getMainPainter();
 
-            let chkd1 = document.getElementById("btn1").checked,
-                chkd2 = document.getElementById("btn2").checked,
-                chkd3 = document.getElementById("btn3").checked,
-                all = document.getElementById("btn4").checked;
+            let chkd1 = document.getElementById('btn1').checked,
+                chkd2 = document.getElementById('btn2').checked,
+                chkd3 = document.getElementById('btn3').checked,
+                all = document.getElementById('btn4').checked;
 
-            painter.configureUserTooltipHandler(chkd1 || all ? info => UserHandler("tooltip", info) : null);
+            painter.configureUserTooltipHandler(chkd1 || all ? info => UserHandler('tooltip', info) : null);
 
-            painter.configureUserClickHandler(chkd2 || all ? info => UserHandler("click", info) : null);
+            painter.configureUserClickHandler(chkd2 || all ? info => UserHandler('click', info) : null);
 
-            painter.configureUserDblclickHandler(chkd3 || all ? info => UserHandler("dblclick", info) : null);
+            painter.configureUserDblclickHandler(chkd3 || all ? info => UserHandler('dblclick', info) : null);
 
             painter.configureUserContextMenu(CustomContextMenu);
          });
@@ -139,4 +139,3 @@
    </script>
 
 </html>
-
