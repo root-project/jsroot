@@ -1,5 +1,5 @@
 import babel from '@rollup/plugin-babel';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
 import babelrc from './.babelrc.json';
 
@@ -274,7 +274,7 @@ function header() {
 
 			return `/**
  * @license
- * Copyright 2010-2021 Three.js Authors
+ * Copyright 2010-2023 Three.js Authors
  * SPDX-License-Identifier: MIT
  */
 ${ code }`;
