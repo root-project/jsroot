@@ -42,7 +42,7 @@
       // load extra three.js sources
 
       const loader = new STLLoader();
-      loader.load(stl_file, function(geometry) {
+      loader.load(stl_file, geometry => {
 
          const material = new MeshPhongMaterial({ color: 0xff5533, specular: 0x111111, shininess: 200 });
          const mesh = new Mesh( geometry, material );
