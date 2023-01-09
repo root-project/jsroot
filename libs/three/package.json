@@ -51,7 +51,7 @@
     }
   },
   "scripts": {
-    "build": "patch ../../../threejs/examples/jsm/controls/OrbitControls.js OrbitControls.patch && cp Three_jsroot.js ../../../threejs/src && rollup -c rollup.jsroot.config.js && rm ../../../threejs/src/Three_jsroot.js && git -C ../../../threejs restore examples/jsm/controls/OrbitControls.js"
+    "build": "patch ../../../threejs/examples/jsm/controls/OrbitControls.js OrbitControls.patch && cp Three_jsroot.js ../../../threejs/src && rollup -c rollup.jsroot.config.js && rm ../../../threejs/src/Three_jsroot.js && git -C ../../../threejs restore examples/jsm/controls/OrbitControls.js && rm -f ../../../threejs/examples/jsm/controls/OrbitControls.js.orig"
   },
   "keywords": [
     "three",
