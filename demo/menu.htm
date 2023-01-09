@@ -18,12 +18,12 @@
          createMenu(evnt).then(menu => {
             for (let ncol = 0; ncol < 3; ncol++) {
 
-               menu.add("column:");
+               menu.add('column:');
 
                for (let n = 0; n < 10; n++)
-                  menu.add(`item_${ncol}_${n}`, arg => {console.log(`click ${arg}`);});
+                  menu.add(`item_${ncol}_${n}`, arg => console.log(`click ${arg}`));
 
-               menu.add("endcolumn:");
+               menu.add('endcolumn:');
             }
 
             menu.show();
@@ -33,7 +33,7 @@
 
       showMenu({ clientX: 20, clientY: 20 });
 
-      document.addEventListener("contextmenu", showMenu);
+      document.addEventListener('contextmenu', showMenu);
 
    </script>
 </html>

@@ -17,11 +17,11 @@
 
       import { buildGUI } from '../modules/gui.mjs';
 
-      let hpainter = await buildGUI("guiDiv");
+      let hpainter = await buildGUI('guiDiv');
 
-      await hpainter.openRootFile("../../files/hsimple.root");
+      await hpainter.openRootFile('../../files/hsimple.root');
 
-      let histpainter = await hpainter.display("hpxpy;1", "colz");
+      let histpainter = await hpainter.display('hpxpy;1', 'colz');
 
       // assign new context menu handler for TH2 drawing
       histpainter.oldFillHistContextMenu = histpainter.fillHistContextMenu;
@@ -38,9 +38,9 @@
             console.log(`Hist context menu for ${itemname} bins: ${tip.binx} ${tip.biny} cont: ${tip.cont}`);
 
             menu.add(`sub:Histogram bin [${tip.binx}, ${tip.biny}]`, () => menu.painter.provideSpecialDrawArea());
-            menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("bottom").then(() => hpainter.getObject("hpx")).then(res => menu.painter.drawInSpecialArea(res.obj, "*H")));
-            menu.add("Show hprof", () => menu.painter.provideSpecialDrawArea("left").then(() => hpainter.getObject("hprof")).then(res => menu.painter.drawInSpecialArea(res.obj, "E")));
-            menu.add("Close extra area", () => menu.painter.provideSpecialDrawArea());
+            menu.add('Show hpx', () => menu.painter.provideSpecialDrawArea('bottom').then(() => hpainter.getObject('hpx')).then(res => menu.painter.drawInSpecialArea(res.obj, '*H')));
+            menu.add('Show hprof', () => menu.painter.provideSpecialDrawArea('left').then(() => hpainter.getObject('hprof')).then(res => menu.painter.drawInSpecialArea(res.obj, 'E')));
+            menu.add('Close extra area', () => menu.painter.provideSpecialDrawArea());
             menu.add('endsub:');
          }
          return this.oldFillHistContextMenu(menu);

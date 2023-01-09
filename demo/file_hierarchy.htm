@@ -21,16 +21,16 @@
       setDefaultDrawOpt('TH1', 'text');
       setDefaultDrawOpt('TH2', 'col');
 
-      let h = new HierarchyPainter("example", "myTreeDiv");
+      let h = new HierarchyPainter('example', 'myTreeDiv');
 
       // configure 'simple' in provided <div> element
       // one also can specify "grid2x2" or "flex"
-      h.setDisplay("simple", "myMainDiv");
+      h.setDisplay('simple', 'myMainDiv');
 
       // open file and display element
-      await h.openRootFile("../../files/hsimple.root");
+      await h.openRootFile('../../files/hsimple.root');
 
-      await h.display("hpxpy;1", "colz");
+      await h.display('hpxpy;1', 'colz');
 
    </script>
 

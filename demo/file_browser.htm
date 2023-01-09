@@ -13,7 +13,7 @@
    <script type='module'>
       import { HierarchyPainter } from '../modules/main.mjs';
 
-      let h = new HierarchyPainter("example");
+      let h = new HierarchyPainter('example');
 
       // suppress selection elements
       h.no_select = true;
@@ -23,13 +23,13 @@
 
       // configure 'simple' layout for drawings
       // one also can specify "grid2x2" or "flex"
-      h.prepareGuiDiv("simpleGUI", "simple");
+      h.prepareGuiDiv('simpleGUI', 'simple');
 
       // open file and display element
-      await h.createBrowser("fix");
-      await h.openRootFile("https://root.cern/files/lhcb2.root");
-      await h.expandItem("E;1//Event/Gen/Header");
-      h.display("E;1//Event/Gen/Header/m_evtNumber","");
+      await h.createBrowser('fix');
+      await h.openRootFile('https://root.cern/files/lhcb2.root');
+      await h.expandItem('E;1//Event/Gen/Header');
+      h.display('E;1//Event/Gen/Header/m_evtNumber', '');
    </script>
 
 </html>
