@@ -6,7 +6,6 @@
       <meta charset="utf-8">
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
       <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-      <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
       <style>
          body {
             font-family: Monospace;
@@ -16,6 +15,7 @@
          }
       </style>
    </head>
+
    <body>
    </body>
 
@@ -28,6 +28,8 @@
 
       import { build, produceRenderOrder } from '../modules/geom/TGeoPainter.mjs';
 
+      import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
+
       let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null,
          d = decodeUrl();
 
@@ -35,12 +37,12 @@
 
          // options for building three.js model
          let opt = { numfaces: 100000, numnodes: 1000 };
-         if (d.has("all")) {
+         if (d.has('all')) {
             opt.numfaces *= 100;
             opt.numnodes *= 100;
          }
 
-         if (d.has("dflt") || d.has("dflt_colors"))
+         if (d.has('dflt') || d.has('dflt_colors'))
             opt.dflt_colors = true;
 
          // function demonstrate creation of three.js model
@@ -58,7 +60,6 @@
          camera.updateProjectionMatrix();
       }
 
-
       function onWindowResize() {
 
          camera.aspect = window.innerWidth / window.innerHeight;
@@ -66,8 +67,6 @@
 
          renderer.setSize( window.innerWidth, window.innerHeight );
       }
-
-      //
 
       function animate() {
 
@@ -82,8 +81,8 @@
 
          let timer = Date.now() * 0.0001;
 
-         camera.position.x = Math.cos( timer )*geom_size;
-         camera.position.z = Math.sin( timer )*geom_size;
+         camera.position.x = Math.cos(timer)*geom_size;
+         camera.position.z = Math.sin(timer)*geom_size;
          camera.position.y = geom_size;
 
          camera.lookAt( scene.position );
@@ -135,13 +134,13 @@
 
        // ------------------- reading geometry object --------------------------
 
-       let filename = d.get("file") || "https://root.cern/js/files/geom/simple_alice.json.gz";
+       let filename = d.get("file") || 'https://root.cern/js/files/geom/simple_alice.json.gz';
 
-       // filename = "https://root.cern/files/tank.root";
+       // filename = 'https://root.cern/files/tank.root';
 
-       if (filename.indexOf(".root") > 0) {
+       if (filename.indexOf('.root') > 0) {
           // load geometry from ROOT file
-          let itemname = d.get("item") || "geom";
+          let itemname = d.get("item") || 'geom';
           let file = await openFile(filename);
           let obj = await file.readObject(itemname);
           add_geometry(obj);
