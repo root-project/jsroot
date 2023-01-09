@@ -4,6 +4,15 @@
       <meta charset="utf-8">
       <title>Reading geometry and STL file</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+
+      <script type="importmap">
+        {
+            "imports": {
+               "three": "../modules/three.mjs"
+            }
+        }
+      </script>
+
    </head>
 
    <body>
@@ -14,27 +23,26 @@
 
       import { httpRequest, loadScript, draw } from '../modules/main.mjs';
 
-      import * as THREE from '../modules/three.mjs';
+      import { Mesh, MeshPhongMaterial } from 'three';
 
-      import { Mesh, MeshPhongMaterial } from '../modules/three.mjs';
+      import { STLLoader } from 'https://threejs.org/examples/jsm/loaders/STLLoader.js';
 
-      const geom_file = "https://root.cern/js/files/geom/evegeoshape.json.gz",
-            stl_file = "https://threejs.org/examples/models/stl/ascii/slotted_disk.stl";
+      const geom_file = 'https://root.cern/js/files/geom/evegeoshape.json.gz',
+            stl_file = 'https://threejs.org/examples/models/stl/ascii/slotted_disk.stl';
 
       // get geometry object
-      let obj = await httpRequest(geom_file, "object");
+      let obj = await httpRequest(geom_file, 'object');
 
       // draw object, also load three.js functionality
-      let geo_painter = await draw("drawing", obj);
+      let geo_painter = await draw('drawing', obj);
 
       // define global THREE handle requred by STLLoader.js
-      globalThis.THREE = Object.assign({}, THREE);
+      // globalThis.THREE = Object.assign({}, THREE);
 
       // load extra three.js sources
-      await loadScript("https://threejs.org/examples/js/loaders/STLLoader.js");
 
-      const loader = new globalThis.THREE.STLLoader();
-      loader.load(stl_file, function ( geometry ) {
+      const loader = new STLLoader();
+      loader.load(stl_file, function(geometry) {
 
          const material = new MeshPhongMaterial({ color: 0xff5533, specular: 0x111111, shininess: 200 });
          const mesh = new Mesh( geometry, material );
@@ -47,12 +55,11 @@
          mesh.receiveShadow = true;
 
          // this is for JSROOT to mark as THREE.Mesh object
-         mesh._typename = "Mesh";
+         mesh._typename = 'Mesh';
 
-         geo_painter.drawExtras(mesh, "stl");
+         geo_painter.drawExtras(mesh, 'stl');
       });
 
    </script>
 
 </html>
-
