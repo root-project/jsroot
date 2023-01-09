@@ -1,7 +1,5 @@
-import babel from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
-import babelrc from './.babelrc.json';
 
 
 export function glconstants() {
@@ -245,26 +243,6 @@ export function glsl() {
 
 }
 
-function babelCleanup() {
-
-	const doubleSpaces = / {2}/g;
-
-	return {
-
-		transform( code ) {
-
-			code = code.replace( doubleSpaces, '\t' );
-
-			return {
-				code: code,
-				map: null
-			};
-
-		}
-
-	};
-
-}
 
 function header() {
 
@@ -292,13 +270,6 @@ let builds = [
 			addons('../../modules/three.mjs'),
 			glsl(),
 			json({ compact: true, indent: "" }),
-			babel( {
-				babelHelpers: 'bundled',
-				compact: false,
-				babelrc: false,
-				...babelrc
-			} ),
-			babelCleanup(),
 			header()
 		],
 		output: [
@@ -317,12 +288,6 @@ let builds = [
 			glconstants(),
 			glsl(),
 			json({ compact: true, indent: "" }),
-			babel( {
-				babelHelpers: 'bundled',
-				babelrc: false,
-				...babelrc
-			} ),
-			babelCleanup(),
 			terser(),
 			header()
 		],
