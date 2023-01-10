@@ -490,10 +490,8 @@ class JSRootMenu {
             this.add('sub:Exclusion');
             this.add('sub:side');
             for (let side = -1; side <= 1; ++side)
-               this.addchk((painter.lineatt.excl_side == side), side, side, function(arg) {
-                  this.lineatt.changeExcl(parseInt(arg));
-                  this.interactiveRedraw();
-               }.bind(painter));
+               this.addchk((painter.lineatt.excl_side == side), side, side,
+                  arg => { painter.lineatt.changeExcl(parseInt(arg)); painter.interactiveRedraw(); });
             this.add('endsub:');
 
             this.addSizeMenu('width', 10, 100, 10, painter.lineatt.excl_width,
@@ -532,7 +530,7 @@ class JSRootMenu {
                 svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style == supported[n], svg, supported[n],
-               function(arg) { this.markeratt.change(undefined, parseInt(arg)); this.interactiveRedraw(true, `exec:SetMarkerStyle(${arg})`); }.bind(painter));
+               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetMarkerStyle(${arg})`); });
          }
          this.add('endsub:');
          this.add('endsub:');
@@ -562,8 +560,7 @@ class JSRootMenu {
       this.add('sub:Title');
       this.add('SetTitle', () => {
          this.input('Enter axis title', faxis.fTitle).then(t => {
-            faxis.fTitle = t;
-            painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
+            faxis.fTitle = t; painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
          });
       });
       this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), 'Center',
@@ -636,16 +633,16 @@ class JSRootMenu {
       this.addchk(settings.Tooltip, 'Tooltip', flag => { settings.Tooltip = flag; });
       this.addchk(settings.ContextMenu, 'Context menus', flag => { settings.ContextMenu = flag; });
       this.add('sub:Zooming');
-      this.addchk(settings.Zooming, 'Global', flag => { settings.Zooming = flag; });
-      this.addchk(settings.ZoomMouse, 'Mouse', flag => { settings.ZoomMouse = flag; });
-      this.addchk(settings.ZoomWheel, 'Wheel', flag => { settings.ZoomWheel = flag; });
-      this.addchk(settings.ZoomTouch, 'Touch', flag => { settings.ZoomTouch = flag; });
+      this.addchk(settings.Zooming,   'Global', flag => { settings.Zooming = flag; });
+      this.addchk(settings.ZoomMouse, 'Mouse',  flag => { settings.ZoomMouse = flag; });
+      this.addchk(settings.ZoomWheel, 'Wheel',  flag => { settings.ZoomWheel = flag; });
+      this.addchk(settings.ZoomTouch, 'Touch',  flag => { settings.ZoomTouch = flag; });
       this.add('endsub:');
       this.addchk(settings.HandleKeys, 'Keypress handling', flag => { settings.HandleKeys = flag; });
       this.addchk(settings.MoveResize, 'Move and resize', flag => { settings.MoveResize = flag; });
-      this.addchk(settings.DragAndDrop, 'Drag and drop', flag => { settings.DragAndDrop = flag; });
+      this.addchk(settings.DragAndDrop,'Drag and drop', flag => { settings.DragAndDrop = flag; });
       this.addchk(settings.DragGraphs, 'Drag graph points', flag => { settings.DragGraphs = flag; });
-      this.addchk(settings.ProgressBox, 'Progress box', flag => { settings.ProgressBox = flag; });
+      this.addchk(settings.ProgressBox,'Progress box', flag => { settings.ProgressBox = flag; });
       this.add('endsub:');
 
       this.add('sub:Drawing');
@@ -1287,233 +1284,6 @@ class StandaloneMenu extends JSRootMenu {
 
 } // class StandaloneMenu
 
-/**
- * @summary Context menu class using Bootstrap
- *
- * @desc Use {@link createMenu} to create instance of the menu
- * @private
- */
-
-class BootstrapMenu extends JSRootMenu {
-
-   constructor(painter, menuname, show_event) {
-      super(painter, menuname, show_event);
-
-      this.code = '';
-      this.funcs = {};
-      this.lvl = 0;
-   }
-
-   /** @summary Load bootstrap functionality, required for menu
-     * @private */
-   loadBS(with_js) {
-      let ext = 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/';
-
-      let promise = internals.bs_path ? Promise.resolve(true) :
-                      loadScript(source_dir + 'style/bootstrap.min.css')
-                            .then(() => { internals.bs_path = source_dir + 'scripts/'; })
-                            .catch(() => { internals.bs_path = ext + 'js/'; return loadScript(ext + 'css/bootstrap.min.css'); });
-      return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : loadScript(internals.bs_path + 'bootstrap.bundle.min.js'));
-   }
-
-   /** @summary Load bootstrap functionality */
-   load() { return this.loadBS().then(() => this); }
-
-   /** @summary Add menu item
-     * @param {string} name - item name
-     * @param {function} func - func called when item is selected */
-   add(name, arg, func, title) {
-      if (name == 'separator') {
-         this.code += '<hr class="dropdown-divider">';
-         return;
-      }
-
-      if ((name == 'column:') || (name == 'endcolumn:'))
-         return;
-
-      if (name.indexOf('header:') == 0) {
-         this.code += `<h6 class="dropdown-header">${name.slice(7)}</h6>`;
-         return;
-      }
-
-      let newlevel = false, extras = '', cl = 'dropdown-item btn-sm', checked = '';
-
-      if (name == 'endsub:') {
-         this.lvl--;
-         this.code += '</li>';
-         this.code += '</ul>';
-         return;
-      }
-      if (name.indexOf('sub:') == 0) { name = name.slice(4); newlevel = true; }
-
-      if (isFunc(arg)) { func = arg; arg = name; }
-
-      if (name.indexOf('chk:') == 0) {
-         checked = '\u2713';
-         name  = name.slice(4);
-      } else if (name.indexOf('unk:') == 0) {
-         name = name.slice(4);
-      }
-
-      if (title) extras += ` title="${title}"`;
-      if (arg !== undefined) extras += ` arg="${arg}"`;
-      if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded='false'`; cl += ' dropdown-toggle'; }
-
-      let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
-
-      if (newlevel) item = `<li class="dropend">${item}`;
-               else item = `<li>${item}</li>`;
-
-      this.code += item;
-
-      if (newlevel) {
-         this.code += `<ul class="dropdown-menu" aria-labelledby="${this.menuname}${this.cnt}">`;
-         this.lvl++;
-      }
-
-      if (isFunc(func)) this.funcs[this.cnt] = func; // keep call-back function
-
-      this.cnt++;
-   }
-
-   /** @summary Show menu */
-   async show(event) {
-      this.remove();
-
-      if (!event && this.show_evnt) event = this.show_evnt;
-
-      document.body.addEventListener('click', this.remove_handler);
-
-      let oldmenu = document.getElementById(this.menuname);
-      if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
-
-      return this.loadBS().then(() => {
-
-         let ww = window.innerWidth, wh = window.innerHeight;
-
-         this.element = document.createElement('div');
-         this.element.id = this.menuname;
-         this.element.setAttribute('class', 'dropdown');
-         this.element.innerHTML = `<ul class="dropdown-menu dropend" style="display:block">${this.code}</ul>`;
-
-         document.body.appendChild(this.element);
-
-         this.element.style.position = 'absolute';
-         this.element.style.background = 'white';
-         this.element.style.display = 'block';
-         this.element.style.left = (event.clientX + window.pageXOffset) + 'px';
-         this.element.style.top = (event.clientY + window.pageYOffset) + 'px';
-
-         let menu = this;
-
-         let myItems = this.element.getElementsByClassName('dropdown-item');
-
-         for (let i = 0; i < myItems.length; i++)
-            myItems[i].addEventListener('click', function() {
-               let arg = this.getAttribute('arg'),
-                   cnt = this.getAttribute('id').slice(menu.menuname.length),
-                   func = cnt ? menu.funcs[cnt] : null;
-               menu.remove();
-               if (isFunc(func)) {
-                  if (menu.painter)
-                     func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
-                  else
-                     func(arg);
-               }
-            });
-
-         let myDropdown = this.element.getElementsByClassName('dropdown-toggle');
-         for (let i=0; i < myDropdown.length; i++) {
-            myDropdown[i].addEventListener('mouseenter', function() {
-               let el = this.nextElementSibling;
-               el.style.display = (el.style.display == 'block') ? 'none' : 'block';
-               el.style.left = this.scrollWidth + 'px';
-               let rect = el.getBoundingClientRect();
-               if (rect.bottom > wh) el.style.top = (wh - rect.bottom - 5) + 'px';
-               if (rect.right > ww) el.style.left = (-rect.width) + 'px';
-            });
-            myDropdown[i].addEventListener('mouseleave', function() {
-               let el = this.nextElementSibling;
-               el.was_entered = false;
-               setTimeout(function() { if (!el.was_entered) el.style.display = 'none'; }, 200);
-            });
-         }
-
-         let myMenus = this.element.getElementsByClassName('dropdown-menu');
-         for (let i = 0; i < myMenus.length; i++)
-            myMenus[i].addEventListener('mouseenter', function() {
-               this.was_entered = true;
-            });
-
-
-         let newx = null, newy = null, rect = this.element.firstChild.getBoundingClientRect();
-
-         if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
-         if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
-
-         if (newx !== null) this.element.style.left = ((newx > 0 ? newx : 0) + window.pageXOffset) + 'px';
-         if (newy !== null) this.element.style.top = ((newy > 0 ? newy : 0) + window.pageYOffset) + 'px';
-
-         return new Promise(resolve => {
-            this.resolveFunc = resolve;
-         });
-      });
-   }
-
-   /** @summary Run modal elements with bootstrap code */
-   async runModal(title, main_content, args) {
-      if (!args) args = {};
-
-      let dlg_id = this.menuname + '_dialog',
-          old_dlg = document.getElementById(dlg_id);
-      if (old_dlg) old_dlg.remove();
-
-      return this.loadBS(true).then(() => {
-
-         let myModalEl = document.createElement('div');
-         myModalEl.setAttribute('id', dlg_id);
-         myModalEl.setAttribute('class', 'modal fade');
-         myModalEl.setAttribute('role', 'dialog');
-         myModalEl.setAttribute('tabindex', '-1');
-         myModalEl.setAttribute('aria-hidden', 'true');
-         let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
-
-         myModalEl.innerHTML =
-            `<div class="modal-dialog">`+
-              `<div class="modal-content">`+
-               `<div class="modal-header">`+
-                `<h5 class="modal-title">${title}</h5>`+
-                `<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>`+
-               `</div>`+
-               `<div class="modal-body">${main_content}</div>`+
-               `<div class="modal-footer">`+
-                  `${close_btn}`+
-                  `<button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>`+
-               `</div>`+
-              `</div>`+
-             `</div>`;
-
-         document.body.appendChild(myModalEl);
-
-         let myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
-         myModal.show();
-
-         return new Promise(resolveFunc => {
-            let pressOk = false;
-            myModalEl.querySelector(`.jsroot_okbtn`).addEventListener('click', () => { pressOk = true; });
-
-            myModalEl.addEventListener('hidden.bs.modal', () => {
-               if (pressOk) resolveFunc(myModalEl);
-               myModalEl.remove();
-            });
-         });
-
-     });
-   }
-
-} // class BootstrapMenu
-
-
 /** @summary Create JSROOT menu
   * @desc See {@link JSRootMenu} class for detailed list of methods
   * @param {object} [evnt] - event object like mouse context menu event
@@ -1527,8 +1297,7 @@ class BootstrapMenu extends JSRootMenu {
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
 function createMenu(evnt, handler, menuname) {
-   let menu = settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
-                                 : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
+   let menu = new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
    return menu.load();
 }
 
