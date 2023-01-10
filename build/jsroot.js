@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.3.0
+// https://root.cern/js/ v7.3.1
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -11,7 +11,7 @@ let version_id = '7.3.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '19/12/2022';
+let version_date = '10/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -48101,7 +48101,7 @@ class JSRootMenu {
          this.addchk(align[n] == obj.fTextAlign,
             align[n], align[n],
             // align[n].toString() + '_h:' + hnames[Math.floor(align[n]/10) - 1] + '_v:' + vnames[align[n]%10-1], align[n],
-            function(arg) { this.getObject().fTextAlign = parseInt(arg); this.interactiveRedraw(true, `exec:SetTextAlign(${arg})`); }.bind(painter));
+            function(arg) { this.getObject().fTextAlign = parseInt(arg); this.interactiveRedraw('pad', `exec:SetTextAlign(${arg})`); }.bind(painter));
       }
       this.add('endsub:');
 
