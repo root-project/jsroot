@@ -44,7 +44,7 @@ class JSRootMenu {
    remove() {
       if (this.element !== null) {
          this.element.remove();
-         if (this.resolveFunc) {
+         if (isFunc(this.resolveFunc)) {
             this.resolveFunc();
             delete this.resolveFunc;
          }
@@ -101,7 +101,8 @@ class JSRootMenu {
             while ((group < opts.length) && (opts[group].indexOf(name) == 0)) group++;
          }
 
-         if (without_sub) name = top_name + ' ' + name;
+         if (without_sub)
+            name = top_name + ' ' + name;
 
          if (group < i+2) {
             this.add(name, opts[i], call_back);
@@ -350,17 +351,17 @@ class JSRootMenu {
      * @protected */
    addRAttrTextItems(fontHandler, opts, set_func) {
       if (!opts) opts = {};
-      this.addRColorMenu('color', fontHandler.color, sel => set_func({ name: 'color', value: sel }));
+      this.addRColorMenu('color', fontHandler.color, value => set_func({ name: 'color', value }));
       if (fontHandler.scaled)
-         this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: 'size', value: sz }));
+         this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, value => set_func({ name: 'size', value }));
       else
-         this.addSizeMenu('size', 6, 20, 2, fontHandler.size, sz => set_func({ name: 'size', value: sz }));
+         this.addSizeMenu('size', 6, 20, 2, fontHandler.size, value => set_func({ name: 'size', value }));
 
-      this.addSelectMenu('family', ['Arial', 'Times New Roman', 'Courier New', 'Symbol'], fontHandler.name, res => set_func( {name: 'font_family', value: res }));
+      this.addSelectMenu('family', ['Arial', 'Times New Roman', 'Courier New', 'Symbol'], fontHandler.name, value => set_func({ name: 'font_family', value }));
 
-      this.addSelectMenu('style', ['normal', 'italic', 'oblique'], fontHandler.style || 'normal', res => set_func( {name: 'font_style', value: res == 'normal' ? null : res }));
+      this.addSelectMenu('style', ['normal', 'italic', 'oblique'], fontHandler.style || 'normal', res => set_func({ name: 'font_style', value: res == 'normal' ? null : res }));
 
-      this.addSelectMenu('weight', ['normal', 'lighter', 'bold', 'bolder'], fontHandler.weight || 'normal', res => set_func( {name: 'font_weight', value: res == 'normal' ? null : res }));
+      this.addSelectMenu('weight', ['normal', 'lighter', 'bold', 'bolder'], fontHandler.weight || 'normal', res => set_func({ name: 'font_weight', value: res == 'normal' ? null : res }));
 
       if (!opts.noalign)
          this.add('align');
@@ -371,29 +372,23 @@ class JSRootMenu {
    /** @summary Fill context menu for text attributes
      * @private */
    addTextAttributesMenu(painter, prefix) {
-      // for the moment, text attributes accessed directly from objects
-
       let obj = painter.getObject();
-      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign == undefined)) return;
+      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign === undefined) || (obj?.fTextFont === undefined)) return;
 
       this.add('sub:' + (prefix || 'Text'));
       this.addColorMenu('color', obj.fTextColor,
-         arg => { obj.fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
+         arg => { painter.getObject().fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
 
       let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
       this.add('sub:align');
-      for (let n = 0; n < align.length; ++n) {
-         this.addchk(align[n] == obj.fTextAlign,
-            align[n], align[n],
-            // align[n].toString() + '_h:' + hnames[Math.floor(align[n]/10) - 1] + '_v:' + vnames[align[n]%10-1], align[n],
-            function(arg) { this.getObject().fTextAlign = parseInt(arg); this.interactiveRedraw(true, `exec:SetTextAlign(${arg})`); }.bind(painter));
-      }
+      for (let n = 0; n < align.length; ++n)
+         this.addchk(align[n] == obj.fTextAlign, align[n], align[n],
+            arg => { painter.getObject().fTextAlign = parseInt(arg); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`); });
       this.add('endsub:');
 
-      this.addFontMenu('font', obj.fTextFont, function(fnt) {
-         this.getObject().fTextFont = fnt; this.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); }.bind(painter)
-      );
+      this.addFontMenu('font', obj.fTextFont,
+         fnt => { painter.getObject().fTextFont = fnt; painter.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); });
 
       this.add('endsub:');
    }
