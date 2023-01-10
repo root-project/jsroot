@@ -12,10 +12,9 @@
          body {
             min-height: 100%;
             margin: 0px;
-            overflow : hidden;
+            overflow: hidden;
          }
      </style>
-
    </head>
 
    <body>
@@ -24,9 +23,9 @@
 
    <script type='module'>
 
-      let mdi = null, cnt = 0, drawopt = null, addr = null;
-
       import { httpRequest, redraw, decodeUrl, registerForResize, GridDisplay } from '../modules/main.mjs';
+
+      let mdi = null, cnt = 0, drawopt = null, addr = null;
 
       function updateGUI() {
 
@@ -35,12 +34,12 @@
          // Or one can create root.json file in the application and place it on the webserver
          // To run demo, one should generate rootXX.json files using demo.C macro
 
-         let request_addr = addr || ("root" + (cnt % 20) + ".json"),
+         let request_addr = addr || `root${cnt % 20}.json`,
              request_count = cnt++;
 
          httpRequest(request_addr, 'object').then(histo => {
             // when use grid layout, use counter value stored in request itself
-            let frame = mdi ? mdi.findFrame("item" + (request_count % mdi.numGridFrames()), true) : 'drawing';
+            let frame = mdi ? mdi.findFrame(`item${request_count % mdi.numGridFrames()}`, true) : 'drawing';
 
             // redraw histogram at specified frame
             redraw(frame, histo, drawopt).then(() => {
@@ -51,12 +50,12 @@
       }
 
       let d = decodeUrl();
-      let monitor = parseInt(d.get("monitoring") || "1000");
+      let monitor = parseInt(d.get('monitoring') || '1000');
 
-      drawopt = d.get("opt");
-      addr = d.get("addr");
+      drawopt = d.get('opt');
+      addr = d.get('addr');
 
-      let layout = d.get("layout");
+      let layout = d.get('layout');
 
       if (layout)
           mdi = new GridDisplay('drawing', layout);

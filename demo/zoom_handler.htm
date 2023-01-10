@@ -15,17 +15,17 @@
 
       import { openFile, draw } from '../modules/main.mjs';
 
-      let file = await openFile("../../files/hsimple.root");
+      let file = await openFile('../../files/hsimple.root');
 
-      let obj1 = await file.readObject("hpx;1");
+      let obj1 = await file.readObject('hpx;1');
 
-      let h1painter = await draw("drawth1", obj1, "hist");
+      let h1painter = await draw('drawth1', obj1, 'hist');
 
-      let obj2 = await file.readObject("hpxpy;1");
+      let obj2 = await file.readObject('hpxpy;1');
 
-      let h2painter = await draw("drawth2", obj2, "col");
+      let h2painter = await draw('drawth2', obj2, 'col');
 
-      // zooming handled in frame painter now
+      // zooming handled in the frame painter now
       let fp = h2painter.getFramePainter();
 
       // keep old function to be able invoke it again
@@ -39,6 +39,4 @@
 
    </script>
 
-
 </html>
-
