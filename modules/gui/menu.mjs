@@ -384,7 +384,7 @@ class JSRootMenu {
       this.add('sub:align');
       for (let n = 0; n < align.length; ++n)
          this.addchk(align[n] == obj.fTextAlign, align[n], align[n],
-            arg => { painter.getObject().fTextAlign = parseInt(arg); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`); });
+            arg => { painter.getObject().fTextAlign = parseInt(arg); painter.interactiveRedraw('pad', `exec:SetTextAlign(${arg})`); });
       this.add('endsub:');
 
       this.addFontMenu('font', obj.fTextFont,
