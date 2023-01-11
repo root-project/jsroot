@@ -1,5 +1,5 @@
 import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr,
-         clTPave, clTPaveText, clTPaveStats, clTLegend, clTLegendEntry, clTPaletteAxis,
+         clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTLegendEntry, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
@@ -11,8 +11,6 @@ import { createMenu } from '../gui/menu.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-
-const clTDiamond = 'TDiamond', clTPavesText = 'TPavesText', clTPaveLabel = 'TPaveLabel';
 
 /**
  * @summary painter for TPave-derived classes

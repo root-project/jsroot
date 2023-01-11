@@ -1,7 +1,7 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
-         clTPave, clTPaveText, clTPaveStats, clTLegend, clTPaletteAxis,
+         clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
          clTColor, clTGraph, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
          clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume } from './core.mjs';
@@ -37,10 +37,10 @@ const drawFuncs = { lst: [
    { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
-   { name: 'TPavesText', sameas: clTPave },
+   { name: clTPavesText, sameas: clTPave },
    { name: clTPaveStats, sameas: clTPave },
-   { name: 'TPaveLabel', sameas: clTPave },
-   { name: 'TDiamond', sameas: clTPave },
+   { name: clTPaveLabel, sameas: clTPave },
+   { name: clTDiamond, sameas: clTPave },
    { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
    { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
    { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
