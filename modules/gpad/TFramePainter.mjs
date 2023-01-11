@@ -91,11 +91,13 @@ function addDragHandler(_painter, arg) {
       makeResizeElements(painter.draw_g);
 
       if (change_size || change_pos) {
-         if (change_size && ('resize' in arg)) arg.resize(newwidth, newheight);
-         if (change_pos && ('move' in arg)) arg.move(newx, newy, newx - oldx, newy - oldy);
+         if (change_size && isFunc(arg.resize))
+            arg.resize(newwidth, newheight);
+         if (change_pos && isFunc(arg.move))
+            arg.move(newx, newy, newx - oldx, newy - oldy);
 
          if (change_size || change_pos) {
-            if ('obj' in arg) {
+            if (arg.obj) {
                let rect = pp.getPadRect();
                arg.obj.fX1NDC = newx / rect.width;
                arg.obj.fX2NDC = (newx + newwidth) / rect.width;
@@ -103,7 +105,8 @@ function addDragHandler(_painter, arg) {
                arg.obj.fY2NDC = 1 - newy / rect.height;
                arg.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
             }
-            if ('redraw' in arg) arg.redraw(arg);
+            if (isFunc(arg.redraw))
+               arg.redraw(arg);
          }
       }
 
@@ -277,13 +280,15 @@ const TooltipHandler = {
 
    /** @return true if tooltip is shown, use to prevent some other action */
    isTooltipShown() {
-      if (!this.tooltip_enabled || !this.isTooltipAllowed()) return false;
+      if (!this.tooltip_enabled || !this.isTooltipAllowed())
+         return false;
       let hintsg = this.hints_layer().select('.objects_hints');
       return hintsg.empty() ? false : hintsg.property('hints_pad') == this.getPadName();
    },
 
    setTooltipEnabled(enabled) {
-      if (enabled !== undefined) this.tooltip_enabled = enabled;
+      if (enabled !== undefined)
+         this.tooltip_enabled = enabled;
    },
 
    /** @summary central function which let show selected hints for the object */
@@ -706,20 +711,20 @@ const FrameInteractive = {
 
       if (settings.Zooming && !this.projection) {
          if (settings.ZoomMouse) {
-            svg.on('mousedown', this.startRectSel.bind(this));
-            svg.on('dblclick', this.mouseDoubleClick.bind(this));
+            svg.on('mousedown', evnt => this.startRectSel(evnt));
+            svg.on('dblclick', evnt => this.mouseDoubleClick(evnt));
          }
          if (settings.ZoomWheel)
-            svg.on('wheel', this.mouseWheel.bind(this));
+            svg.on('wheel', evnt => this.mouseWheel(evnt));
       }
 
       if (browser.touches && ((settings.Zooming && settings.ZoomTouch && !this.projection) || settings.ContextMenu))
-         svg.on('touchstart', this.startTouchZoom.bind(this));
+         svg.on('touchstart', evnt => this.startTouchZoom(evnt));
 
       if (settings.ContextMenu) {
          if (browser.touches) {
-            svg_x.on('touchstart', this.startTouchMenu.bind(this,'x'));
-            svg_y.on('touchstart', this.startTouchMenu.bind(this,'y'));
+            svg_x.on('touchstart', evnt => this.startTouchMenu('x', evnt));
+            svg_y.on('touchstart', evnt => this.startTouchMenu('y', evnt));
          }
          svg.on('contextmenu', evnt => this.showContextMenu('', evnt));
          svg_x.on('contextmenu', evnt => this.showContextMenu('x', evnt));
@@ -754,19 +759,19 @@ const FrameInteractive = {
       if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false) ||
           (getActivePad() !== pp) || (allowed.indexOf(key) < 0)) return false;
 
-      if (evnt.shiftKey) key = 'Shift ' + key;
-      if (evnt.altKey) key = 'Alt ' + key;
-      if (evnt.ctrlKey) key = 'Ctrl ' + key;
+      if (evnt.shiftKey) key = `Shift ${key}`;
+      if (evnt.altKey) key = `Alt ${key}`;
+      if (evnt.ctrlKey) key = `Ctrl ${key}`;
 
       let zoom = { name: 'x', dleft: 0, dright: 0 };
 
       switch (key) {
-         case 'ArrowLeft':  zoom.dleft = -1; zoom.dright = 1; break;
-         case 'ArrowRight':  zoom.dleft = 1; zoom.dright = -1; break;
+         case 'ArrowLeft': zoom.dleft = -1; zoom.dright = 1; break;
+         case 'ArrowRight': zoom.dleft = 1; zoom.dright = -1; break;
          case 'Ctrl ArrowLeft': zoom.dleft = zoom.dright = -1; break;
          case 'Ctrl ArrowRight': zoom.dleft = zoom.dright = 1; break;
-         case 'ArrowUp':  zoom.name = 'y'; zoom.dleft = 1; zoom.dright = -1; break;
-         case 'ArrowDown':  zoom.name = 'y'; zoom.dleft = -1; zoom.dright = 1; break;
+         case 'ArrowUp': zoom.name = 'y'; zoom.dleft = 1; zoom.dright = -1; break;
+         case 'ArrowDown': zoom.name = 'y'; zoom.dleft = -1; zoom.dright = 1; break;
          case 'Ctrl ArrowUp': zoom.name = 'y'; zoom.dleft = zoom.dright = 1; break;
          case 'Ctrl ArrowDown': zoom.name = 'y'; zoom.dleft = zoom.dright = -1; break;
       }
@@ -863,8 +868,8 @@ const FrameInteractive = {
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      d3_select(window).on('mousemove.zoomRect', this.moveRectSel.bind(this))
-                       .on('mouseup.zoomRect', this.endRectSel.bind(this), true);
+      d3_select(window).on('mousemove.zoomRect', evnt => this.moveRectSel(evnt))
+                       .on('mouseup.zoomRect', evnt => this.endRectSel(evnt), true);
 
       this.zoom_rect = null;
 
@@ -1074,8 +1079,8 @@ const FrameInteractive = {
                               .on('touchend', null, true);
          } else if (settings.ContextMenu) {
             this.zoom_curr = arr[0];
-            this.getFrameSvg().on('touchcancel', this.endTouchSel.bind(this))
-                              .on('touchend', this.endTouchSel.bind(this));
+            this.getFrameSvg().on('touchcancel', evnt => this.endTouchSel(evnt))
+                              .on('touchend', evnt => this.endTouchSel(evnt));
             evnt.preventDefault();
             evnt.stopPropagation();
          }
@@ -1123,9 +1128,9 @@ const FrameInteractive = {
             .attr('width', this.zoom_origin[0] - this.zoom_curr[0])
             .attr('height', this.zoom_origin[1] - this.zoom_curr[1]);
 
-      d3_select(window).on('touchmove.zoomRect', this.moveTouchZoom.bind(this))
-                       .on('touchcancel.zoomRect', this.endTouchZoom.bind(this))
-                       .on('touchend.zoomRect', this.endTouchZoom.bind(this));
+      d3_select(window).on('touchmove.zoomRect', evnt => this.moveTouchZoom(evnt))
+                       .on('touchcancel.zoomRect', evnt => this.endTouchZoom(evnt))
+                       .on('touchend.zoomRect', evnt => this.endTouchZoom(evnt));
    },
 
    /** @summary Move touch zooming */
@@ -1333,7 +1338,8 @@ const FrameInteractive = {
                   }
             }
 
-            if (sel) menu_painter = sel; else kind = 'frame';
+            if (sel) menu_painter = sel;
+                else kind = 'frame';
 
             if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
@@ -1380,7 +1386,7 @@ const FrameInteractive = {
       if (arr.length != 1) return;
 
       if (!kind) kind = 'main';
-      let fld = 'touch_' + kind;
+      let fld = `touch_${kind}`;
 
       evnt.sourceEvent.preventDefault();
       evnt.sourceEvent.stopPropagation();
@@ -1437,7 +1443,6 @@ const FrameInteractive = {
    }
 
 } // FrameInterative
-
 
 
 /**
