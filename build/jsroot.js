@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/01/2023';
+let version_date = '11/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -979,8 +979,10 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
-      clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
-      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats',
+      clTGraph2DErrors = 'TGraph2DErrors', clTGraph2DAsymmErrors = 'TGraph2DAsymmErrors',
+      clTGraphPolar = 'TGraphPolar', clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
+      clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTPavesText = 'TPavesText',
+      clTPaveLabel = 'TPaveLabel', clTDiamond = 'TDiamond',
       clTLegend = 'TLegend', clTLegendEntry = 'TLegendEntry', clTPaletteAxis = 'TPaletteAxis',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
@@ -1745,6 +1747,7 @@ clTCanvas: clTCanvas,
 clTClonesArray: clTClonesArray,
 clTColor: clTColor,
 clTCutG: clTCutG,
+clTDiamond: clTDiamond,
 clTF1: clTF1,
 clTF2: clTF2,
 clTGaxis: clTGaxis,
@@ -1752,11 +1755,15 @@ clTGeoNode: clTGeoNode,
 clTGeoNodeMatrix: clTGeoNodeMatrix,
 clTGeoVolume: clTGeoVolume,
 clTGraph: clTGraph,
+clTGraph2DAsymmErrors: clTGraph2DAsymmErrors,
+clTGraph2DErrors: clTGraph2DErrors,
+clTGraphPolar: clTGraphPolar,
 clTGraphPolargram: clTGraphPolargram,
 clTGraphTime: clTGraphTime,
 clTH1: clTH1,
 clTH2: clTH2,
 clTH3: clTH3,
+clTHStack: clTHStack,
 clTHashList: clTHashList,
 clTLatex: clTLatex,
 clTLegend: clTLegend,
@@ -1773,8 +1780,10 @@ clTObject: clTObject,
 clTPad: clTPad,
 clTPaletteAxis: clTPaletteAxis,
 clTPave: clTPave,
+clTPaveLabel: clTPaveLabel,
 clTPaveStats: clTPaveStats,
 clTPaveText: clTPaveText,
+clTPavesText: clTPavesText,
 clTPolyLine: clTPolyLine,
 clTPolyLine3D: clTPolyLine3D,
 clTPolyMarker3D: clTPolyMarker3D,
@@ -71558,8 +71567,6 @@ drawTPadSnapshot: drawTPadSnapshot,
 ensureTCanvas: ensureTCanvas
 });
 
-const clTDiamond = 'TDiamond', clTPavesText = 'TPavesText', clTPaveLabel = 'TPaveLabel';
-
 /**
  * @summary painter for TPave-derived classes
  *
@@ -96477,10 +96484,10 @@ const drawFuncs = { lst: [
    { name: 'TFrame', icon: 'img_frame', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
-   { name: 'TPavesText', sameas: clTPave },
+   { name: clTPavesText, sameas: clTPave },
    { name: clTPaveStats, sameas: clTPave },
-   { name: 'TPaveLabel', sameas: clTPave },
-   { name: 'TDiamond', sameas: clTPave },
+   { name: clTPaveLabel, sameas: clTPave },
+   { name: clTDiamond, sameas: clTPave },
    { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
    { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
    { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
@@ -96494,7 +96501,7 @@ const drawFuncs = { lst: [
    { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
    { name: clTProfile2D, sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
-   { name: 'THStack', icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
+   { name: clTHStack, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
    { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
    { name: clTPolyLine3D, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
    { name: 'TGraphStruct' },
@@ -96502,10 +96509,10 @@ const drawFuncs = { lst: [
    { name: 'TGraphEdge' },
    { name: clTGraphTime, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphTimePainter$1; }).then(h => h.TGraphTimePainter), opt: 'once;repeat;first', theonly: true },
    { name: clTGraph2D, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraph2DPainter$1; }).then(h => h.TGraph2DPainter), opt: ';P;PCOL', theonly: true },
-   { name: 'TGraph2DErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
-   { name: 'TGraph2DAsymmErrors', sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
+   { name: clTGraph2DErrors, sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
+   { name: clTGraph2DAsymmErrors, sameas: clTGraph2D, opt: ';P;PCOL;ERR', theonly: true },
    { name: clTGraphPolargram, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
-   { name: 'TGraphPolar', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
+   { name: clTGraphPolar, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
    { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP' },
    { name: clTCutG, sameas: clTGraph },
@@ -97607,32 +97614,35 @@ function createStreamerInfoContent(lst) {
          _childs : []
       };
 
-      if (entry.fTitle) item._title += '  ' + entry.fTitle;
+      if (entry.fTitle)
+         item._title += '  ' + entry.fTitle;
 
       h._childs.push(item);
 
-      if (typeof entry.fElements == 'undefined') continue;
+      if (typeof entry.fElements == 'undefined')
+         continue;
       for (let l = 0; l < entry.fElements.arr.length; ++l) {
          let elem = entry.fElements.arr[l];
-         if (!elem || !elem.fName) continue;
-         let info = elem.fTypeName + ' ' + elem.fName,
-             title = elem.fTypeName + ' type:' + elem.fType;
+         if (!elem?.fName) continue;
+         let _name = `${elem.fTypeName} ${elem.fName}`,
+             _title = `${elem.fTypeName} type:${elem.fType}`;
          if (elem.fArrayDim === 1)
-            info += '[' + elem.fArrayLength + ']';
+            _name += `[${elem.fArrayLength}]`;
          else
             for (let dim = 0; dim < elem.fArrayDim; ++dim)
-               info += '[' + elem.fMaxIndex[dim] + ']';
+               _name += `[${elem.fMaxIndex[dim]}]`;
          if (elem.fBaseVersion === 4294967295)
-            info += ':-1';
+            _name += ':-1';
          else if (elem.fBaseVersion !== undefined)
-            info += ':' + elem.fBaseVersion;
-         info += ';';
+            _name += `:${elem.fBaseVersion}`;
+         _name += ';';
          if (elem.fTitle)
-            info += ' // ' + elem.fTitle;
+            _name += ` // ${elem.fTitle}`;
 
-         item._childs.push({ _name: info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? 'img_class' : 'img_member' });
+         item._childs.push({ _name, _title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? 'img_class' : 'img_member' });
       }
-      if (!item._childs.length) delete item._childs;
+      if (!item._childs.length)
+         delete item._childs;
    }
 
    return h;
@@ -98097,10 +98107,14 @@ class HierarchyPainter extends BasePainter {
       if (isStr(arg)) {
          itemname = arg;
       } else if (isObject(arg)) {
-         if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined)) item = arg; else
-         if (arg.name !== undefined) itemname = arg.name; else
-         if (arg.arg !== undefined) itemname = arg.arg; else
-         if (arg.item !== undefined) item = arg.item;
+         if ((arg._parent !== undefined) && (arg._name !== undefined) && (arg._kind !== undefined))
+            item = arg;
+         else if (arg.name !== undefined)
+            itemname = arg.name;
+         else if (arg.arg !== undefined)
+            itemname = arg.arg;
+         else if (arg.item !== undefined)
+            item = arg.item;
       }
 
       if (isStr(itemname) && (itemname.indexOf('img:') == 0)) {
@@ -104646,7 +104660,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       res.Color = d.check('COL');
       res.Line = d.check('LINE');
-      res.Error = d.check('ERR') && (this.matchObjectType('TGraph2DErrors') || this.matchObjectType('TGraph2DAsymmErrors'));
+      res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
       res.Circles = d.check('P0');
       res.Markers = d.check('P');
 
@@ -104664,7 +104678,7 @@ class TGraph2DPainter extends ObjectPainter {
    /** @summary Create histogram for axes drawing */
    createHistogram() {
       let gr = this.getObject(),
-          asymm = this.matchObjectType('TGraph2DAsymmErrors'),
+          asymm = this.matchObjectType(clTGraph2DAsymmErrors),
           xmin = gr.fX[0], xmax = xmin,
           ymin = gr.fY[0], ymax = ymin,
           zmin = gr.fZ[0], zmax = zmin;
@@ -104840,7 +104854,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (this.options.Error) {
             err = new Float32Array(size*6*3);
-            asymm = this.matchObjectType('TGraph2DAsymmErrors');
+            asymm = this.matchObjectType(clTGraph2DAsymmErrors);
           }
 
          if (this.options.Line)
@@ -120517,6 +120531,7 @@ exports.clTCanvas = clTCanvas;
 exports.clTClonesArray = clTClonesArray;
 exports.clTColor = clTColor;
 exports.clTCutG = clTCutG;
+exports.clTDiamond = clTDiamond;
 exports.clTF1 = clTF1;
 exports.clTF2 = clTF2;
 exports.clTGaxis = clTGaxis;
@@ -120524,11 +120539,15 @@ exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
 exports.clTGeoVolume = clTGeoVolume;
 exports.clTGraph = clTGraph;
+exports.clTGraph2DAsymmErrors = clTGraph2DAsymmErrors;
+exports.clTGraph2DErrors = clTGraph2DErrors;
+exports.clTGraphPolar = clTGraphPolar;
 exports.clTGraphPolargram = clTGraphPolargram;
 exports.clTGraphTime = clTGraphTime;
 exports.clTH1 = clTH1;
 exports.clTH2 = clTH2;
 exports.clTH3 = clTH3;
+exports.clTHStack = clTHStack;
 exports.clTHashList = clTHashList;
 exports.clTLatex = clTLatex;
 exports.clTLegend = clTLegend;
@@ -120545,8 +120564,10 @@ exports.clTObject = clTObject;
 exports.clTPad = clTPad;
 exports.clTPaletteAxis = clTPaletteAxis;
 exports.clTPave = clTPave;
+exports.clTPaveLabel = clTPaveLabel;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;
+exports.clTPavesText = clTPavesText;
 exports.clTPolyLine = clTPolyLine;
 exports.clTPolyLine3D = clTPolyLine3D;
 exports.clTPolyMarker3D = clTPolyMarker3D;
