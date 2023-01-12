@@ -1,7 +1,7 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 import { settings, constants, internals, isNodeJs, getPromise, BIT, clTObjString, clTAxis, isObject, isFunc, isStr } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
-import { getElementRect, BasePainter } from './BasePainter.mjs';
+import { getElementRect, BasePainter, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { TAttFillHandler } from './TAttFillHandler.mjs';
 import { TAttLineHandler } from './TAttLineHandler.mjs';
@@ -999,23 +999,16 @@ class ObjectPainter extends BasePainter {
          if (!arg.rotate) { arg.x += dx; arg.y += dy; dx = dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = '', append = arg => { if (trans) trans += ' '; trans += arg; },
-             x = Math.round(arg.x), y = Math.round(arg.y);
+         let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '',
+             dtrans =  makeTranslate(Math.round(dx), Math.round(dy)),
+             append = arg => { if (trans) trans += ' '; trans += arg; };
 
-         dx = Math.round(dx), dy = Math.round(dy);
-
-         if (y)
-            trans = `translate(${x},${y})`;
-         else if (x)
-            trans = `translate(${x})`;
          if (arg.rotate)
             append(`rotate(${Math.round(arg.rotate)})`);
          if (scale !== 1)
             append(`scale(${scale.toFixed(3)})`);
-         if (dy)
-            append(`translate(${dx},${dy})`);
-         else if (dx)
-            append(`translate(${dx})`);
+         if (dtrans)
+            append(dtrans);
          if (trans) txt.attr('transform', trans);
       });
 
