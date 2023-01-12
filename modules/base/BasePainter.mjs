@@ -655,7 +655,7 @@ class BasePainter {
 
 /** @summary Load and initialize JSDOM from nodes
   * @return {Promise} with d3 selection for d3_body
-   * @private */
+  * @private */
 async function _loadJSDOM() {
    return import('jsdom').then(handle => {
 
@@ -669,6 +669,16 @@ async function _loadJSDOM() {
    });
 }
 
+/** @summary Return translate string for transform attribute of some svg element
+  * @return string or null if x and y are zeros
+  * @private */
+function makeTranslate(x,y)
+{
+   if (y) return `translate(${x},${y})`;
+   if (x) return `translate(${x})`;
+   return null;
+}
+
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgPath, compressSVG,
-         BasePainter, _loadJSDOM };
+         BasePainter, _loadJSDOM, makeTranslate };

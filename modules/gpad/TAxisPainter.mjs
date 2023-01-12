@@ -2,7 +2,7 @@ import { gStyle, settings, constants, isBatchMode, clTGaxis, clTAxis } from '../
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
-import { floatToString } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
@@ -1247,12 +1247,8 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = -1 * Math.round(((side > 0) ? (this.labelsOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
             }
 
-            if (title_shift_y)
-               title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`);
-            else if (title_shift_x)
-               title_g.attr('transform', `translate(${title_shift_x})`);
-
-            title_g.property('shift_x', title_shift_x)
+            title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
+                   .property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
          }
 

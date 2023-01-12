@@ -6,7 +6,7 @@ import { HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from '../three.mjs';
 import { browser, settings, constants, internals, isBatchMode, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
-import { getElementRect, getAbsPosInCanvas } from './BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
@@ -313,7 +313,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
-            elem.attr('transform', `translate(${size.x},${size.y})`);
+            elem.attr('transform', makeTranslate(size.x,size.y));
 
          } else {
 

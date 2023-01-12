@@ -3,6 +3,7 @@ import { select as d3_select, pointer as d3_pointer,
          drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
+import { makeTranslate } from '../base/BasePainter.mjs';
 import { AxisPainterMethods, chooseTimeFormat } from './TAxisPainter.mjs';
 import { createMenu } from '../gui/menu.mjs';
 import { addDragHandler } from './TFramePainter.mjs';
@@ -778,12 +779,8 @@ class RAxisPainter extends RObjectPainter {
                          text: this.fTitle, draw_g: title_g });
       }
 
-      if (title_shift_y)
-         title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`);
-      else if (title_shift_x)
-         title_g.attr('transform', `translate(${title_shift_x})`);
-
-      title_g.property('basepos', title_basepos)
+      title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
+             .property('basepos', title_basepos)
              .property('shift_x', title_shift_x)
              .property('shift_y', title_shift_y);
 
