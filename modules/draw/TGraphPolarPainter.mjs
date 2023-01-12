@@ -1,6 +1,6 @@
 import { settings, create, isBatchMode } from '../core.mjs';
 import { scaleLinear, select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { DrawOptions, buildSvgPath } from '../base/BasePainter.mjs';
+import { DrawOptions, buildSvgPath, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -88,7 +88,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
 
-      rect.transform = `translate(${rect.x},${rect.y})`;
+      rect.transform = makeTranslate(rect.x, rect.y) || '';
 
       return rect;
    }
@@ -148,7 +148,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
       this.szx = rect.szx;
       this.szy = rect.szy;
 

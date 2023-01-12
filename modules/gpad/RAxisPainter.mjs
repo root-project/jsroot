@@ -485,7 +485,7 @@ class RAxisPainter extends RObjectPainter {
                }
 
                new_x = set_x; new_y = set_y; curr_indx = besti;
-               title_g.attr('transform', 'translate(' + Math.round(new_x) + ',' + Math.round(new_y) +  ')');
+               title_g.attr('transform', makeTranslate(new_x, new_y));
 
           }).on('end', evnt => {
                if (!drag_rect) return;
@@ -978,7 +978,7 @@ class RAxisPainter extends RObjectPainter {
 
       this.standalone = true;  // no need to clean axis container
 
-      let promise = this.drawAxis(this.draw_g, `translate(${pos.x},${pos.y})`);
+      let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y) || '');
 
       if (isBatchMode()) return promise;
 
