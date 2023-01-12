@@ -998,19 +998,22 @@ class ObjectPainter extends BasePainter {
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = '';
-         if (arg.y)
-            trans = `translate(${Math.round(arg.x)},${Math.round(arg.y)})`;
-         else if (arg.x)
-            trans = `translate(${Math.round(arg.x)})`;
+         let trans = '', append = arg => { if (trans) trans += ' '; trans += arg; },
+             x = Math.round(arg.x), y = Math.round(arg.y),
+             dx = Math.round(arg.dx), dy = Math.round(arg.dy);
+
+         if (y)
+            trans = `translate(${x},${y})`;
+         else if (x)
+            trans = `translate(${x})`;
          if (arg.rotate)
-            trans += ` rotate(${Math.round(arg.rotate)})`;
+            append(`rotate(${Math.round(arg.rotate)})`);
          if (scale !== 1)
-            trans += ` scale(${scale.toFixed(3)})`;
-         if (arg.dy)
-            trans += ` translate(${Math.round(arg.dx)},${Math.round(arg.dy)})`;
-         else if (arg.dx)
-            trans += ` translate(${Math.round(arg.dx)})`;
+            append(`scale(${scale.toFixed(3)})`);
+         if (dy)
+            append(`translate(${dx},${dy})`);
+         else if (dx)
+            append(`translate(${dx})`);
          if (trans) txt.attr('transform', trans);
       });
 
