@@ -950,7 +950,7 @@ class ObjectPainter extends BasePainter {
                arg.y += arg.height / 2;
          }
 
-         arg.dx = arg.dy = 0;
+         let dx = 0, dy = 0;
 
          if (is_txt) {
 
@@ -965,15 +965,16 @@ class ObjectPainter extends BasePainter {
 
             if (arg.plain) {
                txt.attr('text-anchor', arg.align[0]);
-               if (arg.align[1] == 'top')
+               if (arg.align[1] == 'top') {
                   txt.attr('dy', '.8em');
-               else if (arg.align[1] == 'middle') {
-                  if (isNodeJs()) txt.attr('dy', '.4em'); else txt.attr('dominant-baseline', 'middle');
+               } else if (arg.align[1] == 'middle') {
+                  if (isNodeJs()) txt.attr('dy', '.4em');
+                             else txt.attr('dominant-baseline', 'middle');
                }
             } else {
                txt.attr('text-anchor', 'start');
-               arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
-               arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
+               dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
+               dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
 
          } else if (arg.text_rect) {
@@ -983,24 +984,25 @@ class ObjectPainter extends BasePainter {
 
             scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
-            arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
+            dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
 
             if (arg.align[1] == 'top')
-               arg.dy = -box.y1*scale;
+               dy = -box.y1*scale;
             else if (arg.align[1] == 'bottom')
-               arg.dy = -box.y2*scale;
+               dy = -box.y2*scale;
             else if (arg.align[1] == 'middle')
-               arg.dy = -0.5*(box.y1 + box.y2)*scale;
+               dy = -0.5*(box.y1 + box.y2)*scale;
          } else {
             console.error('text rect not calcualted - please check code');
          }
 
-         if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
+         if (!arg.rotate) { arg.x += dx; arg.y += dy; dx = dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
          let trans = '', append = arg => { if (trans) trans += ' '; trans += arg; },
-             x = Math.round(arg.x), y = Math.round(arg.y),
-             dx = Math.round(arg.dx), dy = Math.round(arg.dy);
+             x = Math.round(arg.x), y = Math.round(arg.y);
+
+         dx = Math.round(dx), dy = Math.round(dy);
 
          if (y)
             trans = `translate(${x},${y})`;
