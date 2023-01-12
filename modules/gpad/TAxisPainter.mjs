@@ -1247,8 +1247,12 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = -1 * Math.round(((side > 0) ? (this.labelsOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
             }
 
-            title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
-                   .property('shift_x', title_shift_x)
+            if (title_shift_y)
+               title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`);
+            else if (title_shift_x)
+               title_g.attr('transform', `translate(${title_shift_x})`);
+
+            title_g.property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
          }
 

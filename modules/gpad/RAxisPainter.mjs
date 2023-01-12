@@ -778,8 +778,12 @@ class RAxisPainter extends RObjectPainter {
                          text: this.fTitle, draw_g: title_g });
       }
 
-      title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
-             .property('basepos', title_basepos)
+      if (title_shift_y)
+         title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`);
+      else if (title_shift_x)
+         title_g.attr('transform', `translate(${title_shift_x})`);
+
+      title_g.property('basepos', title_basepos)
              .property('shift_x', title_shift_x)
              .property('shift_y', title_shift_y);
 
