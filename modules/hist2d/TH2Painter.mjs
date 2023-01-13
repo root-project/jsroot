@@ -699,7 +699,7 @@ class TH2Painter extends THistPainter {
             zc[2] = histo.getBinContent(i+2, j+2);
             zc[3] = histo.getBinContent(i+1, j+2);
 
-            for (k=0;k<4;k++)
+            for (k = 0; k < 4; k++)
                ir[k] = BinarySearch(zc[k]);
 
             if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
@@ -893,32 +893,29 @@ class TH2Painter extends THistPainter {
          return cmd;
 
       }, get_segm_intersection = (segm1, segm2) => {
+          let s10_x = segm1.x2 - segm1.x1,
+              s10_y = segm1.y2 - segm1.y1,
+              s32_x = segm2.x2 - segm2.x1,
+              s32_y = segm2.y2 - segm2.y1,
+              denom = s10_x * s32_y - s32_x * s10_y;
 
-          let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
-          s10_x = segm1.x2 - segm1.x1;
-          s10_y = segm1.y2 - segm1.y1;
-          s32_x = segm2.x2 - segm2.x1;
-          s32_y = segm2.y2 - segm2.y1;
-
-          denom = s10_x * s32_y - s32_x * s10_y;
           if (denom == 0)
               return 0; // Collinear
-          let denomPositive = denom > 0;
-
-          s02_x = segm1.x1 - segm2.x1;
-          s02_y = segm1.y1 - segm2.y1;
-          s_numer = s10_x * s02_y - s10_y * s02_x;
+          let denomPositive = denom > 0,
+              s02_x = segm1.x1 - segm2.x1,
+              s02_y = segm1.y1 - segm2.y1,
+              s_numer = s10_x * s02_y - s10_y * s02_x;
           if ((s_numer < 0) == denomPositive)
               return null; // No collision
 
-          t_numer = s32_x * s02_y - s32_y * s02_x;
+          let t_numer = s32_x * s02_y - s32_y * s02_x;
           if ((t_numer < 0) == denomPositive)
               return null; // No collision
 
           if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
               return null; // No collision
           // Collision detected
-          t = t_numer / denom;
+          let t = t_numer / denom;
           return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
 
       }, buildPathOutside = (xp,yp,iminus,iplus,side) => {
@@ -1251,11 +1248,7 @@ class TH2Painter extends THistPainter {
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2;
 
-      const makeLine = (dx, dy) => {
-         if (dx)
-            return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : '';
-      };
+      const makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : '');
 
       for (let loop = 0; loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
