@@ -3,7 +3,7 @@ import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFun
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
-import { TRandom, floatToString } from '../base/BasePainter.mjs';
+import { TRandom, floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
 
@@ -2077,7 +2077,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
 
       let nbins = Math.min(this.nbinsx, this.nbinsy);
 
@@ -2213,7 +2213,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
 
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
@@ -2251,7 +2251,7 @@ class TH2Painter extends THistPainter {
          .selectAll('g')
          .data(ticks)
          .join('g')
-         .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+         .attr('transform', d => `rotate(${Math.round(d.angle*180/Math.PI-90)}) translate(${outerRadius})`);
       groupTick.append('line')
          .attr('stroke', 'currentColor')
          .attr('x2', 6);

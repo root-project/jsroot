@@ -3,7 +3,7 @@ import { gStyle, settings, constants, internals, btoa_func,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
-import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad  } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
@@ -64,7 +64,7 @@ let PadButtonsHandler = {
          btns_y = height - sz0;
       }
 
-      btns.attr('transform', `translate(${btns_x},${btns_y})`);
+      btns.attr('transform', makeTranslate(btns_x,btns_y));
    },
 
    findPadButton(keyname) {
@@ -289,7 +289,7 @@ class TPadPainter extends ObjectPainter {
       rect.y = Math.round(h/2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
-      rect.transform = `translate(${rect.x},${rect.y})`;
+      rect.transform = makeTranslate(rect.x,rect.y) || '';
 
       return rect;
    }
@@ -526,7 +526,7 @@ class TPadPainter extends ObjectPainter {
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
          if (!isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr('transform', `translate(${posx}, ${posy})`)
+         dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
            .text(date.toLocaleString('en-GB'));
       }
@@ -551,7 +551,7 @@ class TPadPainter extends ObjectPainter {
          let rect = this.getPadRect(),
              posx = Math.round(rect.width * (1 - gStyle.fDateX)),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         df.attr('transform', `translate(${posx}, ${posy})`)
+         df.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'end')
            .text(item_name);
       }

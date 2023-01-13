@@ -854,7 +854,7 @@ class RAxisPainter extends RObjectPainter {
             axis_g.selectAll('*').remove();
       }
 
-      axis_g.attr('transform', transform || null);
+      axis_g.attr('transform', transform);
 
       this.extractDrawAttributes();
       this.axis_g = axis_g;
@@ -930,7 +930,7 @@ class RAxisPainter extends RObjectPainter {
       else
          axis_g.selectAll('*').remove();
 
-      axis_g.attr('transform', transform || null);
+      axis_g.attr('transform', transform);
 
       if (this.ticksSide == 'invert') side = -side;
 
@@ -978,7 +978,7 @@ class RAxisPainter extends RObjectPainter {
 
       this.standalone = true;  // no need to clean axis container
 
-      let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y) || '');
+      let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y));
 
       if (isBatchMode()) return promise;
 

@@ -3,7 +3,7 @@ import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, dr
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
-import { getElementRect, getAbsPosInCanvas } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, makeTranslate } from '../base/BasePainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { detectRightButton, injectStyle } from '../gui/utils.mjs';
@@ -84,7 +84,7 @@ function addDragHandler(_painter, arg) {
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
-      painter.draw_g.attr('transform', `translate(${newx},${newy})`);
+      painter.draw_g.attr('transform', makeTranslate(newx,newy));
 
       setPainterTooltipEnabled(painter, true);
 
@@ -2053,12 +2053,12 @@ class TFramePainter extends ObjectPainter {
          let can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame;
 
          let pr1 = draw_horiz.drawAxis(layer, w, h,
-                                       draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                       draw_horiz.invert_side ? null : `translate(0,${h})`,
                                        pad?.fTickx ? -h : 0, disable_x_draw,
                                        undefined, false);
 
          let pr2 = draw_vertical.drawAxis(layer, w, h,
-                                          draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                          draw_vertical.invert_side ? `translate(${w})` : null,
                                           pad?.fTicky ? w : 0, disable_y_draw,
                                           draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
@@ -2122,13 +2122,13 @@ class TFramePainter extends ObjectPainter {
 
       if (draw_horiz)
          pr1 = draw_horiz.drawAxis(layer, w, h,
-                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   draw_horiz.invert_side ? null : `translate(0,${h})`,
                                    pad?.fTickx ? -h : 0, false,
                                    undefined, false);
 
       if (draw_vertical)
          pr2 = draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      draw_vertical.invert_side ? `translate(${w})` : null,
                                       pad?.fTicky ? w : 0, false,
                                       draw_vertical.invert_side ? 0 : this._frame_x, false);
 
@@ -2339,7 +2339,7 @@ class TFramePainter extends ObjectPainter {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
          [w, h] = [h, w];
       } else {
-         trans = `translate(${lm},${tm})`;
+         trans = makeTranslate(lm,tm);
       }
 
       this._frame_x = lm;
