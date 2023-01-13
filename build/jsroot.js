@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '11/01/2023';
+let version_date = '13/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8431,7 +8431,7 @@ class BasePainter {
 
 /** @summary Load and initialize JSDOM from nodes
   * @return {Promise} with d3 selection for d3_body
-   * @private */
+  * @private */
 async function _loadJSDOM() {
    return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
 
@@ -8443,6 +8443,16 @@ async function _loadJSDOM() {
 
       return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
    });
+}
+
+/** @summary Return translate string for transform attribute of some svg element
+  * @return string or null if x and y are zeros
+  * @private */
+function makeTranslate(x,y)
+{
+   if (y) return `translate(${x},${y})`;
+   if (x) return `translate(${x})`;
+   return null;
 }
 
 const root_fonts = ['Arial', 'iTimes New Roman',
@@ -8908,11 +8918,8 @@ function parseLatex(node, arg, label, curr) {
    const positionGNode = (pos, x, y, inside_gg) => {
       x = Math.round(x);
       y = Math.round(y);
-      if (y)
-         pos.g.attr('transform',`translate(${x},${y})`);
-      else if (x)
-         pos.g.attr('transform',`translate(${x})`);
 
+      pos.g.attr('transform', makeTranslate(x, y));
       pos.rect.x1 += x;
       pos.rect.x2 += x;
       pos.rect.y1 += y;
@@ -8935,10 +8942,7 @@ function parseLatex(node, arg, label, curr) {
 
       gg = gg.append('svg:g');
 
-      if (curr.y)
-         gg.attr('transform',`translate(${curr.x},${curr.y})`);
-      else if (curr.x)
-         gg.attr('transform',`translate(${curr.x})`);
+      gg.attr('transform', makeTranslate(curr.x,curr.y));
       return gg;
    };
 
@@ -9892,10 +9896,13 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    else if (arg.align[1] == 'bottom-base')
       arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
-   let trans = `translate(${arg.x},${arg.y})`;
-   if (arg.rotate) trans += ` rotate(${arg.rotate})`;
+   let trans = makeTranslate(arg.x, arg.y) || '';
+   if (arg.rotate) {
+      if (trans) trans += ' ';
+      trans += `rotate(${arg.rotate})`;
+   }
 
-   mj_node.attr('transform', trans).attr('visibility', null);
+   mj_node.attr('transform', trans || null).attr('visibility', null);
 }
 
 /** @summary Produce text with MathJax
@@ -11828,7 +11835,7 @@ class ObjectPainter extends BasePainter {
                arg.y += arg.height / 2;
          }
 
-         arg.dx = arg.dy = 0;
+         let dx = 0, dy = 0;
 
          if (is_txt) {
 
@@ -11843,15 +11850,16 @@ class ObjectPainter extends BasePainter {
 
             if (arg.plain) {
                txt.attr('text-anchor', arg.align[0]);
-               if (arg.align[1] == 'top')
+               if (arg.align[1] == 'top') {
                   txt.attr('dy', '.8em');
-               else if (arg.align[1] == 'middle') {
-                  if (isNodeJs()) txt.attr('dy', '.4em'); else txt.attr('dominant-baseline', 'middle');
+               } else if (arg.align[1] == 'middle') {
+                  if (isNodeJs()) txt.attr('dy', '.4em');
+                             else txt.attr('dominant-baseline', 'middle');
                }
             } else {
                txt.attr('text-anchor', 'start');
-               arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
-               arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
+               dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
+               dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
 
          } else if (arg.text_rect) {
@@ -11861,34 +11869,31 @@ class ObjectPainter extends BasePainter {
 
             scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
-            arg.dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
+            dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
 
             if (arg.align[1] == 'top')
-               arg.dy = -box.y1*scale;
+               dy = -box.y1*scale;
             else if (arg.align[1] == 'bottom')
-               arg.dy = -box.y2*scale;
+               dy = -box.y2*scale;
             else if (arg.align[1] == 'middle')
-               arg.dy = -0.5*(box.y1 + box.y2)*scale;
+               dy = -0.5*(box.y1 + box.y2)*scale;
          } else {
             console.error('text rect not calcualted - please check code');
          }
 
-         if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
+         if (!arg.rotate) { arg.x += dx; arg.y += dy; dx = dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = '';
-         if (arg.y)
-            trans = `translate(${Math.round(arg.x)},${Math.round(arg.y)})`;
-         else if (arg.x)
-            trans = `translate(${Math.round(arg.x)})`;
+         let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '',
+             dtrans =  makeTranslate(Math.round(dx), Math.round(dy)),
+             append = arg => { if (trans) trans += ' '; trans += arg; };
+
          if (arg.rotate)
-            trans += ` rotate(${Math.round(arg.rotate)})`;
+            append(`rotate(${Math.round(arg.rotate)})`);
          if (scale !== 1)
-            trans += ` scale(${scale.toFixed(3)})`;
-         if (arg.dy)
-            trans += ` translate(${Math.round(arg.dx)},${Math.round(arg.dy)})`;
-         else if (arg.dx)
-            trans += ` translate(${Math.round(arg.dx)})`;
+            append(`scale(${scale.toFixed(3)})`);
+         if (dtrans)
+            append(dtrans);
          if (trans) txt.attr('transform', trans);
       });
 
@@ -55718,7 +55723,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
-            elem.attr('transform', `translate(${size.x},${size.y})`);
+            elem.attr('transform', makeTranslate(size.x,size.y));
 
          } else {
 
@@ -59537,109 +59542,108 @@ class TAxisPainter extends ObjectPainter {
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
           drag_move = drag().subject(Object);
 
-      drag_move
-         .on('start', evnt => {
+      drag_move.on('start', evnt => {
 
-            evnt.sourceEvent.preventDefault();
-            evnt.sourceEvent.stopPropagation();
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
 
-            let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                title_length = vertical ? box.height : box.width;
+         let box = title_g.node().getBBox(), // check that elements visible, request precise value
+             title_length = vertical ? box.height : box.width;
 
-            new_x = acc_x = title_g.property('shift_x');
-            new_y = acc_y = title_g.property('shift_y');
+         new_x = acc_x = title_g.property('shift_x');
+         new_y = acc_y = title_g.property('shift_y');
 
-            sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
+         sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
 
-            alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
-            let off = vertical ? -title_length/2 : title_length/2;
-            if (this.title_align == 'middle') {
-               alt_pos[0] +=  off;
-               alt_pos[2] -=  off;
-            } else if (this.title_align == 'begin') {
-               alt_pos[1] -= off;
-               alt_pos[2] -= 2*off;
-            } else { // end
-               alt_pos[0] += 2*off;
-               alt_pos[1] += off;
-            }
+         alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
+         let off = vertical ? -title_length/2 : title_length/2;
+         if (this.title_align == 'middle') {
+            alt_pos[0] +=  off;
+            alt_pos[2] -=  off;
+         } else if (this.title_align == 'begin') {
+            alt_pos[1] -= off;
+            alt_pos[2] -= 2*off;
+         } else { // end
+            alt_pos[0] += 2*off;
+            alt_pos[1] += off;
+         }
 
-            if (this.titleCenter)
-               curr_indx = 1;
-            else if (reverse ^ this.titleOpposite)
-               curr_indx = 0;
-            else
-               curr_indx = 2;
+         if (this.titleCenter)
+            curr_indx = 1;
+         else if (reverse ^ this.titleOpposite)
+            curr_indx = 0;
+         else
+            curr_indx = 2;
 
-            alt_pos[curr_indx] = vertical ? acc_y : acc_x;
+         alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
-            drag_rect = title_g.append('rect')
-                 .classed('zoom', true)
-                 .attr('x', box.x)
-                 .attr('y', box.y)
-                 .attr('width', box.width)
-                 .attr('height', box.height)
-                 .style('cursor', 'move');
+         drag_rect = title_g.append('rect')
+              .classed('zoom', true)
+              .attr('x', box.x)
+              .attr('y', box.y)
+              .attr('width', box.width)
+              .attr('height', box.height)
+              .style('cursor', 'move');
 //                 .style('pointer-events','none'); // let forward double click to underlying elements
-          }).on('drag', evnt => {
-               if (!drag_rect) return;
+      }).on('drag', evnt => {
+         if (!drag_rect) return;
 
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
 
-               acc_x += evnt.dx;
-               acc_y += evnt.dy;
+         acc_x += evnt.dx;
+         acc_y += evnt.dy;
 
-               let set_x, set_y, besti = 0,
-                   p = vertical ? acc_y : acc_x;
+         let set_x, set_y, besti = 0,
+             p = vertical ? acc_y : acc_x;
 
-               for (let i = 1; i < 3; ++i)
-                  if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
+         for (let i = 1; i < 3; ++i)
+            if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
 
-               if (vertical) {
-                  set_x = acc_x;
-                  set_y = alt_pos[besti];
-               } else {
-                  set_y = acc_y;
-                  set_x = alt_pos[besti];
-               }
+         if (vertical) {
+            set_x = acc_x;
+            set_y = alt_pos[besti];
+         } else {
+            set_y = acc_y;
+            set_x = alt_pos[besti];
+         }
 
-               if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
-                  new_x = set_x; new_y = set_y; curr_indx = besti;
-                  title_g.attr('transform', `translate(${new_x},${new_y})`);
-               }
+         if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
+            new_x = set_x; new_y = set_y; curr_indx = besti;
+            title_g.attr('transform', makeTranslate(new_x, new_y));
+         }
 
-          }).on('end', evnt => {
-               if (!drag_rect) return;
+      }).on('end', evnt => {
+         if (!drag_rect) return;
 
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
 
-               title_g.property('shift_x', new_x)
-                      .property('shift_y', new_y);
+         title_g.property('shift_x', new_x)
+                .property('shift_y', new_y);
 
-               const axis = this.getObject(), abits = EAxisBits,
-                     set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
+         const axis = this.getObject(), abits = EAxisBits,
+               set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
-               this.titleOffset = (vertical ? new_x : new_y) / offset_k;
-               axis.fTitleOffset = this.titleOffset / this.titleSize;
+         this.titleOffset = (vertical ? new_x : new_y) / offset_k;
+         axis.fTitleOffset = this.titleOffset / this.titleSize;
 
-               if (curr_indx == 1) {
-                  set_bit(abits.kCenterTitle, true); this.titleCenter = true;
-                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
-               } else if (curr_indx == 0) {
-                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
-                  set_bit(abits.kOppositeTitle, true); this.titleOpposite = true;
-               } else {
-                  set_bit(abits.kCenterTitle, false); this.titleCenter = false;
-                  set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
-               }
+         if (curr_indx == 1) {
+            set_bit(abits.kCenterTitle, true); this.titleCenter = true;
+            set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
+         } else if (curr_indx == 0) {
+            set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+            set_bit(abits.kOppositeTitle, true); this.titleOpposite = true;
+         } else {
+            set_bit(abits.kCenterTitle, false); this.titleCenter = false;
+            set_bit(abits.kOppositeTitle, false); this.titleOpposite = false;
+         }
 
-               this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset});;SetBit(${abits.kCenterTitle},${this.titleCenter?1:0})`);
+         this.submitAxisExec(`SetTitleOffset(${axis.fTitleOffset});;SetBit(${abits.kCenterTitle},${this.titleCenter?1:0})`);
 
-               drag_rect.remove();
-               drag_rect = null;
-            });
+         drag_rect.remove();
+         drag_rect = null;
+      });
 
       title_g.style('cursor', 'move').call(drag_move);
    }
@@ -59949,7 +59953,7 @@ class TAxisPainter extends ObjectPainter {
             axis_lines += this.vertical ? `M${secondShift},0v${h}` : `M0,${secondShift}h${w}`;
       }
 
-      axis_g.attr('transform', transform || null);
+      axis_g.attr('transform', transform);
 
       let side = 1, ticksPlusMinus = 0;
 
@@ -60070,7 +60074,7 @@ class TAxisPainter extends ObjectPainter {
                   title_shift_x = -1 * Math.round(((side > 0) ? (this.labelsOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
             }
 
-            title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
+            title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
                    .property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
          }
@@ -60144,7 +60148,7 @@ class TAxisPainter extends ObjectPainter {
 
       this.createG();
 
-      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), `translate(${x1},${y2})`);
+      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(x1, y2) || '');
    }
 
 } // class TAxisPainter
@@ -64184,7 +64188,7 @@ function addDragHandler(_painter, arg) {
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
-      painter.draw_g.attr('transform', `translate(${newx},${newy})`);
+      painter.draw_g.attr('transform', makeTranslate(newx,newy));
 
       setPainterTooltipEnabled(painter, true);
 
@@ -66153,12 +66157,12 @@ class TFramePainter extends ObjectPainter {
          let can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame;
 
          let pr1 = draw_horiz.drawAxis(layer, w, h,
-                                       draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                       draw_horiz.invert_side ? null : `translate(0,${h})`,
                                        pad?.fTickx ? -h : 0, disable_x_draw,
                                        undefined, false);
 
          let pr2 = draw_vertical.drawAxis(layer, w, h,
-                                          draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                          draw_vertical.invert_side ? `translate(${w})` : null,
                                           pad?.fTicky ? w : 0, disable_y_draw,
                                           draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
@@ -66222,13 +66226,13 @@ class TFramePainter extends ObjectPainter {
 
       if (draw_horiz)
          pr1 = draw_horiz.drawAxis(layer, w, h,
-                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   draw_horiz.invert_side ? null : `translate(0,${h})`,
                                    pad?.fTickx ? -h : 0, false,
                                    undefined, false);
 
       if (draw_vertical)
          pr2 = draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      draw_vertical.invert_side ? `translate(${w})` : null,
                                       pad?.fTicky ? w : 0, false,
                                       draw_vertical.invert_side ? 0 : this._frame_x, false);
 
@@ -66439,7 +66443,7 @@ class TFramePainter extends ObjectPainter {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
          [w, h] = [h, w];
       } else {
-         trans = `translate(${lm},${tm})`;
+         trans = makeTranslate(lm,tm);
       }
 
       this._frame_x = lm;
@@ -68712,7 +68716,7 @@ let PadButtonsHandler = {
          btns_y = height - sz0;
       }
 
-      btns.attr('transform', `translate(${btns_x},${btns_y})`);
+      btns.attr('transform', makeTranslate(btns_x,btns_y));
    },
 
    findPadButton(keyname) {
@@ -68937,7 +68941,7 @@ class TPadPainter extends ObjectPainter {
       rect.y = Math.round(h/2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
-      rect.transform = `translate(${rect.x},${rect.y})`;
+      rect.transform = makeTranslate(rect.x,rect.y) || '';
 
       return rect;
    }
@@ -69174,7 +69178,7 @@ class TPadPainter extends ObjectPainter {
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
          if (!isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr('transform', `translate(${posx}, ${posy})`)
+         dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
            .text(date.toLocaleString('en-GB'));
       }
@@ -69199,7 +69203,7 @@ class TPadPainter extends ObjectPainter {
          let rect = this.getPadRect(),
              posx = Math.round(rect.width * (1 - gStyle.fDateX)),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         df.attr('transform', `translate(${posx}, ${posy})`)
+         df.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'end')
            .text(item_name);
       }
@@ -71687,7 +71691,7 @@ class TPavePainter extends ObjectPainter {
       let width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
-      this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
+      this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
 
       this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -71710,7 +71714,7 @@ class TPavePainter extends ObjectPainter {
              .call(this.lineatt.func);
 
          let text_g = this.draw_g.append('svg:g')
-                                 .attr('transform', `translate(${Math.round(width/4)},${Math.round(height/4)})`);
+                                 .attr('transform', makeTranslate(Math.round(width/4),Math.round(height/4)));
 
          return this.drawPaveText(w2, h2, arg, text_g);
       }
@@ -72243,11 +72247,11 @@ class TPavePainter extends ObjectPainter {
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
          this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*0.7), swap_side: this._swap_side });
-         axis_transform = this._swap_side ? '' : `translate(${s_width})`;
+         axis_transform = this._swap_side ? null : `translate(${s_width})`;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
          this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*0.7), swap_side: this._swap_side });
-         axis_transform = this._swap_side ? '' : `translate(0,${s_height})`;
+         axis_transform = this._swap_side ? null : `translate(0,${s_height})`;
       }
 
       if (!contour || !draw_palette || postpone_draw)
@@ -72317,7 +72321,7 @@ class TPavePainter extends ObjectPainter {
 
                if (shift > 0) {
                   this._pave_x -= shift;
-                  this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
+                  this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
                }
@@ -72325,7 +72329,7 @@ class TPavePainter extends ObjectPainter {
                let shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
                if (shift > 0) {
                   this._pave_y += shift;
-                  this.draw_g.attr('transform', `translate(${this._pave_x},${this._pave_y})`);
+                  this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
                   palette.fY1NDC -= shift/height;
                   palette.fY2NDC -= shift/height;
                }
@@ -77095,7 +77099,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             zc[2] = histo.getBinContent(i+2, j+2);
             zc[3] = histo.getBinContent(i+1, j+2);
 
-            for (k=0;k<4;k++)
+            for (k = 0; k < 4; k++)
                ir[k] = BinarySearch(zc[k]);
 
             if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
@@ -77287,32 +77291,29 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          return cmd;
 
       }, get_segm_intersection = (segm1, segm2) => {
+          let s10_x = segm1.x2 - segm1.x1,
+              s10_y = segm1.y2 - segm1.y1,
+              s32_x = segm2.x2 - segm2.x1,
+              s32_y = segm2.y2 - segm2.y1,
+              denom = s10_x * s32_y - s32_x * s10_y;
 
-          let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
-          s10_x = segm1.x2 - segm1.x1;
-          s10_y = segm1.y2 - segm1.y1;
-          s32_x = segm2.x2 - segm2.x1;
-          s32_y = segm2.y2 - segm2.y1;
-
-          denom = s10_x * s32_y - s32_x * s10_y;
           if (denom == 0)
               return 0; // Collinear
-          let denomPositive = denom > 0;
-
-          s02_x = segm1.x1 - segm2.x1;
-          s02_y = segm1.y1 - segm2.y1;
-          s_numer = s10_x * s02_y - s10_y * s02_x;
+          let denomPositive = denom > 0,
+              s02_x = segm1.x1 - segm2.x1,
+              s02_y = segm1.y1 - segm2.y1,
+              s_numer = s10_x * s02_y - s10_y * s02_x;
           if ((s_numer < 0) == denomPositive)
               return null; // No collision
 
-          t_numer = s32_x * s02_y - s32_y * s02_x;
+          let t_numer = s32_x * s02_y - s32_y * s02_x;
           if ((t_numer < 0) == denomPositive)
               return null; // No collision
 
           if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
               return null; // No collision
           // Collision detected
-          t = t_numer / denom;
+          let t = t_numer / denom;
           return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
 
       }, buildPathOutside = (xp,yp,iminus,iplus,side) => {
@@ -77644,11 +77645,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2;
 
-      const makeLine = (dx, dy) => {
-         if (dx)
-            return dy ? `l${dx},${dy}` : `h${dx}`;
-         return dy ? `v${dy}` : '';
-      };
+      const makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : '');
 
       for (let loop = 0; loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
@@ -78470,7 +78467,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
 
       let nbins = Math.min(this.nbinsx, this.nbinsy);
 
@@ -78606,7 +78603,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
 
       const chord$1 = chord()
          .padAngle(10 / innerRadius)
@@ -78644,7 +78641,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          .selectAll('g')
          .data(ticks)
          .join('g')
-         .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+         .attr('transform', d => `rotate(${Math.round(d.angle*180/Math.PI-90)}) translate(${outerRadius})`);
       groupTick.append('line')
          .attr('stroke', 'currentColor')
          .attr('x2', 6);
@@ -103583,7 +103580,7 @@ async function drawText$1() {
          this.moveDrag = function(dx,dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
-            this.draw_g.attr('transform', `translate(${this.pos_dx},${this.pos_dy})`);
+            this.draw_g.attr('transform', makeTranslate(this.pos_dx, this.pos_dy));
         };
 
       if (!this.moveEnd)
@@ -103735,7 +103732,7 @@ function drawEllipse() {
 
    this.draw_g
       .append('svg:path')
-      .attr('transform',`translate(${x},${y})`)
+      .attr('transform', makeTranslate(x, y))
       .attr('d', path)
       .call(this.lineatt.func).call(this.fillatt.func);
 }
@@ -103752,7 +103749,7 @@ function drawPie() {
        rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
        ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
-   this.draw_g.attr('transform', `translate(${xc},${yc})`);
+   this.draw_g.attr('transform', makeTranslate(xc, yc));
 
    // Draw the slices
    let nb = pie.fPieSlices.length, total = 0,
@@ -105088,7 +105085,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
 
-      rect.transform = `translate(${rect.x},${rect.y})`;
+      rect.transform = makeTranslate(rect.x, rect.y) || '';
 
       return rect;
    }
@@ -105148,7 +105145,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -106158,7 +106155,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
                        .enter()
                        .append('svg:g')
                        .attr('class', 'grpoint')
-                       .attr('transform', d => `translate(${d.grx1},${d.gry1})`);
+                       .attr('transform', d => makeTranslate(d.grx1,d.gry1));
       }
 
       if (options.Bar) {
@@ -106776,7 +106773,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       this.pos_dy += dy;
 
       if (this.move_binindx === undefined) {
-         this.draw_g.attr('transform', `translate(${this.pos_dx},${this.pos_dy})`);
+         this.draw_g.attr('transform', makeTranslate(this.pos_dx,this.pos_dy));
       } else if (this.move_funcs && this.move_bin) {
          this.move_bin.x = this.move_funcs.revertAxis('x', this.move_x0 + this.pos_dx);
          this.move_bin.y = this.move_funcs.revertAxis('y', this.move_y0 + this.pos_dy);
@@ -110578,7 +110575,7 @@ class RAxisPainter extends RObjectPainter {
                }
 
                new_x = set_x; new_y = set_y; curr_indx = besti;
-               title_g.attr('transform', 'translate(' + Math.round(new_x) + ',' + Math.round(new_y) +  ')');
+               title_g.attr('transform', makeTranslate(new_x, new_y));
 
           }).on('end', evnt => {
                if (!drag_rect) return;
@@ -110872,7 +110869,7 @@ class RAxisPainter extends RObjectPainter {
                          text: this.fTitle, draw_g: title_g });
       }
 
-      title_g.attr('transform', `translate(${title_shift_x},${title_shift_y})`)
+      title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
              .property('basepos', title_basepos)
              .property('shift_x', title_shift_x)
              .property('shift_y', title_shift_y);
@@ -110947,7 +110944,7 @@ class RAxisPainter extends RObjectPainter {
             axis_g.selectAll('*').remove();
       }
 
-      axis_g.attr('transform', transform || null);
+      axis_g.attr('transform', transform);
 
       this.extractDrawAttributes();
       this.axis_g = axis_g;
@@ -111023,7 +111020,7 @@ class RAxisPainter extends RObjectPainter {
       else
          axis_g.selectAll('*').remove();
 
-      axis_g.attr('transform', transform || null);
+      axis_g.attr('transform', transform);
 
       if (this.ticksSide == 'invert') side = -side;
 
@@ -111071,7 +111068,7 @@ class RAxisPainter extends RObjectPainter {
 
       this.standalone = true;  // no need to clean axis container
 
-      let promise = this.drawAxis(this.draw_g, `translate(${pos.x},${pos.y})`);
+      let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y));
 
       if (isBatchMode()) return promise;
 
@@ -111631,12 +111628,12 @@ class RFramePainter extends RObjectPainter {
          draw_vertical.disable_ticks = (ticksy <= 0);
 
          let pr1 = draw_horiz.drawAxis(layer, w, h,
-                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   draw_horiz.invert_side ? null : `translate(0,${h})`,
                                    (ticksx > 1) ? -h : 0, disable_x_draw,
                                    undefined, false);
 
          let pr2 =  draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      draw_vertical.invert_side ? `translate(${w})` : null,
                                       (ticksy > 1) ? w : 0, disable_y_draw,
                                       draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
@@ -111647,7 +111644,7 @@ class RFramePainter extends RObjectPainter {
          let arr = [];
 
          if (ticksx > 0)
-            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : '', sidex));
+            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : null, sidex));
 
          if (ticksy > 0)
             arr.push(draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey));
@@ -111655,7 +111652,7 @@ class RFramePainter extends RObjectPainter {
          pr = Promise.all(arr).then(() => {
             arr = [];
             if (ticksx > 1)
-               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : '', -sidex, ticksx == 2));
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : null, -sidex, ticksx == 2));
 
             if (ticksy > 1)
                arr.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
@@ -111690,7 +111687,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
          this.x2_handle.assignFrameMembers(this,'x2');
 
-         pr1 = this.x2_handle.drawAxis(layer, '', -1);
+         pr1 = this.x2_handle.drawAxis(layer, null, -1);
       }
 
       if (second_y) {
@@ -111709,7 +111706,7 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
          this.y2_handle.assignFrameMembers(this,'y2');
 
-         pr2 = this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
+         pr2 = this.y2_handle.drawAxis(layer, makeTranslate(w, h), -1);
       }
 
       return Promise.all([pr1,pr2]);
@@ -111892,7 +111889,7 @@ class RFramePainter extends RObjectPainter {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
          [w, h] = [h, w];
       } else {
-         trans = `translate(${lm},${tm})`;
+         trans = makeTranslate(lm,tm);
       }
 
       // update values here to let access even when frame is not really updated
@@ -112513,7 +112510,7 @@ class RPadPainter extends RObjectPainter {
       rect.y = Math.round(h/2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
-      rect.transform = `translate(${rect.x},${rect.y})`;
+      rect.transform = makeTranslate(rect.x,rect.y) || '';
       return rect;
    }
 
@@ -115296,7 +115293,7 @@ function drawRFrameTitle(reason, drag) {
 
    this.createG();
 
-   this.draw_g.attr('transform',`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
+   this.draw_g.attr('transform', makeTranslate(fx, Math.round(fy-title_margin-title_height)));
 
    let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
@@ -115677,7 +115674,7 @@ class RPalettePainter extends RObjectPainter {
           }
 
           // x,y,width,height attributes used for drag functionality
-          this.draw_g.attr('transform',`translate(${palette_x},${palette_y})`);
+          this.draw_g.attr('transform', makeTranslate(palette_x, palette_y));
       }
 
       let g_btns = this.draw_g.select('.colbtns');
@@ -115928,7 +115925,7 @@ class RPavePainter extends RObjectPainter {
             pave_y = fr.y + offsety;
       }
 
-      this.draw_g.attr('transform', `translate(${pave_x},${pave_y})`);
+      this.draw_g.attr('transform', makeTranslate(pave_x,pave_y));
 
       this.draw_g.append('svg:rect')
                  .attr('x', 0)
@@ -120620,6 +120617,7 @@ exports.kNoZoom = kNoZoom;
 exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
 exports.makeSVG = makeSVG;
+exports.makeTranslate = makeTranslate;
 exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
