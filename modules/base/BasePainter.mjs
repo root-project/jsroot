@@ -117,7 +117,7 @@ function floatToString(value, fmt, ret_fmt) {
       while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
       let diff = sg.length - l - prec;
-      if (sg.indexOf('.')>l) diff--;
+      if (sg.indexOf('.') > l) diff--;
 
       if (diff != 0) {
          prec -= diff;
@@ -352,9 +352,11 @@ function buildSvgPath(kind, bins, height, ndig) {
       }
 
       if (cminy != cmaxy) {
-         if (cminy != curry) res.path += 'v' + (cminy - curry);
-         res.path += 'v' + (cmaxy - cminy);
-         if (cmaxy != prevy) res.path += 'v' + (prevy - cmaxy);
+         if (cminy != curry)
+            res.path += `v${cminy - curry}`;
+         res.path += `v${cmaxy - cminy}`;
+         if (cmaxy != prevy)
+            res.path += `v${prevy - cmaxy}`;
       }
    }
 
