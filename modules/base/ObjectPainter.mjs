@@ -767,9 +767,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let title = this.getObjectHint();
-      if (this.getObject() && ('_typename' in this.getObject()))
-         title = this.getObject()._typename + '::' + title;
+      let title = this.getObjectHint(), obj = this.getObject();
+      if (obj?._typename)
+         title = obj._typename + '::' + title;
 
       menu.add('header:' + title);
 
@@ -827,8 +827,7 @@ class ObjectPainter extends BasePainter {
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty()) return;
 
-      let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size),
-          pp = this.getPadPainter();
+      let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
       draw_g.call(font.func);
 
@@ -838,7 +837,7 @@ class ObjectPainter extends BasePainter {
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size)
-            .property('_fast_drawing', pp?._fast_drawing || false);
+            .property('_fast_drawing', this.getPadPainter()?._fast_drawing || false);
 
       if (draw_g.property('_fast_drawing'))
          draw_g.property('_font_too_small', (max_font_size && (max_font_size < 5)) || (font.size < 4));
@@ -1528,7 +1527,7 @@ function getElementMainPainter(dom) {
   * @return {string} produced JSON string */
 function drawingJSON(dom) {
    let canp = getElementCanvPainter(dom);
-   return canp ? canp.produceJSON() : '';
+   return canp?.produceJSON() || '';
 }
 
 
@@ -1621,4 +1620,4 @@ const EAxisBits = {
 
 export { getElementCanvPainter, getElementMainPainter, drawingJSON,
          selectActivePad, getActivePad, cleanup, resize,
-         ObjectPainter, drawRawText, EAxisBits  };
+         ObjectPainter, drawRawText, EAxisBits };
