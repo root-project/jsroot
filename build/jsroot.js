@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '19/01/2023';
+let version_date = '23/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9276,8 +9276,8 @@ function parseLatex(node, arg, label, curr) {
                path2.attr('d',`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
             case '{}':
-               path1.attr('d',`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
-               path2.attr('d',`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
+               path1.attr('d',`M${2*w},${r_y1}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}`);
+               path2.attr('d',`M${2*w+r_width},${r_y1}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}`);
                break;
             default: // ()
                path1.attr('d',`M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
@@ -11654,9 +11654,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let title = this.getObjectHint();
-      if (this.getObject() && ('_typename' in this.getObject()))
-         title = this.getObject()._typename + '::' + title;
+      let title = this.getObjectHint(), obj = this.getObject();
+      if (obj?._typename)
+         title = obj._typename + '::' + title;
 
       menu.add('header:' + title);
 
@@ -11714,8 +11714,7 @@ class ObjectPainter extends BasePainter {
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty()) return;
 
-      let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size),
-          pp = this.getPadPainter();
+      let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
       draw_g.call(font.func);
 
@@ -11725,7 +11724,7 @@ class ObjectPainter extends BasePainter {
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size)
-            .property('_fast_drawing', pp?._fast_drawing || false);
+            .property('_fast_drawing', this.getPadPainter()?._fast_drawing || false);
 
       if (draw_g.property('_fast_drawing'))
          draw_g.property('_font_too_small', (max_font_size && (max_font_size < 5)) || (font.size < 4));
@@ -12415,7 +12414,7 @@ function getElementMainPainter(dom) {
   * @return {string} produced JSON string */
 function drawingJSON(dom) {
    let canp = getElementCanvPainter(dom);
-   return canp ? canp.produceJSON() : '';
+   return canp?.produceJSON() || '';
 }
 
 
@@ -59419,7 +59418,7 @@ class TAxisPainter extends ObjectPainter {
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
-         } else if ((this.nticks3 > 1) && !this.log)  {
+         } else if ((this.nticks3 > 1) && !this.log) {
             handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7))
                handle.minor = handle.middle;
@@ -76056,7 +76055,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
 
-      } else if (this.options.Error || this.options.Mark || this.options.Line || this.options.Curve)  {
+      } else if (this.options.Error || this.options.Mark || this.options.Line || this.options.Curve) {
 
          show_rect = true;
 
@@ -76367,7 +76366,7 @@ class TH1Painter extends TH1Painter$2 {
           pr = Promise.resolve(true),
           zmult = 1 + 2*gStyle.fHistTopMargin;
 
-      if (reason == 'resize')  {
+      if (reason == 'resize') {
 
          if (is_main && main.resize3D()) main.render3D();
 
@@ -89278,7 +89277,7 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(opt) && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
-         if (opt[0] == 'x') {  maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
+         if (opt[0] == 'x') { maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 
@@ -90208,7 +90207,7 @@ const CustomStreamers = {
 
    THashList: clTList,
 
-   TStreamerLoop(buf, elem)  {
+   TStreamerLoop(buf, elem) {
       if (buf.last_read_version > 1) {
          buf.classStreamer(elem, clTStreamerElement);
          elem.fCountVersion = buf.ntou4();
@@ -91923,11 +91922,10 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return Promise.resolve(null);
          }
 
-         const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
+         const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16)),
+               uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
-         const uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
-
-         if (fmt === 'ZSTD')  {
+         if (fmt === 'ZSTD') {
             const handleZsdt = ZstdCodec => {
 
                return new Promise((resolveFunc, rejectFunc) => {
@@ -98483,7 +98481,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Update item node
      * @private */
    updateTreeNode(hitem, d3cont) {
-      if ((d3cont === undefined) || d3cont.empty())  {
+      if ((d3cont === undefined) || d3cont.empty()) {
          d3cont = select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
@@ -105643,7 +105641,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
          if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
          if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
-         if (d.check('3')) { res.EF = 1; res.Errors = 0;  }
+         if (d.check('3')) { res.EF = 1; res.Errors = 0; }
          if (d.check('4')) { res.EF = 2; res.Errors = 0; }
          if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
          if (d.check('X')) res.Errors = 0;
@@ -107140,7 +107138,7 @@ class TF1Painter extends ObjectPainter {
           main = this.getFramePainter(),
           gxmin = 0, gxmax = 0;
 
-      if (main && !ignore_zoom)  {
+      if (main && !ignore_zoom) {
          let gr = main.getGrFuncs(this.second_x, this.second_y);
          gxmin = gr.scale_xmin;
          gxmax = gr.scale_xmax;
@@ -107872,7 +107870,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       let mgraph = this.getObject(),
           maximum, minimum, logx = false, logy = false,
           time_display = false, time_format = '',
-          rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
+          rw = { xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
       if (pad) {
          logx = pad.fLogx;
@@ -110340,7 +110338,7 @@ class RAxisPainter extends RObjectPainter {
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
-         } else if ((this.nticks3 > 1) && !this.log)  {
+         } else if ((this.nticks3 > 1) && !this.log) {
             handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
@@ -113284,7 +113282,7 @@ class RPadPainter extends RObjectPainter {
       // if same object drawn twice, two painters will exists
       for (let k = 0; k < this.painters.length; ++k) {
          if (this.painters[k].snapid === snapid)
-            if (--cnt === 0) { objpainter = this.painters[k]; break;  }
+            if (--cnt === 0) { objpainter = this.painters[k]; break; }
       }
 
       if (objpainter) {
@@ -118235,7 +118233,7 @@ class RH1Painter extends RH1Painter$2 {
           zmult = 1 + 2*gStyle.fHistTopMargin,
           pr = Promise.resolve(this);
 
-      if (reason == 'resize')  {
+      if (reason == 'resize') {
          if (is_main && main.resize3D()) main.render3D();
          return pr;
       }
