@@ -1425,7 +1425,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Update item node
      * @private */
    updateTreeNode(hitem, d3cont) {
-      if ((d3cont === undefined) || d3cont.empty())  {
+      if ((d3cont === undefined) || d3cont.empty()) {
          d3cont = d3_select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
