@@ -1951,12 +1951,11 @@ class TH2Painter extends THistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
-           let pattern_class = 'scatter_' + colindx,
-               pattern = defs.select('.' + pattern_class);
+           let pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`,
+               pattern = defs.select(`#${pattern_id}`);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
-                            .attr('class', pattern_class)
-                            .attr('id', 'jsroot_scatter_pattern_' + internals.id_counter++)
+                            .attr('id', pattern_id)
                             .attr('patternUnits', 'userSpaceOnUse');
            else
               pattern.selectAll('*').remove();
@@ -1993,7 +1992,7 @@ class TH2Painter extends THistPainter {
            this.draw_g
                .append('svg:path')
                .attr('scatter-index', colindx)
-               .style('fill', `url(#${pattern.attr('id')})`)
+               .style('fill', `url(#${pattern_id})`)
                .attr('d', colPaths[colindx]);
         }
 
