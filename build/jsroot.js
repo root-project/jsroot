@@ -78332,7 +78332,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else {
-               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1] - curry[colindx]}`;
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1]-curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -78354,12 +78354,11 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
-           let pattern_class = 'scatter_' + colindx,
-               pattern = defs.select('.' + pattern_class);
+           let pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`,
+               pattern = defs.select(`#${pattern_id}`);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
-                            .attr('class', pattern_class)
-                            .attr('id', 'jsroot_scatter_pattern_' + internals.id_counter++)
+                            .attr('id', pattern_id)
                             .attr('patternUnits', 'userSpaceOnUse');
            else
               pattern.selectAll('*').remove();
@@ -78378,8 +78377,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
               }
            }
 
-           // arrx.sort();
-
            this.markeratt.resetPos();
 
            let path = '';
@@ -78396,7 +78393,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
            this.draw_g
                .append('svg:path')
                .attr('scatter-index', colindx)
-               .style('fill', `url(#${pattern.attr('id')})`)
+               .style('fill', `url(#${pattern_id})`)
                .attr('d', colPaths[colindx]);
         }
 
@@ -119293,7 +119290,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else {
-               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+dj] - curry[colindx]}`;
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+dj]-curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -119317,12 +119314,11 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx<cntr.length)) {
-           let pattern_class = 'scatter_' + colindx,
-               pattern = defs.select('.' + pattern_class);
+           let pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`,
+               pattern = defs.select(`#${pattern_id}`);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
-                            .attr('class', pattern_class)
-                            .attr('id', 'jsroot_scatter_pattern_' + internals.id_counter++)
+                            .attr('id', pattern_id)
                             .attr('patternUnits','userSpaceOnUse');
            else
               pattern.selectAll('*').remove();
@@ -119341,8 +119337,6 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
               }
            }
 
-           // arrx.sort();
-
            this.markeratt.resetPos();
 
            let path = '';
@@ -119359,7 +119353,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
            this.draw_g
                .append('svg:path')
                .attr('scatter-index', colindx)
-               .style('fill', `url(#${pattern.attr('id')})`)
+               .style('fill', `url(#${pattern_id})`)
                .attr('d', colPaths[colindx]);
         }
 
