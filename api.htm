@@ -165,10 +165,10 @@
            { name: "Inspector", url: "?file=" + filepath + "hsimple.root&item=hpx;1&opt=inspect", title: "Show objects data memebers" },
            { name: "Projection", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hpxpy;1&opt=col,projx3", title: "Enable X projection with 3 bins" },
            { name: "Images", url: "?path=" + filepath + "&layout=grid2x2&file=hsimple.root&items=[hpx;1,hpxpy;1,img:../files/img/ALICE.png,img:../files/img/ATLAS.png]&opts=[hist,colz,scale,center]", title: "Example of adding images from the web server" },
-           { name: "Use JSON", url: "?nobrowser&json=https://jsroot.gsi.de/files/danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class"  },
+           { name: "Use JSON", url: "?nobrowser&json=https://jsroot.gsi.de/files/danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class" },
            { name: "Superimpose", url: "?file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1", title: "Superimpose histogram and function" },
-           { name: "Several files", url: "?layout=grid2x2&path=" + filepath + "&files=[hsimple.root,graph.root,ct.root]&items=[hsimple.root/[1],graph.root/[11],graph.root/[3],ct.root/[0]]&opts=[lego]", title: "Open several files simultaneusely"  },
-           { name: "Superimpose 2 files", url: "?files=[" + filepath + "hsimple.root," + filepath + "graph.root]&item=graph.root/Graph;1+hsimple.root/hprof;1", title: "Superimpose items from two different files"  },
+           { name: "Several files", url: "?layout=grid2x2&path=" + filepath + "&files=[hsimple.root,graph.root,ct.root]&items=[hsimple.root/[1],graph.root/[11],graph.root/[3],ct.root/[0]]&opts=[lego]", title: "Open several files simultaneusely" },
+           { name: "Superimpose 2 files", url: "?files=[" + filepath + "hsimple.root," + filepath + "graph.root]&item=graph.root/Graph;1+hsimple.root/hprof;1", title: "Superimpose items from two different files" },
            { name: "Superimpose 3 files", url: "?path=" + filepath + "&files=[temp44.root,temp35.root,temp28.root]&item=temp44.root/Histograms/TDC_C100/Ch1/TDC_C100_Ch1_RisingCalibr;1+temp35.root/_same_+temp28.root/_same_&opt=plc,nostat+plc+plc&tooltip=2", title: "Superimpose same item from three different files" },
            { name: "Use autozoom", url: "?layout=grid1x3&path=" + filepath + "&files=[temp44.root,temp35.root,temp28.root]&items=[temp44.root/Histograms/TDC_C100/Ch3/TDC_C100_Ch3_RisingRef;1,temp35.root/_same_,temp28.root/_same_]&opts=[autozoom,autozoom,autozoom]", title: "Let display only non-empty bins of the histogram(s)" }
          ],

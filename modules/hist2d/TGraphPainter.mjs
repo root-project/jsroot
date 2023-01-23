@@ -100,7 +100,7 @@ class TGraphPainter extends ObjectPainter {
          if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
          if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
          if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
-         if (d.check('3')) { res.EF = 1; res.Errors = 0;  }
+         if (d.check('3')) { res.EF = 1; res.Errors = 0; }
          if (d.check('4')) { res.EF = 2; res.Errors = 0; }
          if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
          if (d.check('X')) res.Errors = 0;

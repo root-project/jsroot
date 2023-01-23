@@ -899,7 +899,7 @@ class RPadPainter extends RObjectPainter {
       // if same object drawn twice, two painters will exists
       for (let k = 0; k < this.painters.length; ++k) {
          if (this.painters[k].snapid === snapid)
-            if (--cnt === 0) { objpainter = this.painters[k]; break;  }
+            if (--cnt === 0) { objpainter = this.painters[k]; break; }
       }
 
       if (objpainter) {

@@ -4,7 +4,7 @@ import { gStyle, settings, constants, internals, btoa_func,
 import { color as d3_color, pointer as d3_pointer, select as d3_select } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate } from '../base/BasePainter.mjs';
-import { ObjectPainter, selectActivePad, getActivePad  } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
