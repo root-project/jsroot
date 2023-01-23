@@ -1,4 +1,4 @@
-import { gStyle, internals, isStr, createTPolyLine, kNoZoom } from '../core.mjs';
+import { gStyle, isStr, createTPolyLine, kNoZoom } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { floatToString, TRandom } from '../base/BasePainter.mjs';
@@ -1031,7 +1031,7 @@ class RH2Painter extends RHistPainter {
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else{
-               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+dj] - curry[colindx]}`;
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+dj]-curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -1077,8 +1077,6 @@ class RH2Painter extends RHistPainter {
                  arry[n] = rnd.random();
               }
            }
-
-           // arrx.sort();
 
            this.markeratt.resetPos();
 

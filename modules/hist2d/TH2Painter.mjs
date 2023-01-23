@@ -1,4 +1,4 @@
-import { gStyle, internals, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr,
+import { gStyle, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr,
          clTMultiGraph, clTF2, clTProfile2D } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -1929,7 +1929,7 @@ class TH2Painter extends THistPainter {
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else{
-               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1] - curry[colindx]}`;
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1]-curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -1973,8 +1973,6 @@ class TH2Painter extends THistPainter {
                  arry[n] = rnd.random();
               }
            }
-
-           // arrx.sort();
 
            this.markeratt.resetPos();
 
