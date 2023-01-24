@@ -654,16 +654,16 @@ class RH2Painter extends RHistPainter {
                pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
             }
             if (!cmd) {
-               cmd = 'M' + pnt.x + ',' + pnt.y; first = pnt;
+               cmd = `M${pnt.x},${pnt.y}`; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                if (!isany) return ''; // all same points
                cmd += 'z'; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
-               cmd +=  'l' + (pnt.x - last.x) + ',' + (pnt.y - last.y); isany = true;
+               cmd += `l${pnt.x - last.x},${pnt.y - last.y}`; isany = true;
             } else if (pnt.x != last.x) {
-               cmd +=  'h' + (pnt.x - last.x); isany = true;
+               cmd += `h${pnt.x - last.x}`; isany = true;
             } else if (pnt.y != last.y) {
-               cmd +=  'v' + (pnt.y - last.y); isany = true;
+               cmd += `v${pnt.y - last.y}`; isany = true;
             }
             last = pnt;
          }

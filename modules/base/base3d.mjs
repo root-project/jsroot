@@ -1055,7 +1055,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // extract mouse position
       this.tmout_mouse = this.getMousePos(evnt, {});
-      this.tmout_ttpos =  this.tooltip ? this.tooltip.extract_pos(evnt) : null;
+      this.tmout_ttpos = this.tooltip ? this.tooltip.extract_pos(evnt) : null;
 
       if (this.tmout_handle) {
          clearTimeout(this.tmout_handle);

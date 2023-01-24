@@ -975,7 +975,7 @@ class RPadPainter extends RObjectPainter {
          if (snap.fKind == webSnapIds.kPalette) {
             let arr = snap.fObject.arr, palette = [];
             for (let n = 0; n < arr.length; ++n)
-               palette[n] =  arr[n].fString;
+               palette[n] = arr[n].fString;
             this.custom_palette = new ColorPalette(palette);
             return this.drawNextSnap(lst, indx);
          }

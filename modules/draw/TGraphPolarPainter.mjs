@@ -36,8 +36,8 @@ class TGraphPolargramPainter extends ObjectPainter {
       if (!keep_float) {
          pos.x = Math.round(pos.x);
          pos.y = Math.round(pos.y);
-         pos.rx =  Math.round(pos.rx);
-         pos.ry =  Math.round(pos.ry);
+         pos.rx = Math.round(pos.rx);
+         pos.ry = Math.round(pos.ry);
       }
       return pos;
    }

@@ -730,8 +730,8 @@ class TAxisPainter extends ObjectPainter {
          alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
          let off = vertical ? -title_length/2 : title_length/2;
          if (this.title_align == 'middle') {
-            alt_pos[0] +=  off;
-            alt_pos[2] -=  off;
+            alt_pos[0] += off;
+            alt_pos[2] -= off;
          } else if (this.title_align == 'begin') {
             alt_pos[1] -= off;
             alt_pos[2] -= 2*off;

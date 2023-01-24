@@ -443,10 +443,10 @@ class RFramePainter extends RObjectPainter {
                                    (ticksx > 1) ? -h : 0, disable_x_draw,
                                    undefined, false);
 
-         let pr2 =  draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : null,
-                                      (ticksy > 1) ? w : 0, disable_y_draw,
-                                      draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+         let pr2 = draw_vertical.drawAxis(layer, w, h,
+                                   draw_vertical.invert_side ? `translate(${w})` : null,
+                                   (ticksy > 1) ? w : 0, disable_y_draw,
+                                   draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1,pr2]).then(() => this.drawGrids());
 
