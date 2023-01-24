@@ -1257,6 +1257,17 @@ class TGraphPainter extends ObjectPainter {
    moveEnd(not_changed) {
       let exec = '', graph = this.getObject(), last = graph?.fNpoints-1;
 
+      const changeBin = bin => {
+         exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
+         graph.fX[bin.indx] = bin.x;
+         graph.fY[bin.indx] = bin.y;
+         if ((bin.indx == 0) && this._cutg_lastsame) {
+            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
+            graph.fX[last] = bin.x;
+            graph.fY[last] = bin.y;
+         }
+      };
+
       if (this.move_binindx === undefined) {
          this.draw_g.attr('transform', null);
 
@@ -1266,14 +1277,7 @@ class TGraphPainter extends ObjectPainter {
                let bin = this.bins[k];
                bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
                bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
-               exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               graph.fX[bin.indx] = bin.x;
-               graph.fY[bin.indx] = bin.y;
-               if ((bin.indx == 0) && this._cutg_lastsame) {
-                  exec += `SetPoint(${last},${bin.x},${bin.y});;`;
-                  graph.fX[last] = bin.x;
-                  graph.fY[last] = bin.y;
-               }
+               changeBin(bin);
             }
             if (graph.$redraw_pad)
                this.redrawPad();
@@ -1281,15 +1285,7 @@ class TGraphPainter extends ObjectPainter {
                this.drawGraph();
          }
       } else {
-         let bin = this.move_bin;
-         exec = `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-         graph.fX[bin.indx] = bin.x;
-         graph.fY[bin.indx] = bin.y;
-         if ((bin.indx == 0) && this._cutg_lastsame) {
-            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
-            graph.fX[last] = bin.x;
-            graph.fY[last] = bin.y;
-         }
+         changeBin(this.move_bin);
          delete this.move_binindx;
          if (graph.$redraw_pad)
             this.redrawPad();
