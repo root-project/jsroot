@@ -1255,13 +1255,12 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Complete moving */
    moveEnd(not_changed) {
-      let exec = '';
+      let exec = '', graph = this.getObject(), last = graph?.fNpoints-1;
 
       if (this.move_binindx === undefined) {
          this.draw_g.attr('transform', null);
 
          if (this.move_funcs && this.bins && !not_changed) {
-            let graph = this.getObject();
 
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
@@ -1271,7 +1270,6 @@ class TGraphPainter extends ObjectPainter {
                graph.fX[bin.indx] = bin.x;
                graph.fY[bin.indx] = bin.y;
                if ((bin.indx == 0) && this._cutg_lastsame) {
-                  let last = graph.fNpoints-1;
                   exec += `SetPoint(${last},${bin.x},${bin.y});;`;
                   graph.fX[last] = bin.x;
                   graph.fY[last] = bin.y;
@@ -1283,10 +1281,18 @@ class TGraphPainter extends ObjectPainter {
                this.drawGraph();
          }
       } else {
-         exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
-         if ((this.move_bin.indx == 0) && this._cutg_lastsame)
-            exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
+         let bin = this.move_bin;
+         exec = `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
+         graph.fX[bin.indx] = bin.x;
+         graph.fY[bin.indx] = bin.y;
+         if ((bin.indx == 0) && this._cutg_lastsame) {
+            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
+            graph.fX[last] = bin.x;
+            graph.fY[last] = bin.y;
+         }
          delete this.move_binindx;
+         if (graph.$redraw_pad)
+            this.redrawPad();
       }
 
       delete this.move_funcs;
