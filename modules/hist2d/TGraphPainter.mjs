@@ -173,13 +173,17 @@ class TGraphPainter extends ObjectPainter {
          if (d.empty()) res.Line = 1;
       }
 
-      if (graph._typename == clTGraphErrors) {
+      if (this.matchObjectType(clTGraphErrors)) {
          let len = graph.fEX.length, m = 0;
          for (let k = 0; k < len; ++k)
             m = Math.max(m, graph.fEX[k], graph.fEY[k]);
          if (m < 1e-100)
             res.Errors = 0;
       }
+
+      this._cutg = this.matchObjectType(clTCutG);
+      this._cutg_lastsame = this._cutg && (graph.fNpoints > 3) &&
+                            (graph.fX[0] == graph.fX[graph.fNpoints-1]) && (graph.fY[0] == graph.fY[graph.fNpoints-1]);
 
       if (!res.Axis) {
          // check if axis should be drawn
@@ -219,7 +223,7 @@ class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if (this.matchObjectType(clTCutG) && (npoints > 3) && (gr.fX[0] == gr.fX[npoints-1]) && (gr.fY[0] == gr.fY[npoints-1]))
+      if (this._cutg && this._cutg_lastsame)
          npoints--;
 
       if (gr._typename == clTGraphErrors)
@@ -512,7 +516,7 @@ class TGraphPainter extends ObjectPainter {
       if (options.Line || options.Fill) {
 
          let close_symbol = '';
-         if (this.matchObjectType(clTCutG)) {
+         if (this._cutg) {
             close_symbol = 'Z';
             if (!options.original) options.Fill = 1;
          }
@@ -1262,14 +1266,14 @@ class TGraphPainter extends ObjectPainter {
                bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
                bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
                exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               if ((bin.indx == 0) && this.matchObjectType(clTCutG))
+               if ((bin.indx == 0) && this._cutg_lastsame)
                   exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
             }
             this.drawGraph();
          }
       } else {
          exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
-         if ((this.move_bin.indx == 0) && this.matchObjectType(clTCutG))
+         if ((this.move_bin.indx == 0) && this._cutg_lastsame)
             exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
          delete this.move_binindx;
       }
