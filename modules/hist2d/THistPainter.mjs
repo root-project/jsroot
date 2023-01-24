@@ -1,5 +1,5 @@
-import { gStyle, BIT, settings, constants, internals, create, isObject, isFunc, getPromise,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile, kNoZoom } from '../core.mjs';
+import { gStyle, BIT, settings, constants, internals, create, isObject, isFunc, isStr, getPromise,
+         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis, clTGaxis, clTF1, clTProfile, kNoZoom, clTCutG } from '../core.mjs';
 import { ColorPalette, toHex, getColor } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -227,12 +227,24 @@ class THistDrawOptions {
               Render3D: constants.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0 });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null });
    }
 
    /** @summary Decode histogram draw options */
    decode(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
+
+      if (isStr(opt) && (hdim === 2)) {
+         let p1 = opt.lastIndexOf('['),  p2 = opt.lastIndexOf(']');
+         if ((p1 >= 0) && (p2 > p1+1)) {
+            let name = opt.slice(p1+1, p2);
+            opt = opt.slice(0, p1);
+            pad?.fPrimitives?.arr?.forEach(obj => {
+               if ((obj?._typename == clTCutG) && (obj?.fName == name))
+                  this.cutg = obj;
+            });
+         }
+      }
 
       const d = new DrawOptions(opt);
 
