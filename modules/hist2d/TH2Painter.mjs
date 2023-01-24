@@ -1246,6 +1246,7 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as arrows */
    drawBinsArrow() {
       let histo = this.getObject(), cmd = '',
+          test_cutg = this.options.cutg,
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.prepareDraw({ rounding: false }),
@@ -1257,6 +1258,9 @@ class TH2Painter extends THistPainter {
       for (let loop = 0; loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
             for (j = handle.j1; j < handle.j2; ++j) {
+
+               if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                     histo.fYaxis.GetBinCoord(j - 0.5))) continue;
 
                if (i === handle.i1)
                   dx = histo.getBinContent(i+2, j+1) - histo.getBinContent(i+1, j+1);
@@ -1331,7 +1335,8 @@ class TH2Painter extends THistPainter {
           i, j, binz, absz, res = '', cross = '', btn1 = '', btn2 = '',
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
           uselogz = false, logmin = 0,
-          pad = this.getPadPainter().getRootPad(true);
+          pad = this.getPadPainter().getRootPad(true),
+          test_cutg = this.options.cutg;
 
       if (pad && pad.fLogz && (absmax > 0)) {
          uselogz = true;
@@ -1354,6 +1359,9 @@ class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             absz = Math.abs(binz);
             if ((absz === 0) || (absz < absmin)) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                 histo.fYaxis.GetBinCoord(j - 0.5))) continue;
 
             zdiff = uselogz ? ((absz > 0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
             // area of the box should be proportional to absolute bin content
@@ -1378,7 +1386,7 @@ class TH2Painter extends THistPainter {
             if ((binz < 0) && (this.options.BoxStyle === 10))
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
-            if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
+            if ((this.options.BoxStyle === 11) && (ww > 5) && (hh > 5)) {
                const pww = Math.round(ww*0.1),
                      phh = Math.round(hh*0.1),
                      side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
