@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '23/01/2023';
+let version_date = '24/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11886,7 +11886,7 @@ class ObjectPainter extends BasePainter {
 
          // use translate and then rotate to avoid complex sign calculations
          let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '',
-             dtrans =  makeTranslate(Math.round(dx), Math.round(dy)),
+             dtrans = makeTranslate(Math.round(dx), Math.round(dy)),
              append = arg => { if (trans) trans += ' '; trans += arg; };
 
          if (arg.rotate)
@@ -56466,7 +56466,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // extract mouse position
       this.tmout_mouse = this.getMousePos(evnt, {});
-      this.tmout_ttpos =  this.tooltip ? this.tooltip.extract_pos(evnt) : null;
+      this.tmout_ttpos = this.tooltip ? this.tooltip.extract_pos(evnt) : null;
 
       if (this.tmout_handle) {
          clearTimeout(this.tmout_handle);
@@ -57935,6 +57935,7 @@ function drawBinsLego(painter, is_v7 = false) {
          rvertices = [ new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0) ],
          main = painter.getFramePainter(),
          handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
+         test_cutg = painter.options.cutg,
          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
          histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
@@ -57962,6 +57963,9 @@ function drawBinsLego(painter, is_v7 = false) {
          [binz1, binz2] = [binz2, binz1];
 
       if ((binz1 >= zmax) || (binz2 < zmin)) return false;
+
+      if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii + 0.5),
+                 histo.fYaxis.GetBinCoord(jj + 0.5))) return false;
 
       reduced = (binz2 === zmin) || (binz1 >= binz2);
 
@@ -58286,7 +58290,8 @@ function drawBinsError3D(painter, is_v7 = false) {
          histo = painter.getHisto(),
          handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
          zmin = main.z_handle.getScaleMin(),
-         zmax = main.z_handle.getScaleMax();
+         zmax = main.z_handle.getScaleMax(),
+         test_cutg = painter.options.cutg;
    let i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
        nsegments = 0, lpos = null, binindx = null, lindx = 0;
 
@@ -58306,6 +58311,9 @@ function drawBinsError3D(painter, is_v7 = false) {
             binz = histo.getBinContent(i + 1, j + 1);
             if ((binz < zmin) || (binz > zmax)) continue;
             if ((binz === zmin) && check_skip_min()) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                 histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
             // just count number of segments
             if (loop === 0) { nsegments += 3; continue; }
@@ -59559,8 +59567,8 @@ class TAxisPainter extends ObjectPainter {
          alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
          let off = vertical ? -title_length/2 : title_length/2;
          if (this.title_align == 'middle') {
-            alt_pos[0] +=  off;
-            alt_pos[2] -=  off;
+            alt_pos[0] += off;
+            alt_pos[2] -= off;
          } else if (this.title_align == 'begin') {
             alt_pos[1] -= off;
             alt_pos[2] -= 2*off;
@@ -61927,13 +61935,13 @@ function crystalball_integral(x, alpha, n, sigma, mean = 0) {
          // for n=1 the primitive of 1/x is log(x)
          intpow = -A * Math.log( n / abs_alpha ) + A * Math.log( B -z );
       }
-      intgaus =  sqrtpiover2*(1. + erf(abs_alpha*oneoversqrt2));
+      intgaus = sqrtpiover2*(1. + erf(abs_alpha*oneoversqrt2));
    }
    else
    {
       intgaus = normal_cdf_c(z, 1);
       intgaus *= sqrt2pi;
-      intpow  =  0;
+      intpow  = 0;
    }
    return sigma * (intgaus + intpow);
 }
@@ -62109,8 +62117,8 @@ function eff_MidPInterval(total,passed,level,bUpper) {
    // treat special case for 0<passed<1
    // do a linear interpolation of the upper limit values
    if ( passed > 0 && passed < 1) {
-      let p0 =  eff_MidPInterval(total,0.0,level,bUpper);
-      let p1 =  eff_MidPInterval(total,1.0,level,bUpper);
+      let p0 = eff_MidPInterval(total, 0.0, level, bUpper);
+      let p1 = eff_MidPInterval(total, 1.0, level, bUpper);
       p = (p1 - p0) * passed + p0;
       return p;
    }
@@ -62896,7 +62904,9 @@ class JSRootMenu {
          return;
       }
 
-      if (!without_sub) this.add('sub:' + top_name, opts[0], call_back);
+      if (!without_sub) this.add('sub:' + top_name, () => {
+         this.input('Provide draw option', opts[0], 'text').then(call_back);
+      });
 
       for (let i = 0; i < opts.length; ++i) {
          let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
@@ -73065,12 +73075,25 @@ class THistDrawOptions {
               Render3D: constants$1.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0 });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null });
    }
 
    /** @summary Decode histogram draw options */
    decode(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
+
+      if (isStr(opt) && (hdim === 2)) {
+         let p1 = opt.lastIndexOf('['),  p2 = opt.lastIndexOf(']');
+         if ((p1 >= 0) && (p2 > p1+1)) {
+            let name = opt.slice(p1+1, p2);
+            opt = opt.slice(0, p1);
+            pad?.fPrimitives?.arr?.forEach(obj => {
+               if ((obj?._typename == clTCutG) && (obj?.fName == name))
+                  this.cutg = obj;
+                  obj.$redraw_pad = true;
+            });
+         }
+      }
 
       const d = new DrawOptions(opt);
 
@@ -76751,6 +76774,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
    countStat(cond) {
+      if (!cond && this.options.cutg)
+         cond = (x,y) => this.options.cutg.IsInside(x,y);
+
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
@@ -76767,12 +76793,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          for (i = 0; i < len; ++i) {
             bin = histo.fBins.arr[i];
 
-            xside = 1; yside = 1;
-
-            if (bin.fXmin > funcs.scale_xmax) xside = 2; else
-            if (bin.fXmax < funcs.scale_xmin) xside = 0;
-            if (bin.fYmin > funcs.scale_ymax) yside = 2; else
-            if (bin.fYmax < funcs.scale_ymin) yside = 0;
+            xside = (bin.fXmin > funcs.scale_xmax) ? 2 : (bin.fXmax < funcs.scale_xmin ? 0 : 1);
+            yside = (bin.fYmin > funcs.scale_ymax) ? 2 : (bin.fYmax < funcs.scale_ymin ? 0 : 1);
 
             xx = yy = numpoints = 0;
             gr = bin.fPoly; numgraphs = 1;
@@ -76952,7 +76974,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             can_merge = (handle.ybar2 === 1) && (handle.ybar1 === 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
-          skip_zero = !this.options.Zero;
+          skip_zero = !this.options.Zero, test_cutg = this.options.cutg;
 
       const flush_last_entry = () => {
          last_entry.path += `h${dx}v${last_entry.y1-last_entry.y2}h${-dx}z`;
@@ -76973,7 +76995,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
-            if (is_zero && skip_zero) {
+            if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
                if (last_entry) flush_last_entry();
                continue;
             }
@@ -77581,6 +77603,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as text */
    async drawBinsText(handle) {
       let histo = this.getObject(),
+          test_cutg = this.options.cutg,
           x, y, width, height,
           color = this.getColor(histo.fMarkerColor),
           rotate = -1*this.options.TextAngle,
@@ -77604,6 +77627,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          for (let j = handle.j1; j < handle.j2; ++j) {
             let binz = histo.getBinContent(i+1, j+1);
             if ((binz === 0) && !this._show_empty_bins) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                     histo.fYaxis.GetBinCoord(j + 0.5))) continue;
+
             let binh = handle.gry[j] - handle.gry[j+1];
 
             if (profile2d)
@@ -77645,6 +77672,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as arrows */
    drawBinsArrow() {
       let histo = this.getObject(), cmd = '',
+          test_cutg = this.options.cutg,
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.prepareDraw({ rounding: false }),
@@ -77656,6 +77684,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       for (let loop = 0; loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
             for (j = handle.j1; j < handle.j2; ++j) {
+
+               if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                     histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
                if (i === handle.i1)
                   dx = histo.getBinContent(i+2, j+1) - histo.getBinContent(i+1, j+1);
@@ -77730,7 +77761,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           i, j, binz, absz, res = '', cross = '', btn1 = '', btn2 = '',
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
           uselogz = false, logmin = 0,
-          pad = this.getPadPainter().getRootPad(true);
+          pad = this.getPadPainter().getRootPad(true),
+          test_cutg = this.options.cutg;
 
       if (pad && pad.fLogz && (absmax > 0)) {
          uselogz = true;
@@ -77753,6 +77785,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             absz = Math.abs(binz);
             if ((absz === 0) || (absz < absmin)) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                 histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
             zdiff = uselogz ? ((absz > 0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
             // area of the box should be proportional to absolute bin content
@@ -77777,7 +77812,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             if ((binz < 0) && (this.options.BoxStyle === 10))
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
-            if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
+            if ((this.options.BoxStyle === 11) && (ww > 5) && (hh > 5)) {
                const pww = Math.round(ww*0.1),
                      phh = Math.round(hh*0.1),
                      side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
@@ -78270,6 +78305,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    drawBinsScatter() {
       let histo = this.getObject(),
           handle = this.prepareDraw({ rounding: true, pixel_density: true }),
+          test_cutg = this.options.cutg,
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
@@ -78291,6 +78327,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
                let npix = Math.round(scale*binz);
                if (npix <= 0) continue;
+
+               if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                     histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
                for (let k = 0; k < npix; ++k)
                   path += this.markeratt.create(
@@ -78325,6 +78364,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
             colindx = cntr.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                     histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
             cmd1 = `M${handle.grx[i]},${handle.gry[j+1]}`;
             if (colPaths[colindx] === undefined) {
@@ -105035,8 +105077,8 @@ class TGraphPolargramPainter extends ObjectPainter {
       if (!keep_float) {
          pos.x = Math.round(pos.x);
          pos.y = Math.round(pos.y);
-         pos.rx =  Math.round(pos.rx);
-         pos.ry =  Math.round(pos.ry);
+         pos.rx = Math.round(pos.rx);
+         pos.ry = Math.round(pos.ry);
       }
       return pos;
    }
@@ -105711,13 +105753,17 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          if (d.empty()) res.Line = 1;
       }
 
-      if (graph._typename == clTGraphErrors) {
+      if (this.matchObjectType(clTGraphErrors)) {
          let len = graph.fEX.length, m = 0;
          for (let k = 0; k < len; ++k)
             m = Math.max(m, graph.fEX[k], graph.fEY[k]);
          if (m < 1e-100)
             res.Errors = 0;
       }
+
+      this._cutg = this.matchObjectType(clTCutG);
+      this._cutg_lastsame = this._cutg && (graph.fNpoints > 3) &&
+                            (graph.fX[0] == graph.fX[graph.fNpoints-1]) && (graph.fY[0] == graph.fY[graph.fNpoints-1]);
 
       if (!res.Axis) {
          // check if axis should be drawn
@@ -105757,7 +105803,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename === clTCutG) && (npoints > 3)) npoints--;
+      if (this._cutg && this._cutg_lastsame)
+         npoints--;
 
       if (gr._typename == clTGraphErrors)
          kind = 1;
@@ -106049,7 +106096,10 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (options.Line || options.Fill) {
 
          let close_symbol = '';
-         if (graph._typename == clTCutG) options.Fill = 1;
+         if (this._cutg) {
+            close_symbol = 'Z';
+            if (!options.original) options.Fill = 1;
+         }
 
          if (options.Fill) {
             close_symbol = 'Z'; // always close area if we want to fill it
@@ -106785,27 +106835,40 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Complete moving */
    moveEnd(not_changed) {
-      let exec = '';
+      let exec = '', graph = this.getObject(), last = graph?.fNpoints-1;
+
+      const changeBin = bin => {
+         exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
+         graph.fX[bin.indx] = bin.x;
+         graph.fY[bin.indx] = bin.y;
+         if ((bin.indx == 0) && this._cutg_lastsame) {
+            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
+            graph.fX[last] = bin.x;
+            graph.fY[last] = bin.y;
+         }
+      };
 
       if (this.move_binindx === undefined) {
          this.draw_g.attr('transform', null);
 
          if (this.move_funcs && this.bins && !not_changed) {
+
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
                bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
                bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
-               exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               if ((bin.indx == 0) && this.matchObjectType(clTCutG))
-                  exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
+               changeBin(bin);
             }
-            this.drawGraph();
+            if (graph.$redraw_pad)
+               this.redrawPad();
+            else
+               this.drawGraph();
          }
       } else {
-         exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;
-         if ((this.move_bin.indx == 0) && this.matchObjectType(clTCutG))
-            exec += `SetPoint(${this.getObject().fNpoints-1},${this.move_bin.x},${this.move_bin.y});;`;
+         changeBin(this.move_bin);
          delete this.move_binindx;
+         if (graph.$redraw_pad)
+            this.redrawPad();
       }
 
       delete this.move_funcs;
@@ -107469,7 +107532,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
          let aa,bb;
          if(obj.TestBit(kUseWeights)) {
-            let tw =  total, // fTotalHistogram->GetBinContent(bin);
+            let tw = total, // fTotalHistogram->GetBinContent(bin);
                 tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
                 pw = passed; // fPassedHistogram->GetBinContent(bin);
 
@@ -107477,8 +107540,8 @@ class TEfficiencyPainter extends ObjectPainter {
 
             // tw/tw2 renormalize the weights
             let norm = tw/tw2;
-            aa =  pw * norm + alpha;
-            bb =  (tw - pw) * norm + beta;
+            aa = pw * norm + alpha;
+            bb = (tw - pw) * norm + beta;
          } else {
             aa = passed + alpha;
             bb = total - passed + beta;
@@ -108823,7 +108886,7 @@ class TArrowPainter extends ObjectPainter {
    rotate(angle, x0, y0) {
       let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = '';
       if ((x0 !== undefined) && (y0 !== undefined)) {
-         res =  `M${Math.round(x0-dx)},${Math.round(y0-dy)}`;
+         res = `M${Math.round(x0-dx)},${Math.round(y0-dy)}`;
       } else {
          dx = -dx; dy = -dy;
       }
@@ -111634,10 +111697,10 @@ class RFramePainter extends RObjectPainter {
                                    (ticksx > 1) ? -h : 0, disable_x_draw,
                                    undefined, false);
 
-         let pr2 =  draw_vertical.drawAxis(layer, w, h,
-                                      draw_vertical.invert_side ? `translate(${w})` : null,
-                                      (ticksy > 1) ? w : 0, disable_y_draw,
-                                      draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+         let pr2 = draw_vertical.drawAxis(layer, w, h,
+                                   draw_vertical.invert_side ? `translate(${w})` : null,
+                                   (ticksy > 1) ? w : 0, disable_y_draw,
+                                   draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1,pr2]).then(() => this.drawGrids());
 
@@ -113355,7 +113418,7 @@ class RPadPainter extends RObjectPainter {
          if (snap.fKind == webSnapIds.kPalette) {
             let arr = snap.fObject.arr, palette = [];
             for (let n = 0; n < arr.length; ++n)
-               palette[n] =  arr[n].fString;
+               palette[n] = arr[n].fString;
             this.custom_palette = new ColorPalette(palette);
             return this.drawNextSnap(lst, indx);
          }
@@ -116767,7 +116830,7 @@ class RHistPainter extends RObjectPainter {
    addInteractivity() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      let ismain =  this.isMainPainter(),
+      let ismain = this.isMainPainter(),
           second_axis = this.options.second_x || this.options.second_y,
           fp = ismain || second_axis ? this.getFramePainter() : null;
       return fp ? fp.addInteractivity(!ismain && second_axis) : true;
@@ -117286,7 +117349,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
                first = false;
             }
 
-            err =  0;
+            err = 0;
 
             hmin = Math.min(hmin, value - err);
             hmax = Math.max(hmax, value + err);
@@ -118920,16 +118983,16 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
                pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
             }
             if (!cmd) {
-               cmd = 'M' + pnt.x + ',' + pnt.y; first = pnt;
+               cmd = `M${pnt.x},${pnt.y}`; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                if (!isany) return ''; // all same points
                cmd += 'z'; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
-               cmd +=  'l' + (pnt.x - last.x) + ',' + (pnt.y - last.y); isany = true;
+               cmd += `l${pnt.x - last.x},${pnt.y - last.y}`; isany = true;
             } else if (pnt.x != last.x) {
-               cmd +=  'h' + (pnt.x - last.x); isany = true;
+               cmd += `h${pnt.x - last.x}`; isany = true;
             } else if (pnt.y != last.y) {
-               cmd +=  'v' + (pnt.y - last.y); isany = true;
+               cmd += `v${pnt.y - last.y}`; isany = true;
             }
             last = pnt;
          }
