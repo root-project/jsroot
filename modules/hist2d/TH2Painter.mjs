@@ -1182,6 +1182,7 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as text */
    async drawBinsText(handle) {
       let histo = this.getObject(),
+          test_cutg = this.options.cutg,
           x, y, width, height,
           color = this.getColor(histo.fMarkerColor),
           rotate = -1*this.options.TextAngle,
@@ -1205,6 +1206,10 @@ class TH2Painter extends THistPainter {
          for (let j = handle.j1; j < handle.j2; ++j) {
             let binz = histo.getBinContent(i+1, j+1);
             if ((binz === 0) && !this._show_empty_bins) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                     histo.fYaxis.GetBinCoord(j - 0.5))) continue;
+
             let binh = handle.gry[j] - handle.gry[j+1];
 
             if (profile2d)
@@ -1879,6 +1884,7 @@ class TH2Painter extends THistPainter {
    drawBinsScatter() {
       let histo = this.getObject(),
           handle = this.prepareDraw({ rounding: true, pixel_density: true }),
+          test_cutg = this.options.cutg,
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
@@ -1900,6 +1906,9 @@ class TH2Painter extends THistPainter {
 
                let npix = Math.round(scale*binz);
                if (npix <= 0) continue;
+
+               if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                     histo.fYaxis.GetBinCoord(j - 0.5))) continue;
 
                for (let k = 0; k < npix; ++k)
                   path += this.markeratt.create(
@@ -1934,6 +1943,9 @@ class TH2Painter extends THistPainter {
 
             colindx = cntr.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
+
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                     histo.fYaxis.GetBinCoord(j - 0.5))) continue;
 
             cmd1 = `M${handle.grx[i]},${handle.gry[j+1]}`;
             if (colPaths[colindx] === undefined) {
