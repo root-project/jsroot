@@ -219,7 +219,8 @@ class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if ((gr._typename === clTCutG) && (npoints > 3)) npoints--;
+      if (this.matchObjectType(clTCutG) && (npoints > 3) && (gr.fX[0] == gr.fX[npoints-1]) && (gr.fY[0] == gr.fY[npoints-1]))
+         npoints--;
 
       if (gr._typename == clTGraphErrors)
          kind = 1;
@@ -511,7 +512,10 @@ class TGraphPainter extends ObjectPainter {
       if (options.Line || options.Fill) {
 
          let close_symbol = '';
-         if (graph._typename == clTCutG) options.Fill = 1;
+         if (this.matchObjectType(clTCutG)) {
+            close_symbol = 'Z';
+            if (!options.original) options.Fill = 1;
+         }
 
          if (options.Fill) {
             close_symbol = 'Z'; // always close area if we want to fill it
