@@ -293,6 +293,7 @@
    "Misc" : [
      { "name": "ellipse", "file": "ellipse.root", "item": "c1;1", "title": "TEllipse class" },
      { "name": "axis", "file": "gaxis.root", "item": "c1;1", "title": "TGaxis class" },
+     { "name": "cut", "file": "cut.root", "item": "c1",  "title": "TCutG used for TH2 bins selection" },
      { "name": "arrow", "file": "arrow.root", "item": "c1;1", "title": "TArrow class" },
      { "name": "sinfo", "url": "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", "title": "List of streamer infos" },
      { "name": "3dmark", "url": "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", "title": "TPloyMarker3D class, reset pad margins" },
