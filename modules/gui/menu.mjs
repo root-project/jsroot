@@ -91,7 +91,9 @@ class JSRootMenu {
          return;
       }
 
-      if (!without_sub) this.add('sub:' + top_name, opts[0], call_back);
+      if (!without_sub) this.add('sub:' + top_name, () => {
+         this.input('Provide draw option', opts[0], 'text').then(call_back);
+      });
 
       for (let i = 0; i < opts.length; ++i) {
          let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
