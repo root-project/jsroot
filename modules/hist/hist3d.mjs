@@ -1118,8 +1118,8 @@ function drawBinsLego(painter, is_v7 = false) {
 
       if ((binz1 >= zmax) || (binz2 < zmin)) return false;
 
-      if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii - 0.5),
-                 histo.fYaxis.GetBinCoord(jj - 0.5))) return false;
+      if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii + 0.5),
+                 histo.fYaxis.GetBinCoord(jj + 0.5))) return false;
 
       reduced = (binz2 === zmin) || (binz1 >= binz2);
 
@@ -1466,8 +1466,8 @@ function drawBinsError3D(painter, is_v7 = false) {
             if ((binz < zmin) || (binz > zmax)) continue;
             if ((binz === zmin) && check_skip_min()) continue;
 
-            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
-                 histo.fYaxis.GetBinCoord(j - 0.5))) continue;
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
+                 histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
             // just count number of segments
             if (loop === 0) { nsegments += 3; continue; }
