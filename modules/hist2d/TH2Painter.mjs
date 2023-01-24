@@ -345,6 +345,9 @@ class TH2Painter extends THistPainter {
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
    countStat(cond) {
+      if (!cond && this.options.cutg)
+         cond = (x,y) => this.options.cutg.IsInside(x,y);
+
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
