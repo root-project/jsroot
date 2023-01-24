@@ -1261,15 +1261,26 @@ class TGraphPainter extends ObjectPainter {
          this.draw_g.attr('transform', null);
 
          if (this.move_funcs && this.bins && !not_changed) {
+            let graph = this.getObject();
+
             for (let k = 0; k < this.bins.length; ++k) {
                let bin = this.bins[k];
                bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
                bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
                exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-               if ((bin.indx == 0) && this._cutg_lastsame)
-                  exec += `SetPoint(${this.getObject().fNpoints-1},${bin.x},${bin.y});;`;
+               graph.fX[bin.indx] = bin.x;
+               graph.fY[bin.indx] = bin.y;
+               if ((bin.indx == 0) && this._cutg_lastsame) {
+                  let last = graph.fNpoints-1;
+                  exec += `SetPoint(${last},${bin.x},${bin.y});;`;
+                  graph.fX[last] = bin.x;
+                  graph.fY[last] = bin.y;
+               }
             }
-            this.drawGraph();
+            if (graph.$redraw_pad)
+               this.redrawPad();
+            else
+               this.drawGraph();
          }
       } else {
          exec = `SetPoint(${this.move_bin.indx},${this.move_bin.x},${this.move_bin.y});;`;

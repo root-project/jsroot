@@ -242,6 +242,7 @@ class THistDrawOptions {
             pad?.fPrimitives?.arr?.forEach(obj => {
                if ((obj?._typename == clTCutG) && (obj?.fName == name))
                   this.cutg = obj;
+                  obj.$redraw_pad = true;
             });
          }
       }
