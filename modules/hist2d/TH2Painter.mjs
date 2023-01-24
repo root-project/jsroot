@@ -546,7 +546,7 @@ class TH2Painter extends THistPainter {
             can_merge = (handle.ybar2 === 1) && (handle.ybar1 === 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
-          skip_zero = !this.options.Zero;
+          skip_zero = !this.options.Zero, skip_bin = false, test_cutg = this.options.cutg;
 
       const flush_last_entry = () => {
          last_entry.path += `h${dx}v${last_entry.y1-last_entry.y2}h${-dx}z`;
@@ -567,7 +567,11 @@ class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
-            if (is_zero && skip_zero) {
+            if (test_cutg)
+               skip_bin = !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i - 0.5),
+                                              histo.fYaxis.GetBinCoord(j - 0.5));
+
+            if ((is_zero && skip_zero) || skip_bin) {
                if (last_entry) flush_last_entry();
                continue;
             }
