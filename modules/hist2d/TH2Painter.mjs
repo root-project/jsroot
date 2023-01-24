@@ -364,12 +364,8 @@ class TH2Painter extends THistPainter {
          for (i = 0; i < len; ++i) {
             bin = histo.fBins.arr[i];
 
-            xside = 1; yside = 1;
-
-            if (bin.fXmin > funcs.scale_xmax) xside = 2; else
-            if (bin.fXmax < funcs.scale_xmin) xside = 0;
-            if (bin.fYmin > funcs.scale_ymax) yside = 2; else
-            if (bin.fYmax < funcs.scale_ymin) yside = 0;
+            xside = (bin.fXmin > funcs.scale_xmax) ? 2 : (bin.fXmax < funcs.scale_xmin ? 0 : 1);
+            yside = (bin.fYmin > funcs.scale_ymax) ? 2 : (bin.fYmax < funcs.scale_ymin ? 0 : 1);
 
             xx = yy = numpoints = 0;
             gr = bin.fPoly; numgraphs = 1;
