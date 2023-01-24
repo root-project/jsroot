@@ -396,7 +396,7 @@ class THistDrawOptions {
 
       if (d.check('LIST')) this.List = true; // not used
 
-      if (d.check('CONT', true) && (hdim>1)) {
+      if (d.check('CONT', true) && (hdim > 1)) {
          this.Contour = 1;
          if (d.part.indexOf('Z') >= 0) this.Zscale = true;
          if (d.part.indexOf('1') >= 0) this.Contour = 11; else
@@ -552,29 +552,29 @@ class THistDrawOptions {
             res = 'LEGO';
             if (!this.Zero) res += '0';
             if (this.Lego > 10) res += (this.Lego-10);
-            if (this.Zscale) res+='Z';
+            if (this.Zscale) res += 'Z';
          } else if (this.Surf) {
             res = 'SURF' + (this.Surf-10);
-            if (this.Zscale) res+='Z';
+            if (this.Zscale) res += 'Z';
          }
-         if (!this.FrontBox) res+='FB';
-         if (!this.BackBox) res+='BB';
+         if (!this.FrontBox) res += 'FB';
+         if (!this.BackBox) res += 'BB';
 
-         if (this.x3dscale !== 1) res += '_X3DSC' + Math.round(this.x3dscale * 100);
-         if (this.y3dscale !== 1) res += '_Y3DSC' + Math.round(this.y3dscale * 100);
+         if (this.x3dscale !== 1) res += `_X3DSC${Math.round(this.x3dscale * 100)}`;
+         if (this.y3dscale !== 1) res += `_Y3DSC${Math.round(this.y3dscale * 100)}`;
 
       } else {
          if (this.Scat) {
             res = 'SCAT';
          } else if (this.Color) {
             res = 'COL';
-            if (!this.Zero) res+='0';
+            if (!this.Zero) res += '0';
             if (this.Zscale) res += (!this.Zvert ? 'HZ' : 'Z');
-            if (this.Axis < 0) res+='A';
+            if (this.Axis < 0) res += 'A';
          } else if (this.Contour) {
             res = 'CONT';
             if (this.Contour > 10) res += (this.Contour-10);
-            if (this.Zscale) res+='Z';
+            if (this.Zscale) res += 'Z';
          } else if (this.Bar) {
             res = (this.BaseLine === false) ? 'B' : 'B1';
          } else if (this.Mark) {
@@ -597,7 +597,6 @@ class THistDrawOptions {
       }
 
       if (is_main_hist && res) {
-
          if (this.ForceStat || (this.StatEnabled === true))
             res += '_STAT';
          else if (this.NoStat || (this.StatEnabled === false))
@@ -729,13 +728,13 @@ class HistContour {
 /** @summary histogram status bits
   * @private */
 const TH1StatusBits = {
-   kNoStats       : BIT(9),  // don't draw stats box
-   kUserContour   : BIT(10), // user specified contour levels
-   kCanRebin      : BIT(11), // can rebin axis
-   kLogX          : BIT(15), // X-axis in log scale
-   kIsZoomed      : BIT(16), // bit set when zooming on Y axis
-   kNoTitle       : BIT(17), // don't draw the histogram title
-   kIsAverage     : BIT(18)  // Bin contents are average (used by Add)
+   kNoStats     : BIT(9),  // don't draw stats box
+   kUserContour : BIT(10), // user specified contour levels
+   kCanRebin    : BIT(11), // can rebin axis
+   kLogX        : BIT(15), // X-axis in log scale
+   kIsZoomed    : BIT(16), // bit set when zooming on Y axis
+   kNoTitle     : BIT(17), // don't draw the histogram title
+   kIsAverage   : BIT(18)  // Bin contents are average (used by Add)
 };
 
 
@@ -752,8 +751,7 @@ class THistPainter extends ObjectPainter {
    constructor(dom, histo) {
       super(dom, histo);
       this.draw_content = true;
-      this.nbinsx = 0;
-      this.nbinsy = 0;
+      this.nbinsx = this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
       this.hist_painter_id = internals.id_counter++; // assign unique identifier for hist painter
@@ -885,7 +883,7 @@ class THistPainter extends ObjectPainter {
       }
 
       let indx = this._auto_color || 0;
-      this._auto_color = indx+1;
+      this._auto_color = indx + 1;
 
       let pal = this.getHistPalette();
 
@@ -931,8 +929,8 @@ class THistPainter extends ObjectPainter {
       this.getPadPainter().forEachPainterInPad(objp => {
          if (objp.child_painter_id === this.hist_painter_id) {
             let obj = objp.getObject();
-            if (obj && obj.fName)
-               objp.snapid = snapid + '#func_' + obj.fName;
+            if (obj?.fName)
+               objp.snapid = `${snapid}#func_${obj.fName}`;
          }
        }, 'objects');
    }
@@ -1583,7 +1581,7 @@ class THistPainter extends ObjectPainter {
 
       if (side == 'left') {
          if (indx < 0) indx = 0;
-         if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst)) indx = taxis.fFirst-1;
+         if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst)) indx = taxis.fFirst - 1;
       } else {
          if (indx > nbin) indx = nbin;
          if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
@@ -1640,9 +1638,9 @@ class THistPainter extends ObjectPainter {
           taxis = histo ? histo['f'+arg+'axis'] : null;
       if (!taxis) return;
 
-      let curr = '[1,' + taxis.fNbins + ']';
+      let curr = `[1,${taxis.fNbins}]`;
       if (taxis.TestBit(EAxisBits.kAxisRange))
-          curr = '[' + taxis.fFirst +',' + taxis.fLast +']';
+          curr = `[${taxis.fFirst},${taxis.fLast}]`;
 
       menu.input(`Enter user range for axis ${arg} like [1,${taxis.fNbins}]`, curr).then(res => {
          if (!res) return;
@@ -1691,7 +1689,7 @@ class THistPainter extends ObjectPainter {
           fp = this.getFramePainter();
       if (!histo) return;
 
-      menu.add('header:'+ histo._typename + '::' + histo.fName);
+      menu.add(`header:${histo._typename}::${histo.fName}`);
 
       if (this.options.Axis <= 0)
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
