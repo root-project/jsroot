@@ -231,7 +231,7 @@ class THistDrawOptions {
    }
 
    /** @summary Decode histogram draw options */
-   decode(opt, hdim, histo, pad, painter) {
+   decode(opt, hdim, histo, pp, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
       if (isStr(opt) && (hdim === 2)) {
@@ -239,11 +239,8 @@ class THistDrawOptions {
          if ((p1 >= 0) && (p2 > p1+1)) {
             let name = opt.slice(p1+1, p2);
             opt = opt.slice(0, p1) + opt.slice(p2+1);
-            pad?.fPrimitives?.arr?.forEach(obj => {
-               if ((obj?._typename == clTCutG) && (obj?.fName == name))
-                  this.cutg = obj;
-                  obj.$redraw_pad = true;
-            });
+            this.cutg = pp?.findInPrimitives(name, clTCutG);
+            if (this.cutg) this.cutg.$redraw_pad = true;
          }
       }
 
@@ -831,7 +828,7 @@ class THistPainter extends ObjectPainter {
       else
          this.options.reset();
 
-      this.options.decode(opt || histo.fOption, hdim, histo, pad, this);
+      this.options.decode(opt || histo.fOption, hdim, histo, pp, pad, this);
 
       this.storeDrawOpt(opt); // opt will be return as default draw option, used in webcanvas
    }
@@ -1296,7 +1293,6 @@ class THistPainter extends ObjectPainter {
       if (!pt && isFunc(pp?.findInPrimitives))
          pt = pp.findInPrimitives('title', clTPaveText);
 
-      console.log('drawing title', pt, 'use pad title',  this.options.PadTitle);
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);

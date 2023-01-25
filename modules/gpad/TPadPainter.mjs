@@ -235,6 +235,7 @@ class TPadPainter extends ObjectPainter {
       delete this._pad_height;
       delete this._doing_draw;
       delete this._interactively_changed;
+      delete this._snap_primitives;
 
       this.painters = [];
       this.pad = null;
@@ -765,9 +766,15 @@ class TPadPainter extends ObjectPainter {
      * @desc used to find title drawing
      * @private */
    findInPrimitives(objname, objtype) {
-      let arr = this.pad?.fPrimitives?.arr;
+      let match = obj => (obj.fName == objname) && (objtype ? (obj._typename == objtype) : true);
 
-      return arr ? arr.find(obj => (obj.fName == objname) && (objtype ? (obj.typename == objtype) : true)) : null;
+      if (this._snap_primitives) {
+         let snap = this._snap_primitives.find(snap => (snap.fKind === webSnapIds.kObject) ? match(snap.fSnapshot) : false);
+         if (snap) return snap.fSnapshot;
+      }
+
+      let arr = this.pad?.fPrimitives?.arr;
+      return arr ? arr.find(match) : null;
    }
 
    /** @summary Try to find painter for specified object
@@ -1394,11 +1401,12 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with pad painter when drawing completed
      * @private */
    async redrawPadSnap(snap) {
-      if (!snap || !snap.fPrimitives)
+      if (!snap?.fPrimitives)
          return this;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
       this._readonly = snap.fReadOnly ?? false; // readonly flag
+      this._snap_primitives = snap?.fPrimitives; // keep list to be able find primitive
 
       let first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
@@ -1411,8 +1419,7 @@ class TPadPainter extends ObjectPainter {
 
          this.snapid = snap.fObjectID;
 
-         this.draw_object = first;
-         this.pad = first;
+         this.draw_object = this.pad = first; // first object is pad
 
          // this._fixed_size = true;
 
