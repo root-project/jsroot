@@ -73081,7 +73081,7 @@ class THistDrawOptions {
               Render3D: constants$1.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
    }
 
    /** @summary Decode histogram draw options */
@@ -73190,6 +73190,7 @@ class THistDrawOptions {
       if (d.check('X+')) { this.AxisPos = 10; this.second_x = has_main; }
       if (d.check('Y+')) { this.AxisPos += 1; this.second_y = has_main; }
 
+      if (d.check('SAME0')) { this.Same = true; this.IgnoreMainScale = true; }
       if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
       if (d.check('SAME')) { this.Same = true; this.Func = true; }
 
@@ -74731,19 +74732,22 @@ class THistPainter extends ObjectPainter {
       let main = this.getMainPainter(),
           fp = this.getFramePainter();
 
-      if (main?.fContour && (main !== this)) {
+      if (main?.fContour && (main !== this) && !this.options.IgnoreMainScale) {
          this.fContour = main.fContour;
          return this.fContour;
       }
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+      // when no same0 draw option specified, use main painter for creating contour, also ignore scatter drawing for main painer
       let histo = this.getObject(), nlevels = 0, apply_min,
-          zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
+          src = (this !== main) && (main?.minbin !== undefined) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this,
+          zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin,
           custom_levels;
-      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
+      if (zmin === zmax) { zmin = src.gminbin; zmax = src.gmaxbin; zminpos = src.gminposbin; }
+
       let gzmin = zmin, gzmax = zmax;
-      if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin,zmin); apply_min = true; }
+      if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin, zmin); apply_min = true; }
       if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
       if (zmin >= zmax) {
          if (apply_min) zmax = zmin + 1; else zmin = zmax - 1;
@@ -74812,7 +74816,7 @@ class THistPainter extends ObjectPainter {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();
       if (mp !== this) {
-         if (mp && (mp.draw_content !== false))
+         if (mp && (mp.draw_content !== false) && mp.options.Zscale)
             return null;
       }
 
@@ -75131,7 +75135,7 @@ class THistPainter extends ObjectPainter {
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin === null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz < this.minposbin)) this.minposbin = binz;
          }
       }
 
@@ -76373,6 +76377,27 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
    }
 
 }; // class TH1Painter
+
+
+/**
+ * @summary Set histogram title
+ * @desc If provided, also change axes title
+ * @private
+ */
+
+function setHistTitle(histo, title)
+{
+   if (!histo) return;
+   if (title.indexOf(';') < 0) {
+      histo.fTitle = title;
+   } else {
+      let arr = title.split(';');
+      histo.fTitle = arr[0];
+      if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
+      if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
+      if (arr.length > 3) histo.fZaxis.fTitle = arr[3];
+   }
+}
 
 /** @summary Draw 1-D histogram in 3D
   * @private */
@@ -78311,6 +78336,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
           rnd = new TRandom(handle.sumz);
+
+      handle.ScatterPlot = true;
 
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
@@ -105894,7 +105921,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
       if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
 
-      histo.fTitle = graph.fTitle;
+      setHistTitle(histo, graph.fTitle);
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;

@@ -4,6 +4,7 @@
 1. Upgrade d3.js to v7.8.0
 2. Upgrade three.js to r148
 3. Support "[cutg]" draw option for TH2
+4. Correctly handle "same0" draw option for TH2
 
 
 ## Changes in 7.3.0
