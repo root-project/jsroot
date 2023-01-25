@@ -238,7 +238,7 @@ class THistDrawOptions {
          let p1 = opt.lastIndexOf('['),  p2 = opt.lastIndexOf(']');
          if ((p1 >= 0) && (p2 > p1+1)) {
             let name = opt.slice(p1+1, p2);
-            opt = opt.slice(0, p1);
+            opt = opt.slice(0, p1) + opt.slice(p2+1);
             pad?.fPrimitives?.arr?.forEach(obj => {
                if ((obj?._typename == clTCutG) && (obj?.fName == name))
                   this.cutg = obj;
@@ -1296,6 +1296,7 @@ class THistPainter extends ObjectPainter {
       if (!pt && isFunc(pp?.findInPrimitives))
          pt = pp.findInPrimitives('title', clTPaveText);
 
+      console.log('drawing title', pt, 'use pad title',  this.options.PadTitle);
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
