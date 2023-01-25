@@ -1359,7 +1359,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       // here the case of normal drawing, will be handled in promise
-      if ((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG))
+      if (((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG)) && (snap.fOption !== '__ignore_drawing__'))
          return this.drawObject(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
