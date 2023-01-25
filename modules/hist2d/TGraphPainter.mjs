@@ -3,7 +3,7 @@ import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc, is
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgPath, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { TH1Painter } from './TH1Painter.mjs';
+import { TH1Painter, setHistTitle } from './TH1Painter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -313,7 +313,7 @@ class TGraphPainter extends ObjectPainter {
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
       if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
 
-      histo.fTitle = graph.fTitle;
+      setHistTitle(histo, graph.fTitle);
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;
