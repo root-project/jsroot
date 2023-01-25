@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '24/01/2023';
+let version_date = '25/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1451,18 +1451,18 @@ function getMethods(typename, obj) {
       }
 
       m.GetParName = function(n) {
-         if (this.fParams && this.fParams.fParNames) return this.fParams.fParNames[n];
-         if (this.fFormula && this.fFormula.fParams) {
-            for (let k=0;k<this.fFormula.fParams.length;++k)
-               if(this.fFormula.fParams[k].second == n)
-                  return this.fFormula.fParams[k].first;
+         if (this.fParams?.fParNames)
+            return this.fParams.fParNames[n];
+         if (this.fFormula?.fParams) {
+            for (let k = 0, arr = this.fFormula.fParams; k < arr.length; ++k)
+               if(arr[k].second == n)
+                  return arr[k].first;
          }
-         if (this.fNames && this.fNames[n]) return this.fNames[n];
-         return 'p'+n;
+         return (this.fNames && this.fNames[n]) ? this.fNames[n] : 'p'+n;
       }
       m.GetParValue = function(n) {
-         if (this.fParams && this.fParams.fParameters) return this.fParams.fParameters[n];
-         if (this.fFormula && this.fFormula.fClingParameters) return this.fFormula.fClingParameters[n];
+         if (this.fParams?.fParameters) return this.fParams.fParameters[n];
+         if (this.fFormula?.fClingParameters) return this.fFormula.fClingParameters[n];
          if (this.fParams) return this.fParams[n];
          return undefined;
       }
