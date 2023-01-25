@@ -1962,7 +1962,7 @@ class THistPainter extends ObjectPainter {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();
       if (mp !== this) {
-         if (mp && (mp.draw_content !== false))
+         if (mp && (mp.draw_content !== false) && mp.options.Zscale)
             return null;
       }
 
