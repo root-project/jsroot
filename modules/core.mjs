@@ -1404,7 +1404,7 @@ function getMethods(typename, obj) {
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == clTObject) || (typename == clTNamed) || (obj && (obj.fBits !== undefined)))
+   if ((typename == clTObject) || (typename == clTNamed) || (obj?.fBits !== undefined))
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function (f) { return (this.fBits & f) != 0; };
          m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
@@ -1508,7 +1508,7 @@ function getMethods(typename, obj) {
          // Set bin content - only trivial case, without expansion
          this.fEntries++;
          this.fTsumw = 0;
-         if ((bin >= 0) && (bin<this.fArray.length))
+         if ((bin >= 0) && (bin < this.fArray.length))
             this.fArray[bin] = content;
       }
    }
@@ -1687,7 +1687,6 @@ function isRootCollection(lst, typename) {
       if ((lst.$kind === clTList) || (lst.$kind === clTObjArray)) return true;
       if (!typename) typename = lst._typename;
    }
-   if (!typename) return false;
    return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
