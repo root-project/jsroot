@@ -227,7 +227,7 @@ class THistDrawOptions {
               Render3D: constants.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
    }
 
    /** @summary Decode histogram draw options */
@@ -336,6 +336,7 @@ class THistDrawOptions {
       if (d.check('X+')) { this.AxisPos = 10; this.second_x = has_main; }
       if (d.check('Y+')) { this.AxisPos += 1; this.second_y = has_main; }
 
+      if (d.check('SAME0')) { this.Same = true; this.IgnoreMainScale = true; }
       if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
       if (d.check('SAME')) { this.Same = true; this.Func = true; }
 
@@ -1877,7 +1878,7 @@ class THistPainter extends ObjectPainter {
       let main = this.getMainPainter(),
           fp = this.getFramePainter();
 
-      if (main?.fContour && (main !== this)) {
+      if (main?.fContour && (main !== this) && !this.options.IgnoreMainScale) {
          this.fContour = main.fContour;
          return this.fContour;
       }
@@ -1885,9 +1886,11 @@ class THistPainter extends ObjectPainter {
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       let histo = this.getObject(), nlevels = 0, apply_min,
-          zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
+          src = (this !== main) && (main?.minbin !== undefined) && !this.options.IgnoreMainScale ? main : this,
+          zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin,
           custom_levels;
-      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
+      if (zmin === zmax) { zmin = src.gminbin; zmax = src.gmaxbin; zminpos = src.gminposbin; }
+
       let gzmin = zmin, gzmax = zmax;
       if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin,zmin); apply_min = true; }
       if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
@@ -2277,7 +2280,7 @@ class THistPainter extends ObjectPainter {
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-               if ((this.minposbin === null) || (binz<this.minposbin)) this.minposbin = binz;
+               if ((this.minposbin === null) || (binz < this.minposbin)) this.minposbin = binz;
          }
       }
 
