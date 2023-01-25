@@ -1885,6 +1885,8 @@ class TH2Painter extends THistPainter {
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
           rnd = new TRandom(handle.sumz);
 
+      handle.ScatterPlot = true;
+
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
 
