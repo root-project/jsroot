@@ -2371,7 +2371,7 @@ class TH2Painter extends THistPainter {
                  'y = ' + funcs.axisAsText('y', realy));
       if (numpoints > 0)
          lines.push('npnts = ' + numpoints);
-      lines.push('bin = ' + binname);
+      lines.push(`bin = ${binname}`);
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
       else

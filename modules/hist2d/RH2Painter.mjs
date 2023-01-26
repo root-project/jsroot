@@ -1157,11 +1157,10 @@ class RH2Painter extends RHistPainter {
          dj = histo.stepy || 1;
       }
 
-      lines.push(this.getObjectHint() || 'histo<2>');
-      lines.push('x = ' + this.getAxisBinTip('x', i, di),
-                 'y = ' + this.getAxisBinTip('y', j, dj));
-
-      lines.push(`bin = ${i+1}, ${j+1}`);
+      lines.push(this.getObjectHint() || 'histo<2>',
+                 'x = ' + this.getAxisBinTip('x', i, di),
+                 'y = ' + this.getAxisBinTip('y', j, dj),
+                 `bin = ${i+1}, ${j+1}`);
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 

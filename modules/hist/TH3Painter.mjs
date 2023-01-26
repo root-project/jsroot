@@ -169,17 +169,16 @@ class TH3Painter extends THistPainter {
    getBinTooltips(ix, iy, iz) {
       let lines = [], histo = this.getHisto();
 
-      lines.push(this.getObjectHint());
-
-      lines.push(`x = ${this.getAxisBinTip('x', histo.fXaxis, ix)}  xbin=${ix+1}`);
-      lines.push(`y = ${this.getAxisBinTip('y', histo.fYaxis, iy)}  ybin=${iy+1}`);
-      lines.push(`z = ${this.getAxisBinTip('z', histo.fZaxis, iz)}  zbin=${iz+1}`);
+      lines.push(this.getObjectHint(),
+                 `x = ${this.getAxisBinTip('x', histo.fXaxis, ix)}  xbin=${ix+1}`,
+                 `y = ${this.getAxisBinTip('y', histo.fYaxis, iy)}  ybin=${iy+1}`,
+                 `z = ${this.getAxisBinTip('z', histo.fZaxis, iz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
-         lines.push('entries = ' + binz);
+         lines.push(`entries = ${binz}`);
       else
-         lines.push('entries = ' + floatToString(binz, gStyle.fStatFormat));
+         lines.push(`entries = ${floatToString(binz, gStyle.fStatFormat)}`);
 
       return lines;
    }
