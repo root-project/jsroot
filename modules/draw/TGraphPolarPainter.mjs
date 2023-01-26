@@ -467,14 +467,14 @@ class TGraphPolarPainter extends ObjectPainter {
                   radius: match_distance
                 };
 
-      res.lines.push('r = ' + main.axisAsText('r', graph.fY[bestindx]));
-      res.lines.push('phi = ' + main.axisAsText('phi',graph.fX[bestindx]));
+      res.lines.push(`r = ${main.axisAsText('r', graph.fY[bestindx])}`,
+                     `phi = ${main.axisAsText('phi', graph.fX[bestindx])}`);
 
       if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push('error r = ' + main.axisAsText('r', graph.fEY[bestindx]));
+         res.lines.push(`error r = ${main.axisAsText('r', graph.fEY[bestindx])}`);
 
       if (graph.fEX && graph.fEX[bestindx])
-         res.lines.push('error phi = ' + main.axisAsText('phi', graph.fEX[bestindx]));
+         res.lines.push(`error phi = ${main.axisAsText('phi', graph.fEX[bestindx])}`);
 
       return res;
    }

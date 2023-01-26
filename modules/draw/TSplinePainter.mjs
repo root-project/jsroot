@@ -169,17 +169,16 @@ class TSplinePainter extends ObjectPainter {
 
       let name = this.getObjectHint();
       if (name) res.lines.push(name);
-      res.lines.push('x = ' + funcs.axisAsText('x', xx));
-      res.lines.push('y = ' + funcs.axisAsText('y', yy));
+      res.lines.push(`x = ${funcs.axisAsText('x', xx)}`,
+                     `y = ${funcs.axisAsText('y', yy)}`);
       if (knot !== null) {
-         res.lines.push('knot = ' + indx);
-         res.lines.push('B = ' + floatToString(knot.fB, gStyle.fStatFormat));
-         res.lines.push('C = ' + floatToString(knot.fC, gStyle.fStatFormat));
-         res.lines.push('D = ' + floatToString(knot.fD, gStyle.fStatFormat));
-         if ((knot.fE !== undefined) && (knot.fF !== undefined)) {
-            res.lines.push('E = ' + floatToString(knot.fE, gStyle.fStatFormat));
-            res.lines.push('F = ' + floatToString(knot.fF, gStyle.fStatFormat));
-         }
+         res.lines.push(`knot = ${indx}`,
+                        `B = ${floatToString(knot.fB, gStyle.fStatFormat)}`,
+                        `C = ${floatToString(knot.fC, gStyle.fStatFormat)}`,
+                        `D = ${floatToString(knot.fD, gStyle.fStatFormat)}`);
+         if ((knot.fE !== undefined) && (knot.fF !== undefined))
+            res.lines.push(`E = ${floatToString(knot.fE, gStyle.fStatFormat)}`,
+                           `F = ${floatToString(knot.fF, gStyle.fStatFormat)}`);
       }
 
       return res;

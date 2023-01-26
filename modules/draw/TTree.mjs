@@ -12,6 +12,7 @@ import { TGraphPainter } from '../hist/TGraphPainter.mjs';
 import { drawPolyMarker3D } from '../draw/TPolyMarker3D.mjs';
 import { showProgress, registerForResize } from '../gui/utils.mjs';
 
+
 /** @summary Show TTree::Draw progress during processing */
 TDrawSelector.prototype.ShowProgress = function(value) {
    if ((typeof document == 'undefined') || isBatchMode()) return;
@@ -103,7 +104,7 @@ async function treeDrawProgress(obj, final) {
       if (isFunc(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
       let str = create(clTObjString);
-      str.fString = toJSON(obj,2);
+      str.fString = toJSON(obj, 2);
       return drawRawText(this.drawid, str);
    }
 
@@ -277,7 +278,7 @@ function createTreePlayer(player) {
           pos = expr.indexOf('>>');
 
       if (pos < 0) {
-         expr += '>>' + hname;
+         expr += `>>${hname}`;
       } else {
          hname = expr.slice(pos+2);
          if (hname[0] == '+') hname = hname.slice(1);
@@ -301,7 +302,7 @@ function createTreePlayer(player) {
       } else {
          url += `&prototype="Option_t*"&opt="${expr}"`;
       }
-      url += '&_ret_object_=' + hname;
+      url += `&_ret_object_=${hname}`;
 
       const submitDrawRequest = () => {
          httpRequest(url, 'object').then(res => {
