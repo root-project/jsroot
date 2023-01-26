@@ -991,6 +991,7 @@ const clTObject = 'TObject', clTNamed = 'TNamed',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
       clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
+      nsREX = 'ROOT::Experimental::',
       kNoZoom = -1111;
 
 
@@ -1819,6 +1820,7 @@ isRootCollection: isRootCollection,
 isStr: isStr,
 kNoZoom: kNoZoom,
 loadScript: loadScript,
+nsREX: nsREX,
 parse: parse,
 parseMulti: parseMulti,
 registerMethods: registerMethods,
@@ -58803,7 +58805,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              if (pnts.length < 3) return;
 
-             const faces = ShapeUtils.triangulateShape(pnts , []);
+             const faces = ShapeUtils.triangulateShape(pnts, []);
 
              if (!faces || (faces.length === 0)) return;
 
@@ -60994,7 +60996,7 @@ function beta(x,y) {
 /** @summary chisquared_cdf_c
   * @memberof Math */
 function chisquared_cdf_c(x,r,x0 = 0) {
-   return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
+   return inc_gamma_c(0.5 * r, 0.5*(x-x0));
 }
 
 /** @summary Continued fraction expansion #1 for incomplete beta integral
@@ -61600,7 +61602,7 @@ function beta_cdf_c(x,a,b) {
 /** @summary chisquared_cdf
   * @memberof Math */
 function chisquared_cdf(x,r,x0=0) {
-   return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
+   return inc_gamma(0.5 * r, 0.5*(x-x0));
 }
 
 /** @summary gamma_quantile_c function
@@ -78824,7 +78826,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                  'y = ' + funcs.axisAsText('y', realy));
       if (numpoints > 0)
          lines.push('npnts = ' + numpoints);
-      lines.push('bin = ' + binname);
+      lines.push(`bin = ${binname}`);
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
       else
@@ -79241,12 +79243,12 @@ function drawTH2PolyLego(painter) {
 
             try {
                if (pnts.length > 2)
-                  faces = ShapeUtils.triangulateShape(pnts , []);
+                  faces = ShapeUtils.triangulateShape(pnts, []);
             } catch(e) {
                faces = null;
             }
 
-            if (faces && (faces.length>pnts.length-3)) break;
+            if (faces && (faces.length > pnts.length-3)) break;
          }
 
          if (faces && faces.length && pnts) {
@@ -79254,7 +79256,7 @@ function drawTH2PolyLego(painter) {
             all_faces.push(faces);
 
             nfaces += faces.length * 2;
-            if (z1>z0) nfaces += pnts.length*2;
+            if (z1 > z0) nfaces += pnts.length*2;
          }
       }
 
@@ -79607,17 +79609,16 @@ class TH3Painter extends THistPainter {
    getBinTooltips(ix, iy, iz) {
       let lines = [], histo = this.getHisto();
 
-      lines.push(this.getObjectHint());
-
-      lines.push(`x = ${this.getAxisBinTip('x', histo.fXaxis, ix)}  xbin=${ix+1}`);
-      lines.push(`y = ${this.getAxisBinTip('y', histo.fYaxis, iy)}  ybin=${iy+1}`);
-      lines.push(`z = ${this.getAxisBinTip('z', histo.fZaxis, iz)}  zbin=${iz+1}`);
+      lines.push(this.getObjectHint(),
+                 `x = ${this.getAxisBinTip('x', histo.fXaxis, ix)}  xbin=${ix+1}`,
+                 `y = ${this.getAxisBinTip('y', histo.fYaxis, iy)}  ybin=${iy+1}`,
+                 `z = ${this.getAxisBinTip('z', histo.fZaxis, iz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
-         lines.push('entries = ' + binz);
+         lines.push(`entries = ${binz}`);
       else
-         lines.push('entries = ' + floatToString(binz, gStyle.fStatFormat));
+         lines.push(`entries = ${floatToString(binz, gStyle.fStatFormat)}`);
 
       return lines;
    }
@@ -80737,21 +80738,21 @@ class Geometry {
          vertex = geometry.vertices[ face.a ];
          if (useVertexNormals) normal = face.vertexNormals[0];
          // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
          vertex = geometry.vertices[ face.b ];
          if (useVertexNormals) normal = face.vertexNormals[1];
          //uvs = faceVertexUvs ? new Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
          vertex = geometry.vertices[ face.c ];
          if (useVertexNormals) normal = face.vertexNormals[2];
          // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal, uvs */ );
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push( vertex );
 
@@ -82021,7 +82022,7 @@ function createTubeBuffer( shape, faces_limit) {
 
 /** @summary Creates eltu geometrey
   * @private */
-function createEltuBuffer( shape , faces_limit ) {
+function createEltuBuffer(shape, faces_limit) {
    let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm));
 
    if (faces_limit < 0) return radiusSegments*4;
@@ -82349,7 +82350,7 @@ function createXtruBuffer( shape, faces_limit ) {
    for (let vert = 0; vert < shape.fNvert; ++vert)
       pnts.push(new Vector2(shape.fX[vert], shape.fY[vert]));
 
-   let faces = ShapeUtils.triangulateShape(pnts , []);
+   let faces = ShapeUtils.triangulateShape(pnts, []);
    if (faces.length < pnts.length-2) {
       geoWarn(`Problem with XTRU shape ${shape.fName} with ${pnts.length} vertices`);
       faces = [];
@@ -82954,28 +82955,28 @@ function createGeometry(shape, limit) {
 
    try {
       switch (shape._typename) {
-         case clTGeoBBox: return createCubeBuffer( shape, limit );
-         case clTGeoPara: return createParaBuffer( shape, limit );
+         case clTGeoBBox: return createCubeBuffer(shape, limit);
+         case clTGeoPara: return createParaBuffer(shape, limit);
          case clTGeoTrd1:
-         case clTGeoTrd2: return createTrapezoidBuffer( shape, limit );
+         case clTGeoTrd2: return createTrapezoidBuffer(shape, limit);
          case clTGeoArb8:
          case clTGeoTrap:
-         case clTGeoGtra: return createArb8Buffer( shape, limit );
-         case clTGeoSphere: return createSphereBuffer( shape , limit );
+         case clTGeoGtra: return createArb8Buffer(shape, limit);
+         case clTGeoSphere: return createSphereBuffer(shape, limit);
          case clTGeoCone:
          case clTGeoConeSeg:
          case clTGeoTube:
          case clTGeoTubeSeg:
-         case clTGeoCtub: return createTubeBuffer( shape, limit );
-         case clTGeoEltu: return createEltuBuffer( shape, limit );
-         case clTGeoTorus: return createTorusBuffer( shape, limit );
+         case clTGeoCtub: return createTubeBuffer(shape, limit);
+         case clTGeoEltu: return createEltuBuffer(shape, limit);
+         case clTGeoTorus: return createTorusBuffer(shape, limit);
          case clTGeoPcon:
-         case clTGeoPgon: return createPolygonBuffer( shape, limit );
-         case clTGeoXtru: return createXtruBuffer( shape, limit );
-         case clTGeoParaboloid: return createParaboloidBuffer( shape, limit );
-         case clTGeoHype: return createHypeBuffer( shape, limit );
-         case 'TGeoTessellated': return createTessellatedBuffer( shape, limit );
-         case clTGeoCompositeShape: return createComposite( shape, limit );
+         case clTGeoPgon: return createPolygonBuffer(shape, limit);
+         case clTGeoXtru: return createXtruBuffer(shape, limit);
+         case clTGeoParaboloid: return createParaboloidBuffer(shape, limit);
+         case clTGeoHype: return createHypeBuffer(shape, limit);
+         case 'TGeoTessellated': return createTessellatedBuffer(shape, limit);
+         case clTGeoCompositeShape: return createComposite(shape, limit);
          case clTGeoShapeAssembly: break;
          case clTGeoScaledShape: {
             let res = createGeometry(shape.fShape, limit);
@@ -84692,7 +84693,7 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
       clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
-      clREveGeoShapeExtract = 'ROOT::Experimental::REveGeoShapeExtract';
+      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`;
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
@@ -87594,7 +87595,7 @@ class TGeoPainter extends ObjectPainter {
             if (!tracks) return this;
 
             // FIXME: probably tracks should be remembered?
-            return this.drawExtras(tracks, '', false).then(()=> {
+            return this.drawExtras(tracks, '', false).then(() => {
                this.updateClipping(true);
                return this.render3D(100);
             });
@@ -87721,10 +87722,10 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
-      } else if ((obj._typename === clTEveTrack) || (obj._typename === 'ROOT::Experimental::REveTrack')) {
+      } else if ((obj._typename === clTEveTrack) || (obj._typename === `${nsREX}REveTrack`)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === clTEvePointSet) || (obj._typename === 'ROOT::Experimental::REvePointSet') || (obj._typename === clTPolyMarker3D)) {
+      } else if ((obj._typename === clTEvePointSet) || (obj._typename === `${nsREX}REvePointSet`) || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
@@ -96529,9 +96530,6 @@ treeIOTest: treeIOTest,
 treeProcess: treeProcess
 });
 
-// v7 namespace prefix
-const _v7 = 'ROOT::Experimental::';
-
 async function import_more() { return Promise.resolve().then(function () { return more; }); }
 
 async function import_geo() {
@@ -96651,25 +96649,25 @@ const drawFuncs = { lst: [
    { name: 'Session', icon: 'img_globe' },
    { name: 'kind:TopFolder', icon: 'img_base' },
    { name: 'kind:Folder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true },
-   { name: _v7+'RCanvas', icon: 'img_canvas', class: () => init_v7().then(h => h.RCanvasPainter), opt: '', expand_item: 'fPrimitives' },
-   { name: _v7+'RCanvasDisplayItem', icon: 'img_canvas', draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: 'fPrimitives' },
-   { name: _v7+'RHist1Drawable', icon: 'img_histo1d', class: () => init_v7('rh1').then(h => h.RH1Painter), opt: '' },
-   { name: _v7+'RHist2Drawable', icon: 'img_histo2d', class: () => init_v7('rh2').then(h => h.RH2Painter), opt: '' },
-   { name: _v7+'RHist3Drawable', icon: 'img_histo3d', class: () => init_v7('rh3').then(h => h.RH3Painter), opt: '' },
-   { name: _v7+'RHistDisplayItem', icon: 'img_histo1d', draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
-   { name: _v7+'RText', icon: 'img_text', draw: () => init_v7('more').then(h => h.drawText), opt: '', direct: 'v7', csstype: 'text' },
-   { name: _v7+'RFrameTitle', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFrameTitle), opt: '', direct: 'v7', csstype: 'title' },
-   { name: _v7+'RPaletteDrawable', icon: 'img_text', class: () => init_v7('more').then(h => h.RPalettePainter), opt: '' },
-   { name: _v7+'RDisplayHistStat', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
-   { name: _v7+'RLine', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawLine), opt: '', direct: 'v7', csstype: 'line' },
-   { name: _v7+'RBox', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawBox), opt: '', direct: 'v7', csstype: 'box' },
-   { name: _v7+'RMarker', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawMarker), opt: '', direct: 'v7', csstype: 'marker' },
-   { name: _v7+'RPave', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPavePainter), opt: '' },
-   { name: _v7+'RLegend', icon: 'img_graph', class: () => init_v7('pave').then(h => h.RLegendPainter), opt: '' },
-   { name: _v7+'RPaveText', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
-   { name: _v7+'RFrame', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRFrame), opt: '' },
-   { name: _v7+'RFont', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFont), opt: '', direct: 'v7', csstype: 'font' },
-   { name: _v7+'RAxisDrawable', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRAxis), opt: '' }
+   { name: nsREX+'RCanvas', icon: 'img_canvas', class: () => init_v7().then(h => h.RCanvasPainter), opt: '', expand_item: 'fPrimitives' },
+   { name: nsREX+'RCanvasDisplayItem', icon: 'img_canvas', draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: 'fPrimitives' },
+   { name: nsREX+'RHist1Drawable', icon: 'img_histo1d', class: () => init_v7('rh1').then(h => h.RH1Painter), opt: '' },
+   { name: nsREX+'RHist2Drawable', icon: 'img_histo2d', class: () => init_v7('rh2').then(h => h.RH2Painter), opt: '' },
+   { name: nsREX+'RHist3Drawable', icon: 'img_histo3d', class: () => init_v7('rh3').then(h => h.RH3Painter), opt: '' },
+   { name: nsREX+'RHistDisplayItem', icon: 'img_histo1d', draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
+   { name: nsREX+'RText', icon: 'img_text', draw: () => init_v7('more').then(h => h.drawText), opt: '', direct: 'v7', csstype: 'text' },
+   { name: nsREX+'RFrameTitle', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFrameTitle), opt: '', direct: 'v7', csstype: 'title' },
+   { name: nsREX+'RPaletteDrawable', icon: 'img_text', class: () => init_v7('more').then(h => h.RPalettePainter), opt: '' },
+   { name: nsREX+'RDisplayHistStat', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
+   { name: nsREX+'RLine', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawLine), opt: '', direct: 'v7', csstype: 'line' },
+   { name: nsREX+'RBox', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawBox), opt: '', direct: 'v7', csstype: 'box' },
+   { name: nsREX+'RMarker', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawMarker), opt: '', direct: 'v7', csstype: 'marker' },
+   { name: nsREX+'RPave', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPavePainter), opt: '' },
+   { name: nsREX+'RLegend', icon: 'img_graph', class: () => init_v7('pave').then(h => h.RLegendPainter), opt: '' },
+   { name: nsREX+'RPaveText', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
+   { name: nsREX+'RFrame', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRFrame), opt: '' },
+   { name: nsREX+'RFont', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFont), opt: '', direct: 'v7', csstype: 'font' },
+   { name: nsREX+'RAxisDrawable', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRAxis), opt: '' }
 ], cache: {} };
 
 
@@ -105537,14 +105535,14 @@ class TGraphPolarPainter extends ObjectPainter {
                   radius: match_distance
                 };
 
-      res.lines.push('r = ' + main.axisAsText('r', graph.fY[bestindx]));
-      res.lines.push('phi = ' + main.axisAsText('phi',graph.fX[bestindx]));
+      res.lines.push(`r = ${main.axisAsText('r', graph.fY[bestindx])}`,
+                     `phi = ${main.axisAsText('phi', graph.fX[bestindx])}`);
 
       if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push('error r = ' + main.axisAsText('r', graph.fEY[bestindx]));
+         res.lines.push(`error r = ${main.axisAsText('r', graph.fEY[bestindx])}`);
 
       if (graph.fEX && graph.fEX[bestindx])
-         res.lines.push('error phi = ' + main.axisAsText('phi', graph.fEX[bestindx]));
+         res.lines.push(`error phi = ${main.axisAsText('phi', graph.fEX[bestindx])}`);
 
       return res;
    }
@@ -108740,17 +108738,16 @@ class TSplinePainter extends ObjectPainter {
 
       let name = this.getObjectHint();
       if (name) res.lines.push(name);
-      res.lines.push('x = ' + funcs.axisAsText('x', xx));
-      res.lines.push('y = ' + funcs.axisAsText('y', yy));
+      res.lines.push(`x = ${funcs.axisAsText('x', xx)}`,
+                     `y = ${funcs.axisAsText('y', yy)}`);
       if (knot !== null) {
-         res.lines.push('knot = ' + indx);
-         res.lines.push('B = ' + floatToString(knot.fB, gStyle.fStatFormat));
-         res.lines.push('C = ' + floatToString(knot.fC, gStyle.fStatFormat));
-         res.lines.push('D = ' + floatToString(knot.fD, gStyle.fStatFormat));
-         if ((knot.fE !== undefined) && (knot.fF !== undefined)) {
-            res.lines.push('E = ' + floatToString(knot.fE, gStyle.fStatFormat));
-            res.lines.push('F = ' + floatToString(knot.fF, gStyle.fStatFormat));
-         }
+         res.lines.push(`knot = ${indx}`,
+                        `B = ${floatToString(knot.fB, gStyle.fStatFormat)}`,
+                        `C = ${floatToString(knot.fC, gStyle.fStatFormat)}`,
+                        `D = ${floatToString(knot.fD, gStyle.fStatFormat)}`);
+         if ((knot.fE !== undefined) && (knot.fF !== undefined))
+            res.lines.push(`E = ${floatToString(knot.fE, gStyle.fStatFormat)}`,
+                           `F = ${floatToString(knot.fF, gStyle.fStatFormat)}`);
       }
 
       return res;
@@ -109488,7 +109485,7 @@ async function treeDrawProgress(obj, final) {
       if (isFunc(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
       let str = create$1(clTObjString);
-      str.fString = toJSON(obj,2);
+      str.fString = toJSON(obj, 2);
       return drawRawText(this.drawid, str);
    }
 
@@ -109662,7 +109659,7 @@ function createTreePlayer(player) {
           pos = expr.indexOf('>>');
 
       if (pos < 0) {
-         expr += '>>' + hname;
+         expr += `>>${hname}`;
       } else {
          hname = expr.slice(pos+2);
          if (hname[0] == '+') hname = hname.slice(1);
@@ -109680,13 +109677,13 @@ function createTreePlayer(player) {
          url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
          // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (nentries == '') nentries = (this.root_version >= 394499) ? 'TTree::kMaxEntries': '1000000000'; // kMaxEntries available since ROOT 6.05/03
-         if (firstentry == '') firstentry = '0';
+         if (!nentries) nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
+         if (!firstentry) firstentry = '0';
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
       } else {
          url += `&prototype="Option_t*"&opt="${expr}"`;
       }
-      url += '&_ret_object_=' + hname;
+      url += `&_ret_object_=${hname}`;
 
       const submitDrawRequest = () => {
          httpRequest(url, 'object').then(res => {
@@ -110100,7 +110097,7 @@ class RObjectPainter extends ObjectPainter {
          return false;
 
       if (!req._typename) {
-         req._typename = 'ROOT::Experimental::RChangeAttrRequest';
+         req._typename = nsREX + 'RChangeAttrRequest';
          req.ids = [];
          req.names = [];
          req.values = [];
@@ -110123,7 +110120,7 @@ class RObjectPainter extends ObjectPainter {
             case 'boolean': kind = 'boolean'; break;
          }
 
-      obj = { _typename: 'ROOT::Experimental::RAttrMap::' };
+      obj = { _typename: nsREX + 'RAttrMap::' };
       switch(kind) {
          case 'none': obj._typename += 'NoValue_t'; break;
          case 'boolean': obj._typename += 'BoolValue_t'; obj.v = value ? true : false; break;
@@ -112148,11 +112145,11 @@ class RFramePainter extends RObjectPainter {
 
       let changed = false,
           r_x = '', r_y = '', r_z = '', is_any_check = false,
-         req = {
-            _typename: 'ROOT::Experimental::RFrame::RUserRanges',
+          req = {
+            _typename: `${nsREX}RFrame::RUserRanges`,
             values: [0, 0, 0, 0, 0, 0],
             flags: [false, false, false, false, false, false]
-         };
+          };
 
       const checkZooming = (painter, force) => {
          if (!force && !isFunc(painter.canZoomInside)) return;
@@ -112215,7 +112212,7 @@ class RFramePainter extends RObjectPainter {
       if (!changed) return false;
 
       if (this.v7NormalMode())
-         this.v7SubmitRequest('zoom', { _typename: 'ROOT::Experimental::RFrame::RZoomRequest', ranges: req });
+         this.v7SubmitRequest('zoom', { _typename: `${nsREX}RFrame::RZoomRequest`, ranges: req });
 
       return this.interactiveRedraw('pad', 'zoom' + r_x + r_y + r_z).then(() => true);
    }
@@ -112243,7 +112240,7 @@ class RFramePainter extends RObjectPainter {
 
       let changed = false, is_any_check = false,
           req = {
-             _typename: 'ROOT::Experimental::RFrame::RUserRanges',
+             _typename: `${nsREX}RFrame::RUserRanges`,
              values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              flags: [false, false, false, false, false, false, false, false, false, false]
           };
@@ -112280,14 +112277,14 @@ class RFramePainter extends RObjectPainter {
       if (!changed) return false;
 
       if (this.v7NormalMode())
-         this.v7SubmitRequest('zoom', { _typename: 'ROOT::Experimental::RFrame::RZoomRequest', ranges: req });
+         this.v7SubmitRequest('zoom', { _typename: `${nsREX}RFrame::RZoomRequest`, ranges: req });
 
-      return this.interactiveRedraw('pad', 'zoom' + indx).then(() => true);
+      return this.interactiveRedraw('pad', `zoom${indx}`).then(() => true);
    }
 
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
-      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
+      return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
    }
 
    /** @summary Unzoom specified axes
@@ -112645,13 +112642,13 @@ class RPadPainter extends RObjectPainter {
    /** @summary Returns palette associated with pad.
      * @desc Either from existing palette painter or just default palette */
    getHistPalette() {
-      let pp = this.findPainterFor(undefined, undefined, 'ROOT::Experimental::RPaletteDrawable');
+      let pp = this.findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`);
 
       if (pp) return pp.getHistPalette();
 
       if (!this.fDfltPalette) {
          this.fDfltPalette = {
-            _typename: 'ROOT::Experimental::RPalette',
+            _typename: `${nsREX}RPalette`,
             fColors: [{ fOrdinal: 0,     fColor: { fColor: 'rgb(53, 42, 135)' } },
                       { fOrdinal: 0.125, fColor: { fColor: 'rgb(15, 92, 221)' } },
                       { fOrdinal: 0.25,  fColor: { fColor: 'rgb(20, 129, 214)' } },
@@ -112664,7 +112661,7 @@ class RPadPainter extends RObjectPainter {
              fInterpolate: true,
              fNormalized: true
          };
-         addMethods(this.fDfltPalette, 'ROOT::Experimental::RPalette');
+         addMethods(this.fDfltPalette, `${nsREX}RPalette`);
       }
 
       return this.fDfltPalette;
@@ -112993,7 +112990,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
       let arr = this.pad ? this.pad.fPrimitives : null;
-      return arr && arr.find(obj => obj._typename != 'ROOT::Experimental::RPadDisplayItem') ? true : false;
+      return arr?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -113376,13 +113373,13 @@ class RPadPainter extends RObjectPainter {
 
       if (objpainter) {
 
-         if (snap._typename == 'ROOT::Experimental::RPadDisplayItem')  // subpad
+         if (snap._typename == `${nsREX}RPadDisplayItem`)  // subpad
             return objpainter.redrawPadSnap(snap).then(ppainter => {
                this.addObjectPainter(ppainter, lst, indx);
                return this.drawNextSnap(lst, indx);
             });
 
-         if (snap._typename === 'ROOT::Experimental::TObjectDisplayItem')
+         if (snap._typename === `${nsREX}TObjectDisplayItem`)
             this.extractTObjectProp(snap);
 
          let promise;
@@ -113393,7 +113390,7 @@ class RPadPainter extends RObjectPainter {
          return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
-      if (snap._typename == 'ROOT::Experimental::RPadDisplayItem') { // subpad
+      if (snap._typename == `${nsREX}RPadDisplayItem`) { // subpad
 
          let subpad = snap; // not subpad, but just attributes
 
@@ -113420,7 +113417,7 @@ class RPadPainter extends RObjectPainter {
       // will be used in addToPadPrimitives to assign style to sub-painters
       this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
-      if (snap._typename === 'ROOT::Experimental::TObjectDisplayItem') {
+      if (snap._typename === `${nsREX}TObjectDisplayItem`) {
 
          // identifier used in RObjectDrawable
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
@@ -115063,7 +115060,7 @@ class RCanvasPainter extends RPadPainter {
    async submitMenuRequest(painter, menukind, reqid) {
       return new Promise(resolveFunc => {
          this.submitDrawableRequest('', {
-            _typename: 'ROOT::Experimental::RDrawableMenuRequest',
+            _typename: `${nsREX}RDrawableMenuRequest`,
             menukind: menukind || '',
             menureqid: reqid, // used to identify menu request
          }, painter, resolveFunc);
@@ -115087,10 +115084,7 @@ class RCanvasPainter extends RPadPainter {
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
        }
 
-      this.submitDrawableRequest('', {
-         _typename: 'ROOT::Experimental::RDrawableExecRequest',
-         exec: exec
-      }, painter);
+      this.submitDrawableRequest('', { _typename: `${nsREX}RDrawableExecRequest`, exec }, painter);
    }
 
    /** @summary Process reply from request to RDrawable */
@@ -115304,7 +115298,7 @@ class RCanvasPainter extends RPadPainter {
    static async draw(dom, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
-         can = create$1('ROOT::Experimental::RCanvas');
+         can = create$1(`${nsREX}RCanvas`);
 
       let painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
@@ -115345,7 +115339,7 @@ async function ensureRCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 
    // simple check - if canvas there, can use painter
-   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* , noframe */) : Promise.resolve(true);
+   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* noframe */) : Promise.resolve(true);
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select('.main_layer').empty())
@@ -115404,7 +115398,7 @@ function drawRFrameTitle(reason, drag) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-registerMethods('ROOT::Experimental::RPalette', {
+registerMethods(`${nsREX}RPalette`, {
 
    extractRColor(rcolor) {
      return rcolor.fColor || 'black';
@@ -115709,7 +115703,7 @@ class RPalettePainter extends RObjectPainter {
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
-         addMethods(pal, 'ROOT::Experimental::RPalette');
+         addMethods(pal, `${nsREX}RPalette`);
 
       return pal;
    }
@@ -116366,7 +116360,7 @@ class RHistStatsPainter extends RPavePainter {
          text_g.selectAll('*').remove();
 
       textFont.setSize(height/(nlines * 1.2));
-      this.startTextDrawing(textFont, 'font' , text_g);
+      this.startTextDrawing(textFont, 'font', text_g);
 
       if (nlines == 1) {
          this.drawText({ width: width, height: height, text: lines[0], latex: 1, draw_g: text_g });
@@ -116430,7 +116424,7 @@ class RHistStatsPainter extends RPavePainter {
    async redraw(reason) {
       if (reason && isStr(reason) && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
          let req = {
-            _typename: 'ROOT::Experimental::RHistStatBoxBase::RRequest',
+            _typename: `${nsREX}RHistStatBoxBase::RRequest`,
             mask: this.getObject().fShowMask // lines to show in stat box
          };
 
@@ -116459,7 +116453,7 @@ RPaveTextPainter: RPaveTextPainter
 /** @summary assign methods for the RAxis objects
   * @private */
 function assignRAxisMethods(axis) {
-   if ((axis._typename == 'ROOT::Experimental::RAxisEquidistant') || (axis._typename == 'ROOT::Experimental::RAxisLabels')) {
+   if ((axis._typename == `${nsREX}RAxisEquidistant`) || (axis._typename == `${nsREX}RAxisLabels`)) {
       if (axis.fInvBinWidth === 0) {
          axis.$dummy = true;
          axis.fInvBinWidth = 1;
@@ -116472,7 +116466,7 @@ function assignRAxisMethods(axis) {
       axis.GetNumBins = function() { return this.fNBinsNoOver; };
       axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; };
       axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); };
-   } else if (axis._typename == 'ROOT::Experimental::RAxisIrregular') {
+   } else if (axis._typename == `${nsREX}RAxisIrregular`) {
       axis.min = axis.fBinBorders[0];
       axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
       axis.GetNumBins = function() { return this.fBinBorders.length; };
@@ -116899,7 +116893,7 @@ class RHistPainter extends RObjectPainter {
          if (handle.incomplete)
             return new Promise(resolveFunc => {
                // use empty kind to always submit request
-               let req = this.v7SubmitRequest('', { _typename: 'ROOT::Experimental::RHistDrawableBase::RRequest' },
+               let req = this.v7SubmitRequest('', { _typename: `${nsREX}RHistDrawableBase::RRequest` },
                                                   this.processItemReply.bind(this));
                if (req) {
                   this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
@@ -117138,7 +117132,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Update palette drawing */
    updatePaletteDraw() {
       if (this.isMainPainter())
-         this.getPadPainter().findPainterFor(undefined, undefined, 'ROOT::Experimental::RPaletteDrawable')?.drawPalette();
+         this.getPadPainter().findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`)?.drawPalette();
    }
 
    /** @summary Fill menu entries for palette */
@@ -118424,7 +118418,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
    }
 
    /** @summary Readraw projections */
-   redrawProjection(/* ii1, ii2 , jj1, jj2*/) {
+   redrawProjection(/* ii1, ii2, jj1, jj2 */) {
       // do nothing for the moment
 
       if (!this.is_projection) return;
@@ -119508,11 +119502,10 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
          dj = histo.stepy || 1;
       }
 
-      lines.push(this.getObjectHint() || 'histo<2>');
-      lines.push('x = ' + this.getAxisBinTip('x', i, di),
-                 'y = ' + this.getAxisBinTip('y', j, dj));
-
-      lines.push(`bin = ${i+1}, ${j+1}`);
+      lines.push(this.getObjectHint() || 'histo<2>',
+                 'x = ' + this.getAxisBinTip('x', i, di),
+                 'y = ' + this.getAxisBinTip('y', j, dj),
+                 `bin = ${i+1}, ${j+1}`);
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
@@ -119974,11 +119967,10 @@ class RH3Painter extends RHistPainter {
          dz = histo.stepz || 1;
       }
 
-      lines.push(this.getObjectHint());
-
-      lines.push(`x = ${this.getAxisBinTip('x', ix, dx)}  xbin=${ix+1}`);
-      lines.push(`y = ${this.getAxisBinTip('y', iy, dy)}  ybin=${iy+1}`);
-      lines.push(`z = ${this.getAxisBinTip('z', iz, dz)}  zbin=${iz+1}`);
+      lines.push(this.getObjectHint(),
+                 `x = ${this.getAxisBinTip('x', ix, dx)}  xbin=${ix+1}`,
+                 `y = ${this.getAxisBinTip('y', iy, dy)}  ybin=${iy+1}`,
+                 `z = ${this.getAxisBinTip('z', iz, dz)}  zbin=${iz+1}`);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
           lbl = 'entries = '+ ((dx > 1) || (dy > 1) || (dz > 1) ? '~' : '');
@@ -120709,6 +120701,7 @@ exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
 exports.makeSVG = makeSVG;
 exports.makeTranslate = makeTranslate;
+exports.nsREX = nsREX;
 exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
