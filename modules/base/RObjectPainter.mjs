@@ -1,4 +1,4 @@
-import { isStr, isFunc } from '../core.mjs';
+import { isStr, isFunc, nsREX } from '../core.mjs';
 import { FontHandler } from './FontHandler.mjs';
 import { ObjectPainter } from './ObjectPainter.mjs';
 
@@ -238,7 +238,7 @@ class RObjectPainter extends ObjectPainter {
          return false;
 
       if (!req._typename) {
-         req._typename = 'ROOT::Experimental::RChangeAttrRequest';
+         req._typename = nsREX + 'RChangeAttrRequest';
          req.ids = [];
          req.names = [];
          req.values = [];
@@ -261,7 +261,7 @@ class RObjectPainter extends ObjectPainter {
             case 'boolean': kind = 'boolean'; break;
          }
 
-      obj = { _typename: 'ROOT::Experimental::RAttrMap::' };
+      obj = { _typename: nsREX + 'RAttrMap::' };
       switch(kind) {
          case 'none': obj._typename += 'NoValue_t'; break;
          case 'boolean': obj._typename += 'BoolValue_t'; obj.v = value ? true : false; break;

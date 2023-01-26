@@ -1,4 +1,4 @@
-import { addMethods, settings, isBatchMode } from '../core.mjs';
+import { addMethods, settings, isBatchMode, nsREX } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -105,7 +105,7 @@ class RPalettePainter extends RObjectPainter {
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
-         addMethods(pal, 'ROOT::Experimental::RPalette');
+         addMethods(pal, `${nsREX}RPalette`);
 
       return pal;
    }

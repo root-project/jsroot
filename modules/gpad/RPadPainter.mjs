@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, addMethods,
-         isPromise, getPromise, isBatchMode, isObject, isFunc, isStr, btoa_func, clTPad } from '../core.mjs';
+         isPromise, getPromise, isBatchMode, isObject, isFunc, isStr, btoa_func, clTPad, nsREX } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -173,13 +173,13 @@ class RPadPainter extends RObjectPainter {
    /** @summary Returns palette associated with pad.
      * @desc Either from existing palette painter or just default palette */
    getHistPalette() {
-      let pp = this.findPainterFor(undefined, undefined, 'ROOT::Experimental::RPaletteDrawable');
+      let pp = this.findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`);
 
       if (pp) return pp.getHistPalette();
 
       if (!this.fDfltPalette) {
          this.fDfltPalette = {
-            _typename: 'ROOT::Experimental::RPalette',
+            _typename: `${nsREX}RPalette`,
             fColors: [{ fOrdinal: 0,     fColor: { fColor: 'rgb(53, 42, 135)' } },
                       { fOrdinal: 0.125, fColor: { fColor: 'rgb(15, 92, 221)' } },
                       { fOrdinal: 0.25,  fColor: { fColor: 'rgb(20, 129, 214)' } },
@@ -192,7 +192,7 @@ class RPadPainter extends RObjectPainter {
              fInterpolate: true,
              fNormalized: true
          };
-         addMethods(this.fDfltPalette, 'ROOT::Experimental::RPalette');
+         addMethods(this.fDfltPalette, `${nsREX}RPalette`);
       }
 
       return this.fDfltPalette;
@@ -521,7 +521,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
       let arr = this.pad ? this.pad.fPrimitives : null;
-      return arr && arr.find(obj => obj._typename != 'ROOT::Experimental::RPadDisplayItem') ? true : false;
+      return arr?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -904,13 +904,13 @@ class RPadPainter extends RObjectPainter {
 
       if (objpainter) {
 
-         if (snap._typename == 'ROOT::Experimental::RPadDisplayItem')  // subpad
+         if (snap._typename == `${nsREX}RPadDisplayItem`)  // subpad
             return objpainter.redrawPadSnap(snap).then(ppainter => {
                this.addObjectPainter(ppainter, lst, indx);
                return this.drawNextSnap(lst, indx);
             });
 
-         if (snap._typename === 'ROOT::Experimental::TObjectDisplayItem')
+         if (snap._typename === `${nsREX}TObjectDisplayItem`)
             this.extractTObjectProp(snap);
 
          let promise;
@@ -921,7 +921,7 @@ class RPadPainter extends RObjectPainter {
          return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
-      if (snap._typename == 'ROOT::Experimental::RPadDisplayItem') { // subpad
+      if (snap._typename == `${nsREX}RPadDisplayItem`) { // subpad
 
          let subpad = snap; // not subpad, but just attributes
 
@@ -948,7 +948,7 @@ class RPadPainter extends RObjectPainter {
       // will be used in addToPadPrimitives to assign style to sub-painters
       this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
-      if (snap._typename === 'ROOT::Experimental::TObjectDisplayItem') {
+      if (snap._typename === `${nsREX}TObjectDisplayItem`) {
 
          // identifier used in RObjectDrawable
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };

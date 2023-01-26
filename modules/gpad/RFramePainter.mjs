@@ -1,4 +1,4 @@
-import { gStyle, settings, create, isBatchMode, isFunc, isStr, clTAxis } from '../core.mjs';
+import { gStyle, settings, create, isBatchMode, isFunc, isStr, clTAxis, nsREX } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { makeTranslate} from '../base/BasePainter.mjs';
@@ -865,11 +865,11 @@ class RFramePainter extends RObjectPainter {
 
       let changed = false,
           r_x = '', r_y = '', r_z = '', is_any_check = false,
-         req = {
-            _typename: 'ROOT::Experimental::RFrame::RUserRanges',
+          req = {
+            _typename: `${nsREX}RFrame::RUserRanges`,
             values: [0, 0, 0, 0, 0, 0],
             flags: [false, false, false, false, false, false]
-         };
+          };
 
       const checkZooming = (painter, force) => {
          if (!force && !isFunc(painter.canZoomInside)) return;
@@ -932,7 +932,7 @@ class RFramePainter extends RObjectPainter {
       if (!changed) return false;
 
       if (this.v7NormalMode())
-         this.v7SubmitRequest('zoom', { _typename: 'ROOT::Experimental::RFrame::RZoomRequest', ranges: req });
+         this.v7SubmitRequest('zoom', { _typename: `${nsREX}RFrame::RZoomRequest`, ranges: req });
 
       return this.interactiveRedraw('pad', 'zoom' + r_x + r_y + r_z).then(() => true);
    }
@@ -960,7 +960,7 @@ class RFramePainter extends RObjectPainter {
 
       let changed = false, is_any_check = false,
           req = {
-             _typename: 'ROOT::Experimental::RFrame::RUserRanges',
+             _typename: `${nsREX}RFrame::RUserRanges`,
              values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              flags: [false, false, false, false, false, false, false, false, false, false]
           };
@@ -997,14 +997,14 @@ class RFramePainter extends RObjectPainter {
       if (!changed) return false;
 
       if (this.v7NormalMode())
-         this.v7SubmitRequest('zoom', { _typename: 'ROOT::Experimental::RFrame::RZoomRequest', ranges: req });
+         this.v7SubmitRequest('zoom', { _typename: `${nsREX}RFrame::RZoomRequest`, ranges: req });
 
-      return this.interactiveRedraw('pad', 'zoom' + indx).then(() => true);
+      return this.interactiveRedraw('pad', `zoom${indx}`).then(() => true);
    }
 
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
-      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
+      return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
    }
 
    /** @summary Unzoom specified axes

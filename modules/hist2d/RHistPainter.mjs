@@ -1,11 +1,11 @@
-import { gStyle, settings, isObject, isFunc, isStr } from '../core.mjs';
+import { gStyle, settings, isObject, isFunc, isStr, nsREX } from '../core.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 
 /** @summary assign methods for the RAxis objects
   * @private */
 function assignRAxisMethods(axis) {
-   if ((axis._typename == 'ROOT::Experimental::RAxisEquidistant') || (axis._typename == 'ROOT::Experimental::RAxisLabels')) {
+   if ((axis._typename == `${nsREX}RAxisEquidistant`) || (axis._typename == `${nsREX}RAxisLabels`)) {
       if (axis.fInvBinWidth === 0) {
          axis.$dummy = true;
          axis.fInvBinWidth = 1;
@@ -18,7 +18,7 @@ function assignRAxisMethods(axis) {
       axis.GetNumBins = function() { return this.fNBinsNoOver; }
       axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; }
       axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); }
-   } else if (axis._typename == 'ROOT::Experimental::RAxisIrregular') {
+   } else if (axis._typename == `${nsREX}RAxisIrregular`) {
       axis.min = axis.fBinBorders[0];
       axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
       axis.GetNumBins = function() { return this.fBinBorders.length; }
@@ -445,7 +445,7 @@ class RHistPainter extends RObjectPainter {
          if (handle.incomplete)
             return new Promise(resolveFunc => {
                // use empty kind to always submit request
-               let req = this.v7SubmitRequest('', { _typename: 'ROOT::Experimental::RHistDrawableBase::RRequest' },
+               let req = this.v7SubmitRequest('', { _typename: `${nsREX}RHistDrawableBase::RRequest` },
                                                   this.processItemReply.bind(this));
                if (req) {
                   this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
@@ -684,7 +684,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Update palette drawing */
    updatePaletteDraw() {
       if (this.isMainPainter())
-         this.getPadPainter().findPainterFor(undefined, undefined, 'ROOT::Experimental::RPaletteDrawable')?.drawPalette();
+         this.getPadPainter().findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`)?.drawPalette();
    }
 
    /** @summary Fill menu entries for palette */

@@ -1,4 +1,4 @@
-import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode, isFunc, isStr } from '../core.mjs';
+import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode, isFunc, isStr, nsREX } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -373,7 +373,7 @@ class RCanvasPainter extends RPadPainter {
    async submitMenuRequest(painter, menukind, reqid) {
       return new Promise(resolveFunc => {
          this.submitDrawableRequest('', {
-            _typename: 'ROOT::Experimental::RDrawableMenuRequest',
+            _typename: `${nsREX}RDrawableMenuRequest`,
             menukind: menukind || '',
             menureqid: reqid, // used to identify menu request
          }, painter, resolveFunc);
@@ -397,10 +397,7 @@ class RCanvasPainter extends RPadPainter {
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
        }
 
-      this.submitDrawableRequest('', {
-         _typename: 'ROOT::Experimental::RDrawableExecRequest',
-         exec: exec
-      }, painter);
+      this.submitDrawableRequest('', { _typename: `${nsREX}RDrawableExecRequest`, exec }, painter);
    }
 
    /** @summary Process reply from request to RDrawable */
@@ -620,7 +617,7 @@ class RCanvasPainter extends RPadPainter {
    static async draw(dom, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
-         can = create('ROOT::Experimental::RCanvas');
+         can = create(`${nsREX}RCanvas`);
 
       let painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
@@ -720,7 +717,7 @@ function drawRFrameTitle(reason, drag) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-registerMethods('ROOT::Experimental::RPalette', {
+registerMethods(`${nsREX}RPalette`, {
 
    extractRColor(rcolor) {
      return rcolor.fColor || 'black';

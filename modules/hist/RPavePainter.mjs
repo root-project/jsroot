@@ -1,4 +1,4 @@
-import { settings, isBatchMode, isFunc, isStr, gStyle } from '../core.mjs';
+import { settings, isBatchMode, isFunc, isStr, gStyle, nsREX } from '../core.mjs';
 import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
@@ -477,7 +477,7 @@ class RHistStatsPainter extends RPavePainter {
    async redraw(reason) {
       if (reason && isStr(reason) && (reason.indexOf('zoom') == 0) && this.v7NormalMode()) {
          let req = {
-            _typename: 'ROOT::Experimental::RHistStatBoxBase::RRequest',
+            _typename: `${nsREX}RHistStatBoxBase::RRequest`,
             mask: this.getObject().fShowMask // lines to show in stat box
          };
 

@@ -1,7 +1,8 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, getPromise,
-         clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix } from '../core.mjs';
+         clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
+         clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
@@ -33,7 +34,7 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
       clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
-      clREveGeoShapeExtract = 'ROOT::Experimental::REveGeoShapeExtract';
+      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`;
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
@@ -3062,10 +3063,10 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === clTPolyLine3D) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawPolyLine(obj, itemname);
-      } else if ((obj._typename === clTEveTrack) || (obj._typename === 'ROOT::Experimental::REveTrack')) {
+      } else if ((obj._typename === clTEveTrack) || (obj._typename === `${nsREX}REveTrack`)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawEveTrack(obj, itemname);
-      } else if ((obj._typename === clTEvePointSet) || (obj._typename === 'ROOT::Experimental::REvePointSet') || (obj._typename === clTPolyMarker3D)) {
+      } else if ((obj._typename === clTEvePointSet) || (obj._typename === `${nsREX}REvePointSet`) || (obj._typename === clTPolyMarker3D)) {
          if (!add_objects || this.addExtra(obj, itemname))
             promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
