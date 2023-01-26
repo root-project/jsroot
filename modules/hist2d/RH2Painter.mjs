@@ -61,7 +61,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Readraw projections */
-   redrawProjection(/* ii1, ii2 , jj1, jj2*/) {
+   redrawProjection(/* ii1, ii2, jj1, jj2 */) {
       // do nothing for the moment
 
       if (!this.is_projection) return;

@@ -830,7 +830,7 @@ function beta(x,y) {
 /** @summary chisquared_cdf_c
   * @memberof Math */
 function chisquared_cdf_c(x,r,x0 = 0) {
-   return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
+   return inc_gamma_c(0.5 * r, 0.5*(x-x0));
 }
 
 /** @summary Continued fraction expansion #1 for incomplete beta integral
@@ -1437,7 +1437,7 @@ function beta_cdf_c(x,a,b) {
 /** @summary chisquared_cdf
   * @memberof Math */
 function chisquared_cdf(x,r,x0=0) {
-   return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
+   return inc_gamma(0.5 * r, 0.5*(x-x0));
 }
 
 /** @summary gamma_quantile_c function

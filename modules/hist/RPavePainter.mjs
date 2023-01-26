@@ -413,7 +413,7 @@ class RHistStatsPainter extends RPavePainter {
          text_g.selectAll('*').remove();
 
       textFont.setSize(height/(nlines * 1.2));
-      this.startTextDrawing(textFont, 'font' , text_g);
+      this.startTextDrawing(textFont, 'font', text_g);
 
       if (nlines == 1) {
          this.drawText({ width: width, height: height, text: lines[0], latex: 1, draw_g: text_g });

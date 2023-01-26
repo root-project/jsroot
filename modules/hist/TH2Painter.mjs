@@ -75,12 +75,12 @@ function drawTH2PolyLego(painter) {
 
             try {
                if (pnts.length > 2)
-                  faces = ShapeUtils.triangulateShape(pnts , []);
+                  faces = ShapeUtils.triangulateShape(pnts, []);
             } catch(e) {
                faces = null;
             }
 
-            if (faces && (faces.length>pnts.length-3)) break;
+            if (faces && (faces.length > pnts.length-3)) break;
          }
 
          if (faces && faces.length && pnts) {
@@ -88,7 +88,7 @@ function drawTH2PolyLego(painter) {
             all_faces.push(faces);
 
             nfaces += faces.length * 2;
-            if (z1>z0) nfaces += pnts.length*2;
+            if (z1 > z0) nfaces += pnts.length*2;
          }
       }
 

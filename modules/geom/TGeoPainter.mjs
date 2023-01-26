@@ -2935,7 +2935,7 @@ class TGeoPainter extends ObjectPainter {
             if (!tracks) return this;
 
             // FIXME: probably tracks should be remembered?
-            return this.drawExtras(tracks, '', false).then(()=> {
+            return this.drawExtras(tracks, '', false).then(() => {
                this.updateClipping(true);
                return this.render3D(100);
             });

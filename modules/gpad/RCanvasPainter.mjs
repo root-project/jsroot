@@ -661,7 +661,7 @@ async function ensureRCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 
    // simple check - if canvas there, can use painter
-   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* , noframe */) : Promise.resolve(true);
+   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* noframe */) : Promise.resolve(true);
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().select('.main_layer').empty())

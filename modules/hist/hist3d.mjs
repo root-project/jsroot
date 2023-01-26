@@ -1957,7 +1957,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              if (pnts.length < 3) return;
 
-             const faces = ShapeUtils.triangulateShape(pnts , []);
+             const faces = ShapeUtils.triangulateShape(pnts, []);
 
              if (!faces || (faces.length === 0)) return;
 
