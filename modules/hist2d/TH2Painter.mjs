@@ -2433,8 +2433,8 @@ class TH2Painter extends THistPainter {
 
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
-                     color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                     color1: this.lineatt?.color ?? 'green',
+                     color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                      exact: true, menu: true,
                      lines: this.getPolyBinTooltips(foundindx, realx, realy) };
 
@@ -2483,8 +2483,8 @@ class TH2Painter extends THistPainter {
 
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
-                     color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                     color1: this.lineatt?.color ?? 'green',
+                     color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                      lines: this.getCandleTooltips(p), exact: true, menu: true };
 
          if (pnt.disabled) {
@@ -2581,8 +2581,8 @@ class TH2Painter extends THistPainter {
 
       let res = { name: histo.fName, title: histo.fTitle,
                   x: pnt.x, y: pnt.y,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = this.getHistPalette().getColor(colindx);

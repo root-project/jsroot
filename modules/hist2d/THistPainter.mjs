@@ -1626,7 +1626,7 @@ class THistPainter extends ObjectPainter {
    async addInteractivity() {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
-          fp = ismain || second_axis ? this.getFramePainter() : null;
+          fp = (ismain || second_axis) ? this.getFramePainter() : null;
       return fp ? fp.addInteractivity(!ismain && second_axis) : false;
    }
 

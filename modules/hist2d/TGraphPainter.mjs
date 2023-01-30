@@ -884,7 +884,7 @@ class TGraphPainter extends ObjectPainter {
                fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
             let sub_g = this.draw_g.append('svg:g'),
-                options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
+                options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }

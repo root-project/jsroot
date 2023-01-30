@@ -795,8 +795,8 @@ class RH1Painter extends RHistPainter {
 
       let res = { name: 'histo', title: histo.fTitle,
                   x: midx, y: midy, exact: true,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {

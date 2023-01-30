@@ -1225,8 +1225,8 @@ class RH2Painter extends RHistPainter {
 
       let res = { name: 'histo', title: histo.fTitle || 'title',
                   x: pnt.x, y: pnt.y,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = h.palette.getColor(colindx);
