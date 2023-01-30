@@ -11092,11 +11092,8 @@ class ObjectPainter extends BasePainter {
      * Such string typically used as object tooltip.
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
-      let res = this.getItemName(), obj = this.getObject();
-      if (!res) res = obj && obj.fName ? obj.fName : '';
-      if (!res) res = this.getClassName();
-      if (res.length > 20) res = res.slice(0, 17) + '...';
-      return res;
+      let hint = this.getItemName() || this.getObject()?.fName || this.getClassName() || '';
+      return (hint.length <= 20) ? hint : hint.slice(0, 17) + '...';
    }
 
    /** @summary returns color from current list of colors
@@ -11300,7 +11297,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getAxisToSvgFunc(isndc, nornd) {
       let func = { isndc, nornd },
-          use_frame = this.draw_g && this.draw_g.property('in_frame');
+          use_frame = this.draw_g?.property('in_frame');
       if (use_frame) func.main = this.getFramePainter();
       if (func.main?.grx && func.main?.gry) {
          if (nornd) {
@@ -11363,7 +11360,7 @@ class ObjectPainter extends BasePainter {
      * @return {number} value of requested coordiantes
      * @protected */
    svgToAxis(axis, coord, ndc) {
-      let use_frame = this.draw_g && this.draw_g.property('in_frame');
+      let use_frame = this.draw_g?.property('in_frame');
 
       if (use_frame) {
          let main = this.getFramePainter();
@@ -12177,7 +12174,7 @@ class ObjectPainter extends BasePainter {
 
          let items = reply ? reply.fItems : null;
 
-         if (items && items.length) {
+         if (items?.length) {
             if (_menu.size() > 0)
                _menu.add('separator');
 
@@ -56445,7 +56442,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    };
 
    control.removeZoomMesh = function() {
-      if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.showSelection())
+      if (this.mouse_zoom_mesh?.object.showSelection())
          this.painter.render3D();
       this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
    };
@@ -66165,11 +66162,11 @@ class TFramePainter extends ObjectPainter {
           pad = pp.getRootPad(true);
 
       this.x_handle.invert_side = (AxisPos >= 10);
-      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && pad && (pad.fTickx > 1); // labels on both sides
+      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad?.fTickx > 1); // labels on both sides
       this.x_handle.has_obstacle = has_x_obstacle;
 
       this.y_handle.invert_side = ((AxisPos % 10) === 1);
-      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && pad && (pad.fTicky > 1); // labels on both sides
+      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad?.fTicky > 1); // labels on both sides
       this.y_handle.has_obstacle = has_y_obstacle;
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
@@ -66291,7 +66288,7 @@ class TFramePainter extends ObjectPainter {
       if (this.fillatt === undefined) {
          if (tframe)
             this.createAttFill({ attr: tframe });
-         else if (pad && pad.fFrameFillColor)
+         else if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
          else if (pad)
             this.createAttFill({ attr: pad });
@@ -69391,7 +69388,7 @@ class TPadPainter extends ObjectPainter {
 
       if ((obj._typename == clTObjArray) && (obj.name == 'ListOfColors')) {
 
-         if (this.options && this.options.CreatePalette) {
+         if (this.options?.CreatePalette) {
             let arr = [];
             for (let n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
                let col = getRGBfromTColor(obj.arr[n]);
@@ -69405,7 +69402,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(obj);
 
          // copy existing colors and extend with new values
-         if (this.options && this.options.LocalColors)
+         if (this.options?.LocalColors)
             this.root_colors = extendRootColors(null, obj);
          return true;
       }
@@ -69966,7 +69963,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(ListOfColors);
 
          // copy existing colors and extend with new values
-         if (this.options && this.options.LocalColors)
+         if (this.options?.LocalColors)
             this.root_colors = extendRootColors(null, ListOfColors);
 
          // set palette
@@ -71127,7 +71124,7 @@ class TCanvasPainter extends TPadPainter {
             this.completeCanvasSnapDrawing();
             let ranges = this.getWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ':' + ranges;
-            handle.send('READY6:' + version + ranges); // send ready message back when drawing completed
+            handle.send(`READY6:${version}${ranges}`); // send ready message back when drawing completed
             this.confirmDraw();
          });
       } else if (msg.slice(0,5) == 'MENU:') {
@@ -71142,7 +71139,7 @@ class TCanvasPainter extends TPadPainter {
          let p1 = msg.indexOf(':'),
              cmdid = msg.slice(0,p1),
              cmd = msg.slice(p1+1),
-             reply = 'REPLY:' + cmdid + ':';
+             reply = `REPLY:${cmdid}:`;
          if ((cmd == 'SVG') || (cmd == 'PNG') || (cmd == 'JPEG')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
@@ -72447,7 +72444,7 @@ class TPavePainter extends ObjectPainter {
             let pos = pointer(evnt, this.draw_g.node()),
                 coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                 item = this.z_handle.analyzeWheelEvent(evnt, coord);
-            if (item && item.changed)
+            if (item?.changed)
                this.getFramePainter().zoom('z', item.min, item.max);
          });
    }
@@ -73352,8 +73349,8 @@ class THistDrawOptions {
 
       if (d.check('A')) this.Axis = -1;
 
-      if (d.check('RX') || (pad && pad.$RX)) this.RevX = true;
-      if (d.check('RY') || (pad && pad.$RY)) this.RevY = true;
+      if (d.check('RX') || pad?.$RX) this.RevX = true;
+      if (d.check('RY') || pad?.$RY) this.RevY = true;
       const check_axis_bit = (opt, axis, bit) => {
          let flag = d.check(opt);
          if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
@@ -76244,7 +76241,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
          this.decodeOptions(arg);
 
-         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+         if (this.options.need_fillcol && this.fillatt?.empty())
             this.fillatt.change(5,1001);
 
          // redraw all objects in pad, inform dependent objects
@@ -77803,7 +77800,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           pad = this.getPadPainter().getRootPad(true),
           test_cutg = this.options.cutg;
 
-      if (pad && pad.fLogz && (absmax > 0)) {
+      if (pad?.fLogz && (absmax > 0)) {
          uselogz = true;
          let logmax = Math.log(absmax);
          if (absmin > 0)
@@ -83377,7 +83374,7 @@ class ClonedNodes {
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
 
-         if (obj && obj._typename == '$$Shape$$')
+         if (obj?._typename == '$$Shape$$')
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -83393,9 +83390,9 @@ class ClonedNodes {
 
       let chlds = null;
       if (kind === kindGeo)
-         chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
+         chlds = obj.fVolume?.fNodes?.arr || null;
       else
-         chlds = obj.fElements ? obj.fElements.arr : null;
+         chlds = obj.fElements?.arr || null;
 
       if (chlds !== null) {
          checkDuplicates(obj, chlds);
@@ -87829,7 +87826,7 @@ class TGeoPainter extends ObjectPainter {
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      if (itemname && itemname.indexOf('<prnt>/Tracks') == 0)
+      if (itemname?.indexOf('<prnt>/Tracks') === 0)
          line.main_track = true;
 
       this.addToExtrasContainer(line);
@@ -94034,7 +94031,7 @@ function getTreeBranch(tree, id) {
    if (!Number.isInteger(id)) return;
    let res, seq = 0;
    function scan(obj) {
-      if (obj && obj.fBranches)
+      if (obj?.fBranches)
          obj.fBranches.arr.forEach(br => {
             if (seq++ === id) res = br;
             if (!res) scan(br);
@@ -96953,7 +96950,7 @@ async function redraw(dom, obj, opt) {
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
-      handle = getDrawHandle('ROOT.' + obj._typename);
+      handle = getDrawHandle(`ROOT.${obj._typename}`);
    if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
@@ -97257,7 +97254,7 @@ function folderHierarchy(item, obj) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
          _name: chld.fName,
-         _kind: 'ROOT.' + chld._typename,
+         _kind: `ROOT.${chld._typename}`,
          _obj: chld
       });
    }
@@ -97336,8 +97333,8 @@ function listHierarchy(folder, lst) {
             _obj: null
           } : {
             _name: obj.fName || obj.name,
-            _kind: 'ROOT.' + obj._typename,
-            _title: (obj.fTitle || '') + ' type:'  +  obj._typename,
+            _kind: `ROOT.${obj._typename}`,
+            _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
           };
 
@@ -97748,7 +97745,7 @@ function createInspectorContent(obj) {
       h._title = obj.fTitle;
 
    if (obj._typename)
-      h._title += '  type:' + obj._typename;
+      h._title += `  type:${obj._typename}`;
 
    if (isRootCollection(obj)) {
       h._name = obj.name || obj._typename;
@@ -97904,7 +97901,7 @@ class HierarchyPainter extends BasePainter {
          // this is central get method, item or itemname can be used, returns promise
          _get(item, itemname) {
 
-            if (item && item._readobj)
+            if (item?._readobj)
                return Promise.resolve(item._readobj);
 
             if (item) itemname = painter.itemFullName(item, this);
@@ -99285,9 +99282,9 @@ class HierarchyPainter extends BasePainter {
 
          let item = items[i], can_split = true;
 
-         if (item && item.indexOf('img:') == 0) { images[i] = true; continue; }
+         if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
 
-         if (item && (item.length > 1) && (item[0] == "'") && (item[item.length - 1] == "'")) {
+         if ((item?.length > 1) && (item[0] == "'") && (item[item.length - 1] == "'")) {
             items[i] = item.slice(1, item.length-1);
             can_split = false;
          }
@@ -100241,7 +100238,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      let handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
+      let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
@@ -105531,7 +105528,7 @@ class TGraphPolarPainter extends ObjectPainter {
       }
 
       let match_distance = 5;
-      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.getFullSize();
+      if (this.markeratt?.used) match_distance = this.markeratt.getFullSize();
 
       if (Math.sqrt(best_dist2) > match_distance) return null;
 
@@ -106577,7 +106574,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
        res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
+      if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
 
       if (best.exact) res.exact = true;
@@ -106772,7 +106769,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
       }
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
+      if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
 
       if (!islines) {
@@ -109343,10 +109340,7 @@ class TASImagePainter extends ObjectPainter {
    /** @summary Toggle colz draw option
      * @private */
    toggleColz() {
-      let obj = this.getObject(),
-          can_toggle = obj && obj.fPalette;
-
-      if (can_toggle) {
+      if (this.getObject()?.fPalette) {
          this.options.Zscale = !this.options.Zscale;
          this.drawColorPalette(this.options.Zscale, true);
       }
@@ -109378,8 +109372,8 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Fill pad toolbar for TASImage */
    fillToolbar() {
-      let pp = this.getPadPainter(), obj = this.getObject();
-      if (pp && obj?.fPalette) {
+      let pp = this.getPadPainter();
+      if (pp && this.getObject()?.fPalette) {
          pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
          pp.showPadButtons();
       }
@@ -109900,12 +109894,12 @@ class RObjectPainter extends ObjectPainter {
          return res;
       };
 
-      if (obj.fAttr && obj.fAttr.m) {
+      if (obj.fAttr?.m) {
          let value = obj.fAttr.m[name];
          if (value) return type_check(value.v); // found value direct in attributes
       }
 
-      if (this.rstyle && this.rstyle.fBlocks) {
+      if (this.rstyle?.fBlocks) {
          let blks = this.rstyle.fBlocks;
          for (let k = 0; k < blks.length; ++k) {
             let block = blks[k],
@@ -109913,7 +109907,7 @@ class RObjectPainter extends ObjectPainter {
                         (obj.fId && (block.selector == ('#' + obj.fId))) ||
                         (obj.fCssClass && (block.selector == ('.' + obj.fCssClass)));
 
-            if (match && block.map && block.map.m) {
+            if (match && block.map?.m) {
                let value = block.map.m[name.toLowerCase()];
                if (value) return type_check(value.v);
             }
@@ -109928,7 +109922,7 @@ class RObjectPainter extends ObjectPainter {
       let obj = this.getObject();
       if (this.cssprefix) name = this.cssprefix + name;
 
-      if (obj && obj.fAttr && obj.fAttr.m)
+      if (obj?.fAttr?.m)
          obj.fAttr.m[name] = { v: value };
    }
 
@@ -110280,7 +110274,7 @@ class RAxisPainter extends RObjectPainter {
             toffset = parseFloat(toffset);
             if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
          }
-      } else if (this.axis && this.axis.fLabelsIndex) {
+      } else if (this.axis?.fLabelsIndex) {
          this.kind = 'labels';
          delete this.own_labels;
       } else if (opts.labels) {
@@ -110396,7 +110390,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Provide label for axis value */
    formatLabels(d) {
       let indx = Math.round(d);
-      if (this.axis && this.axis.fLabelsIndex) {
+      if (this.axis?.fLabelsIndex) {
          if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
          for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
             let pair = this.axis.fLabelsIndex[i];
@@ -112906,7 +112900,7 @@ class RPadPainter extends RObjectPainter {
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (this.pad && this.pad.fPos && this.pad.fSize) {
+      if (this.pad?.fPos && this.pad?.fSize) {
          x = Math.round(width * this.pad.fPos.fHoriz.fArr[0]);
          y = Math.round(height * this.pad.fPos.fVert.fArr[0]);
          w = Math.round(width * this.pad.fSize.fHoriz.fArr[0]);
@@ -114395,7 +114389,7 @@ class WebWindowHandle {
    /** @summary Close connection */
    close(force) {
       if (this.master) {
-         this.master.send('CLOSECH=' + this.channelid, 0);
+         this.master.send(`CLOSECH=${this.channelid}`, 0);
          delete this.master.channels[this.channelid];
          delete this.master;
          return;
@@ -114585,7 +114579,7 @@ class WebWindowHandle {
 
             let key = this.key || '';
 
-            this.send('READY=' + key, 0); // need to confirm connection
+            this.send(`READY=${key}`, 0); // need to confirm connection
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
 
@@ -114932,7 +114926,7 @@ class RCanvasPainter extends RPadPainter {
          this.syncDraw(true)
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
-                 handle.send('SNAPDONE:' + snapid); // send ready message back when drawing completed
+                 handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
               });
       } else if (msg.slice(0,4) == 'JSON') {
@@ -114946,7 +114940,7 @@ class RCanvasPainter extends RPadPainter {
          let p1 = msg.indexOf(':'),
              cmdid = msg.slice(0,p1),
              cmd = msg.slice(p1+1),
-             reply = 'REPLY:' + cmdid + ':';
+             reply = `REPLY:${cmdid}:`;
          if ((cmd == 'SVG') || (cmd == 'PNG') || (cmd == 'JPEG')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
@@ -116150,25 +116144,25 @@ class RLegendPainter extends RPavePainter {
             if (entry.fMarker) objp.createv7AttMarker();
          }
 
-         if (objp && entry.fFill && objp.fillatt)
+         if (entry.fFill && objp?.fillatt)
             this.draw_g
               .append('svg:path')
               .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
               .call(objp.fillatt.func);
 
-         if (objp && entry.fLine && objp.lineatt)
+         if (entry.fLine && objp?.lineatt)
             this.draw_g
               .append('svg:path')
               .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
               .call(objp.lineatt.func);
 
-         if (objp && entry.fError && objp.lineatt)
+         if (entry.fError && objp?.lineatt)
             this.draw_g
               .append('svg:path')
               .attr('d', `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
               .call(objp.lineatt.func);
 
-         if (objp && entry.fMarker && objp.markeratt)
+         if (entry.fMarker && objp?.markeratt)
             this.draw_g.append('svg:path')
                 .attr('d', objp.markeratt.create(margin_x + width/8, posy + stepy/2))
                 .call(objp.markeratt.func);
@@ -116500,7 +116494,7 @@ function assignRAxisMethods(axis) {
 /** @summary Returns real histogram impl
   * @private */
 function getHImpl(obj) {
-   return (obj && obj.fHistImpl) ? obj.fHistImpl.fIO : null;
+   return obj?.fHistImpl?.fIO || null;
 }
 
 
@@ -116529,8 +116523,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Returns true if RHistDisplayItem is used */
    isDisplayItem() {
-      let obj = this.getObject();
-      return obj && obj.fAxes ? true : false;
+      return this.getObject()?.fAxes ? true : false;
    }
 
    /** @summary get histogram */
@@ -116574,7 +116567,7 @@ class RHistPainter extends RObjectPainter {
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[x-1]));
             };
          }
-      } else if (!histo && obj && obj.fAxes) {
+      } else if (!histo && obj?.fAxes) {
          // case of RHistDisplayItem
 
          histo = obj;
@@ -116788,14 +116781,14 @@ class RHistPainter extends RObjectPainter {
    getAxis(name) {
       let histo = this.getHisto(), obj = this.getObject(), axis = null;
 
-      if (obj && obj.fAxes) {
+      if (obj?.fAxes) {
          switch(name) {
             case 'x': axis = obj.fAxes[0]; break;
             case 'y': axis = obj.fAxes[1]; break;
             case 'z': axis = obj.fAxes[2]; break;
             default: axis = obj.fAxes[0]; break;
          }
-      } else if (histo && histo.fAxes) {
+      } else if (histo?.fAxes) {
          switch(name) {
             case 'x': axis = histo.fAxes._0; break;
             case 'y': axis = histo.fAxes._1; break;
@@ -118183,7 +118176,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
          this.decodeOptions(arg); // obsolete, should be implemented differently
 
-         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+         if (this.options.need_fillcol && this.fillatt?.empty())
             this.fillatt.change(5,1001);
 
          // redraw all objects
