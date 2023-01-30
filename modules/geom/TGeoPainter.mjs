@@ -4292,7 +4292,7 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            let extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
+            let extras = this._main_painter?._extraObjects || this._extraObjects;
             return this.drawExtras(extras, '', false);
          }
       }).then(() => {

@@ -459,7 +459,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       let res = { name: this.getObject().fName, title: this.getObject().fTitle,
                   x: bestpos.x, y: bestpos.y,
-                  color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
+                  color1: this.markeratt?.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
                   lines: [ this.getObjectHint() ],
                   binindx: bestindx,

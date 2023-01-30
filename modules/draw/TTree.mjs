@@ -151,7 +151,7 @@ function createTreePlayer(player) {
 
    player.showExtraButtons = function(args) {
       let main = this.selectDom(),
-         numentries = this.local_tree ? this.local_tree.fEntries : 0;
+         numentries = this.local_tree?.fEntries || 0;
 
       main.select('.treedraw_more').remove(); // remove more button first
 
