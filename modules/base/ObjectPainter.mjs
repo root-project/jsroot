@@ -203,11 +203,8 @@ class ObjectPainter extends BasePainter {
      * Such string typically used as object tooltip.
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
-      let res = this.getItemName(), obj = this.getObject();
-      if (!res) res = obj && obj.fName ? obj.fName : '';
-      if (!res) res = this.getClassName();
-      if (res.length > 20) res = res.slice(0, 17) + '...';
-      return res;
+      let hint = this.getItemName() || this.getObject()?.fName || this.getClassName() || '';
+      return (hint.length <= 20) ? hint : hint.slice(0, 17) + '...';
    }
 
    /** @summary returns color from current list of colors

@@ -291,10 +291,7 @@ class TASImagePainter extends ObjectPainter {
    /** @summary Toggle colz draw option
      * @private */
    toggleColz() {
-      let obj = this.getObject(),
-          can_toggle = obj && obj.fPalette;
-
-      if (can_toggle) {
+      if (this.getObject()?.fPalette) {
          this.options.Zscale = !this.options.Zscale;
          this.drawColorPalette(this.options.Zscale, true);
       }
@@ -326,8 +323,8 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Fill pad toolbar for TASImage */
    fillToolbar() {
-      let pp = this.getPadPainter(), obj = this.getObject();
-      if (pp && obj?.fPalette) {
+      let pp = this.getPadPainter();
+      if (pp && this.getObject()?.fPalette) {
          pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
          pp.showPadButtons();
       }

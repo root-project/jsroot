@@ -2398,7 +2398,7 @@ class ClonedNodes {
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
 
-         if (obj && obj._typename == '$$Shape$$')
+         if (obj?._typename == '$$Shape$$')
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -2414,9 +2414,9 @@ class ClonedNodes {
 
       let chlds = null;
       if (kind === kindGeo)
-         chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
+         chlds = obj.fVolume?.fNodes?.arr || null;
       else
-         chlds = obj.fElements ? obj.fElements.arr : null;
+         chlds = obj.fElements?.arr || null;
 
       if (chlds !== null) {
          checkDuplicates(obj, chlds);

@@ -334,14 +334,14 @@ class RHistPainter extends RObjectPainter {
    getAxis(name) {
       let histo = this.getHisto(), obj = this.getObject(), axis = null;
 
-      if (obj && obj.fAxes) {
+      if (obj?.fAxes) {
          switch(name) {
             case 'x': axis = obj.fAxes[0]; break;
             case 'y': axis = obj.fAxes[1]; break;
             case 'z': axis = obj.fAxes[2]; break;
             default: axis = obj.fAxes[0]; break;
          }
-      } else if (histo && histo.fAxes) {
+      } else if (histo?.fAxes) {
          switch(name) {
             case 'x': axis = histo.fAxes._0; break;
             case 'y': axis = histo.fAxes._1; break;

@@ -31,7 +31,7 @@ class RObjectPainter extends ObjectPainter {
          return res;
       };
 
-      if (obj.fAttr && obj.fAttr.m) {
+      if (obj.fAttr?.m) {
          let value = obj.fAttr.m[name];
          if (value) return type_check(value.v); // found value direct in attributes
       }
@@ -59,7 +59,7 @@ class RObjectPainter extends ObjectPainter {
       let obj = this.getObject();
       if (this.cssprefix) name = this.cssprefix + name;
 
-      if (obj && obj.fAttr && obj.fAttr.m)
+      if (obj?.fAttr?.m)
          obj.fAttr.m[name] = { v: value };
    }
 
