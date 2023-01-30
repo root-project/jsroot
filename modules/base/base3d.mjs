@@ -957,7 +957,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // then check if double-click handler assigned
-      let fp = this.painter ? this.painter.getFramePainter() : null;
+      let fp = this.painter?.getFramePainter();
       if (isFunc(fp?._dblclick_handler)) {
          let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
@@ -1055,7 +1055,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // extract mouse position
       this.tmout_mouse = this.getMousePos(evnt, {});
-      this.tmout_ttpos = this.tooltip ? this.tooltip.extract_pos(evnt) : null;
+      this.tmout_ttpos = this.tooltip?.extract_pos(evnt);
 
       if (this.tmout_handle) {
          clearTimeout(this.tmout_handle);
@@ -1136,7 +1136,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.single_click_tm;
 
       if (kind == 1) {
-         let fp = this.painter ? this.painter.getFramePainter() : null;
+         let fp = this.painter?.getFramePainter();
          if (isFunc(fp?._click_handler)) {
             let info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
