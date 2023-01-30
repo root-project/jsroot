@@ -766,9 +766,9 @@ class ObjectPainter extends BasePainter {
    fillContextMenu(menu) {
       let title = this.getObjectHint(), obj = this.getObject();
       if (obj?._typename)
-         title = obj._typename + '::' + title;
+         title = `${obj._typename}::${title}`;
 
-      menu.add('header:' + title);
+      menu.add(`header:${title}`);
 
       menu.addAttributesMenu(this);
 

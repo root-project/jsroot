@@ -862,7 +862,7 @@ class TPavePainter extends ObjectPainter {
    fillContextMenu(menu) {
       let pave = this.getObject();
 
-      menu.add('header: ' + pave._typename + '::' + pave.fName);
+      menu.add(`header: ${pave._typename}::${pave.fName}`);
       if (this.isStats()) {
          menu.add('Default position', function() {
             pave.fX2NDC = gStyle.fStatX;
