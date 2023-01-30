@@ -485,8 +485,8 @@ class THistDrawOptions {
 
       if (d.check('A')) this.Axis = -1;
 
-      if (d.check('RX') || (pad && pad.$RX)) this.RevX = true;
-      if (d.check('RY') || (pad && pad.$RY)) this.RevY = true;
+      if (d.check('RX') || pad?.$RX) this.RevX = true;
+      if (d.check('RY') || pad?.$RY) this.RevY = true;
       const check_axis_bit = (opt, axis, bit) => {
          let flag = d.check(opt);
          if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }

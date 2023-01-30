@@ -2038,11 +2038,11 @@ class TFramePainter extends ObjectPainter {
           pad = pp.getRootPad(true);
 
       this.x_handle.invert_side = (AxisPos >= 10);
-      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && pad && (pad.fTickx > 1); // labels on both sides
+      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad?.fTickx > 1); // labels on both sides
       this.x_handle.has_obstacle = has_x_obstacle;
 
       this.y_handle.invert_side = ((AxisPos % 10) === 1);
-      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && pad && (pad.fTicky > 1); // labels on both sides
+      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad?.fTicky > 1); // labels on both sides
       this.y_handle.has_obstacle = has_y_obstacle;
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
@@ -2164,7 +2164,7 @@ class TFramePainter extends ObjectPainter {
       if (this.fillatt === undefined) {
          if (tframe)
             this.createAttFill({ attr: tframe });
-         else if (pad && pad.fFrameFillColor)
+         else if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
          else if (pad)
             this.createAttFill({ attr: pad });

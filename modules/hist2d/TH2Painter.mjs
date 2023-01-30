@@ -1338,7 +1338,7 @@ class TH2Painter extends THistPainter {
           pad = this.getPadPainter().getRootPad(true),
           test_cutg = this.options.cutg;
 
-      if (pad && pad.fLogz && (absmax > 0)) {
+      if (pad?.fLogz && (absmax > 0)) {
          uselogz = true;
          let logmax = Math.log(absmax);
          if (absmin > 0)
