@@ -290,7 +290,7 @@ function getTreeBranch(tree, id) {
    if (!Number.isInteger(id)) return;
    let res, seq = 0;
    function scan(obj) {
-      if (obj && obj.fBranches)
+      if (obj?.fBranches)
          obj.fBranches.arr.forEach(br => {
             if (seq++ === id) res = br;
             if (!res) scan(br);

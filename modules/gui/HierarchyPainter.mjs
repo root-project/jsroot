@@ -614,7 +614,7 @@ function createInspectorContent(obj) {
       h._title = obj.fTitle;
 
    if (obj._typename)
-      h._title += '  type:' + obj._typename;
+      h._title += `  type:${obj._typename}`;
 
    if (isRootCollection(obj)) {
       h._name = obj.name || obj._typename;
@@ -3110,7 +3110,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      let handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
+      let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 

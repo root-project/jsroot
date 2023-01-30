@@ -46,7 +46,7 @@ function assignRAxisMethods(axis) {
 /** @summary Returns real histogram impl
   * @private */
 function getHImpl(obj) {
-   return (obj && obj.fHistImpl) ? obj.fHistImpl.fIO : null;
+   return obj?.fHistImpl?.fIO || null;
 }
 
 
@@ -75,8 +75,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Returns true if RHistDisplayItem is used */
    isDisplayItem() {
-      let obj = this.getObject();
-      return obj && obj.fAxes ? true : false;
+      return this.getObject()?.fAxes ? true : false;
    }
 
    /** @summary get histogram */
@@ -120,7 +119,7 @@ class RHistPainter extends RObjectPainter {
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[x-1]));
             }
          }
-      } else if (!histo && obj && obj.fAxes) {
+      } else if (!histo && obj?.fAxes) {
          // case of RHistDisplayItem
 
          histo = obj;
