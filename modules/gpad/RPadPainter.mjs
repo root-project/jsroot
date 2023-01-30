@@ -520,8 +520,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
-      let arr = this.pad ? this.pad.fPrimitives : null;
-      return arr?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
+      return this.pad?.fPrimitives?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -572,7 +571,7 @@ class RPadPainter extends RObjectPainter {
             this._start_tm = new Date().getTime();
 
          // set number of primitves
-         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.length : 0;
+         this._num_primitives = this.pad?.fPrimitives?.length ?? 0;
 
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }

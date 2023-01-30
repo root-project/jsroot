@@ -521,12 +521,12 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Return scale min */
    getScaleMin() {
-      return this.func ? this.func.domain()[0] : 0;
+      return this.func?.domain()[0] ?? 0;
    }
 
    /** @summary Return scale max */
    getScaleMax() {
-      return this.func ? this.func.domain()[1] : 0;
+      return this.func?.domain()[1] ?? 0;
    }
 
    /** @summary Provide label for axis value */
