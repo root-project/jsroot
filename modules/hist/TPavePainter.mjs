@@ -193,7 +193,7 @@ class TPavePainter extends ObjectPainter {
                       .call(this.fillatt.func)
                       .call(this.lineatt.func);
 
-      let promise = this.paveDrawFunc ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+      let promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
 
       return promise.then(() => {
 
