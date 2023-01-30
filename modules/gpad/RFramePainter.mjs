@@ -160,7 +160,7 @@ class RFramePainter extends RObjectPainter {
          this.x_handle.draw_grid = gridx;
 
       // add a grid on x axis, if the option is set
-      if (this.x_handle && this.x_handle.draw_grid) {
+      if (this.x_handle?.draw_grid) {
          let grid = '';
          for (let n = 0; n < this.x_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -181,7 +181,7 @@ class RFramePainter extends RObjectPainter {
          this.y_handle.draw_grid = gridy;
 
       // add a grid on y axis, if the option is set
-      if (this.y_handle && this.y_handle.draw_grid) {
+      if (this.y_handle?.draw_grid) {
          let grid = '';
          for (let n = 0; n < this.y_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -201,20 +201,17 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Converts 'raw' axis value into text */
    axisAsText(axis, value) {
-      let handle = this[axis+'_handle'];
+      let handle = this[`${axis}_handle`];
 
-      if (handle)
-         return handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']);
-
-      return value.toPrecision(4);
+      return handle ? handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']) : value.toPrecision(4);
    }
 
    /** @summary Set axix range */
    _setAxisRange(prefix, vmin, vmax) {
-      let nmin = prefix + 'min', nmax = prefix + 'max';
+      let nmin = `${prefix}min`, nmax = `${prefix}max`;
       if (this[nmin] != this[nmax]) return;
-      let min = this.v7EvalAttr(prefix + '_min'),
-          max = this.v7EvalAttr(prefix + '_max');
+      let min = this.v7EvalAttr(`${prefix}_min`),
+          max = this.v7EvalAttr(`${prefix}_max`);
 
       if (min !== undefined) vmin = min;
       if (max !== undefined) vmax = max;
@@ -224,11 +221,11 @@ class RFramePainter extends RObjectPainter {
          this[nmax] = vmax;
       }
 
-      let nzmin = 'zoom_' + prefix + 'min', nzmax = 'zoom_' + prefix + 'max';
+      let nzmin = `zoom_${prefix}min`, nzmax = `zoom_${prefix}max`;
 
       if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
-         min = this.v7EvalAttr(prefix + '_zoomMin');
-         max = this.v7EvalAttr(prefix + '_zoomMax');
+         min = this.v7EvalAttr(`${prefix}_zoomMin`);
+         max = this.v7EvalAttr(`${prefix}_zoomMax`);
 
          if ((min !== undefined) || (max !== undefined)) {
             this[nzmin] = (min === undefined) ? this[nmin] : min;
