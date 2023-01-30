@@ -296,7 +296,7 @@ const TooltipHandler = {
 
       if (pnt?.handler) {
          // special use of interactive handler in the frame painter
-         let rect = this.draw_g ? this.draw_g.select('.main_layer') : null;
+         let rect = this.draw_g?.select('.main_layer');
          if (!rect || rect.empty()) {
             pnt = null; // disable
          } else if (pnt.touch && evnt) {
@@ -2571,7 +2571,7 @@ class TFramePainter extends ObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr('transform') : '',
+         transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }

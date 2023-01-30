@@ -302,7 +302,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Redraw image */
    redraw(reason) {
-      let img = this.draw_g ? this.draw_g.select('image') : null,
+      let img = this.draw_g?.select('image'),
           fp = this.getFramePainter();
 
       if (img && !img.empty() && (reason !== 'zoom') && fp) {

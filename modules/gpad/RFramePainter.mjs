@@ -793,7 +793,7 @@ class RFramePainter extends RObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr('transform') : '',
+         transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
