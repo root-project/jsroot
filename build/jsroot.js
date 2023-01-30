@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '27/01/2023';
+let version_date = '30/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12367,7 +12367,7 @@ function drawRawText(dom, txt /*, opt*/) {
    };
 
    painter.drawText = async function() {
-      let txt = (this.txt._typename && (this.txt._typename == clTObjString)) ? this.txt.fString : this.txt.value;
+      let txt = (this.txt._typename == clTObjString) ? this.txt.fString : this.txt.value;
       if (!isStr(txt)) txt = '<undefined>';
 
       let mathjax = this.txt.mathjax || (settings.Latex == constants$1.Latex.AlwaysMathJax);
@@ -56380,7 +56380,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // then check if double-click handler assigned
-      let fp = this.painter ? this.painter.getFramePainter() : null;
+      let fp = this.painter?.getFramePainter();
       if (isFunc(fp?._dblclick_handler)) {
          let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
@@ -56478,7 +56478,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       // extract mouse position
       this.tmout_mouse = this.getMousePos(evnt, {});
-      this.tmout_ttpos = this.tooltip ? this.tooltip.extract_pos(evnt) : null;
+      this.tmout_ttpos = this.tooltip?.extract_pos(evnt);
 
       if (this.tmout_handle) {
          clearTimeout(this.tmout_handle);
@@ -56559,7 +56559,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.single_click_tm;
 
       if (kind == 1) {
-         let fp = this.painter ? this.painter.getFramePainter() : null;
+         let fp = this.painter?.getFramePainter();
          if (isFunc(fp?._click_handler)) {
             let info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
@@ -59370,12 +59370,12 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Return scale min */
    getScaleMin() {
-      return this.func ? this.func.domain()[0] : 0;
+      return this.func?.domain()[0] ?? 0;
    }
 
    /** @summary Return scale max */
    getScaleMax() {
-      return this.func ? this.func.domain()[1] : 0;
+      return this.func?.domain()[1] ?? 0;
    }
 
    /** @summary Provide label for axis value */
@@ -64423,7 +64423,7 @@ const TooltipHandler = {
 
       if (pnt?.handler) {
          // special use of interactive handler in the frame painter
-         let rect = this.draw_g ? this.draw_g.select('.main_layer') : null;
+         let rect = this.draw_g?.select('.main_layer');
          if (!rect || rect.empty()) {
             pnt = null; // disable
          } else if (pnt.touch && evnt) {
@@ -66698,7 +66698,7 @@ class TFramePainter extends ObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr('transform') : '',
+         transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
@@ -71787,7 +71787,7 @@ class TPavePainter extends ObjectPainter {
                       .call(this.fillatt.func)
                       .call(this.lineatt.func);
 
-      let promise = this.paveDrawFunc ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+      let promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
 
       return promise.then(() => {
 
@@ -74493,7 +74493,7 @@ class THistPainter extends ObjectPainter {
    async addInteractivity() {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
-          fp = ismain || second_axis ? this.getFramePainter() : null;
+          fp = (ismain || second_axis) ? this.getFramePainter() : null;
       return fp ? fp.addInteractivity(!ismain && second_axis) : false;
    }
 
@@ -76167,8 +76167,8 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
       let res = { name: histo.fName, title: histo.fTitle,
                   x: midx, y: midy, exact: true,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {
@@ -78898,8 +78898,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
-                     color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                     color1: this.lineatt?.color ?? 'green',
+                     color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                      exact: true, menu: true,
                      lines: this.getPolyBinTooltips(foundindx, realx, realy) };
 
@@ -78948,8 +78948,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
-                     color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                     color1: this.lineatt?.color ?? 'green',
+                     color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                      lines: this.getCandleTooltips(p), exact: true, menu: true };
 
          if (pnt.disabled) {
@@ -79046,8 +79046,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       let res = { name: histo.fName, title: histo.fTitle,
                   x: pnt.x, y: pnt.y,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = this.getHistPalette().getColor(colindx);
@@ -88961,7 +88961,7 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            let extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
+            let extras = this._main_painter?._extraObjects || this._extraObjects;
             return this.drawExtras(extras, '', false);
          }
       }).then(() => {
@@ -94778,7 +94778,7 @@ class TDrawSelector extends TSelector {
       res.k = res.nbins / (res.max - res.min);
 
       res.GetBin = function(value) {
-         const bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value - this.min) * this.k);
+         const bin = this.lbls?.indexOf(value) ?? Math.floor((value - this.min) * this.k);
          return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
       };
 
@@ -105537,7 +105537,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       let res = { name: this.getObject().fName, title: this.getObject().fTitle,
                   x: bestpos.x, y: bestpos.y,
-                  color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
+                  color1: this.markeratt?.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
                   lines: [ this.getObjectHint() ],
                   binindx: bestindx,
@@ -106501,7 +106501,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
                fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
             let sub_g = this.draw_g.append('svg:g'),
-                options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
+                options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }
@@ -109354,7 +109354,7 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Redraw image */
    redraw(reason) {
-      let img = this.draw_g ? this.draw_g.select('image') : null,
+      let img = this.draw_g?.select('image'),
           fp = this.getFramePainter();
 
       if (img && !img.empty() && (reason !== 'zoom') && fp) {
@@ -109542,7 +109542,7 @@ function createTreePlayer(player) {
 
    player.showExtraButtons = function(args) {
       let main = this.selectDom(),
-         numentries = this.local_tree ? this.local_tree.fEntries : 0;
+         numentries = this.local_tree?.fEntries || 0;
 
       main.select('.treedraw_more').remove(); // remove more button first
 
@@ -111450,7 +111450,7 @@ class RFramePainter extends RObjectPainter {
          this.x_handle.draw_grid = gridx;
 
       // add a grid on x axis, if the option is set
-      if (this.x_handle && this.x_handle.draw_grid) {
+      if (this.x_handle?.draw_grid) {
          let grid = '';
          for (let n = 0; n < this.x_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -111471,7 +111471,7 @@ class RFramePainter extends RObjectPainter {
          this.y_handle.draw_grid = gridy;
 
       // add a grid on y axis, if the option is set
-      if (this.y_handle && this.y_handle.draw_grid) {
+      if (this.y_handle?.draw_grid) {
          let grid = '';
          for (let n = 0; n < this.y_handle.ticks.length; ++n)
             if (this.swap_xy)
@@ -111491,20 +111491,17 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Converts 'raw' axis value into text */
    axisAsText(axis, value) {
-      let handle = this[axis+'_handle'];
+      let handle = this[`${axis}_handle`];
 
-      if (handle)
-         return handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']);
-
-      return value.toPrecision(4);
+      return handle ? handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']) : value.toPrecision(4);
    }
 
    /** @summary Set axix range */
    _setAxisRange(prefix, vmin, vmax) {
-      let nmin = prefix + 'min', nmax = prefix + 'max';
+      let nmin = `${prefix}min`, nmax = `${prefix}max`;
       if (this[nmin] != this[nmax]) return;
-      let min = this.v7EvalAttr(prefix + '_min'),
-          max = this.v7EvalAttr(prefix + '_max');
+      let min = this.v7EvalAttr(`${prefix}_min`),
+          max = this.v7EvalAttr(`${prefix}_max`);
 
       if (min !== undefined) vmin = min;
       if (max !== undefined) vmax = max;
@@ -111514,11 +111511,11 @@ class RFramePainter extends RObjectPainter {
          this[nmax] = vmax;
       }
 
-      let nzmin = 'zoom_' + prefix + 'min', nzmax = 'zoom_' + prefix + 'max';
+      let nzmin = `zoom_${prefix}min`, nzmax = `zoom_${prefix}max`;
 
       if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
-         min = this.v7EvalAttr(prefix + '_zoomMin');
-         max = this.v7EvalAttr(prefix + '_zoomMax');
+         min = this.v7EvalAttr(`${prefix}_zoomMin`);
+         max = this.v7EvalAttr(`${prefix}_zoomMax`);
 
          if ((min !== undefined) || (max !== undefined)) {
             this[nzmin] = (min === undefined) ? this[nmin] : min;
@@ -112083,7 +112080,7 @@ class RFramePainter extends RObjectPainter {
          y: this._frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g ? this.draw_g.attr('transform') : '',
+         transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       }
@@ -112999,8 +112996,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
-      let arr = this.pad ? this.pad.fPrimitives : null;
-      return arr?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
+      return this.pad?.fPrimitives?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`) ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -113051,7 +113047,7 @@ class RPadPainter extends RObjectPainter {
             this._start_tm = new Date().getTime();
 
          // set number of primitves
-         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.length : 0;
+         this._num_primitives = this.pad?.fPrimitives?.length ?? 0;
 
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
@@ -118110,8 +118106,8 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
       let res = { name: 'histo', title: histo.fTitle,
                   x: midx, y: midy, exact: true,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {
@@ -119580,8 +119576,8 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
 
       let res = { name: 'histo', title: histo.fTitle || 'title',
                   x: pnt.x, y: pnt.y,
-                  color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getBinTooltips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = h.palette.getColor(colindx);
