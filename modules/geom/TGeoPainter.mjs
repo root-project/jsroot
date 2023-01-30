@@ -3160,7 +3160,7 @@ class TGeoPainter extends ObjectPainter {
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      if (itemname && itemname.indexOf('<prnt>/Tracks') == 0)
+      if (itemname?.indexOf('<prnt>/Tracks') === 0)
          line.main_track = true;
 
       this.addToExtrasContainer(line);

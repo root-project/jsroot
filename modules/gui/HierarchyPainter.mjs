@@ -123,7 +123,7 @@ function folderHierarchy(item, obj) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
          _name: chld.fName,
-         _kind: 'ROOT.' + chld._typename,
+         _kind: `ROOT.${chld._typename}`,
          _obj: chld
       });
    }
@@ -202,8 +202,8 @@ function listHierarchy(folder, lst) {
             _obj: null
           } : {
             _name: obj.fName || obj.name,
-            _kind: 'ROOT.' + obj._typename,
-            _title: (obj.fTitle || '') + ' type:'  +  obj._typename,
+            _kind: `ROOT.${obj._typename}`,
+            _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
           };
 
@@ -770,7 +770,7 @@ class HierarchyPainter extends BasePainter {
          // this is central get method, item or itemname can be used, returns promise
          _get(item, itemname) {
 
-            if (item && item._readobj)
+            if (item?._readobj)
                return Promise.resolve(item._readobj);
 
             if (item) itemname = painter.itemFullName(item, this);
@@ -2153,9 +2153,9 @@ class HierarchyPainter extends BasePainter {
 
          let item = items[i], can_split = true;
 
-         if (item && item.indexOf('img:') == 0) { images[i] = true; continue; }
+         if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
 
-         if (item && (item.length > 1) && (item[0] == "'") && (item[item.length - 1] == "'")) {
+         if ((item?.length > 1) && (item[0] == "'") && (item[item.length - 1] == "'")) {
             items[i] = item.slice(1, item.length-1);
             can_split = false;
          }

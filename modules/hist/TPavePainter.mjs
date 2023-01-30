@@ -853,7 +853,7 @@ class TPavePainter extends ObjectPainter {
             let pos = d3_pointer(evnt, this.draw_g.node()),
                 coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                 item = this.z_handle.analyzeWheelEvent(evnt, coord);
-            if (item && item.changed)
+            if (item?.changed)
                this.getFramePainter().zoom('z', item.min, item.max);
          });
    }

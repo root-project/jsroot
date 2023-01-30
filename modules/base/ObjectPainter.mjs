@@ -1285,7 +1285,7 @@ class ObjectPainter extends BasePainter {
 
          let items = reply ? reply.fItems : null;
 
-         if (items && items.length) {
+         if (items?.length) {
             if (_menu.size() > 0)
                _menu.add('separator');
 
