@@ -239,7 +239,7 @@ class RCanvasPainter extends RPadPainter {
          this.syncDraw(true)
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
-                 handle.send('SNAPDONE:' + snapid); // send ready message back when drawing completed
+                 handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
               });
       } else if (msg.slice(0,4) == 'JSON') {
@@ -253,7 +253,7 @@ class RCanvasPainter extends RPadPainter {
          let p1 = msg.indexOf(':'),
              cmdid = msg.slice(0,p1),
              cmd = msg.slice(p1+1),
-             reply = 'REPLY:' + cmdid + ':';
+             reply = `REPLY:${cmdid}:`;
          if ((cmd == 'SVG') || (cmd == 'PNG') || (cmd == 'JPEG')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
