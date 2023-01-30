@@ -960,7 +960,7 @@ class TGraphPainter extends ObjectPainter {
 
        res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
+      if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
 
       if (best.exact) res.exact = true;
@@ -1155,7 +1155,7 @@ class TGraphPainter extends ObjectPainter {
          res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
       }
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty())
+      if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
 
       if (!islines) {

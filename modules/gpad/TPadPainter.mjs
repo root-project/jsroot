@@ -711,7 +711,7 @@ class TPadPainter extends ObjectPainter {
 
       if ((obj._typename == clTObjArray) && (obj.name == 'ListOfColors')) {
 
-         if (this.options && this.options.CreatePalette) {
+         if (this.options?.CreatePalette) {
             let arr = [];
             for (let n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
                let col = getRGBfromTColor(obj.arr[n]);
@@ -725,7 +725,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(obj);
 
          // copy existing colors and extend with new values
-         if (this.options && this.options.LocalColors)
+         if (this.options?.LocalColors)
             this.root_colors = extendRootColors(null, obj);
          return true;
       }
@@ -1286,7 +1286,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(ListOfColors);
 
          // copy existing colors and extend with new values
-         if (this.options && this.options.LocalColors)
+         if (this.options?.LocalColors)
             this.root_colors = extendRootColors(null, ListOfColors);
 
          // set palette

@@ -453,7 +453,7 @@ class TGraphPolarPainter extends ObjectPainter {
       }
 
       let match_distance = 5;
-      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.getFullSize();
+      if (this.markeratt?.used) match_distance = this.markeratt.getFullSize();
 
       if (Math.sqrt(best_dist2) > match_distance) return null;
 

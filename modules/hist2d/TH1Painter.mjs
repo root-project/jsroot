@@ -1033,7 +1033,7 @@ class TH1Painter extends THistPainter {
 
          this.decodeOptions(arg);
 
-         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+         if (this.options.need_fillcol && this.fillatt?.empty())
             this.fillatt.change(5,1001);
 
          // redraw all objects in pad, inform dependent objects

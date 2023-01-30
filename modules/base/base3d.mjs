@@ -1022,7 +1022,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    }
 
    control.removeZoomMesh = function() {
-      if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.showSelection())
+      if (this.mouse_zoom_mesh?.object.showSelection())
          this.painter.render3D();
       this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
    }

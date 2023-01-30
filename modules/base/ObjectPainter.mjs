@@ -411,7 +411,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getAxisToSvgFunc(isndc, nornd) {
       let func = { isndc, nornd },
-          use_frame = this.draw_g && this.draw_g.property('in_frame');
+          use_frame = this.draw_g?.property('in_frame');
       if (use_frame) func.main = this.getFramePainter();
       if (func.main?.grx && func.main?.gry) {
          if (nornd) {
@@ -474,7 +474,7 @@ class ObjectPainter extends BasePainter {
      * @return {number} value of requested coordiantes
      * @protected */
    svgToAxis(axis, coord, ndc) {
-      let use_frame = this.draw_g && this.draw_g.property('in_frame');
+      let use_frame = this.draw_g?.property('in_frame');
 
       if (use_frame) {
          let main = this.getFramePainter();

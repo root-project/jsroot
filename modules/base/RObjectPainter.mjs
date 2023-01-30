@@ -36,7 +36,7 @@ class RObjectPainter extends ObjectPainter {
          if (value) return type_check(value.v); // found value direct in attributes
       }
 
-      if (this.rstyle && this.rstyle.fBlocks) {
+      if (this.rstyle?.fBlocks) {
          let blks = this.rstyle.fBlocks;
          for (let k = 0; k < blks.length; ++k) {
             let block = blks[k],
@@ -44,7 +44,7 @@ class RObjectPainter extends ObjectPainter {
                         (obj.fId && (block.selector == ('#' + obj.fId))) ||
                         (obj.fCssClass && (block.selector == ('.' + obj.fCssClass)));
 
-            if (match && block.map && block.map.m) {
+            if (match && block.map?.m) {
                let value = block.map.m[name.toLowerCase()];
                if (value) return type_check(value.v);
             }

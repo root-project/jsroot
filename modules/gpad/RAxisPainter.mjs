@@ -89,7 +89,7 @@ class RAxisPainter extends RObjectPainter {
             toffset = parseFloat(toffset);
             if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
          }
-      } else if (this.axis && this.axis.fLabelsIndex) {
+      } else if (this.axis?.fLabelsIndex) {
          this.kind = 'labels';
          delete this.own_labels;
       } else if (opts.labels) {
@@ -205,7 +205,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Provide label for axis value */
    formatLabels(d) {
       let indx = Math.round(d);
-      if (this.axis && this.axis.fLabelsIndex) {
+      if (this.axis?.fLabelsIndex) {
          if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
          for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
             let pair = this.axis.fLabelsIndex[i];

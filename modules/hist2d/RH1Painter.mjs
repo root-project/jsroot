@@ -872,7 +872,7 @@ class RH1Painter extends RHistPainter {
 
          this.decodeOptions(arg); // obsolete, should be implemented differently
 
-         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+         if (this.options.need_fillcol && this.fillatt?.empty())
             this.fillatt.change(5,1001);
 
          // redraw all objects

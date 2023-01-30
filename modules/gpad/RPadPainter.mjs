@@ -430,7 +430,7 @@ class RPadPainter extends RObjectPainter {
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (this.pad && this.pad.fPos && this.pad.fSize) {
+      if (this.pad?.fPos && this.pad?.fSize) {
          x = Math.round(width * this.pad.fPos.fHoriz.fArr[0]);
          y = Math.round(height * this.pad.fPos.fVert.fArr[0]);
          w = Math.round(width * this.pad.fSize.fHoriz.fArr[0]);
