@@ -325,7 +325,7 @@ class RFramePainter extends RObjectPainter {
                                         logcheckmin: this.swap_xy,
                                         logminfactor: 0.0001 });
 
-      this.x_handle.assignFrameMembers(this,'x');
+      this.x_handle.assignFrameMembers(this, 'x');
 
       this.y_handle = new TAxisPainter(this.getDom(), yaxis, true);
       this.y_handle.setPadName(this.getPadName());
@@ -339,7 +339,7 @@ class RFramePainter extends RObjectPainter {
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
-      this.y_handle.assignFrameMembers(this,'y');
+      this.y_handle.assignFrameMembers(this, 'y');
    }
 
    /** @summary Identify if requested axes are drawn
@@ -406,10 +406,10 @@ class RFramePainter extends RObjectPainter {
          this.z_handle.snapid = this.snapid;
 
          this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
-         this.x_handle.assignFrameMembers(this,'x');
+         this.x_handle.assignFrameMembers(this, 'x');
 
          this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
-         this.y_handle.assignFrameMembers(this,'y');
+         this.y_handle.assignFrameMembers(this, 'y');
 
          // only get basic properties like log scale
          this.z_handle.configureZAxis('zaxis', this);
@@ -493,7 +493,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.snapid = this.snapid;
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
-         this.x2_handle.assignFrameMembers(this,'x2');
+         this.x2_handle.assignFrameMembers(this, 'x2');
 
          pr1 = this.x2_handle.drawAxis(layer, null, -1);
       }
@@ -512,7 +512,7 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.snapid = this.snapid;
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
-         this.y2_handle.assignFrameMembers(this,'y2');
+         this.y2_handle.assignFrameMembers(this, 'y2');
 
          pr2 = this.y2_handle.drawAxis(layer, makeTranslate(w, h), -1);
       }

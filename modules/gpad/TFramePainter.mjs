@@ -1856,7 +1856,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: 0.0001 });
-         this.x2_handle.assignFrameMembers(this,'x2');
+         this.x2_handle.assignFrameMembers(this, 'x2');
       }
 
       if (opts.second_y) {
@@ -1871,7 +1871,7 @@ class TFramePainter extends ObjectPainter {
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
                                            logminfactor: 3e-4 });
 
-         this.y2_handle.assignFrameMembers(this,'y2');
+         this.y2_handle.assignFrameMembers(this, 'y2');
       }
    }
 
@@ -1969,7 +1969,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridx += `M${this.x_handle.ticks[n]},0v${h}`;
 
-         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x') ? this.getAxis('x').fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1),
              grid_color = this.getColor(colid) || 'black';
 
          if (gridx)
@@ -1990,7 +1990,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
 
-         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y') ? this.getAxis('y').fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1),
              grid_color = this.getColor(colid) || 'black';
 
          if (gridy)
@@ -1998,14 +1998,14 @@ class TFramePainter extends ObjectPainter {
                 .attr('class', 'ygrid')
                 .attr('d', gridy)
                 .style('stroke', grid_color)
-                .style('stroke-width',gStyle.fGridWidth)
+                .style('stroke-width', gStyle.fGridWidth)
                 .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
    }
 
    /** @summary Converts 'raw' axis value into text */
    axisAsText(axis, value) {
-      let handle = this[axis+'_handle'];
+      let handle = this[`${axis}_handle`];
 
       if (handle)
          return handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']);
