@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '30/01/2023';
+let version_date = '31/01/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11655,9 +11655,9 @@ class ObjectPainter extends BasePainter {
    fillContextMenu(menu) {
       let title = this.getObjectHint(), obj = this.getObject();
       if (obj?._typename)
-         title = obj._typename + '::' + title;
+         title = `${obj._typename}::${title}`;
 
-      menu.add('header:' + title);
+      menu.add(`header:${title}`);
 
       menu.addAttributesMenu(this);
 
@@ -57371,7 +57371,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
-                               { log: pad ? pad.fLogx : 0 });
+                               { log: pad?.fLogx ?? 0 });
    this.x_handle.assignFrameMembers(this, 'x');
    this.x_handle.extractDrawAttributes(scalingSize);
 
@@ -57391,7 +57391,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.z_handle.snapid = this.snapid;
    }
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { log: pad ? pad.fLogz : 0 });
+                               { log: pad?.fLogz ?? 0 });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
@@ -65980,7 +65980,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: 0.0001 });
-         this.x2_handle.assignFrameMembers(this,'x2');
+         this.x2_handle.assignFrameMembers(this, 'x2');
       }
 
       if (opts.second_y) {
@@ -65995,7 +65995,7 @@ class TFramePainter extends ObjectPainter {
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
                                            logminfactor: 3e-4 });
 
-         this.y2_handle.assignFrameMembers(this,'y2');
+         this.y2_handle.assignFrameMembers(this, 'y2');
       }
    }
 
@@ -66093,7 +66093,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridx += `M${this.x_handle.ticks[n]},0v${h}`;
 
-         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x') ? this.getAxis('x').fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1),
              grid_color = this.getColor(colid) || 'black';
 
          if (gridx)
@@ -66114,7 +66114,7 @@ class TFramePainter extends ObjectPainter {
             else
                gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
 
-         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y') ? this.getAxis('y').fAxisColor : 1),
+         let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1),
              grid_color = this.getColor(colid) || 'black';
 
          if (gridy)
@@ -66122,14 +66122,14 @@ class TFramePainter extends ObjectPainter {
                 .attr('class', 'ygrid')
                 .attr('d', gridy)
                 .style('stroke', grid_color)
-                .style('stroke-width',gStyle.fGridWidth)
+                .style('stroke-width', gStyle.fGridWidth)
                 .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
    }
 
    /** @summary Converts 'raw' axis value into text */
    axisAsText(axis, value) {
-      let handle = this[axis+'_handle'];
+      let handle = this[`${axis}_handle`];
 
       if (handle)
          return handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']);
@@ -66541,7 +66541,7 @@ class TFramePainter extends ObjectPainter {
 
       pp._interactively_changed = true;
 
-      let name = 'fLog' + axis;
+      let name = `fLog${axis}`;
 
       // do not allow log scale for labels
       if (!pad[name]) {
@@ -66549,7 +66549,7 @@ class TFramePainter extends ObjectPainter {
             axis = 'y';
          else if (this.swap_xy && axis === 'y')
             axis = 'x';
-         let handle = this[axis + '_handle'];
+         let handle = this[`${axis}_handle`];
          if (handle?.kind === 'labels') return;
       }
 
@@ -66559,7 +66559,7 @@ class TFramePainter extends ObjectPainter {
       // directly change attribute in the pad
       pad[name] = value;
 
-      this.interactiveRedraw('pad', 'log'+axis);
+      this.interactiveRedraw('pad', `log${axis}`);
    }
 
    /** @summary Toggle log state on the specified axis */
@@ -66606,7 +66606,7 @@ class TFramePainter extends ObjectPainter {
             main.fillPaletteMenu(menu);
 
          if (faxis) {
-            let handle = this[kind+'_handle'];
+            let handle = this[`${kind}_handle`];
 
             if ((handle?.kind == 'labels') && (faxis.fNbins > 20))
                menu.add('Find label', () => menu.input('Label id').then(id => {
@@ -66844,8 +66844,8 @@ class TFramePainter extends ObjectPainter {
          this.forEachPainter(obj => {
             if (!isFunc(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
-               this['zoom_' + name + 'min'] = vmin;
-               this['zoom_' + name + 'max'] = vmax;
+               this[`zoom_${name}min`] = vmin;
+               this[`zoom_${name}max`] = vmax;
                changed = true;
                zoom_v = false;
             }
@@ -66853,8 +66853,8 @@ class TFramePainter extends ObjectPainter {
 
       // and process unzoom, if any
       if (unzoom_v) {
-         if (this['zoom_' + name + 'min'] !== this['zoom_' + name + 'max']) changed = true;
-         this['zoom_' + name + 'min'] = this['zoom_' + name + 'max'] = 0;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
       }
 
       if (!changed) return false;
@@ -66864,7 +66864,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
-      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
+      return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
    }
 
    /** @summary Unzoom speicified axes
@@ -66921,14 +66921,11 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   revertAxis(axis, pnt) {
-      let handle = this[axis+'_handle'];
-      return handle ? handle.revertPoint(pnt) : 0;
-   }
+   revertAxis(axis, pnt) { return this[`${axis}_handle`]?.revertPoint(pnt) ?? 0; }
 
    /** @summary Show axis status message
-    * @desc method called normally when mouse enter main object element
-    * @private */
+     * @desc method called normally when mouse enter main object element
+     * @private */
    showAxisStatus(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = clTAxis,
           m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name == 'x') ? 0 : 1;
@@ -66941,7 +66938,7 @@ class TFramePainter extends ObjectPainter {
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + ' : ' + this.axisAsText(axis_name, axis_value), m[0] + ',' + m[1]);
+      this.showObjectStatus(hint_name, hint_title, `${axis_name} : ${this.axisAsText(axis_name, axis_value)}`, `${m[0]},${m[1]}`);
    }
 
    /** @summary Add interactive keys handlers
@@ -72453,7 +72450,7 @@ class TPavePainter extends ObjectPainter {
    fillContextMenu(menu) {
       let pave = this.getObject();
 
-      menu.add('header: ' + pave._typename + '::' + pave.fName);
+      menu.add(`header: ${pave._typename}::${pave.fName}`);
       if (this.isStats()) {
          menu.add('Default position', function() {
             pave.fX2NDC = gStyle.fStatX;
@@ -111609,7 +111606,7 @@ class RFramePainter extends RObjectPainter {
                                         logcheckmin: this.swap_xy,
                                         logminfactor: 0.0001 });
 
-      this.x_handle.assignFrameMembers(this,'x');
+      this.x_handle.assignFrameMembers(this, 'x');
 
       this.y_handle = new TAxisPainter(this.getDom(), yaxis, true);
       this.y_handle.setPadName(this.getPadName());
@@ -111623,7 +111620,7 @@ class RFramePainter extends RObjectPainter {
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
-      this.y_handle.assignFrameMembers(this,'y');
+      this.y_handle.assignFrameMembers(this, 'y');
    }
 
    /** @summary Identify if requested axes are drawn
@@ -111690,10 +111687,10 @@ class RFramePainter extends RObjectPainter {
          this.z_handle.snapid = this.snapid;
 
          this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
-         this.x_handle.assignFrameMembers(this,'x');
+         this.x_handle.assignFrameMembers(this, 'x');
 
          this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
-         this.y_handle.assignFrameMembers(this,'y');
+         this.y_handle.assignFrameMembers(this, 'y');
 
          // only get basic properties like log scale
          this.z_handle.configureZAxis('zaxis', this);
@@ -111777,7 +111774,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.snapid = this.snapid;
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
-         this.x2_handle.assignFrameMembers(this,'x2');
+         this.x2_handle.assignFrameMembers(this, 'x2');
 
          pr1 = this.x2_handle.drawAxis(layer, null, -1);
       }
@@ -111796,7 +111793,7 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.snapid = this.snapid;
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
-         this.y2_handle.assignFrameMembers(this,'y2');
+         this.y2_handle.assignFrameMembers(this, 'y2');
 
          pr2 = this.y2_handle.drawAxis(layer, makeTranslate(w, h), -1);
       }
@@ -112429,10 +112426,7 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   revertAxis(axis, pnt) {
-      let handle = this[axis+'_handle'];
-      return handle ? handle.revertPoint(pnt) : 0;
-   }
+   revertAxis(axis, pnt) { return this[`${axis}_handle`]?.revertPoint(pnt) ?? 0; }
 
    /** @summary Show axis status message
      * @desc method called normally when mouse enter main object element
@@ -112446,7 +112440,7 @@ class RFramePainter extends RObjectPainter {
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + ' : ' + this.axisAsText(axis_name, axis_value), Math.round(m[0]) + ',' + Math.round(m[1]));
+      this.showObjectStatus(hint_name, hint_title, `${axis_name} : ${this.axisAsText(axis_name, axis_value)}`, `${Math.round(m[0])},${Math.round(m[1])}`);
    }
 
    /** @summary Add interactive keys handlers
@@ -112847,6 +112841,11 @@ class RPadPainter extends RObjectPainter {
          this.alignButtons(btns, rect.width, rect.height);
 
       return true;
+   }
+
+   /** @summary Draw item name on canvas, dummy for RPad
+     * @private */
+   drawItemNameOnCanvas() {
    }
 
    /** @summary Enlarge pad draw element when possible */
