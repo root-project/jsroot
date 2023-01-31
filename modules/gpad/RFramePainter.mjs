@@ -1145,10 +1145,7 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   revertAxis(axis, pnt) {
-      let handle = this[axis+'_handle'];
-      return handle ? handle.revertPoint(pnt) : 0;
-   }
+   revertAxis(axis, pnt) { return this[`${axis}_handle`]?.revertPoint(pnt) ?? 0; }
 
    /** @summary Show axis status message
      * @desc method called normally when mouse enter main object element
@@ -1164,7 +1161,7 @@ class RFramePainter extends RObjectPainter {
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + ' : ' + this.axisAsText(axis_name, axis_value), Math.round(m[0]) + ',' + Math.round(m[1]));
+      this.showObjectStatus(hint_name, hint_title, `${axis_name} : ${this.axisAsText(axis_name, axis_value)}`, `${Math.round(m[0])},${Math.round(m[1])}`);
    }
 
    /** @summary Add interactive keys handlers

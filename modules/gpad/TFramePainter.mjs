@@ -2417,7 +2417,7 @@ class TFramePainter extends ObjectPainter {
 
       pp._interactively_changed = true;
 
-      let name = 'fLog' + axis;
+      let name = `fLog${axis}`;
 
       // do not allow log scale for labels
       if (!pad[name]) {
@@ -2425,7 +2425,7 @@ class TFramePainter extends ObjectPainter {
             axis = 'y';
          else if (this.swap_xy && axis === 'y')
             axis = 'x';
-         let handle = this[axis + '_handle'];
+         let handle = this[`${axis}_handle`];
          if (handle?.kind === 'labels') return;
       }
 
@@ -2435,7 +2435,7 @@ class TFramePainter extends ObjectPainter {
       // directly change attribute in the pad
       pad[name] = value;
 
-      this.interactiveRedraw('pad', 'log'+axis);
+      this.interactiveRedraw('pad', `log${axis}`);
    }
 
    /** @summary Toggle log state on the specified axis */
@@ -2482,7 +2482,7 @@ class TFramePainter extends ObjectPainter {
             main.fillPaletteMenu(menu);
 
          if (faxis) {
-            let handle = this[kind+'_handle'];
+            let handle = this[`${kind}_handle`];
 
             if ((handle?.kind == 'labels') && (faxis.fNbins > 20))
                menu.add('Find label', () => menu.input('Label id').then(id => {
@@ -2720,8 +2720,8 @@ class TFramePainter extends ObjectPainter {
          this.forEachPainter(obj => {
             if (!isFunc(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
-               this['zoom_' + name + 'min'] = vmin;
-               this['zoom_' + name + 'max'] = vmax;
+               this[`zoom_${name}min`] = vmin;
+               this[`zoom_${name}max`] = vmax;
                changed = true;
                zoom_v = false;
             }
@@ -2729,8 +2729,8 @@ class TFramePainter extends ObjectPainter {
 
       // and process unzoom, if any
       if (unzoom_v) {
-         if (this['zoom_' + name + 'min'] !== this['zoom_' + name + 'max']) changed = true;
-         this['zoom_' + name + 'min'] = this['zoom_' + name + 'max'] = 0;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
       }
 
       if (!changed) return false;
@@ -2740,7 +2740,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
-      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
+      return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
    }
 
    /** @summary Unzoom speicified axes
@@ -2797,14 +2797,11 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   revertAxis(axis, pnt) {
-      let handle = this[axis+'_handle'];
-      return handle ? handle.revertPoint(pnt) : 0;
-   }
+   revertAxis(axis, pnt) { return this[`${axis}_handle`]?.revertPoint(pnt) ?? 0; }
 
    /** @summary Show axis status message
-    * @desc method called normally when mouse enter main object element
-    * @private */
+     * @desc method called normally when mouse enter main object element
+     * @private */
    showAxisStatus(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = clTAxis,
           m = d3_pointer(evnt, this.getFrameSvg().node()), id = (axis_name == 'x') ? 0 : 1;
@@ -2817,7 +2814,7 @@ class TFramePainter extends ObjectPainter {
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + ' : ' + this.axisAsText(axis_name, axis_value), m[0] + ',' + m[1]);
+      this.showObjectStatus(hint_name, hint_title, `${axis_name} : ${this.axisAsText(axis_name, axis_value)}`, `${m[0]},${m[1]}`);
    }
 
    /** @summary Add interactive keys handlers
