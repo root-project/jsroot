@@ -377,9 +377,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
          let pos = main.translate(graph.fX[n], graph.fY[n]);
 
-         if (this.options.mark) {
+         if (this.options.mark)
             mpath += this.markeratt.create(pos.x, pos.y);
-         }
 
          if (this.options.line || this.options.fill) {
             lpath += (lpath ? 'L' : 'M') + pos.x + ',' + pos.y;
@@ -412,7 +411,7 @@ class TGraphPolarPainter extends ObjectPainter {
       if (epath)
          this.draw_g.append('svg:path')
              .attr('d', epath)
-             .style('fill','none')
+             .style('fill', 'none')
              .call(this.lineatt.func);
 
       if (mpath)

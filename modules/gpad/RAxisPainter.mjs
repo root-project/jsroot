@@ -847,9 +847,9 @@ class RAxisPainter extends RObjectPainter {
       if (side === undefined) side = 1;
 
       if (!this.standalone) {
-         axis_g = layer.select('.' + this.name + '_container');
+         axis_g = layer.select(`.${this.name}_container`);
          if (axis_g.empty())
-            axis_g = layer.append('svg:g').attr('class', this.name + '_container');
+            axis_g = layer.append('svg:g').attr('class', `${this.name}_container`);
          else
             axis_g.selectAll('*').remove();
       }

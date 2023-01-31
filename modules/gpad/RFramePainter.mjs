@@ -452,18 +452,18 @@ class RFramePainter extends RObjectPainter {
          let arr = [];
 
          if (ticksx > 0)
-            arr.push(draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : null, sidex));
+            arr.push(draw_horiz.drawAxis(layer, makeTranslate(0, sidex > 0 ? h : 0), sidex));
 
          if (ticksy > 0)
-            arr.push(draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey));
+            arr.push(draw_vertical.drawAxis(layer, makeTranslate(sidey > 0 ? 0 : w, h), sidey));
 
          pr = Promise.all(arr).then(() => {
             arr = [];
             if (ticksx > 1)
-               arr.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : null, -sidex, ticksx == 2));
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, makeTranslate(0, sidex < 0 ? h : 0), -sidex, ticksx == 2));
 
             if (ticksy > 1)
-               arr.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
+               arr.push(draw_vertical.drawAxisOtherPlace(layer, makeTranslate(sidey < 0 ? 0 : w, h), -sidey, ticksy == 2));
             return Promise.all(arr);
          }).then(() => this.drawGrids());
       }

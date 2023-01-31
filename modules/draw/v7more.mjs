@@ -212,7 +212,7 @@ class RPalettePainter extends RObjectPainter {
 
       framep.z_handle.maxTickSize = Math.round(palette_width*0.3);
 
-      let promise = framep.z_handle.drawAxis(this.draw_g, vertical ? `translate(${palette_width},${palette_height})` : `translate(0,${palette_height})`, vertical ? -1 : 1);
+      let promise = framep.z_handle.drawAxis(this.draw_g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
 
       if (isBatchMode() || drag)
          return promise;
