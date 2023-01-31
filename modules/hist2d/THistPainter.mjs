@@ -1855,7 +1855,7 @@ class THistPainter extends ObjectPainter {
       } else {
          if (nlevels < 2) nlevels = gStyle.fNumberContours;
          let pad = this.getPadPainter().getRootPad(true);
-         cntr.createNormal(nlevels, pad ? pad.fLogz : 0, zminpositive);
+         cntr.createNormal(nlevels, pad?.fLogz ?? 0, zminpositive);
       }
 
       cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.isTH2Poly() ? 0 : -1);

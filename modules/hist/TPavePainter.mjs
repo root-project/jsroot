@@ -89,11 +89,11 @@ class TPavePainter extends ObjectPainter {
          }
 
          if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
-            pt.fX1NDC = Math.max(pad ? pad.fLeftMargin : 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, pad ? 1 - pad.fRightMargin : 1);
+            pt.fX1NDC = Math.max(pad?.fLeftMargin ?? 0, pt.fX2NDC - 0.3);
+            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - (pad?.fRightMargin ?? 0));
             let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(pad ? 1 - pad.fTopMargin : 1, pt.fY1NDC + h0);
-            pt.fY1NDC = Math.max(pt.fY2NDC - h0, pad ? pad.fBottomMargin : 0);
+            pt.fY2NDC = Math.min(1 - (pad?.fTopMargin ?? 0), pt.fY1NDC + h0);
+            pt.fY1NDC = Math.max(pt.fY2NDC - h0, pad?.fBottomMargin ?? 0);
          }
       }
 
@@ -687,11 +687,11 @@ class TPavePainter extends ObjectPainter {
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad?.fLogz ?? 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? null : `translate(${s_width})`;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad?.fLogz ?? 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? null : `translate(0,${s_height})`;
       }
 
