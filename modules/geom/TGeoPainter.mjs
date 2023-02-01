@@ -1357,7 +1357,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._camera.layers.enable( _BLOOM_SCENE );
       this._bloomComposer = new EffectComposer( this._renderer );
-      this._bloomComposer.addPass( new RenderPass( this._scene, this._camera ) );
+      this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
       this._bloomPass = new UnrealBloomPass(new Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85);
       this._bloomPass.threshold = 0;
       this._bloomPass.strength = this.ctrl.bloom.strength;
@@ -1825,8 +1825,8 @@ class TGeoPainter extends ObjectPainter {
             this._tcontrols.setSpace( this._tcontrols.space === 'local' ? 'world' : 'local' );
             break;
          case 'Control':
-            this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
-            this._tcontrols.setRotationSnap( MathUtils.degToRad( 15 ) );
+            this._tcontrols.setTranslationSnap(Math.ceil(this._overall_size) / 50);
+            this._tcontrols.setRotationSnap(MathUtils.degToRad(15));
             break;
          case 't': // Translate
             this._tcontrols.setMode( 'translate' );
@@ -2817,7 +2817,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._controls) {
             this._controls.autoRotate = this.ctrl.rotate;
-            this._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
+            this._controls.autoRotateSpeed = rotSpeed * (current.getTime() - last.getTime()) / 16.6666;
             this._controls.update();
          }
          last = new Date();
@@ -4548,7 +4548,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    ownedByTransformControls(child) {
       let obj = child.parent;
-      while (obj && !(obj instanceof TransformControls) )
+      while (obj && !(obj instanceof TransformControls))
          obj = obj.parent;
       return obj && (obj instanceof TransformControls);
    }

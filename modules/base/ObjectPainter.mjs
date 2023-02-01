@@ -98,7 +98,7 @@ class ObjectPainter extends BasePainter {
    getObject() { return this.draw_object; }
 
    /** @summary Returns drawn object class name */
-   getClassName() { return this.getObject()?._typename || ''; }
+   getClassName() { return this.getObject()?._typename ?? ''; }
 
    /** @summary Checks if drawn object matches with provided typename
      * @param {string|object} arg - typename (or object with _typename member)
@@ -162,11 +162,10 @@ class ObjectPainter extends BasePainter {
       let pp = this.getPadPainter(),
           obj = this.getObject();
 
-      if (!obj?._typename || !pp?.getObjectDrawSettings)
+      if (!obj?._typename || !isFunc(pp?.getObjectDrawSettings))
          return [];
 
-      let sett = pp.getObjectDrawSettings('ROOT.' + obj._typename, 'nosame');
-      return sett?.opts;
+      return pp.getObjectDrawSettings(`ROOT.${obj._typename}`, 'nosame')?.opts;
    }
 
    /** @summary Central place to update objects drawing

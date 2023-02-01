@@ -176,7 +176,7 @@ class Polygon {
 
       this.nsign = 1;
 
-      //this.normal = b.clone().subtract( a ).cross( c.clone().subtract( a ) ).normalize();
+      //this.normal = b.clone().subtract(a).cross(c.clone().subtract(a)).normalize();
 
       this.normal = new Vertex(b.x - a.x, b.y - a.y, b.z - a.z, 0, 0, 0).cross3(c.x - a.x, c.y - a.y, c.z - a.z).normalize();
 
@@ -189,7 +189,7 @@ class Polygon {
           vertices = [];
 
       for (let i = 0; i < vertice_count; ++i )
-         vertices.push( this.vertices[i].clone() );
+         vertices.push(this.vertices[i].clone());
 
       return new Polygon(vertices, this);
    }
@@ -270,7 +270,7 @@ class Polygon {
             if ( ti != BACK ) f.push( vi );
             if ( ti != FRONT ) b.push( vi );
             if ( (ti | tj) === SPANNING ) {
-               // t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
+               // t = (this.w - this.normal.dot(vi))/this.normal.dot(vj.clone().subtract(vi));
                //v = vi.clone().lerp( vj, t );
 
                t = (this.w - (nnx*vi.x + nny*vi.y + nnz*vi.z)) / (nnx*(vj.x-vi.x) + nny*(vj.y-vi.y) + nnz*(vj.z-vi.z));
@@ -281,10 +281,10 @@ class Polygon {
             }
          }
 
-         //if ( f.length >= 3 ) front.push( new Polygon( f ).calculateProperties() );
-         //if ( b.length >= 3 ) back.push( new Polygon( b ).calculateProperties() );
-         if ( f.length >= 3 ) front.push( new Polygon( f, polygon, true ) );
-         if ( b.length >= 3 ) back.push( new Polygon( b, polygon, true ) );
+         //if ( f.length >= 3 ) front.push(new Polygon(f).calculateProperties());
+         //if ( b.length >= 3 ) back.push(new Polygon(b).calculateProperties());
+         if (f.length >= 3) front.push(new Polygon(f, polygon, true));
+         if (b.length >= 3) back.push(new Polygon(b, polygon, true));
       }
    }
 
@@ -376,7 +376,7 @@ class Node {
       let node = new Node();
 
       node.divider = this.divider?.clone();
-      node.polygons = this.polygons.map( polygon => polygon.clone() );
+      node.polygons = this.polygons.map(polygon => polygon.clone());
       node.front = this.front?.clone();
       node.back = this.back?.clone();
 
@@ -578,14 +578,14 @@ class Geometry {
           b = other_tree.tree.clone();
 
       a.invert();
-      a.clipTo( b );
-      b.clipTo( a );
+      a.clipTo(b);
+      b.clipTo(a);
       b.invert();
-      b.clipTo( a );
+      b.clipTo(a);
       b.invert();
-      a.build( b.collectPolygons() );
+      a.build(b.collectPolygons());
       a.invert();
-      a = new Geometry( a );
+      a = new Geometry(a);
       a.matrix = this.matrix;
       return a;
    }
@@ -594,13 +594,13 @@ class Geometry {
       let a = this.tree.clone(),
           b = other_tree.tree.clone();
 
-      a.clipTo( b );
-      b.clipTo( a );
+      a.clipTo(b);
+      b.clipTo(a);
       b.invert();
-      b.clipTo( a );
+      b.clipTo(a);
       b.invert();
-      a.build( b.collectPolygons() );
-      a = new Geometry( a );
+      a.build(b.collectPolygons());
+      a = new Geometry(a);
       a.matrix = this.matrix;
       return a;
    }
@@ -610,13 +610,13 @@ class Geometry {
           b = other_tree.tree.clone();
 
       a.invert();
-      b.clipTo( a );
+      b.clipTo(a);
       b.invert();
-      a.clipTo( b );
-      b.clipTo( a );
-      a.build( b.collectPolygons() );
+      a.clipTo(b);
+      b.clipTo(a);
+      a.build(b.collectPolygons());
       a.invert();
-      a = new Geometry( a );
+      a = new Geometry(a);
       a.matrix = this.matrix;
       return a;
    }
@@ -692,7 +692,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons() );
+      a.build(b.collectPolygons());
       a.invert();
       return this;
    }
@@ -706,7 +706,7 @@ class Geometry {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.collectPolygons() );
+      a.build(b.collectPolygons());
       return this;
    }
 
@@ -719,7 +719,7 @@ class Geometry {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.collectPolygons() );
+      a.build(b.collectPolygons());
       a.invert();
       return this;
    }
@@ -731,7 +731,7 @@ class Geometry {
           b = other_tree.tree;
 
       a.invert();
-      b.clipTo( a );
+      b.clipTo(a);
 
       return this;
    }
@@ -774,8 +774,8 @@ class Geometry {
          mesh = new Mesh( geometry, material );
 
       if (this.matrix) {
-         mesh.position.setFromMatrixPosition( this.matrix );
-         mesh.rotation.setFromRotationMatrix( this.matrix );
+         mesh.position.setFromMatrixPosition(this.matrix);
+         mesh.rotation.setFromRotationMatrix(this.matrix);
       }
 
       return mesh;

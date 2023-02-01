@@ -298,7 +298,7 @@ class RH3Painter extends RHistPainter {
          if (this.options.Sphere === 11) use_colors = true;
 
          let geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
+         geom.applyMatrix4(new Matrix4().makeRotationX(Math.PI/2));
          geom.computeVertexNormals();
 
          let indx = geom.getIndex().array,

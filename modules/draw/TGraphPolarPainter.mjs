@@ -117,7 +117,6 @@ class TGraphPolargramPainter extends ObjectPainter {
       this.processFrameTooltipEvent(null); // remove all tooltips
 
       let polar = this.getObject();
-
       if (!polar) return;
 
       let delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);

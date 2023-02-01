@@ -109,15 +109,15 @@
        camera.position.y = geom_size;
 
        scene = new Scene();
-       scene.add( new AmbientLight( 0x404040 ) );
+       scene.add(new AmbientLight(0x404040));
 
        let light = new DirectionalLight( 0xffffff );
-       light.position.set( 0, 1, 0 );
+       light.position.set(0, 1, 0);
        scene.add( light );
 
        // first draw dummy object, seen in the beginning
-       let material = new MeshLambertMaterial({ side: DoubleSide, color: 'red', vertexColors: false });
-       dummy = new Mesh( new TetrahedronGeometry( 75, 0 ), material );
+       let material = new MeshLambertMaterial({side: DoubleSide, color: 'red', vertexColors: false});
+       dummy = new Mesh(new TetrahedronGeometry(75, 0), material);
        // object.position.set( 200, 0, 200 );
        scene.add( dummy );
 

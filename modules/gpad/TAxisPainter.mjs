@@ -613,7 +613,7 @@ class TAxisPainter extends ObjectPainter {
             this.kind = 2;
          }
 
-         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
+         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1)) {
             this.nmajor++;
             this.kind = 1;
          }

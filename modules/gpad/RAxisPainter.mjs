@@ -266,7 +266,7 @@ class RAxisPainter extends RObjectPainter {
             this.kind = 2;
          }
 
-         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
+         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1)) {
             this.nmajor++;
             this.kind = 1;
          }
@@ -292,8 +292,8 @@ class RAxisPainter extends RObjectPainter {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
-            let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+            let maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                 ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                 ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
