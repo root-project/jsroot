@@ -1970,7 +1970,7 @@ class TPadPainter extends ObjectPainter {
                menu.add('separator');
                let shown = [];
                this.painters.forEach((pp,indx) => {
-                  let obj = pp ? pp.getObject() : null;
+                  let obj = pp?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
                   if (pp.$secondary) return;
                   let name = ('_typename' in obj) ? (obj._typename + '::') : '';

@@ -1061,7 +1061,7 @@ class THistPainter extends ObjectPainter {
                      }
                   // or just in generic list of painted objects
                   if (!funcpainter && func.fName)
-                     funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
+                     funcpainter = pp?.findPainterFor(null, func.fName, func._typename);
 
                   if (funcpainter) {
                      funcpainter.updateObject(func);

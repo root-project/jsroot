@@ -718,8 +718,7 @@ class ObjectPainter extends BasePainter {
      * @return {Promise} when pad redraw completed
      * @protected */
    async redrawPad(reason) {
-      let pp = this.getPadPainter();
-      return pp ? pp.redrawPad(reason) : false;
+      return this.getPadPainter()?.redrawPad(reason) ?? false;
    }
 
    /** @summary execute selected menu command, either locally or remotely
@@ -1538,13 +1537,11 @@ let $active_pp = null;
   * @private */
 function selectActivePad(args) {
    if (args.active) {
-      let fp = $active_pp ? $active_pp.getFramePainter() : null;
-      if (fp) fp.setFrameActive(false);
+      $active_pp?.getFramePainter()?.setFrameActive(false);
 
       $active_pp = args.pp;
 
-      fp = $active_pp ? $active_pp.getFramePainter() : null;
-      if (fp) fp.setFrameActive(true);
+      $active_pp?.getFramePainter()?.setFrameActive(true);
    } else if ($active_pp === args.pp) {
       $active_pp = null;
    }

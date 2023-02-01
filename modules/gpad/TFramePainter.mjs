@@ -274,8 +274,7 @@ const TooltipHandler = {
    /** @desc only canvas info_layer can be used while other pads can overlay
      * @return layer where frame tooltips are shown */
    hints_layer() {
-      let pp = this.getCanvPainter();
-      return pp ? pp.getLayerSvg('info_layer') : d3_select(null);
+      return this.getCanvPainter()?.getLayerSvg('info_layer') ?? d3_select(null);
    },
 
    /** @return true if tooltip is shown, use to prevent some other action */
