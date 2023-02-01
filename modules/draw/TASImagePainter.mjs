@@ -140,7 +140,7 @@ class TASImagePainter extends ObjectPainter {
    async drawImage() {
       let obj = this.getObject(),
           fp = this.getFramePainter(),
-          rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
+          rect = fp?.getFrameRect() ?? this.getPadPainter().getPadRect();
 
       this.wheel_zoomy = true;
 

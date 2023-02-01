@@ -223,7 +223,7 @@ let Handling3DDrawings = {
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
          let main = this.selectDom().node(),
-             chld = main ? main.firstChild : null;
+             chld = main?.firstChild;
 
          if (chld && !chld.$jsroot)
             chld = chld.nextSibling;

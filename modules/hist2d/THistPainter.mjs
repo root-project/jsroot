@@ -1627,13 +1627,13 @@ class THistPainter extends ObjectPainter {
       let ismain = this.isMainPainter(),
           second_axis = (this.options.AxisPos > 0),
           fp = (ismain || second_axis) ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity(!ismain && second_axis) : false;
+      return fp?.addInteractivity(!ismain && second_axis) ?? false;
    }
 
    /** @summary Invoke dialog to enter and modify user range */
    changeUserRange(menu, arg) {
       let histo = this.getHisto(),
-          taxis = histo ? histo['f'+arg+'axis'] : null;
+          taxis = histo ? histo[`f${arg}axis`] : null;
       if (!taxis) return;
 
       let curr = `[1,${taxis.fNbins}]`;

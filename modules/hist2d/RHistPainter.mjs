@@ -407,7 +407,7 @@ class RHistPainter extends RObjectPainter {
       let ismain = this.isMainPainter(),
           second_axis = this.options.second_x || this.options.second_y,
           fp = ismain || second_axis ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity(!ismain && second_axis) : true;
+      return fp?.addInteractivity(!ismain && second_axis) ?? true;
    }
 
    /** @summary Process item reply */
@@ -474,8 +474,8 @@ class RHistPainter extends RObjectPainter {
       if (this.options.second_y && axis == 'y') axis = 'y2';
 
       let main = this.getFramePainter(),
-          min = main ? main['zoom_' + axis + 'min'] : 0,
-          max = main ? main['zoom_' + axis + 'max'] : 0;
+          min = main ? main[`zoom_${axis}min`] : 0,
+          max = main ? main[`zoom_${axis}max`] : 0;
 
       if ((min !== max) && taxis) {
          if (size == 'left')
