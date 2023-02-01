@@ -1317,8 +1317,7 @@ class THistPainter extends ObjectPainter {
    processTitleChange(arg) {
 
       let histo = this.getHisto(),
-          pp = this.getPadPainter(),
-          tpainter = pp?.findPainterFor(null, 'title');
+          tpainter = this.getPadPainter()?.findPainterFor(null, 'title');
 
       if (!histo || !tpainter) return null;
 
@@ -1356,7 +1355,7 @@ class THistPainter extends ObjectPainter {
      * @private */
    toggleStat(arg) {
 
-      let stat = this.findStat(), pp = this.getPadPainter(), statpainter;
+      let stat = this.findStat(), statpainter;
 
       if (!arg) arg = '';
 
@@ -1365,7 +1364,7 @@ class THistPainter extends ObjectPainter {
          // when statbox created first time, one need to draw it
          stat = this.createStat(true);
       } else {
-         statpainter = pp?.findPainterFor(stat);
+         statpainter = this.getPadPainter()?.findPainterFor(stat);
       }
 
       if (arg == 'only-check')

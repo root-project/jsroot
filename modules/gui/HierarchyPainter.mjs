@@ -1939,12 +1939,12 @@ class HierarchyPainter extends BasePainter {
 
             if (!updating) showProgress('Drawing ' + display_itemname);
 
-            let handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
+            let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || '';
-               handle = obj._typename ? getDrawHandle('ROOT.' + obj._typename) : null;
+               handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
             }
 
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))

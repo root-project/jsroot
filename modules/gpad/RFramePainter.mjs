@@ -421,9 +421,9 @@ class RFramePainter extends RObjectPainter {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          pp = this.getPadPainter(), pr;
+          pr;
 
-      if (pp?._fast_drawing) {
+      if (this.getPadPainter()?._fast_drawing) {
          pr = Promise.resolve(true); // do nothing
       } else if (this.v6axes) {
 

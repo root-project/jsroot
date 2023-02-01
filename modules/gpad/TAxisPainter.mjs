@@ -1014,8 +1014,7 @@ class TAxisPainter extends ObjectPainter {
    extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
           is_gaxis = axis?._typename === clTGaxis,
-          pp = this.getPadPainter(),
-          frect = pp?.getFrameRect(),
+          frect = this.getPadPainter()?.getFrameRect(),
           pad_w = Math.round((frect?.width || 8)/0.8), // use factor 0.8 as ratio between frame and pad size, frame size is visible and more obvios
           pad_h = Math.round((frect?.height || 8)/0.8),
           tickSize = 0, tickScalingSize = 0, titleColor;

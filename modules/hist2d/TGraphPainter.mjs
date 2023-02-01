@@ -189,8 +189,7 @@ class TGraphPainter extends ObjectPainter {
          // check if axis should be drawn
          // either graph drawn directly or
          // graph is first object in list of primitives
-         let pp = this.getPadPainter(),
-             pad = pp?.getRootPad(true);
+         let pad = this.getPadPainter()?.getRootPad(true);
          if (!pad || (pad?.fPrimitives?.arr[0] === graph)) res.Axis = 'AXIS';
       } else if (res.Axis.indexOf('A') < 0) {
          res.Axis = 'AXIS,' + res.Axis;
@@ -1481,15 +1480,14 @@ class TGraphPainter extends ObjectPainter {
       if (indx >= (graph?.fFunctions?.arr?.length || 0))
          return this;
 
-      let pp = this.getPadPainter(),
-          func = graph.fFunctions.arr[indx],
+      let func = graph.fFunctions.arr[indx],
           opt = graph.fFunctions.opt[indx];
 
       //  required for stats filling
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      return pp.drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
+      return this.getPadPainter().drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
    /** @summary Draw axis histogram

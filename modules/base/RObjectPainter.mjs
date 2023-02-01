@@ -152,8 +152,7 @@ class RObjectPainter extends ObjectPainter {
          let ordinal = parseFloat(val.slice(1, val.length-1));
          val = 'black';
          if (Number.isFinite(ordinal)) {
-             let pp = this.getPadPainter(),
-                 pal = pp?.getHistPalette();
+             let pal = this.getPadPainter()?.getHistPalette();
              if (pal) val = pal.getColorOrdinal(ordinal);
          }
       }
@@ -223,10 +222,8 @@ class RObjectPainter extends ObjectPainter {
           size = this.v7EvalAttr(prefix + 'size', 0.01),
           style = this.v7EvalAttr(prefix + 'style', 1),
           refsize = 1;
-      if (size < 1) {
-         let pp = this.getPadPainter();
-         refsize = pp?.getPadHeight() || 100;
-      }
+      if (size < 1)
+         refsize = this.getPadPainter()?.getPadHeight() || 100;
 
       this.createAttMarker({ color, size, style, refsize });
    }
