@@ -1551,7 +1551,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    // for contour plots one requires handle with full range
    let main = painter.getFramePainter(),
-       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0}),
        histo = painter.getHisto(), // get levels
        levels = painter.getContourLevels(), // init contour if not exists
        palette = painter.getHistPalette(),
@@ -1584,7 +1584,7 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
 function drawBinsSurf3D(painter, is_v7 = false) {
    let histo = painter.getHisto(),
        main = painter.getFramePainter(),
-       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5}),
        i,j, x1, y1, x2, y2, z11, z12, z21, z22,
        axis_zmin = main.z_handle.getScaleMin();
        // axis_zmax = main.z_handle.getScaleMax();

@@ -256,15 +256,15 @@ class TASImagePainter extends ObjectPainter {
          return null;
       }
 
-      let frame_painter = this.getFramePainter();
+      let fp = this.getFramePainter();
 
       // keep palette width
-      if (can_move && frame_painter) {
+      if (can_move && fp) {
          let pal = this.draw_palette;
-         pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
-         pal.fX1NDC = frame_painter.fX2NDC + 0.01;
-         pal.fY1NDC = frame_painter.fY1NDC;
-         pal.fY2NDC = frame_painter.fY2NDC;
+         pal.fX2NDC = fp.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
+         pal.fX1NDC = fp.fX2NDC + 0.01;
+         pal.fY1NDC = fp.fY1NDC;
+         pal.fY2NDC = fp.fY2NDC;
       }
 
       if (pal_painter) {

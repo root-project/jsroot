@@ -413,7 +413,7 @@ class TGraphPainter extends ObjectPainter {
    get_main() {
       let pmain = this.getFramePainter();
 
-      if (pmain && pmain.grx && pmain.gry) return pmain;
+      if (pmain?.grx && pmain?.gry) return pmain;
 
       // FIXME: check if needed, can be removed easily
       let pp = this.getPadPainter(),

@@ -473,10 +473,8 @@ class ObjectPainter extends BasePainter {
    svgToAxis(axis, coord, ndc) {
       let use_frame = this.draw_g?.property('in_frame');
 
-      if (use_frame) {
-         let main = this.getFramePainter();
-         return main?.revertAxis(axis, coord) ?? 0;
-      }
+      if (use_frame)
+         return this.getFramePainter()?.revertAxis(axis, coord) ?? 0;
 
       let pp = this.getPadPainter(),
           value = !pp ? 0 : ((axis == 'y') ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth()),
@@ -1538,9 +1536,7 @@ let $active_pp = null;
 function selectActivePad(args) {
    if (args.active) {
       $active_pp?.getFramePainter()?.setFrameActive(false);
-
       $active_pp = args.pp;
-
       $active_pp?.getFramePainter()?.setFrameActive(true);
    } else if ($active_pp === args.pp) {
       $active_pp = null;

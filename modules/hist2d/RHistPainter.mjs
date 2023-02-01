@@ -358,7 +358,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Get tip text for axis bin */
    getAxisBinTip(name, bin, step) {
       let pmain = this.getFramePainter(),
-          handle = pmain[name+'_handle'],
+          handle = pmain[`${name}_handle`],
           axis = this.getAxis(name),
           x1 = axis.GetBinCoord(bin);
 
@@ -370,7 +370,7 @@ class RHistPainter extends RObjectPainter {
       if (handle.kind === 'time')
          return pmain.axisAsText(name, (x1+x2)/2);
 
-      return '[' + pmain.axisAsText(name, x1) + ', ' + pmain.axisAsText(name, x2) + ')';
+      return `[${pmain.axisAsText(name, x1)}, ${pmain.axisAsText(name, x2)})`;
    }
 
    /** @summary Extract axes ranges and bins numbers
@@ -603,7 +603,7 @@ class RHistPainter extends RObjectPainter {
       let pmain = this.getFramePainter();
       if (!pmain) return;
       let prefix = pmain.isAxisZoomed(arg) ? 'zoom_' + arg : arg,
-          curr = '[' + pmain[prefix+'min'] + ',' + pmain[prefix+'max'] + ']';
+          curr = '[' + pmain[`${prefix}min`] + ',' + pmain[`${prefix}max`] + ']';
       menu.input('Enter values range for axis ' + arg + ' like [0,100] or empty string to unzoom', curr).then(res => {
          res = res ? JSON.parse(res) : [];
          if (!isObject(res) || (res.length != 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))

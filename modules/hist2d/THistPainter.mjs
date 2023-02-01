@@ -1552,7 +1552,7 @@ class THistPainter extends ObjectPainter {
      * @desc be aware - here indexes starts from 0 */
    getSelectIndex(axis, side, add) {
       let indx = 0,
-          nbin = this['nbins'+axis] || 0,
+          nbin = this[`nbins${axis}`] ?? 0,
           taxis = this.getAxis(axis);
 
       if (this.options.second_x && axis == 'x') axis = 'x2';
@@ -2295,7 +2295,7 @@ class THistPainter extends ObjectPainter {
    getAxisBinTip(name, axis, bin) {
       let pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          handle = funcs[name+'_handle'],
+          handle = funcs[`${name}_handle`],
           x1 = axis.GetBinLowEdge(bin+1);
 
       if (handle.kind === 'labels')

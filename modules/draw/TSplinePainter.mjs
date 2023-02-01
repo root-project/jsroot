@@ -111,8 +111,7 @@ class TSplinePainter extends ObjectPainter {
 
       let cleanup = false,
           spline = this.getObject(),
-          main = this.getFramePainter(),
-          funcs = main?.getGrFuncs(this.options.second_x, this.options.second_y),
+          funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y),
           xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !funcs) {
@@ -190,7 +189,7 @@ class TSplinePainter extends ObjectPainter {
 
       let spline = this.getObject(),
           pmain = this.getFramePainter(),
-          funcs = pmain?.getGrFuncs(this.options.second_x, this.options.second_y),
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
 
@@ -272,11 +271,8 @@ class TSplinePainter extends ObjectPainter {
    canZoomInside(axis/*,min,max*/) {
       if (axis !== 'x') return false;
 
-      let spline = this.getObject();
-      if (!spline) return false;
-
-      // if function calculated, one always could zoom inside
-      return true;
+      // spline can always be calculated and therefore one can zoom inside
+      return this.getObject() ? true : false;
    }
 
    /** @summary Decode options for TSpline drawing */

@@ -67,8 +67,7 @@ class RH3Painter extends RHistPainter {
           j2 = this.getSelectIndex('y', 'right'),
           k1 = this.getSelectIndex('z', 'left'),
           k2 = this.getSelectIndex('z', 'right'),
-          fp = this.getFramePainter(),
-          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+          res = {name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0},
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
 
       for (xi = 1; xi <= this.nbinsx; ++xi) {
