@@ -149,7 +149,7 @@ class ObjectPainter extends BasePainter {
                if (this.options[k] !== this.options_store[k])
                   changed = true;
          }
-         if (changed)
+         if (changed && isFunc(this.options.asString))
             return this.options.asString(this.isMainPainter(), pp?.getRootPad());
       }
 
