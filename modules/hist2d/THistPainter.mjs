@@ -296,12 +296,16 @@ class THistDrawOptions {
       if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
       if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
-      let lx = false, ly = false, check3dbox = '', check3d = (hdim == 3);
-      if (d.check('LOGXY')) lx = ly = true;
-      if (d.check('LOGX')) lx = true;
-      if (d.check('LOGY')) ly = true;
-      if (lx && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
-      if (ly && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
+      let lx = 0, ly = 0, check3dbox = '', check3d = (hdim == 3);
+      if (d.check('LOG2XY')) lx = ly = 2;
+      if (d.check('LOGXY')) lx = ly = 1;
+      if (d.check('LOG2X')) lx = 2;
+      if (d.check('LOGX')) lx = 1;
+      if (d.check('LOG2Y')) ly = 2;
+      if (d.check('LOGY')) ly = 1;
+      if (lx && pad) { pad.fLogx = lx; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+      if (ly && pad) { pad.fLogy = ly; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
+      if (d.check('LOG2Z') && pad) pad.fLogz = 2;
       if (d.check('LOGZ') && pad) pad.fLogz = 1;
       if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
       if (d.check('GRIDX') && pad) pad.fGridx = 1;
@@ -606,9 +610,18 @@ class THistDrawOptions {
       }
 
       if (is_main_hist && pad && res) {
-         if (pad.fLogx) res += '_LOGX';
-         if (pad.fLogy) res += '_LOGY';
-         if (pad.fLogz) res += '_LOGZ';
+         if (pad.fLogx == 2)
+            res += '_LOG2X';
+         else if (pad.fLogx)
+            res += '_LOGX';
+         if (pad.fLogy == 2)
+            res += '_LOG2Y';
+         else if (pad.fLogy)
+            res += '_LOGY';
+         if (pad.fLogz == 2)
+            res += '_LOG2Z';
+         else if (pad.fLogz)
+            res += '_LOGZ';
          if (pad.fGridx) res += '_GRIDX';
          if (pad.fGridy) res += '_GRIDY';
          if (pad.fTickx) res += '_TICKX';
