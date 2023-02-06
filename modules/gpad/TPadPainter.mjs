@@ -444,7 +444,7 @@ class TPadPainter extends ObjectPainter {
 
          if (!isBatchMode())
             frect.style('pointer-events', 'visibleFill')
-                 .on('dblclick', evnt => this.enlargePad(evnt))
+                 .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter())
                  .on('mouseenter', () => this.showObjectStatus())
                  .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
@@ -559,7 +559,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Enlarge pad draw element when possible */
-   enlargePad(evnt) {
+   enlargePad(evnt, is_dblclick) {
 
       if (evnt) {
          evnt.preventDefault();
@@ -568,6 +568,10 @@ class TPadPainter extends ObjectPainter {
 
       let svg_can = this.getCanvSvg(),
           pad_enlarged = svg_can.property('pad_enlarged');
+
+      // ignore double click on canvas itself for enlarge
+      if (is_dblclick && this._websocket && (this.enlargeMain('state') == 'off'))
+         return;
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
@@ -634,7 +638,7 @@ class TPadPainter extends ObjectPainter {
 
          if (!isBatchMode())
             svg_rect.style('pointer-events', 'visibleFill') // get events also for not visible rect
-                    .on('dblclick', evnt => this.enlargePad(evnt))
+                    .on('dblclick', evnt => this.enlargePad(evnt, true))
                     .on('click', () => this.selectObjectPainter())
                     .on('mouseenter', () => this.showObjectStatus())
                     .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
