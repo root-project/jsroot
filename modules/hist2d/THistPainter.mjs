@@ -2244,7 +2244,7 @@ class THistPainter extends ObjectPainter {
 
       let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
 
-       // calculate graphical coordinates in advance
+      // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = xaxis.GetBinCoord(i + args.middle);
          if (funcs.logx && (x <= 0)) { res.i1 = i+1; continue; }
@@ -2253,8 +2253,16 @@ class THistPainter extends ObjectPainter {
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
 
          if (args.use3d) {
-            if (res.grx[i] < -pmain.size_x3d) { res.i1 = i; res.grx[i] = -pmain.size_x3d; }
-            if (res.grx[i] > pmain.size_x3d) { res.i2 = i; res.grx[i] = pmain.size_x3d; }
+            if (res.grx[i] < -pmain.size_x3d) {
+               res.grx[i] = -pmain.size_x3d;
+               if (this.options.RevX) res.i2 = i;
+                                 else res.i1 = i;
+            }
+            if (res.grx[i] > pmain.size_x3d) {
+               res.grx[i] = pmain.size_x3d;
+               if (this.options.RevX) res.i1 = i;
+                                 else res.i2 = i;
+            }
          }
       }
 
@@ -2270,8 +2278,16 @@ class THistPainter extends ObjectPainter {
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
          if (args.use3d) {
-            if (res.gry[j] < -pmain.size_y3d) { res.j1 = j; res.gry[j] = -pmain.size_y3d; }
-            if (res.gry[j] > pmain.size_y3d) { res.j2 = j; res.gry[j] = pmain.size_y3d; }
+            if (res.gry[j] < -pmain.size_y3d) {
+               res.gry[j] = -pmain.size_y3d;
+               if (this.options.RevY) res.j2 = j;
+                                 else res.j1 = j;
+            }
+            if (res.gry[j] > pmain.size_y3d) {
+               res.gry[j] = pmain.size_y3d;
+               if (this.options.RevY) res.j1 = j;
+                                 else res.j2 = j;
+            }
          }
       }
 

@@ -239,7 +239,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
          frame_painter.highlightBin3D(tip, mesh);
 
-         if (!tip && zoom_mesh && frame_painter.get3dZoomCoord) {
+         if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
             let pnt = zoom_mesh.globalIntersect(this.raycaster),
                 axis_name = zoom_mesh.zoom,
                 axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
