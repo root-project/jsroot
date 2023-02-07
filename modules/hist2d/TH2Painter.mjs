@@ -1140,7 +1140,7 @@ class TH2Painter extends THistPainter {
                      .append('svg:path')
                      .style('fill', colindx ? this.fPalette.getColor(colindx) : 'none')
                      .attr('d', colPaths[colindx]);
-            if (this.options.Line)
+            if (this.options.Line || this.options.Text)
                item.call(this.lineatt.func);
          }
 
