@@ -1432,7 +1432,7 @@ class TGraphPainter extends ObjectPainter {
       const st = gStyle;
 
       stats = create(clTPaveStats);
-      Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
+      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
