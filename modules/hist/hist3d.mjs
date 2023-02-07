@@ -219,10 +219,10 @@ function create3DScene(render3d, x3dscale, y3dscale) {
          let tip = null, mesh = null, zoom_mesh = null;
 
          for (let i = 0; i < intersects.length; ++i) {
-            if (intersects[i].object.tooltip) {
+            if (isFunc(intersects[i].object?.tooltip)) {
                tip = intersects[i].object.tooltip(intersects[i]);
                if (tip) { mesh = intersects[i].object; break; }
-            } else if (intersects[i].object.zoom && !zoom_mesh) {
+            } else if (intersects[i].object?.zoom && !zoom_mesh) {
                zoom_mesh = intersects[i].object;
             }
          }
@@ -1305,7 +1305,7 @@ function drawBinsLego(painter, is_v7 = false) {
                histo = p.getHisto(),
                tip = p.get3DToolTip(this.face_to_bins_index[intersect.faceIndex]);
 
-         tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
+         tip.x1 = Math.max(-main.size_x3d, handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
          tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
 
          tip.y1 = Math.max(-main.size_y3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
@@ -1313,14 +1313,14 @@ function drawBinsLego(painter, is_v7 = false) {
 
          let binz1 = this.baseline, binz2 = tip.value;
          if (histo.$baseh) binz1 = histo.$baseh.getBinContent(tip.ix, tip.iy);
-         if (binz2<binz1) { let v = binz1; binz1 = binz2; binz2 = v; }
+         if (binz2 < binz1) [binz1, binz2] = [binz2, binz1];
 
-         tip.z1 = main.grz(Math.max(this.zmin,binz1));
-         tip.z2 = main.grz(Math.min(this.zmax,binz2));
+         tip.z1 = main.grz(Math.max(this.zmin, binz1));
+         tip.z2 = main.grz(Math.min(this.zmax, binz2));
 
          tip.color = this.tip_color;
 
-         if (p.is_projection && (p.getDimension()==2)) tip.$painter = p; // used only for projections
+         if (p.is_projection && (p.getDimension() == 2)) tip.$painter = p; // used only for projections
 
          return tip;
       };
