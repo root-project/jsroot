@@ -259,15 +259,17 @@ class TPavePainter extends ObjectPainter {
    /** @summary draw TPaveStats object */
    drawPaveStats(width, height) {
 
-      let pt = this.getObject(), lines = [],
-          color = this.getColor(pt.fTextColor),
+      let pt = this.getObject(), lines = [], colors = [],
+          color0 = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
-      // now draw TLine and TBox objects
+      // extract only text
       for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
-         if ((entry._typename == clTText) || (entry._typename == clTLatex))
+         if ((entry._typename == clTText) || (entry._typename == clTLatex)) {
             lines.push(entry.fTitle);
+            colors.push(entry.fTextColor);
+          }
       }
 
       let nlines = lines.length;
@@ -291,11 +293,11 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color, latex: 1 });
+         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: color0, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
-         let y = j*stepy;
-         this.UseTextColor = true;
+         let y = j*stepy,
+             color = (colors[j] > 1) ? this.getColor(colors[j]) : color0;
 
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split('|');
