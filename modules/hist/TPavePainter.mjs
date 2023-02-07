@@ -661,7 +661,12 @@ class TPavePainter extends ObjectPainter {
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
-         if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
+         if (framep.z_handle && framep.mode3d) {
+            gzmin = framep.z_handle.full_min;
+            gzmax = framep.z_handle.full_max;
+            zmin = framep.z_handle.scale_min;
+            zmax = framep.z_handle.scale_max;
+         } else if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
             gzmin = framep.zmin;
             gzmax = framep.zmax;
             zmin = framep.zoom_zmin;
