@@ -77608,14 +77608,18 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      let cntr = this.getContour(true), palette = this.getHistPalette();
+      let cntr = this.getContour(true), palette = this.getHistPalette(),
+          draw_lines = this.options.Line || this.options.Text;
 
       for (i = 0; i < len; ++i) {
          bin = histo.fBins.arr[i];
          colindx = cntr.getPaletteIndex(palette, bin.fContent);
-         if (colindx === null) continue;
+         if (colindx === null) {
+            if (!draw_lines) continue;
+            colindx = 0;
+         }
          if (bin.fContent === 0) {
-            if (!this.options.Zero || !this.options.Line) continue;
+            if (!this.options.Zero && !draw_lines) continue;
             colindx = 0; // make dummy fill color to draw only line
          }
 
@@ -77630,7 +77634,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          else
             colPaths[colindx] += cmd;
 
-         if (this.options.Text && bin.fContent) textbins.push(bin);
+         if (this.options.Text && bin.fContent)
+            textbins.push(bin);
       }
 
       for (colindx = 0; colindx < colPaths.length; ++colindx)
@@ -77639,7 +77644,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                      .append('svg:path')
                      .style('fill', colindx ? this.fPalette.getColor(colindx) : 'none')
                      .attr('d', colPaths[colindx]);
-            if (this.options.Line)
+            if (draw_lines)
                item.call(this.lineatt.func);
          }
 
