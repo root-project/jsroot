@@ -516,7 +516,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
-                               { log: pad?.fLogx ?? 0 });
+                               { log: pad?.fLogx ?? 0, reverse: opts.reverse_x });
    this.x_handle.assignFrameMembers(this, 'x');
    this.x_handle.extractDrawAttributes(scalingSize);
 
@@ -526,7 +526,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.y_handle.snapid = this.snapid;
    }
    this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
-                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
+                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0, reverse: opts.reverse_y });
    this.y_handle.assignFrameMembers(this, 'y');
    this.y_handle.extractDrawAttributes(scalingSize);
 
@@ -536,7 +536,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.z_handle.snapid = this.snapid;
    }
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { log: pad?.fLogz ?? 0 });
+                               { log: pad?.fLogz ?? 0, reverse: opts.reverse_z });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
@@ -590,6 +590,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
+
+
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
@@ -599,8 +601,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let space = 0;
          if (!xticks.last_major()) {
-            space = (xticks.next_major_grpos() - grx);
-            if (draw_width > 0)
+            space = Math.abs(xticks.next_major_grpos() - grx);
+            if ((draw_width > 0) && (space > 0))
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
 
@@ -746,6 +748,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
           m = new Matrix4();
+
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
             0,          text_scale,  0,  -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
@@ -771,6 +774,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
           m = new Matrix4();
+
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
             0,           text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
@@ -813,7 +817,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let space = 0;
          if (!yticks.last_major()) {
-            space = (yticks.next_major_grpos() - gry);
+            space = Math.abs(yticks.next_major_grpos() - gry);
             if (draw_width > 0)
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
