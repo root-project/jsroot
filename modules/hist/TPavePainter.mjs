@@ -1192,7 +1192,7 @@ class TPavePainter extends ObjectPainter {
             painter.UseContextMenu = true;
          }
 
-         painter.NoFillStats = (opt == 'nofillstats');
+         painter.NoFillStats = (opt == 'nofillstats') || (pave.fName != 'stats');
 
          switch (pave._typename) {
             case clTPaveLabel:
