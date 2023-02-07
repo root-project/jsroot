@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '6/02/2023';
+let version_date = '7/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -59785,7 +59785,7 @@ class TAxisPainter extends ObjectPainter {
 
             if (center_lbls) {
                let gap = arg.gap_after || arg.gap_before;
-               pos = Math.round(pos - (this.vertical ? 0.5*gap : -0.5*gap));
+               pos = Math.round(pos - ((this.vertical != this.reverse) ? 0.5*gap : -0.5*gap));
                if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
             }
 
