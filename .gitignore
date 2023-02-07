@@ -12,7 +12,11 @@ demo/node/*.svg
 node_modules/
 libs/three/node_modules/
 libs/d3/node_modules/
-build
+build/jsroot.min.js
+build/hist2d.js
+build/hist2d.min.js
+build/hist.js
+build/hist.min.js
 openui5dist
 package-lock.json
 httpcontrol.C
