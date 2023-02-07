@@ -481,6 +481,8 @@ class TH2Painter extends THistPainter {
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
 
+      if (dostat == 1) dostat = 1111;
+
       let data = this.countStat(),
           print_name = Math.floor(dostat % 10),
           print_entries = Math.floor(dostat / 10) % 10,

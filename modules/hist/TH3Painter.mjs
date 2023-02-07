@@ -125,6 +125,8 @@ class TH3Painter extends THistPainter {
       if (this.isIgnoreStatsFill())
          return false;
 
+      if (dostat == 1) dostat = 1111;
+
       let data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,

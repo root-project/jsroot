@@ -226,6 +226,8 @@ class TH1Painter extends THistPainter {
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
 
+      if (dostat == 1) dostat = 1111;
+
       let histo = this.getHisto(),
           data = this.countStat(),
           print_name = dostat % 10,
