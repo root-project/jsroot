@@ -57066,10 +57066,10 @@ function create3DScene(render3d, x3dscale, y3dscale) {
          let tip = null, mesh = null, zoom_mesh = null;
 
          for (let i = 0; i < intersects.length; ++i) {
-            if (intersects[i].object.tooltip) {
+            if (isFunc(intersects[i].object?.tooltip)) {
                tip = intersects[i].object.tooltip(intersects[i]);
                if (tip) { mesh = intersects[i].object; break; }
-            } else if (intersects[i].object.zoom && !zoom_mesh) {
+            } else if (intersects[i].object?.zoom && !zoom_mesh) {
                zoom_mesh = intersects[i].object;
             }
          }
@@ -57086,7 +57086,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
          frame_painter.highlightBin3D(tip, mesh);
 
-         if (!tip && zoom_mesh && frame_painter.get3dZoomCoord) {
+         if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
             let pnt = zoom_mesh.globalIntersect(this.raycaster),
                 axis_name = zoom_mesh.zoom,
                 axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
@@ -57363,7 +57363,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
-                               { log: pad?.fLogx ?? 0 });
+                               { log: pad?.fLogx ?? 0, reverse: opts.reverse_x });
    this.x_handle.assignFrameMembers(this, 'x');
    this.x_handle.extractDrawAttributes(scalingSize);
 
@@ -57373,7 +57373,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.y_handle.snapid = this.snapid;
    }
    this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
-                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
+                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0, reverse: opts.reverse_y });
    this.y_handle.assignFrameMembers(this, 'y');
    this.y_handle.extractDrawAttributes(scalingSize);
 
@@ -57383,7 +57383,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.z_handle.snapid = this.snapid;
    }
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { log: pad?.fLogz ?? 0 });
+                               { log: pad?.fLogz ?? 0, reverse: opts.reverse_z });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
@@ -57437,6 +57437,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
+
+
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
@@ -57446,8 +57448,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let space = 0;
          if (!xticks.last_major()) {
-            space = (xticks.next_major_grpos() - grx);
-            if (draw_width > 0)
+            space = Math.abs(xticks.next_major_grpos() - grx);
+            if ((draw_width > 0) && (space > 0))
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
 
@@ -57593,6 +57595,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
           m = new Matrix4();
+
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0,           0,  posx,
             0,          text_scale,  0,  -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
@@ -57618,6 +57621,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
           m = new Matrix4();
+
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
             0,           text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
@@ -57660,7 +57664,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let space = 0;
          if (!yticks.last_major()) {
-            space = (yticks.next_major_grpos() - gry);
+            space = Math.abs(yticks.next_major_grpos() - gry);
             if (draw_width > 0)
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
@@ -58146,24 +58150,27 @@ function drawBinsLego(painter, is_v7 = false) {
                handle = this.handle,
                main = p.getFramePainter(),
                histo = p.getHisto(),
-               tip = p.get3DToolTip(this.face_to_bins_index[intersect.faceIndex]);
+               tip = p.get3DToolTip(this.face_to_bins_index[intersect.faceIndex]),
+               x1 = Math.min(main.size_x3d, Math.max(-main.size_x3d, handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix] - handle.grx[tip.ix-1]))),
+               x2 = Math.min(main.size_x3d, Math.max(-main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix] - handle.grx[tip.ix-1]))),
+               y1 = Math.min(main.size_y3d, Math.max(-main.size_y3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]))),
+               y2 = Math.min(main.size_y3d, Math.max(-main.size_y3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1])));
 
-         tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
-         tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix] - handle.grx[tip.ix-1]));
-
-         tip.y1 = Math.max(-main.size_y3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
-         tip.y2 = Math.min(main.size_y3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
+         tip.x1 = Math.min(x1, x2);
+         tip.x2 = Math.max(x1, x2);
+         tip.y1 = Math.min(y1, y2);
+         tip.y2 = Math.max(y1, y2);
 
          let binz1 = this.baseline, binz2 = tip.value;
          if (histo.$baseh) binz1 = histo.$baseh.getBinContent(tip.ix, tip.iy);
-         if (binz2<binz1) { let v = binz1; binz1 = binz2; binz2 = v; }
+         if (binz2 < binz1) [binz1, binz2] = [binz2, binz1];
 
-         tip.z1 = main.grz(Math.max(this.zmin,binz1));
-         tip.z2 = main.grz(Math.min(this.zmax,binz2));
+         tip.z1 = main.grz(Math.max(this.zmin, binz1));
+         tip.z2 = main.grz(Math.min(this.zmax, binz2));
 
          tip.color = this.tip_color;
 
-         if (p.is_projection && (p.getDimension()==2)) tip.$painter = p; // used only for projections
+         if (p.is_projection && (p.getDimension() == 2)) tip.$painter = p; // used only for projections
 
          return tip;
       };
@@ -58375,12 +58382,16 @@ function drawBinsError3D(painter, is_v7 = false) {
        let p = this.painter,
            histo = p.getHisto(),
            main = p.getFramePainter(),
-           tip = p.get3DToolTip(this.intersect_index[pos]);
+           tip = p.get3DToolTip(this.intersect_index[pos]),
+           x1 = Math.min(main.size_x3d, Math.max(-main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)))),
+           x2 = Math.min(main.size_x3d, Math.max(-main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)))),
+           y1 = Math.min(main.size_y3d, Math.max(-main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)))),
+           y2 = Math.min(main.size_y3d, Math.max(-main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1))));
 
-       tip.x1 = Math.max(-main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
-       tip.x2 = Math.min(main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
-       tip.y1 = Math.max(-main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
-       tip.y2 = Math.min(main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
+       tip.x1 = Math.min(x1, x2);
+       tip.x2 = Math.max(x1, x2);
+       tip.y1 = Math.min(y1, y2);
+       tip.y2 = Math.max(y1, y2);
 
        tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
        tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
@@ -62901,7 +62912,8 @@ class JSRootMenu {
       }
 
       if (!without_sub) this.add('sub:' + top_name, () => {
-         this.input('Provide draw option', opts[0], 'text').then(call_back);
+         let opt = isFunc(this.painter?.getDrawOpt) ? this.painter.getDrawOpt() : opts[0];
+         this.input('Provide draw option', opt, 'text').then(call_back);
       });
 
       for (let i = 0; i < opts.length; ++i) {
@@ -71837,15 +71849,17 @@ class TPavePainter extends ObjectPainter {
    /** @summary draw TPaveStats object */
    drawPaveStats(width, height) {
 
-      let pt = this.getObject(), lines = [],
-          color = this.getColor(pt.fTextColor),
+      let pt = this.getObject(), lines = [], colors = [],
+          color0 = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
-      // now draw TLine and TBox objects
+      // extract only text
       for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
-         if ((entry._typename == clTText) || (entry._typename == clTLatex))
+         if ((entry._typename == clTText) || (entry._typename == clTLatex)) {
             lines.push(entry.fTitle);
+            colors.push(entry.fTextColor);
+          }
       }
 
       let nlines = lines.length;
@@ -71869,11 +71883,11 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color, latex: 1 });
+         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: color0, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
-         let y = j*stepy;
-         this.UseTextColor = true;
+         let y = j*stepy,
+             color = (colors[j] > 1) ? this.getColor(colors[j]) : color0;
 
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split('|');
@@ -72770,7 +72784,7 @@ class TPavePainter extends ObjectPainter {
             painter.UseContextMenu = true;
          }
 
-         painter.NoFillStats = (opt == 'nofillstats');
+         painter.NoFillStats = (opt == 'nofillstats') || (pave.fName != 'stats');
 
          switch (pave._typename) {
             case clTPaveLabel:
@@ -74357,7 +74371,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Check if such function should be drawn directly */
    needDrawFunc(histo, func) {
       if (func._typename === clTPaveStats)
-          return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
+          return (func.fName !== 'stats') || (!histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat);
 
        if (func._typename === clTF1)
           return !func.TestBit(BIT(9));
@@ -75095,7 +75109,7 @@ class THistPainter extends ObjectPainter {
 
       let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
 
-       // calculate graphical coordinates in advance
+      // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = xaxis.GetBinCoord(i + args.middle);
          if (funcs.logx && (x <= 0)) { res.i1 = i+1; continue; }
@@ -75104,8 +75118,16 @@ class THistPainter extends ObjectPainter {
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
 
          if (args.use3d) {
-            if (res.grx[i] < -pmain.size_x3d) { res.i1 = i; res.grx[i] = -pmain.size_x3d; }
-            if (res.grx[i] > pmain.size_x3d) { res.i2 = i; res.grx[i] = pmain.size_x3d; }
+            if (res.grx[i] < -pmain.size_x3d) {
+               res.grx[i] = -pmain.size_x3d;
+               if (this.options.RevX) res.i2 = i;
+                                 else res.i1 = i;
+            }
+            if (res.grx[i] > pmain.size_x3d) {
+               res.grx[i] = pmain.size_x3d;
+               if (this.options.RevX) res.i1 = i;
+                                 else res.i2 = i;
+            }
          }
       }
 
@@ -75121,8 +75143,16 @@ class THistPainter extends ObjectPainter {
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
          if (args.use3d) {
-            if (res.gry[j] < -pmain.size_y3d) { res.j1 = j; res.gry[j] = -pmain.size_y3d; }
-            if (res.gry[j] > pmain.size_y3d) { res.j2 = j; res.gry[j] = pmain.size_y3d; }
+            if (res.gry[j] < -pmain.size_y3d) {
+               res.gry[j] = -pmain.size_y3d;
+               if (this.options.RevY) res.j2 = j;
+                                 else res.j1 = j;
+            }
+            if (res.gry[j] > pmain.size_y3d) {
+               res.gry[j] = pmain.size_y3d;
+               if (this.options.RevY) res.j1 = j;
+                                 else res.j2 = j;
+            }
          }
       }
 
@@ -75436,6 +75466,8 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
+
+      if (dostat == 1) dostat = 1111;
 
       let histo = this.getHisto(),
           data = this.countStat(),
@@ -76031,19 +76063,21 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       if (funcs.swap_xy)
          [pnt_x, pnt_y, width, height] = [pnt_y, pnt_x, height, width];
 
+      let descent_order = funcs.swap_xy != pmain.x_handle.reverse;
+
       while (l < r-1) {
          let m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
          if ((xx === null) || (xx < pnt_x - 0.5)) {
-            if (funcs.swap_xy) r = m; else l = m;
+            if (descent_order) r = m; else l = m;
          } else if (xx > pnt_x + 0.5) {
-            if (funcs.swap_xy) l = m; else r = m;
+            if (descent_order) l = m; else r = m;
          } else { l++; r--; }
       }
 
       findbin = r = l;
       grx1 = GetBinGrX(findbin);
 
-      if (pmain.swap_xy) {
+      if (descent_order) {
          while ((l > left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
          while ((r < right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
       } else {
@@ -76948,6 +76982,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
+
+      if (dostat == 1) dostat = 1111;
 
       let data = this.countStat(),
           print_name = Math.floor(dostat % 10),
@@ -79417,7 +79453,8 @@ class TH2Painter extends TH2Painter$2 {
             pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
                main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
                main.set3DOptions(this.options);
-               main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
+               main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2,
+                  draw: this.options.Axis !== -1, reverse_x: this.options.RevX, reverse_y: this.options.RevY });
             });
          }
 
@@ -79574,6 +79611,8 @@ class TH3Painter extends THistPainter {
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill())
          return false;
+
+      if (dostat == 1) dostat = 1111;
 
       let data = this.countStat(),
           print_name = dostat % 10,
@@ -107047,7 +107086,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       const st = gStyle;
 
       stats = create$1(clTPaveStats);
-      Object.assign(stats, { fName : 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
+      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
@@ -107805,9 +107844,11 @@ class TRatioPlotPainter extends ObjectPainter {
             up_fp._ratio_painter = this;
 
             up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this._ratio_painter.setGridsRange(xmin, xmax);
-               this._ratio_low_fp.o_zoom(xmin,xmax);
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax).then(res => {
+                  this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax);
+                  this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax);
+                  return res;
+               });
             };
 
             up_fp.o_sizeChanged = up_fp.sizeChanged;

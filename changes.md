@@ -6,6 +6,7 @@
 3. Support "[cutg]" draw option for TH2
 4. Correctly handle "same0" draw option for TH2
 5. Fix several issues with axis reverse order
+6. Implement reverse axis on lego plots
 
 
 ## Changes in 7.3.0
