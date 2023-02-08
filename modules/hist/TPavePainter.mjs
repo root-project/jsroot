@@ -364,8 +364,10 @@ class TPavePainter extends ObjectPainter {
           pad_height = pp.getPadHeight(),
           draw_header = (pt.fLabel.length > 0),
           promises = [],
+          margin_x = pt.fMargin * width,
+          margin_y = pt.fMargin * height,
           stepy = height / (nlines || 1),
-          margin_x = pt.fMargin * width, max_font_size = 0;
+          max_font_size = 0;
 
       // for single line (typically title) limit font size
       if ((nlines == 1) && (pt.fTextSize > 0)) {
@@ -411,7 +413,7 @@ class TPavePainter extends ObjectPainter {
                   let arg = null;
 
                   if (nlines == 1) {
-                     arg = { x: 0, y: 0, width, height };
+                     arg = { x: margin_x, y: margin_y, width: width - 2*margin_x, height: height - 2*margin_y };
                   } else {
                      arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy };
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
