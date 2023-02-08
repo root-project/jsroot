@@ -7,7 +7,7 @@ import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
-import { createMenu } from '../gui/menu.mjs';
+import { showPainterMenu } from '../gui/menu.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -988,16 +988,9 @@ class TPavePainter extends ObjectPainter {
          let fp = this.getFramePainter();
          if (isFunc(fp?.showContextMenu))
              fp.showContextMenu('z', evnt);
-         return;
+      } else {
+         showPainterMenu(evnt, this, this.isTitle() ? 'title' : undefined);
       }
-
-      evnt.stopPropagation(); // disable main context menu
-      evnt.preventDefault();  // disable browser context menu
-
-      createMenu(evnt, this).then(menu => {
-         this.fillContextMenu(menu);
-         return this.fillObjectExecMenu(menu, this.isTitle() ? 'title' : undefined);
-       }).then(menu => menu.show());
    }
 
    /** @summary Returns true when stat box is drawn */

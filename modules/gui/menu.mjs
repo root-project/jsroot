@@ -1312,5 +1312,17 @@ function closeMenu(menuname) {
    return false;
 }
 
-export { createMenu, closeMenu };
+/** @summary Fill and show context menu for painter object
+  * @private */
+function showPainterMenu(evnt, painter, kind) {
+   evnt.stopPropagation(); // disable main context menu
+   evnt.preventDefault();  // disable browser context menu
+
+   createMenu(evnt, painter).then(menu => {
+      painter.fillContextMenu(menu);
+      return painter.fillObjectExecMenu(menu, kind);
+   }).then(menu => menu.show());
+}
+
+export { createMenu, closeMenu, showPainterMenu };
 
