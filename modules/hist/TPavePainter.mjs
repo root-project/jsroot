@@ -366,7 +366,7 @@ class TPavePainter extends ObjectPainter {
           promises = [],
           margin_x = pt.fMargin * width,
           margin_y = pt.fMargin * height,
-          stepy = height / (nlines || 1),
+          stepy = (height - 2*margin_y) / (nlines || 1),
           max_font_size = 0;
 
       // for single line (typically title) limit font size
@@ -380,7 +380,7 @@ class TPavePainter extends ObjectPainter {
       let fast = (nlines == 1) && pp?._fast_drawing, num_default = 0;
 
       for(let nline = 0; nline < nlines; ++nline) {
-         let entry = arr[nline], texty = nline*stepy;
+         let entry = arr[nline], texty = margin_y + nline*stepy;
 
          switch(entry._typename) {
             case clTText:
