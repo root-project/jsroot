@@ -990,6 +990,9 @@ class TGeoPainter extends ObjectPainter {
 
       menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
 
+      if(!this.getCanvPainter())
+         menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
+
       menu.addchk(this.ctrl.highlight, 'Highlight volumes', () => {
          this.ctrl.highlight = !this.ctrl.highlight;
       });
@@ -1784,7 +1787,7 @@ class TGeoPainter extends ObjectPainter {
          let lines = provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
 
-         return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines: lines };
+         return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines };
       }
 
       this._controls.processMouseLeave = function() {
