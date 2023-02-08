@@ -1,4 +1,4 @@
-import { settings, gStyle, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
+import { settings, gStyle, isBatchMode, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -1324,5 +1324,12 @@ function showPainterMenu(evnt, painter, kind) {
    }).then(menu => menu.show());
 }
 
-export { createMenu, closeMenu, showPainterMenu };
+/** @summary Assign handler for context menu for painter draw element
+  * @private */
+function assignContextMenu(painter, kind) {
+   if (!isBatchMode() && painter?.draw_g)
+      painter.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, painter, kind) : null);
+}
+
+export { createMenu, closeMenu, showPainterMenu, assignContextMenu };
 
