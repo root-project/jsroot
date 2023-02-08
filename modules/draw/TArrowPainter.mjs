@@ -1,7 +1,8 @@
-import { BIT, isBatchMode } from '../core.mjs';
+import { BIT, isBatchMode, settings } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
+import { showPainterMenu } from '../gui/menu.mjs';
 
 
 /** @summary Drawing TArrow
@@ -127,8 +128,10 @@ class TArrowPainter extends ObjectPainter {
          elem.style('fill','none');
       }
 
-     if (!isBatchMode())
-        addMoveHandler(this);
+      if (!isBatchMode()) {
+         addMoveHandler(this);
+         this.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, this) : null);
+      }
 
       return this;
    }
