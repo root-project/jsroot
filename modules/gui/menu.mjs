@@ -1,4 +1,4 @@
-import { loadScript, source_dir, settings, gStyle, internals, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
+import { settings, gStyle, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
