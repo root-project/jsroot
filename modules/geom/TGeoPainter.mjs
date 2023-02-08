@@ -1730,7 +1730,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._controls || !this._webgl || isBatchMode()) return;
 
-      this.setTooltipAllowed(settings.Tooltip);
+      if (!this.getCanvPainter())
+         this.setTooltipAllowed(settings.Tooltip);
 
       this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
