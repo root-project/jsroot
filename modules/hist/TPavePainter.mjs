@@ -365,8 +365,7 @@ class TPavePainter extends ObjectPainter {
           draw_header = (pt.fLabel.length > 0),
           promises = [],
           margin_x = pt.fMargin * width,
-          margin_y = pt.fMargin * height,
-          stepy = (height - 2*margin_y) / (nlines || 1),
+          stepy = height / (nlines || 1),
           max_font_size = 0;
 
       // for single line (typically title) limit font size
@@ -380,7 +379,7 @@ class TPavePainter extends ObjectPainter {
       let fast = (nlines == 1) && pp?._fast_drawing, num_default = 0;
 
       for(let nline = 0; nline < nlines; ++nline) {
-         let entry = arr[nline], texty = margin_y + nline*stepy;
+         let entry = arr[nline], texty = nline*stepy;
 
          switch(entry._typename) {
             case clTText:
@@ -410,17 +409,21 @@ class TPavePainter extends ObjectPainter {
                   if (num_default++ === 0)
                      this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
 
-                  let arg = null;
+                  let arg = null, align = entry.fTextAlign || pt.fTextAlign;
 
                   if (nlines == 1) {
-                     arg = { x: margin_x, y: margin_y, width: width - 2*margin_x, height: height - 2*margin_y };
+                     arg = { x: 0, y: 0, width, height, align };
+                     let halign = Math.floor(align / 10);
+                     // when horizontal align applied, shift text by margin 
+                     if (halign == 1)
+                        arg.x = margin_x;
+                     else if (halign == 3)
+                        arg.x = -margin_x;
                   } else {
-                     arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy };
+                     arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy, align };
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
                      if (entry.fTextSize) arg.font_size = Math.round(entry.fTextSize * pad_height);
                   }
-
-                  arg.align = entry.fTextAlign || pt.fTextAlign;
                   arg.draw_g = text_g;
                   arg.latex = (entry._typename == clTText ? 0 : 1);
                   arg.text = entry.fTitle;
