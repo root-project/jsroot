@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '7/02/2023';
+let version_date = '8/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -71954,8 +71954,10 @@ class TPavePainter extends ObjectPainter {
           pad_height = pp.getPadHeight(),
           draw_header = (pt.fLabel.length > 0),
           promises = [],
-          stepy = height / (nlines || 1),
-          margin_x = pt.fMargin * width, max_font_size = 0;
+          margin_x = pt.fMargin * width,
+          margin_y = pt.fMargin * height,
+          stepy = (height /* - 2*margin_y */) / (nlines || 1),
+          max_font_size = 0;
 
       // for single line (typically title) limit font size
       if ((nlines == 1) && (pt.fTextSize > 0)) {
@@ -72001,7 +72003,7 @@ class TPavePainter extends ObjectPainter {
                   let arg = null;
 
                   if (nlines == 1) {
-                     arg = { x: 0, y: 0, width, height };
+                     arg = { x: margin_x, y: margin_y, width: width - 2*margin_x, height: height - 2*margin_y };
                   } else {
                      arg = { x: margin_x, y: texty, width: width - 2*margin_x, height: stepy };
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
