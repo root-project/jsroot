@@ -720,7 +720,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary execute selected menu command, either locally or remotely
      * @private */
-   executeMenuCommand(method) {
+   executeMenuCommand(method /* , args, id */) {
 
       if (method.fName == 'Inspect')
          // primitve inspector, keep it here
@@ -1244,6 +1244,10 @@ class ObjectPainter extends BasePainter {
          if (isFunc(cp?.executeObjectMethod))
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
+         item.fClassName = execp.getClassName();
+         if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
+            item.fClassName = clTAxis;
+
          if (execp.executeMenuCommand(item, undefined, execp.args_menu_id)) return;
 
          if (!execp.args_menu_id) return;
@@ -1253,10 +1257,6 @@ class ObjectPainter extends BasePainter {
                return cp.submitExec(execp, item.fExec, kind);
             else
                return execp.submitCanvExec(item.fExec, execp.args_menu_id);
-
-         item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
-            item.fClassName = clTAxis;
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;

@@ -1308,8 +1308,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Execute menu command
      * @private */
-   executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method,args)) return true;
+   executeMenuCommand(method, args, id) {
+      if (super.executeMenuCommand(method, args, id)) return true;
 
       let canp = this.getCanvPainter(), pmain = this.get_main();
 
