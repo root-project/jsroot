@@ -472,8 +472,6 @@ function drawPolyMarker() {
    this.dy = 0;
 
    this.moveDrag = function (dx,dy) {
-      console.log("moving poly", this.snapid);
-
       this.dx += dx;
       this.dy += dy;
       this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
