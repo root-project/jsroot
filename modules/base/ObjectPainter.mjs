@@ -720,7 +720,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary execute selected menu command, either locally or remotely
      * @private */
-   executeMenuCommand(method /* , args, id */) {
+   executeMenuCommand(method) {
 
       if (method.fName == 'Inspect')
          // primitve inspector, keep it here
@@ -1248,7 +1248,10 @@ class ObjectPainter extends BasePainter {
          if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
             item.fClassName = clTAxis;
 
-         if (execp.executeMenuCommand(item, undefined, execp.args_menu_id)) return;
+         item.$menu = menu;
+         item.$execid = execp.args_menu_id;
+
+         if (execp.executeMenuCommand(item)) return;
 
          if (!execp.args_menu_id) return;
 
@@ -1260,7 +1263,7 @@ class ObjectPainter extends BasePainter {
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
-             if (execp.executeMenuCommand(item, args, execp.args_menu_id)) return;
+             if (execp.executeMenuCommand(item, args)) return;
 
              let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
              if (cp?.v7canvas)

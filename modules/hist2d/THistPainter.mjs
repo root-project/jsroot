@@ -1699,13 +1699,13 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Execute histogram menu command
      * @desc Used to catch standard menu items and provide local implementation */
-   executeMenuCommand(method, args, id) {
-      if (super.executeMenuCommand(method, args, id))
+   executeMenuCommand(method, args) {
+      if (super.executeMenuCommand(method, args))
          return true;
 
       if (method.fClassName == clTAxis) {
-         let p = isStr(id) ? id.indexOf('#') : -1,
-             kind = p > 0 ? id.slice(p+1) : 'x',
+         let p = isStr(method.$execid) ? method.$execid.indexOf('#') : -1,
+             kind = p > 0 ? method.$execid.slice(p+1) : 'x',
              fp = this.getFramePainter();
          if (method.fName == 'UnZoom') {
             fp?.unzoom(kind);

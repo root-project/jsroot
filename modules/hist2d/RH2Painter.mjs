@@ -68,8 +68,8 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Execute menu command */
-   executeMenuCommand(method, args, id) {
-      if (super.executeMenuCommand(method, args, id)) return true;
+   executeMenuCommand(method, args) {
+      if (super.executeMenuCommand(method, args)) return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
          this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
