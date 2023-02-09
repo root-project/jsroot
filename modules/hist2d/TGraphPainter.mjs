@@ -1324,10 +1324,10 @@ class TGraphPainter extends ObjectPainter {
                let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
                    userx = funcs.revertAxis('x', pnt.x) ?? 0,
                    usery = funcs.revertAxis('y', pnt.y) ?? 0;
-               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, this.args_menu_id);
+               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
             }
-         } else if (this.args_menu_id && (hint?.binindx !== undefined)) {
-            this.submitCanvExec(`RemovePoint(${hint.binindx})`, this.args_menu_id);
+         } else if (method.$execid && (hint?.binindx !== undefined)) {
+            this.submitCanvExec(`RemovePoint(${hint.binindx})`, method.$execid);
          }
 
          return true; // call is processed
