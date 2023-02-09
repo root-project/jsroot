@@ -6,6 +6,7 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
+import { assignContextMenu } from '../gui/menu.mjs';
 
 
 /** @summary Draw TText
@@ -84,6 +85,8 @@ async function drawText() {
          }
 
       addMoveHandler(this);
+
+      assignContextMenu(this);
 
       return this;
    });
