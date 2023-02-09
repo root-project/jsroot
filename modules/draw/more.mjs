@@ -271,7 +271,7 @@ function drawBox() {
 
    this.getPathes = () => {
       let xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
-          ww = Math.abs(this.x2-this.x1), hh = Math.abs(this.y1-this.y2);
+          ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
       let path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
       if (!this.borderMode)
@@ -308,13 +308,23 @@ function drawBox() {
    addMoveHandler(this);
 
    this.moveStart = function (x,y) {
+      let ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
+
+      this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
+      this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
+      this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
+      this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
+      if (this.c_x1 != this.c_x2 && this.c_y1 && this.c_y2)
+         this.c_y1 = this.c_y2 = false;
+      if (this.c_y1 != this.c_y2 && this.c_x1 && this.c_x2)
+         this.c_x1 = this.c_x2 = false;
    }
 
    this.moveDrag = function (dx,dy) {
-      this.x1 += dx;
-      this.x2 += dx;
-      this.y1 += dy;
-      this.y2 += dy;
+      if (this.c_x1) this.x1 += dx;
+      if (this.c_x2) this.x2 += dx;
+      if (this.c_y1) this.y1 += dy;
+      if (this.c_y2) this.y2 += dy;
 
       let nodes = this.draw_g.selectAll('path').nodes(),
           pathes = this.getPathes();
