@@ -137,13 +137,13 @@ function drawPolyLine() {
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let polyline = this.getObject(), exec = '';
+      let polyline = this.getObject(),
+          func = this.getAxisToSvgFunc(this.isndc),
+          exec = '';
 
       for (let n = 0; n <= polyline.fLastPoint; ++n) {
-         let grx = this.axisToSvg('x', polyline.fX[n], this.isndc),
-             gry = this.axisToSvg('y', polyline.fY[n], this.isndc),
-             x   = this.svgToAxis('x', grx + this.dx, this.isndc),
-             y   = this.svgToAxis('y', gry + this.dy, this.isndc);
+         let x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
+             y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
          polyline.fX[n] = x;
          polyline.fY[n] = y;
          exec += `SetPoint(${n},${x},${y});;`;
