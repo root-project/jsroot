@@ -1696,6 +1696,22 @@ class THistPainter extends ObjectPainter {
        });
    }
 
+   /** @summary Execute histogram menu command
+     * @desc Used to catch standard menu items and provide local implementation */
+   executeMenuCommand(method, args, id) {
+      if (super.executeMenuCommand(method, args, id))
+         return true;
+
+      if (method.fName == 'UnZoom') {
+         let p = isStr(id) ? id.indexOf('#') : -1,
+             kind = p > 0 ? id.slice(p+1) : 'xyz';
+         this.getFramePainter()?.unzoom(kind);
+         return true;
+      }
+
+      return false;
+   }
+
    /** @summary Fill histogram context menu */
    fillContextMenu(menu) {
 

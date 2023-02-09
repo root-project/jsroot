@@ -145,8 +145,8 @@ class TH2Painter extends THistPainter {
 
    /** @summary Execute TH2 menu command
      * @desc Used to catch standard menu items and provide local implementation */
-   executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method, args))
+   executeMenuCommand(method, args, id) {
+      if (super.executeMenuCommand(method, args, id))
          return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {

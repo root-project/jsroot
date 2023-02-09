@@ -1244,15 +1244,15 @@ class ObjectPainter extends BasePainter {
          if (isFunc(cp?.executeObjectMethod))
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
-         if (execp.executeMenuCommand(item)) return;
+         if (execp.executeMenuCommand(item, undefined, execp.args_menu_id)) return;
 
          if (!execp.args_menu_id) return;
 
-          if (!item.fArgs)
-             if (cp?.v7canvas)
-                return cp.submitExec(execp, item.fExec, kind);
-             else
-                return execp.submitCanvExec(item.fExec, execp.args_menu_id);
+         if (!item.fArgs)
+            if (cp?.v7canvas)
+               return cp.submitExec(execp, item.fExec, kind);
+            else
+               return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
          if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
@@ -1260,7 +1260,7 @@ class ObjectPainter extends BasePainter {
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
-             if (execp.executeMenuCommand(item, args)) return;
+             if (execp.executeMenuCommand(item, args, execp.args_menu_id)) return;
 
              let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
              if (cp?.v7canvas)
