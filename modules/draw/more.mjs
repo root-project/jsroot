@@ -1,10 +1,8 @@
 import { BIT, isBatchMode, clTLatex, clTMathText, clTPolyLine } from '../core.mjs';
-import { rgb as d3_rgb } from '../d3.mjs';
+import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
@@ -253,45 +251,81 @@ function drawPie() {
 function drawBox() {
    let box = this.getObject(),
        opt = this.getDrawOpt(),
-       draw_line = (opt.toUpperCase().indexOf('L') >= 0),
-       lineatt = this.createAttLine(box),
-       fillatt = this.createAttFill(box);
+       draw_line = (opt.toUpperCase().indexOf('L') >= 0);
+
+   this.createAttLine({ attr: box }),
+   this.createAttFill({ attr: box });
+
+   // if box filled, contour line drawn only with 'L' draw option:
+   if (!this.fillatt.empty() && !draw_line)
+      this.lineatt.color = 'none';
 
    this.createG();
 
-   let x1 = this.axisToSvg('x', box.fX1),
-       x2 = this.axisToSvg('x', box.fX2),
-       y1 = this.axisToSvg('y', box.fY1),
-       y2 = this.axisToSvg('y', box.fY2),
-       xx = Math.min(x1,x2), yy = Math.min(y1,y2),
-       ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
+   this.x1 = this.axisToSvg('x', box.fX1);
+   this.x2 = this.axisToSvg('x', box.fX2);
+   this.y1 = this.axisToSvg('y', box.fY1);
+   this.y2 = this.axisToSvg('y', box.fY2);
+   this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
+   this.borderSize = box.fBorderSize;
 
-   // if box filled, contour line drawn only with 'L' draw option:
-   if (!fillatt.empty() && !draw_line) lineatt.color = 'none';
+   this.getPathes = () => {
+      let xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
+          ww = Math.abs(this.x2-this.x1), hh = Math.abs(this.y1-this.y2);
 
-   this.draw_g
-       .append('svg:path')
-       .attr('d', `M${xx},${yy}h${ww}v${hh}h${-ww}z`)
-       .call(lineatt.func)
-       .call(fillatt.func);
-
-   if (box.fBorderMode && box.fBorderSize && fillatt.hasColor()) {
-      let pww = box.fBorderSize, phh = box.fBorderSize,
+      let path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
+      if (!this.borderMode)
+         return [path];
+      let pww = this.borderSize, phh = this.borderSize,
           side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
           side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
 
-      if (box.fBorderMode < 0) { let s = side1; side1 = side2; side2 = s; }
-
-      this.draw_g.append('svg:path')
-                 .attr('d', side1)
-                 .call(fillatt.func)
-                 .style('fill', d3_rgb(fillatt.color).brighter(0.5).formatHex());
-
-      this.draw_g.append('svg:path')
-          .attr('d', side2)
-          .call(fillatt.func)
-          .style('fill', d3_rgb(fillatt.color).darker(0.5).formatHex());
+      return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
    }
+
+   let paths = this.getPathes();
+
+   this.draw_g
+       .append('svg:path')
+       .attr('d', paths[0])
+       .call(this.lineatt.func)
+       .call(this.fillatt.func);
+
+   if (this.borderMode) {
+      this.draw_g.append('svg:path')
+                 .attr('d', paths[1])
+                 .call(fillatt.func)
+                 .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+
+      this.draw_g.append('svg:path')
+                 .attr('d', paths[2])
+                 .call(fillatt.func)
+                 .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+   }
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.moveStart = function (x,y) {
+   }
+
+   this.moveDrag = function (dx,dy) {
+      this.x1 += dx;
+      this.x2 += dx;
+      this.y1 += dy;
+      this.y2 += dy;
+
+      let nodes = this.draw_g.selectAll('path').nodes(),
+          pathes = this.getPathes();
+
+      pathes.forEach((path, i) => d3_select(nodes[i]).attr('d', path));
+
+   }
+
+   this.moveEnd = function (not_changed) {
+   }
+
 }
 
 /** @summary Draw TMarker
