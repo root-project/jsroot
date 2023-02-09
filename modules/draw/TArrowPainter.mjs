@@ -1,4 +1,4 @@
-import { BIT, isBatchMode } from '../core.mjs';
+import { BIT } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -51,7 +51,7 @@ class TArrowPainter extends ObjectPainter {
    }
 
    /** @summary Start interactive moving */
-   moveStart(x,y) {
+   moveStart(x, y) {
       let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
           sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
           sz2 = Math.sqrt((x-this.x2)**2 + (y-this.y2)**2)/fullsize;
@@ -64,7 +64,7 @@ class TArrowPainter extends ObjectPainter {
    }
 
    /** @summary Continue interactive moving */
-   moveDrag(dx,dy) {
+   moveDrag(dx, dy) {
       if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
       if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
       this.draw_g.select('path').attr('d', this.createPath());
@@ -121,24 +121,22 @@ class TArrowPainter extends ObjectPainter {
                      .attr('d', this.createPath())
                      .call(this.lineatt.func);
 
-      if ((this.beg > 10) || (this.end > 10)) {
-         this.createAttFill({ attr: arrow });
-         elem.call(this.fillatt.func);
-      } else {
-         elem.style('fill','none');
-      }
+      this.createAttFill({ attr: arrow });
 
-      if (!isBatchMode()) {
-         addMoveHandler(this);
-         assignContextMenu(this);
-      }
+      if ((this.beg > 10) || (this.end > 10))
+         elem.call(this.fillatt.func);
+      else
+         elem.style('fill', 'none');
+
+      addMoveHandler(this);
+      assignContextMenu(this);
 
       return this;
    }
 
    /** @summary Draw TArrow object */
    static async draw(dom, obj, opt) {
-      let painter = new TArrowPainter(dom, obj,opt);
+      let painter = new TArrowPainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
