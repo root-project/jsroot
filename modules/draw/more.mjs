@@ -330,10 +330,16 @@ function drawBox() {
           pathes = this.getPathes();
 
       pathes.forEach((path, i) => d3_select(nodes[i]).attr('d', path));
-
    }
 
    this.moveEnd = function (not_changed) {
+      if (not_changed) return;
+      let box = this.getObject(), exec = '';
+      if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
+      if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
+      if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
+      if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
+      this.submitCanvExec(exec + 'Notify();;');
    }
 
 }
