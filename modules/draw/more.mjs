@@ -92,29 +92,6 @@ async function drawText() {
    });
 }
 
-/** @summary Draw TLine
-  * @private */
-async function drawTLine(dom, obj) {
-   let painter = new ObjectPainter(dom, obj);
-
-   painter.redraw = function() {
-      const kLineNDC = BIT(14),
-            line = this.getObject(),
-            lineatt = new TAttLineHandler(line),
-            isndc = line.TestBit(kLineNDC);
-
-      this.createG();
-
-      this.draw_g
-          .append('svg:path')
-          .attr('d', `M${this.axisToSvg('x',line.fX1,isndc)},${this.axisToSvg('y',line.fY1,isndc)}L${this.axisToSvg('x',line.fX2,isndc)},${this.axisToSvg('y',line.fY2,isndc)}`)
-          .call(lineatt.func);
-
-      return this;
-   }
-
-   return ensureTCanvas(painter, false).then(() => painter.redraw());
-}
 
 /** @summary Draw TPolyLine
   * @private */
@@ -375,5 +352,5 @@ function drawJSImage(dom, obj, opt) {
    return painter;
 }
 
-export { drawText, drawTLine, drawPolyLine, drawEllipse, drawPie, drawBox,
+export { drawText, drawPolyLine, drawEllipse, drawPie, drawBox,
          drawMarker, drawPolyMarker, drawJSImage };
