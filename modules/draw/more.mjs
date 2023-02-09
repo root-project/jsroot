@@ -456,13 +456,46 @@ function drawPolyMarker() {
 
    this.createG();
 
-   for (let n = 0; n < poly.fN; ++n)
+   for (let n = 0; n <= poly.fLastPoint; ++n)
       path += this.markeratt.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
           .call(this.markeratt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+
+   this.moveDrag = function (dx,dy) {
+      console.log("moving poly", this.snapid);
+
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   }
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let poly = this.getObject(),
+          func = this.getAxisToSvgFunc(),
+          exec = '';
+
+      for (let n = 0; n <= poly.fLastPoint; ++n) {
+         let x = this.svgToAxis('x', func.x(poly.fX[n]) + this.dx),
+             y = this.svgToAxis('y', func.y(poly.fY[n]) + this.dy);
+         poly.fX[n] = x;
+         poly.fY[n] = y;
+         exec += `SetPoint(${n},${x},${y});;`;
+      }
+      this.submitCanvExec(exec + 'Notify();;');
+      this.redraw();
+   }
+
 }
 
 /** @summary Draw JS image
