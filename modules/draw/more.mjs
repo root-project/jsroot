@@ -199,11 +199,34 @@ function drawEllipse() {
      path += 'Z';
    }
 
+   this.x = x;
+   this.y = y;
+
    this.draw_g
       .append('svg:path')
       .attr('transform', makeTranslate(x, y))
       .attr('d', path)
-      .call(this.lineatt.func).call(this.fillatt.func);
+      .call(this.lineatt.func)
+      .call(this.fillatt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.moveDrag = function (dx,dy) {
+      this.x += dx;
+      this.y += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.x, this.y));
+   }
+
+   this.moveEnd = function (not_changed) {
+      if (not_changed) return;
+      let ellipse = this.getObject();
+      ellipse.fX1 = this.svgToAxis('x', this.x);
+      ellipse.fY1 = this.svgToAxis('y', this.y);
+      this.submitCanvExec(`SetX1(${ellipse.fX1});;SetY1(${ellipse.fY1});;Notify();;`);
+   }
+
 }
 
 /** @summary Draw TPie
