@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '8/02/2023';
+let version_date = '9/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -62578,7 +62578,8 @@ function detectRightButton(event) {
   * @private */
 function addMoveHandler(painter, enabled) {
 
-   if (enabled === undefined) enabled = true;
+   if (enabled === undefined)
+      enabled = true;
 
    if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
 
@@ -62667,16 +62668,19 @@ function selectgStyle(name) {
          fCanvasColor: 0, fPadBorderMode: 0, fPadColor: 0, fStatColor: 0,
          fTitleAlign: 23, fTitleX: 0.5, fTitleBorderSize: 0, fTitleColor: 0, fTitleStyle: 0,
          fOptStat: 1111, fStatY: 0.935,
-         fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 }); break;
+         fLegendBorderSize: 1, fLegendFont: 42, fLegendTextSize: 0, fLegendFillColor: 0 });
+         break;
       case 'Plain': Object.assign(gStyle, {
          fFrameBorderMode: 0, fCanvasBorderMode: 0, fPadBorderMode: 0,
          fPadColor: 0, fCanvasColor: 0,
-         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 }); break;
+         fTitleColor: 0, fTitleBorderSize: 0, fStatColor: 0, fStatBorderSize: 1, fLegendBorderSize: 1 });
+         break;
       case 'Bold': Object.assign(gStyle, {
          fCanvasColor: 10, fCanvasBorderMode: 0,
          fFrameLineWidth: 3, fFrameFillColor: 10,
          fPadColor: 10, fPadTickX: 1, fPadTickY: 1, fPadBottomMargin: 0.15, fPadLeftMargin: 0.15,
-         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 }); break;
+         fTitleColor: 10, fTitleTextColor: 600, fStatColor: 10 });
+         break;
    }
 }
 
@@ -64134,6 +64138,25 @@ function closeMenu(menuname) {
    let x = document.getElementById(menuname || 'root_ctx_menu');
    if (x) { x.parentNode.removeChild(x); return true; }
    return false;
+}
+
+/** @summary Fill and show context menu for painter object
+  * @private */
+function showPainterMenu(evnt, painter, kind) {
+   evnt.stopPropagation(); // disable main context menu
+   evnt.preventDefault();  // disable browser context menu
+
+   createMenu$1(evnt, painter).then(menu => {
+      painter.fillContextMenu(menu);
+      return painter.fillObjectExecMenu(menu, kind);
+   }).then(menu => menu.show());
+}
+
+/** @summary Assign handler for context menu for painter draw element
+  * @private */
+function assignContextMenu(painter, kind) {
+   if (!isBatchMode() && painter?.draw_g)
+      painter.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, painter, kind) : null);
 }
 
 function setPainterTooltipEnabled(painter, on) {
@@ -72582,16 +72605,9 @@ class TPavePainter extends ObjectPainter {
          let fp = this.getFramePainter();
          if (isFunc(fp?.showContextMenu))
              fp.showContextMenu('z', evnt);
-         return;
+      } else {
+         showPainterMenu(evnt, this, this.isTitle() ? 'title' : undefined);
       }
-
-      evnt.stopPropagation(); // disable main context menu
-      evnt.preventDefault();  // disable browser context menu
-
-      createMenu$1(evnt, this).then(menu => {
-         this.fillContextMenu(menu);
-         return this.fillObjectExecMenu(menu, this.isTitle() ? 'title' : undefined);
-       }).then(menu => menu.show());
    }
 
    /** @summary Returns true when stat box is drawn */
@@ -86450,7 +86466,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._controls || !this._webgl || isBatchMode()) return;
 
-      this.setTooltipAllowed(settings.Tooltip);
+      if (!this.getCanvPainter())
+         this.setTooltipAllowed(settings.Tooltip);
 
       this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
@@ -96669,7 +96686,7 @@ const drawFuncs = { lst: [
    { name: 'TPie', icon: 'img_graph', draw: () => import_more().then(h => h.drawPie), direct: true },
    { name: 'TPieSlice', icon: 'img_graph', dummy: true },
    { name: 'TExec', icon: 'img_graph', dummy: true },
-   { name: clTLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawTLine) },
+   { name: clTLine, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TLinePainter$1; }).then(h => h.TLinePainter) },
    { name: 'TArrow', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TArrowPainter$1; }).then(h => h.TArrowPainter) },
    { name: clTPolyLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
    { name: 'TCurlyLine', sameas: clTPolyLine },
@@ -103729,33 +103746,12 @@ async function drawText$1() {
 
       addMoveHandler(this);
 
+      assignContextMenu(this);
+
       return this;
    });
 }
 
-/** @summary Draw TLine
-  * @private */
-async function drawTLine(dom, obj) {
-   let painter = new ObjectPainter(dom, obj);
-
-   painter.redraw = function() {
-      const kLineNDC = BIT(14),
-            line = this.getObject(),
-            lineatt = new TAttLineHandler(line),
-            isndc = line.TestBit(kLineNDC);
-
-      this.createG();
-
-      this.draw_g
-          .append('svg:path')
-          .attr('d', `M${this.axisToSvg('x',line.fX1,isndc)},${this.axisToSvg('y',line.fY1,isndc)}L${this.axisToSvg('x',line.fX2,isndc)},${this.axisToSvg('y',line.fY2,isndc)}`)
-          .call(lineatt.func);
-
-      return this;
-   };
-
-   return ensureTCanvas(painter, false).then(() => painter.redraw());
-}
 
 /** @summary Draw TPolyLine
   * @private */
@@ -103917,45 +103913,97 @@ function drawPie() {
 function drawBox$1() {
    let box = this.getObject(),
        opt = this.getDrawOpt(),
-       draw_line = (opt.toUpperCase().indexOf('L') >= 0),
-       lineatt = this.createAttLine(box),
-       fillatt = this.createAttFill(box);
+       draw_line = (opt.toUpperCase().indexOf('L') >= 0);
+
+   this.createAttLine({ attr: box }),
+   this.createAttFill({ attr: box });
+
+   // if box filled, contour line drawn only with 'L' draw option:
+   if (!this.fillatt.empty() && !draw_line)
+      this.lineatt.color = 'none';
 
    this.createG();
 
-   let x1 = this.axisToSvg('x', box.fX1),
-       x2 = this.axisToSvg('x', box.fX2),
-       y1 = this.axisToSvg('y', box.fY1),
-       y2 = this.axisToSvg('y', box.fY2),
-       xx = Math.min(x1,x2), yy = Math.min(y1,y2),
-       ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
+   this.x1 = this.axisToSvg('x', box.fX1);
+   this.x2 = this.axisToSvg('x', box.fX2);
+   this.y1 = this.axisToSvg('y', box.fY1);
+   this.y2 = this.axisToSvg('y', box.fY2);
+   this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
+   this.borderSize = box.fBorderSize;
 
-   // if box filled, contour line drawn only with 'L' draw option:
-   if (!fillatt.empty() && !draw_line) lineatt.color = 'none';
+   this.getPathes = () => {
+      let xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
+          ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
-   this.draw_g
-       .append('svg:path')
-       .attr('d', `M${xx},${yy}h${ww}v${hh}h${-ww}z`)
-       .call(lineatt.func)
-       .call(fillatt.func);
-
-   if (box.fBorderMode && box.fBorderSize && fillatt.hasColor()) {
-      let pww = box.fBorderSize, phh = box.fBorderSize,
+      let path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
+      if (!this.borderMode)
+         return [path];
+      let pww = this.borderSize, phh = this.borderSize,
           side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
           side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
 
-      if (box.fBorderMode < 0) { let s = side1; side1 = side2; side2 = s; }
+      return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
+   };
+
+   let paths = this.getPathes();
+
+   this.draw_g
+       .append('svg:path')
+       .attr('d', paths[0])
+       .call(this.lineatt.func)
+       .call(this.fillatt.func);
+
+   if (this.borderMode) {
+      this.draw_g.append('svg:path')
+                 .attr('d', paths[1])
+                 .call(this.fillatt.func)
+                 .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       this.draw_g.append('svg:path')
-                 .attr('d', side1)
-                 .call(fillatt.func)
-                 .style('fill', rgb(fillatt.color).brighter(0.5).formatHex());
-
-      this.draw_g.append('svg:path')
-          .attr('d', side2)
-          .call(fillatt.func)
-          .style('fill', rgb(fillatt.color).darker(0.5).formatHex());
+                 .attr('d', paths[2])
+                 .call(this.fillatt.func)
+                 .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
    }
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.moveStart = function (x,y) {
+      let ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
+
+      this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
+      this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
+      this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
+      this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
+      if (this.c_x1 != this.c_x2 && this.c_y1 && this.c_y2)
+         this.c_y1 = this.c_y2 = false;
+      if (this.c_y1 != this.c_y2 && this.c_x1 && this.c_x2)
+         this.c_x1 = this.c_x2 = false;
+   };
+
+   this.moveDrag = function (dx,dy) {
+      if (this.c_x1) this.x1 += dx;
+      if (this.c_x2) this.x2 += dx;
+      if (this.c_y1) this.y1 += dy;
+      if (this.c_y2) this.y2 += dy;
+
+      let nodes = this.draw_g.selectAll('path').nodes(),
+          pathes = this.getPathes();
+
+      pathes.forEach((path, i) => select(nodes[i]).attr('d', path));
+   };
+
+   this.moveEnd = function (not_changed) {
+      if (not_changed) return;
+      let box = this.getObject(), exec = '';
+      if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
+      if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
+      if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
+      if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
+      this.submitCanvExec(exec + 'Notify();;');
+   };
+
 }
 
 /** @summary Draw TMarker
@@ -104025,7 +104073,6 @@ drawMarker: drawMarker$1,
 drawPie: drawPie,
 drawPolyLine: drawPolyLine,
 drawPolyMarker: drawPolyMarker,
-drawTLine: drawTLine,
 drawText: drawText$1
 });
 
@@ -107798,6 +107845,95 @@ __proto__: null,
 TEfficiencyPainter: TEfficiencyPainter
 });
 
+class TLinePainter extends ObjectPainter {
+
+   /** @summary Start interactive moving */
+   moveStart(x, y) {
+      let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
+          sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
+          sz2 = Math.sqrt((x-this.x2)**2 + (y-this.y2)**2)/fullsize;
+      if (sz1 > 0.9)
+         this.side = 1;
+      else if (sz2 > 0.9)
+         this.side = -1;
+      else
+         this.side = 0;
+   }
+
+   /** @summary Continue interactive moving */
+   moveDrag(dx, dy) {
+      if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
+      if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
+      this.draw_g.select('path').attr('d', this.createPath());
+   }
+
+   /** @summary Finish interactive moving */
+   moveEnd(not_changed) {
+      if (not_changed) return;
+      let line = this.getObject(), exec = '';
+      line.fX1 = this.svgToAxis('x', this.x1, this.isndc);
+      line.fX2 = this.svgToAxis('x', this.x2, this.isndc);
+      line.fY1 = this.svgToAxis('y', this.y1, this.isndc);
+      line.fY2 = this.svgToAxis('y', this.y2, this.isndc);
+      if (this.side != 1) exec += `SetX1(${line.fX1});;SetY1(${line.fY1});;`;
+      if (this.side != -1) exec += `SetX2(${line.fX2});;SetY2(${line.fY2});;`;
+      this.submitCanvExec(exec + 'Notify();;');
+   }
+
+   /** @summary Calculate line coordinates */
+   prepareDraw() {
+      let line = this.getObject(), kLineNDC = BIT(14);
+
+      this.isndc = line.TestBit(kLineNDC);
+
+      this.x1 = this.axisToSvg('x', line.fX1, this.isndc, true);
+      this.y1 = this.axisToSvg('y', line.fY1, this.isndc, true);
+      this.x2 = this.axisToSvg('x', line.fX2, this.isndc, true);
+      this.y2 = this.axisToSvg('y', line.fY2, this.isndc, true);
+
+      this.createAttLine({ attr: line });
+   }
+
+   /** @summary Create path */
+   createPath() {
+      const x1 = Math.round(this.x1), x2 = Math.round(this.x2), y1 = Math.round(this.y1), y2 = Math.round(this.y2);
+      return `M${x1},${y1}` + (x1 == x2 ? `V${y2}` : (y1 == y2 ? `H${x2}` : `L${x2},${y2}`));
+   }
+
+   /** @summary Add extras - used for TArrow */
+   addExtras() {}
+
+   /** @summary Redraw line */
+   redraw() {
+      this.prepareDraw();
+
+      this.createG();
+
+      const elem = this.draw_g.append('svg:path')
+                       .attr('d', this.createPath())
+                       .call(this.lineatt.func);
+
+      this.addExtras(elem);
+
+      addMoveHandler(this);
+      assignContextMenu(this);
+
+      return this;
+   }
+
+   /** @summary Draw TLine object */
+   static async draw(dom, obj, opt) {
+      let painter = new TLinePainter(dom, obj, opt);
+      return ensureTCanvas(painter, false).then(() => painter.redraw());
+   }
+
+} // class TLinePainter
+
+var TLinePainter$1 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TLinePainter: TLinePainter
+});
+
 /**
  * @summary Painter class for TRatioPlot
  *
@@ -107914,7 +108050,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   ratio.fGridlines.push(line);
                   if (currpad === undefined)
                      currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
-                  arr.push(drawTLine(this.getDom(), line));
+                  arr.push(TLinePainter.draw(this.getDom(), line));
                }
             });
          }
@@ -108961,7 +109097,7 @@ TSplinePainter: TSplinePainter
 
 /** @summary Drawing TArrow
   * @private */
-class TArrowPainter extends ObjectPainter {
+class TArrowPainter extends TLinePainter {
 
    /** @summary Create line segment with rotation */
    rotate(angle, x0, y0) {
@@ -109004,46 +109140,15 @@ class TArrowPainter extends ObjectPainter {
               path;
    }
 
-   /** @summary Start interactive moving */
-   moveStart(x,y) {
-      let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
-          sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
-          sz2 = Math.sqrt((x-this.x2)**2 + (y-this.y2)**2)/fullsize;
-      if (sz1 > 0.9)
-         this.side = 1;
-      else if (sz2 > 0.9)
-         this.side = -1;
-      else
-         this.side = 0;
-   }
+   /** @summary calculate all TArrow coordinates */
+   prepareDraw() {
+      super.prepareDraw();
 
-   /** @summary Continue interactive moving */
-   moveDrag(dx,dy) {
-      if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
-      if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
-      this.draw_g.select('path').attr('d', this.createPath());
-   }
+      let arrow = this.getObject(),
+          oo = arrow.fOption,
+          rect = this.getPadPainter().getPadRect();
 
-   /** @summary Finish interactive moving */
-   moveEnd(not_changed) {
-      if (not_changed) return;
-      let arrow = this.getObject(), exec = '';
-      arrow.fX1 = this.svgToAxis('x', this.x1, this.isndc);
-      arrow.fX2 = this.svgToAxis('x', this.x2, this.isndc);
-      arrow.fY1 = this.svgToAxis('y', this.y1, this.isndc);
-      arrow.fY2 = this.svgToAxis('y', this.y2, this.isndc);
-      if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
-      if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
-      this.submitCanvExec(exec + 'Notify();;');
-   }
-
-   /** @summary Redraw arrow */
-   redraw() {
-      let arrow = this.getObject(), kLineNDC = BIT(14),
-          oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
-
-      this.wsize = Math.max(3, Math.round(Math.max(rect.width, rect.height) * arrow.fArrowSize*0.8));
-      this.isndc = arrow.TestBit(kLineNDC);
+      this.wsize = Math.max(3, Math.round(Math.max(rect.width, rect.height) * arrow.fArrowSize * 0.8));
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
 
@@ -109062,35 +109167,20 @@ class TArrowPainter extends ObjectPainter {
       if ((p1 >= 0) && (p1 == len-1))
          this.end = ((p2 >= 0) && (p2 == len-2)) ? 11 : 1;
 
-      this.createAttLine({ attr: arrow });
+      this.createAttFill({ attr: arrow });
+   }
 
-      this.createG();
-
-      this.x1 = this.axisToSvg('x', arrow.fX1, this.isndc, true);
-      this.y1 = this.axisToSvg('y', arrow.fY1, this.isndc, true);
-      this.x2 = this.axisToSvg('x', arrow.fX2, this.isndc, true);
-      this.y2 = this.axisToSvg('y', arrow.fY2, this.isndc, true);
-
-      let elem = this.draw_g.append('svg:path')
-                     .attr('d', this.createPath())
-                     .call(this.lineatt.func);
-
-      if ((this.beg > 10) || (this.end > 10)) {
-         this.createAttFill({ attr: arrow });
+   /** @summary Add extras to path for TArrow */
+   addExtras(elem) {
+      if ((this.beg > 10) || (this.end > 10))
          elem.call(this.fillatt.func);
-      } else {
-         elem.style('fill','none');
-      }
-
-     if (!isBatchMode())
-        addMoveHandler(this);
-
-      return this;
+      else
+         elem.style('fill', 'none');
    }
 
    /** @summary Draw TArrow object */
    static async draw(dom, obj, opt) {
-      let painter = new TArrowPainter(dom, obj,opt);
+      let painter = new TArrowPainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
