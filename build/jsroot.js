@@ -12108,7 +12108,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    async fillObjectExecMenu(menu, kind) {
 
-      if (this._userContextMenuFunc)
+      if (isFunc(this._userContextMenuFunc))
          return this._userContextMenuFunc(menu, kind);
 
       let canvp = this.getCanvPainter();
@@ -12117,11 +12117,11 @@ class ObjectPainter extends BasePainter {
          return menu;
 
       function DoExecMenu(arg) {
-         let execp = this.exec_painter || this,
-            cp = execp.getCanvPainter(),
-            item = execp.args_menu_items[parseInt(arg)];
+         let execp = menu.exec_painter || this,
+             cp = execp.getCanvPainter(),
+             item = menu.exec_items[parseInt(arg)];
 
-         if (!item || !item.fName) return;
+         if (!item?.fName) return;
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == 'Show:Editor') {
@@ -12131,21 +12131,21 @@ class ObjectPainter extends BasePainter {
          }
 
          if (isFunc(cp?.executeObjectMethod))
-            if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
+            if (cp.executeObjectMethod(execp, item, item.$execid)) return;
+
+         item.fClassName = execp.getClassName();
+         if ((item.$execid.indexOf('#x') > 0) || (item.$execid.indexOf('#y') > 0) || (item.$execid.indexOf('#z') > 0))
+            item.fClassName = clTAxis;
 
          if (execp.executeMenuCommand(item)) return;
 
-         if (!execp.args_menu_id) return;
+         if (!item.$execid) return;
 
-          if (!item.fArgs)
-             if (cp?.v7canvas)
-                return cp.submitExec(execp, item.fExec, kind);
-             else
-                return execp.submitCanvExec(item.fExec, execp.args_menu_id);
-
-         item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf('#x') > 0) || (execp.args_menu_id.indexOf('#y') > 0) || (execp.args_menu_id.indexOf('#z') > 0))
-            item.fClassName = clTAxis;
+         if (!item.fArgs)
+            if (cp?.v7canvas)
+               return cp.submitExec(execp, item.fExec, kind);
+            else
+               return execp.submitCanvExec(item.fExec, item.$execid);
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
@@ -12155,32 +12155,31 @@ class ObjectPainter extends BasePainter {
              if (cp?.v7canvas)
                 cp.submitExec(execp, exec, kind);
              else if (cp)
-                cp.sendWebsocket(`OBJEXEC:${execp.args_menu_id}:${exec}`);
+                cp.sendWebsocket(`OBJEXEC:${item.$execid}:${exec}`);
          });
       }
 
       const DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {
 
          // avoid multiple call of the callback after timeout
-         if (this._got_menu) return;
-         this._got_menu = true;
+         if (menu._got_menu) return;
+         menu._got_menu = true;
 
          if (reply && (_reqid !== reply.fId))
             console.error(`missmatch between request ${_reqid} and reply ${reply.fId} identifiers`);
 
-         let items = reply ? reply.fItems : null;
+         menu.exec_items = reply?.fItems;
 
-         if (items?.length) {
+         if (menu.exec_items?.length) {
             if (_menu.size() > 0)
                _menu.add('separator');
 
-            this.args_menu_items = items;
-            this.args_menu_id = reply.fId;
-
             let lastclname;
 
-            for (let n = 0; n < items.length; ++n) {
-               let item = items[n];
+            for (let n = 0; n < menu.exec_items.length; ++n) {
+               let item = menu.exec_items[n];
+               item.$execid = reply.fId;
+               item.$menu = menu;
 
                if (item.fClassName && lastclname && (lastclname != item.fClassName)) {
                   _menu.add('endsub:');
@@ -12209,11 +12208,11 @@ class ObjectPainter extends BasePainter {
       let reqid = this.snapid;
       if (kind) reqid += '#' + kind; // use # to separate object id from member specifier like 'x' or 'z'
 
-      this._got_menu = false;
+      menu._got_menu = false;
 
       // if menu painter differs from this, remember it for further usage
       if (menu.painter)
-         menu.painter.exec_painter = (menu.painter !== this) ? this : undefined;
+         menu.exec_painter = (menu.painter !== this) ? this : undefined;
 
       return new Promise(resolveFunc => {
 
@@ -73122,12 +73121,13 @@ class THistDrawOptions {
    decode(opt, hdim, histo, pp, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
+      this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
          let p1 = opt.lastIndexOf('['),  p2 = opt.lastIndexOf(']');
          if ((p1 >= 0) && (p2 > p1+1)) {
-            let name = opt.slice(p1+1, p2);
+            this.cutg_name = opt.slice(p1+1, p2);
             opt = opt.slice(0, p1) + opt.slice(p2+1);
-            this.cutg = pp?.findInPrimitives(name, clTCutG);
+            this.cutg = pp?.findInPrimitives(this.cutg_name, clTCutG);
             if (this.cutg) this.cutg.$redraw_pad = true;
          }
       }
@@ -73515,6 +73515,9 @@ class THistDrawOptions {
          if (pad.fTickx) res += '_TICKX';
          if (pad.fTicky) res += '_TICKY';
       }
+
+      if (this.cutg_name)
+         res += ` [${this.cutg_name}]`;
 
       return res;
    }
@@ -74582,6 +74585,35 @@ class THistPainter extends ObjectPainter {
 
          this.interactiveRedraw();
        });
+   }
+
+   /** @summary Execute histogram menu command
+     * @desc Used to catch standard menu items and provide local implementation */
+   executeMenuCommand(method, args) {
+      if (super.executeMenuCommand(method, args))
+         return true;
+
+      if (method.fClassName == clTAxis) {
+         let p = isStr(method.$execid) ? method.$execid.indexOf('#') : -1,
+             kind = p > 0 ? method.$execid.slice(p+1) : 'x',
+             fp = this.getFramePainter();
+         if (method.fName == 'UnZoom') {
+            fp?.unzoom(kind);
+            return true;
+         } else if (method.fName == 'SetRange') {
+            const axis = fp?.getAxis(kind), bins = JSON.parse(`[${args}]`);
+            if (axis && bins?.length == 2)
+               fp?.zoom(kind, axis.GetBinLowEdge(bins[0]), axis.GetBinLowEdge(bins[1]+1));
+            // let execute command on server
+         } else if (method.fName == 'SetRangeUser') {
+            const values = JSON.parse(`[${args}]`);
+            if (values?.length == 2)
+               fp?.zoom(kind, values[0], values[1]);
+            // let execute command on server
+         }
+      }
+
+      return false;
    }
 
    /** @summary Fill histogram context menu */
@@ -103739,7 +103771,7 @@ async function drawText$1() {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
             let text = this.getObject();
-            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
+            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc);
             text.fY = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
             this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
          };
@@ -103760,26 +103792,60 @@ function drawPolyLine() {
    this.createG();
 
    let polyline = this.getObject(),
-       lineatt = new TAttLineHandler(polyline),
-       fillatt = this.createAttFill(polyline),
        kPolyLineNDC = BIT(14),
        isndc = polyline.TestBit(kPolyLineNDC),
+       opt = this.getDrawOpt() || polyline.fOption,
+       dofill = (polyline._typename == clTPolyLine) && ((opt == 'f') || (opt == 'F')),
        cmd = '', func = this.getAxisToSvgFunc(isndc);
+
+   this.createAttLine({ attr: polyline });
+   this.createAttFill({ attr: polyline });
 
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
-   if (polyline._typename != clTPolyLine)
-      fillatt.setSolidColor('none');
-
-   if (!fillatt.empty())
+   if (dofill)
       cmd += 'Z';
 
-   this.draw_g
-       .append('svg:path')
-       .attr('d', cmd)
-       .call(lineatt.func)
-       .call(fillatt.func);
+   let elem =  this.draw_g.append('svg:path').attr('d', cmd);
+
+   if (dofill)
+      elem.call(this.fillatt.func);
+   else
+      elem.call(this.lineatt.func)
+          .style('fill', 'none');
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+   this.isndc = isndc;
+
+   this.moveDrag = function (dx,dy) {
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   };
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let polyline = this.getObject(),
+          func = this.getAxisToSvgFunc(this.isndc),
+          exec = '';
+
+      for (let n = 0; n <= polyline.fLastPoint; ++n) {
+         let x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
+             y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
+         polyline.fX[n] = x;
+         polyline.fY[n] = y;
+         exec += `SetPoint(${n},${x},${y});;`;
+      }
+      this.submitCanvExec(exec + 'Notify();;');
+      this.redraw();
+   };
+
 }
 
 /** @summary Draw TEllipse
@@ -103861,11 +103927,34 @@ function drawEllipse() {
      path += 'Z';
    }
 
+   this.x = x;
+   this.y = y;
+
    this.draw_g
       .append('svg:path')
       .attr('transform', makeTranslate(x, y))
       .attr('d', path)
-      .call(this.lineatt.func).call(this.fillatt.func);
+      .call(this.lineatt.func)
+      .call(this.fillatt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.moveDrag = function (dx,dy) {
+      this.x += dx;
+      this.y += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.x, this.y));
+   };
+
+   this.moveEnd = function (not_changed) {
+      if (not_changed) return;
+      let ellipse = this.getObject();
+      ellipse.fX1 = this.svgToAxis('x', this.x);
+      ellipse.fY1 = this.svgToAxis('y', this.y);
+      this.submitCanvExec(`SetX1(${ellipse.fX1});;SetY1(${ellipse.fY1});;Notify();;`);
+   };
+
 }
 
 /** @summary Draw TPie
@@ -103892,9 +103981,10 @@ function drawPie() {
       total += pie.fPieSlices[n].fValue;
 
    for (let n = 0; n < nb; n++) {
-      let slice = pie.fPieSlices[n],
-          lineatt = new TAttLineHandler({attr: slice}),
-          fillatt = this.createAttFill(slice);
+      let slice = pie.fPieSlices[n];
+
+      this.createAttLine({ attr: slice }),
+      this.createAttFill({ attr: slice });
 
       af += slice.fValue/total*2*Math.PI;
       let x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
@@ -103902,8 +103992,8 @@ function drawPie() {
       this.draw_g
           .append('svg:path')
           .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
-          .call(lineatt.func)
-          .call(fillatt.func);
+          .call(this.lineatt.func)
+          .call(this.fillatt.func);
       x1 = x2; y1 = y2;
    }
 }
@@ -104010,39 +104100,96 @@ function drawBox$1() {
   * @private */
 function drawMarker$1() {
    const marker = this.getObject(),
-         att = new TAttMarkerHandler(marker),
-         kMarkerNDC = BIT(14),
-         isndc = marker.TestBit(kMarkerNDC);
+         kMarkerNDC = BIT(14);
+
+   this.isndc = marker.TestBit(kMarkerNDC);
+
+   this.createAttMarker({ attr: marker });
 
    this.createG();
 
-   let x = this.axisToSvg('x', marker.fX, isndc),
-       y = this.axisToSvg('y', marker.fY, isndc),
-       path = att.create(x, y);
+   let x = this.axisToSvg('x', marker.fX, this.isndc),
+       y = this.axisToSvg('y', marker.fY, this.isndc),
+       path = this.markeratt.create(x, y);
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
-          .call(att.func);
+          .call(this.markeratt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+
+   this.moveDrag = function (dx,dy) {
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   };
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let marker = this.getObject();
+      marker.fX = this.svgToAxis('x', this.axisToSvg('x', marker.fX, this.isndc) + this.dx, this.isndc);
+      marker.fY = this.svgToAxis('y', this.axisToSvg('y', marker.fY, this.isndc) + this.dy, this.isndc);
+      this.submitCanvExec(`SetX(${marker.fX});;SetY(${marker.fY});;Notify();;`);
+      this.redraw();
+   };
 }
 
 /** @summary Draw TPolyMarker
   * @private */
 function drawPolyMarker() {
-   this.createG();
 
    let poly = this.getObject(),
-       att = new TAttMarkerHandler(poly),
        path = '',
        func = this.getAxisToSvgFunc();
 
-   for (let n = 0; n < poly.fN; ++n)
-      path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
+   this.createAttMarker({ attr: poly });
+
+   this.createG();
+
+   for (let n = 0; n <= poly.fLastPoint; ++n)
+      path += this.markeratt.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
-          .call(att.func);
+          .call(this.markeratt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+
+   this.moveDrag = function (dx,dy) {
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   };
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let poly = this.getObject(),
+          func = this.getAxisToSvgFunc(),
+          exec = '';
+
+      for (let n = 0; n <= poly.fLastPoint; ++n) {
+         let x = this.svgToAxis('x', func.x(poly.fX[n]) + this.dx),
+             y = this.svgToAxis('y', func.y(poly.fY[n]) + this.dy);
+         poly.fX[n] = x;
+         poly.fY[n] = y;
+         exec += `SetPoint(${n},${x},${y});;`;
+      }
+      this.submitCanvExec(exec + 'Notify();;');
+      this.redraw();
+   };
+
 }
 
 /** @summary Draw JS image
@@ -107025,25 +107172,25 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary Execute menu command
      * @private */
    executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method,args)) return true;
+      if (super.executeMenuCommand(method, args)) return true;
 
       let canp = this.getCanvPainter(), pmain = this.get_main();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
          if (!canp || canp._readonly) return true; // ignore function
 
-         let hint = this.extractTooltip(pnt);
+         let pnt = isFunc(pmain?.getLastEventPos) ? pmain.getLastEventPos() : null,
+             hint = this.extractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            let pnt = isFunc(pmain.getLastEventPos) ? pmain.getLastEventPos() : null;
             if (pnt) {
                let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
                    userx = funcs.revertAxis('x', pnt.x) ?? 0,
                    usery = funcs.revertAxis('y', pnt.y) ?? 0;
-               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, this.args_menu_id);
+               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
             }
-         } else if (this.args_menu_id && (hint?.binindx !== undefined)) {
-            this.submitCanvExec(`RemovePoint(${hint.binindx})`, this.args_menu_id);
+         } else if (method.$execid && (hint?.binindx !== undefined)) {
+            this.submitCanvExec(`RemovePoint(${hint.binindx})`, method.$execid);
          }
 
          return true; // call is processed
