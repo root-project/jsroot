@@ -294,12 +294,12 @@ function drawBox() {
    if (this.borderMode) {
       this.draw_g.append('svg:path')
                  .attr('d', paths[1])
-                 .call(fillatt.func)
+                 .call(this.fillatt.func)
                  .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       this.draw_g.append('svg:path')
                  .attr('d', paths[2])
-                 .call(fillatt.func)
+                 .call(this.fillatt.func)
                  .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
    }
 
