@@ -235,12 +235,13 @@ class THistDrawOptions {
    decode(opt, hdim, histo, pp, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
+      this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
          let p1 = opt.lastIndexOf('['),  p2 = opt.lastIndexOf(']');
          if ((p1 >= 0) && (p2 > p1+1)) {
-            let name = opt.slice(p1+1, p2);
+            this.cutg_name = opt.slice(p1+1, p2);
             opt = opt.slice(0, p1) + opt.slice(p2+1);
-            this.cutg = pp?.findInPrimitives(name, clTCutG);
+            this.cutg = pp?.findInPrimitives(this.cutg_name, clTCutG);
             if (this.cutg) this.cutg.$redraw_pad = true;
          }
       }
@@ -628,6 +629,9 @@ class THistDrawOptions {
          if (pad.fTickx) res += '_TICKX';
          if (pad.fTicky) res += '_TICKY';
       }
+
+      if (this.cutg_name)
+         res += ` [${this.cutg_name}]`;
 
       return res;
    }
