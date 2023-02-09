@@ -54,7 +54,10 @@ class TLinePainter extends ObjectPainter {
    }
 
    /** @summary Create path */
-   createPath() { return `M${Math.round(this.x1)},${Math.round(this.y1)}L${Math.round(this.x2)},${Math.round(this.y2)}`; }
+   createPath() {
+      const x1 = Math.round(this.x1), x2 = Math.round(this.x2), y1 = Math.round(this.y1), y2 = Math.round(this.y2);
+      return `M${x1},${y1}` + (x1 == x2 ? `V${y2}` : (y1 == y2 ? `H${x2}` : `L${x2},${y2}`));
+   }
 
    /** @summary Add extras - used for TArrow */
    addExtras() {}
