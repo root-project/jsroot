@@ -1,8 +1,6 @@
 import { BIT, isBatchMode, clTLatex, clTMathText, clTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
-import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
-import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
@@ -287,9 +285,10 @@ function drawPie() {
       total += pie.fPieSlices[n].fValue;
 
    for (let n = 0; n < nb; n++) {
-      let slice = pie.fPieSlices[n],
-          lineatt = new TAttLineHandler({attr: slice}),
-          fillatt = this.createAttFill(slice);
+      let slice = pie.fPieSlices[n];
+
+      this.createAttLine({ attr: slice }),
+      this.createAttFill({ attr: slice });
 
       af += slice.fValue/total*2*Math.PI;
       let x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
@@ -297,8 +296,8 @@ function drawPie() {
       this.draw_g
           .append('svg:path')
           .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
-          .call(lineatt.func)
-          .call(fillatt.func);
+          .call(this.lineatt.func)
+          .call(this.fillatt.func);
       x1 = x2; y1 = y2;
    }
 }
@@ -405,39 +404,42 @@ function drawBox() {
   * @private */
 function drawMarker() {
    const marker = this.getObject(),
-         att = new TAttMarkerHandler(marker),
          kMarkerNDC = BIT(14),
          isndc = marker.TestBit(kMarkerNDC);
+
+   this.createAttMarker({ attr: marker });
 
    this.createG();
 
    let x = this.axisToSvg('x', marker.fX, isndc),
        y = this.axisToSvg('y', marker.fY, isndc),
-       path = att.create(x, y);
+       path = this.markeratt.create(x, y);
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
-          .call(att.func);
+          .call(this.markeratt.func);
 }
 
 /** @summary Draw TPolyMarker
   * @private */
 function drawPolyMarker() {
-   this.createG();
 
    let poly = this.getObject(),
-       att = new TAttMarkerHandler(poly),
        path = '',
        func = this.getAxisToSvgFunc();
 
+   this.createAttMarker({ attr: poly });
+
+   this.createG();
+
    for (let n = 0; n < poly.fN; ++n)
-      path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
+      path += this.markeratt.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
-          .call(att.func);
+          .call(this.markeratt.func);
 }
 
 /** @summary Draw JS image
