@@ -39,27 +39,37 @@ class TLinePainter extends ObjectPainter {
       this.submitCanvExec(exec + 'Notify();;');
    }
 
-   /** @summary Create path */
-   createPath() { return `M${Math.round(this.x1)},${Math.round(this.y1)}L${Math.round(this.x2)},${Math.round(this.y2)}`; }
-
-   /** @summary Redraw line */
-   redraw() {
+   /** @summary Calculate line coordinates */
+   prepareDraw() {
       let line = this.getObject(), kLineNDC = BIT(14);
 
       this.isndc = line.TestBit(kLineNDC);
-
-      this.createAttLine({ attr: line });
-
-      this.createG();
 
       this.x1 = this.axisToSvg('x', line.fX1, this.isndc, true);
       this.y1 = this.axisToSvg('y', line.fY1, this.isndc, true);
       this.x2 = this.axisToSvg('x', line.fX2, this.isndc, true);
       this.y2 = this.axisToSvg('y', line.fY2, this.isndc, true);
 
-      this.draw_g.append('svg:path')
-                 .attr('d', this.createPath())
-                 .call(this.lineatt.func);
+      this.createAttLine({ attr: line });
+   }
+
+   /** @summary Create path */
+   createPath() { return `M${Math.round(this.x1)},${Math.round(this.y1)}L${Math.round(this.x2)},${Math.round(this.y2)}`; }
+
+   /** @summary Add extras - used for TArrow */
+   addExtras() {}
+
+   /** @summary Redraw line */
+   redraw() {
+      this.prepareDraw();
+
+      this.createG();
+
+      const elem = this.draw_g.append('svg:path')
+                       .attr('d', this.createPath())
+                       .call(this.lineatt.func);
+
+      this.addExtras(elem);
 
       addMoveHandler(this);
       assignContextMenu(this);
