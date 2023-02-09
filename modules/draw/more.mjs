@@ -404,21 +404,44 @@ function drawBox() {
   * @private */
 function drawMarker() {
    const marker = this.getObject(),
-         kMarkerNDC = BIT(14),
-         isndc = marker.TestBit(kMarkerNDC);
+         kMarkerNDC = BIT(14);
+
+   this.isndc = marker.TestBit(kMarkerNDC);
 
    this.createAttMarker({ attr: marker });
 
    this.createG();
 
-   let x = this.axisToSvg('x', marker.fX, isndc),
-       y = this.axisToSvg('y', marker.fY, isndc),
+   let x = this.axisToSvg('x', marker.fX, this.isndc),
+       y = this.axisToSvg('y', marker.fY, this.isndc),
        path = this.markeratt.create(x, y);
 
    if (path)
       this.draw_g.append('svg:path')
           .attr('d', path)
           .call(this.markeratt.func);
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+
+   this.moveDrag = function (dx,dy) {
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   }
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let marker = this.getObject();
+      marker.fX = this.svgToAxis('x', this.axisToSvg('x', marker.fX, this.isndc) + this.dx, this.isndc);
+      marker.fY = this.svgToAxis('y', this.axisToSvg('y', marker.fY, this.isndc) + this.dy, this.isndc);
+      this.submitCanvExec(`SetX(${marker.fX});;SetY(${marker.fY});;Notify();;`);
+      this.redraw();
+   }
 }
 
 /** @summary Draw TPolyMarker
