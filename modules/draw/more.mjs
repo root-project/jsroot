@@ -77,7 +77,7 @@ async function drawText() {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
             let text = this.getObject();
-            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
+            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc);
             text.fY = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
             this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
          }
@@ -98,26 +98,60 @@ function drawPolyLine() {
    this.createG();
 
    let polyline = this.getObject(),
-       lineatt = new TAttLineHandler(polyline),
-       fillatt = this.createAttFill(polyline),
        kPolyLineNDC = BIT(14),
        isndc = polyline.TestBit(kPolyLineNDC),
+       opt = this.getDrawOpt() || polyline.fOption,
+       dofill = (polyline._typename == clTPolyLine) && ((opt == 'f') || (opt == 'F')),
        cmd = '', func = this.getAxisToSvgFunc(isndc);
+
+   this.createAttLine({ attr: polyline });
+   this.createAttFill({ attr: polyline });
 
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
-   if (polyline._typename != clTPolyLine)
-      fillatt.setSolidColor('none');
-
-   if (!fillatt.empty())
+   if (dofill)
       cmd += 'Z';
 
-   this.draw_g
-       .append('svg:path')
-       .attr('d', cmd)
-       .call(lineatt.func)
-       .call(fillatt.func);
+   let elem =  this.draw_g.append('svg:path').attr('d', cmd);
+
+   if (dofill)
+      elem.call(this.fillatt.func);
+   else
+      elem.call(this.lineatt.func)
+          .style('fill', 'none');
+
+   assignContextMenu(this);
+
+   addMoveHandler(this);
+
+   this.dx = 0;
+   this.dy = 0;
+   this.isndc = isndc;
+
+   this.moveDrag = function (dx,dy) {
+      this.dx += dx;
+      this.dy += dy;
+      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+   }
+
+   this.moveEnd = function(not_changed) {
+      if (not_changed) return;
+      let polyline = this.getObject(), exec = '';
+
+      for (let n = 0; n <= polyline.fLastPoint; ++n) {
+         let grx = this.axisToSvg('x', polyline.fX[n], this.isndc),
+             gry = this.axisToSvg('y', polyline.fY[n], this.isndc),
+             x   = this.svgToAxis('x', grx + this.dx, this.isndc),
+             y   = this.svgToAxis('y', gry + this.dy, this.isndc);
+         polyline.fX[n] = x;
+         polyline.fY[n] = y;
+         exec += `SetPoint(${n},${x},${y});;`;
+      }
+      this.submitCanvExec(exec + 'Notify();;');
+      this.redraw();
+   }
+
 }
 
 /** @summary Draw TEllipse
