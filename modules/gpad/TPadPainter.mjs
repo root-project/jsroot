@@ -1695,23 +1695,23 @@ class TPadPainter extends ObjectPainter {
       if (!r.ranges || p.empty()) return true;
 
       // calculate user range for full pad
-      const log10 = (x,e) => (x<=0) ? e : Math.log10(x),
-            log2 = (x,e) => (x<=0) ? e : Math.log10(x)/Math.log10(2),
-            funcs = [ x => x, log10, log2 ],
-            frect = main.getFrameRect();
+      const func = (log, value, err) => {
+         if (!log) return value;
+         if (value <= 0) return err;
+         value = Math.log10(value);
+         if (log > 1) value = value/Math.log10(log);
+         return value;
+      }, frect = main.getFrameRect();
 
-      let func = funcs[main.logx] || log10;
-      r.ux1 = func(r.ux1, 0);
-      r.ux2 = func(r.ux2, 1);
+      r.ux1 = func(main.logx, r.ux1, 0);
+      r.ux2 = func(main.logx, r.ux2, 1);
 
       let k = (r.ux1 - r.ux2)/frect.width;
       r.px1 = r.ux1 - k*frect.x;
       r.px2 = r.px1 + k*this.getPadWidth();
 
-      func = funcs[main.logy] || log10;
-
-      r.uy1 = func(r.uy1, 0);
-      r.uy2 = func(r.uy2, 1);
+      r.uy1 = func(main.logy, r.uy1, 0);
+      r.uy2 = func(main.logy, r.uy2, 1);
 
       k = (r.uy2 - r.uy1)/frect.height;
       r.py1 = r.uy1 - k*frect.y;
