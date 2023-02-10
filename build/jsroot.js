@@ -11,7 +11,7 @@ let version_id = '7.3.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '7/02/2023';
+let version_date = '10/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -89186,7 +89186,7 @@ class THStackPainter extends ObjectPainter {
       let max0 = max, min0 = min, zoomed = false;
 
       if (stack.fMaximum != kNoZoom) {
-         max = stack.fMaximum*(1 + gStyle.fHistTopMargin);
+         max = stack.fMaximum;
          max0 = Math.max(max, max0);
          zoomed = true;
       }
