@@ -2082,6 +2082,9 @@ class TPadPainter extends ObjectPainter {
       if (d.check('LOGZ')) pad.fLogz = 1;
       if (d.check('LOG2')) pad.fLogx = pad.fLogy = pad.fLogz = 2;
       if (d.check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
+      if (d.check('LNX')) { pad.fLogx = 3; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+      if (d.check('LNY')) { pad.fLogy = 3; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
+      if (d.check('LN')) pad.fLogx = pad.fLogy = pad.fLogz = 3;
       if (d.check('GRIDX')) pad.fGridx = 1;
       if (d.check('GRIDY')) pad.fGridy = 1;
       if (d.check('GRID')) pad.fGridx = pad.fGridy = 1;
