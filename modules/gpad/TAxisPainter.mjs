@@ -135,8 +135,9 @@ const AxisPainterMethods = {
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
-
-         return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         if (Math.abs(base - Math.E) < 0.001)
+            return floatToString(val, fmt || gStyle.fStatFormat);
+         return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
       }
       return null;
    },
@@ -161,7 +162,7 @@ const AxisPainterMethods = {
          value = Math.round(value/Math.pow(base,order));
          if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? '#times' : 'x');
       }
-      if (Math.abs(base-Math.exp(1)) < 0.001)
+      if (Math.abs(base - Math.E) < 0.001)
          res += 'e';
       else
          res += base.toString();
@@ -404,7 +405,13 @@ class TAxisPainter extends ObjectPainter {
       if (this.kind == 'time') {
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (this.log) {
-         this.logbase = this.log === 2 ? 2 : 10;
+         if ((this.log === 1) || (this.log === 10))
+            this.logbase =  10;
+         else if (this.log === 3)
+            this.logbase = Math.E;
+         else
+            this.logbase = Math.round(this.log);
+
          if (smax <= 0) smax = 1;
 
          if ((smin <= 0) && axis && !opts.logcheckmin)
@@ -419,14 +426,14 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = d3_scaleLog().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
+         this.func = d3_scaleLog().base(this.logbase).domain([smin, smax]);
       } else if (this.symlog) {
          let v = Math.max(Math.abs(smin), Math.abs(smax));
          if (Number.isInteger(this.symlog) && (this.symlog > 0))
             v *= Math.pow(10,-1*this.symlog);
          else
             v *= 0.01;
-         this.func = d3_scaleSymlog().constant(v).domain([smin,smax]);
+         this.func = d3_scaleSymlog().constant(v).domain([smin, smax]);
       } else {
          this.func = d3_scaleLinear().domain([smin,smax]);
       }
