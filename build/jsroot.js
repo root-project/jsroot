@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/02/2023';
+let version_date = '13/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -58983,8 +58983,9 @@ const AxisPainterMethods = {
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
-
-         return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         if (Math.abs(base - Math.E) < 0.001)
+            return floatToString(val, fmt || gStyle.fStatFormat);
+         return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
       }
       return null;
    },
@@ -59009,7 +59010,7 @@ const AxisPainterMethods = {
          value = Math.round(value/Math.pow(base,order));
          if ((value!=0) && (value!=1)) res = value.toString() + (settings.Latex ? '#times' : 'x');
       }
-      if (Math.abs(base-Math.exp(1)) < 0.001)
+      if (Math.abs(base - Math.E) < 0.001)
          res += 'e';
       else
          res += base.toString();
@@ -59252,7 +59253,13 @@ class TAxisPainter extends ObjectPainter {
       if (this.kind == 'time') {
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (this.log) {
-         this.logbase = this.log === 2 ? 2 : 10;
+         if ((this.log === 1) || (this.log === 10))
+            this.logbase =  10;
+         else if (this.log === 3)
+            this.logbase = Math.E;
+         else
+            this.logbase = Math.round(this.log);
+
          if (smax <= 0) smax = 1;
 
          if ((smin <= 0) && axis && !opts.logcheckmin)
@@ -59267,14 +59274,14 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = log().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
+         this.func = log().base(this.logbase).domain([smin, smax]);
       } else if (this.symlog) {
          let v = Math.max(Math.abs(smin), Math.abs(smax));
          if (Number.isInteger(this.symlog) && (this.symlog > 0))
             v *= Math.pow(10,-1*this.symlog);
          else
             v *= 0.01;
-         this.func = symlog().constant(v).domain([smin,smax]);
+         this.func = symlog().constant(v).domain([smin, smax]);
       } else {
          this.func = linear().domain([smin,smax]);
       }
@@ -66600,31 +66607,36 @@ class TFramePainter extends ObjectPainter {
 
       if ((kind == 'x') || (kind == 'y') || (kind == 'z') || (kind == 'x2') || (kind == 'y2')) {
          let faxis = obj || this[kind+'axis'];
-         menu.add('header: ' + kind.toUpperCase() + ' axis');
+         menu.add(`header: ${kind.toUpperCase()} axis`);
          menu.add('Unzoom', () => this.unzoom(kind));
          if (pad) {
-            menu.add('sub:SetLog '+kind[0]);
-            menu.addchk(pad['fLog' + kind[0]] == 0, 'linear', () => this.changeAxisLog(kind[0], 0));
-            menu.addchk(pad['fLog' + kind[0]] == 1, 'log', () => this.changeAxisLog(kind[0], 1));
-            menu.addchk(pad['fLog' + kind[0]] == 2, 'log2', () => this.changeAxisLog(kind[0], 2));
+            let member = 'fLog'+kind[0];
+            menu.add('sub:SetLog '+kind[0], () => {
+               menu.input('Enter log kind 0 - off, 1 - log10, 2 - log2, 3 - ln', pad[member], 'int', 0, 10000).then(v => {
+                  this.changeAxisLog(kind[0], v);
+            });});
+            menu.addchk(pad[member] == 0, 'linear', () => this.changeAxisLog(kind[0], 0));
+            menu.addchk(pad[member] == 1, 'log', () => this.changeAxisLog(kind[0], 1));
+            menu.addchk(pad[member] == 2, 'log2', () => this.changeAxisLog(kind[0], 2));
+            menu.addchk(pad[member] == 3, 'ln', () => this.changeAxisLog(kind[0], 3));
+            menu.addchk(pad[member] == 4, 'log4', () => this.changeAxisLog(kind[0], 4));
+            menu.addchk(pad[member] == 8, 'log8', () => this.changeAxisLog(kind[0], 8));
             menu.add('endsub:');
          }
-         menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log',
-               flag => {
-                  faxis.InvertBit(EAxisBits.kMoreLogLabels);
-                  if (main?.snapid && (kind.length == 1))
-                     main.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
-                  else
-                     this.interactiveRedraw('pad');
-               });
-         menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent',
-               flag => {
-                  faxis.InvertBit(EAxisBits.kNoExponent);
-                  if (main?.snapid && (kind.length == 1))
-                     main.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
-                  else
-                     this.interactiveRedraw('pad');
-               });
+         menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log', flag => {
+            faxis.InvertBit(EAxisBits.kMoreLogLabels);
+            if (main?.snapid && (kind.length == 1))
+               main.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
+            else
+               this.interactiveRedraw('pad');
+         });
+         menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent', flag => {
+            faxis.InvertBit(EAxisBits.kNoExponent);
+            if (main?.snapid && (kind.length == 1))
+               main.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
+            else
+               this.interactiveRedraw('pad');
+         });
 
          if ((kind === 'z') && main?.options?.Zscale && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu);
@@ -76472,7 +76484,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
    /** @summary draw TH1 object */
    static async draw(dom, histo, opt) {
-      return THistPainter._drawHist(new TH1Painter$2(dom, histo), opt);
+      return THistPainter._drawHist(new TH1Painter(dom, histo), opt);
    }
 
 }; // class TH1Painter
@@ -79272,7 +79284,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary draw TH2 object */
    static async draw(dom, histo, opt) {
-      return THistPainter._drawHist(new TH2Painter$2(dom, histo), opt);
+      return THistPainter._drawHist(new TH2Painter(dom, histo), opt);
    }
 
 }; // class TH2Painter
@@ -107384,7 +107396,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    }
 
    static async draw(dom, graph, opt) {
-      return TGraphPainter$1._drawGraph(new TGraphPainter$1(dom, graph), opt);
+      return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }
 
 }; // class TGraphPainter
@@ -108518,7 +108530,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
 
    /** @summary Draw TMultiGraph object */
    static async draw(dom, mgraph, opt) {
-      return TMultiGraphPainter$2._drawMG(new TMultiGraphPainter$2(dom, mgraph), opt);
+      return TMultiGraphPainter._drawMG(new TMultiGraphPainter(dom, mgraph), opt);
    }
 
 }; // class TMultiGraphPainter
@@ -118581,7 +118593,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
    /** @summary draw RH1 object */
    static async draw(dom, histo, opt) {
-      return RH1Painter$2._draw(new RH1Painter$2(dom, histo), opt);
+      return RH1Painter._draw(new RH1Painter(dom, histo), opt);
    }
 
 }; // class RH1Painter
@@ -120002,7 +120014,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
    /** @summary draw RH2 object */
    static async draw(dom, obj, opt) {
       // create painter and add it to canvas
-      return RH2Painter$2._draw(new RH2Painter$2(dom, obj), opt);
+      return RH2Painter._draw(new RH2Painter(dom, obj), opt);
    }
 
 }; //  class RH2Painter
