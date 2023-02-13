@@ -11025,8 +11025,9 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Return actual draw options as string
+     * @param ignore_pad - do not include pad settings into histogram draw options
      * @desc if options are not modified - returns original string which was specified for object draw */
-   getDrawOpt() {
+   getDrawOpt(ignore_pad) {
       if (!this.options) return '';
 
       if (isFunc(this.options.asString)) {
@@ -11039,7 +11040,7 @@ class ObjectPainter extends BasePainter {
                   changed = true;
          }
          if (changed && isFunc(this.options.asString))
-            return this.options.asString(this.isMainPainter(), pp?.getRootPad());
+            return this.options.asString(this.isMainPainter(), ignore_pad ? null : pp?.getRootPad());
       }
 
       return this.options.original || ''; // nothing better, return original draw option
@@ -59235,6 +59236,7 @@ class TAxisPainter extends ObjectPainter {
       this.kind = 'normal';
       this.vertical = vertical;
       this.log = opts.log || 0;
+      this.noexp_changed = opts.noexp_changed;
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
@@ -59343,10 +59345,9 @@ class TAxisPainter extends ObjectPainter {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
          }
-         this.noexp = axis ? axis.TestBit(EAxisBits.kNoExponent) : false;
-         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
-         this.moreloglabels = axis ? axis.TestBit(EAxisBits.kMoreLogLabels) : false;
-
+         this.noexp = axis?.TestBit(EAxisBits.kNoExponent);
+         if ((this.scale_max < 300) && (this.scale_min > 0.3) && !this.noexp_changed) this.noexp = true;
+         this.moreloglabels = axis?.TestBit(EAxisBits.kMoreLogLabels);
          this.format = this.formatLog;
 
       } else if (this.kind == 'labels') {
@@ -65935,6 +65936,7 @@ class TFramePainter extends ObjectPainter {
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                        noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
                                         logcheckmin: this.swap_xy,
                                         logminfactor: 0.0001 });
@@ -65948,6 +65950,7 @@ class TFramePainter extends ObjectPainter {
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                        noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
@@ -66009,6 +66012,7 @@ class TFramePainter extends ObjectPainter {
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                          { reverse: this.reverse_x2,
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                           noexp_changed: this.x2_noexp_changed,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: 0.0001 });
          this.x2_handle.assignFrameMembers(this, 'x2');
@@ -66022,6 +66026,7 @@ class TFramePainter extends ObjectPainter {
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                          { reverse: this.reverse_y2,
                                            log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                           noexp_changed: this.y2_noexp_changed,
                                            logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
                                            logminfactor: 3e-4 });
@@ -66606,17 +66611,18 @@ class TFramePainter extends ObjectPainter {
           pad = pp?.getRootPad(true);
 
       if ((kind == 'x') || (kind == 'y') || (kind == 'z') || (kind == 'x2') || (kind == 'y2')) {
-         let faxis = obj || this[kind+'axis'];
+         let faxis = obj || this[kind+'axis'],
+             handle = this[`${kind}_handle`];
          menu.add(`header: ${kind.toUpperCase()} axis`);
          menu.add('Unzoom', () => this.unzoom(kind));
          if (pad) {
             let member = 'fLog'+kind[0];
             menu.add('sub:SetLog '+kind[0], () => {
-               menu.input('Enter log kind 0 - off, 1 - log10, 2 - log2, 3 - ln', pad[member], 'int', 0, 10000).then(v => {
+               menu.input('Enter log kind: 0 - off, 1 - log10, 2 - log2, 3 - ln, ...', pad[member], 'int', 0, 10000).then(v => {
                   this.changeAxisLog(kind[0], v);
             });});
             menu.addchk(pad[member] == 0, 'linear', () => this.changeAxisLog(kind[0], 0));
-            menu.addchk(pad[member] == 1, 'log', () => this.changeAxisLog(kind[0], 1));
+            menu.addchk(pad[member] == 1, 'log10', () => this.changeAxisLog(kind[0], 1));
             menu.addchk(pad[member] == 2, 'log2', () => this.changeAxisLog(kind[0], 2));
             menu.addchk(pad[member] == 3, 'ln', () => this.changeAxisLog(kind[0], 3));
             menu.addchk(pad[member] == 4, 'log4', () => this.changeAxisLog(kind[0], 4));
@@ -66630,8 +66636,11 @@ class TFramePainter extends ObjectPainter {
             else
                this.interactiveRedraw('pad');
          });
-         menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent', flag => {
-            faxis.InvertBit(EAxisBits.kNoExponent);
+         menu.addchk(handle?.noexp ?? faxis.TestBit(EAxisBits.kNoExponent), 'No exponent', flag => {
+            if (flag != faxis.TestBit(EAxisBits.kNoExponent))
+               faxis.InvertBit(EAxisBits.kNoExponent);
+            if (handle) handle.noexp_changed = true;
+            this[`${kind}_noexp_changed`] = true;
             if (main?.snapid && (kind.length == 1))
                main.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
             else
@@ -66641,21 +66650,17 @@ class TFramePainter extends ObjectPainter {
          if ((kind === 'z') && main?.options?.Zscale && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu);
 
-         if (faxis) {
-            let handle = this[`${kind}_handle`];
+         if ((handle?.kind == 'labels') && (faxis.fNbins > 20))
+            menu.add('Find label', () => menu.input('Label id').then(id => {
+               if (!id) return;
+               for (let bin = 0; bin < faxis.fNbins; ++bin) {
+                  let lbl = handle.formatLabels(bin);
+                  if (lbl == id)
+                     return this.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin+5));
+                }
+            }));
 
-            if ((handle?.kind == 'labels') && (faxis.fNbins > 20))
-               menu.add('Find label', () => menu.input('Label id').then(id => {
-                  if (!id) return;
-                  for (let bin = 0; bin < faxis.fNbins; ++bin) {
-                     let lbl = handle.formatLabels(bin);
-                     if (lbl == id)
-                        return this.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin+5));
-                   }
-               }));
-
-            menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
-         }
+         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
          return true;
       }
 
@@ -70360,7 +70365,7 @@ class TPadPainter extends ObjectPainter {
          if (isFunc(sub.getWebPadOptions)) {
             if (scan_subpads) sub.getWebPadOptions(arg, cp);
          } else if (sub.snapid) {
-            let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: '', fopt: [] };
+            let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(true), fcust: '', fopt: [] };
             if (isFunc(sub.fillWebObjectOptions))
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
@@ -70792,6 +70797,9 @@ class TPadPainter extends ObjectPainter {
       if (d.check('LOGZ')) pad.fLogz = 1;
       if (d.check('LOG2')) pad.fLogx = pad.fLogy = pad.fLogz = 2;
       if (d.check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
+      if (d.check('LNX')) { pad.fLogx = 3; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+      if (d.check('LNY')) { pad.fLogy = 3; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
+      if (d.check('LN')) pad.fLogx = pad.fLogy = pad.fLogz = 3;
       if (d.check('GRIDX')) pad.fGridx = 1;
       if (d.check('GRIDY')) pad.fGridy = 1;
       if (d.check('GRID')) pad.fGridx = pad.fGridy = 1;
@@ -75307,6 +75315,9 @@ class THistPainter extends ObjectPainter {
    }
 
 } // class THistPainter
+
+const PadDrawOptions = ['USE_PAD_TITLE', 'LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'LOG', 'LOG2X', 'LOG2Y', 'LOG2',
+                        'LNX', 'LNY', 'LN', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY', 'FB'];
 
 /**
  * @summary Painter for TH1 classes
@@ -105995,8 +106006,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       // check pad options first
       res.PadStats = d.check('USE_PAD_STATS');
-      let hopt = '', checkhopt = ['USE_PAD_TITLE', 'LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY'];
-      checkhopt.forEach(name => { if (d.check(name)) hopt += ';' + name; });
+      let hopt = '';
+      PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
       if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
       if (d.check('YAXIS_', true)) hopt += ';YAXIS_' + d.part;
 
@@ -108507,8 +108518,8 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       painter._plc = d.check('PLC');
       painter._pmc = d.check('PMC');
 
-      let hopt = '', checkhopt = ['USE_PAD_TITLE', 'LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY', 'FB'];
-      checkhopt.forEach(name => { if (d.check(name)) hopt += ';' + name; });
+      let hopt = '';
+      PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
       let promise = Promise.resolve(true);
       if (d.check('A') || !painter.getMainPainter()) {
