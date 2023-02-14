@@ -102,8 +102,8 @@ const AxisPainterMethods = {
 
    /** @summary Assign often used members of frame painter */
    assignFrameMembers(fp, axis) {
-      fp['gr'+axis] = this.gr;                    // fp.grx
-      fp['log'+axis] = this.log;                  // fp.logx
+      fp[`gr${axis}`] = this.gr;                 // fp.grx
+      fp[`log${axis}`] = this.log;               // fp.logx
       fp[`scale_${axis}min`] = this.scale_min;   // fp.scale_xmin
       fp[`scale_${axis}max`] = this.scale_max;   // fp.scale_xmax
    },
@@ -116,7 +116,7 @@ const AxisPainterMethods = {
    /** @summary Convert graphical point back into axis value */
    revertPoint(pnt) {
       let value = this.func.invert(pnt);
-      return (this.kind == 'time') ?  (value - this.timeoffset) / 1000 : value;
+      return this.kind == 'time' ? (value - this.timeoffset) / 1000 : value;
    },
 
    /** @summary Provide label for time axis */
