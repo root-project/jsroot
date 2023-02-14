@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '13/02/2023';
+let version_date = '14/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -58951,8 +58951,8 @@ const AxisPainterMethods = {
 
    /** @summary Assign often used members of frame painter */
    assignFrameMembers(fp, axis) {
-      fp['gr'+axis] = this.gr;                    // fp.grx
-      fp['log'+axis] = this.log;                  // fp.logx
+      fp[`gr${axis}`] = this.gr;                 // fp.grx
+      fp[`log${axis}`] = this.log;               // fp.logx
       fp[`scale_${axis}min`] = this.scale_min;   // fp.scale_xmin
       fp[`scale_${axis}max`] = this.scale_max;   // fp.scale_xmax
    },
@@ -58965,7 +58965,7 @@ const AxisPainterMethods = {
    /** @summary Convert graphical point back into axis value */
    revertPoint(pnt) {
       let value = this.func.invert(pnt);
-      return (this.kind == 'time') ?  (value - this.timeoffset) / 1000 : value;
+      return this.kind == 'time' ? (value - this.timeoffset) / 1000 : value;
    },
 
    /** @summary Provide label for time axis */
@@ -59271,7 +59271,7 @@ class TAxisPainter extends ObjectPainter {
             }
 
          if ((smin <= 0) && opts.log_min_nz)
-            smin = opts.log_min_nz;
+            smin = this.log_min_nz = opts.log_min_nz;
 
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
@@ -64166,6 +64166,8 @@ function assignContextMenu(painter, kind) {
       painter.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, painter, kind) : null);
 }
 
+const logminfactorX = 0.0001, logminfactorY = 3e-4;
+
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
@@ -65933,13 +65935,13 @@ class TFramePainter extends ObjectPainter {
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.setHistPainter(opts.hist_painter, 'x');
 
-      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
                                         logcheckmin: this.swap_xy,
-                                        logminfactor: 0.0001 });
+                                        logminfactor: logminfactorX });
 
       this.x_handle.assignFrameMembers(this, 'x');
 
@@ -65947,14 +65949,14 @@ class TFramePainter extends ObjectPainter {
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.setHistPainter(opts.hist_painter, 'y');
 
-      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
-                                        logminfactor: 3e-4 });
+                                        logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
 
@@ -66014,7 +66016,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                            noexp_changed: this.x2_noexp_changed,
                                            logcheckmin: this.swap_xy,
-                                           logminfactor: 0.0001 });
+                                           logminfactor: logminfactorX });
          this.x2_handle.assignFrameMembers(this, 'x2');
       }
 
@@ -66029,7 +66031,7 @@ class TFramePainter extends ObjectPainter {
                                            noexp_changed: this.y2_noexp_changed,
                                            logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
-                                           logminfactor: 3e-4 });
+                                           logminfactor: logminfactorY });
 
          this.y2_handle.assignFrameMembers(this, 'y2');
       }
@@ -66790,7 +66792,9 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_y) {
          let cnt = 0;
-         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
+         if ((ymin <= this.ymin) || (!this.ymin && this.logy &&
+              (!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))
+            { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
       } else {
@@ -82274,9 +82278,9 @@ function createTorusBuffer( shape, faces_limit ) {
    if (shape.fDphi !== 360)
       for (let t = 0; t <= tubularSegments; t += tubularSegments) {
          let tube1 = shape.fRmax, tube2 = shape.fRmin,
-             d1 = (t > 0) ? 0 : 1, d2 = 1 - d1,
-             skip = (shape.fRmin) > 0 ?  0 : 1,
-             nsign = (t > 0) ? 1 : -1;
+             d1 = t > 0 ? 0 : 1, d2 = 1 - d1,
+             skip = shape.fRmin > 0 ? 0 : 1,
+             nsign = t > 0 ? 1 : -1;
          for (let n = 0; n < radialSegments; ++n) {
             creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
@@ -115141,7 +115145,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    async drawInSidePanel(canv, opt) {
       let side = this.selectDom('origin').select('.side_panel');
-      return side.empty() ?  null : this.drawObject(side.node(), canv, opt);
+      return side.empty() ? null : this.drawObject(side.node(), canv, opt);
    }
 
    /** @summary Checks if canvas shown inside ui5 widget
