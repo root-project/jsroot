@@ -1443,6 +1443,11 @@ class TPadPainter extends ObjectPainter {
             registerForResize(this.brlayout);
          }
 
+         // when getting first message from server, resize browser window
+         if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas &&
+              (first.fCw > 0) && (first.fCh > 0) && isFunc(this.resizeBrowser))
+               this.resizeBrowser(first.fCw, first.fCh, true);
+
          this.createCanvasSvg(0);
 
          if (!this.batch_mode)

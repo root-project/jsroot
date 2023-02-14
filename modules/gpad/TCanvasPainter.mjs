@@ -2,6 +2,7 @@ import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, isFunc, 
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
+import { getElementRect } from '../base/BasePainter.mjs';
 import { cleanup, resize, selectActivePad, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
 import { TFramePainter } from './TFramePainter.mjs';
@@ -688,16 +689,19 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary resize browser window  */
-   resizeBrowser(canvW, canvH) {
+   resizeBrowser(canvW, canvH, only_resize) {
       if (!isFunc(window?.resizeTo) || !canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let cW = this.getPadWidth(), cH = this.getPadHeight();
       if (!cW || !cH) {
+         console.log('checking dom element');
          let dom = this.selectDom('origin');
          if (dom.empty()) return;
-         cW = dom.node().outerWidth;
-         cH = dom.node().outerHeight;
+         let rect = getElementRect(dom);
+         cW = rect.width;
+         cH = rect.height;
+         console.log('checking dom element', cW, cH);
          if (!cW || !cH) return;
       }
 
@@ -706,7 +710,8 @@ class TCanvasPainter extends TPadPainter {
       if ((fullW > 0) && (fullH > 0)) {
           window.resizeTo(fullW, fullH);
           // send information to server
-          this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
+          if (!only_resize)
+             this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
       }
    }
 
