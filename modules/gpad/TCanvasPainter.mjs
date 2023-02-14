@@ -695,13 +695,11 @@ class TCanvasPainter extends TPadPainter {
 
       let cW = this.getPadWidth(), cH = this.getPadHeight();
       if (!cW || !cH) {
-         console.log('checking dom element');
          let dom = this.selectDom('origin');
          if (dom.empty()) return;
          let rect = getElementRect(dom);
          cW = rect.width;
          cH = rect.height;
-         console.log('checking dom element', cW, cH);
          if (!cW || !cH) return;
       }
 

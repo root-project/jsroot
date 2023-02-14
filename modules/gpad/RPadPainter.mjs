@@ -1069,6 +1069,11 @@ class RPadPainter extends RObjectPainter {
             registerForResize(this.brlayout);
          }
 
+         // when getting first message from server, resize browser window
+         if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas && snap.fWinSize &&
+              (snap.fWinSize[0] > 0) && (snap.fWinSize[1] > 0) && isFunc(this.resizeBrowser))
+                  this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1], true);
+
          this.createCanvasSvg(0);
          this.addPadButtons(true);
 
