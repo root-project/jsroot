@@ -422,7 +422,7 @@ class TAxisPainter extends ObjectPainter {
             }
 
          if ((smin <= 0) && opts.log_min_nz)
-            smin = opts.log_min_nz;
+            smin = this.log_min_nz = opts.log_min_nz;
 
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
