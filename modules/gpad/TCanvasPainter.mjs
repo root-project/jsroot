@@ -687,6 +687,29 @@ class TCanvasPainter extends TPadPainter {
       return res;
    }
 
+   /** @summary resize browser window  */
+   resizeBrowser(canvW, canvH) {
+      if (!isFunc(window?.resizeTo) || !canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+         return;
+
+      let cW = this.getPadWidth(), cH = this.getPadHeight();
+      if (!cW || !cH) {
+         let dom = this.selectDom('origin');
+         if (dom.empty()) return;
+         cW = dom.node().outerWidth;
+         cH = dom.node().outerHeight;
+         if (!cW || !cH) return;
+      }
+
+      let fullW = window.innerWidth - cW + canvW,
+          fullH = window.innerHeight - cH + canvH;
+      if ((fullW > 0) && (fullH > 0)) {
+          window.resizeTo(fullW, fullH);
+          // send information to server
+          this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
+      }
+   }
+
    /** @summary draw TCanvas */
    static async draw(dom, can, opt) {
       let nocanvas = !can;
