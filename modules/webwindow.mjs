@@ -707,6 +707,9 @@ async function connectWebWindow(arg) {
    if (arg.winW && arg.winH && isFunc(window?.resizeTo))
       window.resizeTo(arg.winW, arg.winH);
 
+   if (arg.winX && arg.winY && isFunc(window?.moveTo))
+      window.moveTo(arg.winX, arg.winY);
+
    // only for debug purposes
    // arg.socket_kind = 'longpoll';
 
