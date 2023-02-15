@@ -1167,7 +1167,7 @@ class TPadPainter extends ObjectPainter {
                if ((cw > 0) && (ch > 0) && (this.pad.fCw != cw) || (this.pad.fCh != ch)) {
                   this.pad.fCw = cw;
                   this.pad.fCh = ch;
-                  this.sendWebsocket(`RESIZED:[${cw}, ${ch}]`);
+                  this.sendWebsocket(`RESIZED:[${cw},${ch}]`);
                }
             }, 1000); // long enough delay to prevent multiple occurence
          }
