@@ -614,7 +614,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary resize browser window  */
-   resizeBrowser(canvW, canvH, only_resize) {
+   resizeBrowser(canvW, canvH) {
       if (!isFunc(window?.resizeTo) || !canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
@@ -632,9 +632,6 @@ class RCanvasPainter extends RPadPainter {
           fullH = window.innerHeight - cH + canvH;
       if ((fullW > 0) && (fullH > 0) && ((cW != canvW) || (cH != canvH))) {
           window.resizeTo(fullW, fullH);
-          // send information to server
-          if (!only_resize)
-             this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
           return true;
       }
    }

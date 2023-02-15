@@ -786,7 +786,7 @@ class RPadPainter extends RObjectPainter {
             delete this.enforceCanvasSize;
 
             if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fWinSize)
-               if (this.resizeBrowser(this.pad.fWinSize[0], this.pad.fWinSize[1], true))
+               if (this.resizeBrowser(this.pad.fWinSize[0], this.pad.fWinSize[1]))
                   handle_online = false;
          }
 
@@ -1097,7 +1097,7 @@ class RPadPainter extends RObjectPainter {
          // when getting first message from server, resize browser window
          if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas && snap.fWinSize &&
               (snap.fWinSize[0] > 0) && (snap.fWinSize[1] > 0) && isFunc(this.resizeBrowser))
-                  this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1], true);
+                  this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
 
          this.createCanvasSvg(0);
          this.addPadButtons(true);

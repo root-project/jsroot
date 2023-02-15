@@ -1163,7 +1163,7 @@ class TPadPainter extends ObjectPainter {
             delete this.enforceCanvasSize;
 
             if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fCw && this.pad?.fCh)
-               if (this.resizeBrowser(this.pad.fCw, this.pad.fCh, true))
+               if (this.resizeBrowser(this.pad.fCw, this.pad.fCh))
                   handle_online = false;
          }
 
@@ -1472,7 +1472,7 @@ class TPadPainter extends ObjectPainter {
          // when getting first message from server, resize browser window
          if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas &&
               (first.fCw > 0) && (first.fCh > 0) && isFunc(this.resizeBrowser))
-               this.resizeBrowser(first.fCw, first.fCh, true);
+               this.resizeBrowser(first.fCw, first.fCh);
 
          this.createCanvasSvg(0);
 
