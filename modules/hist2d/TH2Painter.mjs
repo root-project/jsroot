@@ -1562,6 +1562,7 @@ class TH2Painter extends THistPainter {
       let histo = this.getHisto(),
           handle = this.prepareDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
+          cp = this.getCanvPainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           bars = '', lines = '', dashed_lines = '',
           hists = '', hlines = '',
@@ -1573,7 +1574,9 @@ class TH2Painter extends THistPainter {
 
       if (this.options.Scaled !== null)
          scaledViolin = scaledCandle = this.options.Scaled;
-      else if (histo.fTitle.indexOf('unscaled') >= 0)
+      else if (cp?.online_canvas) {
+         // console.log('ignore hist title in online canvas');
+      } else if(histo.fTitle.indexOf('unscaled') >= 0)
          scaledViolin = scaledCandle = false;
       else if (histo.fTitle.indexOf('scaled') >= 0)
          scaledViolin = scaledCandle = true;
