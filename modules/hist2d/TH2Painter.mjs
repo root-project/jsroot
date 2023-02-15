@@ -1567,7 +1567,8 @@ class TH2Painter extends THistPainter {
           hists = '', hlines = '',
           markers = '', cmarkers = '', attrcmarkers = null,
           xx, proj, swapXY = isOption(kHorizontal),
-          scaledViolin = true, scaledCandle = false,
+          scaledViolin = gStyle.fViolinScaled,
+          scaledCandle = gStyle.fCandleScaled,
           maxContent = 0, maxIntegral = 0;
 
       if (this.options.Scaled !== null)
