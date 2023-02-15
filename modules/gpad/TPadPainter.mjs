@@ -399,7 +399,7 @@ class TPadPainter extends ObjectPainter {
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) return (check_resize > 1); // flag used to force re-drawing of all subpads
+         if (this._fixed_size) return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
 
@@ -1143,7 +1143,8 @@ class TPadPainter extends ObjectPainter {
 
       if (!force) force = this.needRedrawByResize();
 
-      let changed = false,
+      let handle_online = this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode,
+          changed = false,
           redrawNext = indx => {
              if (!changed || (indx >= this.painters.length)) {
                 this.confirmDraw();
@@ -1157,7 +1158,16 @@ class TPadPainter extends ObjectPainter {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
+         if (this.enforceCanvasSize) {
+            // mode when after window resize one tries to preserve canvas size
+            delete this.enforceCanvasSize;
+
+            if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fCw && this.pad?.fCh)
+               if (this.resizeBrowser(this.pad.fCw, this.pad.fCh, true))
+                  handle_online = false;
+         }
+
+         if (changed && handle_online) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
@@ -1167,6 +1177,7 @@ class TPadPainter extends ObjectPainter {
                if ((cw > 0) && (ch > 0) && (this.pad.fCw != cw) || (this.pad.fCh != ch)) {
                   this.pad.fCw = cw;
                   this.pad.fCh = ch;
+                  console.log(`RESIZED:[${cw},${ch}]`);
                   this.sendWebsocket(`RESIZED:[${cw},${ch}]`);
                }
             }, 1000); // long enough delay to prevent multiple occurence

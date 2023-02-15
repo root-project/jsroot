@@ -688,7 +688,7 @@ class TCanvasPainter extends TPadPainter {
       return res;
    }
 
-   /** @summary resize browser window  */
+   /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH, only_resize) {
       if (!isFunc(window?.resizeTo) || !canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
@@ -705,11 +705,12 @@ class TCanvasPainter extends TPadPainter {
 
       let fullW = window.innerWidth - cW + canvW,
           fullH = window.innerHeight - cH + canvH;
-      if ((fullW > 0) && (fullH > 0)) {
+      if ((fullW > 0) && (fullH > 0) && ((cW != canvW) || (cH != canvH))) {
           window.resizeTo(fullW, fullH);
           // send information to server
           if (!only_resize)
              this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
+          return true;
       }
    }
 
