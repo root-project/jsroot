@@ -766,7 +766,8 @@ class RPadPainter extends RObjectPainter {
 
       if (!force) force = this.needRedrawByResize();
 
-      let changed = false,
+      let handle_online = this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode,
+          changed = false,
           redrawNext = indx => {
              if (!changed || (indx >= this.painters.length)) {
                 this.confirmDraw();
@@ -780,7 +781,16 @@ class RPadPainter extends RObjectPainter {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
+         if (this.enforceCanvasSize) {
+            // mode when after window resize one tries to preserve canvas size
+            delete this.enforceCanvasSize;
+
+            if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fWinSize)
+               if (this.resizeBrowser(this.pad.fWinSize[0], this.pad.fWinSize[1], true))
+                  handle_online = false;
+         }
+
+         if (changed && handle_online) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {

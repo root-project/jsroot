@@ -630,11 +630,12 @@ class RCanvasPainter extends RPadPainter {
 
       let fullW = window.innerWidth - cW + canvW,
           fullH = window.innerHeight - cH + canvH;
-      if ((fullW > 0) && (fullH > 0)) {
+      if ((fullW > 0) && (fullH > 0) && ((cW != canvW) || (cH != canvH))) {
           window.resizeTo(fullW, fullH);
           // send information to server
           if (!only_resize)
              this.sendWebsocket(`RESIZED:[${canvW}, ${canvH}]`);
+          return true;
       }
    }
 
