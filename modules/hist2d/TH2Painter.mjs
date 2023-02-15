@@ -1618,12 +1618,12 @@ class TH2Painter extends THistPainter {
       handle.candle = []; // array of drawn points
 
       // Determining the quantiles
-      const fWhiskerRange = 1.0, fBoxRange = 0.5, // for now constants, later can be made configurable
-            prob = [ (fWhiskerRange >= 1) ? 1e-15 : 0.5 - fWhiskerRange/2.,
-                    (fBoxRange >= 1) ? 1E-14 : 0.5 - fBoxRange/2.,
-                    0.5,
-                    (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.,
-                    (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.];
+      const wRange = gStyle.fCandleWhiskerRange, bRange = gStyle.fCandleBoxRange,
+            prob = [ (wRange >= 1) ? 1e-15 : 0.5 - wRange/2.,
+                     (bRange >= 1) ? 1E-14 : 0.5 - bRange/2.,
+                     0.5,
+                     (bRange >= 1) ? 1-1E-14 : 0.5 + bRange/2.,
+                     (wRange >= 1) ? 1-1e-15 : 0.5 + wRange/2. ];
 
       const produceCandlePoint = (bin_indx, grx_left, grx_right, xindx1, xindx2) => {
          let res = extractQuantiles(xx, proj, prob);
