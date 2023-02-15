@@ -236,6 +236,13 @@ class TPavePainter extends ObjectPainter {
       if (pave?.fInit) {
          res.fcust = 'pave';
          res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
+
+         if ((pave.fName == 'stats') && this.isStats()) {
+             pave.fLines.arr.forEach(entry => {
+                if ((entry._typename == clTText) || (entry._typename == clTLatex))
+                   res.fcust += `;;${entry.fTitle}`;
+             });
+         }
       }
 
       return res;
