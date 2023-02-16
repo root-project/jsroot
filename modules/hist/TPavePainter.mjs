@@ -96,7 +96,12 @@ class TPavePainter extends ObjectPainter {
 
             svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
 
-            let canvas = await svgToImage(svg_code);
+            let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
+                rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
+                tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
+                bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
+
+            let canvas = await svgToImage(svg_code), found_autoplace = false;
             if (canvas) {
                const context = canvas.getContext("2d");
 
@@ -105,14 +110,63 @@ class TPavePainter extends ObjectPainter {
                let arr = data.data;
                console.log('array size', arr.length, 'expected',  canvas.width * canvas.height * 4);
 
-               console.log('first element', arr[0], arr[1], arr[2]);
+               let boxW = 30, boxH = 30, nX = Math.floor(canvas.width / boxW), nY = Math.floor(canvas.height / boxH),
+                   raster = new Array(nX*nY), filled_counter = 0;
+
+               for (let ix = 0; ix < nX; ++ix) {
+                  let px1 = ix * boxW, px2 = px1 + boxW;
+                  for (let iy = 0; iy < nY; ++iy) {
+                     let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
+                     // let py2 = canvas.height - iy * boxH, py1 = py2 - boxH, filled = 0;
+
+                     for (let x = px1; (x < px2) && !filled; ++x)
+                        for (let y = py1; y < py2; ++y) {
+                           let indx = (y * canvas.width + x) * 4;
+                           if (arr[indx] || arr[indx+1] || arr[indx+2]) {
+                              filled = 1;
+                              break;
+                           }
+                        }
+                      raster[iy * nX + ix] = filled;
+                      filled_counter += filled;
+                  }
+               }
+
+               console.log('Raster total', nX * nY, 'filled', filled_counter);
+
+               let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
+                   legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
+                   needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
+
+               console.log('Required width and height', legWidth, legHeight);
+
+               const test = (x, y) => {
+                  for (let ix = x; ix < x + needW; ++ix)
+                     for (let iy = y; iy < y + needH; ++iy)
+                        if (raster[iy * nX + ix]) return false;
+                  return true;
+               }
+
+               for (let ix = 0; ix < (nX - needW) && !found_autoplace; ++ix)
+                  for (let iy = nY - needH-1; iy >= 0; --iy)
+                     if (test(ix, iy)) {
+                        found_autoplace = true;
+                        console.log('found', ix, iy);
+                        pt.fX1NDC = lm + ix /nX * (1 - lm - rm);
+                        pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
+                        pt.fY2NDC = 1 - bm - iy/nY * (1 - bm - tm);
+                        pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
+                        break;
+                     }
             }
 
-            pt.fX1NDC = Math.max(pad?.fLeftMargin ?? 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - (pad?.fRightMargin ?? 0));
-            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(1 - (pad?.fTopMargin ?? 0), pt.fY1NDC + h0);
-            pt.fY1NDC = Math.max(pt.fY2NDC - h0, pad?.fBottomMargin ?? 0);
+            if (!found_autoplace) {
+               pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+               pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+               let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+               pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+               pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+            }
          }
       }
 
