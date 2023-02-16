@@ -273,7 +273,7 @@ function buildSvgPath(kind, bins, height, ndig) {
       return str;
    };
 
-   res.path = ((kind[0] == 'L') ? 'L' : 'M') + conv(bin.grx) + ',' + conv(bin.gry);
+   res.path = ((kind[0] == 'L') ? 'L' : 'M') + `${conv(bin.grx)},${conv(bin.gry)}`;
 
    // just calculate all deltas, can be used to build exclusion
    if (smooth || kind.indexOf('calc') >= 0)
@@ -286,7 +286,7 @@ function buildSvgPath(kind, bins, height, ndig) {
          let prev = bin;
          bin = bins[n];
          if (n > 1) res.path += 'S';
-         res.path += `${conv(bin.grx - bin.dgrx)},${conv(bin.gry - bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
+         res.path += `${conv(bin.grx-bin.dgrx)},${conv(bin.gry-bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
          maxy = Math.max(maxy, prev.gry);
       }
    } else if (npnts < 10000) {
