@@ -3,7 +3,7 @@ import { gStyle, settings, constants, internals, addMethods,
 import { pointer as d3_pointer } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
-import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToCanvas } from '../base/BasePainter.mjs';
 import { selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { registerForResize, saveFile } from '../gui/utils.mjs';
 import { BrowserLayout } from '../gui/display.mjs';
@@ -1310,14 +1310,7 @@ class RPadPainter extends RObjectPainter {
 
       }, 'pads');
 
-      const reEncode = data => {
-         data = encodeURIComponent(data);
-         data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
-           let c = String.fromCharCode('0x'+p1);
-           return c === '%' ? '%25' : c;
-         });
-         return decodeURIComponent(data);
-      }, reconstruct = () => {
+      const reconstruct = () => {
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
 
@@ -1356,29 +1349,9 @@ class RPadPainter extends RObjectPainter {
          return svg; // return SVG file as is
       }
 
-      let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
-          image = new Image();
-
-      return new Promise(resolveFunc => {
-         image.onload = function() {
-            let canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            let context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-
-            reconstruct();
-
-            resolveFunc(canvas.toDataURL('image/' + file_format));
-         }
-
-         image.onerror = function(arg) {
-            console.log(`IMAGE ERROR ${arg}`);
-            reconstruct();
-            resolveFunc(null);
-         }
-
-         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
+      return svgToCanvas(svg).then(canvas => {
+         reconstruct();
+         return canvas ? canvas.toDataURL('image/' + file_format) : null;
       });
    }
 
