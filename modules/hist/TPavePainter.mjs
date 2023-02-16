@@ -30,6 +30,90 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
+   /** @summary Autoplace legend on the frame
+     * @return {Promise} */
+   async autoPlaceLegend(pt, pad) {
+      let main_svg = this.getFrameSvg().select('.main_layer'),
+          svg_code = main_svg.node().outerHTML;
+
+      svg_code = compressSVG(svg_code);
+
+      console.log('svg length', svg_code.length, this.getFramePainter().getFrameWidth());
+
+      svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
+
+      let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
+          rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
+          tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
+          bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
+
+      return svgToImage(svg_code).then(canvas => {
+         if (!canvas) return false;
+
+         const context = canvas.getContext("2d");
+
+         let data = context.getImageData(0, 0, canvas.width, canvas.height);
+
+         let arr = data.data;
+
+         let nX = 100, nY = 100,
+             boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
+             raster = new Array(nX*nY);
+
+         if (arr.length != canvas.width * canvas.height * 4) {
+            console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
+            nX = nY = 0;
+         }
+
+         for (let ix = 0; ix < nX; ++ix) {
+            let px1 = ix * boxW, px2 = px1 + boxW;
+            for (let iy = 0; iy < nY; ++iy) {
+               let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
+
+               for (let x = px1; (x < px2) && !filled; ++x)
+                  for (let y = py1; y < py2; ++y) {
+                     let indx = (y * canvas.width + x) * 4;
+                     if (arr[indx] || arr[indx+1] || arr[indx+2]) {
+                        filled = 1;
+                        break;
+                     }
+                  }
+                raster[iy * nX + ix] = filled;
+            }
+         }
+
+         let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
+             legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
+             needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
+
+         const test = (x, y) => {
+            for (let ix = x; ix < x + needW; ++ix)
+               for (let iy = y; iy < y + needH; ++iy)
+                  if (raster[iy * nX + ix]) return false;
+            return true;
+         }
+
+         for (let ix = 0; ix < (nX - needW); ++ix)
+            for (let iy = nY-needH-1; iy >= 0; --iy)
+               if (test(ix, iy)) {
+                  pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
+                  pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
+                  pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
+                  pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
+                  console.log('placed at', ix, iy, 'size', needW, needH);
+                  return true;
+               }
+      }).then(res => {
+         if (!res) {
+            pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+            pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+            pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+         }
+      });
+   }
+
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
@@ -49,7 +133,9 @@ class TPavePainter extends ObjectPainter {
          pt.fInit = 1;
          let pad = pp.getRootPad(true);
 
-         if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
+         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
+            await this.autoPlaceLegend(pt, pad);
+         } else if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -86,85 +172,6 @@ class TPavePainter extends ObjectPainter {
          } else {
             pt.fX1NDC = pt.fY1NDC = 0.1;
             pt.fX2NDC = pt.fY2NDC = 0.9;
-         }
-
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
-            let main_svg = this.getFrameSvg().select('.main_layer'),
-                svg_code = main_svg.node().outerHTML;
-
-            svg_code = compressSVG(svg_code);
-
-            svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
-
-            let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
-                rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
-                tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
-                bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
-
-            let canvas = await svgToImage(svg_code), found_autoplace = false;
-            if (canvas) {
-               const context = canvas.getContext("2d");
-
-               let data = context.getImageData(0, 0, canvas.width, canvas.height);
-
-               let arr = data.data;
-
-               let nX = 100, nY = 50,
-                   boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
-                   raster = new Array(nX*nY);
-
-               if (arr.length != canvas.width * canvas.height * 4) {
-                  console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
-                  nX = nY = 0;
-               }
-
-               for (let ix = 0; ix < nX; ++ix) {
-                  let px1 = ix * boxW, px2 = px1 + boxW;
-                  for (let iy = 0; iy < nY; ++iy) {
-                     let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
-
-                     for (let x = px1; (x < px2) && !filled; ++x)
-                        for (let y = py1; y < py2; ++y) {
-                           let indx = (y * canvas.width + x) * 4;
-                           if (arr[indx] || arr[indx+1] || arr[indx+2]) {
-                              filled = 1;
-                              break;
-                           }
-                        }
-                      raster[iy * nX + ix] = filled;
-                  }
-               }
-
-               let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
-                   legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
-                   needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
-
-               const test = (x, y) => {
-                  for (let ix = x; ix < x + needW; ++ix)
-                     for (let iy = y; iy < y + needH; ++iy)
-                        if (raster[iy * nX + ix]) return false;
-                  return true;
-               }
-
-               for (let ix = 0; ix < (nX - needW) && !found_autoplace; ++ix)
-                  for (let iy = nY-needH-1; iy >= 0; --iy)
-                     if (test(ix, iy)) {
-                        found_autoplace = true;
-                        pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
-                        pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                        pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
-                        pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
-                        break;
-                     }
-            }
-
-            if (!found_autoplace) {
-               pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
-               pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
-               let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-               pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
-               pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
-            }
          }
       }
 
