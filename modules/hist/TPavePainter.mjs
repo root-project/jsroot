@@ -3,7 +3,7 @@ import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
-import { floatToString, makeTranslate, compressSVG, svgToCanvas } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate, compressSVG, svgToImage } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -96,7 +96,7 @@ class TPavePainter extends ObjectPainter {
 
             svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
 
-            let canvas = await svgToCanvas(svg_code);
+            let canvas = await svgToImage(svg_code);
             if (canvas) {
                const context = canvas.getContext("2d");
 

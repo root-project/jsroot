@@ -681,10 +681,13 @@ function makeTranslate(x,y)
    return null;
 }
 
-/** @summary Create image based on SVG and fill Canvas
-  * @return {Promise} with canvas (or null when fails)
+/** @summary Create image based on SVG
+  * @return {Promise} with produced image in base64 form (or canvas when no image_format specified)
   * @private */
-async function svgToCanvas(svg) {
+async function svgToImage(svg, image_format) {
+
+   if (image_format == 'svg')
+      return svg;
 
    const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
 
@@ -706,10 +709,11 @@ async function svgToCanvas(svg) {
          canvas.height = image.height;
          let context = canvas.getContext('2d');
          context.drawImage(image, 0, 0);
-         resolveFunc(canvas);
+
+         resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       }
       image.onerror = function(arg) {
-         console.log(`IMAGE ERROR`, arg);
+         console.log('IMAGE ERROR', arg);
          resolveFunc(null);
       }
    });
@@ -721,4 +725,4 @@ async function svgToCanvas(svg) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgPath, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, svgToCanvas };
+         BasePainter, _loadJSDOM, makeTranslate, svgToImage };
