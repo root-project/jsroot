@@ -71,7 +71,7 @@ class TPavePainter extends ObjectPainter {
                for (let x = px1; (x < px2) && !filled; ++x)
                   for (let y = py1; y < py2; ++y) {
                      let indx = (y * canvas.width + x) * 4;
-                     if (arr[indx] || arr[indx+1] || arr[indx+2]) {
+                     if (arr[indx] || arr[indx+1] || arr[indx+2] || arr[indx+3]) {
                         filled = 1;
                         break;
                      }
@@ -96,7 +96,7 @@ class TPavePainter extends ObjectPainter {
                if (test(ix, iy)) {
                   pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
                   pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                  pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
+                  pt.fY2NDC = 1 - tm - (iy-1)/nY * (1 - bm - tm);
                   pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
                   return true;
                }
