@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, btoa_func } from '../core.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -681,6 +681,44 @@ function makeTranslate(x,y)
    return null;
 }
 
+/** @summary Create image based on SVG and fill Canvas
+  * @return {Promise} with canvas (or null when fails)
+  * @private */
+async function svgToCanvas(svg) {
+
+   const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+   svg = encodeURIComponent(doctype + svg);
+
+   svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
+       let c = String.fromCharCode('0x'+p1);
+       return c === '%' ? '%25' : c;
+   });
+
+   svg = decodeURIComponent(svg);
+
+   const image = new Image();
+
+   const promise = new Promise(resolveFunc => {
+      image.onload = function() {
+         let canvas = document.createElement('canvas');
+         canvas.width = image.width;
+         canvas.height = image.height;
+         let context = canvas.getContext('2d');
+         context.drawImage(image, 0, 0);
+         resolveFunc(canvas);
+      }
+      image.onerror = function(arg) {
+         console.log(`IMAGE ERROR`, arg);
+         resolveFunc(null);
+      }
+   });
+
+   image.src = 'data:image/svg+xml;base64,' + btoa_func(svg);
+
+   return promise;
+}
+
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgPath, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate };
+         BasePainter, _loadJSDOM, makeTranslate, svgToCanvas };
