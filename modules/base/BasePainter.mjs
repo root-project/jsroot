@@ -700,15 +700,29 @@ async function svgToImage(svg, image_format) {
 
    svg = decodeURIComponent(svg);
 
-   const image = new Image();
+   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
-   const promise = new Promise(resolveFunc => {
+   if (isNodeJs())
+      return import('canvas').then(async handle => {
+
+         const img = await handle.default.loadImage(img_src);
+
+         const canvas = handle.default.createCanvas(img.width, img.height);
+
+         canvas.getContext('2d').drawImage(img, 0, 0);
+
+         return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+      });
+
+   return new Promise(resolveFunc => {
+      const image = document.createElement('img');
+
       image.onload = function() {
          let canvas = document.createElement('canvas');
          canvas.width = image.width;
          canvas.height = image.height;
-         let context = canvas.getContext('2d');
-         context.drawImage(image, 0, 0);
+
+         canvas.getContext('2d').drawImage(image, 0, 0);
 
          resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       }
@@ -716,11 +730,9 @@ async function svgToImage(svg, image_format) {
          console.log('IMAGE ERROR', arg);
          resolveFunc(null);
       }
+
+      image.src = img_src;
    });
-
-   image.src = 'data:image/svg+xml;base64,' + btoa_func(svg);
-
-   return promise;
 }
 
 export { getElementRect, getAbsPosInCanvas,
