@@ -38,8 +38,6 @@ class TPavePainter extends ObjectPainter {
 
       svg_code = compressSVG(svg_code);
 
-      console.log('svg length', svg_code.length, this.getFramePainter().getFrameWidth());
-
       svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
 
       let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
@@ -100,7 +98,6 @@ class TPavePainter extends ObjectPainter {
                   pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
                   pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
                   pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
-                  console.log('placed at', ix, iy, 'size', needW, needH);
                   return true;
                }
       }).then(res => {
@@ -133,9 +130,7 @@ class TPavePainter extends ObjectPainter {
          pt.fInit = 1;
          let pad = pp.getRootPad(true);
 
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
-            await this.autoPlaceLegend(pt, pad);
-         } else if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
+         if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -173,6 +168,9 @@ class TPavePainter extends ObjectPainter {
             pt.fX1NDC = pt.fY1NDC = 0.1;
             pt.fX2NDC = pt.fY2NDC = 0.9;
          }
+
+         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend))
+            await this.autoPlaceLegend(pt, pad);
       }
 
       // fill stats before drawing to have coordinates early
