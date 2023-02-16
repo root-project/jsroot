@@ -1,9 +1,9 @@
-import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr,
+import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr, btoa_func,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTLegendEntry, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
-import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate, compressSVG } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -89,6 +89,54 @@ class TPavePainter extends ObjectPainter {
          }
 
          if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
+            let main_svg = this.getFrameSvg().select('.main_layer'),
+                svg_code = main_svg.node().outerHTML;
+
+            svg_code = compressSVG(svg_code);
+
+            svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
+
+            let image = new Image(),
+                doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+            const reEncode = data => {
+               data = encodeURIComponent(data);
+               data = data.replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                  let c = String.fromCharCode('0x'+p1);
+                  return c === '%' ? '%25' : c;
+               });
+               return decodeURIComponent(data);
+            }
+
+            let pr = new Promise(resolveFunc => {
+               image.onload = function() {
+                  console.log('create image for frame', image.width, image.height);
+
+                  let canvas = document.createElement('canvas');
+                  canvas.width = image.width;
+                  canvas.height = image.height;
+                  let context = canvas.getContext('2d');
+                  context.drawImage(image, 0, 0);
+
+                  let data = context.getImageData(0, 0,  image.width, image.height);
+
+                  let arr = data.data;
+                  console.log('array size', arr.length, 'expected',  image.width * image.height * 4);
+
+                  console.log('first element', arr[0], arr[1], arr[2]);
+
+                  resolveFunc(true);
+               }
+               image.onerror = function(arg) {
+                  console.log(`IMAGE ERROR`, arg);
+                  resolveFunc(false);
+               }
+            });
+
+            image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg_code));
+
+            await pr;
+
             pt.fX1NDC = Math.max(pad?.fLeftMargin ?? 0, pt.fX2NDC - 0.3);
             pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - (pad?.fRightMargin ?? 0));
             let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
