@@ -108,16 +108,20 @@ class TPavePainter extends ObjectPainter {
                let data = context.getImageData(0, 0, canvas.width, canvas.height);
 
                let arr = data.data;
-               console.log('array size', arr.length, 'expected',  canvas.width * canvas.height * 4);
 
-               let boxW = 30, boxH = 30, nX = Math.floor(canvas.width / boxW), nY = Math.floor(canvas.height / boxH),
-                   raster = new Array(nX*nY), filled_counter = 0;
+               let nX = 100, nY = 50,
+                   boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
+                   raster = new Array(nX*nY);
+
+               if (arr.length != canvas.width * canvas.height * 4) {
+                  console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
+                  nX = nY = 0;
+               }
 
                for (let ix = 0; ix < nX; ++ix) {
                   let px1 = ix * boxW, px2 = px1 + boxW;
                   for (let iy = 0; iy < nY; ++iy) {
                      let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
-                     // let py2 = canvas.height - iy * boxH, py1 = py2 - boxH, filled = 0;
 
                      for (let x = px1; (x < px2) && !filled; ++x)
                         for (let y = py1; y < py2; ++y) {
@@ -128,17 +132,12 @@ class TPavePainter extends ObjectPainter {
                            }
                         }
                       raster[iy * nX + ix] = filled;
-                      filled_counter += filled;
                   }
                }
-
-               console.log('Raster total', nX * nY, 'filled', filled_counter);
 
                let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
                    legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
                    needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
-
-               console.log('Required width and height', legWidth, legHeight);
 
                const test = (x, y) => {
                   for (let ix = x; ix < x + needW; ++ix)
@@ -148,13 +147,12 @@ class TPavePainter extends ObjectPainter {
                }
 
                for (let ix = 0; ix < (nX - needW) && !found_autoplace; ++ix)
-                  for (let iy = nY - needH-1; iy >= 0; --iy)
+                  for (let iy = nY-needH-1; iy >= 0; --iy)
                      if (test(ix, iy)) {
                         found_autoplace = true;
-                        console.log('found', ix, iy);
-                        pt.fX1NDC = lm + ix /nX * (1 - lm - rm);
+                        pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
                         pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                        pt.fY2NDC = 1 - bm - iy/nY * (1 - bm - tm);
+                        pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
                         pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
                         break;
                      }
