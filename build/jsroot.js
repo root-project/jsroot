@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '15/02/2023';
+let version_date = '16/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8461,6 +8461,60 @@ function makeTranslate(x,y)
    if (y) return `translate(${x},${y})`;
    if (x) return `translate(${x})`;
    return null;
+}
+
+/** @summary Create image based on SVG
+  * @return {Promise} with produced image in base64 form (or canvas when no image_format specified)
+  * @private */
+async function svgToImage(svg, image_format) {
+
+   if (image_format == 'svg')
+      return svg;
+
+   const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+   svg = encodeURIComponent(doctype + svg);
+
+   svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
+       let c = String.fromCharCode('0x'+p1);
+       return c === '%' ? '%25' : c;
+   });
+
+   svg = decodeURIComponent(svg);
+
+   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
+
+   if (isNodeJs())
+      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
+
+         const img = await handle.default.loadImage(img_src);
+
+         const canvas = handle.default.createCanvas(img.width, img.height);
+
+         canvas.getContext('2d').drawImage(img, 0, 0);
+
+         return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+      });
+
+   return new Promise(resolveFunc => {
+      const image = document.createElement('img');
+
+      image.onload = function() {
+         let canvas = document.createElement('canvas');
+         canvas.width = image.width;
+         canvas.height = image.height;
+
+         canvas.getContext('2d').drawImage(image, 0, 0);
+
+         resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
+      };
+      image.onerror = function(arg) {
+         console.log('IMAGE ERROR', arg);
+         resolveFunc(null);
+      };
+
+      image.src = img_src;
+   });
 }
 
 const root_fonts = ['Arial', 'iTimes New Roman',
@@ -70605,14 +70659,21 @@ class TPadPainter extends ObjectPainter {
 
       }, 'pads');
 
-      const reEncode = data => {
-         data = encodeURIComponent(data);
-         data = data.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-           let c = String.fromCharCode('0x'+p1);
-           return c === '%' ? '%25' : c;
-         });
-         return decodeURIComponent(data);
-      }, reconstruct = () => {
+      let width = elem.property('draw_width'), height = elem.property('draw_height');
+      if (use_frame) {
+         let fp = this.getFramePainter();
+         width = fp.getFrameWidth();
+         height = fp.getFrameHeight();
+      }
+
+      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
+
+      if (internals.processSvgWorkarounds)
+         svg = internals.processSvgWorkarounds(svg);
+
+      svg = compressSVG(svg);
+
+      return svgToImage(svg, file_format).then(res => {
          // reactivate border
          if (active_pp)
             active_pp.drawActiveBorder(null, true);
@@ -70634,49 +70695,7 @@ class TPadPainter extends ObjectPainter {
             if (item.btns_node) // reinsert buttons
                item.btns_prnt.insertBefore(item.btns_node, item.btns_next);
          }
-      };
-
-      let width = elem.property('draw_width'), height = elem.property('draw_height');
-      if (use_frame) {
-         let fp = this.getFramePainter();
-         width = fp.getFrameWidth();
-         height = fp.getFrameHeight();
-      }
-
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
-
-      if (internals.processSvgWorkarounds)
-         svg = internals.processSvgWorkarounds(svg);
-
-      svg = compressSVG(svg);
-
-      if (file_format == 'svg') {
-         reconstruct();
-         return svg; // return SVG file as is
-      }
-
-      let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
-          image = new Image();
-
-      return new Promise(resolveFunc => {
-         image.onload = function() {
-            let canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            let context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-
-            reconstruct();
-            resolveFunc(canvas.toDataURL('image/' + file_format));
-         };
-
-         image.onerror = function(arg) {
-            console.log(`IMAGE ERROR ${arg}`);
-            reconstruct();
-            resolveFunc(null);
-         };
-
-         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
+         return res;
       });
    }
 
@@ -71784,11 +71803,82 @@ class TPavePainter extends ObjectPainter {
          }
 
          if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
-            pt.fX1NDC = Math.max(pad?.fLeftMargin ?? 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - (pad?.fRightMargin ?? 0));
-            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(1 - (pad?.fTopMargin ?? 0), pt.fY1NDC + h0);
-            pt.fY1NDC = Math.max(pt.fY2NDC - h0, pad?.fBottomMargin ?? 0);
+            let main_svg = this.getFrameSvg().select('.main_layer'),
+                svg_code = main_svg.node().outerHTML;
+
+            svg_code = compressSVG(svg_code);
+
+            svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
+
+            let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
+                rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
+                tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
+                bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
+
+            let canvas = await svgToImage(svg_code), found_autoplace = false;
+            if (canvas) {
+               const context = canvas.getContext("2d");
+
+               let data = context.getImageData(0, 0, canvas.width, canvas.height);
+
+               let arr = data.data;
+
+               let nX = 100, nY = 50,
+                   boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
+                   raster = new Array(nX*nY);
+
+               if (arr.length != canvas.width * canvas.height * 4) {
+                  console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
+                  nX = nY = 0;
+               }
+
+               for (let ix = 0; ix < nX; ++ix) {
+                  let px1 = ix * boxW, px2 = px1 + boxW;
+                  for (let iy = 0; iy < nY; ++iy) {
+                     let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
+
+                     for (let x = px1; (x < px2) && !filled; ++x)
+                        for (let y = py1; y < py2; ++y) {
+                           let indx = (y * canvas.width + x) * 4;
+                           if (arr[indx] || arr[indx+1] || arr[indx+2]) {
+                              filled = 1;
+                              break;
+                           }
+                        }
+                      raster[iy * nX + ix] = filled;
+                  }
+               }
+
+               let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
+                   legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
+                   needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
+
+               const test = (x, y) => {
+                  for (let ix = x; ix < x + needW; ++ix)
+                     for (let iy = y; iy < y + needH; ++iy)
+                        if (raster[iy * nX + ix]) return false;
+                  return true;
+               };
+
+               for (let ix = 0; ix < (nX - needW) && !found_autoplace; ++ix)
+                  for (let iy = nY-needH-1; iy >= 0; --iy)
+                     if (test(ix, iy)) {
+                        found_autoplace = true;
+                        pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
+                        pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
+                        pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
+                        pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
+                        break;
+                     }
+            }
+
+            if (!found_autoplace) {
+               pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+               pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+               let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+               pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+               pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+            }
          }
       }
 
@@ -71931,6 +72021,13 @@ class TPavePainter extends ObjectPainter {
       if (pave?.fInit) {
          res.fcust = 'pave';
          res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
+
+         if ((pave.fName == 'stats') && this.isStats()) {
+             pave.fLines.arr.forEach(entry => {
+                if ((entry._typename == clTText) || (entry._typename == clTLatex))
+                   res.fcust += `;;${entry.fTitle}`;
+             });
+         }
       }
 
       return res;
@@ -114143,14 +114240,21 @@ class RPadPainter extends RObjectPainter {
 
       }, 'pads');
 
-      const reEncode = data => {
-         data = encodeURIComponent(data);
-         data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
-           let c = String.fromCharCode('0x'+p1);
-           return c === '%' ? '%25' : c;
-         });
-         return decodeURIComponent(data);
-      }, reconstruct = () => {
+      let width = elem.property('draw_width'), height = elem.property('draw_height');
+      if (use_frame) {
+         let fp = this.getFramePainter();
+         width = fp.getFrameWidth();
+         height = fp.getFrameHeight();
+      }
+
+      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
+
+      if (internals.processSvgWorkarounds)
+         svg = internals.processSvgWorkarounds(svg);
+
+      svg = compressSVG(svg);
+
+      return svgToImage(svg, file_format).then(res => {
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
 
@@ -114168,50 +114272,7 @@ class RPadPainter extends RObjectPainter {
             if (item.btns_node) // reinsert buttons
                item.btns_prnt.insertBefore(item.btns_node, item.btns_next);
          }
-      };
-
-      let width = elem.property('draw_width'), height = elem.property('draw_height');
-      if (use_frame) {
-         let fp = this.getFramePainter();
-         width = fp.getFrameWidth();
-         height = fp.getFrameHeight();
-      }
-
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
-
-      if (internals.processSvgWorkarounds)
-         svg = internals.processSvgWorkarounds(svg);
-
-      svg = compressSVG(svg);
-
-      if (file_format == 'svg') {
-         reconstruct();
-         return svg; // return SVG file as is
-      }
-
-      let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
-          image = new Image();
-
-      return new Promise(resolveFunc => {
-         image.onload = function() {
-            let canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            let context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-
-            reconstruct();
-
-            resolveFunc(canvas.toDataURL('image/' + file_format));
-         };
-
-         image.onerror = function(arg) {
-            console.log(`IMAGE ERROR ${arg}`);
-            reconstruct();
-            resolveFunc(null);
-         };
-
-         image.src = 'data:image/svg+xml;base64,' + btoa_func(reEncode(doctype + svg));
+         return res;
       });
    }
 
@@ -121138,6 +121199,7 @@ exports.setDefaultDrawOpt = setDefaultDrawOpt;
 exports.setHPainter = setHPainter;
 exports.setSaveFile = setSaveFile;
 exports.settings = settings;
+exports.svgToImage = svgToImage;
 exports.toJSON = toJSON;
 exports.treeDraw = treeDraw;
 exports.version = version;
