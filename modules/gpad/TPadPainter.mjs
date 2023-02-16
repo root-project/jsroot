@@ -1695,7 +1695,7 @@ class TPadPainter extends ObjectPainter {
       r.ux1 = func(main.logx, r.ux1, 0);
       r.ux2 = func(main.logx, r.ux2, 1);
 
-      let k = (r.ux1 - r.ux2)/frect.width;
+      let k = (r.ux2 - r.ux1)/frect.width;
       r.px1 = r.ux1 - k*frect.x;
       r.px2 = r.px1 + k*this.getPadWidth();
 
