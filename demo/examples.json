@@ -164,6 +164,7 @@
      { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1" },
      { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
+     { "name": "autoplace", "file": "tutorials_hist.root", "item": "legendautoplace;1", "title": "Autoplace of TLegend element, canvas from tutorials/hist/legendautoplace.C macro" },
      { "name": "time", "file": "ct.root", "item": "ct;1" },
      { "name": "2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
      { "name": "big", "file": "bigcanvas.root", "item": "big", "title": "100 histograms in subpads, for performance testing" },
