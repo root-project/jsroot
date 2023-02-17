@@ -465,10 +465,10 @@ class TGraphPainter extends ObjectPainter {
          extrabins.push(bin);
       }
 
-      let path2 = buildSvgPath(is_curve ? 'Lbezier' : 'Lline', extrabins);
+      let path2 = buildSvgCurve(extrabins, { cmd: 'L', line: !is_curve });
 
       this.draw_g.append('svg:path')
-                 .attr('d', path.path + path2.path + 'Z')
+                 .attr('d', path + path2 + 'Z')
                  .call(this.fillatt.func)
                  .style('opacity', 0.75);
    }
@@ -534,15 +534,12 @@ class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y);
          }
 
-         let kind = 'line'; // simple line
-         if (excl_width) kind += 'calc'; // we need to calculated deltas to build exclusion points
-
-         let path = buildSvgPath(kind, drawbins);
+         let path = buildSvgCurve(drawbins, {line: true, calc: excl_width });
 
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
 
-         let elem = draw_g.append('svg:path').attr('d', path.path + close_symbol);
+         let elem = draw_g.append('svg:path').attr('d', path + close_symbol);
          if (options.Line)
             elem.call(lineatt.func);
 
@@ -566,18 +563,12 @@ class TGraphPainter extends ObjectPainter {
             }
          }
 
-         let kind = 'bezier', path;
-         if (excl_width) kind += 'calc'; // we need to calculated deltas to build exclusion points
-
-         if (excl_width) {
-            path = buildSvgPath(kind, curvebins);
+         let path = buildSvgCurve(curvebins);
+         if (excl_width)
             this.appendExclusion(true, path, curvebins, excl_width);
-         } else {
-            path = buildSvgCurve(curvebins);
-         }
 
          draw_g.append('svg:path')
-               .attr('d', path.path)
+               .attr('d', path)
                .call(lineatt.func)
                .style('fill', 'none');
          if (main_block)

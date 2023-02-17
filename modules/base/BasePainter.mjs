@@ -215,23 +215,14 @@ class TRandom {
 /** @summary Build smooth SVG curve uzing Bezier
   * @desc Reuse code from https://stackoverflow.com/questions/62855310
   * @private */
-function buildSvgCurve(p, t) {
-   if (p.length < 2)
-      return { path: '' };
-   if (p.length == 2)
-      return { path: `M${p[0].grx},${p[0].gry}L{p[1].gry},${p[1].gry}` };
+function buildSvgCurve(p, args) {
 
-   if (!t) t = 0.3;
-
-   for (let i = 1; i < p.length - 1; i++) {
-      p[i].dgrx = (p[i+1].grx - p[i-1].grx) * t;
-      p[i].dgry = (p[i+1].gry - p[i-1].gry) * t;
-   }
-
-   let ndig = 2;
+   if (!args) args = { };
+   args.ndig = args.ndig ?? (args.line ? 0 : 2);
+   args.t = args.t ?? 0.2;
 
    const end_point = (pnt1, pnt2, sign) => {
-      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t,
+      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
           a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
           a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
 
@@ -239,8 +230,9 @@ function buildSvgCurve(p, t) {
       pnt1.dgry = len * Math.sin(2*a1 - a2);
    }, conv = val => {
       let vvv = Math.round(val);
-      if ((ndig == 0) || (vvv === val)) return vvv.toString();
-      let str = val.toFixed(ndig);
+      if (!args.ndig || (vvv === val))
+         return vvv.toString();
+      let str = val.toFixed(args.ndig);
       while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
          str = str.slice(0, str.length - 1);
       if (str[str.length - 1] == '.')
@@ -249,20 +241,41 @@ function buildSvgCurve(p, t) {
       return str;
    };
 
+   if (!args.line || args.calc) {
+      for (let i = 1; i < p.length - 1; i++) {
+         p[i].dgrx = (p[i+1].grx - p[i-1].grx) * args.t;
+         p[i].dgry = (p[i+1].gry - p[i-1].gry) * args.t;
+      }
 
-   end_point(p[0], p[1], 1.);
+      if (p.length > 2) {
+         end_point(p[0], p[1], 1.);
+         end_point(p[p.length - 1], p[p.length - 2], -1);
+      } else if (p.length == 2) {
+         p[0].dgrx = (p[1].grx - p[0].grx) * args.t;
+         p[0].dgry = (p[1].gry - p[0].gry) * args.t;
+         p[1].dgrx = -p[0].dgrx;
+         p[1].dgry = -p[0].dgry;
+      }
+   }
 
-   end_point(p[p.length - 1], p[p.length - 2], -1);
+   if (p.length < 3)
+      args.line = true;
 
-   let path = `M${conv(p[0].grx)},${conv(p[0].gry)}`;
+   let path = `${args.cmd ?? 'M'}${conv(p[0].grx)},${conv(p[0].gry)}`;
 
-   // start with four points
-   path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+   if (args.line) {
+      for (let i = 1; i < p.length; i++)
+         path += `L${conv(p[i].grx)},${conv(p[i].gry)}`;
+   } else {
+      // start with four points
+      path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
 
-   // continue with simpler points
-   for (let i = 2; i < p.length; i++)
-      path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
-   return { path };
+      // continue with simpler points
+      for (let i = 2; i < p.length; i++)
+         path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
+   }
+
+   return path;
 }
 
 /** @summary Function used to provide svg:path for the smoothed curves.
