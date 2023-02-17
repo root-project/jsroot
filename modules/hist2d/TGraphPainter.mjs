@@ -573,9 +573,7 @@ class TGraphPainter extends ObjectPainter {
             path = buildSvgPath(kind, curvebins);
             this.appendExclusion(true, path, curvebins, excl_width);
          } else {
-            let bins_new = [];
-            curvebins.forEach(bin => bins_new.push({x: bin.grx, y: bin.gry}));
-            path = buildSvgCurve(bins_new);
+            path = buildSvgCurve(curvebins);
          }
 
          draw_g.append('svg:path')

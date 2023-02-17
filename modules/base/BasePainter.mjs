@@ -220,26 +220,25 @@ function buildSvgCurve(p, t) {
 
   let pc = new Array(p.length);
   for (let i = 1; i < p.length - 1; i++) {
-    let dx = p[i - 1].x - p[i + 1].x, // difference x
-        dy = p[i - 1].y - p[i + 1].y, // difference y
-        o1 = { x: p[i].x - dx * t, y: p[i].y - dy * t },  // first control point
-        o2 = { x: p[i].x + dx * t, y: p[i].y + dy * t };  // second control point
+    let dx = p[i - 1].grx - p[i + 1].grx, // difference x
+        dy = p[i - 1].gry - p[i + 1].gry, // difference y
+        o1 = { x: p[i].grx - dx * t, y: p[i].gry - dy * t },  // first control point
+        o2 = { x: p[i].grx + dx * t, y: p[i].gry + dy * t };  // second control point
 
     // building the control points array
      pc[i] = [ o1, o2 ];
   }
 
   // the first & the last curve are quadratic Bezier
-  let path = `M${p[0].x},${p[0].y}Q${pc[1][1].x},${pc[1][1].y},${p[1].x},${p[1].y}`;
+  let path = `M${p[0].grx},${p[0].gry}Q${pc[1][1].x},${pc[1][1].y},${p[1].grx},${p[1].gry}`;
 
   if (p.length > 2) {
     // central curves are cubic Bezier
     for (let i = 1; i < p.length - 2; i++)
-        path += `C${pc[i][0].x},${pc[i][0].y},${pc[i + 1][1].x},${pc[i + 1][1].y},${p[i + 1].x},${p[i + 1].y}`;
+        path += `C${pc[i][0].x},${pc[i][0].y},${pc[i + 1][1].x},${pc[i + 1][1].y},${p[i + 1].grx},${p[i + 1].gry}`;
     // the first & the last curve are quadratic Bezier
     let n = p.length - 1;
-    // ctx.quadraticCurveTo(pc[n - 1][0].x, pc[n - 1][0].y, p[n].x, p[n].y);
-    path += `Q${pc[n - 1][0].x},${pc[n - 1][0].y},${p[n].x},${p[n].y}`;
+    path += `Q${pc[n - 1][0].x},${pc[n - 1][0].y},${p[n].grx},${p[n].gry}`;
   }
   return { path };
 }
