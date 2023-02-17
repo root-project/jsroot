@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '16/02/2023';
+let version_date = '17/02/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -7994,100 +7994,94 @@ class TRandom {
 } // class TRandom
 
 
-/** @summary Function used to provide svg:path for the smoothed curves.
-  * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-  * @param {string} kind  should contain 'bezier' or 'line'.
-  * If first symbol 'L', then it used to continue drawing
+/** @summary Build smooth SVG curve uzing Bezier
+  * @desc Reuse code from https://stackoverflow.com/questions/62855310
   * @private */
-function buildSvgPath(kind, bins, height, ndig) {
+function buildSvgCurve(p, args) {
 
-   const smooth = kind.indexOf('bezier') >= 0;
+   if (!args) args = { };
+   if (!args.line)
+      args.calc = true;
+   else if (args.ndig === undefined)
+      args.ndig = 0;
 
-   if (ndig === undefined) ndig = smooth ? 2 : 0;
-   if (height === undefined) height = 0;
+   let npnts = p.length;
+   if (npnts < 3) args.line = true;
 
-   const jsroot_d3_svg_lineSlope = (p0, p1) => (p1.gry - p0.gry) / (p1.grx - p0.grx),
-         jsroot_d3_svg_lineFiniteDifferences = points => {
-      let i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
-      while (++i < j) {
-         p0 = p1; p1 = points[i + 1];
-         m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0, p1))) / 2;
+   args.t = args.t ?? 0.2;
+
+   if ((args.ndig === undefined) || args.height) {
+      args.maxy = p[0].gry;
+      args.mindiff = 100;
+      for (let i = 1; i < npnts; i++) {
+         args.maxy = Math.max(args.maxy, p[i].gry);
+         args.mindiff = Math.min(args.mindiff, Math.abs(p[i].grx - p[i-1].grx), Math.abs(p[i].gry - p[i-1].gry));
       }
-      m[i] = d;
-      return m;
-   }, jsroot_d3_svg_lineMonotoneTangents = points => {
-      let d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
-      while (++i < j) {
-         d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
-         if (Math.abs(d) < 1e-6) {
-            m[i] = m[i + 1] = 0;
-         } else {
-            a = m[i] / d;
-            b = m[i + 1] / d;
-            s = a * a + b * b;
-            if (s > 9) {
-               s = d * 3 / Math.sqrt(s);
-               m[i] = s * a;
-               m[i + 1] = s * b;
-            }
-         }
-      }
-      i = -1;
-      while (++i <= j) {
-         s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-         points[i].dgrx = s || 0;
-         points[i].dgry = m[i] * s || 0;
-      }
+      if (args.ndig === undefined)
+         args.ndig = args.mindiff > 20 ? 0 : (args.mindiff > 5 ? 1 : 2);
+   }
+
+   const end_point = (pnt1, pnt2, sign) => {
+      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
+          a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+          a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
+
+      pnt1.dgrx = len * Math.cos(2*a1 - a2);
+      pnt1.dgry = len * Math.sin(2*a1 - a2);
+   }, conv = val => {
+      return !args.ndig || (Math.round(val) === val) ? val.toFixed(0) : val.toFixed(args.ndig);
    };
 
-   let res = { path: '', close: '' }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
-      currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
-
-   const conv = val => {
-      let vvv = Math.round(val);
-      if ((ndig == 0) || (vvv === val)) return vvv.toString();
-      let str = val.toFixed(ndig);
-      while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
-         str = str.slice(0, str.length - 1);
-      if (str[str.length - 1] == '.')
-         str = str.slice(0, str.length - 1);
-      if (str == '-0') str = '0';
-      return str;
-   };
-
-   res.path = ((kind[0] == 'L') ? 'L' : 'M') + conv(bin.grx) + ',' + conv(bin.gry);
-
-   // just calculate all deltas, can be used to build exclusion
-   if (smooth || kind.indexOf('calc') >= 0)
-      jsroot_d3_svg_lineMonotoneTangents(bins);
-
-   if (smooth) {
-      // build smoothed curve
-      res.path += `C${conv(bin.grx+bin.dgrx)},${conv(bin.gry+bin.dgry)},`;
-      for (let n = 1; n < npnts; ++n) {
-         let prev = bin;
-         bin = bins[n];
-         if (n > 1) res.path += 'S';
-         res.path += `${conv(bin.grx - bin.dgrx)},${conv(bin.gry - bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
-         maxy = Math.max(maxy, prev.gry);
+   if (args.calc) {
+      for (let i = 1; i < npnts - 1; i++) {
+         p[i].dgrx = (p[i+1].grx - p[i-1].grx) * args.t;
+         p[i].dgry = (p[i+1].gry - p[i-1].gry) * args.t;
       }
+
+      if (npnts > 2) {
+         end_point(p[0], p[1], 1.);
+         end_point(p[npnts - 1], p[npnts - 2], -1);
+      } else if (p.length == 2) {
+         p[0].dgrx = (p[1].grx - p[0].grx) * args.t;
+         p[0].dgry = (p[1].gry - p[0].gry) * args.t;
+         p[1].dgrx = -p[0].dgrx;
+         p[1].dgry = -p[0].dgry;
+      }
+   }
+
+   let path = `${args.cmd ?? 'M'}${conv(p[0].grx)},${conv(p[0].gry)}`;
+
+   if (!args.line) {
+      let i0 = 1;
+      if (args.qubic) {
+         npnts--; i0++;
+         path += `Q${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+      }
+      path += `C${conv(p[i0-1].grx+p[i0-1].dgrx)},${conv(p[i0-1].gry+p[i0-1].dgry)},${conv(p[i0].grx-p[i0].dgrx)},${conv(p[i0].gry-p[i0].dgry)},${conv(p[i0].grx)},${conv(p[i0].gry)}`;
+
+      // continue with simpler points
+      for (let i = i0 + 1; i < npnts; i++)
+         path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
+
+      if (args.qubic)
+         path += `Q${conv(p[npnts].grx-p[npnts].dgrx)},${conv(p[npnts].gry-p[npnts].dgry)},${conv(p[npnts].grx)},${conv(p[npnts].gry)}`;
    } else if (npnts < 10000) {
       // build simple curve
 
-      let acc_x = 0, acc_y = 0;
+      let acc_x = 0, acc_y = 0, currx = Math.round(p[0].grx), curry = Math.round(p[0].gry);
 
       const flush = () => {
-         if (acc_x) { res.path += 'h' + acc_x; acc_x = 0; }
-         if (acc_y) { res.path += 'v' + acc_y; acc_y = 0; }
+         if (acc_x) { path += 'h' + acc_x; acc_x = 0; }
+         if (acc_y) { path += 'v' + acc_y; acc_y = 0; }
       };
 
       for (let n = 1; n < npnts; ++n) {
-         bin = bins[n];
-         dx = Math.round(bin.grx) - currx;
-         dy = Math.round(bin.gry) - curry;
+         let bin = p[n],
+             dx = Math.round(bin.grx) - currx,
+             dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
             flush();
-            res.path += `l${dx},${dy}`;
+            path += `l${dx},${dy}`;
          } else if (!dx && dy) {
             if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
             acc_y += dy;
@@ -8096,20 +8090,20 @@ function buildSvgPath(kind, bins, height, ndig) {
             acc_x += dx;
          }
          currx += dx; curry += dy;
-         maxy = Math.max(maxy, curry);
       }
 
       flush();
 
    } else {
       // build line with trying optimize many vertical moves
-      let lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
+      let currx = Math.round(p[0].grx), curry = Math.round(p[0].gry),
+          cminy = curry, cmaxy = curry, prevy = curry;
+
       for (let n = 1; n < npnts; ++n) {
-         bin = bins[n];
-         lastx = Math.round(bin.grx);
-         lasty = Math.round(bin.gry);
-         maxy = Math.max(maxy, lasty);
-         dx = lastx - currx;
+         let bin = p[n],
+             lastx = Math.round(bin.grx),
+             lasty = Math.round(bin.gry),
+             dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
             cminy = Math.min(cminy, lasty);
@@ -8119,33 +8113,35 @@ function buildSvgPath(kind, bins, height, ndig) {
          }
 
          if (cminy !== cmaxy) {
-            if (cminy != curry) res.path += 'v' + (cminy - curry);
-            res.path += 'v' + (cmaxy - cminy);
-            if (cmaxy != prevy) res.path += 'v' + (prevy - cmaxy);
+            if (cminy != curry)
+               path += `v${cminy-curry}`;
+            path += `v${cmaxy-cminy}`;
+            if (cmaxy != prevy)
+               path += `v${prevy-cmaxy}`;
             curry = prevy;
          }
-         dy = lasty - curry;
+         let dy = lasty - curry;
          if (dy)
-            res.path += `l${dx},${dy}`;
+            path += `l${dx},${dy}`;
          else
-            res.path += 'h' + dx;
+            path += `h${dx}`;
          currx = lastx; curry = lasty;
          prevy = cminy = cmaxy = lasty;
       }
 
       if (cminy != cmaxy) {
          if (cminy != curry)
-            res.path += `v${cminy - curry}`;
-         res.path += `v${cmaxy - cminy}`;
+            path += `v${cminy-curry}`;
+         path += `v${cmaxy-cminy}`;
          if (cmaxy != prevy)
-            res.path += `v${prevy - cmaxy}`;
+            path += `v${prevy-cmaxy}`;
       }
    }
 
-   if (height > 0)
-      res.close = `L${conv(bin.grx)},${conv(maxy)}h${conv(bins[0].grx - bin.grx)}Z`;
+   if (args.height)
+      args.close = `L${conv(p[p.length-1].grx)},${conv(Math.max(args.maxy, args.height))}H${conv(p[0].grx)}Z`;
 
-   return res;
+   return path;
 }
 
 /** @summary Compress SVG code, produced from drawing
@@ -8308,8 +8304,8 @@ class BasePainter {
       }
 
       let rect_origin = getElementRect(main_origin, true),
-         can_resize = main_origin.attr('can_resize'),
-         do_resize = false;
+          can_resize = main_origin.attr('can_resize'),
+          do_resize = false;
 
       if (can_resize == 'height')
          if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
@@ -8329,8 +8325,8 @@ class BasePainter {
       }
 
       let rect = getElementRect(main),
-          old_h = main.property('draw_height'),
-          old_w = main.property('draw_width');
+          old_h = main.property('_jsroot_height'),
+          old_w = main.property('_jsroot_width');
 
       rect.changed = false;
 
@@ -8341,6 +8337,9 @@ class BasePainter {
       } else {
          rect.changed = true;
       }
+
+      if (rect.changed)
+         main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
 
       return rect;
    }
@@ -70514,14 +70513,14 @@ class TPadPainter extends ObjectPainter {
       r.ux1 = func(main.logx, r.ux1, 0);
       r.ux2 = func(main.logx, r.ux2, 1);
 
-      let k = (r.ux1 - r.ux2)/frect.width;
+      let k = (r.ux2 - r.ux1)/(frect.width || 10);
       r.px1 = r.ux1 - k*frect.x;
       r.px2 = r.px1 + k*this.getPadWidth();
 
       r.uy1 = func(main.logy, r.uy1, 0);
       r.uy2 = func(main.logy, r.uy2, 1);
 
-      k = (r.uy2 - r.uy1)/frect.height;
+      k = (r.uy2 - r.uy1)/(frect.height || 10);
       r.py1 = r.uy1 - k*frect.y;
       r.py2 = r.py1 + k*this.getPadHeight();
 
@@ -71744,6 +71743,87 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
+   /** @summary Autoplace legend on the frame
+     * @return {Promise} */
+   async autoPlaceLegend(pt, pad) {
+      let main_svg = this.getFrameSvg().select('.main_layer'),
+          svg_code = main_svg.node().outerHTML;
+
+      svg_code = compressSVG(svg_code);
+
+      svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
+
+      let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
+          rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
+          tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
+          bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
+
+      return svgToImage(svg_code).then(canvas => {
+         if (!canvas) return false;
+
+         const context = canvas.getContext("2d");
+
+         let data = context.getImageData(0, 0, canvas.width, canvas.height);
+
+         let arr = data.data;
+
+         let nX = 100, nY = 100,
+             boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
+             raster = new Array(nX*nY);
+
+         if (arr.length != canvas.width * canvas.height * 4) {
+            console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
+            nX = nY = 0;
+         }
+
+         for (let ix = 0; ix < nX; ++ix) {
+            let px1 = ix * boxW, px2 = px1 + boxW;
+            for (let iy = 0; iy < nY; ++iy) {
+               let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
+
+               for (let x = px1; (x < px2) && !filled; ++x)
+                  for (let y = py1; y < py2; ++y) {
+                     let indx = (y * canvas.width + x) * 4;
+                     if (arr[indx] || arr[indx+1] || arr[indx+2] || arr[indx+3]) {
+                        filled = 1;
+                        break;
+                     }
+                  }
+                raster[iy * nX + ix] = filled;
+            }
+         }
+
+         let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
+             legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
+             needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
+
+         const test = (x, y) => {
+            for (let ix = x; ix < x + needW; ++ix)
+               for (let iy = y; iy < y + needH; ++iy)
+                  if (raster[iy * nX + ix]) return false;
+            return true;
+         };
+
+         for (let ix = 0; ix < (nX - needW); ++ix)
+            for (let iy = nY-needH-1; iy >= 0; --iy)
+               if (test(ix, iy)) {
+                  pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
+                  pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
+                  pt.fY2NDC = 1 - tm - (iy-1)/nY * (1 - bm - tm);
+                  pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
+                  return true;
+               }
+      }).then(res => {
+         if (!res) {
+            pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+            pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+            pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+         }
+      });
+   }
+
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
@@ -71802,84 +71882,8 @@ class TPavePainter extends ObjectPainter {
             pt.fX2NDC = pt.fY2NDC = 0.9;
          }
 
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend)) {
-            let main_svg = this.getFrameSvg().select('.main_layer'),
-                svg_code = main_svg.node().outerHTML;
-
-            svg_code = compressSVG(svg_code);
-
-            svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
-
-            let lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
-                rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,
-                tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
-                bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
-
-            let canvas = await svgToImage(svg_code), found_autoplace = false;
-            if (canvas) {
-               const context = canvas.getContext("2d");
-
-               let data = context.getImageData(0, 0, canvas.width, canvas.height);
-
-               let arr = data.data;
-
-               let nX = 100, nY = 50,
-                   boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
-                   raster = new Array(nX*nY);
-
-               if (arr.length != canvas.width * canvas.height * 4) {
-                  console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width*canvas.height * 4}`);
-                  nX = nY = 0;
-               }
-
-               for (let ix = 0; ix < nX; ++ix) {
-                  let px1 = ix * boxW, px2 = px1 + boxW;
-                  for (let iy = 0; iy < nY; ++iy) {
-                     let py1 = iy * boxH, py2 = py1 + boxH, filled = 0;
-
-                     for (let x = px1; (x < px2) && !filled; ++x)
-                        for (let y = py1; y < py2; ++y) {
-                           let indx = (y * canvas.width + x) * 4;
-                           if (arr[indx] || arr[indx+1] || arr[indx+2]) {
-                              filled = 1;
-                              break;
-                           }
-                        }
-                      raster[iy * nX + ix] = filled;
-                  }
-               }
-
-               let legWidth = 0.3 / Math.max(0.2, (1 - lm - rm)),
-                   legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
-                   needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY);
-
-               const test = (x, y) => {
-                  for (let ix = x; ix < x + needW; ++ix)
-                     for (let iy = y; iy < y + needH; ++iy)
-                        if (raster[iy * nX + ix]) return false;
-                  return true;
-               };
-
-               for (let ix = 0; ix < (nX - needW) && !found_autoplace; ++ix)
-                  for (let iy = nY-needH-1; iy >= 0; --iy)
-                     if (test(ix, iy)) {
-                        found_autoplace = true;
-                        pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
-                        pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                        pt.fY2NDC = 1 - tm - (iy-1.5)/nY * (1 - bm - tm);
-                        pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
-                        break;
-                     }
-            }
-
-            if (!found_autoplace) {
-               pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
-               pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
-               let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-               pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
-               pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
-            }
-         }
+         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend))
+            await this.autoPlaceLegend(pt, pad);
       }
 
       // fill stats before drawing to have coordinates early
@@ -73959,10 +73963,8 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Generates automatic color for some objects painters */
    createAutoColor(numprimitives) {
-      if (!numprimitives) {
-         let pad = this.getPadPainter().getRootPad(true);
-         numprimitives = pad?.fPrimitves ? pad.fPrimitves.arr.length : 5;
-      }
+      if (!numprimitives)
+         numprimitives = this.getPadPainter()?.getRootPad(true)?.fPrimitves?.arr?.length || 5;
 
       let indx = this._auto_color || 0;
       this._auto_color = indx + 1;
@@ -73990,11 +73992,12 @@ class THistPainter extends ObjectPainter {
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
-            let icolor = mp.createAutoColor();
-            if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
+            let icolor = mp.createAutoColor(), exec = '';
+            if (this.options._pfc) { histo.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (this.options._plc) { histo.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (this.options._pmc) { histo.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
             this.options._pfc = this.options._plc = this.options._pmc = false;
+            this._auto_exec = exec; // can be reused when sending option back to server
          }
       }
 
@@ -74349,6 +74352,22 @@ class THistPainter extends ObjectPainter {
       if (isFunc(cp?.processChanges))
          cp.processChanges(kind, this);
    }
+
+   /** @summary Fill option object used in TWebCanvas */
+   fillWebObjectOptions(res) {
+      if (!res) {
+         if (!this.snapid || !this._auto_exec) return null;
+         res = { _typename: 'TWebObjectOptions', snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
+      }
+
+      if (this._auto_exec) {
+         res.fcust = 'auto_exec:' + this._auto_exec;
+         delete this._auto_exec;
+      }
+
+      return res;
+   }
+
 
    /** @summary Toggle histogram title drawing */
    toggleTitle(arg) {
@@ -75887,12 +75906,11 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          bins2.unshift({ grx, gry: Math.round(funcs.gry(y - yerr)) });
       }
 
-      let kind = (this.options.ErrorKind === 4) ? 'bezier' : 'line',
-          path1 = buildSvgPath(kind, bins1),
-          path2 = buildSvgPath('L'+kind, bins2);
+      let path1 = buildSvgCurve(bins1, { line: this.options.ErrorKind !== 4 }),
+          path2 = buildSvgCurve(bins2, { line: this.options.ErrorKind !== 4, cmd: 'L' });
 
       this.draw_g.append('svg:path')
-                 .attr('d', path1.path + path2.path + 'Z')
+                 .attr('d', path1 + path2 + 'Z')
                  .call(this.fillatt.func);
    }
 
@@ -104573,7 +104591,8 @@ class THStackPainter extends ObjectPainter {
 
       let rindx = this.options.horder ? indx : nhists-indx-1,
           hist = hlst.arr[rindx],
-          hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt;
+          hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt,
+          exec = '';
 
       if (hopt.toUpperCase().indexOf(this.options.hopt) < 0)
          hopt += ' ' + this.options.hopt;
@@ -104584,9 +104603,9 @@ class THStackPainter extends ObjectPainter {
          let mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor(nhists);
-            if (this.options._pfc) hist.fFillColor = icolor;
-            if (this.options._plc) hist.fLineColor = icolor;
-            if (this.options._pmc) hist.fMarkerColor = icolor;
+            if (this.options._pfc) { hist.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; }
+            if (this.options._plc) { hist.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; }
+            if (this.options._pmc) { hist.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; }
          }
       }
 
@@ -104599,7 +104618,10 @@ class THStackPainter extends ObjectPainter {
          let prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
 
          return this.hdraw_func(subpad_painter.getDom(), hist, hopt).then(subp => {
-            this.painters.push(subp);
+            if (subp) {
+               subp._auto_exec = exec;
+               this.painters.push(subp);
+            }
             subpad_painter.selectCurrentPad(prev_name);
             return this.drawNextHisto(indx+1, pad_painter);
          });
@@ -105910,7 +105932,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (this.options.curve && bins.length)
          this.draw_g.append('svg:path')
-                 .attr('d', buildSvgPath('bezier', bins).path)
+                 .attr('d', buildSvgCurve(bins))
                  .style('fill', 'none')
                  .call(this.lineatt.func);
 
@@ -106064,6 +106086,7 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
  *
  * @private
  */
+
 
 let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
@@ -106508,10 +106531,10 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          extrabins.push(bin);
       }
 
-      let path2 = buildSvgPath(is_curve ? 'Lbezier' : 'Lline', extrabins);
+      let path2 = buildSvgCurve(extrabins, { cmd: 'L', line: !is_curve });
 
       this.draw_g.append('svg:path')
-                 .attr('d', path.path + path2.path + 'Z')
+                 .attr('d', path + path2 + 'Z')
                  .call(this.fillatt.func)
                  .style('opacity', 0.75);
    }
@@ -106537,7 +106560,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y - bin.eylow);
          }
 
-         let path1 = buildSvgPath((options.EF > 1) ? 'bezier' : 'line', drawbins),
+         let path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
              bins2 = [];
 
          for (let n = drawbins.length-1; n >= 0; --n) {
@@ -106547,10 +106570,10 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          }
 
          // build upper part (in reverse direction)
-         let path2 = buildSvgPath((options.EF > 1) ? 'Lbezier' : 'Lline', bins2);
+         let path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true });
 
          draw_g.append('svg:path')
-               .attr('d', path1.path + path2.path + 'Z')
+               .attr('d', path1 + path2 + 'Z')
                .call(fillatt.func);
          if (main_block)
             this.draw_kind = 'lines';
@@ -106577,15 +106600,12 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y);
          }
 
-         let kind = 'line'; // simple line
-         if (excl_width) kind += 'calc'; // we need to calculated deltas to build exclusion points
-
-         let path = buildSvgPath(kind, drawbins);
+         let path = buildSvgCurve(drawbins, {line: true, calc: excl_width });
 
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
 
-         let elem = draw_g.append('svg:path').attr('d', path.path + close_symbol);
+         let elem = draw_g.append('svg:path').attr('d', path + close_symbol);
          if (options.Line)
             elem.call(lineatt.func);
 
@@ -106609,16 +106629,12 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
             }
          }
 
-         let kind = 'bezier';
-         if (excl_width) kind += 'calc'; // we need to calculated deltas to build exclusion points
-
-         let path = buildSvgPath(kind, curvebins);
-
+         let path = buildSvgCurve(curvebins, { qubic: !excl_width } );
          if (excl_width)
-             this.appendExclusion(true, path, curvebins, excl_width);
+            this.appendExclusion(true, path, curvebins, excl_width);
 
          draw_g.append('svg:path')
-               .attr('d', path.path)
+               .attr('d', path)
                .call(lineatt.func)
                .style('fill', 'none');
          if (main_block)
@@ -107885,19 +107901,20 @@ class TF1Painter extends ObjectPainter {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = buildSvgPath('bezier', this.bins, h0, 2);
+         let args = { height: h0, t: 0.1 },
+             path = buildSvgCurve(this.bins, args);
 
          if (!this.lineatt.empty())
             this.draw_g.append('svg:path')
                 .attr('class', 'line')
-                .attr('d', path.path)
+                .attr('d', path)
                 .style('fill', 'none')
                 .call(this.lineatt.func);
 
          if (!this.fillatt.empty())
             this.draw_g.append('svg:path')
                 .attr('class', 'area')
-                .attr('d', path.path + path.close)
+                .attr('d', path + args.close)
                 .call(this.fillatt.func);
       }
    }
@@ -108640,7 +108657,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    /** @summary method draws next graph  */
    async drawNextGraph(indx, opt) {
 
-      let graphs = this.getObject().fGraphs;
+      let graphs = this.getObject().fGraphs, exec = '';
 
       // at the end of graphs drawing draw functions (if any)
       if (indx >= graphs.arr.length) {
@@ -108648,21 +108665,24 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
          return this.drawNextFunction(0);
       }
 
+      let gr = graphs.arr[indx], o = graphs.opt[indx] || opt || '';
+
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
          let mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             let icolor = mp.createAutoColor(graphs.arr.length);
-            if (this._pfc) graphs.arr[indx].fFillColor = icolor;
-            if (this._plc) graphs.arr[indx].fLineColor = icolor;
-            if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
+            if (this._pfc) { gr.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; }
+            if (this._plc) { gr.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; }
+            if (this._pmc) { gr.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; }
          }
       }
 
-      let o = graphs.opt[indx] || opt || '';
-
-      return this.drawGraph(graphs.arr[indx], o, graphs.arr.length - indx).then(subp => {
-         if (subp) this.painters.push(subp);
+      return this.drawGraph(gr, o, graphs.arr.length - indx).then(subp => {
+         if (subp) {
+            this.painters.push(subp);
+            subp._auto_exec = exec;
+         }
 
          return this.drawNextGraph(indx+1, opt);
       });
@@ -109315,17 +109335,9 @@ class TSplinePainter extends ObjectPainter {
             bins.push({ x, y, grx: funcs.grx(x), gry: funcs.gry(y) });
          }
 
-         let h0 = h;  // use maximal frame height for filling
-         if ((pmain.hmin !== undefined) && (pmain.hmin >= 0)) {
-            h0 = Math.round(funcs.gry(0));
-            if ((h0 > h) || (h0 < 0)) h0 = h;
-         }
-
-         let path = buildSvgPath('bezier', bins, h0, 2);
-
          this.draw_g.append('svg:path')
              .attr('class', 'line')
-             .attr('d', path.path)
+             .attr('d', buildSvgCurve(bins))
              .style('fill', 'none')
              .call(this.lineatt.func);
       }
@@ -118077,14 +118089,13 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
          bins2.unshift({grx: grx, gry: gry2});
       }
 
-      let kind = (this.options.ErrorKind === 4) ? 'bezier' : 'line',
-          path1 = buildSvgPath(kind, bins1),
-          path2 = buildSvgPath('L'+kind, bins2);
+      let path1 = buildSvgCurve(bins1, { line: this.options.ErrorKind !== 4 }),
+          path2 = buildSvgCurve(bins2, { line: this.options.ErrorKind !== 4, cmd: 'L' });
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor('blue');
 
       this.draw_g.append('svg:path')
-                 .attr('d', path1.path + path2.path + 'Z')
+                 .attr('d', path1 + path2 + 'Z')
                  .call(this.fillatt.func);
 
       return true;
@@ -121082,7 +121093,7 @@ exports.atob_func = atob_func;
 exports.browser = browser$1;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
-exports.buildSvgPath = buildSvgPath;
+exports.buildSvgCurve = buildSvgCurve;
 exports.clTAttCanvas = clTAttCanvas;
 exports.clTAttFill = clTAttFill;
 exports.clTAttLine = clTAttLine;
