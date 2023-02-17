@@ -247,7 +247,13 @@ function buildSvgCurve(p, args) {
       pnt1.dgrx = len * Math.cos(2*a1 - a2);
       pnt1.dgry = len * Math.sin(2*a1 - a2);
    }, conv = val => {
-      return !args.ndig || (Math.round(val) === val) ? val.toFixed(0) : val.toFixed(args.ndig);
+      if (!args.ndig || (Math.round(val) === val))
+         return val.toFixed(0);
+      let s = val.toFixed(args.ndig), p = s.length-1;
+      while (s[p] == '0') p--;
+      if (s[p] == '.') p--;
+      s = s.slice(0, p+1);
+      return (s == '-0') ? '0' : s;
    };
 
    if (args.calc) {
