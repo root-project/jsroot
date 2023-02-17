@@ -270,15 +270,15 @@ function buildSvgCurve(p, args) {
    let path = `${args.cmd ?? 'M'}${conv(p[0].grx)},${conv(p[0].gry)}`;
 
    if (!args.line) {
+      let i0 = 1;
       if (args.qubic) {
-         npnts--;
+         npnts--; i0++;
          path += `Q${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
-      } else {
-         path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
       }
+      path += `C${conv(p[i0-1].grx+p[i0-1].dgrx)},${conv(p[i0-1].gry+p[i0-1].dgry)},${conv(p[i0].grx-p[i0].dgrx)},${conv(p[i0].gry-p[i0].dgry)},${conv(p[i0].grx)},${conv(p[i0].gry)}`;
 
       // continue with simpler points
-      for (let i = 2; i < npnts; i++)
+      for (let i = i0 + 1; i < npnts; i++)
          path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
 
       if (args.qubic)

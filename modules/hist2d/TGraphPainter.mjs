@@ -563,7 +563,7 @@ class TGraphPainter extends ObjectPainter {
             }
          }
 
-         let path = buildSvgCurve(curvebins);
+         let path = buildSvgCurve(curvebins, { qubic: !excl_width } );
          if (excl_width)
             this.appendExclusion(true, path, curvebins, excl_width);
 
