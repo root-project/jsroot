@@ -218,8 +218,26 @@ class TRandom {
 function buildSvgCurve(p, args) {
 
    if (!args) args = { };
-   args.ndig = args.ndig ?? (args.line ? 0 : 2);
+   if (!args.line)
+      args.calc = true;
+   else if (args.ndig === undefined)
+      args.ndig = 0;
+
    args.t = args.t ?? 0.2;
+
+   if ((args.ndig === undefined) || args.height) {
+      args.miny = args.maxy = p[0].gry;
+      p.forEach(bin => {
+         args.miny = Math.min(args.miny, bin.gry);
+         args.maxy = Math.max(args.maxy, bin.gry);
+      });
+      if (args.ndig === undefined)
+         args.ndig = (args.maxy - args.miny > 300) ? 2 : (args.maxy - args.miny > 30) ? 3 : 4;
+   }
+
+   let npnts = p.length;
+
+   if (npnts < 3) args.line = true;
 
    const end_point = (pnt1, pnt2, sign) => {
       let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
@@ -232,15 +250,15 @@ function buildSvgCurve(p, args) {
       return !args.ndig || (Math.round(val) === val) ? val.toFixed(0) : val.toFixed(args.ndig);
    };
 
-   if (!args.line || args.calc) {
-      for (let i = 1; i < p.length - 1; i++) {
+   if (args.calc) {
+      for (let i = 1; i < npnts - 1; i++) {
          p[i].dgrx = (p[i+1].grx - p[i-1].grx) * args.t;
          p[i].dgry = (p[i+1].gry - p[i-1].gry) * args.t;
       }
 
-      if (p.length > 2) {
+      if (npnts > 2) {
          end_point(p[0], p[1], 1.);
-         end_point(p[p.length - 1], p[p.length - 2], -1);
+         end_point(p[npnts - 1], p[npnts - 2], -1);
       } else if (p.length == 2) {
          p[0].dgrx = (p[1].grx - p[0].grx) * args.t;
          p[0].dgry = (p[1].gry - p[0].gry) * args.t;
@@ -249,18 +267,9 @@ function buildSvgCurve(p, args) {
       }
    }
 
-   if (p.length < 3)
-      args.line = true;
-
    let path = `${args.cmd ?? 'M'}${conv(p[0].grx)},${conv(p[0].gry)}`;
 
-   if (args.line) {
-      for (let i = 1; i < p.length; i++)
-         path += `L${conv(p[i].grx)},${conv(p[i].gry)}`;
-   } else {
-      // start with four points
-      let npnts = p.length;
-
+   if (!args.line) {
       if (args.qubic) {
          npnts--;
          path += `Q${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
@@ -274,100 +283,18 @@ function buildSvgCurve(p, args) {
 
       if (args.qubic)
          path += `Q${conv(p[npnts].grx-p[npnts].dgrx)},${conv(p[npnts].gry-p[npnts].dgry)},${conv(p[npnts].grx)},${conv(p[npnts].gry)}`;
-   }
-
-   return path;
-}
-
-/** @summary Function used to provide svg:path for the smoothed curves.
-  * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-  * @param {string} kind  should contain 'bezier' or 'line'.
-  * If first symbol 'L', then it used to continue drawing
-  * @private */
-function buildSvgPath(kind, bins, height, ndig) {
-
-   const smooth = kind.indexOf('bezier') >= 0;
-
-   if (ndig === undefined) ndig = smooth ? 2 : 0;
-   if (height === undefined) height = 0;
-
-   const jsroot_d3_svg_lineSlope = (p0, p1) => (p1.gry - p0.gry) / (p1.grx - p0.grx),
-         jsroot_d3_svg_lineFiniteDifferences = points => {
-      let i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
-      while (++i < j) {
-         p0 = p1; p1 = points[i + 1];
-         m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0, p1))) / 2;
-      }
-      m[i] = d;
-      return m;
-   }, jsroot_d3_svg_lineMonotoneTangents = points => {
-      let d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
-      while (++i < j) {
-         d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
-         if (Math.abs(d) < 1e-6) {
-            m[i] = m[i + 1] = 0;
-         } else {
-            a = m[i] / d;
-            b = m[i + 1] / d;
-            s = a * a + b * b;
-            if (s > 9) {
-               s = d * 3 / Math.sqrt(s);
-               m[i] = s * a;
-               m[i + 1] = s * b;
-            }
-         }
-      }
-      i = -1;
-      while (++i <= j) {
-         s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-         points[i].dgrx = s || 0;
-         points[i].dgry = m[i] * s || 0;
-      }
-   };
-
-   let res = { path: '', close: '' }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
-      currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
-
-   const conv = val => {
-      let vvv = Math.round(val);
-      if ((ndig == 0) || (vvv === val)) return vvv.toString();
-      let str = val.toFixed(ndig);
-      while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
-         str = str.slice(0, str.length - 1);
-      if (str[str.length - 1] == '.')
-         str = str.slice(0, str.length - 1);
-      if (str == '-0') str = '0';
-      return str;
-   };
-
-   res.path = ((kind[0] == 'L') ? 'L' : 'M') + `${conv(bin.grx)},${conv(bin.gry)}`;
-
-   // just calculate all deltas, can be used to build exclusion
-   if (smooth || kind.indexOf('calc') >= 0)
-      jsroot_d3_svg_lineMonotoneTangents(bins);
-
-   if (smooth) {
-      // build smoothed curve
-      res.path += `C${conv(bin.grx+bin.dgrx)},${conv(bin.gry+bin.dgry)},`;
-      for (let n = 1; n < npnts; ++n) {
-         let prev = bin;
-         bin = bins[n];
-         if (n > 1) res.path += 'S';
-         res.path += `${conv(bin.grx-bin.dgrx)},${conv(bin.gry-bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
-         maxy = Math.max(maxy, prev.gry);
-      }
    } else if (npnts < 10000) {
       // build simple curve
 
       let acc_x = 0, acc_y = 0;
 
       const flush = () => {
-         if (acc_x) { res.path += 'h' + acc_x; acc_x = 0; }
-         if (acc_y) { res.path += 'v' + acc_y; acc_y = 0; }
+         if (acc_x) { path += 'h' + acc_x; acc_x = 0; }
+         if (acc_y) { path += 'v' + acc_y; acc_y = 0; }
       };
 
       for (let n = 1; n < npnts; ++n) {
-         bin = bins[n];
+         bin = p[n];
          dx = Math.round(bin.grx) - currx;
          dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
@@ -390,10 +317,9 @@ function buildSvgPath(kind, bins, height, ndig) {
       // build line with trying optimize many vertical moves
       let lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
       for (let n = 1; n < npnts; ++n) {
-         bin = bins[n];
+         bin = p[n];
          lastx = Math.round(bin.grx);
          lasty = Math.round(bin.gry);
-         maxy = Math.max(maxy, lasty);
          dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
@@ -404,33 +330,35 @@ function buildSvgPath(kind, bins, height, ndig) {
          }
 
          if (cminy !== cmaxy) {
-            if (cminy != curry) res.path += 'v' + (cminy - curry);
-            res.path += 'v' + (cmaxy - cminy);
-            if (cmaxy != prevy) res.path += 'v' + (prevy - cmaxy);
+            if (cminy != curry)
+               path += `v${cminy-curry}`;
+            path += `v${cmaxy-cminy}`;
+            if (cmaxy != prevy)
+               path += `v${prevy-cmaxy}`;
             curry = prevy;
          }
          dy = lasty - curry;
          if (dy)
-            res.path += `l${dx},${dy}`;
+            path += `l${dx},${dy}`;
          else
-            res.path += 'h' + dx;
+            path += `h${dx}`;
          currx = lastx; curry = lasty;
          prevy = cminy = cmaxy = lasty;
       }
 
       if (cminy != cmaxy) {
          if (cminy != curry)
-            res.path += `v${cminy - curry}`;
-         res.path += `v${cmaxy - cminy}`;
+            path += `v${cminy-curry}`;
+         path += `v${cmaxy-cminy}`;
          if (cmaxy != prevy)
-            res.path += `v${prevy - cmaxy}`;
+            path += `v${prevy-cmaxy}`;
       }
    }
 
-   if (height > 0)
-      res.close = `L${conv(bin.grx)},${conv(maxy)}h${conv(bins[0].grx - bin.grx)}Z`;
+   if (args.height)
+      args.close = `L${conv(p[p.length-1].grx)},${conv(Math.max(args.maxy, args.height))}H${conv(p[0].grx)}Z`;
 
-   return res;
+   return path;
 }
 
 /** @summary Compress SVG code, produced from drawing
@@ -806,5 +734,5 @@ async function svgToImage(svg, image_format) {
 }
 
 export { getElementRect, getAbsPosInCanvas,
-         DrawOptions, TRandom, floatToString, buildSvgPath, buildSvgCurve, compressSVG,
+         DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, svgToImage };
