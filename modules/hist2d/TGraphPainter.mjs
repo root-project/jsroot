@@ -1,7 +1,7 @@
 import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc, isStr,
          clTPaveStats, clTCutG, clTF1, clTF2, kNoZoom } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
-import { DrawOptions, buildSvgPath, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
+import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter, setHistTitle, PadDrawOptions } from './TH1Painter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -494,7 +494,7 @@ class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y - bin.eylow);
          }
 
-         let path1 = buildSvgPath((options.EF > 1) ? 'bezier' : 'line', drawbins),
+         let path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
              bins2 = [];
 
          for (let n = drawbins.length-1; n >= 0; --n) {
@@ -504,10 +504,10 @@ class TGraphPainter extends ObjectPainter {
          }
 
          // build upper part (in reverse direction)
-         let path2 = buildSvgPath((options.EF > 1) ? 'Lbezier' : 'Lline', bins2);
+         let path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true });
 
          draw_g.append('svg:path')
-               .attr('d', path1.path + path2.path + 'Z')
+               .attr('d', path1 + path2 + 'Z')
                .call(fillatt.func);
          if (main_block)
             this.draw_kind = 'lines';

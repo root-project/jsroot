@@ -229,16 +229,7 @@ function buildSvgCurve(p, args) {
       pnt1.dgrx = len * Math.cos(2*a1 - a2);
       pnt1.dgry = len * Math.sin(2*a1 - a2);
    }, conv = val => {
-      let vvv = Math.round(val);
-      if (!args.ndig || (vvv === val))
-         return vvv.toString();
-      let str = val.toFixed(args.ndig);
-      while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
-         str = str.slice(0, str.length - 1);
-      if (str[str.length - 1] == '.')
-         str = str.slice(0, str.length - 1);
-      if (str == '-0') str = '0';
-      return str;
+      return !args.ndig || (Math.round(val) === val) ? val.toFixed(0) : val.toFixed(args.ndig);
    };
 
    if (!args.line || args.calc) {
@@ -268,11 +259,21 @@ function buildSvgCurve(p, args) {
          path += `L${conv(p[i].grx)},${conv(p[i].gry)}`;
    } else {
       // start with four points
-      path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+      let npnts = p.length;
+
+      if (args.qubic) {
+         npnts--;
+         path += `Q${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+      } else {
+         path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+      }
 
       // continue with simpler points
-      for (let i = 2; i < p.length; i++)
+      for (let i = 2; i < npnts; i++)
          path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
+
+      if (args.qubic)
+         path += `Q${conv(p[npnts].grx-p[npnts].dgrx)},${conv(p[npnts].gry-p[npnts].dgry)},${conv(p[npnts].grx)},${conv(p[npnts].gry)}`;
    }
 
    return path;
