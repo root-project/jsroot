@@ -228,31 +228,24 @@ function buildSvgCurve(p, t) {
       p[i].dgry = (p[i+1].gry - p[i-1].gry) * t;
    }
 
-   // make approximate for first differences
-   let pnt1 = p[0], pnt2 = p[1],
-       len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t,
-       a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
-       a1 = Math.atan2(pnt2.gry - pnt1.gry, pnt2.grx - pnt1.grx);
+   function end_point(pnt1, pnt2, sign) {
+      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t,
+          a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+          a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
 
-   // make first point diffs as second one (with angle adjusting)
-   pnt1.dgrx = len * Math.cos(2*a1 - a2);
-   pnt1.dgry = len * Math.sin(2*a1 - a2);
+      pnt1.dgrx = len * Math.cos(2*a1 - a2);
+      pnt1.dgry = len * Math.sin(2*a1 - a2);
+   }
 
-   // and for lost point
-   pnt1 = p[p.length - 2]; pnt2 = p[p.length - 1];
-   len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t;
-   a1 = Math.atan2(pnt1.dgry, pnt1.dgrx);
-   a2 = Math.atan2(pnt2.gry - pnt1.gry, pnt2.grx - pnt1.grx);
-   pnt2.dgrx = len * Math.cos(2*a2 - a1);
-   pnt2.dgry = len * Math.sin(2*a2 - a1);
+   end_point(p[0], p[1], 1.);
 
-   pnt2 = p[0];
+   end_point(p[p.length - 1], p[p.length - 2], -1);
 
-   let path = `M${pnt2.grx},${pnt2.gry}`;
+   let path = `M${p[0].grx},${p[0].gry}`;
 
    // central curves are cubic Bezier
    for (let i = 0; i < p.length - 1; i++) {
-      pnt1 = pnt2; pnt2 = p[i+1];
+      let pnt1 = p[i], pnt2 = p[i+1];
       path += `C${pnt1.grx+pnt1.dgrx},${pnt1.gry+pnt1.dgry},${pnt2.grx-pnt2.dgrx},${pnt2.gry-pnt2.dgry},${pnt2.grx},${pnt2.gry}`;
    }
    return { path };
