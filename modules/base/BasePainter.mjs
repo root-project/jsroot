@@ -216,6 +216,11 @@ class TRandom {
   * @desc Reuse code from https://stackoverflow.com/questions/62855310
   * @private */
 function buildSvgCurve(p, t) {
+   if (p.length < 2)
+      return { path: '' };
+   if (p.length == 2)
+      return { path: `M${p[0].grx},${p[0].gry}L{p[1].gry},${p[1].gry}` };
+
    if (!t) t = 0.3;
 
    for (let i = 1; i < p.length - 1; i++) {
@@ -223,18 +228,32 @@ function buildSvgCurve(p, t) {
       p[i].dgry = (p[i+1].gry - p[i-1].gry) * t;
    }
 
-   let pnt1 = p[0], pnt2 = p[1];
+   // make approximate for first differences
+   let pnt1 = p[0], pnt2 = p[1],
+       len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t,
+       a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+       a1 = Math.atan2(pnt2.gry - pnt1.gry, pnt2.grx - pnt1.grx);
 
-   // the first & the last curve are quadratic Bezier
-   let path = `M${pnt1.grx},${pnt1.gry}Q${pnt2.grx-pnt2.dgrx},${pnt2.gry-pnt2.dgry},${pnt2.grx},${pnt2.gry}`;
+   // make first point diffs as second one (with angle adjusting)
+   pnt1.dgrx = len * Math.cos(2*a1 - a2);
+   pnt1.dgry = len * Math.sin(2*a1 - a2);
+
+   // and for lost point
+   pnt1 = p[p.length - 2]; pnt2 = p[p.length - 1];
+   len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t;
+   a1 = Math.atan2(pnt1.dgry, pnt1.dgrx);
+   a2 = Math.atan2(pnt2.gry - pnt1.gry, pnt2.grx - pnt1.grx);
+   pnt2.dgrx = len * Math.cos(2*a2 - a1);
+   pnt2.dgry = len * Math.sin(2*a2 - a1);
+
+   pnt2 = p[0];
+
+   let path = `M${pnt2.grx},${pnt2.gry}`;
 
    // central curves are cubic Bezier
-   for (let i = 1; i < p.length - 1; i++) {
+   for (let i = 0; i < p.length - 1; i++) {
       pnt1 = pnt2; pnt2 = p[i+1];
-      if (i == p.length - 2)
-         path += `Q${pnt1.grx+pnt1.dgrx},${pnt1.gry+pnt1.dgry},${pnt2.grx},${pnt2.gry}`;
-      else
-         path += `C${pnt1.grx+pnt1.dgrx},${pnt1.gry+pnt1.dgry},${pnt2.grx-pnt2.dgrx},${pnt2.gry-pnt2.dgry},${pnt2.grx},${pnt2.gry}`;
+      path += `C${pnt1.grx+pnt1.dgrx},${pnt1.gry+pnt1.dgry},${pnt2.grx-pnt2.dgrx},${pnt2.gry-pnt2.dgry},${pnt2.grx},${pnt2.gry}`;
    }
    return { path };
 }
