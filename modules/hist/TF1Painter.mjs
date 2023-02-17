@@ -311,7 +311,7 @@ class TF1Painter extends ObjectPainter {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let args = { height: h0 },
+         let args = { height: h0, t: 0.1 },
              path = buildSvgCurve(this.bins, args);
 
          if (!this.lineatt.empty())

@@ -223,21 +223,21 @@ function buildSvgCurve(p, args) {
    else if (args.ndig === undefined)
       args.ndig = 0;
 
+   let npnts = p.length;
+   if (npnts < 3) args.line = true;
+
    args.t = args.t ?? 0.2;
 
    if ((args.ndig === undefined) || args.height) {
-      args.miny = args.maxy = p[0].gry;
-      p.forEach(bin => {
-         args.miny = Math.min(args.miny, bin.gry);
-         args.maxy = Math.max(args.maxy, bin.gry);
-      });
+      args.maxy = p[0].gry;
+      args.mindiff = 100;
+      for (let i = 1; i < npnts; i++) {
+         args.maxy = Math.max(args.maxy, p[i].gry);
+         args.mindiff = Math.min(args.mindiff, Math.abs(p[i].grx - p[i-1].grx), Math.abs(p[i].gry - p[i-1].gry));
+      }
       if (args.ndig === undefined)
-         args.ndig = (args.maxy - args.miny > 300) ? 2 : (args.maxy - args.miny > 30) ? 3 : 4;
+         args.ndig = args.mindiff > 20 ? 0 : (args.mindiff > 5 ? 1 : 2);
    }
-
-   let npnts = p.length;
-
-   if (npnts < 3) args.line = true;
 
    const end_point = (pnt1, pnt2, sign) => {
       let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
@@ -286,7 +286,7 @@ function buildSvgCurve(p, args) {
    } else if (npnts < 10000) {
       // build simple curve
 
-      let acc_x = 0, acc_y = 0;
+      let acc_x = 0, acc_y = 0, currx = Math.round(p[0].grx), curry = Math.round(p[0].gry);
 
       const flush = () => {
          if (acc_x) { path += 'h' + acc_x; acc_x = 0; }
@@ -294,12 +294,12 @@ function buildSvgCurve(p, args) {
       };
 
       for (let n = 1; n < npnts; ++n) {
-         bin = p[n];
-         dx = Math.round(bin.grx) - currx;
-         dy = Math.round(bin.gry) - curry;
+         let bin = p[n],
+             dx = Math.round(bin.grx) - currx,
+             dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
             flush();
-            res.path += `l${dx},${dy}`;
+            path += `l${dx},${dy}`;
          } else if (!dx && dy) {
             if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
             acc_y += dy;
@@ -308,19 +308,20 @@ function buildSvgCurve(p, args) {
             acc_x += dx;
          }
          currx += dx; curry += dy;
-         maxy = Math.max(maxy, curry);
       }
 
       flush();
 
    } else {
       // build line with trying optimize many vertical moves
-      let lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
+      let currx = Math.round(p[0].grx), curry = Math.round(p[0].gry),
+          cminy = curry, cmaxy = curry, prevy = curry;
+
       for (let n = 1; n < npnts; ++n) {
-         bin = p[n];
-         lastx = Math.round(bin.grx);
-         lasty = Math.round(bin.gry);
-         dx = lastx - currx;
+         let bin = p[n],
+             lastx = Math.round(bin.grx),
+             lasty = Math.round(bin.gry),
+             dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
             cminy = Math.min(cminy, lasty);
@@ -337,7 +338,7 @@ function buildSvgCurve(p, args) {
                path += `v${prevy-cmaxy}`;
             curry = prevy;
          }
-         dy = lasty - curry;
+         let dy = lasty - curry;
          if (dy)
             path += `l${dx},${dy}`;
          else
