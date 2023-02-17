@@ -212,6 +212,39 @@ class TRandom {
 } // class TRandom
 
 
+/** @summary Build smooth SVG curve uzing Bezier
+  * @desc Reuse code from https://stackoverflow.com/questions/62855310
+  * @private */
+function buildSvgCurve(p, t) {
+  if (!t) t = 0.3;
+
+  let pc = new Array(p.length);
+  for (let i = 1; i < p.length - 1; i++) {
+    let dx = p[i - 1].x - p[i + 1].x, // difference x
+        dy = p[i - 1].y - p[i + 1].y, // difference y
+        o1 = { x: p[i].x - dx * t, y: p[i].y - dy * t },  // first control point
+        o2 = { x: p[i].x + dx * t, y: p[i].y + dy * t };  // second control point
+
+    // building the control points array
+     pc[i] = [ o1, o2 ];
+  }
+
+  // the first & the last curve are quadratic Bezier
+  let path = `M${p[0].x},${p[0].y}Q${pc[1][1].x},${pc[1][1].y},${p[1].x},${p[1].y}`;
+
+  if (p.length > 2) {
+    // central curves are cubic Bezier
+    for (let i = 1; i < p.length - 2; i++)
+        path += `C${pc[i][0].x},${pc[i][0].y},${pc[i + 1][1].x},${pc[i + 1][1].y},${p[i + 1].x},${p[i + 1].y}`;
+    // the first & the last curve are quadratic Bezier
+    let n = p.length - 1;
+    // ctx.quadraticCurveTo(pc[n - 1][0].x, pc[n - 1][0].y, p[n].x, p[n].y);
+    path += `Q${pc[n - 1][0].x},${pc[n - 1][0].y},${p[n].x},${p[n].y}`;
+  }
+  return { path };
+}
+
+
 /** @summary Function used to provide svg:path for the smoothed curves.
   * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
   * @param {string} kind  should contain 'bezier' or 'line'.
@@ -739,5 +772,5 @@ async function svgToImage(svg, image_format) {
 }
 
 export { getElementRect, getAbsPosInCanvas,
-         DrawOptions, TRandom, floatToString, buildSvgPath, compressSVG,
+         DrawOptions, TRandom, floatToString, buildSvgPath, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, svgToImage };

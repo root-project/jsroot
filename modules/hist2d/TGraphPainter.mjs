@@ -1,7 +1,7 @@
 import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc, isStr,
          clTPaveStats, clTCutG, clTF1, clTF2, kNoZoom } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
-import { DrawOptions, buildSvgPath, makeTranslate } from '../base/BasePainter.mjs';
+import { DrawOptions, buildSvgPath, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter, setHistTitle, PadDrawOptions } from './TH1Painter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -14,65 +14,6 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
       clTGraphAsymmErrors = 'TGraphAsymmErrors',
       clTGraphBentErrors = 'TGraphBentErrors',
       clTGraphMultiErrors = 'TGraphMultiErrors';
-
-function controlPoints(p, t) {
-  // given the points array p calculate the control points
-  var pc = [];
-  for (var i = 1; i < p.length - 1; i++) {
-    var dx = p[i - 1].x - p[i + 1].x; // difference x
-    var dy = p[i - 1].y - p[i + 1].y; // difference y
-    // the first control point
-    var x1 = p[i].x - dx * t;
-    var y1 = p[i].y - dy * t;
-    var o1 = {
-      x: x1,
-      y: y1
-    };
-
-    // the second control point
-    var x2 = p[i].x + dx * t;
-    var y2 = p[i].y + dy * t;
-    var o2 = {
-      x: x2,
-      y: y2
-    };
-
-    // building the control points array
-    pc[i] = [];
-    pc[i].push(o1);
-    pc[i].push(o2);
-  }
-  return pc;
-}
-
-
-function buildSvgCurve(p, t) {
-  // taking example from https://stackoverflow.com/questions/62855310
-
-  let pc = controlPoints(p, t ?? 1/3); // the control points array
-
-  // ctx.moveTo(p[0].x, p[0].y);
-  // the first & the last curve are quadratic Bezier
-  // because I'm using push(), pc[i][1] comes before pc[i][0]
-  // ctx.quadraticCurveTo(pc[1][1].x, pc[1][1].y, p[1].x, p[1].y);
-
-  let path = `M${p[0].x},${p[0].y}Q${pc[1][1].x},${pc[1][1].y},${p[1].x},${p[1].y}`;
-
-  if (p.length > 2) {
-    // central curves are cubic Bezier
-    for (let i = 1; i < p.length - 2; i++) {
-        // ctx.bezierCurveTo(pc[i][0].x, pc[i][0].y, pc[i + 1][1].x, pc[i + 1][1].y, p[i + 1].x, p[i + 1].y);
-        path += `C${pc[i][0].x},${pc[i][0].y},${pc[i + 1][1].x},${pc[i + 1][1].y},${p[i + 1].x},${p[i + 1].y}`;
-    }
-    // the first & the last curve are quadratic Bezier
-    var n = p.length - 1;
-    // ctx.quadraticCurveTo(pc[n - 1][0].x, pc[n - 1][0].y, p[n].x, p[n].y);
-    path += `Q${pc[n - 1][0].x},${pc[n - 1][0].y},${p[n].x},${p[n].y}`;
-  }
-  return { path };
-}
-
-
 
 /**
  * @summary Painter for TGraph object.
