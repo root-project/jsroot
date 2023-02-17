@@ -228,29 +228,42 @@ function buildSvgCurve(p, t) {
       p[i].dgry = (p[i+1].gry - p[i-1].gry) * t;
    }
 
-   function end_point(pnt1, pnt2, sign) {
+   let ndig = 2;
+
+   const end_point = (pnt1, pnt2, sign) => {
       let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * t,
           a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
           a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
 
       pnt1.dgrx = len * Math.cos(2*a1 - a2);
       pnt1.dgry = len * Math.sin(2*a1 - a2);
-   }
+   }, conv = val => {
+      let vvv = Math.round(val);
+      if ((ndig == 0) || (vvv === val)) return vvv.toString();
+      let str = val.toFixed(ndig);
+      while ((str[str.length - 1] == '0') && (str.lastIndexOf('.') < str.length - 1))
+         str = str.slice(0, str.length - 1);
+      if (str[str.length - 1] == '.')
+         str = str.slice(0, str.length - 1);
+      if (str == '-0') str = '0';
+      return str;
+   };
+
 
    end_point(p[0], p[1], 1.);
 
    end_point(p[p.length - 1], p[p.length - 2], -1);
 
-   let path = `M${p[0].grx},${p[0].gry}`;
+   let path = `M${conv(p[0].grx)},${conv(p[0].gry)}`;
 
-   // central curves are cubic Bezier
-   for (let i = 0; i < p.length - 1; i++) {
-      let pnt1 = p[i], pnt2 = p[i+1];
-      path += `C${pnt1.grx+pnt1.dgrx},${pnt1.gry+pnt1.dgry},${pnt2.grx-pnt2.dgrx},${pnt2.gry-pnt2.dgry},${pnt2.grx},${pnt2.gry}`;
-   }
+   // start with four points
+   path += `C${conv(p[0].grx+p[0].dgrx)},${conv(p[0].gry+p[0].dgry)},${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+
+   // continue with simpler points
+   for (let i = 2; i < p.length; i++)
+      path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
    return { path };
 }
-
 
 /** @summary Function used to provide svg:path for the smoothed curves.
   * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
