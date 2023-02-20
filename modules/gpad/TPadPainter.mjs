@@ -1132,6 +1132,25 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with result */
    checkCanvasResize(size, force) {
 
+      if (this._dbr) {
+         // special case of invoked web browser resize
+         clearTimeout(this._dbr.handle);
+
+         let rect = getElementRect(this.selectDom('origin'));
+
+         // chrome browser first changes width, then height, producing two different resize events
+         // therefore at least one dimension should match to wait for next resize
+         // if none of dimension matches - cancel direct browser resize
+         if ((rect.width == this._dbr.width) === (rect.height == this._dbr.height)) {
+            let func = this._dbr.func;
+            delete this._dbr;
+            func(true);
+         } else {
+            this._dbr.setTimer(300); // check for next resize
+         }
+         return false;
+      }
+
       if (!this.iscan && this.has_canvas) return false;
 
       let sync_promise = this.syncDraw('canvas_resize');
@@ -1154,18 +1173,12 @@ class TPadPainter extends ObjectPainter {
              return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
-      return sync_promise.then(() => {
+      return sync_promise.then(() => this.ensureBrowserSize(this.enforceCanvasSize, this.pad?.fCw, this.pad?.fCh)).then(() => {
+         delete this.enforceCanvasSize;
+
+         console.log('create canvas SVG');
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
-
-         if (this.enforceCanvasSize) {
-            // mode when after window resize one tries to preserve canvas size
-            delete this.enforceCanvasSize;
-
-            if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fCw && this.pad?.fCh)
-               if (this.resizeBrowser(this.pad.fCw, this.pad.fCh))
-                  handle_online = false;
-         }
 
          if (changed && handle_online) {
             if (this._resize_tmout)
@@ -1174,7 +1187,7 @@ class TPadPainter extends ObjectPainter {
                delete this._resize_tmout;
                if (!this.pad) return;
                let cw = this.getPadWidth(), ch = this.getPadHeight();
-               if ((cw > 0) && (ch > 0) && (this.pad.fCw != cw) || (this.pad.fCh != ch)) {
+               if ((cw > 0) && (ch > 0) && ((this.pad.fCw != cw) || (this.pad.fCh != ch))) {
                   this.pad.fCw = cw;
                   this.pad.fCh = ch;
                   console.log(`RESIZED:[${cw},${ch}]`);
@@ -1423,6 +1436,32 @@ class TPadPainter extends ObjectPainter {
       return null;
    }
 
+   /** @summary Ensure that browser window size match to requested canvas size
+     * @desc Actively used for the first canvas drawing or after intentional layout resize when browser should be adjusted
+     * @private */
+   ensureBrowserSize(condition, canvW, canvH) {
+     if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
+        return true;
+
+     return new Promise(resolveFunc => {
+        this._dbr = { func: resolveFunc, width: canvW, height: canvH, setTimer: tmout => {
+           this._dbr.handle = setTimeout(() => {
+              if (this._dbr) {
+                 delete this._dbr;
+                 resolveFunc(true);
+              }
+           }, tmout);
+        }};
+
+        if (!this.resizeBrowser(canvW, canvH)) {
+           delete this._dbr;
+           resolveFunc(true);
+        } else if (this._dbr) {
+           this._dbr.setTimer(200); // set short timer
+        }
+     });
+   }
+
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * for the canvas snapshot contains list of objects
@@ -1468,11 +1507,6 @@ class TPadPainter extends ObjectPainter {
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
             registerForResize(this.brlayout);
          }
-
-         // when getting first message from server, resize browser window
-         if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas &&
-              (first.fCw > 0) && (first.fCh > 0) && isFunc(this.resizeBrowser))
-               this.resizeBrowser(first.fCw, first.fCh);
 
          this.createCanvasSvg(0);
 
