@@ -757,7 +757,7 @@ class RPadPainter extends RObjectPainter {
    checkCanvasResize(size, force) {
 
       if (this._dbr) {
-         // special case of invoked web browser resize
+         // special case of invoked intentially web browser resize to keep layout of canvas the same
          clearTimeout(this._dbr.handle);
 
          let rect = getElementRect(this.selectDom('origin'));
@@ -786,9 +786,7 @@ class RPadPainter extends RObjectPainter {
 
       if (!force) force = this.needRedrawByResize();
 
-      let handle_online = this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode,
-          changed = false,
-          redrawNext = indx => {
+      let changed = false, redrawNext = indx => {
              if (!changed || (indx >= this.painters.length)) {
                 this.confirmDraw();
                 return changed;
@@ -802,7 +800,7 @@ class RPadPainter extends RObjectPainter {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && handle_online) {
+         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
