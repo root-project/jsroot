@@ -521,11 +521,9 @@ class BasePainter {
           main = this.selectDom(),
           lmt = 5; // minimal size
 
-      if (enlarge !== 'on') {
-         if (new_size && new_size.width && new_size.height)
-            main_origin.style('width', new_size.width + 'px')
-               .style('height', new_size.height + 'px');
-      }
+      if ((enlarge !== 'on') && new_size?.width && new_size?.height)
+         main_origin.style('width', new_size.width + 'px')
+                    .style('height', new_size.height + 'px');
 
       let rect_origin = getElementRect(main_origin, true),
           can_resize = main_origin.attr('can_resize'),
