@@ -805,7 +805,7 @@ class TAxisPainter extends ObjectPainter {
                set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
          this.titleOffset = (vertical ? new_x : new_y) / offset_k;
-         axis.fTitleOffset = this.titleOffset / this.titleSize;
+         axis.fTitleOffset = this.titleOffset / this.offsetScalingSize / (this.titleSize/this.scalingSize);
 
          if (curr_indx == 1) {
             set_bit(abits.kCenterTitle, true); this.titleCenter = true;
@@ -1079,12 +1079,16 @@ class TAxisPainter extends ObjectPainter {
          this.titleSize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * this.scalingSize);
          this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
          this.titleFont.setColor(titleColor);
-         this.titleOffset = axis.fTitleOffset * this.titleSize; // in pixels
+         this.offsetScalingSize = this.vertical ? pad_w : pad_h;
+         this.titleOffset = axis.fTitleOffset;
+         if (!this.titleOffset && this.name[0] == 'x') this.titleOffset = gStyle.fXaxis.fTitleOffset;
+         this.titleOffset *= this.offsetScalingSize*(this.titleSize/this.scalingSize); // missing vertical/horizontal coef and side
          this.titleCenter = axis.TestBit(EAxisBits.kCenterTitle);
          this.titleOpposite = axis.TestBit(EAxisBits.kOppositeTitle);
       } else {
          delete this.titleSize;
          delete this.titleFont;
+         delete this.offsetScalingSize;
          delete this.titleOffset;
          delete this.titleCenter;
          delete this.titleOpposite;
@@ -1202,7 +1206,7 @@ class TAxisPainter extends ObjectPainter {
 
          title_g = axis_g.append('svg:g').attr('class', 'axis_title');
 
-         let title_offest_k = 1.6 / this.scalingSize,
+         let title_offest_k = side,
              rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
 
          this.startTextDrawing(this.titleFont, 'font', title_g);
@@ -1212,7 +1216,7 @@ class TAxisPainter extends ObjectPainter {
          this.title_align = this.titleCenter ? 'middle' : (myxor ? 'begin' : 'end');
 
          if (this.vertical) {
-            title_offest_k *= -side*pad_w;
+            title_offest_k *= -1.6;
 
             title_shift_x = Math.round(title_offest_k * this.titleOffset);
 
@@ -1229,7 +1233,7 @@ class TAxisPainter extends ObjectPainter {
                             rotate: (rotate < 0) ? 90 : 270,
                             text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          } else {
-            title_offest_k *= side*pad_h;
+            title_offest_k *= 1.6;
 
             title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k * this.titleOffset);
@@ -1245,16 +1249,10 @@ class TAxisPainter extends ObjectPainter {
 
          return this.finishTextDrawing(title_g);
       }).then(() => {
+
          if (title_g) {
-            // fine-tuning of title position when possible
-            if (axis_rect) {
-               let title_rect = title_g.node().getBoundingClientRect();
-               if ((axis_rect.left != axis_rect.right) && (title_rect.left != title_rect.right))
-                  title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - this.titleFont.size*0.3) :
-                                               Math.round(axis_rect.right - title_rect.left + this.titleFont.size*0.3);
-               else
-                  title_shift_x = -1 * Math.round(((side > 0) ? (this.labelsOffset + labelsMaxWidth) : 0) + this.titleFont.size*0.7);
-            }
+            if (!this.titleOffset && this.vertical && labelsMaxWidth)
+              title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScalingSize*(this.titleSize/this.scalingSize)));
 
             title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
                    .property('shift_x', title_shift_x)
