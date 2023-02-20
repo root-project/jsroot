@@ -11,6 +11,9 @@ import { settings, internals, isNodeJs, isFunc, isStr, btoa_func } from '../core
   * With node.js can use 'width' and 'height' attributes when provided in element
   * @private */
 function getElementRect(elem, sizearg) {
+   if (!elem || elem.empty())
+      return { x: 0, y: 0, width: 0, height: 0 };
+
    if (isNodeJs() && (sizearg != 'bbox'))
       return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
