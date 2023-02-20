@@ -258,7 +258,8 @@ class RPadPainter extends RObjectPainter {
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) return (check_resize > 1); // flag used to force re-drawing of all subpads
+         if (this._fixed_size) 
+            return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
 
