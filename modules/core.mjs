@@ -1675,6 +1675,10 @@ function getMethods(typename, obj) {
    return m;
 }
 
+gStyle.fXaxis = create(clTAttAxis);
+gStyle.fYaxis = create(clTAttAxis);
+gStyle.fZaxis = create(clTAttAxis);
+
 /** @summary Add methods for specified type.
   * @desc Will be automatically applied when decoding JSON string
   * @private */
