@@ -258,7 +258,7 @@ class RPadPainter extends RObjectPainter {
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) 
+         if (this._fixed_size)
             return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
@@ -756,6 +756,25 @@ class RPadPainter extends RObjectPainter {
    /** @summary Check resize of canvas */
    checkCanvasResize(size, force) {
 
+      if (this._dbr) {
+         // special case of invoked web browser resize
+         clearTimeout(this._dbr.handle);
+
+         let rect = getElementRect(this.selectDom('origin'));
+
+         // chrome browser first changes width, then height, producing two different resize events
+         // therefore at least one dimension should match to wait for next resize
+         // if none of dimension matches - cancel direct browser resize
+         if ((rect.width == this._dbr.width) === (rect.height == this._dbr.height)) {
+            let func = this._dbr.func;
+            delete this._dbr;
+            func(true);
+         } else {
+            this._dbr.setTimer(300); // check for next resize
+         }
+         return false;
+      }
+
       if (!this.iscan && this.has_canvas) return false;
 
       let sync_promise = this.syncDraw('canvas_resize');
@@ -778,18 +797,10 @@ class RPadPainter extends RObjectPainter {
              return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
-      return sync_promise.then(() => {
+      return sync_promise.then(() => this.ensureBrowserSize(this.enforceCanvasSize && this.pad?.fWinSize, this.pad.fWinSize[0], this.pad.fWinSize[1])).then(() => {
+         delete this.enforceCanvasSize;
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
-
-         if (this.enforceCanvasSize) {
-            // mode when after window resize one tries to preserve canvas size
-            delete this.enforceCanvasSize;
-
-            if (changed && handle_online && isFunc(this.resizeBrowser) && this.pad?.fWinSize)
-               if (this.resizeBrowser(this.pad.fWinSize[0], this.pad.fWinSize[1]))
-                  handle_online = false;
-         }
 
          if (changed && handle_online) {
             if (this._resize_tmout)
@@ -1057,6 +1068,34 @@ class RPadPainter extends RObjectPainter {
       return null;
    }
 
+   /** @summary Ensure that browser window size match to requested canvas size
+     * @desc Actively used for the first canvas drawing or after intentional layout resize when browser should be adjusted
+     * @private */
+   ensureBrowserSize(condition, canvW, canvH) {
+      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
+         return true;
+
+      return new Promise(resolveFunc => {
+         this._dbr = {
+            func: resolveFunc, width: canvW, height: canvH, setTimer: tmout => {
+               this._dbr.handle = setTimeout(() => {
+                  if (this._dbr) {
+                     delete this._dbr;
+                     resolveFunc(true);
+                  }
+               }, tmout);
+            }
+         };
+
+         if (!this.resizeBrowser(canvW, canvH)) {
+            delete this._dbr;
+            resolveFunc(true);
+         } else if (this._dbr) {
+            this._dbr.setTimer(200); // set short timer
+         }
+      });
+   }
+
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * @return {Promise} with pad painter*/
@@ -1094,11 +1133,6 @@ class RPadPainter extends RObjectPainter {
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
             registerForResize(this.brlayout);
          }
-
-         // when getting first message from server, resize browser window
-         if (this.online_canvas && !this.batch_mode && this.use_openui && !this.embed_canvas && snap.fWinSize &&
-              (snap.fWinSize[0] > 0) && (snap.fWinSize[1] > 0) && isFunc(this.resizeBrowser))
-                  this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
 
          this.createCanvasSvg(0);
          this.addPadButtons(true);
