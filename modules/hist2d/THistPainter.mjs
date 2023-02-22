@@ -1272,7 +1272,7 @@ class THistPainter extends ObjectPainter {
       if (this.options.Same)
          return false;
 
-      return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
+      return fp.drawAxes(false, this.options.Axis < 0, this.options.Axis < 0,
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
    }
 
