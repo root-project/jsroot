@@ -805,7 +805,7 @@ class TAxisPainter extends ObjectPainter {
                set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
          this.titleOffset = (vertical ? new_x : new_y) / offset_k;
-         axis.fTitleOffset = this.titleOffset / this.offsetScalingSize / (this.titleSize/this.scalingSize);
+         axis.fTitleOffset = this.titleOffset / this.offsetScaling / this.titleSize;
 
          if (curr_indx == 1) {
             set_bit(abits.kCenterTitle, true); this.titleCenter = true;
@@ -1025,9 +1025,9 @@ class TAxisPainter extends ObjectPainter {
    extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
           is_gaxis = axis?._typename === clTGaxis,
-          frect = this.getPadPainter()?.getFrameRect(),
-          pad_w = Math.round((frect?.width || 8)/0.8), // use factor 0.8 as ratio between frame and pad size, frame size is visible and more obvios
-          pad_h = Math.round((frect?.height || 8)/0.8),
+          pp = this.getPadPainter(),
+          pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
+          pad_h = pp?.getPadHeight() || scalingSize || h/0.8,
           tickSize = 0, tickScalingSize = 0, titleColor;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
@@ -1079,16 +1079,16 @@ class TAxisPainter extends ObjectPainter {
          this.titleSize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * this.scalingSize);
          this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
          this.titleFont.setColor(titleColor);
-         this.offsetScalingSize = this.vertical ? pad_w : pad_h;
+         this.offsetScaling = (axis.fTitleSize >= 1) ? 1 : (this.vertical ? pad_w : pad_h) / this.scalingSize;
          this.titleOffset = axis.fTitleOffset;
          if (!this.titleOffset && this.name[0] == 'x') this.titleOffset = gStyle.fXaxis.fTitleOffset;
-         this.titleOffset *= this.offsetScalingSize*(this.titleSize/this.scalingSize); // missing vertical/horizontal coef and side
+         this.titleOffset *= this.titleSize * this.offsetScaling;
          this.titleCenter = axis.TestBit(EAxisBits.kCenterTitle);
          this.titleOpposite = axis.TestBit(EAxisBits.kOppositeTitle);
       } else {
          delete this.titleSize;
          delete this.titleFont;
-         delete this.offsetScalingSize;
+         delete this.offsetScaling;
          delete this.titleOffset;
          delete this.titleCenter;
          delete this.titleOpposite;
@@ -1252,7 +1252,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (title_g) {
             if (!this.titleOffset && this.vertical && labelsMaxWidth)
-              title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScalingSize*(this.titleSize/this.scalingSize)));
+              title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
 
             title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
                    .property('shift_x', title_shift_x)
