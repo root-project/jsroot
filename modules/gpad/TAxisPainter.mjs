@@ -1162,7 +1162,7 @@ class TAxisPainter extends ObjectPainter {
                .attr('d', axis_lines)
                .call(this.lineatt.func);
 
-      let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, labelsMaxWidth = 0,
+      let title_shift_x = 0, title_shift_y = 0, title_g = null, labelsMaxWidth = 0,
           // draw labels (sometime on both sides)
           pr = (disable_axis_drawing || this.optionUnlab) ? Promise.resolve(0) :
                 this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelsOffset, this.ticksSize, ticksPlusMinus, max_text_width);
@@ -1241,9 +1241,6 @@ class TAxisPainter extends ObjectPainter {
                             rotate: (rotate < 0) ? 180 : 0,
                             text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          }
-
-         if (this.vertical && !this.titleOffset && ('getBoundingClientRect' in axis_g.node()))
-            axis_rect = axis_g.node().getBoundingClientRect();
 
          this.addTitleDrag(title_g, this.vertical, title_offest_k, swap_side, this.vertical ? h : w);
 
