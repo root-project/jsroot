@@ -8274,6 +8274,12 @@ class BasePainter {
       if (rect.changed)
          main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
 
+      // after change enlarge state always mark main element as resized
+      if (main_origin.property('did_enlarge')) {
+         rect.changed = true;
+         main_origin.property('did_enlarge', false);
+      }
+
       return rect;
    }
 
@@ -8328,7 +8334,7 @@ class BasePainter {
             enlarge.node().appendChild(main.node().firstChild);
 
          origin.property('use_enlarge', true);
-
+         origin.property('did_enlarge', true);
          return true;
       }
       if ((action === false) && (state !== 'off')) {
@@ -8338,6 +8344,7 @@ class BasePainter {
 
          enlarge.remove();
          origin.property('use_enlarge', false);
+         origin.property('did_enlarge', true);
          return true;
       }
 
