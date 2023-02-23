@@ -930,7 +930,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (lcnt > 0) side = -side;
 
-         let lastpos = 0, fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
+         let lastpos = 0, fix_coord = this.vertical ? -labeloffset*side : labeloffset*side + ticksPlusMinus*tickSize;
 
          this.startTextDrawing(labelsFont, 'font', label_g[lcnt]);
 
@@ -970,6 +970,7 @@ class TAxisPainter extends ObjectPainter {
                arg.x = pos;
                arg.y = fix_coord;
                arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
+               if (arg.align % 10 === 3) arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
             }
 
             if (rotate_lbls)
