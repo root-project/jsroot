@@ -541,12 +541,12 @@ which is capable to convert any (beside TTree) ROOT object into JSON. Any ROOT a
 create JSON files for selected objects and write such files in a directory,
 which can be accessed via web server. Then one can use JSROOT to read such files and display objects in a web browser.
 
-There is a demonstration page showing such functionality: <https://root.cern/js/latest/demo/demo.htm>.
+There is a demonstration page showing such functionality: <https://root.cern/js/latest/demo/update_draw.htm>.
 This demo page reads in cycle 20 json files and displays them.
 
 If one has a web server which already provides such JSON file, one could specify the URL to this file like:
 
-<https://root.cern/js/latest/demo/demo.htm?addr=../httpserver.C/Canvases/c1/root.json.gz>
+<https://root.cern/js/latest/demo/update_draw.htm?addr=../httpserver.C/Canvases/c1/root.json.gz>
 
 Here the same problem with [Cross-Origin Request](https://developer.mozilla.org/en/http_access_control) can appear. If the web server configuration cannot be changed, just copy JSROOT to the web server itself.
 
