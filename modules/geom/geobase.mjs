@@ -2461,7 +2461,7 @@ class ClonedNodes {
             clone.fDX = shape.fDX;
             clone.fDY = shape.fDY;
             clone.fDZ = shape.fDZ;
-            clone.vol = shape.fDX * shape.fDY * shape.fDZ;
+            clone.vol = Math.sqrt(shape.fDX**2 + shape.fDY**2 + shape.fDZ**2);
             if (shape.$nfaces === undefined)
                shape.$nfaces = createGeometry(shape, -1);
             clone.nfaces = shape.$nfaces;
