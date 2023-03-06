@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '1/03/2023';
+let version_date = '6/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -82130,12 +82130,10 @@ function createSphereBuffer( shape, faces_limit ) {
    }
 
    let numoutside = widthSegments * heightSegments * 2,
-       numtop = widthSegments * 2,
-       numbottom = widthSegments * 2,
-       numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4),
+       numtop = widthSegments * (noInside ? 1 : 2),
+       numbottom = widthSegments * (noInside ? 1 : 2),
+       numcut = (phiLength === 360) ? 0 : heightSegments * (noInside ? 2 : 4),
        epsilon = 1e-10;
-
-   if (noInside) numbottom = numtop = widthSegments;
 
    if (faces_limit < 0) return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
@@ -82759,7 +82757,15 @@ function createParaboloidBuffer( shape, faces_limit ) {
       }
    }
 
-   let zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
+   let rmin = shape.fRlo, rmax = shape.fRhi,
+       numfaces = (heightSegments+1) * radiusSegments*2;
+
+   if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
+   if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
+
+   if (faces_limit < 0) return numfaces;
+
+   let zmin = -shape.fDZ, zmax = shape.fDZ;
 
    // if no radius at -z, find intersection
    if (shape.fA >= 0) {
@@ -82769,12 +82775,6 @@ function createParaboloidBuffer( shape, faces_limit ) {
    }
 
    let ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
-
-   let numfaces = (heightSegments+1)*radiusSegments*2;
-   if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
-   if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
-
-   if (faces_limit < 0) return numfaces;
 
    // calculate all sin/cos tables in advance
    let _sin = new Float32Array(radiusSegments+1),
@@ -82915,9 +82915,7 @@ function createTessellatedBuffer( shape, faces_limit) {
    let numfaces = 0;
 
    for (let i = 0; i < shape.fFacets.length; ++i) {
-      let f = shape.fFacets[i];
-      if (f.fNvert == 4) numfaces += 2;
-                    else numfaces += 1;
+      numfaces += (shape.fFacets[i].fNvert == 4) ? 2 : 1;
    }
 
    if (faces_limit < 0) return numfaces;
@@ -83182,8 +83180,8 @@ function countGeometryFaces(geom) {
 function createComposite( shape, faces_limit ) {
 
    if (faces_limit < 0)
-      return createGeometry(shape.fNode.fLeft, -10) +
-             createGeometry(shape.fNode.fRight, -10);
+      return createGeometry(shape.fNode.fLeft, -1) +
+             createGeometry(shape.fNode.fRight, -1);
 
    let geom1, geom2, bsp1, bsp2, return_bsp = false,
        matrix1 = createMatrix(shape.fNode.fLeftMat),
@@ -114883,6 +114881,7 @@ class WebWindowHandle {
    provideData(chid, _msg, _len) {
       if (this.wait_first_recv) {
          delete this.wait_first_recv;
+         this.state = 1;
          return this.invokeReceiver(false, 'onWebsocketOpened');
       }
 
@@ -115041,6 +115040,9 @@ class WebWindowHandle {
       // now server-side entity should be initialized and init message send from server side!
       return channel;
    }
+
+   /** @summary Returns true if socket connected */
+   isConnected() { return this.state > 0; }
 
    /** @summary Returns used channel ID, 1 by default */
    getChannelId() { return this.channelid && this.master ? this.channelid : 1; }
