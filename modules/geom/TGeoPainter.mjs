@@ -1458,7 +1458,9 @@ class TGeoPainter extends ObjectPainter {
                if (this._hpainter)
                   menu.add('Inspect', itemname, arg => this._hpainter.display(arg, 'inspect'));
 
-               if (obj.geo_name) {
+               if (isFunc(this.hidePhysicalNode))
+                  menu.add('Hide', itemname, arg => this.hidePhysicalNode([arg]));
+               else if (obj.geo_name) {
                   menu.add('Hide', n, indx => {
                      let mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
