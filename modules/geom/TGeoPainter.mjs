@@ -1448,8 +1448,11 @@ class TGeoPainter extends ObjectPainter {
                   else if (!hdr)
                      hdr = 'header';
 
-               } else
+               } else {
                   continue;
+               }
+
+               cnt++;
 
                menu.add((many ? 'sub:' : 'header:') + hdr, itemname, arg => this.activateInBrowser([arg], true));
 
@@ -1458,9 +1461,17 @@ class TGeoPainter extends ObjectPainter {
                if (this._hpainter)
                   menu.add('Inspect', itemname, arg => this._hpainter.display(arg, 'inspect'));
 
-               if (isFunc(this.hidePhysicalNode))
+               if (isFunc(this.hidePhysicalNode)) {
                   menu.add('Hide', itemname, arg => this.hidePhysicalNode([arg]));
-               else if (obj.geo_name) {
+                  if (cnt > 1)
+                     menu.add('Hide all before', n, indx => {
+                        let items = [];
+                        for (let i = 0; i < indx; ++i)
+                           if (intersects[i].object.stack)
+                              items.push(this.getStackFullName(intersects[i].object.stack));
+                        this.hidePhysicalNode(items);
+                     });
+               } else if (obj.geo_name) {
                   menu.add('Hide', n, indx => {
                      let mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
@@ -1482,7 +1493,7 @@ class TGeoPainter extends ObjectPainter {
                      this.render3D();
                   });
 
-               if (++cnt > 1)
+               if (cnt > 1)
                   menu.add('Manifest', n, function(indx) {
 
                      if (this._last_manifest)
@@ -1605,7 +1616,8 @@ class TGeoPainter extends ObjectPainter {
    getStackFullName(stack) {
       let mainitemname = this.getItemName(),
           sub = this.resolveStack(stack);
-      if (!sub || !sub.name) return mainitemname;
+      if (!sub || !sub.name)
+         return mainitemname;
       return mainitemname ? mainitemname + '/' + sub.name : sub.name;
    }
 
