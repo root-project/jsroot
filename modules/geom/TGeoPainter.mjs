@@ -2595,9 +2595,13 @@ class TGeoPainter extends ObjectPainter {
       return 0;
    }
 
-   /** @summary Place camera to default position */
-   adjustCameraPosition(first_time, keep_zoom) {
+   /** @summary Place camera to default position,
+     * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
+     * @param keep_zoom - tries to keep zomming factor of the camera */
+   adjustCameraPosition(arg, keep_zoom) {
       if (!this._toplevel) return;
+
+      let force = (arg === true), first_time = (arg == 'first') || force;
 
       let box = this.getGeomBoundingBox(this._toplevel);
 
@@ -2614,6 +2618,22 @@ class TGeoPainter extends ObjectPainter {
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
+
+      if (this._scene_size && !force) {
+         const d = this._scene_size, test = (v1, v2, scale) => {
+            if (!scale) scale = Math.abs((v1+v2)/2);
+            return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
+         };
+         let large_change = test(sizex, d.sizex) || test(sizey, d.sizey) || test(sizez, d.sizez) ||
+                            test(midx, d.midx, d.sizex) || test(midy, d.midy, d.sizey) || test(midz, d.midz, d.sizez);
+         if (!large_change) {
+            if (this.ctrl.select_in_view)
+               this.startDrawGeometry();
+            return;
+         }
+      }
+
+      this._scene_size = { sizex, sizey, sizez, midx, midy, midz };
 
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
@@ -4274,14 +4294,14 @@ class TGeoPainter extends ObjectPainter {
       return promise.then(() => {
 
          if (this._full_redrawing) {
-            this.adjustCameraPosition(true);
+            this.adjustCameraPosition('first');
             this._full_redrawing = false;
             full_redraw = true;
             this.changedDepthMethod('norender');
          }
 
          if (this._first_drawing) {
-            this.adjustCameraPosition(true);
+            this.adjustCameraPosition('first');
             this.showDrawInfo();
             this._first_drawing = false;
             first_time = true;
@@ -4476,6 +4496,7 @@ class TGeoPainter extends ObjectPainter {
       cleanupRender3D(this._renderer);
 
       delete this._scene;
+      delete this._scene_size;
       this._scene_width = 0;
       this._scene_height = 0;
       this._renderer = null;
