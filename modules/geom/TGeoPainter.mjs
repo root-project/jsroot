@@ -1416,8 +1416,9 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
-               if (intersects[n].object.stack) numnodes++;
-               if (intersects[n].object.geo_name) numitems++;
+               let obj = intersects[n].object;
+               if (obj.stack) numnodes++;
+               if (obj.geo_name) numitems++;
             }
 
          if (numnodes + numitems === 0) {
@@ -1546,7 +1547,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Filter some objects from three.js intersects array */
    filterIntersects(intersects) {
 
-      if (!intersects.length) return intersects;
+      if (!intersects?.length)
+         return intersects;
 
       // check redirections
       for (let n = 0; n < intersects.length; ++n)
@@ -1558,7 +1560,7 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-            unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
+            unique = obj.visible && ((obj.stack !== undefined) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
@@ -1566,7 +1568,8 @@ class TGeoPainter extends ObjectPainter {
          if (obj.jsroot_special) unique = false;
 
          for (let k = 0; (k < n) && unique;++k)
-            if (intersects[k].object === obj) unique = false;
+            if (intersects[k].object === obj)
+               unique = false;
 
          if (!unique) intersects.splice(n,1);
       }
@@ -1766,7 +1769,7 @@ class TGeoPainter extends ObjectPainter {
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
             let obj = intersects[k].object, info = null;
-            if (!obj) continue;
+            if (!obj || !obj.visible) continue;
             if (obj.geo_object)
                info = obj.geo_name;
             else if (obj.stack)
