@@ -4955,7 +4955,7 @@ function provideMenu(menu, item, hpainter) {
          menu.add('sub:Physical vis', 'Physical node visibility - only for this instance');
          menu.addchk(phys_vis?.visible, 'on', 'on', changePhysVis, 'Enable visibility of phys node');
          menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
-         menu.addchk(!phys_vis, 'reset', 'clear', changePhysVis, 'Reset visibility of physical node');
+         menu.add('reset', 'clear', changePhysVis, 'Reset custom visibility of physical node');
          menu.add('reset all', 'clearall', changePhysVis, 'Reset all custom settings for all nodes');
          menu.add('endsub:');
       }
