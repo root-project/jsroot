@@ -930,7 +930,7 @@ class TGeoPainter extends ObjectPainter {
 
                let m2 = this.getmatrix();
 
-               let entry = this.CopyStack();
+               let entry = this.copyStack();
 
                let mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
 
@@ -3051,7 +3051,8 @@ class TGeoPainter extends ObjectPainter {
           res = obj.$hidden_via_menu ? false : true;
 
       if (toggle) {
-         obj.$hidden_via_menu = res; res = !res;
+         obj.$hidden_via_menu = res;
+         res = !res;
 
          let mesh = null;
          // either found painted object or just draw once again
@@ -4912,16 +4913,12 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && findItemWithPainter(item))
-      menu.add('Focus', function() {
+   let drawitem = findItemWithPainter(item),
+       fullname = drawitem ? hpainter.itemFullName(item, drawitem) : '';
 
-        let drawitem = findItemWithPainter(item);
-
-        if (!drawitem) return;
-
-        let fullname = hpainter.itemFullName(item, drawitem);
-
-        if (isFunc(drawitem._painter?.focusOnItem))
+   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && drawitem)
+      menu.add('Focus', () => {
+        if (drawitem && isFunc(drawitem._painter?.focusOnItem))
            drawitem._painter.focusOnItem(fullname);
       });
 
@@ -4931,12 +4928,30 @@ function provideMenu(menu, item, hpainter) {
       if (res.hidden + res.visible > 0)
          menu.addchk((res.hidden == 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
    } else {
+
+      let stack = drawitem?._painter?._clones?.findStackByName(fullname),
+          phys_vis = stack ? drawitem._painter._clones.getPhysNodeVisibility(stack) : null,
+          is_visible = testGeoBit(vol, geoBITS.kVisThis);
+
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible',
             geoBITS.kVisNone, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geoBITS.kVisThis), 'Visible',
-            geoBITS.kVisThis, ToggleMenuBit);
+      if (stack) {
+         const changePhysVis = arg => {
+            drawitem._painter._clones.setPhysNodeVisibility(stack, arg == 'clear' ? arg : arg == 'on');
+            findItemWithPainter(item, 'testGeomChanges');
+         };
+
+         menu.add('sub:Physical vis', 'Physical node visibility - only for this instance');
+         menu.addchk(phys_vis?.visible, 'on', 'on', changePhysVis, 'Enable visibility of phys node');
+         menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
+         menu.addchk(!phys_vis, 'reset', 'clear', changePhysVis, 'Reset visibility of physical node');
+         menu.add('endsub:');
+      }
+
+      menu.addchk(is_visible, 'Lofical vis',
+            geoBITS.kVisThis, ToggleMenuBit, 'Logical node visibility - all instances');
       menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
-            geoBITS.kVisDaughters, ToggleMenuBit);
+            geoBITS.kVisDaughters, ToggleMenuBit, 'Logical node daugthers visibility');
    }
 
    return true;
