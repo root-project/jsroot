@@ -1825,7 +1825,7 @@ class TGeoPainter extends ObjectPainter {
             delete this._last_manifest;
             this.render3D();
          } else {
-            this.adjustCameraPosition();
+            this.adjustCameraPosition(true);
          }
       }
    }
