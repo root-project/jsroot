@@ -83954,9 +83954,8 @@ class ClonedNodes {
          return 0;
 
       let res = 0;
-      for (let n=0;n<this.nodes.length;++n) {
+      for (let n = 0; n < this.nodes.length; ++n) {
          let clone = this.nodes[n];
-
          clone.vis = flags[n].vis;
          clone.nochlds = flags[n].nochlds;
          if (clone.vis) res++;
@@ -83965,42 +83964,65 @@ class ClonedNodes {
       return res;
    }
 
-   /** @summary Provide visibility flag for physical node
+   /** @summary Set visibility flag for physical node
      * @desc Trying to reimplement functionality in the RGeomViewer */
    setPhysNodeVisibility(stack, on) {
+      let do_clear = false;
+      if (on == 'clearall') {
+         delete this.fVisibility;
+         return;
+      } else if (on == 'clear') {
+         do_clear = true;
+         if (!this.fVisibility) return;
+      } else {
+         on = on ? true : false;
+      }
+      if (!stack) return;
+
       if (!this.fVisibility)
          this.fVisibility = [];
 
-      let nodeid = this.getNodeIdByStack(stack),
-         node = nodeid >= 0 ? this.nodes[nodeid] : null;
-
-      console.log('node.vis', node?.vis, 'node', node);
-
       for (let indx = 0; indx < this.fVisibility.length; ++indx) {
-         let item = this.fVisibility[i],
+         let item = this.fVisibility[indx],
              res = compare_stacks(item.stack, stack);
 
          if (res == 0) {
-            let changed = (item.visible != on);
-            if (changed) {
+            if (do_clear) {
+               this.fVisibility.splice(indx, 1);
+               if (this.fVisibility.length == 0)
+                  delete this.fVisibility;
+            } else
                item.visible = on;
 
-               // no need for custom settings if match with description
-               if ((node.vis > 0) == on)
-                  this.fVisibility.splice(indx, 1);
-            }
-
-            return changed;
+            return;
          }
 
          if (res > 0) {
-            this.fVisibility.splice(indx, 0, { visible: on, stack });
-            return true;
+            if (!do_clear)
+               this.fVisibility.splice(indx, 0, { visible: on, stack });
+            return;
          }
       }
 
-      this.fVisibility.push({ visible: on, stack });
-      return true;
+      if (!do_clear)
+         this.fVisibility.push({ visible: on, stack });
+      return;
+   }
+
+   /** @summary Get visibility item for physical node */
+   getPhysNodeVisibility(stack) {
+      if (!stack || !this.fVisibility)
+         return null;
+      for (let indx = 0; indx < this.fVisibility.length; ++indx) {
+         let item = this.fVisibility[indx],
+             res = compare_stacks(item.stack, stack);
+         if (res == 0)
+            return item;
+         if (res > 0)
+            return null;
+      }
+
+      return null;
    }
 
    /** @summary Scan visible nodes in hierarchy, starting from nodeid
@@ -84019,10 +84041,11 @@ class ClonedNodes {
          arg.nodeid = 0;
          arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
-         arg.CopyStack = function(factor) {
+         arg.copyStack = function(factor) {
             let entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
             if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be built as first
-            for (let n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
+            for (let n = 0; n < this.last; ++n)
+               entry.stack[n] = this.stack[n+1]; // copy stack
             return entry;
          };
 
@@ -84030,6 +84053,22 @@ class ClonedNodes {
             arg.matrices = [];
             arg.mpool = [ new Matrix4() ]; // pool of Matrix objects to avoid permanent creation
             arg.getmatrix = function() { return this.matrices[this.last]; };
+         }
+
+         if (this.fVisibility?.length) {
+            arg.vindx = 0;
+            arg.varray = this.fVisibility;
+            arg.vstack = arg.varray[arg.vindx].stack;
+            arg.testPhysVis = function() {
+               if (!this.vstack || (this.vstack?.length != this.last))
+                  return undefined;
+               for (let n = 0; n < this.last; ++n)
+                  if (this.vstack[n] != this.stack[n+1])
+                     return undefined;
+               let res = this.varray[this.vindx++].visible;
+               this.vstack = this.vindx < this.varray.length ? this.varray[this.vindx].stack : null;
+               return res;
+            };
          }
       }
 
@@ -84048,10 +84087,22 @@ class ClonedNodes {
          }
       }
 
-      if (node.nochlds) vislvl = 0;
+      let node_vis = node.vis, node_nochlds = node.nochlds;
 
-      if (node.vis > vislvl) {
-         if (!arg.func || arg.func(node)) res++;
+      if (arg.testPhysVis) {
+         let res = arg.testPhysVis();
+         if (res !== undefined) {
+            node_vis = res && !node.chlds ? vislvl + 1 : 0;
+            node_nochlds = !res;
+         }
+      }
+
+      if (node_nochlds)
+         vislvl = 0;
+
+      if (node_vis > vislvl) {
+         if (!arg.func || arg.func(node))
+            res++;
       }
 
       arg.counter++;
@@ -84071,11 +84122,15 @@ class ClonedNodes {
       if (arg.last === 0) {
          delete arg.last;
          delete arg.stack;
-         delete arg.CopyStack;
+         delete arg.copyStack;
          delete arg.counter;
          delete arg.matrices;
          delete arg.mpool;
          delete arg.getmatrix;
+         delete arg.vindx;
+         delete arg.varray;
+         delete arg.vstack;
+         delete arg.testPhysVis;
       }
 
       return res;
@@ -84210,9 +84265,13 @@ class ClonedNodes {
          let node = this.nodes[currid];
          if (!node.chlds) return null;
 
-         for (let k=0;k<node.chlds.length;++k) {
+         for (let k = 0; k < node.chlds.length; ++k) {
             let chldid = node.chlds[k];
-            if (this.getNodeName(chldid) === names[n]) { stack.push(k); currid = chldid; break; }
+            if (this.getNodeName(chldid) === names[n]) {
+               stack.push(k);
+               currid = chldid;
+               break;
+            }
          }
 
          // no new entry - not found stack
@@ -84542,7 +84601,8 @@ class ClonedNodes {
                 return true;
              };
 
-             for (let n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
+            for (let n = 0; n < arg.viscnt.length; ++n)
+               arg.viscnt[n] = 0;
 
              this.scanVisible(arg);
 
@@ -84561,10 +84621,10 @@ class ClonedNodes {
 
       arg.func = function(node) {
          if (node.sortid < sortidcut) {
-            this.items.push(this.CopyStack());
+            this.items.push(this.copyStack());
          } else if ((camVol >= 0) && (node.vol > camVol)) {
             if (this.frustum.CheckShape(this.getmatrix(), node))
-               this.items.push(this.CopyStack(camFact));
+               this.items.push(this.copyStack(camFact));
          }
          return true;
       };
@@ -86003,7 +86063,7 @@ class TGeoPainter extends ObjectPainter {
 
                let m2 = this.getmatrix();
 
-               let entry = this.CopyStack();
+               let entry = this.copyStack();
 
                let mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
 
@@ -86552,7 +86612,7 @@ class TGeoPainter extends ObjectPainter {
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.render3D();
-                  });
+                  }, 'Hide this physical node');
 
                   if (many) menu.add('endsub:');
 
@@ -86596,19 +86656,30 @@ class TGeoPainter extends ObjectPainter {
                   this.focusCamera(intersects[indx].object);
                });
 
-               if (!this._geom_viewer)
-               menu.add('Hide', n, function(indx) {
-                  let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
-                  if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
-                     setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
-                     updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
-                  } else if (resolve.obj && (resolve.node.kind === kindEve)) {
-                     resolve.obj.fRnrSelf = false;
-                     updateBrowserIcons(resolve.obj, this._hpainter);
-                  }
+               if (!this._geom_viewer) {
+                  menu.add('Hide', n, function(indx) {
+                     let resolve = this._clones.resolveStack(intersects[indx].object.stack);
+                     if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
+                        setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
+                        updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
+                     } else if (resolve.obj && (resolve.node.kind === kindEve)) {
+                        resolve.obj.fRnrSelf = false;
+                        updateBrowserIcons(resolve.obj, this._hpainter);
+                     }
 
-                  this.testGeomChanges();// while many volumes may disappear, recheck all of them
-               });
+                     this.testGeomChanges();// while many volumes may disappear, recheck all of them
+                  }, 'Hide all logical nodes of that kind');
+                  menu.add('Hide only this', n, function(indx) {
+                     this._clones.setPhysNodeVisibility(intersects[indx].object?.stack, false);
+                     this.testGeomChanges();
+                  }, 'Hide only this physical node');
+                  if (n > 1)
+                     menu.add('Hide all before', n, function(indx) {
+                        for (let k = 0; k < indx; ++k)
+                           this._clones.setPhysNodeVisibility(intersects[k].object?.stack, false);
+                        this.testGeomChanges();
+                     }, 'Hide all physical nodes before that');
+               }
 
                if (many) menu.add('endsub:');
             }
@@ -88124,7 +88195,8 @@ class TGeoPainter extends ObjectPainter {
           res = obj.$hidden_via_menu ? false : true;
 
       if (toggle) {
-         obj.$hidden_via_menu = res; res = !res;
+         obj.$hidden_via_menu = res;
+         res = !res;
 
          let mesh = null;
          // either found painted object or just draw once again
@@ -89985,16 +90057,12 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    };
 
-   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && findItemWithPainter(item))
-      menu.add('Focus', function() {
+   let drawitem = findItemWithPainter(item),
+       fullname = drawitem ? hpainter.itemFullName(item, drawitem) : '';
 
-        let drawitem = findItemWithPainter(item);
-
-        if (!drawitem) return;
-
-        let fullname = hpainter.itemFullName(item, drawitem);
-
-        if (isFunc(drawitem._painter?.focusOnItem))
+   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && drawitem)
+      menu.add('Focus', () => {
+        if (drawitem && isFunc(drawitem._painter?.focusOnItem))
            drawitem._painter.focusOnItem(fullname);
       });
 
@@ -90004,12 +90072,31 @@ function provideMenu(menu, item, hpainter) {
       if (res.hidden + res.visible > 0)
          menu.addchk((res.hidden == 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
    } else {
+
+      let stack = drawitem?._painter?._clones?.findStackByName(fullname),
+          phys_vis = stack ? drawitem._painter._clones.getPhysNodeVisibility(stack) : null,
+          is_visible = testGeoBit(vol, geoBITS.kVisThis);
+
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible',
             geoBITS.kVisNone, ToggleMenuBit);
-      menu.addchk(testGeoBit(vol, geoBITS.kVisThis), 'Visible',
-            geoBITS.kVisThis, ToggleMenuBit);
+      if (stack) {
+         const changePhysVis = arg => {
+            drawitem._painter._clones.setPhysNodeVisibility(stack, (arg == 'off') ? false : arg);
+            findItemWithPainter(item, 'testGeomChanges');
+         };
+
+         menu.add('sub:Physical vis', 'Physical node visibility - only for this instance');
+         menu.addchk(phys_vis?.visible, 'on', 'on', changePhysVis, 'Enable visibility of phys node');
+         menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
+         menu.addchk(!phys_vis, 'reset', 'clear', changePhysVis, 'Reset visibility of physical node');
+         menu.add('reset all', 'clearall', changePhysVis, 'Reset all custom settings for all nodes');
+         menu.add('endsub:');
+      }
+
+      menu.addchk(is_visible, 'Lofical vis',
+            geoBITS.kVisThis, ToggleMenuBit, 'Logical node visibility - all instances');
       menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
-            geoBITS.kVisDaughters, ToggleMenuBit);
+            geoBITS.kVisDaughters, ToggleMenuBit, 'Logical node daugthers visibility');
    }
 
    return true;
