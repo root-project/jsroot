@@ -2638,34 +2638,46 @@ class ClonedNodes {
    /** @summary Set visibility flag for physical node
      * @desc Trying to reimplement functionality in the RGeomViewer */
    setPhysNodeVisibility(stack, on) {
+      let do_clear = false;
+      if (on == 'clearall') {
+         delete this.fVisibility;
+         return;
+      } else if (on == 'clear') {
+         do_clear = true;
+         if (!this.fVisibility) return;
+      } else {
+         on = on ? true : false;
+      }
+      if (!stack) return;
+
       if (!this.fVisibility)
          this.fVisibility = [];
-
-      let do_clear = (on == 'clear');
 
       for (let indx = 0; indx < this.fVisibility.length; ++indx) {
          let item = this.fVisibility[indx],
              res = compare_stacks(item.stack, stack);
 
          if (res == 0) {
-            if (do_clear)
+            if (do_clear) {
                this.fVisibility.splice(indx, 1);
-            else
+               if (this.fVisibility.length == 0)
+                  delete this.fVisibility;
+            } else
                item.visible = on;
 
-            return true;
+            return;
          }
 
          if (res > 0) {
             if (!do_clear)
                this.fVisibility.splice(indx, 0, { visible: on, stack });
-            return true;
+            return;
          }
       }
 
       if (!do_clear)
          this.fVisibility.push({ visible: on, stack });
-      return true;
+      return;
    }
 
    /** @summary Get visibility item for physical node */

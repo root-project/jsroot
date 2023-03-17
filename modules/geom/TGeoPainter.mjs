@@ -1479,7 +1479,7 @@ class TGeoPainter extends ObjectPainter {
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.render3D();
-                  });
+                  }, 'Hide this physical node');
 
                   if (many) menu.add('endsub:');
 
@@ -1523,19 +1523,30 @@ class TGeoPainter extends ObjectPainter {
                   this.focusCamera(intersects[indx].object);
                });
 
-               if (!this._geom_viewer)
-               menu.add('Hide', n, function(indx) {
-                  let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
-                  if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
-                     setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
-                     updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
-                  } else if (resolve.obj && (resolve.node.kind === kindEve)) {
-                     resolve.obj.fRnrSelf = false;
-                     updateBrowserIcons(resolve.obj, this._hpainter);
-                  }
+               if (!this._geom_viewer) {
+                  menu.add('Hide', n, function(indx) {
+                     let resolve = this._clones.resolveStack(intersects[indx].object.stack);
+                     if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
+                        setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
+                        updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
+                     } else if (resolve.obj && (resolve.node.kind === kindEve)) {
+                        resolve.obj.fRnrSelf = false;
+                        updateBrowserIcons(resolve.obj, this._hpainter);
+                     }
 
-                  this.testGeomChanges();// while many volumes may disappear, recheck all of them
-               });
+                     this.testGeomChanges();// while many volumes may disappear, recheck all of them
+                  }, 'Hide all logical nodes of that kind');
+                  menu.add('Hide only this', n, function(indx) {
+                     this._clones.setPhysNodeVisibility(intersects[indx].object?.stack, false);
+                     this.testGeomChanges();
+                  }, 'Hide only this physical node');
+                  if (n > 1)
+                     menu.add('Hide all before', n, function(indx) {
+                        for (let k = 0; k < indx; ++k)
+                           this._clones.setPhysNodeVisibility(intersects[k].object?.stack, false);
+                        this.testGeomChanges();
+                     }, 'Hide all physical nodes before that');
+               }
 
                if (many) menu.add('endsub:');
             }
@@ -4937,7 +4948,7 @@ function provideMenu(menu, item, hpainter) {
             geoBITS.kVisNone, ToggleMenuBit);
       if (stack) {
          const changePhysVis = arg => {
-            drawitem._painter._clones.setPhysNodeVisibility(stack, arg == 'clear' ? arg : arg == 'on');
+            drawitem._painter._clones.setPhysNodeVisibility(stack, (arg == 'off') ? false : arg);
             findItemWithPainter(item, 'testGeomChanges');
          };
 
@@ -4945,6 +4956,7 @@ function provideMenu(menu, item, hpainter) {
          menu.addchk(phys_vis?.visible, 'on', 'on', changePhysVis, 'Enable visibility of phys node');
          menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
          menu.addchk(!phys_vis, 'reset', 'clear', changePhysVis, 'Reset visibility of physical node');
+         menu.add('reset all', 'clearall', changePhysVis, 'Reset all custom settings for all nodes');
          menu.add('endsub:');
       }
 
