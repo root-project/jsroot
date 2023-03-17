@@ -1017,8 +1017,9 @@ class TGeoPainter extends ObjectPainter {
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
    changedGlobalTransparency(transparency, skip_render) {
       let func = isFunc(transparency) ? transparency : null;
-      if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
-      this._toplevel.traverse( node => {
+      if (func || (transparency === undefined))
+         transparency = this.ctrl.transparency;
+      this._toplevel.traverse(node => {
          if (node?.material?.inherentOpacity !== undefined) {
             let t = func ? func(node) : undefined;
             if (t !== undefined)

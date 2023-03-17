@@ -2272,15 +2272,24 @@ function createFrustum(source) {
 }
 
 /** @summary Compares two stacks.
-  * @return {Number} length where stacks are the same
+  * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
   * @private */
-function compareStacks(stack1, stack2) {
-   if (!stack1 || !stack2) return 0;
-   if (stack1 === stack2) return stack1.length;
-   let len = Math.min(stack1.length, stack2.length);
-   for (let k = 0; k < len; ++k)
-      if (stack1[k] !== stack2[k]) return k;
-   return len;
+function compare_stacks(stack1, stack2) {
+   if (stack1 === stack2)
+      return 0;
+   const len1 = stack1?.length ?? 0,
+         len2 = stack2?.length ?? 0,
+         len = (len1 < len2) ? len1 : len2;
+   let indx = 0;
+   while (indx < len) {
+      if (stack1[indx] < stack2[indx])
+         return -1;
+      if (stack1[indx] > stack2[indx])
+         return 1;
+      ++indx;
+   }
+
+   return (len1 < len2) ? -1 : ((len1 > len2) ? 1 : 0);
 }
 
 /** @summary Checks if two stack arrays are identical
@@ -2627,6 +2636,44 @@ class ClonedNodes {
       return res;
    }
 
+   /** @summary Provide visibility flag for physical node
+     * @desc Trying to reimplement functionality in the RGeomViewer */
+   setPhysNodeVisibility(stack, on) {
+      if (!this.fVisibility)
+         this.fVisibility = [];
+
+      let nodeid = this.getNodeIdByStack(stack),
+         node = nodeid >= 0 ? this.nodes[nodeid] : null;
+
+      console.log('node.vis', node?.vis, 'node', node);
+
+      for (let indx = 0; indx < this.fVisibility.length; ++indx) {
+         let item = this.fVisibility[i],
+             res = compare_stacks(item.stack, stack);
+
+         if (res == 0) {
+            let changed = (item.visible != on);
+            if (changed) {
+               item.visible = on;
+
+               // no need for custom settings if match with description
+               if ((node.vis > 0) == on)
+                  this.fVisibility.splice(indx, 1);
+            }
+
+            return changed;
+         }
+
+         if (res > 0) {
+            this.fVisibility.splice(indx, 0, { visible: on, stack });
+            return true;
+         }
+      }
+
+      this.fVisibility.push({ visible: on, stack });
+      return true;
+   }
+
    /** @summary Scan visible nodes in hierarchy, starting from nodeid
      * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
    scanVisible(arg, vislvl) {
@@ -2793,6 +2840,18 @@ class ClonedNodes {
          node = this.nodes[id];
       }
       return ids;
+   }
+
+   /** @summary Retuns node id by stack */
+   getNodeIdByStack(stack) {
+      if (!stack || !this.nodes)
+         return -1;
+      let node = this.nodes[0], id = 0;
+      for (let k = 0; k < stack.length; ++k) {
+         id = node.chlds[stack[k]];
+         node = this.nodes[id];
+      }
+      return id;
    }
 
    /** @summary Returns true if stack includes at any place provided nodeid */
