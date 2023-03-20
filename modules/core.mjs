@@ -365,7 +365,12 @@ let gStyle = {
    fCandleWhiskerRange: 1.0,
    fCandleBoxRange: 0.5,
    fCandleScaled: false,
-   fViolinScaled: true
+   fViolinScaled: true,
+   fXAxisExpXOffset: 0,
+   fXAxisExpYOffset: 0,
+   fYAxisExpXOffset: 0,
+   fYAxisExpYOffset: 0,
+   fAxisMaxDigits: 5
 };
 
 /** @summary Method returns current document in use
