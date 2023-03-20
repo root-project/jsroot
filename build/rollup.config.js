@@ -51,13 +51,22 @@ const config_hist = {
    }
 }
 
-
 const config_2d = {
    ...config,
    input: "modules/hist2d/bundle.mjs",
    output: {
       ...config.output,
       file: "build/hist2d.js",
+      inlineDynamicImports: true
+   }
+}
+
+const config_geom = {
+   ...config,
+   input: "modules/geom/bundle.mjs",
+   output: {
+      ...config.output,
+      file: "build/geom.js",
       inlineDynamicImports: true
    }
 }
@@ -109,6 +118,7 @@ export default [
   config,
   config_hist,
   config_2d,
+  config_geom,
   config_minified,
   config_hist_minified,
   config_2d_minified
