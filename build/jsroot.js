@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '17/03/2023';
+let version_date = '20/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -84321,13 +84321,13 @@ class ClonedNodes {
 
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
-            _opacity = entry.opacity || 1, col = entry.color || '#0000FF';
+             opacity = entry.opacity || 1, col = entry.color || '#0000FF';
          prop.fillcolor = new Color$1(col[0] == '#' ? col : `rgb(${col})`);
-         prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
-                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
+         prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
+                          opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
-                          depthWrite: _opacity == 1 });
-         prop.material.inherentOpacity = _opacity;
+                          depthWrite: opacity == 1 });
+         prop.material.inherentOpacity = opacity;
 
          return prop;
       }
@@ -84350,8 +84350,8 @@ class ClonedNodes {
             let opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new Color$1( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
             prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
-                             opacity, wireframe: false, color: prop.fillcolor,
-                             side: FrontSide, vertexColors: false, depthWrite: opacity == 1 });
+                                                      opacity, wireframe: false, color: prop.fillcolor,
+                                                      side: FrontSide, vertexColors: false, depthWrite: opacity == 1 });
             prop.material.inherentOpacity = opacity;
          }
 
@@ -84369,7 +84369,7 @@ class ClonedNodes {
       {
 
          // TODO: maybe correctly extract ROOT colors here?
-         let _opacity = 1.0;
+         let opacity = 1.0;
          if (!root_colors) root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          if (entry.custom_color)
@@ -84392,18 +84392,18 @@ class ClonedNodes {
             }
 
             if (transparency > 0)
-               _opacity = (100.0 - transparency) / 100.0;
+               opacity = (100.0 - transparency) / 100.0;
             if (prop.fillcolor === undefined)
                prop.fillcolor = root_colors[mat.fFillColor];
          }
          if (prop.fillcolor === undefined)
             prop.fillcolor = 'lightgrey';
 
-         prop.material = new MeshLambertMaterial({ transparent: _opacity < 1,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: FrontSide, vertexColors: false,
-                              depthWrite: _opacity == 1 });
-         prop.material.inherentOpacity = _opacity;
+         prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
+                                                   opacity, wireframe: false, color: prop.fillcolor,
+                                                   side: FrontSide, vertexColors: false,
+                                                   depthWrite: opacity == 1 });
+         prop.material.inherentOpacity = opacity;
       }
 
       return prop;
@@ -89132,13 +89132,20 @@ class TGeoPainter extends ObjectPainter {
              color = colors[naxis],
              name = names[naxis];
 
-         const Convert = value => {
-            let range = box.max[name] - box.min[name];
-            if (range < 2) return value.toFixed(3);
-            return (Math.abs(value) > 1e5) ? value.toExponential(3) : Math.round(value).toString();
+         const valueToString = val => {
+            if (!val) return '0';
+            let lg = Math.log10(Math.abs(val));
+            if (lg < 0) {
+               if (lg > -1) return val.toFixed(2);
+               if (lg > -2) return val.toFixed(3);
+            } else {
+               if (lg < 2) return val.toFixed(1);
+               if (lg < 4) return val.toFixed(0);
+            }
+            return val.toExponential(2);
          };
 
-         let lbl = Convert(box.max[name]);
+         let lbl = valueToString(box.max[name]);
 
          buf[0] = box.min.x;
          buf[1] = box.min.y;
@@ -89149,8 +89156,8 @@ class TGeoPainter extends ObjectPainter {
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; if (yup[0] && !ortho) lbl = labels[0] + ' ' + lbl; else lbl += ' ' + labels[0]; break;
-           case 1: buf[4] = box.max.y; if (yup[1]) lbl += ' ' + labels[1]; else lbl = labels[1] + ' ' + lbl; break;
+           case 0: buf[3] = box.max.x; lbl = (yup[0] && !ortho) ? `${labels[0]} ${lbl}` : `${lbl} ${labels[0]}`; break;
+           case 1: buf[4] = box.max.y; lbl = yup[1] ? `${lbl} ${labels[1]}` : `${labels[1]} ${lbl}`; break;
            case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
          }
 
@@ -89220,7 +89227,7 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-         text3d = new TextGeometry(Convert(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new TextGeometry(valueToString(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
@@ -90088,7 +90095,7 @@ function provideMenu(menu, item, hpainter) {
          menu.add('sub:Physical vis', 'Physical node visibility - only for this instance');
          menu.addchk(phys_vis?.visible, 'on', 'on', changePhysVis, 'Enable visibility of phys node');
          menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
-         menu.addchk(!phys_vis, 'reset', 'clear', changePhysVis, 'Reset visibility of physical node');
+         menu.add('reset', 'clear', changePhysVis, 'Reset custom visibility of physical node');
          menu.add('reset all', 'clearall', changePhysVis, 'Reset all custom settings for all nodes');
          menu.add('endsub:');
       }
