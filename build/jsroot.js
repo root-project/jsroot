@@ -375,7 +375,8 @@ let gStyle = {
    fXAxisExpYOffset: 0,
    fYAxisExpXOffset: 0,
    fYAxisExpYOffset: 0,
-   fAxisMaxDigits: 5
+   fAxisMaxDigits: 5,
+   fStripDecimals: true
 };
 
 /** @summary Method returns current document in use
@@ -59074,12 +59075,14 @@ const AxisPainterMethods = {
    /** @summary Provide label for normal axis */
    formatNormal(d, asticks, fmt) {
       let val = parseFloat(d);
-      if (asticks && this.order) val = val / Math.pow(10, this.order);
+      if (asticks && this.order)
+         val = val / Math.pow(10, this.order);
 
-      if (val === Math.round(val))
+      if (gStyle.fStripDecimals && (val === Math.round(val)))
          return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
 
-      if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+      if (asticks)
+         return this.ndig > 10 ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
       return floatToString(val, fmt || gStyle.fStatFormat);
    },
