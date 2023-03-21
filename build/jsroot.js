@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '20/03/2023';
+let version_date = '21/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -370,7 +370,12 @@ let gStyle = {
    fCandleWhiskerRange: 1.0,
    fCandleBoxRange: 0.5,
    fCandleScaled: false,
-   fViolinScaled: true
+   fViolinScaled: true,
+   fXAxisExpXOffset: 0,
+   fXAxisExpYOffset: 0,
+   fYAxisExpXOffset: 0,
+   fYAxisExpYOffset: 0,
+   fAxisMaxDigits: 5
 };
 
 /** @summary Method returns current document in use
@@ -59570,16 +59575,16 @@ class TAxisPainter extends ObjectPainter {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
-            let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+            let maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                 ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                 ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
              if (maxtick || mintick) {
-                maxorder = Math.max(ord1,ord2) + 3;
-                minorder = Math.min(ord1,ord2) - 3;
+                maxorder = Math.max(ord1, ord2) + 3;
+                minorder = Math.min(ord1, ord2) - 3;
              }
          }
 
@@ -59588,7 +59593,7 @@ class TAxisPainter extends ObjectPainter {
          let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
          for (let order = minorder; order <= maxorder; order+=3) {
-            if (exclorder3 && (order===3)) continue;
+            if (exclorder3 && (order === 3)) continue;
             this.order = order;
             this.ndig = 0;
             let lbls = [], indx = 0, totallen = 0;
@@ -59596,6 +59601,11 @@ class TAxisPainter extends ObjectPainter {
                let lbl = this.format(handle.major[indx], true);
                if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
+                  let p = lbl.indexOf('.');
+                  if (!order  && !optionNoexp && ((p > gStyle.fAxisMaxDigits) || ((p < 0) && (lbl.length > gStyle.fAxisMaxDigits)))) {
+                     totallen += 1e10; // do not use order = 0 when too many digits are there
+                     exclorder3 = false;
+                  }
                   totallen += lbl.length;
                   indx++;
                   continue;
@@ -59915,15 +59925,28 @@ class TAxisPainter extends ObjectPainter {
             lastpos = pos;
          }
 
-         if (this.order)
+         if (this.order) {
+            let xoff = 0, yoff = 0;
+            if (this.name == 'xaxis') {
+               xoff = gStyle.fXAxisExpXOffset || 0;
+               yoff = gStyle.fXAxisExpYOffset || 0;
+            } else if (this.name == 'yaxis') {
+               xoff = gStyle.fYAxisExpXOffset || 0;
+               yoff = gStyle.fYAxisExpYOffset || 0;
+            }
+
+            if (xoff) xoff = Math.round(xoff * (this.getPadPainter()?.getPadWidth() ?? 0));
+            if (yoff) yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
+
             this.drawText({ color: labelsFont.color,
-                            x: this.vertical ? side*5 : w+5,
-                            y: this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side),
+                            x: xoff + this.vertical ? side*5 : w+5,
+                            y: yoff + this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side),
                             align: this.vertical ? ((side < 0) ? 30 : 10) : ( (this.has_obstacle ^ (side < 0)) ? 13 : 10 ),
                             latex: 1,
                             text: '#times' + this.formatExp(10, this.order),
                             draw_g: label_g[lcnt]
             });
+         }
       }
 
       // first complete major labels drawing
@@ -59964,7 +59987,6 @@ class TAxisPainter extends ObjectPainter {
          this.optionPlus = (axis.fChopt.indexOf('+') >= 0) || axis.TestBit(EAxisBits.kTickPlus);
          this.optionNoopt = (axis.fChopt.indexOf('N') >= 0);  // no ticks position optimization
          this.optionInt = (axis.fChopt.indexOf('I') >= 0);  // integer labels
-
          this.createAttLine({ attr: axis });
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
@@ -60029,10 +60051,7 @@ class TAxisPainter extends ObjectPainter {
           is_gaxis = axis?._typename === clTGaxis,
           axis_g = layer,
           draw_lines = true,
-          pp = this.getPadPainter();
-          pp?.getPadWidth() || 10;
-          pp?.getPadHeight() || 10;
-          let swap_side = this.swap_side || false;
+          swap_side = this.swap_side || false;
 
       // shift for second ticks set (if any)
       if (!secondShift)
