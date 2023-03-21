@@ -59942,8 +59942,8 @@ class TAxisPainter extends ObjectPainter {
             if (yoff) yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
 
             this.drawText({ color: labelsFont.color,
-                            x: xoff + this.vertical ? side*5 : w+5,
-                            y: yoff + this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side),
+                            x: xoff + (this.vertical ? side*5 : w+5),
+                            y: yoff + (this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side)),
                             align: this.vertical ? ((side < 0) ? 30 : 10) : ( (this.has_obstacle ^ (side < 0)) ? 13 : 10 ),
                             latex: 1,
                             text: '#times' + this.formatExp(10, this.order),
