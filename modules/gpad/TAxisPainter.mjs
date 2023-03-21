@@ -646,16 +646,16 @@ class TAxisPainter extends ObjectPainter {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
-            let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+            let maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                 ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                 ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
              if (maxtick || mintick) {
-                maxorder = Math.max(ord1,ord2) + 3;
-                minorder = Math.min(ord1,ord2) - 3;
+                maxorder = Math.max(ord1, ord2) + 3;
+                minorder = Math.min(ord1, ord2) - 3;
              }
          }
 
@@ -664,7 +664,7 @@ class TAxisPainter extends ObjectPainter {
          let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
          for (let order = minorder; order <= maxorder; order+=3) {
-            if (exclorder3 && (order===3)) continue;
+            if (exclorder3 && (order === 3)) continue;
             this.order = order;
             this.ndig = 0;
             let lbls = [], indx = 0, totallen = 0;
@@ -672,6 +672,11 @@ class TAxisPainter extends ObjectPainter {
                let lbl = this.format(handle.major[indx], true);
                if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
+                  let p = lbl.indexOf('.');
+                  if (!order  && !optionNoexp && ((p > gStyle.fAxisMaxDigits) || ((p < 0) && (lbl.length > gStyle.fAxisMaxDigits)))) {
+                     totallen += 1e10; // do not use order = 0 when too many digits are there
+                     exclorder3 = false;
+                  }
                   totallen += lbl.length;
                   indx++;
                   continue;
@@ -1053,7 +1058,6 @@ class TAxisPainter extends ObjectPainter {
          this.optionPlus = (axis.fChopt.indexOf('+') >= 0) || axis.TestBit(EAxisBits.kTickPlus);
          this.optionNoopt = (axis.fChopt.indexOf('N') >= 0);  // no ticks position optimization
          this.optionInt = (axis.fChopt.indexOf('I') >= 0);  // integer labels
-
          this.createAttLine({ attr: axis });
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
