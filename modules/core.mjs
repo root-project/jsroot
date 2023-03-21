@@ -370,7 +370,8 @@ let gStyle = {
    fXAxisExpYOffset: 0,
    fYAxisExpXOffset: 0,
    fYAxisExpYOffset: 0,
-   fAxisMaxDigits: 5
+   fAxisMaxDigits: 5,
+   fStripDecimals: true
 };
 
 /** @summary Method returns current document in use
