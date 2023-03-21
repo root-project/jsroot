@@ -483,16 +483,18 @@ One also used `exe.bin` method - in this case results of method execution will b
 [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=Clone&_destroy_result_' -O clone.json
 ```
 
-If method required object as argument, it could be posted in binary or XML format as POST request. If binary form is used, one should specify following parameters:
+If method required object as argument, it could be posted in binary, JSON or XML format as POST request.
+If binary form is used, one should specify following parameters:
 
 ```bash
 [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_&_post_class_=TH1I&c1=10' --post-file=h.bin -O res.json
 ```
 
-Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern/doc/master/classTBufferXML.html#a31320042dda441167ecb1b6f13092e89)) method, only string with XML code could be specified:
+Here is important to specify post object class, which is not stored in the binary buffer.
+When submitting argument as JSON produced with [TBufferJSON::ToJSON](https://root.cern/doc/master/classTBufferJSON.html#a49f3c7b200113d7009d61d75c933c398) method, class is not required:
 
 ```bash
-[shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_xml_&c1=10' --post-file=h.xml -O res.json
+[shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_json_&c1=10' --post-file=h.json -O res.json
 ```
 
 To get debug information about command execution, one could submit `exe.txt` request with same arguments.
