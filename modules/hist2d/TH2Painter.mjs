@@ -33,11 +33,16 @@ class TH2Painter extends THistPainter {
    /** @summary Toggle projection */
    toggleProjection(kind, width) {
 
-      if ((kind == 'Projections') || (kind == 'Off')) kind = '';
+      if ((kind == 'Projections') || (kind == 'Off'))
+         kind = '';
 
-      if (isStr(kind) && (kind.length > 1)) {
-          width = parseInt(kind.slice(1));
-          kind = kind[0];
+      if (isStr(kind) && (kind.indexOf('XY') == 0)) {
+         if (kind.length > 2)
+            width = parseInt(kind.slice(2));
+         kind = 'XY';
+      } else if (isStr(kind) && (kind.length > 1)) {
+         width = parseInt(kind.slice(1));
+         kind = kind[0];
       }
 
       if (!width) width = 1;
@@ -89,56 +94,79 @@ class TH2Painter extends THistPainter {
 
       this.doing_projection = true;
 
-      let histo = this.getHisto();
-
-      if (!this.proj_hist) {
-         if (this.is_projection == 'X') {
-            this.proj_hist = createHistogram('TH1D', this.nbinsx);
-            Object.assign(this.proj_hist.fXaxis, histo.fXaxis);
-            this.proj_hist.fName = 'xproj';
-            this.proj_hist.fTitle = 'X projection';
+      const histo = this.getHisto(),
+      createXProject = () => {
+        let p = createHistogram('TH1D', this.nbinsx);
+        Object.assign(p.fXaxis, histo.fXaxis);
+        p.fName = 'xproj';
+        p.fTitle = 'X projection';
+        return p;
+      },
+      createYProject = () => {
+        let p = createHistogram('TH1D', this.nbinsy);
+        Object.assign(p.fXaxis, histo.fYaxis);
+        p.fName = 'yproj';
+        p.fTitle = 'Y projection';
+        return p;
+      },
+      fillProjectHist = (kind, p) => {
+         let first = 0, last = -1;
+         if (kind == 'X') {
+            for (let i = 0; i < this.nbinsx; ++i) {
+               let sum = 0;
+               for (let j = jj1; j < jj2; ++j)
+                  sum += histo.getBinContent(i+1,j+1);
+               p.setBinContent(i+1, sum);
+            }
+            p.fTitle = 'X projection ' + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
+            if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
          } else {
-            this.proj_hist = createHistogram('TH1D', this.nbinsy);
-            Object.assign(this.proj_hist.fXaxis, histo.fYaxis);
-            this.proj_hist.fName = 'yproj';
-            this.proj_hist.fTitle = 'Y projection';
+            for (let j = 0; j < this.nbinsy; ++j) {
+               let sum = 0;
+               for (let i = ii1; i < ii2; ++i)
+                  sum += histo.getBinContent(i+1,j+1);
+               p.setBinContent(j+1, sum);
+            }
+            p.fTitle = 'Y projection ' + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
+            if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
          }
+
+         if (first < last) {
+            let axis = p.fXaxis;
+            axis.fFirst = first;
+            axis.fLast = last;
+
+            if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(EAxisBits.kAxisRange))
+               axis.InvertBit(EAxisBits.kAxisRange);
+         }
+
+         // reset statistic before display
+         p.fEntries = 0;
+         p.fTsumw = 0;
+      };
+
+      if (!this.proj_hist)
+         switch (this.is_projection) {
+            case 'X':
+               this.proj_hist = createXProject();
+               break;
+            case 'XY':
+               this.proj_hist = createXProject();
+               this.proj_hist2 = createYProject();
+               break;
+            default:
+               this.proj_hist = createYProject();
+         }
+
+      if (this.is_projection == 'XY') {
+         fillProjectHist('X', this.proj_hist);
+         fillProjectHist('Y', this.proj_hist2);
+         return this.drawInSpecialArea(this.proj_hist, '', 'X')
+                    .then(() => this.drawInSpecialArea(this.proj_hist2, '', 'Y'))
+                    .then(res => { delete this.doing_projection; return res; });
       }
 
-      let first = 0, last = -1;
-      if (this.is_projection == 'X') {
-         for (let i = 0; i < this.nbinsx; ++i) {
-            let sum = 0;
-            for (let j = jj1; j < jj2; ++j)
-               sum += histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(i+1, sum);
-         }
-         this.proj_hist.fTitle = 'X projection ' + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
-         if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
-
-      } else {
-         for (let j = 0; j < this.nbinsy; ++j) {
-            let sum = 0;
-            for (let i = ii1; i < ii2; ++i)
-               sum += histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(j+1, sum);
-         }
-         this.proj_hist.fTitle = 'Y projection ' + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
-         if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
-      }
-
-      if (first < last) {
-         let axis = this.proj_hist.fXaxis;
-         axis.fFirst = first;
-         axis.fLast = last;
-
-         if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(EAxisBits.kAxisRange))
-            axis.InvertBit(EAxisBits.kAxisRange);
-      }
-
-      // reset statistic before display
-      this.proj_hist.fEntries = 0;
-      this.proj_hist.fTsumw = 0;
+      fillProjectHist(this.is_projection, this.proj_hist);
 
       return this.drawInSpecialArea(this.proj_hist).then(res => { delete this.doing_projection; return res; });
    }
