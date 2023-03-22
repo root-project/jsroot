@@ -303,6 +303,25 @@ class TCanvasPainter extends TPadPainter {
       this._websocket.connect();
    }
 
+   /** @summary set, test or reset timeout of specified name
+     * @desc Used to prevent overloading of websocket for specific function */
+   websocketTimeout(name, tm) {
+      if (!this._websocket)
+         return;
+      if (!this._websocket._tmouts)
+         this._websocket._tmouts = {};
+
+      let handle = this._websocket._tmouts[name];
+      if (tm === undefined)
+         return handle !== undefined;
+
+      if (tm == 'reset') {
+         if (handle) { clearTimeout(handle); delete this._websocket._tmouts[name]; }
+      } else if (!handle && Number.isInteger(tm)) {
+         this._websocket._tmouts[name] = setTimeout(() => { delete this._websocket._tmouts[name]; }, tm);
+      }
+   }
+
    /** @summary Hanler for websocket open event
      * @private */
    onWebsocketOpened(/*handle*/) {
@@ -363,6 +382,7 @@ class TCanvasPainter extends TPadPainter {
       } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
+         this.websocketTimeout(`proj${kind}`, 'reset');
          this.drawProjection(kind, hist);
       } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),

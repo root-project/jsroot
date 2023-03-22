@@ -80,12 +80,12 @@ class TH2Painter extends THistPainter {
 
       if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
-         let exec = `EXECANDSEND:D${this.is_projection}PROJ:${this.snapid}:`;
-         if (this.is_projection == 'X')
-            exec += `ProjectionX("_projx",${jj1+1},${jj2},"")`;
-         else
-            exec += `ProjectionY("_projy",${ii1+1},${ii2},"")`;
-         canp.sendWebsocket(exec);
+         if (((this.is_projection == 'X') || (this.is_projection == 'XY')) && !canp.websocketTimeout('projX'))
+            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.snapid}:ProjectionX("_projx",${jj1+1},${jj2},"")`))
+               canp.websocketTimeout('projX', 1000);
+         if (((this.is_projection == 'Y') || (this.is_projection == 'XY')) && !canp.websocketTimeout('projY'))
+            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.snapid}:ProjectionY("_projy",${ii1+1},${ii2},"")`))
+               canp.websocketTimeout('projY', 1000);
          return true;
       }
 
