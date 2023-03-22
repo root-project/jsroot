@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '21/03/2023';
+let version_date = '22/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12377,7 +12377,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param kind - 'X', 'Y' or ''
+     * @param kind - 'X', 'Y', 'XY' or ''
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind == this._special_draw_area)
@@ -12389,13 +12389,15 @@ class ObjectPainter extends BasePainter {
       });
    }
 
-   /** @summary Provide projection areas
-     * @param kind - 'X', 'Y' or ''
+   /** @summary Draw in special projection areas
+     * @param obj - object to draw
+     * @param opt - draw option
+     * @param kind - '', 'X', 'Y'
      * @private */
-   async drawInSpecialArea(obj, opt) {
+   async drawInSpecialArea(obj, opt, kind) {
       let canp = this.getCanvPainter();
       if (this._special_draw_area && isFunc(canp?.drawProjection))
-         return canp.drawProjection(this._special_draw_area, obj, opt);
+         return canp.drawProjection(kind || this._special_draw_area, obj, opt);
 
       return false;
    }
@@ -67303,7 +67305,7 @@ class GridDisplay extends MDIDisplay {
       this.simple_layout = false;
 
       let dom = this.selectDom();
-      dom.style('overflow','hidden');
+      dom.style('overflow', 'hidden');
 
       if (kind === 'simple') {
          this.simple_layout = true;
@@ -67312,9 +67314,17 @@ class GridDisplay extends MDIDisplay {
          return;
       }
 
-      let num = 2, arr = undefined, sizes = undefined;
+      let num = 2, arr, sizes, chld_sizes;
 
-      if ((kind.indexOf('grid') == 0) || kind2) {
+      if (kind == 'projxy') {
+         this.vertical = false;
+         this.use_separarators = true;
+         arr = [2, 2];
+         sizes = [1,3];
+         chld_sizes = [[3,1], [3,1]];
+         kind = '';
+         this.match_sizes = true;
+      } else if ((kind.indexOf('grid') == 0) || kind2) {
          if (kind2) kind = kind + 'x' + kind2;
                else kind = kind.slice(4).trim();
          this.use_separarators = false;
@@ -67380,20 +67390,23 @@ class GridDisplay extends MDIDisplay {
          }
       }
 
-      if (sizes && (sizes.length!==num)) sizes = undefined;
+      if (sizes?.length !== num)
+         sizes = undefined;
+      if (chld_sizes?.length !== num)
+         chld_sizes = undefined;
 
       if (!this.simple_layout) {
          injectStyle(
             `.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }
              .jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }
              .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`, dom.node(), 'grid_style');
-         this.createGroup(this, dom, num, arr, sizes);
+         this.createGroup(this, dom, num, arr, sizes, chld_sizes);
       }
    }
 
    /** @summary Create frames group
      * @private */
-   createGroup(handle, main, num, childs, sizes) {
+   createGroup(handle, main, num, childs, sizes, childs_sizes) {
 
       if (!sizes) sizes = new Array(num);
       let sum1 = 0, sum2 = 0;
@@ -67406,20 +67419,25 @@ class GridDisplay extends MDIDisplay {
       }
 
       for (let cnt = 0; cnt < num; ++cnt) {
-         let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
+         let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt], parent: handle };
          if (cnt > 0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          group.position0 = group.position;
 
-         if (!childs || !childs[cnt] || childs[cnt]<2) group.drawid = this.framecnt++;
+         if (!childs || !childs[cnt] || childs[cnt] < 2)
+            group.drawid = this.framecnt++;
 
          handle.groups.push(group);
 
          let elem = main.append('div').attr('groupid', group.id);
 
+         // remember HTML node only when need to match sizes of different groups
+         if (handle.match_sizes)
+            group.node = elem.node();
+
          if (handle.vertical)
-            elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
+            elem.style('float', 'bottom').style('height', group.size.toFixed(2)+'%').style('width','100%');
          else
-            elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
+            elem.style('float', 'left').style('width', group.size.toFixed(2)+'%').style('height','100%');
 
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
@@ -67429,15 +67447,15 @@ class GridDisplay extends MDIDisplay {
             elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
          }
 
-         if (childs && (childs[cnt]>1)) {
+         if (childs && (childs[cnt] > 1)) {
             group.vertical = !handle.vertical;
             group.groups = [];
             elem.style('overflow','hidden');
-            this.createGroup(group, elem, childs[cnt]);
+            this.createGroup(group, elem, childs[cnt], null, childs_sizes ? childs_sizes[cnt] : null);
          }
       }
 
-      if (this.use_separarators && this.createSeparator)
+      if (this.use_separarators && isFunc(this.createSeparator))
          for (let cnt = 1; cnt < num; ++cnt)
             this.createSeparator(handle, main, handle.groups[cnt]);
    }
@@ -67445,31 +67463,36 @@ class GridDisplay extends MDIDisplay {
    /** @summary Handle interactive sepearator movement
      * @private */
    handleSeparator(elem, action) {
-      let separ = select(elem),
-          parent = elem.parentNode,
-          handle = separ.property('handle'),
-          id = separ.property('separator_id'),
-          group = handle.groups[id];
 
-       const findGroup = grid => {
-         let chld = parent.firstChild;
+      const findGroup = (node, grid) => {
+         let chld = node?.firstChild;
          while (chld) {
             if (chld.getAttribute('groupid') == grid)
                return select(chld);
             chld = chld.nextSibling;
          }
          // should never happen, but keep it here like
-         return select(parent).select(`[groupid='${grid}']`);
-       }, setGroupSize = grid => {
-          let name = handle.vertical ? 'height' : 'width',
-              size = handle.groups[grid].size+'%';
-          findGroup(grid).style(name, size)
-                         .selectAll('.jsroot_separator').style(name, size);
-       }, resizeGroup = grid => {
-          let sel = findGroup(grid);
-          if (!sel.classed('jsroot_newgrid')) sel = sel.select('.jsroot_newgrid');
-          sel.each(function() { resize(this); });
-       };
+         return select(node).select(`[groupid='${grid}']`);
+      }, setGroupSize = (h, node, grid) => {
+         let name = h.vertical ? 'height' : 'width',
+             size = h.groups[grid].size.toFixed(2)+'%';
+         findGroup(node, grid).style(name, size)
+                              .selectAll('.jsroot_separator').style(name, size);
+      }, resizeGroup = (node, grid) => {
+         let sel = findGroup(node, grid);
+         if (!sel.classed('jsroot_newgrid'))
+            sel = sel.select('.jsroot_newgrid');
+         sel.each(function() { resize(this); });
+      }, posSepar = (h, group, separ) => {
+         separ.style(h.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`);
+      };
+
+      let separ = select(elem),
+          parent = elem.parentNode,
+          handle = separ.property('handle'),
+          id = separ.property('separator_id'),
+          group = handle.groups[id],
+          needResize = false, needSetSize = false;
 
       if (action == 'start') {
          group.startpos = group.position;
@@ -67478,43 +67501,73 @@ class GridDisplay extends MDIDisplay {
       }
 
       if (action == 'end') {
-         if (Math.abs(group.startpos - group.position) >= 0.5) {
-            resizeGroup(id-1);
-            resizeGroup(id);
-          }
-          return;
-      }
-
-      let pos;
-      if (action == 'restore') {
-          pos = group.position0;
-      } else if (handle.vertical) {
-          group.acc_drag += action.dy;
-          pos = group.startpos + ((group.acc_drag + 2) / parent.clientHeight) * 100;
+         if (Math.abs(group.startpos - group.position) < 0.5)
+            return;
+         needResize = true;
       } else {
-          group.acc_drag += action.dx;
-          pos = group.startpos + ((group.acc_drag + 2) / parent.clientWidth) * 100;
+
+         let pos;
+         if (action == 'restore') {
+             pos = group.position0;
+         } else if (handle.vertical) {
+             group.acc_drag += action.dy;
+             pos = group.startpos + ((group.acc_drag + 2) / parent.clientHeight) * 100;
+         } else {
+             group.acc_drag += action.dx;
+             pos = group.startpos + ((group.acc_drag + 2) / parent.clientWidth) * 100;
+         }
+
+         let diff = group.position - pos;
+
+         if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
+
+         // do not change if size too small
+         if (Math.min(handle.groups[id-1].size - diff, group.size+diff) < 3) return;
+
+         handle.groups[id-1].size -= diff;
+         group.size += diff;
+         group.position = pos;
+
+         posSepar(handle, group, separ);
+
+         needSetSize = true;
+         needResize = (action == 'restore');
       }
 
-      let diff = group.position - pos;
+      if (needSetSize) {
+         setGroupSize(handle, parent, id-1);
+         setGroupSize(handle, parent, id);
+      }
 
-      if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
+      if (needResize) {
+         resizeGroup(parent, id-1);
+         resizeGroup(parent, id);
+      }
 
-      // do not change if size too small
-      if (Math.min(handle.groups[id-1].size-diff, group.size+diff) < 3) return;
+      // now handling match of the sizes
+      if (!handle.parent?.match_sizes)
+         return;
 
-      handle.groups[id-1].size -= diff;
-      group.size += diff;
-      group.position = pos;
-
-      separ.style(handle.vertical ? 'top' : 'left', `calc(${pos}% - 2px)`);
-
-      setGroupSize(id-1);
-      setGroupSize(id);
-
-      if (action == 'restore') {
-          resizeGroup(id-1);
-          resizeGroup(id);
+      for (let k = 0; k < handle.parent.groups.length; ++k) {
+         let hh = handle.parent.groups[k];
+         if ((hh === handle) || !hh.node) continue;
+         hh.groups[id].size = handle.groups[id].size;
+         hh.groups[id].position = handle.groups[id].position;
+         hh.groups[id-1].size = handle.groups[id-1].size;
+         hh.groups[id-1].position = handle.groups[id-1].position;
+         if (needSetSize) {
+            select(hh.node).selectAll('.jsroot_separator').each(function() {
+               let s = select(this);
+               if (s.property('separator_id') === id)
+                  posSepar(hh, hh.groups[id], s);
+            });
+            setGroupSize(hh, hh.node, id-1);
+            setGroupSize(hh, hh.node, id);
+         }
+         if (needResize) {
+            resizeGroup(hh.node, id-1);
+            resizeGroup(hh.node, id);
+          }
       }
    }
 
@@ -67528,8 +67581,8 @@ class GridDisplay extends MDIDisplay {
            .property('handle', handle)
            .property('separator_id', group.id)
            .style('position', 'absolute')
-           .style(handle.vertical ? 'top' : 'left', `calc(${group.position}% - 2px)`)
-           .style(handle.vertical ? 'width' : 'height', (handle.size || 100)+'%')
+           .style(handle.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`)
+           .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100)+'%')
            .style(handle.vertical ? 'height' : 'width', '5px')
            .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize');
 
@@ -67542,7 +67595,7 @@ class GridDisplay extends MDIDisplay {
 
       // need to get touches events handling in drag
       if (browser$1.touches && !main.on('touchmove'))
-         main.on('touchmove', function() { });
+         main.on('touchmove', function() {});
    }
 
 
@@ -71058,12 +71111,16 @@ class TCanvasPainter extends TPadPainter {
 
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
+          sidebar2 = origin.select('.side_panel2'),
           main = this.selectDom(), lst = [];
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
 
-      if (!sidebar.empty()) cleanup(sidebar.node());
+      if (!sidebar.empty())
+         cleanup(sidebar.node());
+      if (!sidebar2.empty())
+         cleanup(sidebar2.node());
 
       this.setLayoutKind('simple'); // restore defaults
       origin.html(''); // cleanup origin
@@ -71081,10 +71138,19 @@ class TCanvasPainter extends TPadPainter {
             mainid = (layout_kind.indexOf('vert') == 0) ? 0 : 1;
 
          main = select(grid.getGridFrame(mainid));
-         sidebar = select(grid.getGridFrame(1 - mainid));
-
          main.classed('central_panel', true).style('position', 'relative');
-         sidebar.classed('side_panel', true).style('position', 'relative');
+
+         if (mainid == 2) {
+            // left panel for Y
+            sidebar = select(grid.getGridFrame(0));
+            sidebar.classed('side_panel2', true).style('position', 'relative');
+            // bottom panel for X
+            sidebar = select(grid.getGridFrame(3));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         } else {
+            sidebar = select(grid.getGridFrame(1 - mainid));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         }
 
          // now append all childs to the new main
          for (let k = 0; k < lst.length; ++k)
@@ -71107,7 +71173,7 @@ class TCanvasPainter extends TPadPainter {
    async toggleProjection(kind) {
       delete this.proj_painter;
 
-      if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
+      if (kind) this.proj_painter = { 'X': false, 'Y': false }; // just indicator that drawing can be preformed
 
       if (isFunc(this.showUI5ProjectionArea))
          return this.showUI5ProjectionArea(kind);
@@ -71115,6 +71181,7 @@ class TCanvasPainter extends TPadPainter {
       let layout = 'simple', mainid;
 
       switch(kind) {
+         case 'XY': layout = 'projxy'; mainid = 2; break;
          case 'X':
          case 'bottom': layout = 'vert2_31'; mainid = 0; break;
          case 'Y':
@@ -71133,9 +71200,11 @@ class TCanvasPainter extends TPadPainter {
       if (!this.proj_painter)
          return false; // ignore drawing if projection not configured
 
-      if (hopt === undefined) hopt = 'hist';
+      if (hopt === undefined)
+         hopt = 'hist';
+      if (!kind) kind = 'X';
 
-      if (this.proj_painter === 1) {
+      if (!this.proj_painter[kind]) {
 
          let canv = create$1(clTCanvas),
              pad = this.pad,
@@ -71160,14 +71229,14 @@ class TCanvasPainter extends TPadPainter {
          canv.fPrimitives.Add(hist, hopt);
 
          let promise = this.drawInUI5ProjectionArea
-                       ? this.drawInUI5ProjectionArea(canv, drawopt)
-                       : this.drawInSidePanel(canv, drawopt);
+                       ? this.drawInUI5ProjectionArea(canv, drawopt, kind)
+                       : this.drawInSidePanel(canv, drawopt, kind);
 
-         return promise.then(painter => { this.proj_painter = painter; return painter; });
+         return promise.then(painter => { this.proj_painter[kind] = painter; return painter; });
       }
 
-      this.proj_painter.getMainPainter()?.updateObject(hist, hopt);
-      return this.proj_painter.redrawPad();
+      this.proj_painter[kind].getMainPainter()?.updateObject(hist, hopt);
+      return this.proj_painter[kind].redrawPad();
    }
 
    /** @summary Checks if canvas shown inside ui5 widget
@@ -71181,8 +71250,10 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Draw in side panel
      * @private */
-   async drawInSidePanel(canv, opt) {
-      let side = this.selectDom('origin').select('.side_panel');
+   async drawInSidePanel(canv, opt, kind) {
+      let sel = ((this.getLayoutKind() == 'projxy') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
+          side = this.selectDom('origin').select(sel);
+
       return side.empty() ? null : this.drawObject(side.node(), canv, opt);
    }
 
@@ -71198,7 +71269,7 @@ class TCanvasPainter extends TPadPainter {
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
-          .then(res => this.sendWebsocket('SAVE:' + fname + ':' + res));
+          .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
    /** @summary Send command to server to save canvas with specified name
@@ -71276,7 +71347,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Handle websocket messages
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
+      // console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
 
       if (msg == 'CLOSE') {
          this.onWebsocketClosed();
@@ -73600,8 +73671,9 @@ class THistDrawOptions {
       if (d.check('PARABOLIC')) this.Proj = 4;
       if (this.Proj > 0) this.Contour = 14;
 
-      if (d.check('PROJX',true)) this.Project = 'X' + d.partAsInt(0,1);
-      if (d.check('PROJY',true)) this.Project = 'Y' + d.partAsInt(0,1);
+      if (d.check('PROJXY', true)) this.Project = 'XY' + d.partAsInt(0,1);
+      if (d.check('PROJX', true)) this.Project = 'X' + d.partAsInt(0,1);
+      if (d.check('PROJY', true)) this.Project = 'Y' + d.partAsInt(0,1);
       if (d.check('PROJ')) this.Project = 'Y1';
 
       if (check3dbox) {
@@ -76847,11 +76919,16 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    /** @summary Toggle projection */
    toggleProjection(kind, width) {
 
-      if ((kind == 'Projections') || (kind == 'Off')) kind = '';
+      if ((kind == 'Projections') || (kind == 'Off'))
+         kind = '';
 
-      if (isStr(kind) && (kind.length > 1)) {
-          width = parseInt(kind.slice(1));
-          kind = kind[0];
+      if (isStr(kind) && (kind.indexOf('XY') == 0)) {
+         if (kind.length > 2)
+            width = parseInt(kind.slice(2));
+         kind = 'XY';
+      } else if (isStr(kind) && (kind.length > 1)) {
+         width = parseInt(kind.slice(1));
+         kind = kind[0];
       }
 
       if (!width) width = 1;
@@ -76903,56 +76980,79 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.doing_projection = true;
 
-      let histo = this.getHisto();
-
-      if (!this.proj_hist) {
-         if (this.is_projection == 'X') {
-            this.proj_hist = createHistogram('TH1D', this.nbinsx);
-            Object.assign(this.proj_hist.fXaxis, histo.fXaxis);
-            this.proj_hist.fName = 'xproj';
-            this.proj_hist.fTitle = 'X projection';
+      const histo = this.getHisto(),
+      createXProject = () => {
+        let p = createHistogram('TH1D', this.nbinsx);
+        Object.assign(p.fXaxis, histo.fXaxis);
+        p.fName = 'xproj';
+        p.fTitle = 'X projection';
+        return p;
+      },
+      createYProject = () => {
+        let p = createHistogram('TH1D', this.nbinsy);
+        Object.assign(p.fXaxis, histo.fYaxis);
+        p.fName = 'yproj';
+        p.fTitle = 'Y projection';
+        return p;
+      },
+      fillProjectHist = (kind, p) => {
+         let first = 0, last = -1;
+         if (kind == 'X') {
+            for (let i = 0; i < this.nbinsx; ++i) {
+               let sum = 0;
+               for (let j = jj1; j < jj2; ++j)
+                  sum += histo.getBinContent(i+1,j+1);
+               p.setBinContent(i+1, sum);
+            }
+            p.fTitle = 'X projection ' + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
+            if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
          } else {
-            this.proj_hist = createHistogram('TH1D', this.nbinsy);
-            Object.assign(this.proj_hist.fXaxis, histo.fYaxis);
-            this.proj_hist.fName = 'yproj';
-            this.proj_hist.fTitle = 'Y projection';
+            for (let j = 0; j < this.nbinsy; ++j) {
+               let sum = 0;
+               for (let i = ii1; i < ii2; ++i)
+                  sum += histo.getBinContent(i+1,j+1);
+               p.setBinContent(j+1, sum);
+            }
+            p.fTitle = 'Y projection ' + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
+            if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
          }
+
+         if (first < last) {
+            let axis = p.fXaxis;
+            axis.fFirst = first;
+            axis.fLast = last;
+
+            if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(EAxisBits.kAxisRange))
+               axis.InvertBit(EAxisBits.kAxisRange);
+         }
+
+         // reset statistic before display
+         p.fEntries = 0;
+         p.fTsumw = 0;
+      };
+
+      if (!this.proj_hist)
+         switch (this.is_projection) {
+            case 'X':
+               this.proj_hist = createXProject();
+               break;
+            case 'XY':
+               this.proj_hist = createXProject();
+               this.proj_hist2 = createYProject();
+               break;
+            default:
+               this.proj_hist = createYProject();
+         }
+
+      if (this.is_projection == 'XY') {
+         fillProjectHist('X', this.proj_hist);
+         fillProjectHist('Y', this.proj_hist2);
+         return this.drawInSpecialArea(this.proj_hist, '', 'X')
+                    .then(() => this.drawInSpecialArea(this.proj_hist2, '', 'Y'))
+                    .then(res => { delete this.doing_projection; return res; });
       }
 
-      let first = 0, last = -1;
-      if (this.is_projection == 'X') {
-         for (let i = 0; i < this.nbinsx; ++i) {
-            let sum = 0;
-            for (let j = jj1; j < jj2; ++j)
-               sum += histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(i+1, sum);
-         }
-         this.proj_hist.fTitle = 'X projection ' + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
-         if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
-
-      } else {
-         for (let j = 0; j < this.nbinsy; ++j) {
-            let sum = 0;
-            for (let i = ii1; i < ii2; ++i)
-               sum += histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(j+1, sum);
-         }
-         this.proj_hist.fTitle = 'Y projection ' + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
-         if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
-      }
-
-      if (first < last) {
-         let axis = this.proj_hist.fXaxis;
-         axis.fFirst = first;
-         axis.fLast = last;
-
-         if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(EAxisBits.kAxisRange))
-            axis.InvertBit(EAxisBits.kAxisRange);
-      }
-
-      // reset statistic before display
-      this.proj_hist.fEntries = 0;
-      this.proj_hist.fTsumw = 0;
+      fillProjectHist(this.is_projection, this.proj_hist);
 
       return this.drawInSpecialArea(this.proj_hist).then(res => { delete this.doing_projection; return res; });
    }
@@ -76977,7 +77077,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          menu.add('sub:Projections', () => this.toggleProjection());
          let kind = this.is_projection || '';
          if (kind) kind += this.projection_width;
-         const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10'];
+         const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
          if (this.is_projection) kinds.push('Off');
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
@@ -79416,32 +79516,39 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                                 .attr('class', 'tooltip_bin h1bin')
                                 .style('pointer-events', 'none');
 
-         let binid = i*10000 + j;
+         let binid = i*10000 + j, path;
+
+         if (this.is_projection) {
+            let pw = this.projection_width || 1, dd = (pw - 1) / 2;
+            if ((this.is_projection.indexOf('X')) >= 0 && (pw > 1)) {
+               if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - pw, h.j1); }
+                             else { j1 = Math.max(Math.round(j1-dd), h.j1); j2 = Math.min(j1 + pw, h.j2); }
+            }
+            if ((this.is_projection.indexOf('Y')) >= 0 && (pw > 1)) {
+               if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - pw, h.i1); }
+                             else { i1 = Math.max(Math.round(i1-dd), h.i1); i2 = Math.min(i1 + pw, h.i2); }
+            }
+         }
 
          if (this.is_projection == 'X') {
-            x1 = 0; x2 = this.getFramePainter().getFrameWidth();
-            if (this.projection_width > 1) {
-               let dd = (this.projection_width-1)/2;
-               if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
-                             else { j1 = Math.max(Math.round(j1-dd), h.j1); j2 = Math.min(j1 + this.projection_width, h.j2); }
-            }
+            x1 = 0; x2 = pmain.getFrameWidth();
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.is_projection == 'Y') {
-            y1 = 0; y2 = this.getFramePainter().getFrameHeight();
-            if (this.projection_width > 1) {
-               let dd = (this.projection_width-1)/2;
-               if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }
-                             else { i1 = Math.max(Math.round(i1-dd), h.i1); i2 = Math.min(i1 + this.projection_width, h.i2); }
-            }
-            x1 = h.grx[i1], x2 = h.grx[i2],
+            y1 = 0; y2 = pmain.getFrameHeight();
+            x1 = h.grx[i1]; x2 = h.grx[i2];
             binid = i1*777 + i2*333;
+         } else if (this.is_projection == 'XY') {
+            y1 = h.gry[j2]; y2 = h.gry[j1];
+            x1 = h.grx[i1]; x2 = h.grx[i2];
+            binid = i1*789 + i2*653 + j1*12345 + j2*654321;
+            path = `M${x1},0H${x2}V${y1}H${pmain.getFrameWidth()}V${y2}H${x2}V${pmain.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
          }
 
          res.changed = ttrect.property('current_bin') !== binid;
 
          if (res.changed)
-            ttrect.attr('d', `M${x1},${y1}h${x2-x1}v${y2-y1}h${x1-x2}z`)
+            ttrect.attr('d', path || `M${x1},${y1}H${x2}V${y2}H${x1}Z`)
                   .style('opacity', '0.7')
                   .property('current_bin', binid);
 
@@ -115544,6 +115651,7 @@ class RCanvasPainter extends RPadPainter {
 
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
+          sidebar2 = origin.select('.side_panel2'),
           main = this.selectDom(), lst = [];
 
       while (main.node().firstChild)
@@ -115551,6 +115659,8 @@ class RCanvasPainter extends RPadPainter {
 
       if (!sidebar.empty())
          cleanup(sidebar.node());
+      if (!sidebar2.empty())
+         cleanup(sidebar2.node());
 
       this.setLayoutKind('simple'); // restore defaults
       origin.html(''); // cleanup origin
@@ -115567,10 +115677,19 @@ class RCanvasPainter extends RPadPainter {
             mainid = (layout_kind.indexOf('vert') == 0) ? 0 : 1;
 
          main = select(grid.getGridFrame(mainid));
-         sidebar = select(grid.getGridFrame(1 - mainid));
-
          main.classed('central_panel', true).style('position', 'relative');
-         sidebar.classed('side_panel', true).style('position', 'relative');
+
+         if (mainid == 2) {
+            // left panel for Y
+            sidebar = select(grid.getGridFrame(0));
+            sidebar.classed('side_panel2', true).style('position', 'relative');
+            // bottom panel for X
+            sidebar = select(grid.getGridFrame(3));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         } else {
+            sidebar = select(grid.getGridFrame(1 - mainid));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         }
 
          // now append all childs to the new main
          for (let k = 0; k < lst.length; ++k)
@@ -115593,7 +115712,7 @@ class RCanvasPainter extends RPadPainter {
    async toggleProjection(kind) {
       delete this.proj_painter;
 
-      if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
+      if (kind) this.proj_painter = { 'X': false, 'Y': false }; // just indicator that drawing can be preformed
 
       if (isFunc(this.showUI5ProjectionArea))
          return this.showUI5ProjectionArea(kind);
@@ -115601,6 +115720,7 @@ class RCanvasPainter extends RPadPainter {
       let layout = 'simple', mainid;
 
       switch(kind) {
+         case 'XY': layout = 'projxy'; mainid = 2; break;
          case 'X':
          case 'bottom': layout = 'vert2_31'; mainid = 0; break;
          case 'Y':
@@ -115614,15 +115734,16 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Draw projection for specified histogram
      * @private */
-   async drawProjection( /*kind,hist*/) {
+   async drawProjection(/*kind,hist,hopt*/) {
       // dummy for the moment
       return false;
    }
 
    /** @summary Draw in side panel
      * @private */
-   async drawInSidePanel(canv, opt) {
-      let side = this.selectDom('origin').select('.side_panel');
+   async drawInSidePanel(canv, opt, kind) {
+      let sel = ((this.getLayoutKind() == 'projxy') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
+          side = this.selectDom('origin').select(sel);
       return side.empty() ? null : this.drawObject(side.node(), canv, opt);
    }
 
@@ -115647,7 +115768,7 @@ class RCanvasPainter extends RPadPainter {
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
-          .then(res => { console.log('save', fname, res.length); this.sendWebsocket('SAVE:' + fname + ':' + res); });
+          .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
    /** @summary Send command to server to save canvas with specified name
@@ -115703,7 +115824,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Hanler for websocket message
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log('GET_MSG ' + msg.slice(0,30));
+      // console.log('GET_MSG ' + msg.slice(0,30));
 
       if (msg == 'CLOSE') {
          this.onWebsocketClosed();
