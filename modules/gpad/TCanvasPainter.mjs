@@ -83,7 +83,7 @@ class TCanvasPainter extends TPadPainter {
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
           sidebar2 = origin.select('.side_panel2'),
-          main = this.selectDom(), lst = [];
+          main = this.selectDom(), lst = [], force;
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
@@ -101,6 +101,7 @@ class TCanvasPainter extends TPadPainter {
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
+         force = true;
       } else {
 
          let grid = new GridDisplay(origin.node(), layout_kind);
@@ -134,7 +135,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       // resize main drawing and let draw extras
-      resize(main.node());
+      resize(main.node(), force);
       return true;
    }
 

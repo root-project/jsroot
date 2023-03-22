@@ -2559,10 +2559,10 @@ class TH2Painter extends THistPainter {
       // search bins position
       if (pmain.reverse_x) {
          for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x<=h.grx[i]) && (pnt.x>=h.grx[i+1])) break;
+            if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
       } else {
          for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) break;
+            if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
       }
 
       if (pmain.reverse_y) {
@@ -2600,7 +2600,7 @@ class TH2Painter extends THistPainter {
             }
          }
 
-         binz = histo.getBinContent(i+1,j+1);
+         binz = histo.getBinContent(i+1, j+1);
          if (this.is_projection) {
             colindx = 0; // just to avoid hide
          } else if (!match) {

@@ -399,17 +399,19 @@ class TPadPainter extends ObjectPainter {
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) return check_resize > 1; // flag used to force re-drawing of all subpads
+         if (this._fixed_size)
+            return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
-
-         if (svg.empty()) return false;
+         if (svg.empty())
+            return false;
 
          factor = svg.property('height_factor');
 
          rect = this.testMainResize(check_resize, null, factor);
 
-         if (!rect.changed) return false;
+         if (!rect.changed && (check_resize == 1))
+            return false;
 
          if (!isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
