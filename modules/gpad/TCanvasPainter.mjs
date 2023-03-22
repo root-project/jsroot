@@ -152,7 +152,7 @@ class TCanvasPainter extends TPadPainter {
       let layout = 'simple', mainid;
 
       switch(kind) {
-         case 'XY': layout = 'horiz22_13'; mainid = 2; break;
+         case 'XY': layout = 'projxy'; mainid = 2; break;
          case 'X':
          case 'bottom': layout = 'vert2_31'; mainid = 0; break;
          case 'Y':
@@ -222,7 +222,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Draw in side panel
      * @private */
    async drawInSidePanel(canv, opt, kind) {
-      let sel = ((this.getLayoutKind() == 'horiz22_13') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
+      let sel = ((this.getLayoutKind() == 'projxy') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
           side = this.selectDom('origin').select(sel);
 
       return side.empty() ? null : this.drawObject(side.node(), canv, opt);

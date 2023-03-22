@@ -208,7 +208,7 @@ class GridDisplay extends MDIDisplay {
       this.simple_layout = false;
 
       let dom = this.selectDom();
-      dom.style('overflow','hidden');
+      dom.style('overflow', 'hidden');
 
       if (kind === 'simple') {
          this.simple_layout = true;
@@ -217,9 +217,16 @@ class GridDisplay extends MDIDisplay {
          return;
       }
 
-      let num = 2, arr = undefined, sizes = undefined;
+      let num = 2, arr, sizes, chld_sizes;
 
-      if ((kind.indexOf('grid') == 0) || kind2) {
+      if (kind == 'projxy') {
+         this.vertical = false;
+         this.use_separarators = true;
+         arr = [2, 2];
+         sizes = [1,3];
+         chld_sizes = [[3,1], [3,1]];
+         kind = '';
+      } else if ((kind.indexOf('grid') == 0) || kind2) {
          if (kind2) kind = kind + 'x' + kind2;
                else kind = kind.slice(4).trim();
          this.use_separarators = false;
@@ -285,20 +292,23 @@ class GridDisplay extends MDIDisplay {
          }
       }
 
-      if (sizes && (sizes.length!==num)) sizes = undefined;
+      if (sizes?.length !== num)
+         sizes = undefined;
+      if (chld_sizes?.length !== num)
+         chld_sizes = undefined;
 
       if (!this.simple_layout) {
          injectStyle(
             `.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }
              .jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }
              .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`, dom.node(), 'grid_style');
-         this.createGroup(this, dom, num, arr, sizes);
+         this.createGroup(this, dom, num, arr, sizes, chld_sizes);
       }
    }
 
    /** @summary Create frames group
      * @private */
-   createGroup(handle, main, num, childs, sizes) {
+   createGroup(handle, main, num, childs, sizes, childs_sizes) {
 
       if (!sizes) sizes = new Array(num);
       let sum1 = 0, sum2 = 0;
@@ -334,11 +344,11 @@ class GridDisplay extends MDIDisplay {
             elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
          }
 
-         if (childs && (childs[cnt]>1)) {
+         if (childs && (childs[cnt] > 1)) {
             group.vertical = !handle.vertical;
             group.groups = [];
             elem.style('overflow','hidden');
-            this.createGroup(group, elem, childs[cnt]);
+            this.createGroup(group, elem, childs[cnt], null, childs_sizes ? childs_sizes[cnt] : null);
          }
       }
 
