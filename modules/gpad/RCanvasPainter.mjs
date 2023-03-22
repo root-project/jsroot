@@ -170,7 +170,7 @@ class RCanvasPainter extends RPadPainter {
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
-          .then(res => { console.log('save', fname, res.length); this.sendWebsocket('SAVE:' + fname + ':' + res); });
+          .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
    /** @summary Send command to server to save canvas with specified name
@@ -226,7 +226,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Hanler for websocket message
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log('GET_MSG ' + msg.slice(0,30));
+      // console.log('GET_MSG ' + msg.slice(0,30));
 
       if (msg == 'CLOSE') {
          this.onWebsocketClosed();

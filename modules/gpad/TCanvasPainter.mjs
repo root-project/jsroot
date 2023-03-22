@@ -222,7 +222,7 @@ class TCanvasPainter extends TPadPainter {
    saveCanvasAsFile(fname) {
       let pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
-          .then(res => this.sendWebsocket('SAVE:' + fname + ':' + res));
+          .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
    /** @summary Send command to server to save canvas with specified name
@@ -300,7 +300,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Handle websocket messages
      * @private */
    onWebsocketMsg(handle, msg) {
-      console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
+      // console.log(`GET MSG len:${msg.length} ${msg.slice(0,60)}`);
 
       if (msg == 'CLOSE') {
          this.onWebsocketClosed();
