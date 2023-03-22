@@ -2635,32 +2635,39 @@ class TH2Painter extends THistPainter {
                                 .attr('class', 'tooltip_bin h1bin')
                                 .style('pointer-events', 'none');
 
-         let binid = i*10000 + j;
+         let binid = i*10000 + j, path;
+
+         if (this.is_projection) {
+            let pw = this.projection_width || 1, dd = (pw - 1) / 2;
+            if ((this.is_projection.indexOf('X')) >= 0 && (pw > 1)) {
+               if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - pw, h.j1); }
+                             else { j1 = Math.max(Math.round(j1-dd), h.j1); j2 = Math.min(j1 + pw, h.j2); }
+            }
+            if ((this.is_projection.indexOf('Y')) >= 0 && (pw > 1)) {
+               if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - pw, h.i1); }
+                             else { i1 = Math.max(Math.round(i1-dd), h.i1); i2 = Math.min(i1 + pw, h.i2); }
+            }
+         }
 
          if (this.is_projection == 'X') {
-            x1 = 0; x2 = this.getFramePainter().getFrameWidth();
-            if (this.projection_width > 1) {
-               let dd = (this.projection_width-1)/2;
-               if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
-                             else { j1 = Math.max(Math.round(j1-dd), h.j1); j2 = Math.min(j1 + this.projection_width, h.j2); }
-            }
+            x1 = 0; x2 = pmain.getFrameWidth();
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.is_projection == 'Y') {
-            y1 = 0; y2 = this.getFramePainter().getFrameHeight();
-            if (this.projection_width > 1) {
-               let dd = (this.projection_width-1)/2;
-               if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }
-                             else { i1 = Math.max(Math.round(i1-dd), h.i1); i2 = Math.min(i1 + this.projection_width, h.i2); }
-            }
+            y1 = 0; y2 = pmain.getFrameHeight();
             x1 = h.grx[i1]; x2 = h.grx[i2];
             binid = i1*777 + i2*333;
+         } else if (this.is_projection == 'XY') {
+            y1 = h.gry[j2]; y2 = h.gry[j1];
+            x1 = h.grx[i1]; x2 = h.grx[i2];
+            binid = i1*789 + i2*653 + j1*12345 + j2*654321;
+            path = `M${x1},0H${x2}V${y1}H${pmain.getFrameWidth()}V${y2}H${x2}V${pmain.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
          }
 
          res.changed = ttrect.property('current_bin') !== binid;
 
          if (res.changed)
-            ttrect.attr('d', `M${x1},${y1}h${x2-x1}v${y2-y1}h${x1-x2}z`)
+            ttrect.attr('d', path || `M${x1},${y1}H${x2}V${y2}H${x1}Z`)
                   .style('opacity', '0.7')
                   .property('current_bin', binid);
 
