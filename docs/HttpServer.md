@@ -89,13 +89,29 @@ THttpServer does not take ownership over registered objects - they should be del
 If the objects content is changing in the application, one could enable monitoring flag in the browser - then objects view will be regularly updated.
 
 
+## Accessing file system
+
+THttpServer provides partial access to the files from file system.
+First of all, JSROOT scripts and files can be accessed via "jsrootsys/" path like "http://localhost:8080/jsrootsys/modules/core.mjs".
+Files from ROOT install directory can be get via "rootsys/" path like "http://localhost:8080/rootsys/icons/about.xpm".
+Also files from current directory where ROOT is running can be accessed via "currentdir/" path like "http://localhost:8080/currentdir/file.txt".
+
+If necessary, one can add custom path as well, using [THttpServer::AddLocation](https://root.cern/doc/master/classTHttpServer.html#a5322c3bbfddb8eb6849297d83ccaf87f) method:
+
+```cpp
+ serv->AddLocation("mydir/", "/home/user/specials");
+```
+
+Then files from that directory could be addressed via URL like "http://localhost:8080/mydir/myfile.root"
+
+
 ## Command interface
 
 THttpServer class provide simple interface to invoke command from web browser.
 One just register command like:
 
 ```cpp
-serv->RegisterCommand("/DoSomething","SomeFunction()");
+serv->RegisterCommand("/DoSomething", "SomeFunction()");
 ```
 
 Element with name `DoSomething` will appear in the web browser and can be clicked.
@@ -105,20 +121,20 @@ One could configure argument(s) for the command.
 For that one should use `%arg1`, `%arg2` and so on identifiers. Like:
 
 ```cpp
-serv->RegisterCommand("/DoSomething","SomeFunction(%arg1%,%arg2%)");
+serv->RegisterCommand("/DoSomething", "SomeFunction(%arg1%,%arg2%)");
 ```
 
 User will be requested to enter arguments values, when command element clicked in the browser.
 Example of the command which executes arbitrary string in application via ProcessLine looks like:
 
 ```cpp
-serv->RegisterCommand("/Process","%arg1%");
+serv->RegisterCommand("/Process", "%arg1%");
 ```
 
 When registering command, one could specify icon name which will be displayed with the command.
 
 ```cpp
-serv->RegisterCommand("/DoSomething","SomeFunction()", "rootsys/icons/ed_execute.png");
+serv->RegisterCommand("/DoSomething", "SomeFunction()", "rootsys/icons/ed_execute.png");
 ```
 
 In example usage of images from `$ROOTSYS/icons` directory is shown. One could prepend `button;`
@@ -200,14 +216,14 @@ Hidden folders or objects can not be accessed via http protocol.
 By default server runs in readonly mode and do not allow methods execution via 'exe.json' or 'exe.bin' requests. To allow such action, one could either grant generic access for all or one could allow to execute only special method:
 
 ```cpp
-serv->Restrict("/Folder/histo1",  "allow=all");
-serv->Restrict("/Folder/histo1",  "allow_method=GetTitle");
+serv->Restrict("/Folder/histo1", "allow=all");
+serv->Restrict("/Folder/histo1", "allow_method=GetTitle");
 ```
 
 One could provide several options for the same item, separating them with '&' sign:
 
 ```cpp
-serv->Restrict("/Folder/histo1",  "allow_method=GetTitle&hide=guest");
+serv->Restrict("/Folder/histo1", "allow_method=GetTitle&hide=guest");
 ```
 
 Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern/doc/master/classTRootSniffer.html#a8af1f11cbfb9c895f968ec0594794120) method documentation.
