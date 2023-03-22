@@ -67,6 +67,7 @@ class RCanvasPainter extends RPadPainter {
 
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
+          sidebar2 = origin.select('.side_panel2'),
           main = this.selectDom(), lst = [];
 
       while (main.node().firstChild)
@@ -74,6 +75,8 @@ class RCanvasPainter extends RPadPainter {
 
       if (!sidebar.empty())
          cleanup(sidebar.node());
+      if (!sidebar2.empty())
+         cleanup(sidebar2.node());
 
       this.setLayoutKind('simple'); // restore defaults
       origin.html(''); // cleanup origin
@@ -90,10 +93,19 @@ class RCanvasPainter extends RPadPainter {
             mainid = (layout_kind.indexOf('vert') == 0) ? 0 : 1;
 
          main = d3_select(grid.getGridFrame(mainid));
-         sidebar = d3_select(grid.getGridFrame(1 - mainid));
-
          main.classed('central_panel', true).style('position', 'relative');
-         sidebar.classed('side_panel', true).style('position', 'relative');
+
+         if (mainid == 2) {
+            // left panel for Y
+            sidebar = d3_select(grid.getGridFrame(0));
+            sidebar.classed('side_panel2', true).style('position', 'relative');
+            // bottom panel for X
+            sidebar = d3_select(grid.getGridFrame(3));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         } else {
+            sidebar = d3_select(grid.getGridFrame(1 - mainid));
+            sidebar.classed('side_panel', true).style('position', 'relative');
+         }
 
          // now append all childs to the new main
          for (let k = 0; k < lst.length; ++k)
@@ -116,7 +128,7 @@ class RCanvasPainter extends RPadPainter {
    async toggleProjection(kind) {
       delete this.proj_painter;
 
-      if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
+      if (kind) this.proj_painter = { 'X': false, 'Y': false }; // just indicator that drawing can be preformed
 
       if (isFunc(this.showUI5ProjectionArea))
          return this.showUI5ProjectionArea(kind);
@@ -124,6 +136,7 @@ class RCanvasPainter extends RPadPainter {
       let layout = 'simple', mainid;
 
       switch(kind) {
+         case 'XY': layout = 'horiz22_13'; mainid = 2; break;
          case 'X':
          case 'bottom': layout = 'vert2_31'; mainid = 0; break;
          case 'Y':
@@ -137,15 +150,16 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Draw projection for specified histogram
      * @private */
-   async drawProjection( /*kind,hist*/) {
+   async drawProjection(/*kind,hist,hopt*/) {
       // dummy for the moment
       return false;
    }
 
    /** @summary Draw in side panel
      * @private */
-   async drawInSidePanel(canv, opt) {
-      let side = this.selectDom('origin').select('.side_panel');
+   async drawInSidePanel(canv, opt, kind) {
+      let sel = ((this.getLayoutKind() == 'horiz22_13') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
+          side = this.selectDom('origin').select(sel);
       return side.empty() ? null : this.drawObject(side.node(), canv, opt);
    }
 

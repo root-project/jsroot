@@ -88,8 +88,10 @@ class TCanvasPainter extends TPadPainter {
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
 
-      if (!sidebar.empty()) cleanup(sidebar.node());
-      if (!sidebar2.empty()) cleanup(sidebar2.node());
+      if (!sidebar.empty())
+         cleanup(sidebar.node());
+      if (!sidebar2.empty())
+         cleanup(sidebar2.node());
 
       this.setLayoutKind('simple'); // restore defaults
       origin.html(''); // cleanup origin
@@ -142,7 +144,7 @@ class TCanvasPainter extends TPadPainter {
    async toggleProjection(kind) {
       delete this.proj_painter;
 
-      if (kind) this.proj_painter = { 'X': 1, 'Y': 1 }; // just indicator that drawing can be preformed
+      if (kind) this.proj_painter = { 'X': false, 'Y': false }; // just indicator that drawing can be preformed
 
       if (isFunc(this.showUI5ProjectionArea))
          return this.showUI5ProjectionArea(kind);
@@ -169,9 +171,11 @@ class TCanvasPainter extends TPadPainter {
       if (!this.proj_painter)
          return false; // ignore drawing if projection not configured
 
-      if (hopt === undefined) hopt = 'hist';
+      if (hopt === undefined)
+         hopt = 'hist';
+      if (!kind) kind = 'X';
 
-      if (this.proj_painter[kind] === 1) {
+      if (!this.proj_painter[kind]) {
 
          let canv = create(clTCanvas),
              pad = this.pad,
