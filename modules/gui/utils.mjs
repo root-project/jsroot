@@ -85,6 +85,7 @@ function tryOpenOpenUI(sources, args) {
 
    element.setAttribute('data-sap-ui-theme', args.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
+   element.setAttribute('data-sap-ui-async', 'true');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
    element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
