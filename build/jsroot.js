@@ -77124,7 +77124,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          let kind = this.is_projection || '';
          if (kind) kind += this.projection_widthX;
          if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
-            kind += '_' + this.projection_widthY;
+            kind = `X${this.projection_widthX}_Y${this.projection_widthY}`;
 
          const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
          if (kind) kinds.unshift('Off');
@@ -119460,7 +119460,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
       let kind = this.is_projection || '';
       if (kind) kind += this.projection_widthX;
       if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
-         kind += '_' + this.projection_widthY;
+         kind = `X${this.projection_widthX}_Y${this.projection_widthY}`;
 
       menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2', kind, 'string').then(val => this.toggleProjection(val)));
 
