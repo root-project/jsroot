@@ -48,10 +48,20 @@ class RH2Painter extends RHistPainter {
          } else if (ws) {
             widthX = widthY = parseInt(ws);
          }
-
       } else if (isStr(kind) && (kind.length > 1)) {
-         widthX = widthY = parseInt(kind.slice(1));
-         kind = kind[0];
+         let ps = kind.indexOf('_');
+         if ((ps > 0) && (kind[0] == 'X') && (kind[ps+1] == 'Y')) {
+            widthX = parseInt(kind.slice(1, ps)) || 1;
+            widthY = parseInt(kind.slice(ps+2)) || 1;
+            kind = 'XY';
+         } else if ((ps > 0) && (kind[0] == 'Y') && (kind[ps+1] == 'X')) {
+            widthY = parseInt(kind.slice(1, ps)) || 1;
+            widthX = parseInt(kind.slice(ps+2)) || 1;
+            kind = 'XY';
+         } else {
+            widthX = widthY = parseInt(kind.slice(1)) || 1;
+            kind = kind[0];
+         }
       }
 
       if (!widthX && !widthY)
