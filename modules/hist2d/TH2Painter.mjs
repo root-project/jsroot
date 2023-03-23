@@ -36,9 +36,7 @@ class TH2Painter extends THistPainter {
       if ((kind == 'Projections') || (kind == 'Off'))
          kind = '';
 
-      let widthX, widthY;
-
-      widthX = widthY = width;
+      let widthX = width, widthY = width;
 
       if (isStr(kind) && (kind.indexOf('XY') == 0)) {
          let ws = kind.length > 2 ? kind.slice(2) : '';
@@ -207,9 +205,10 @@ class TH2Painter extends THistPainter {
          if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
             kind += '_' + this.projection_widthY;
 
-         menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2', kind, 'string').then(val => this.toggleProjection(val)));
          const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
          if (kind) kinds.unshift('Off');
+
+         menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2', kind, 'string').then(val => this.toggleProjection(val)));
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
          menu.add('endsub:');
