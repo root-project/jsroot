@@ -1,10 +1,10 @@
-import json from "@rollup/plugin-json";
-import nodeResolve from "@rollup/plugin-node-resolve";
-import terser from "@rollup/plugin-terser";
+import json from '@rollup/plugin-json';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 import modify from 'rollup-plugin-modify';
 import ascii from "rollup-plugin-ascii";
-import ignore from "rollup-plugin-ignore";
-import meta from "../package.json" assert {type: "json"};
+import ignore from 'rollup-plugin-ignore';
+import meta from '../package.json' assert {type: 'json'};
 
 const ignore_modules = ['fs', 'zlib'];
 
@@ -66,7 +66,8 @@ const config_geom = {
    input: "modules/geom/bundle.mjs",
    output: {
       ...config.output,
-      file: "build/geom.js",
+      format: 'es',
+      file: 'build/geom.mjs',
       inlineDynamicImports: true
    }
 }
