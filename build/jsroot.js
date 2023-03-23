@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '22/03/2023';
+let version_date = '23/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -62475,12 +62475,13 @@ function tryOpenOpenUI(sources, args) {
    // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js
 
    // this is location of openui5 scripts when working with THttpServer or when scripts are installed inside JSROOT
-   element.setAttribute('src', src + 'resources/sap-ui-core.js'); // latest openui5 version
+   element.setAttribute('src', src + (args.ui5dbg ? 'resources/sap-ui-core-dbg.js' : 'resources/sap-ui-core.js')); // latest openui5 version
 
    element.setAttribute('data-sap-ui-libs', args.openui5libs ?? 'sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons');
 
    element.setAttribute('data-sap-ui-theme', args.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
+   element.setAttribute('data-sap-ui-async', 'true');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
    element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
@@ -62533,10 +62534,14 @@ async function loadOpenui5(args) {
          case 'jsroot': openui5_sources.push(openui5_root); openui5_root = ''; break;
          default: openui5_sources.push(args.openui5src); break;
       }
+   } else if (args.ui5dbg) {
+      openui5_root = ''; // exclude ROOT version in debug mode
    }
 
-   if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0)) openui5_sources.push(openui5_root);
-   if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt) < 0)) openui5_sources.push(openui5_dflt);
+   if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0))
+      openui5_sources.push(openui5_root);
+   if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt) < 0))
+      openui5_sources.push(openui5_dflt);
 
    return new Promise((resolve, reject) => {
 
@@ -69266,17 +69271,19 @@ class TPadPainter extends ObjectPainter {
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) return check_resize > 1; // flag used to force re-drawing of all subpads
+         if (this._fixed_size)
+            return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
-
-         if (svg.empty()) return false;
+         if (svg.empty())
+            return false;
 
          factor = svg.property('height_factor');
 
          rect = this.testMainResize(check_resize, null, factor);
 
-         if (!rect.changed) return false;
+         if (!rect.changed && (check_resize == 1))
+            return false;
 
          if (!isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
@@ -69868,22 +69875,25 @@ class TPadPainter extends ObjectPainter {
             this.interactiveRedraw('pad', arg.slice(1));
          }
 
-         menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
-         menu.addchk(this.pad.fGridy, 'Grid y', (this.pad.fGridy ? '0' : '1') + 'fGridy', SetPadField);
+         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', SetPadField);
+         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', SetPadField);
          menu.add('sub:Ticks x');
-         menu.addchk(this.pad.fTickx == 0, 'normal', '0fTickx', SetPadField);
-         menu.addchk(this.pad.fTickx == 1, 'ticks on both sides', '1fTickx', SetPadField);
-         menu.addchk(this.pad.fTickx == 2, 'labels on both sides', '2fTickx', SetPadField);
+         menu.addchk(this.pad?.fTickx == 0, 'normal', '0fTickx', SetPadField);
+         menu.addchk(this.pad?.fTickx == 1, 'ticks on both sides', '1fTickx', SetPadField);
+         menu.addchk(this.pad?.fTickx == 2, 'labels on both sides', '2fTickx', SetPadField);
          menu.add('endsub:');
          menu.add('sub:Ticks y');
-         menu.addchk(this.pad.fTicky == 0, 'normal', '0fTicky', SetPadField);
-         menu.addchk(this.pad.fTicky == 1, 'ticks on both sides', '1fTicky', SetPadField);
-         menu.addchk(this.pad.fTicky == 2, 'labels on both sides', '2fTicky', SetPadField);
+         menu.addchk(this.pad?.fTicky == 0, 'normal', '0fTicky', SetPadField);
+         menu.addchk(this.pad?.fTicky == 1, 'ticks on both sides', '1fTicky', SetPadField);
+         menu.addchk(this.pad?.fTicky == 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
 
          menu.addAttributesMenu(this);
          menu.add('Save to gStyle', function() {
-            if (this.fillatt) this.fillatt.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
+            if (!this.pad)
+               return;
+            if (this.fillatt)
+               this.fillatt.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
             gStyle.fPadGridX = this.pad.fGridX;
             gStyle.fPadGridY = this.pad.fGridX;
             gStyle.fPadTickX = this.pad.fTickx;
@@ -71112,7 +71122,7 @@ class TCanvasPainter extends TPadPainter {
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
           sidebar2 = origin.select('.side_panel2'),
-          main = this.selectDom(), lst = [];
+          main = this.selectDom(), lst = [], force;
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
@@ -71130,6 +71140,7 @@ class TCanvasPainter extends TPadPainter {
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
+         force = true;
       } else {
 
          let grid = new GridDisplay(origin.node(), layout_kind);
@@ -71163,7 +71174,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       // resize main drawing and let draw extras
-      resize(main.node());
+      resize(main.node(), force);
       return true;
    }
 
@@ -71331,6 +71342,25 @@ class TCanvasPainter extends TPadPainter {
       this._websocket.connect();
    }
 
+   /** @summary set, test or reset timeout of specified name
+     * @desc Used to prevent overloading of websocket for specific function */
+   websocketTimeout(name, tm) {
+      if (!this._websocket)
+         return;
+      if (!this._websocket._tmouts)
+         this._websocket._tmouts = {};
+
+      let handle = this._websocket._tmouts[name];
+      if (tm === undefined)
+         return handle !== undefined;
+
+      if (tm == 'reset') {
+         if (handle) { clearTimeout(handle); delete this._websocket._tmouts[name]; }
+      } else if (!handle && Number.isInteger(tm)) {
+         this._websocket._tmouts[name] = setTimeout(() => { delete this._websocket._tmouts[name]; }, tm);
+      }
+   }
+
    /** @summary Hanler for websocket open event
      * @private */
    onWebsocketOpened(/*handle*/) {
@@ -71391,6 +71421,7 @@ class TCanvasPainter extends TPadPainter {
       } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
          let kind = msg[1],
              hist = parse(msg.slice(7));
+         this.websocketTimeout(`proj${kind}`, 'reset');
          this.drawProjection(kind, hist);
       } else if (msg.slice(0,5) == 'SHOW:') {
          let that = msg.slice(5),
@@ -76966,12 +76997,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
-         let exec = `EXECANDSEND:D${this.is_projection}PROJ:${this.snapid}:`;
-         if (this.is_projection == 'X')
-            exec += `ProjectionX("_projx",${jj1+1},${jj2},"")`;
-         else
-            exec += `ProjectionY("_projy",${ii1+1},${ii2},"")`;
-         canp.sendWebsocket(exec);
+         if (((this.is_projection == 'X') || (this.is_projection == 'XY')) && !canp.websocketTimeout('projX'))
+            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.snapid}:ProjectionX("_projx",${jj1+1},${jj2},"")`))
+               canp.websocketTimeout('projX', 1000);
+         if (((this.is_projection == 'Y') || (this.is_projection == 'XY')) && !canp.websocketTimeout('projY'))
+            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.snapid}:ProjectionY("_projy",${ii1+1},${ii2},"")`))
+               canp.websocketTimeout('projY', 1000);
          return true;
       }
 
@@ -79440,10 +79471,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       // search bins position
       if (pmain.reverse_x) {
          for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x<=h.grx[i]) && (pnt.x>=h.grx[i+1])) break;
+            if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
       } else {
          for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) break;
+            if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
       }
 
       if (pmain.reverse_y) {
@@ -79481,7 +79512,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             }
          }
 
-         binz = histo.getBinContent(i+1,j+1);
+         binz = histo.getBinContent(i+1, j+1);
          if (this.is_projection) {
             colindx = 0; // just to avoid hide
          } else if (!match) {
@@ -113573,14 +113604,15 @@ class RPadPainter extends RObjectPainter {
             return check_resize > 1; // flag used to force re-drawing of all subpads
 
          svg = this.getCanvSvg();
-
-         if (svg.empty()) return false;
+         if (svg.empty())
+            return false;
 
          factor = svg.property('height_factor');
 
          rect = this.testMainResize(check_resize, null, factor);
 
-         if (!rect.changed) return false;
+         if (!rect.changed && (check_resize == 1))
+            return false;
 
          if (!isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
@@ -115652,7 +115684,7 @@ class RCanvasPainter extends RPadPainter {
       let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
           sidebar2 = origin.select('.side_panel2'),
-          main = this.selectDom(), lst = [];
+          main = this.selectDom(), lst = [], force;
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
@@ -115670,6 +115702,7 @@ class RCanvasPainter extends RPadPainter {
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
+         force = true;
       } else {
          let grid = new GridDisplay(origin.node(), layout_kind);
 
@@ -115702,7 +115735,7 @@ class RCanvasPainter extends RPadPainter {
       }
 
       // resize main drawing and let draw extras
-      resize(main.node());
+      resize(main.node(), force);
       return true;
    }
 
@@ -115807,6 +115840,25 @@ class RCanvasPainter extends RPadPainter {
       this._websocket = handle;
       this._websocket.setReceiver(this);
       this._websocket.connect();
+   }
+
+   /** @summary set, test or reset timeout of specified name
+     * @desc Used to prevent overloading of websocket for specific function */
+   websocketTimeout(name, tm) {
+      if (!this._websocket)
+         return;
+      if (!this._websocket._tmouts)
+         this._websocket._tmouts = {};
+
+      let handle = this._websocket._tmouts[name];
+      if (tm === undefined)
+         return handle !== undefined;
+
+      if (tm == 'reset') {
+         if (handle) { clearTimeout(handle); delete this._websocket._tmouts[name]; }
+      } else if (!handle && Number.isInteger(tm)) {
+         this._websocket._tmouts[name] = setTimeout(() => { delete this._websocket._tmouts[name]; }, tm);
+      }
    }
 
    /** @summary Hanler for websocket open event
