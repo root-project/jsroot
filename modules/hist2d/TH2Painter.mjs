@@ -41,13 +41,7 @@ class TH2Painter extends THistPainter {
       if (isStr(kind) && (kind.indexOf('XY') == 0)) {
          let ws = (kind.length > 2) ? kind.slice(2) : '';
          kind = 'XY';
-         let ps = ws.indexOf('_');
-         if (ps > 0) {
-            widthX = parseInt(ws.slice(0, ps));
-            widthY = parseInt(ws.slice(ps+1));
-         } else if (ws) {
-            widthX = widthY = parseInt(ws) || 1;
-         }
+         widthX = widthY = parseInt(ws) || 1;
       } else if (isStr(kind) && (kind.length > 1)) {
          let ps = kind.indexOf('_');
          if ((ps > 0) && (kind[0] == 'X') && (kind[ps+1] == 'Y')) {
