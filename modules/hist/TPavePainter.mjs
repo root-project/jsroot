@@ -442,7 +442,6 @@ class TPavePainter extends ObjectPainter {
    drawPaveText(width, height, dummy_arg, text_g) {
 
       let pt = this.getObject(),
-          tcolor = this.getColor(pt.fTextColor),
           arr = pt?.fLines?.arr || [],
           nlines = arr.length,
           pp = this.getPadPainter(),
@@ -453,11 +452,11 @@ class TPavePainter extends ObjectPainter {
           stepy = height / (nlines || 1),
           max_font_size = 0;
 
+      this.createAttText({ attr: pt });
+
       // for single line (typically title) limit font size
-      if ((nlines == 1) && (pt.fTextSize > 0)) {
-         max_font_size = Math.round(pt.fTextSize * pad_height);
-         if (max_font_size < 3) max_font_size = 3;
-      }
+      if ((nlines == 1) && (this.textatt.size > 0))
+         max_font_size = Math.max(3, this.textatt.getSize(pad_height));
 
       if (!text_g) text_g = this.draw_g;
 
@@ -477,26 +476,26 @@ class TPavePainter extends ObjectPainter {
                       y = entry.fY ? (1 - entry.fY)*height : texty,
                       color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) {
-                     color = tcolor;
+                     color = this.textatt.color;
                      this.UseTextColor = true;
                   }
 
                   let sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
+                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
-                  this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x, y, text: entry.fTitle, color,
+                  this.drawText({ align: entry.fTextAlign || this.textatt.align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename == clTText) ? 0 : 1,  draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
                   // default position
                   if (num_default++ === 0)
-                     this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
+                     this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
 
-                  let arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || pt.fTextAlign,
+                  let arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || this.textatt.align,
                               draw_g: text_g, latex: entry._typename == clTText ? 0 : 1,
-                              text: entry.fTitle, fast  };
+                              text: entry.fTitle, fast };
                   let halign = Math.floor(arg.align / 10);
                   // when horizontal align applied, just shift text, not change width to keep scaling
                   arg.x = (halign == 1) ? margin_x : (halign == 3 ? -margin_x : 0);
@@ -505,9 +504,9 @@ class TPavePainter extends ObjectPainter {
                      arg.y = texty;
                      arg.height = stepy;
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
-                     if (entry.fTextSize) arg.font_size = Math.round(entry.fTextSize * pad_height);
+                     if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   }
-                  if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
+                  if (!arg.color) { this.UseTextColor = true; arg.color = this.textatt.color; }
                   this.drawText(arg);
                }
                break;
@@ -551,9 +550,9 @@ class TPavePainter extends ObjectPainter {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-         this.startTextDrawing(pt.fTextFont, h/1.5, lbl_g);
+         this.startTextDrawing(this.textatt.font, h/1.5, lbl_g);
 
-         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
+         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g });
 
          promises.push(this.finishTextDrawing(lbl_g));
 
@@ -610,21 +609,22 @@ class TPavePainter extends ObjectPainter {
 
       if (nrows < 1) nrows = 1;
 
-      let tcolor = this.getColor(legend.fTextColor),
-          column_width = Math.round(w/ncols),
+      let column_width = Math.round(w/ncols),
           padding_x = Math.round(0.03*w/ncols),
           padding_y = Math.round(0.03*h),
           step_y = (h - 2*padding_y)/nrows,
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
           pp = this.getPadPainter(),
-          ph = pp.getPadHeight(),
           any_opt = false, i = -1;
 
-      if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
-         font_size = max_font_size = Math.round(ph*legend.fTextSize);
+      this.createAttText({ attr: legend });
 
-      this.startTextDrawing(legend.fTextFont, font_size, this.draw_g, max_font_size);
+      let tsz = this.textatt.getSize(pp.getPadHeight());
+      if (tsz && (tsz < font_size))
+         font_size = max_font_size = tsz;
+
+      this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
 
       for (let ii = 0; ii < nlines; ++ii) {
          let leg = legend.fPrimitives.arr[ii];
@@ -718,7 +718,7 @@ class TPavePainter extends ObjectPainter {
             pos_x = x0 + padding_x;
 
          if (leg.fLabel)
-            this.drawText({ align: legend.fTextAlign, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            this.drawText({ align: this.textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: this.textatt.color });
       }
 
       // rescale after all entries are shown

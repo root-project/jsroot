@@ -81,7 +81,7 @@ class TAttTextHandler {
       return arg;
    }
 
-   /** @summary Provides pixel size depending  */
+   /** @summary Provides pixel size */
    getSize(w, h, fact, zero_size) {
       if (this.size >= 1)
          return Math.round(this.size);
@@ -91,6 +91,13 @@ class TAttTextHandler {
 
       return Math.round((this.size || zero_size || 0.) * Math.min(w,h) * fact);
    }
+
+   /** @summary Returns alternating size - which defined by sz1 variable */
+   getAltSize(sz1, h) {
+      if (!sz1) sz1 = this.size ;
+      return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
+   }
+
 
 } // class TAttTextHandler
 
