@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr, btoa_func,
+import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTLegendEntry, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -214,6 +214,8 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttFill({ attr: pt });
 
+      let promise, interactive_element;
+
       if (pt._typename == clTDiamond) {
          let h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
@@ -225,60 +227,60 @@ class TPavePainter extends ObjectPainter {
                  .style('stroke', this.getColor(pt.fShadowColor))
                  .style('stroke-width', '1px');
 
-         this.draw_g.append('svg:path')
-             .attr('d', 'M0,'+h2 +dpath)
-             .call(this.fillatt.func)
-             .call(this.lineatt.func);
+         interactive_element = this.draw_g.append('svg:path')
+                                   .attr('d', 'M0,'+h2 +dpath)
+                                   .call(this.fillatt.func)
+                                   .call(this.lineatt.func);
 
          let text_g = this.draw_g.append('svg:g')
-                                 .attr('transform', makeTranslate(Math.round(width/4),Math.round(height/4)));
+                                 .attr('transform', makeTranslate(Math.round(width/4), Math.round(height/4)));
 
-         return this.drawPaveText(w2, h2, arg, text_g);
-      }
+         promise = this.drawPaveText(w2, h2, arg, text_g);
+      } else {
 
-      // add shadow decoration before main rect
-      if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
-         let spath = '', scol = this.getColor(pt.fShadowColor);
-         if (this.fillatt.empty()) {
-            if ((dx < 0) && (dy < 0))
-               spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
-            else // ((dx < 0) && (dy > 0))
-               spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
-         } else {
-            // when main is filled, one also can use fill for shadow to avoid complexity
-            spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
-         }
-         this.draw_g.append('svg:path')
-                    .attr('d', spath + 'z')
-                    .style('fill', scol)
-                    .style('stroke', scol)
-                    .style('stroke-width', '1px');
-      }
-
-      if (pt.fNpaves)
-         for (let n = pt.fNpaves-1; n > 0; --n)
+         // add shadow decoration before main rect
+         if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
+            let spath = '', scol = this.getColor(pt.fShadowColor);
+            if (this.fillatt.empty()) {
+               if ((dx < 0) && (dy < 0))
+                  spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
+               else // ((dx < 0) && (dy > 0))
+                  spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
+            } else {
+               // when main is filled, one also can use fill for shadow to avoid complexity
+               spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
+            }
             this.draw_g.append('svg:path')
-               .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
-               .call(this.fillatt.func)
-               .call(this.lineatt.func);
+                       .attr('d', spath + 'z')
+                       .style('fill', scol)
+                       .style('stroke', scol)
+                       .style('stroke-width', '1px');
+         }
 
-      let rect;
-      if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
-           rect = this.draw_g.append('svg:path')
-                      .attr('d', `M0,0H${width}V${height}H0Z`)
-                      .call(this.fillatt.func)
-                      .call(this.lineatt.func);
+         if (pt.fNpaves)
+            for (let n = pt.fNpaves-1; n > 0; --n)
+               this.draw_g.append('svg:path')
+                  .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
+                  .call(this.fillatt.func)
+                  .call(this.lineatt.func);
 
-      let promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+         if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
+            interactive_element = this.draw_g.append('svg:path')
+                                             .attr('d', `M0,0H${width}V${height}H0Z`)
+                                             .call(this.fillatt.func)
+                                             .call(this.lineatt.func);
+
+         promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+      }
 
       return promise.then(() => {
 
          if (isBatchMode() || (pt._typename === clTPave)) return this;
 
          // here all kind of interactive settings
-         if (rect)
-            rect.style('pointer-events', 'visibleFill')
-                .on('mouseenter', () => this.showObjectStatus());
+         if (interactive_element)
+            interactive_element.style('pointer-events', 'visibleFill')
+                               .on('mouseenter', () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
@@ -1168,6 +1170,7 @@ class TPavePainter extends ObjectPainter {
       pave.fBorderSize = obj.fBorderSize;
 
       switch (obj._typename) {
+         case clTDiamond:
          case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;

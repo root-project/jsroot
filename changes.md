@@ -7,7 +7,7 @@
 4. Correctly handle "same0" draw option for TH2
 5. Fix several issues with axis reverse order
 6. Implement reverse axis on lego plots
-7. Add interactivity (moving, context menu) for TLine, TBox, TText, TLatex
+7. Add interactivity (moving, context menu) for TLine, TBox, TText, TLatex, TDiamond
 8. Support more kinds of log scales - ln and logN where N is any positive integer
 9. Use new gStyle attributes for candle and violin plots
 10. Implement autoplace for TLegend
