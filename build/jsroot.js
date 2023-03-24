@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '23/03/2023';
+let version_date = '24/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -75906,7 +75906,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       if (this.isTProfile()) {
 
          if (print_entries > 0)
-            stat.addText('Entries = ' + stat.format(data.entries,'entries'));
+            stat.addText('Entries = ' + stat.format(data.entries, 'entries'));
 
          if (print_mean > 0) {
             stat.addText('Mean = ' + stat.format(data.meanx));
@@ -76015,14 +76015,14 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          }
 
          if (show_text && y) {
-            let lbl = (y === Math.round(y)) ? y.toString() : floatToString(y, gStyle.fPaintTextFormat);
+            let text = (y === Math.round(y)) ? y.toString() : floatToString(y, gStyle.fPaintTextFormat);
 
             if (pmain.swap_xy)
-               this.drawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text, color: text_col, latex: 0 });
             else if (text_angle)
-               this.drawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text, color: text_col, latex: 0 });
             else
-               this.drawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1-2-text_size), width: Math.round(w*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1 - 2 - text_size), width: Math.round(w*0.8), height: text_size, text, color: text_col, latex: 0 });
          }
       }
 
@@ -77129,7 +77129,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
          if (kind) kinds.unshift('Off');
 
-         menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2', kind, 'string').then(val => this.toggleProjection(val)));
+         menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
          menu.add('endsub:');
@@ -86424,7 +86424,8 @@ class TGeoPainter extends ObjectPainter {
    changedBackground(val) {
       if (val !== undefined)
          this.ctrl.background = val;
-      this._renderer.setClearColor(this.ctrl.background, 1);
+      this._scene.background = new Color$1(this.ctrl.background);
+      this._renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
       if (this._toolbar) {
@@ -87758,6 +87759,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
+      this._scene.background = new Color$1(this.ctrl.background);
+
       return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(r => {
 
          this._renderer = r;
@@ -87769,7 +87772,7 @@ class TGeoPainter extends ObjectPainter {
          this._renderer.setSize(w, h, !this._fit_main_area);
          this._renderer.localClippingEnabled = true;
 
-         this._renderer.setClearColor(this.ctrl.background, 1);
+         this._renderer.setClearColor(this._scene.background, 1);
 
          if (this._fit_main_area && this._webgl) {
             this._renderer.domElement.style.width = '100%';
@@ -119462,7 +119465,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
       if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
          kind = `X${this.projection_widthX}_Y${this.projection_widthY}`;
 
-      menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2', kind, 'string').then(val => this.toggleProjection(val)));
+      menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
 
       let kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
       if (kind) kinds.unshift('Off');
