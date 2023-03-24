@@ -8605,7 +8605,7 @@ class FontHandler {
 
       if ((this.name == 'Symbol') || (this.name == 'Wingdings')) {
          this.isSymbol = this.name;
-         this.name = "Times New Roman";
+         this.name = 'Times New Roman';
       } else {
          this.isSymbol = '';
       }
@@ -8615,12 +8615,12 @@ class FontHandler {
 
    /** @summary Assigns font-related attributes */
    setFont(selection, arg) {
-      selection.attr("font-family", this.name);
+      selection.attr('font-family', this.name);
       if (arg != 'without-size')
-         selection.attr("font-size", this.size)
-                  .attr("xml:space", "preserve");
-      selection.attr("font-weight", this.weight || null);
-      selection.attr("font-style", this.style || null);
+         selection.attr('font-size', this.size)
+                  .attr('xml:space', 'preserve');
+      selection.attr('font-weight', this.weight || null);
+      selection.attr('font-style', this.style || null);
    }
 
    /** @summary Set font size (optional) */
@@ -8648,26 +8648,26 @@ class FontHandler {
 
    /** @summary Clears all font-related attributes */
    clearFont(selection) {
-      selection.attr("font-family", null)
-               .attr("font-size", null)
-               .attr("xml:space", null)
-               .attr("font-weight", null)
-               .attr("font-style", null);
+      selection.attr('font-family', null)
+               .attr('font-size', null)
+               .attr('xml:space', null)
+               .attr('font-weight', null)
+               .attr('font-style', null);
    }
 
    /** @summary Returns true in case of monospace font
      * @private */
    isMonospace() {
       let n = this.name.toLowerCase();
-      return (n.indexOf("courier") == 0) || (n == "monospace") || (n == "monaco");
+      return (n.indexOf('courier') == 0) || (n == 'monospace') || (n == 'monaco');
    }
 
-   /** @summary Return full font declaration which can be set as font property like "12pt Arial bold"
+   /** @summary Return full font declaration which can be set as font property like '12pt Arial bold'
      * @private */
    getFontHtml() {
-      let res = Math.round(this.size) + "pt " + this.name;
-      if (this.weight) res += " " + this.weight;
-      if (this.style) res += " " + this.style;
+      let res = Math.round(this.size) + 'pt ' + this.name;
+      if (this.weight) res += ' ' + this.weight;
+      if (this.style) res += ' ' + this.style;
       return res;
    }
 
@@ -10843,14 +10843,14 @@ class TAttLineHandler {
    setArgs(args) {
       if (args.attr) {
          this.color_index = args.attr.fLineColor;
-         args.color = args.color0 || (args.painter ? args.painter.getColor(this.color_index) : getColor(this.color_index));
+         args.color = args.color0 || (args.painter?.getColor(this.color_index) ?? getColor(this.color_index));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          if (args.style === undefined) args.style = args.attr.fLineStyle;
       } else if (isStr(args.color)) {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
          this.color_index = args.color;
-         args.color = args.painter ? args.painter.getColor(args.color) : getColor(args.color);
+         args.color = args.painter?.getColor(args.color) ?? getColor(args.color);
       }
 
       if (args.width === undefined)
@@ -10978,6 +10978,106 @@ function getSvgLineStyle(indx) {
    if ((indx < 0) || (indx >= root_line_styles.length)) indx = 11;
    return root_line_styles[indx];
 }
+
+/**
+  * @summary Handle for line attributes
+  * @private
+  */
+
+class TAttTextHandler {
+
+   /** @summary constructor
+     * @param {object} attr - attributes, see {@link TAttTextHandler#setArgs} */
+   constructor(args) {
+      this.used = true;
+      if (args._typename && (args.fTextFont !== undefined)) args = { attr: args };
+      this.setArgs(args);
+   }
+
+   /** @summary Set text attributes.
+     * @param {object} args - specify attributes by different ways
+     * @param {object} args.attr - TAttText object with appropriate data members or
+     * @param {string} args.color - color in html like rgb(255,0,0) or 'red' or '#ff0000'
+     * @param {number} args.align - text align
+     * @param {number} args.angle - text angle
+     * @param {number} args.font  - font index
+     * @param {number} args.size  - text size */
+   setArgs(args) {
+      if (args.attr) {
+         args.font = args.attr.fTextFont;
+         args.size = args.attr.fTextSize;
+         this.color_index = args.attr.fTextColor;
+         args.color = args.painter?.getColor(this.color_index) ?? getColor(this.color_index);
+         args.align = args.attr.fTextAlign;
+         args.angle = args.attr.fTextAngle;
+      } else if (typeof args.color == 'number') {
+         this.color_index = args.color;
+         args.color = args.painter?.getColor(args.color) ?? getColor(args.color);
+      }
+
+      this.font = args.font;
+      this.size = args.size;
+      this.color = args.color;
+      this.align = args.align;
+      this.angle = args.angle;
+   }
+
+   /** @summary returns true if line attribute is empty and will not be applied. */
+   empty() { return this.color == 'none'; }
+
+   /** @summary Change text attributes */
+   change(font, size, color, align, angle) {
+      if (font !== undefined)
+         this.font = font;
+      if (size !== undefined)
+         this.size = size;
+      if (color !== undefined) {
+         if (this.color !== color)
+            delete this.color_index;
+         this.color = color;
+      }
+      if (align !== undefined)
+         this.align = align;
+      if (angle !== undefined)
+         this.angle = angle;
+      this.changed = true;
+   }
+
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
+     * @private */
+   verifyDirectChange(/* painter */) {
+      this.change(parseInt(this.font), parseFloat(this.size), this.color, parseInt(this.align), parseInt(this.angle));
+   }
+
+   /** @summary Create argument for drawText method */
+   createArg(arg) {
+      if (!arg) arg = {};
+      arg.align = this.align;
+      if (this.angle)
+         arg.rotate = -this.angle; // SVG rotation angle has different sign
+      arg.color = this.color || 'black';
+      return arg;
+   }
+
+   /** @summary Provides pixel size */
+   getSize(w, h, fact, zero_size) {
+      if (this.size >= 1)
+         return Math.round(this.size);
+      if (!w) w = 1000;
+      if (!h) h = w;
+      if (!fact) fact = 1.;
+
+      return Math.round((this.size || zero_size || 0.) * Math.min(w,h) * fact);
+   }
+
+   /** @summary Returns alternating size - which defined by sz1 variable */
+   getAltSize(sz1, h) {
+      if (!sz1) sz1 = this.size ;
+      return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
+   }
+
+
+} // class TAttTextHandler
 
 /**
  * @summary Painter class for ROOT objects
@@ -11598,6 +11698,29 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std) this.lineatt = handler;
+      return handler;
+   }
+
+   /** @summary Creates text attributes object.
+     * @param {object} args - either TAttText or see constructor arguments of {@link TAttTextHandler}
+     * @protected */
+   createAttText(args) {
+      if (!isObject(args))
+         args = { std: true };
+      else if (args.fTextFont !== undefined && args.fTextSize !== undefined && args.fTextSize !== undefined)
+         args = { attr: args, std: false };
+
+      if (args.std === undefined) args.std = true;
+      if (args.painter === undefined) args.painter = this;
+
+      let handler = args.std ? this.textatt : null;
+
+      if (!handler)
+         handler = new TAttTextHandler(args);
+      else if (!handler.changed || args.force)
+         handler.setArgs(args);
+
+      if (args.std) this.textatt = handler;
       return handler;
    }
 
@@ -72093,6 +72216,8 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttFill({ attr: pt });
 
+      let promise, interactive_element;
+
       if (pt._typename == clTDiamond) {
          let h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
@@ -72104,60 +72229,60 @@ class TPavePainter extends ObjectPainter {
                  .style('stroke', this.getColor(pt.fShadowColor))
                  .style('stroke-width', '1px');
 
-         this.draw_g.append('svg:path')
-             .attr('d', 'M0,'+h2 +dpath)
-             .call(this.fillatt.func)
-             .call(this.lineatt.func);
+         interactive_element = this.draw_g.append('svg:path')
+                                   .attr('d', 'M0,'+h2 +dpath)
+                                   .call(this.fillatt.func)
+                                   .call(this.lineatt.func);
 
          let text_g = this.draw_g.append('svg:g')
-                                 .attr('transform', makeTranslate(Math.round(width/4),Math.round(height/4)));
+                                 .attr('transform', makeTranslate(Math.round(width/4), Math.round(height/4)));
 
-         return this.drawPaveText(w2, h2, arg, text_g);
-      }
+         promise = this.drawPaveText(w2, h2, arg, text_g);
+      } else {
 
-      // add shadow decoration before main rect
-      if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
-         let spath = '', scol = this.getColor(pt.fShadowColor);
-         if (this.fillatt.empty()) {
-            if ((dx < 0) && (dy < 0))
-               spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
-            else // ((dx < 0) && (dy > 0))
-               spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
-         } else {
-            // when main is filled, one also can use fill for shadow to avoid complexity
-            spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
-         }
-         this.draw_g.append('svg:path')
-                    .attr('d', spath + 'z')
-                    .style('fill', scol)
-                    .style('stroke', scol)
-                    .style('stroke-width', '1px');
-      }
-
-      if (pt.fNpaves)
-         for (let n = pt.fNpaves-1; n > 0; --n)
+         // add shadow decoration before main rect
+         if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
+            let spath = '', scol = this.getColor(pt.fShadowColor);
+            if (this.fillatt.empty()) {
+               if ((dx < 0) && (dy < 0))
+                  spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
+               else // ((dx < 0) && (dy > 0))
+                  spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
+            } else {
+               // when main is filled, one also can use fill for shadow to avoid complexity
+               spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
+            }
             this.draw_g.append('svg:path')
-               .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
-               .call(this.fillatt.func)
-               .call(this.lineatt.func);
+                       .attr('d', spath + 'z')
+                       .style('fill', scol)
+                       .style('stroke', scol)
+                       .style('stroke-width', '1px');
+         }
 
-      let rect;
-      if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
-           rect = this.draw_g.append('svg:path')
-                      .attr('d', `M0,0H${width}V${height}H0Z`)
-                      .call(this.fillatt.func)
-                      .call(this.lineatt.func);
+         if (pt.fNpaves)
+            for (let n = pt.fNpaves-1; n > 0; --n)
+               this.draw_g.append('svg:path')
+                  .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
+                  .call(this.fillatt.func)
+                  .call(this.lineatt.func);
 
-      let promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+         if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
+            interactive_element = this.draw_g.append('svg:path')
+                                             .attr('d', `M0,0H${width}V${height}H0Z`)
+                                             .call(this.fillatt.func)
+                                             .call(this.lineatt.func);
+
+         promise = isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : Promise.resolve(true);
+      }
 
       return promise.then(() => {
 
          if (isBatchMode() || (pt._typename === clTPave)) return this;
 
          // here all kind of interactive settings
-         if (rect)
-            rect.style('pointer-events', 'visibleFill')
-                .on('mouseenter', () => this.showObjectStatus());
+         if (interactive_element)
+            interactive_element.style('pointer-events', 'visibleFill')
+                               .on('mouseenter', () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
@@ -72319,7 +72444,6 @@ class TPavePainter extends ObjectPainter {
    drawPaveText(width, height, dummy_arg, text_g) {
 
       let pt = this.getObject(),
-          tcolor = this.getColor(pt.fTextColor),
           arr = pt?.fLines?.arr || [],
           nlines = arr.length,
           pp = this.getPadPainter(),
@@ -72330,11 +72454,11 @@ class TPavePainter extends ObjectPainter {
           stepy = height / (nlines || 1),
           max_font_size = 0;
 
+      this.createAttText({ attr: pt });
+
       // for single line (typically title) limit font size
-      if ((nlines == 1) && (pt.fTextSize > 0)) {
-         max_font_size = Math.round(pt.fTextSize * pad_height);
-         if (max_font_size < 3) max_font_size = 3;
-      }
+      if ((nlines == 1) && (this.textatt.size > 0))
+         max_font_size = Math.max(3, this.textatt.getSize(pad_height));
 
       if (!text_g) text_g = this.draw_g;
 
@@ -72354,26 +72478,26 @@ class TPavePainter extends ObjectPainter {
                       y = entry.fY ? (1 - entry.fY)*height : texty,
                       color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) {
-                     color = tcolor;
+                     color = this.textatt.color;
                      this.UseTextColor = true;
                   }
 
                   let sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
+                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
-                  this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x, y, text: entry.fTitle, color,
+                  this.drawText({ align: entry.fTextAlign || this.textatt.align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename == clTText) ? 0 : 1,  draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
                   // default position
                   if (num_default++ === 0)
-                     this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
+                     this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
 
-                  let arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || pt.fTextAlign,
+                  let arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || this.textatt.align,
                               draw_g: text_g, latex: entry._typename == clTText ? 0 : 1,
-                              text: entry.fTitle, fast  };
+                              text: entry.fTitle, fast };
                   let halign = Math.floor(arg.align / 10);
                   // when horizontal align applied, just shift text, not change width to keep scaling
                   arg.x = (halign == 1) ? margin_x : (halign == 3 ? -margin_x : 0);
@@ -72382,9 +72506,9 @@ class TPavePainter extends ObjectPainter {
                      arg.y = texty;
                      arg.height = stepy;
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
-                     if (entry.fTextSize) arg.font_size = Math.round(entry.fTextSize * pad_height);
+                     if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   }
-                  if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
+                  if (!arg.color) { this.UseTextColor = true; arg.color = this.textatt.color; }
                   this.drawText(arg);
                }
                break;
@@ -72428,9 +72552,9 @@ class TPavePainter extends ObjectPainter {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-         this.startTextDrawing(pt.fTextFont, h/1.5, lbl_g);
+         this.startTextDrawing(this.textatt.font, h/1.5, lbl_g);
 
-         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
+         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g });
 
          promises.push(this.finishTextDrawing(lbl_g));
 
@@ -72487,21 +72611,22 @@ class TPavePainter extends ObjectPainter {
 
       if (nrows < 1) nrows = 1;
 
-      let tcolor = this.getColor(legend.fTextColor),
-          column_width = Math.round(w/ncols),
+      let column_width = Math.round(w/ncols),
           padding_x = Math.round(0.03*w/ncols),
           padding_y = Math.round(0.03*h),
           step_y = (h - 2*padding_y)/nrows,
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
           pp = this.getPadPainter(),
-          ph = pp.getPadHeight(),
           any_opt = false, i = -1;
 
-      if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
-         font_size = max_font_size = Math.round(ph*legend.fTextSize);
+      this.createAttText({ attr: legend });
 
-      this.startTextDrawing(legend.fTextFont, font_size, this.draw_g, max_font_size);
+      let tsz = this.textatt.getSize(pp.getPadHeight());
+      if (tsz && (tsz < font_size))
+         font_size = max_font_size = tsz;
+
+      this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
 
       for (let ii = 0; ii < nlines; ++ii) {
          let leg = legend.fPrimitives.arr[ii];
@@ -72595,7 +72720,7 @@ class TPavePainter extends ObjectPainter {
             pos_x = x0 + padding_x;
 
          if (leg.fLabel)
-            this.drawText({ align: legend.fTextAlign, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            this.drawText({ align: this.textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: this.textatt.color });
       }
 
       // rescale after all entries are shown
@@ -73047,6 +73172,7 @@ class TPavePainter extends ObjectPainter {
       pave.fBorderSize = obj.fBorderSize;
 
       switch (obj._typename) {
+         case clTDiamond:
          case clTPaveText:
             pave.fLines = clone(obj.fLines);
             return true;
@@ -99166,7 +99292,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Toggle open state of the item
-     * @desc Used with 'open all' / 'close all' buttons in normal GUI
+     * @desc Used with 'expand all' / 'collapse all' buttons in normal GUI
      * @param {boolean} isopen - if items should be expand or closed
      * @return {boolean} true when any item was changed */
    toggleOpenState(isopen, h) {
@@ -99247,35 +99373,35 @@ class HierarchyPainter extends BasePainter {
       }
 
       let d3btns = d3elem.append('p').attr('class', 'jsroot').style('margin-bottom','3px').style('margin-top',0);
-      d3btns.append('a').attr('class', 'h_button').text('open all')
-            .attr('title','open all items in the browser').on('click', () => this.toggleOpenState(true));
+      d3btns.append('a').attr('class', 'h_button').text('expand all')
+            .attr('title', 'expand all items in the browser').on('click', () => this.toggleOpenState(true));
       d3btns.append('text').text(' | ');
-      d3btns.append('a').attr('class', 'h_button').text('close all')
-            .attr('title','close all items in the browser').on('click', () => this.toggleOpenState(false));
+      d3btns.append('a').attr('class', 'h_button').text('collapse all')
+            .attr('title', 'collapse all items in the browser').on('click', () => this.toggleOpenState(false));
 
       if (isFunc(this.removeInspector)) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('remove')
-               .attr('title','remove inspector').on('click', () => this.removeInspector());
+               .attr('title', 'remove inspector').on('click', () => this.removeInspector());
       }
 
       if ('_online' in this.h) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('reload')
-               .attr('title','reload object list from the server').on('click', () => this.reload());
+               .attr('title', 'reload object list from the server').on('click', () => this.reload());
       }
 
       if ('disp_kind' in this) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('clear')
-               .attr('title','clear all drawn objects').on('click', () => this.clearHierarchy(false));
+               .attr('title', 'clear all drawn objects').on('click', () => this.clearHierarchy(false));
       }
 
       let maindiv =
          d3elem.append('div')
                .attr('class', 'jsroot')
                .style('font-size', this.with_icons ? '12px' : '15px')
-               .style('flex','1');
+               .style('flex', '1');
 
       if (!this.show_overflow)
          maindiv.style('overflow','auto');
@@ -104355,10 +104481,10 @@ async function drawText$1() {
        w = pp.getPadWidth(),
        h = pp.getPadHeight(),
        pos_x = text.fX, pos_y = text.fY,
-       tcolor = this.getColor(text.fTextColor),
        use_frame = false,
-       fact = 1., textsize = text.fTextSize || 0.05,
-       main = this.getFramePainter();
+       fact = 1., main = this.getFramePainter();
+
+   this.createAttText({ attr: text });
 
    if (text.TestBit(BIT(14))) {
       // NDC coordinates
@@ -104373,7 +104499,6 @@ async function drawText$1() {
       this.isndc = true;
       pos_x = pos_y = 0.5;
       text.fTextAlign = 22;
-      if (!tcolor) tcolor = 'black';
    }
 
    this.createG(use_frame);
@@ -104383,9 +104508,7 @@ async function drawText$1() {
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
 
-   let arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
-
-   if (text.fTextAngle) arg.rotate = -text.fTextAngle;
+   let arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
 
    if (text._typename == clTLatex) {
       arg.latex = 1;
@@ -104395,7 +104518,7 @@ async function drawText$1() {
       fact = 0.8;
    }
 
-   this.startTextDrawing(text.fTextFont, Math.round((textsize > 1) ? textsize : textsize*Math.min(w,h)*fact));
+   this.startTextDrawing(this.textatt.font, this.textatt.getSize(w, h, fact, 0.05));
 
    this.drawText(arg);
 
