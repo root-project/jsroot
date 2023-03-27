@@ -43,6 +43,9 @@ class TAttTextHandler {
       this.color = args.color;
       this.align = args.align;
       this.angle = args.angle;
+
+      this.angle_used = false;
+      this.align_used = false;
    }
 
    /** @summary returns true if line attribute is empty and will not be applied. */
@@ -75,8 +78,11 @@ class TAttTextHandler {
    /** @summary Create argument for drawText method */
    createArg(arg) {
       if (!arg) arg = {};
-      arg.align = this.align;
-      if (this.angle)
+      this.align_used = !arg.noalign && !arg.align;
+      if (this.align_used)
+         arg.align = this.align;
+      this.angle_used = !arg.norotate;
+      if (this.angle_used && this.angle)
          arg.rotate = -this.angle; // SVG rotation angle has different sign
       arg.color = this.color || 'black';
       return arg;
@@ -99,6 +105,13 @@ class TAttTextHandler {
       return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
    }
 
+   /** @summary Change text font from GED */
+   setGedFont(value) {
+      let v = parseInt(value);
+      if ((v > 0) && (v < 17))
+         this.font = v*10 + (this.font % 10);
+      return this.font;
+   }
 
 } // class TAttTextHandler
 

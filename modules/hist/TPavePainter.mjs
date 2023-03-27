@@ -338,7 +338,7 @@ class TPavePainter extends ObjectPainter {
 
       this.startTextDrawing(this.textatt.font, height/1.2);
 
-      this.drawText({ align: this.textatt.align, width, height, text: pave.fLabel, color: this.textatt.color });
+      this.drawText(this.textatt.createArg({ width, height, text: pave.fLabel, norotate: true }));
 
       return this.finishTextDrawing();
    }
@@ -382,7 +382,7 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: this.textatt.align, width, height, text: lines[0], color: this.textatt.color, latex: 1 });
+         this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
       } else
       for (let j = 0; j < nlines; ++j) {
          let y = j*stepy,
