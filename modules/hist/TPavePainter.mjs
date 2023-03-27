@@ -334,9 +334,11 @@ class TPavePainter extends ObjectPainter {
 
       this.UseTextColor = true;
 
-      this.startTextDrawing(pave.fTextFont, height/1.2);
+      this.createAttText({ attr: pave });
 
-      this.drawText({ align: pave.fTextAlign, width, height, text: pave.fLabel, color: this.getColor(pave.fTextColor) });
+      this.startTextDrawing(this.textatt.font, height/1.2);
+
+      this.drawText({ align: this.textatt.align, width, height, text: pave.fLabel, color: this.textatt.color });
 
       return this.finishTextDrawing();
    }
@@ -345,7 +347,6 @@ class TPavePainter extends ObjectPainter {
    drawPaveStats(width, height) {
 
       let pt = this.getObject(), lines = [], colors = [],
-          color0 = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
       // extract only text
@@ -373,16 +374,19 @@ class TPavePainter extends ObjectPainter {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-      this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2));
+
+      this.createAttText({ attr: pt });
+
+      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
 
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: color0, latex: 1 });
+         this.drawText({ align: this.textatt.align, width, height, text: lines[0], color: this.textatt.color, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
          let y = j*stepy,
-             color = (colors[j] > 1) ? this.getColor(colors[j]) : color0;
+             color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
 
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split('|');
