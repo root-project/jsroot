@@ -723,7 +723,7 @@ class TPavePainter extends ObjectPainter {
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
-         if (lopt)
+         if (isStr(lopt) && (lopt.toLowerCase() != 'h'))
             any_opt = true;
          else if (!any_opt)
             pos_x = x0 + padding_x;
@@ -736,8 +736,6 @@ class TPavePainter extends ObjectPainter {
                let entry_font_size = textatt.getSize(pp.getPadHeight());
                this.startTextDrawing(textatt.font, entry_font_size, lbl_g, max_font_size);
             }
-
-            // console.log(custom_textg, 'Draw label', entry.fLabel, 'color', textatt.color, entry.fTextColor, legend.fTextColor, 'sizes', entry.fTextSize, entry.fTextFont);
 
             this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: entry.fLabel, color: textatt.color });
 
