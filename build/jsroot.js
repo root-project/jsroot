@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '24/03/2023';
+let version_date = '27/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1065,7 +1065,7 @@ function create$1(typename, target) {
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
       case clTAttText:
-         extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
+         extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42 });
          break;
       case clTPaveText:
          create$1(clTPave, obj);
@@ -1095,7 +1095,7 @@ function create$1(typename, target) {
          create$1(clTAttLine, obj);
          create$1(clTAttFill, obj);
          create$1(clTAttMarker, obj);
-         extend$1(obj, { fLabel: '', fObject: null, fOption: '' });
+         extend$1(obj, { fLabel: '', fObject: null, fOption: '', fTextAlign: 0, fTextColor: 0, fTextFont: 0 });
          break;
       case clTText:
          create$1(clTNamed, obj);
@@ -10997,6 +10997,7 @@ class TAttTextHandler {
    /** @summary Set text attributes.
      * @param {object} args - specify attributes by different ways
      * @param {object} args.attr - TAttText object with appropriate data members or
+     * @param {object} args.attr_alt - alternative TAttText object with appropriate data members if values are 0
      * @param {string} args.color - color in html like rgb(255,0,0) or 'red' or '#ff0000'
      * @param {number} args.align - text align
      * @param {number} args.angle - text angle
@@ -11004,12 +11005,12 @@ class TAttTextHandler {
      * @param {number} args.size  - text size */
    setArgs(args) {
       if (args.attr) {
-         args.font = args.attr.fTextFont;
-         args.size = args.attr.fTextSize;
-         this.color_index = args.attr.fTextColor;
+         args.font = args.attr.fTextFont || args.attr_alt?.fTextFont || 0;
+         args.size = args.attr.fTextSize || args.attr_alt?.fTextSize || 0;
+         this.color_index = args.attr.fTextColor || args.attr_alt?.fTextColor || 0;
          args.color = args.painter?.getColor(this.color_index) ?? getColor(this.color_index);
-         args.align = args.attr.fTextAlign;
-         args.angle = args.attr.fTextAngle;
+         args.align = args.attr.fTextAlign || args.attr_alt?.fTextAlign || 0;
+         args.angle = args.attr.fTextAngle || args.attr_alt?.fTextAngle || 0;
       } else if (typeof args.color == 'number') {
          this.color_index = args.color;
          args.color = args.painter?.getColor(args.color) ?? getColor(args.color);
@@ -69610,13 +69611,13 @@ class TPadPainter extends ObjectPainter {
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
           y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
-          svg_pad = null, svg_rect = null, btns = null;
+          svg_pad, svg_border, btns;
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
 
       if (only_resize) {
          svg_pad = this.svg_this_pad();
-         svg_rect = svg_pad.select('.root_pad_border');
+         svg_border = svg_pad.select('.root_pad_border');
          if (!isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
@@ -69631,14 +69632,14 @@ class TPadPainter extends ObjectPainter {
 
          // need to check attributes directly while attributes objects will be created later
          if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
-            svg_rect = svg_pad.append('svg:path').attr('class', 'root_pad_border');
+            svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
          if (!isBatchMode())
-            svg_rect.style('pointer-events', 'visibleFill') // get events also for not visible rect
-                    .on('dblclick', evnt => this.enlargePad(evnt, true))
-                    .on('click', () => this.selectObjectPainter())
-                    .on('mouseenter', () => this.showObjectStatus())
-                    .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
+            svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
+                      .on('dblclick', evnt => this.enlargePad(evnt, true))
+                      .on('click', () => this.selectObjectPainter())
+                      .on('mouseenter', () => this.showObjectStatus())
+                      .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg_pad.append('svg:g').attr('class','primitives_layer');
          if (!isBatchMode())
@@ -69649,7 +69650,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       this.createAttFill({ attr: this.pad });
-      this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
+      this.createAttLine({ attr: this.pad, color0: !this.pad.fBorderMode ? 'none' : '' });
 
       svg_pad.style('display', pad_visible ? null : 'none')
              .attr('viewBox', `0 0 ${w} ${h}`) // due to svg
@@ -69668,12 +69669,36 @@ class TPadPainter extends ObjectPainter {
       this._pad_width = w;
       this._pad_height = h;
 
-      if (svg_rect) {
-         svg_rect.attr('d', `M0,0H${w}V${h}H0Z`)
-                 .call(this.fillatt.func)
-                 .call(this.lineatt.func);
+      if (svg_border) {
+         svg_border.attr('d', `M0,0H${w}V${h}H0Z`)
+                   .call(this.fillatt.func)
+                   .call(this.lineatt.func);
+         this.drawActiveBorder(svg_border);
 
-         this.drawActiveBorder(svg_rect);
+         let svg_border1 = svg_pad.select('.root_pad_border1'),
+             svg_border2 = svg_pad.select('.root_pad_border2');
+
+         if (this.pad.fBorderMode && this.pad.fBorderSize) {
+            let pw = this.pad.fBorderSize, ph = this.pad.fBorderSize,
+                side1 = `M0,0h${w}l${-pw},${ph}h${2*pw-w}v${h-2*ph}l${-pw},${ph}z`,
+                side2 = `M${w},${h}v${-h}l${-pw},${ph}v${h-2*ph}h${2*pw-w}l${-pw},${ph}z`;
+
+            if (svg_border2.empty())
+               svg_border2 = svg_pad.insert('svg:path', '.primitives_layer').attr('class', 'root_pad_border2');
+            if (svg_border1.empty())
+               svg_border1 = svg_pad.insert('svg:path', '.primitives_layer').attr('class', 'root_pad_border1');
+
+            svg_border1.attr('d', this.pad.fBorderMode > 0 ? side1 : side2)
+                       .call(this.fillatt.func)
+                       .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+            svg_border2.attr('d', this.pad.fBorderMode > 0 ? side2 : side1)
+                       .call(this.fillatt.func)
+                       .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+         } else {
+            svg_border1.remove();
+            svg_border2.remove();
+         }
+
       }
 
       this._fast_drawing = settings.SmallPad && ((w * (1 - this.pad.fLeftMargin-this.pad.fRightMargin) < settings.SmallPad.width) || (h * (1 - this.pad.fBottomMargin - this.pad.fTopMargin) < settings.SmallPad.height));
@@ -72336,9 +72361,11 @@ class TPavePainter extends ObjectPainter {
 
       this.UseTextColor = true;
 
-      this.startTextDrawing(pave.fTextFont, height/1.2);
+      this.createAttText({ attr: pave });
 
-      this.drawText({ align: pave.fTextAlign, width, height, text: pave.fLabel, color: this.getColor(pave.fTextColor) });
+      this.startTextDrawing(this.textatt.font, height/1.2);
+
+      this.drawText({ align: this.textatt.align, width, height, text: pave.fLabel, color: this.textatt.color });
 
       return this.finishTextDrawing();
    }
@@ -72347,7 +72374,6 @@ class TPavePainter extends ObjectPainter {
    drawPaveStats(width, height) {
 
       let pt = this.getObject(), lines = [], colors = [],
-          color0 = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
       // extract only text
@@ -72375,16 +72401,19 @@ class TPavePainter extends ObjectPainter {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-      this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2));
+
+      this.createAttText({ attr: pt });
+
+      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
 
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: pt.fTextAlign, width, height, text: lines[0], color: color0, latex: 1 });
+         this.drawText({ align: this.textatt.align, width, height, text: lines[0], color: this.textatt.color, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
          let y = j*stepy,
-             color = (colors[j] > 1) ? this.getColor(colors[j]) : color0;
+             color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
 
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split('|');
@@ -72595,7 +72624,9 @@ class TPavePainter extends ObjectPainter {
       let legend = this.getObject(),
           nlines = legend.fPrimitives.arr.length,
           ncols = legend.fNColumns,
-          nrows = nlines;
+          nrows = nlines,
+          any_text = false,
+          custom_textg = false; // each text entry has own attributes
 
       if (ncols < 2) {
          ncols = 1;
@@ -72605,9 +72636,17 @@ class TPavePainter extends ObjectPainter {
 
       const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == ' '));
 
-      if (ncols == 1)
-         for (let ii = 0; ii < nlines; ++ii)
-            if (isEmpty(legend.fPrimitives.arr[ii])) nrows--;
+      for (let ii = 0; ii < nlines; ++ii) {
+         let entry = legend.fPrimitives.arr[ii];
+         if (isEmpty(entry)) {
+            if (ncols == 1)
+               nrows--;
+         } else if (entry.fLabel) {
+            any_text = true;
+            if ((entry.fTextFont && (entry.fTextFont != legend.fTextFont)) ||
+                (entry.fTextSize && (entry.fTextSize != legend.fTextSize))) custom_textg = true;
+         }
+      }
 
       if (nrows < 1) nrows = 1;
 
@@ -72618,7 +72657,7 @@ class TPavePainter extends ObjectPainter {
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
           pp = this.getPadPainter(),
-          any_opt = false, i = -1;
+          any_opt = false, i = -1, text_promises = [];
 
       this.createAttText({ attr: legend });
 
@@ -72626,24 +72665,25 @@ class TPavePainter extends ObjectPainter {
       if (tsz && (tsz < font_size))
          font_size = max_font_size = tsz;
 
-      this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
+      if (any_text && !custom_textg)
+         this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
 
       for (let ii = 0; ii < nlines; ++ii) {
-         let leg = legend.fPrimitives.arr[ii];
+         let entry = legend.fPrimitives.arr[ii];
 
-         if (isEmpty(leg)) continue; // let discard empty entry
+         if (isEmpty(entry)) continue; // let discard empty entry
 
          if (ncols == 1) ++i; else i = ii;
 
-         let lopt = leg.fOption.toLowerCase(),
+         let lopt = entry.fOption.toLowerCase(),
              icol = i % ncols, irow = (i - icol) / ncols,
              x0 = icol * column_width,
              tpos_x = x0 + Math.round(legend.fMargin*column_width),
              mid_x = Math.round((x0 + tpos_x)/2),
              pos_y = Math.round(irow*step_y + padding_y), // top corner
              mid_y = Math.round((irow+0.5)*step_y + padding_y), // center line
-             o_fill = leg, o_marker = leg, o_line = leg,
-             mo = leg.fObject,
+             o_fill = entry, o_marker = entry, o_line = entry,
+             mo = entry.fObject,
              painter = null, isany = false;
 
          const draw_fill = lopt.indexOf('f') != -1,
@@ -72714,17 +72754,32 @@ class TPavePainter extends ObjectPainter {
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
-         if (lopt)
+         if (isStr(lopt) && (lopt.toLowerCase() != 'h'))
             any_opt = true;
          else if (!any_opt)
             pos_x = x0 + padding_x;
 
-         if (leg.fLabel)
-            this.drawText({ align: this.textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: this.textatt.color });
+         if (entry.fLabel) {
+            let lbl_g = this.draw_g,
+                textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend });
+            if (custom_textg) {
+               lbl_g = this.draw_g.append('svg:g');
+               let entry_font_size = textatt.getSize(pp.getPadHeight());
+               this.startTextDrawing(textatt.font, entry_font_size, lbl_g, max_font_size);
+            }
+
+            this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: entry.fLabel, color: textatt.color });
+
+            if (custom_textg)
+               text_promises.push(this.finishTextDrawing(lbl_g));
+         }
       }
 
+      if (any_text && !custom_textg)
+         text_promises.push(this.finishTextDrawing());
+
       // rescale after all entries are shown
-      return this.finishTextDrawing();
+      return Promise.all(text_promises);
    }
 
    /** @summary draw color palette with axis */
