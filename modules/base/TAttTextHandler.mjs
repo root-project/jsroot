@@ -19,6 +19,7 @@ class TAttTextHandler {
    /** @summary Set text attributes.
      * @param {object} args - specify attributes by different ways
      * @param {object} args.attr - TAttText object with appropriate data members or
+     * @param {object} args.attr_alt - alternative TAttText object with appropriate data members if values are 0
      * @param {string} args.color - color in html like rgb(255,0,0) or 'red' or '#ff0000'
      * @param {number} args.align - text align
      * @param {number} args.angle - text angle
@@ -26,12 +27,12 @@ class TAttTextHandler {
      * @param {number} args.size  - text size */
    setArgs(args) {
       if (args.attr) {
-         args.font = args.attr.fTextFont;
-         args.size = args.attr.fTextSize;
-         this.color_index = args.attr.fTextColor;
+         args.font = args.attr.fTextFont || args.attr_alt?.fTextFont || 0;
+         args.size = args.attr.fTextSize || args.attr_alt?.fTextSize || 0;
+         this.color_index = args.attr.fTextColor || args.attr_alt?.fTextColor || 0;
          args.color = args.painter?.getColor(this.color_index) ?? getColor(this.color_index);
-         args.align = args.attr.fTextAlign;
-         args.angle = args.attr.fTextAngle;
+         args.align = args.attr.fTextAlign || args.attr_alt?.fTextAlign || 0;
+         args.angle = args.attr.fTextAngle || args.attr_alt?.fTextAngle || 0;
       } else if (typeof args.color == 'number') {
          this.color_index = args.color;
          args.color = args.painter?.getColor(args.color) ?? getColor(args.color);

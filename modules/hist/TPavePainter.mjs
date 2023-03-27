@@ -593,7 +593,9 @@ class TPavePainter extends ObjectPainter {
       let legend = this.getObject(),
           nlines = legend.fPrimitives.arr.length,
           ncols = legend.fNColumns,
-          nrows = nlines;
+          nrows = nlines,
+          any_text = false,
+          custom_textg = false; // each text entry has own attributes
 
       if (ncols < 2) {
          ncols = 1;
@@ -603,9 +605,17 @@ class TPavePainter extends ObjectPainter {
 
       const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == ' '));
 
-      if (ncols == 1)
-         for (let ii = 0; ii < nlines; ++ii)
-            if (isEmpty(legend.fPrimitives.arr[ii])) nrows--;
+      for (let ii = 0; ii < nlines; ++ii) {
+         let entry = legend.fPrimitives.arr[ii];
+         if (isEmpty(entry)) {
+            if (ncols == 1)
+               nrows--;
+         } else if (entry.fLabel) {
+            any_text = true;
+            if ((entry.fTextFont && (entry.fTextFont != legend.fTextFont)) ||
+                (entry.fTextSize && (entry.fTextSize != legend.fTextSize))) custom_textg = true;
+         }
+      }
 
       if (nrows < 1) nrows = 1;
 
@@ -616,7 +626,7 @@ class TPavePainter extends ObjectPainter {
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
           pp = this.getPadPainter(),
-          any_opt = false, i = -1;
+          any_opt = false, i = -1, text_promises = [];
 
       this.createAttText({ attr: legend });
 
@@ -624,24 +634,25 @@ class TPavePainter extends ObjectPainter {
       if (tsz && (tsz < font_size))
          font_size = max_font_size = tsz;
 
-      this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
+      if (any_text && !custom_textg)
+         this.startTextDrawing(this.textatt.font, font_size, this.draw_g, max_font_size);
 
       for (let ii = 0; ii < nlines; ++ii) {
-         let leg = legend.fPrimitives.arr[ii];
+         let entry = legend.fPrimitives.arr[ii];
 
-         if (isEmpty(leg)) continue; // let discard empty entry
+         if (isEmpty(entry)) continue; // let discard empty entry
 
          if (ncols == 1) ++i; else i = ii;
 
-         let lopt = leg.fOption.toLowerCase(),
+         let lopt = entry.fOption.toLowerCase(),
              icol = i % ncols, irow = (i - icol) / ncols,
              x0 = icol * column_width,
              tpos_x = x0 + Math.round(legend.fMargin*column_width),
              mid_x = Math.round((x0 + tpos_x)/2),
              pos_y = Math.round(irow*step_y + padding_y), // top corner
              mid_y = Math.round((irow+0.5)*step_y + padding_y), // center line
-             o_fill = leg, o_marker = leg, o_line = leg,
-             mo = leg.fObject,
+             o_fill = entry, o_marker = entry, o_line = entry,
+             mo = entry.fObject,
              painter = null, isany = false;
 
          const draw_fill = lopt.indexOf('f') != -1,
@@ -717,12 +728,29 @@ class TPavePainter extends ObjectPainter {
          else if (!any_opt)
             pos_x = x0 + padding_x;
 
-         if (leg.fLabel)
-            this.drawText({ align: this.textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: this.textatt.color });
+         if (entry.fLabel) {
+            let lbl_g = this.draw_g,
+                textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend });
+            if (custom_textg) {
+               lbl_g = this.draw_g.append('svg:g');
+               let entry_font_size = textatt.getSize(pp.getPadHeight());
+               this.startTextDrawing(textatt.font, entry_font_size, lbl_g, max_font_size);
+            }
+
+            // console.log(custom_textg, 'Draw label', entry.fLabel, 'color', textatt.color, entry.fTextColor, legend.fTextColor, 'sizes', entry.fTextSize, entry.fTextFont);
+
+            this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: entry.fLabel, color: textatt.color });
+
+            if (custom_textg)
+               text_promises.push(this.finishTextDrawing(lbl_g));
+         }
       }
 
+      if (any_text && !custom_textg)
+         text_promises.push(this.finishTextDrawing());
+
       // rescale after all entries are shown
-      return this.finishTextDrawing();
+      return Promise.all(text_promises);
    }
 
    /** @summary draw color palette with axis */
