@@ -31,8 +31,8 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Autoplace legend on the frame
-     * @return {Promise} */
-   async autoPlaceLegend(pt, pad) {
+     * @return {Promise} with boolean flag if position was changed  */
+   async autoPlaceLegend(pt, pad, keep_origin) {
       let main_svg = this.getFrameSvg().select('.main_layer'),
           svg_code = main_svg.node().outerHTML;
 
@@ -101,13 +101,15 @@ class TPavePainter extends ObjectPainter {
                   return true;
                }
       }).then(res => {
-         if (!res) {
-            pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
-            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
-            pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
-         }
+         if (res || keep_origin)
+            return res;
+
+         pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+         pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+         let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+         pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+         pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+         return true;
       });
    }
 
@@ -1084,6 +1086,12 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
+      } else if (pave._typename === clTLegend) {
+         menu.add('Autoplace', () => {
+            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
+               if (res) this.interactiveRedraw(true, 'pave_moved');
+            });
+         });
       }
 
       if (this.UseTextColor)
