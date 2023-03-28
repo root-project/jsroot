@@ -265,32 +265,32 @@
 
          if (entry.file) {
              filename = entry.file;
-             if ((filename.indexOf("http:") < 0) && (filename.indexOf("https:") < 0)) filename = filepath + filename;
+             if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0)) filename = filepath + filename;
          }
          if (entry.item) itemname = entry.item;
          if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
          if (entry.json) {
             jsonname = entry.json;
-            if ((jsonname.indexOf("http:") < 0) && (jsonname.indexOf("https:") < 0)) jsonname = filepath + jsonname;
+            if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0)) jsonname = filepath + jsonname;
          }
 
          if (entry.url) {
             url = entry.url.replace(/\$\$\$/g, filepath);
          } else if (entry.items) {
-            url = "?nobrowser&file=" + filename;
-            if (entry.layout) url += "&layout=" + entry.layout;
-            url += "&items=[" + entry.items.join(",") + "]";
-            if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
-            if (entry.mathjax) url += "&mathjax";
-            if (entry.latex) url += "&latex=" + entry.latex;
-            if (entry.style) url += "&style=" + entry.style;
+            url = `?nobrowser&file=${filename}`;
+            if (entry.layout) url += `&layout=${entry.layout}`;
+            url += `&items=[${entry.items.join(',')}]`;
+            if (entry.opts) url += `&opts=[${entry.opts.join(',')}]`;
+            if (entry.mathjax) url += '&mathjax';
+            if (entry.latex) url += `&latex=${entry.latex}`;
+            if (entry.style) url += `&style=${entry.style}`;
          } else if (entry.asurl) {
-            url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
-            url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
-            url += itemname + "&opt=" + opt;
-            if (entry.mathjax) url += "&mathjax";
-            if (entry.latex) url += "&latex=" + entry.latex;
-            if (entry.style) url += "&style=" + entry.style;
+            url = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
+            url += jsonname ? `json=${jsonname}` : `file=${filename}&item=${itemname}`;
+            url += `&opt=${opt}`;
+            if (entry.mathjax) url += '&mathjax';
+            if (entry.latex) url += `&latex=${entry.latex}`;
+            if (entry.style) url += `&style=${entry.style}`;
          }
 
          // console.log(`KEY ${keyid} opt ${opt}`);
@@ -349,7 +349,7 @@
       let txt = await httpRequest(demo_path + 'examples.json','text');
 
       examples_main = JSON.parse(txt);
-      if (window.location.search.indexOf("?more") == 0) {
+      if (window.location.search.indexOf('?more') == 0) {
          let txt_more = await httpRequest(demo_path + 'examples_more.json', 'text');
          let examples_more = JSON.parse(txt_more);
          for (let key in examples_more) {
@@ -369,13 +369,13 @@
 
       let d = decodeUrl();
 
-      select_key = d.get("select");
-      if (!select_key && d.has("geom")) select_key = "TGeo";
+      select_key = d.get('select');
+      if (!select_key && d.has("geom")) select_key = 'TGeo';
 
-      if (d.has("dark")) {
+      if (d.has('dark')) {
          settings.DarkMode = true;
-         document.getElementById("panel").style.background = "black";
-         document.getElementById("viewer").style.background = "black";
+         document.getElementById("panel").style.background = 'black';
+         document.getElementById("viewer").style.background = 'black';
       }
 
       document.getElementById( 'version' ).title = version + ", " + source_dir;
@@ -392,7 +392,7 @@
          header.textContent = key;
          content.appendChild( header );
 
-         if (window.location.hash == "#" + key.toLowerCase())
+         if (window.location.hash == '#' + key.toLowerCase())
             header.scrollIntoView();
 
          let url = '', filename = '', itemname = '', jsonname = '', style = '';
@@ -407,22 +407,22 @@
                url = entry.url.replace(/\$\$\$/g,filepath);
             } else if ('json' in entry) {
                jsonname = entry.json;
-               if ((jsonname.indexOf("http:") < 0) && (jsonname.indexOf("https:") < 0)) jsonname = filepath + jsonname;
+               if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0)) jsonname = filepath + jsonname;
             } else {
                if ('file' in entry) {
                   url = ''; filename = entry.file;
-                  if ((filename.indexOf("http:") < 0) && (filename.indexOf("https:") < 0)) filename = filepath + filename;
+                  if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0)) filename = filepath + filename;
                }
                if ('item' in entry) {
                   url = ''; itemname = entry.item; style = entry.style;
                } else if ('items' in entry) {
-                  url = "?nobrowser&file=" + filename;
-                  if (entry.layout) url += "&layout=" + entry.layout;
-                  url += "&items=[" + entry.items.join(",") + "]";
-                  if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
-                  if (entry.mathjax) url += "&mathjax";
-                  if (entry.latex) url += "&latex=" + entry.latex;
-                  if (entry.style) url += "&style=" + entry.style;
+                  url = `?nobrowser&file=${filename}`;
+                  if (entry.layout) url += `&layout=${entry.layout}`;
+                  url += `&items=[${entry.items.join(',')}]`;
+                  if (entry.opts) url += `&opts=[${entry.opts.join(',')}]`;
+                  if (entry.mathjax) url += '&mathjax';
+                  if (entry.latex) url += `&latex=${entry.latex}`;
+                  if (entry.style) url += `&style=${entry.style}`;
                }
             }
 
@@ -434,45 +434,44 @@
             else if (opt)
                aaa.textContent = opt;
             else
-               aaa.textContent = "<dflt>";
+               aaa.textContent = '<dflt>';
 
-            if (aaa.textContent != "<dflt>")
+            if (aaa.textContent != '<dflt>')
                shortname += "_" + aaa.textContent.toLowerCase().replace(' ', '_');
 
-            let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
+            let prefix = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
 
             if (entry.asurl) {
                if (jsonname)
-                  url = prefix + 'json=' + jsonname;
+                  url = prefix + `json=${jsonname}`;
                else
-                  url = prefix + "file=" + filename + "&item=" + itemname;
-               if (entry.style) url += "&style=" + entry.style;
-               if (entry.mathjax) url += "&mathjax";
-               if (entry.latex) url += "&latex=" + entry.latex;
+                  url = prefix + `file=${filename}&item=${itemname}`;
+               if (entry.mathjax) url += '&mathjax';
+               if (entry.latex) url += `&latex=${entry.latex}`;
+               if (entry.style) url += `&style=${entry.style}`;
             }
 
             if (url)
                aaa.href = jsroot_path + url;
             else if (jsonname)
-               aaa.href = jsroot_path + prefix + "json=" + jsonname;
+               aaa.href = jsroot_path + prefix + `json=${jsonname}`;
             else
-               aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
+               aaa.href = jsroot_path + prefix + `file=${filename}&item=${itemname}`;
 
             if (opt)
-               aaa.href += "&opt=" + opt;
+               aaa.href += `&opt=${opt}`;
             if (style)
-               aaa.href += "&style=" + style;
+               aaa.href += `&style=${style}`;
 
             if (settings.DarkMode) {
-               aaa.href += "&dark";
-               if (url) url += "&dark";
+               aaa.href += '&dark';
+               if (url) url += '&dark';
             }
 
             if (extra_opts) aaa.href += extra_opts;
 
             if ('title' in entry) {
                aaa.title = entry.title;
-               // aaa.href += "&title='" + entry.title + "'";
             }
 
             content.appendChild( aaa );
@@ -484,7 +483,7 @@
                content.appendChild(document.createElement('br'));
             }
 
-            if (window.location.hash == "#" + shortname) {
+            if (window.location.hash == '#' + shortname) {
                aaa.focus();
                if (entry.title) setPageTitle(entry.title);
                processClick(url, filename, itemname, opt, jsonname);
@@ -492,26 +491,26 @@
          }
       }
 
-      if (window.location.search.indexOf("?more") == 0) {
+      if (window.location.search.indexOf('?more') == 0) {
           let div = document.createElement( 'h2' );
-          div.textContent = "Testing";
+          div.textContent = 'Testing';
           content.appendChild( div );
 
           let aaa = document.createElement( 'a' );
-          aaa.textContent = "run";
-          aaa.title = "Run all examples after each other";
+          aaa.textContent = 'run';
+          aaa.title = 'Run all examples after each other';
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();
-             window.location.hash = "run";
+             window.location.hash = 'run';
              runBigTest(10,true);
           });
 
           content.appendChild(document.createTextNode(", "));
 
           aaa = document.createElement( 'a' );
-          aaa.textContent = "slow";
-          aaa.title = "Run all examples slowly after each other";
+          aaa.textContent = 'slow';
+          aaa.title = 'Run all examples slowly after each other';
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();
@@ -522,19 +521,19 @@
           content.appendChild(document.createTextNode(', '));
 
           aaa = document.createElement('a');
-          aaa.textContent = "fast";
-          aaa.title = "Run all examples very fast";
+          aaa.textContent = 'fast';
+          aaa.title = 'Run all examples very fast';
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();
-             window.location.hash = "fast";
+             window.location.hash = 'fast';
              runBigTest(1, true);
           });
 
           content.appendChild(document.createTextNode(', '));
           aaa = document.createElement('a');
-          aaa.textContent = "stop";
-          aaa.title = "Stop running example";
+          aaa.textContent = 'stop';
+          aaa.title = 'Stop running example';
           content.appendChild( aaa );
           aaa.addEventListener( 'click', function (event) {
              event.preventDefault();

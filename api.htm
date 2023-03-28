@@ -145,8 +145,8 @@
       }
 
       function GetGithubBrunch(is_test) {
-          if (source_dir.indexOf("/dev/") > 0 && !is_test) return "dev/";
-          if (source_dir.indexOf("/v6/") > 0) return "v6/";
+          if (source_dir.indexOf('/dev/') > 0 && !is_test) return 'dev/';
+          if (source_dir.indexOf('/v6/') > 0) return 'v6/';
           return "master/";
        }
 
@@ -253,7 +253,7 @@
          viewer.style.display = '';
          srcviewer.style.display = 'none';
 
-          if (durl.indexOf("http") == 0)
+          if (durl.indexOf('http') == 0)
              viewer.src = durl;
           else
              viewer.src = jsroot_path + durl;
@@ -261,12 +261,12 @@
       }
 
       function SetPageTitle(title) {
-          let arr = document.getElementsByTagName("meta");
-          for (let k=0;k<arr.length;++k) {
-             let elem = arr[k];
-             if (elem.getAttribute("property") == "og:title")
+         let arr = document.getElementsByTagName("meta");
+         for (let k = 0; k < arr.length; ++k) {
+            let elem = arr[k];
+            if (elem.getAttribute("property") == "og:title")
                elem.setAttribute("content", title);
-          }
+         }
        }
 
       function SetListener(elem, shortname, durl) {
@@ -274,7 +274,7 @@
              event.preventDefault();
 
              if (event.ctrlKey)
-                return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
+                return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
 
              window.location.hash = shortname;
              if (elem.title) SetPageTitle(elem.title);
@@ -284,20 +284,20 @@
 
       function ProcessSourceClick(entry) {
          let srcload = entry.srcload || entry.src;
-         if (srcload === "github")
-            srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + GetGithubBrunch() + entry.src;
+         if (srcload === 'github')
+            srcload = 'https://raw.githubusercontent.com/root-project/jsroot/' + GetGithubBrunch() + entry.src;
 
          httpRequest(srcload, "text").then(function(res) {
             let viewer = document.getElementById( 'viewer' );
             let srcviewer = document.getElementById( 'srcviewer' );
             viewer.style.display = 'none';
             srcviewer.style.display = 'block';
-            srcviewer.innerHTML = "";
+            srcviewer.innerHTML = '';
 
-            let lines = res.split("\n");
+            let lines = res.split('\n');
             for (let k=0;k<lines.length;++k) {
                let pre = document.createElement('pre');
-               pre.textContent = lines[k] || " ";
+               pre.textContent = lines[k] || ' ';
                srcviewer.appendChild(pre);
             }
             srcviewer.focus();
@@ -316,9 +316,9 @@
       }
 
       function MakeShortName(name1, name2) {
-         return name1.toLowerCase().replace(/[ .]/g,"_") + "_" +
-                name2.toLowerCase().replace(/ \(3\)/g,"_3").replace(/ \(2\)/g,"_2").replace(/ \(1\)/g,"_1")
-                                   .replace(/[\(\)]/g,"").replace(/[. ]/g,"_");
+         return name1.toLowerCase().replace(/[ .]/g, '_') + '_' +
+                name2.toLowerCase().replace(/ \(3\)/g, '_3').replace(/ \(2\)/g, '_2').replace(/ \(1\)/g, '_1')
+                                   .replace(/[\(\)]/g, '').replace(/[. ]/g, '_');
       }
 
       for (let key in examples) {
@@ -338,7 +338,7 @@
 
          content.appendChild( header );
 
-         if (window.location.hash == "#" + key.toLowerCase())
+         if (window.location.hash == '#' + key.toLowerCase())
              header.scrollIntoView();
 
          for (let n = 0; n < opts.length; ++n) {
@@ -384,7 +384,7 @@
                content.appendChild( saaa );
                SetSourceListener(saaa, shortname + '_src', entry);
 
-               if ((window.location.hash == "#" + shortname + "_src") || (entry.syn && window.location.hash == "#" + entry.syn + "_src")) {
+               if ((window.location.hash == '#' + shortname + '_src') || (entry.syn && window.location.hash == '#' + entry.syn + '_src')) {
                   saaa.focus();
                   if (entry.title) SetPageTitle(entry.title);
                   ProcessSourceClick(entry);
@@ -393,7 +393,7 @@
 
             content.appendChild(document.createElement('br'));
 
-            if ((window.location.hash == "#" + shortname) || (entry.syn && window.location.hash == "#" + entry.syn) || (entry.syn2 && window.location.hash == "#" + entry.syn2)) {
+            if ((window.location.hash == '#' + shortname) || (entry.syn && window.location.hash == '#' + entry.syn) || (entry.syn2 && window.location.hash == '#' + entry.syn2)) {
                if (aaa) aaa.focus();
                ProcessClick(url);
             }
