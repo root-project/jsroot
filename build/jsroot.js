@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '27/03/2023';
+let version_date = '28/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11021,6 +11021,9 @@ class TAttTextHandler {
       this.color = args.color;
       this.align = args.align;
       this.angle = args.angle;
+
+      this.angle_used = false;
+      this.align_used = false;
    }
 
    /** @summary returns true if line attribute is empty and will not be applied. */
@@ -11053,8 +11056,11 @@ class TAttTextHandler {
    /** @summary Create argument for drawText method */
    createArg(arg) {
       if (!arg) arg = {};
-      arg.align = this.align;
-      if (this.angle)
+      this.align_used = !arg.noalign && !arg.align;
+      if (this.align_used)
+         arg.align = this.align;
+      this.angle_used = !arg.norotate;
+      if (this.angle_used && this.angle)
          arg.rotate = -this.angle; // SVG rotation angle has different sign
       arg.color = this.color || 'black';
       return arg;
@@ -11077,6 +11083,13 @@ class TAttTextHandler {
       return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
    }
 
+   /** @summary Change text font from GED */
+   setGedFont(value) {
+      let v = parseInt(value);
+      if ((v > 0) && (v < 17))
+         this.font = v*10 + (this.font % 10);
+      return this.font;
+   }
 
 } // class TAttTextHandler
 
@@ -60198,9 +60211,9 @@ class TAxisPainter extends ObjectPainter {
       this.lineatt.not_standard = true;
 
       if (!is_gaxis || (this.name === 'zaxis')) {
-         axis_g = layer.select('.' + this.name + '_container');
+         axis_g = layer.select(`.${this.name}_container`);
          if (axis_g.empty())
-            axis_g = layer.append('svg:g').attr('class',this.name + '_container');
+            axis_g = layer.append('svg:g').attr('class', `${this.name}_container`);
          else
             axis_g.selectAll('*').remove();
       }
@@ -60327,6 +60340,16 @@ class TAxisPainter extends ObjectPainter {
             title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
                    .property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
+         }
+
+         if (is_gaxis && !this.embedded && !isBatchMode()) {
+            this.draw_g.on('click', evnt => {
+               let pp = this.getPadPainter();
+               if (!pp) return;
+               evnt.preventDefault();
+               let m = pointer(evnt, pp.getPadSvg().node());
+               pp.selectObjectPainter(this, { x: m[0], y: m[1] });
+            });
          }
 
          return this;
@@ -71757,7 +71780,7 @@ class TCanvasPainter extends TPadPainter {
       this.showSection('ToolTips', this.pad.TestBit(TCanvasStatusBits.kShowToolTips) || this._highlight_connect);
    }
 
-   /** @summary Handle highlight in canvas - delver information to server
+   /** @summary Handle highlight in canvas - deliver information to server
      * @private */
    processHighlightConnect(hints) {
       if (!hints || hints.length == 0 || !this._highlight_connect ||
@@ -72365,7 +72388,7 @@ class TPavePainter extends ObjectPainter {
 
       this.startTextDrawing(this.textatt.font, height/1.2);
 
-      this.drawText({ align: this.textatt.align, width, height, text: pave.fLabel, color: this.textatt.color });
+      this.drawText(this.textatt.createArg({ width, height, text: pave.fLabel, norotate: true }));
 
       return this.finishTextDrawing();
    }
@@ -72409,7 +72432,7 @@ class TPavePainter extends ObjectPainter {
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.drawText({ align: this.textatt.align, width, height, text: lines[0], color: this.textatt.color, latex: 1 });
+         this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
       } else
       for (let j = 0; j < nlines; ++j) {
          let y = j*stepy,
