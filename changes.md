@@ -16,9 +16,20 @@
 13. Let change physical node visibility in TGeo drawings
 14. Use TGaxis attributes from gStyle - fAxisMaxDigits, fStripDecimals and exponent offset
 15. Implement "projxy" draw option for TH2 - like projxy3 or projx1_y5
-16. Fix - correctly set background color for geo painter
-17. Fix - rescan sumw2 when update TH1
-18. Fix - correct placing for TLegend header
+16. Fix - rescan sumw2 when update TH1
+17. Fix - correct placing for TLegend header
+
+
+## Changes in 7.3.1
+1. Fix - TGeo update in the TWebCanvas
+2. Fix - several tutorials with three.js modules loading
+3. Fix - redraw pad when change text align attributes
+4. Fix - pad ranges for TWebCanvas, handle log2 scales
+5. Fix - support candle and violin options when creating string draw option
+6. Fix - labels and tooltips on reversed axes
+7. Fix - zooming on TRatioPlot
+8. Fix - pad ranges calculations for TWebCanvas
+9. Fix - set proper background for geo drawing
 
 
 ## Changes in 7.3.0
