@@ -48,11 +48,8 @@ class TPavePainter extends ObjectPainter {
       return svgToImage(svg_code).then(canvas => {
          if (!canvas) return false;
 
-         const context = canvas.getContext("2d");
-
-         let data = context.getImageData(0, 0, canvas.width, canvas.height);
-
-         let arr = data.data;
+         const context = canvas.getContext('2d'),
+               arr = context.getImageData(0, 0, canvas.width, canvas.height).data;
 
          let nX = 100, nY = 100,
              boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
@@ -89,7 +86,7 @@ class TPavePainter extends ObjectPainter {
                for (let iy = y; iy < y + needH; ++iy)
                   if (raster[iy * nX + ix]) return false;
             return true;
-         }
+         };
 
          for (let ix = 0; ix < (nX - needW); ++ix)
             for (let iy = nY-needH-1; iy >= 0; --iy)
@@ -986,7 +983,7 @@ class TPavePainter extends ObjectPainter {
 
       menu.add(`header: ${pave._typename}::${pave.fName}`);
       if (this.isStats()) {
-         menu.add('Default position', function() {
+         menu.add('Default position', () => {
             pave.fX2NDC = gStyle.fStatX;
             pave.fX1NDC = pave.fX2NDC - gStyle.fStatW;
             pave.fY2NDC = gStyle.fStatY;
@@ -1030,7 +1027,7 @@ class TPavePainter extends ObjectPainter {
          function AddStatOpt(pos, name) {
             let opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
-            menu.addchk(opt, name, opt * 100 + pos, function(arg) {
+            menu.addchk(opt, name, opt * 100 + pos, arg => {
                let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit,
                    oldopt = parseInt(arg / 100);
                newopt -= (oldopt > 0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
@@ -1069,7 +1066,7 @@ class TPavePainter extends ObjectPainter {
 
          menu.add('separator');
       } else if (pave.fName === 'title') {
-         menu.add('Default position', function() {
+         menu.add('Default position', () => {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
             pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
             pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
@@ -1078,7 +1075,7 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, 'pave_moved');
          });
 
-         menu.add('Save to gStyle', function() {
+         menu.add('Save to gStyle', () => {
             gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
             gStyle.fTitleY = pave.fY2NDC;
             if (this.fillatt) this.fillatt.saveToStyle('fTitleColor', 'fTitleStyle');
