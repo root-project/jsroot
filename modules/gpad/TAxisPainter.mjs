@@ -1333,6 +1333,8 @@ class TAxisPainter extends ObjectPainter {
          }
          gaxis.fY1 = gaxis.fY2 = fy;
       }
+
+      this.getCanvPainter()?.submitExec(this, `SetX1(${gaxis.fX1});;SetX2(${gaxis.fX2});;SetY1(${gaxis.fY1});;SetY2(${gaxis.fY2})`);
    }
 
    /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
