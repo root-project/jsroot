@@ -3,11 +3,11 @@
 ## Changes in dev
 1. Upgrade d3.js to v7.8.2
 2. Upgrade three.js to r149
-3. Support "[cutg]" draw option for TH2
-4. Correctly handle "same0" draw option for TH2
+3. Support '[cutg]' draw option for TH2
+4. Correctly handle 'same0' draw option for TH2
 5. Fix several issues with axis reverse order
 6. Implement reverse axis on lego plots
-7. Add interactivity (moving, context menu) for TLine, TBox, TText, TLatex, TDiamond
+7. Add interactivity (moving, context menu) for TLine, TBox, TText, TLatex, TDiamond, TGaxis
 8. Support more kinds of log scales - ln and logN where N is any positive integer
 9. Use new gStyle attributes for candle and violin plots
 10. Implement autoplace for TLegend

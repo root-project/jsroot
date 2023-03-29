@@ -5,6 +5,8 @@ import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, poin
 import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
+import { addMoveHandler } from '../gui/utils.mjs';
+import { assignContextMenu } from '../gui/menu.mjs';
 
 
 /** @summary Return time offset value for given TAxis object
@@ -1240,7 +1242,7 @@ class TAxisPainter extends ObjectPainter {
             if ((this.name == 'zaxis') && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.width - this.ticksSize)
+               if (title_shift_x < rect.waddMoveHandleridth - this.ticksSize)
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
@@ -1274,6 +1276,10 @@ class TAxisPainter extends ObjectPainter {
          }
 
          if (is_gaxis && !this.embedded && !isBatchMode()) {
+            addMoveHandler(this);
+
+            assignContextMenu(this);
+
             this.draw_g.on('click', evnt => {
                let pp = this.getPadPainter();
                if (!pp) return;
@@ -1285,6 +1291,48 @@ class TAxisPainter extends ObjectPainter {
 
          return this;
       });
+   }
+
+   /** @summary Drag moving handle */
+   moveDrag(dx, dy) {
+      this.gaxis_x += dx;
+      this.gaxis_y += dy;
+      this.getG().attr('transform', makeTranslate(this.gaxis_x, this.gaxis_y));
+   }
+
+   /** @summary Drag end handle */
+   moveEnd(not_changed) {
+      if (not_changed) return;
+
+      let fx, fy, gaxis = this.getObject();
+      if (this.bind_frame) {
+         let rect = this.getFramePainter().getFrameRect();
+         fx = (this.gaxis_x - rect.x) / rect.width;
+         fy = (this.gaxis_y - rect.y) / rect.height;
+      } else {
+         fx = this.svgToAxis('x', this.gaxis_x, this.use_ndc);
+         fy = this.svgToAxis('y', this.gaxis_y, this.use_ndc);
+      }
+
+      if (this.vertical) {
+         gaxis.fX1 = gaxis.fX2 = fx;
+         if (this.reverse) {
+            gaxis.fY2 = fy + (gaxis.fY2 - gaxis.fY1);
+            gaxis.fY1 = fy;
+         } else {
+            gaxis.fY1 = fy + (gaxis.fY1 - gaxis.fY2);
+            gaxis.fY2 = fy;
+         }
+      } else {
+         if (this.reverse) {
+            gaxis.fX1 = fx + (gaxis.fX1 - gaxis.fX2);
+            gaxis.fX2 = fx;
+         } else {
+            gaxis.fX2 = fx + (gaxis.fX2 - gaxis.fX1);
+            gaxis.fX1 = fx;
+         }
+         gaxis.fY1 = gaxis.fY2 = fy;
+      }
    }
 
    /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
@@ -1326,10 +1374,10 @@ class TAxisPainter extends ObjectPainter {
          y1 = Math.round(rect.y + gaxis.fY1 * rect.height);
          y2 = Math.round(rect.y + gaxis.fY2 * rect.height);
       } else {
-          x1 = this.axisToSvg('x', gaxis.fX1, this.use_ndc);
-          y1 = this.axisToSvg('y', gaxis.fY1, this.use_ndc);
-          x2 = this.axisToSvg('x', gaxis.fX2, this.use_ndc);
-          y2 = this.axisToSvg('y', gaxis.fY2, this.use_ndc);
+         x1 = this.axisToSvg('x', gaxis.fX1, this.use_ndc);
+         y1 = this.axisToSvg('y', gaxis.fY1, this.use_ndc);
+         x2 = this.axisToSvg('x', gaxis.fX2, this.use_ndc);
+         y2 = this.axisToSvg('y', gaxis.fY2, this.use_ndc);
       }
       let w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
@@ -1340,7 +1388,10 @@ class TAxisPainter extends ObjectPainter {
       if (sz < 0) {
          reverse = true;
          sz = -sz;
-         if (vertical) y2 = y1; else x1 = x2;
+         if (vertical)
+            y2 = y1;
+         else
+            x1 = x2;
       }
 
       this.configureAxis(vertical ? 'yaxis' : 'xaxis', min, max, min, max, vertical, [0, sz], {
@@ -1352,7 +1403,10 @@ class TAxisPainter extends ObjectPainter {
 
       this.createG();
 
-      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(x1, y2) || '');
+      this.gaxis_x = x1;
+      this.gaxis_y = y2;
+
+      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(this.gaxis_x, this.gaxis_y) || '');
    }
 
 } // class TAxisPainter
