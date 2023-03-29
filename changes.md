@@ -10,7 +10,7 @@
 7. Add interactivity (moving, context menu) for TLine, TBox, TText, TLatex, TDiamond, TGaxis
 8. Support more kinds of log scales - ln and logN where N is any positive integer
 9. Use new gStyle attributes for candle and violin plots
-10. Implement autoplace for TLegend
+10. Implement autoplace for TLegend, also via context menu
 11. Change algorithm of building smooth (bezier) curves
 12. Adjust TAxis title positioning to native ROOT behavior
 13. Let change physical node visibility in TGeo drawings

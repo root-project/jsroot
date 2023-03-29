@@ -8480,11 +8480,21 @@ async function _loadJSDOM() {
 /** @summary Return translate string for transform attribute of some svg element
   * @return string or null if x and y are zeros
   * @private */
-function makeTranslate(x,y)
-{
+function makeTranslate(x,y) {
    if (y) return `translate(${x},${y})`;
    if (x) return `translate(${x})`;
    return null;
+}
+
+/** @summary Configure special style used for highlight or dragging elements */
+function addHighlightStyle(elem, drag) {
+   if (drag)
+      elem.style('stroke', 'steelblue')
+          .style('fill-opacity', '0.1');
+   else
+      elem.style('stroke', '#4572A7')
+          .style('fill', '#4572A7')
+          .style('opacity', '0');
 }
 
 /** @summary Create image based on SVG
@@ -59431,6 +59441,8 @@ class TAxisPainter extends ObjectPainter {
    constructor(dom, axis, embedded) {
       super(dom, axis);
 
+      this.is_gaxis = axis?._typename === clTGaxis;
+
       Object.assign(this, AxisPainterMethods);
       this.initAxisPainter();
 
@@ -59527,12 +59539,10 @@ class TAxisPainter extends ObjectPainter {
       else
          this.gr = this.func;
 
-      let is_gaxis = (axis?._typename === clTGaxis);
-
       delete this.format;// remove formatting func
 
       let ndiv = 508;
-      if (is_gaxis)
+      if (this.is_gaxis)
          ndiv = axis.fNdiv;
        else if (axis)
           ndiv = Math.max(axis.fNdivisions, 4);
@@ -59541,7 +59551,7 @@ class TAxisPainter extends ObjectPainter {
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (axis && !is_gaxis && (this.nticks > 20)) this.nticks = 20;
+      if (axis && !this.is_gaxis && (this.nticks > 20)) this.nticks = 20;
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
       if (gr_range <= 0) gr_range = 100;
@@ -59834,13 +59844,13 @@ class TAxisPainter extends ObjectPainter {
          alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
          drag_rect = title_g.append('rect')
-              .classed('zoom', true)
               .attr('x', box.x)
               .attr('y', box.y)
               .attr('width', box.width)
               .attr('height', box.height)
-              .style('cursor', 'move');
-//                 .style('pointer-events','none'); // let forward double click to underlying elements
+              .style('cursor', 'move')
+              .call(addHighlightStyle, true);
+         //   .style('pointer-events','none'); // let forward double click to underlying elements
       }).on('drag', evnt => {
          if (!drag_rect) return;
 
@@ -59914,9 +59924,13 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Submit exec for the axis - if possible
      * @private */
    submitAxisExec(exec) {
-      let snapid = this.hist_painter?.snapid;
-      if (snapid && this.hist_axis)
-         this.submitCanvExec(exec, snapid + '#' + this.hist_axis);
+      if (this.is_gaxis) {
+         this.submitCanvExec(exec);
+      } else {
+         let snapid = this.hist_painter?.snapid;
+         if (snapid && this.hist_axis)
+            this.submitCanvExec(exec, `${snapid}#${this.hist_axis}`);
+      }
    }
 
    /** @summary Produce svg path for axis ticks */
@@ -60115,7 +60129,6 @@ class TAxisPainter extends ObjectPainter {
      * @private  */
    extractDrawAttributes(scalingSize, w, h) {
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === clTGaxis,
           pp = this.getPadPainter(),
           pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
           pad_h = pp?.getPadHeight() || scalingSize || h/0.8,
@@ -60123,7 +60136,7 @@ class TAxisPainter extends ObjectPainter {
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
-      if (is_gaxis) {
+      if (this.is_gaxis) {
          let optionSize = axis.fChopt.indexOf('S') >= 0;
          this.optionUnlab = axis.fChopt.indexOf('U') >= 0;
          this.optionMinus = (axis.fChopt.indexOf('-') >= 0) || axis.TestBit(EAxisBits.kTickMinus);
@@ -60171,7 +60184,8 @@ class TAxisPainter extends ObjectPainter {
          this.titleFont.setColor(titleColor);
          this.offsetScaling = (axis.fTitleSize >= 1) ? 1 : (this.vertical ? pad_w : pad_h) / this.scalingSize;
          this.titleOffset = axis.fTitleOffset;
-         if (!this.titleOffset && this.name[0] == 'x') this.titleOffset = gStyle.fXaxis.fTitleOffset;
+         if (!this.titleOffset && this.name[0] == 'x')
+            this.titleOffset = gStyle.fXaxis.fTitleOffset;
          this.titleOffset *= this.titleSize * this.offsetScaling;
          this.titleCenter = axis.TestBit(EAxisBits.kCenterTitle);
          this.titleOpposite = axis.TestBit(EAxisBits.kOppositeTitle);
@@ -60191,7 +60205,6 @@ class TAxisPainter extends ObjectPainter {
    async drawAxis(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(),
-          is_gaxis = axis?._typename === clTGaxis,
           axis_g = layer,
           draw_lines = true,
           swap_side = this.swap_side || false;
@@ -60204,14 +60217,13 @@ class TAxisPainter extends ObjectPainter {
 
       this.extractDrawAttributes(undefined, w, h);
 
-      if (is_gaxis) {
+      if (this.is_gaxis)
          draw_lines = axis.fLineColor != 0;
-      }
 
       // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
       this.lineatt.not_standard = true;
 
-      if (!is_gaxis || (this.name === 'zaxis')) {
+      if (!this.is_gaxis || (this.name === 'zaxis')) {
          axis_g = layer.select(`.${this.name}_container`);
          if (axis_g.empty())
             axis_g = layer.append('svg:g').attr('class', `${this.name}_container`);
@@ -60307,10 +60319,10 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_x = Math.round(title_offest_k * this.titleOffset);
 
-            if ((this.name == 'zaxis') && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+            if ((this.name == 'zaxis') && this.is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.width - this.ticksSize)
+               if (title_shift_x < rect.waddMoveHandleridth - this.ticksSize)
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
@@ -60343,86 +60355,8 @@ class TAxisPainter extends ObjectPainter {
                    .property('shift_y', title_shift_y);
          }
 
-         if (is_gaxis && !this.embedded && !isBatchMode()) {
-            this.draw_g.on('click', evnt => {
-               let pp = this.getPadPainter();
-               if (!pp) return;
-               evnt.preventDefault();
-               let m = pointer(evnt, pp.getPadSvg().node());
-               pp.selectObjectPainter(this, { x: m[0], y: m[1] });
-            });
-         }
-
          return this;
       });
-   }
-
-   /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
-   convertTo(opt) {
-      let gaxis = this.getObject(),
-          x1 = this.axisToSvg('x', gaxis.fX1),
-          y1 = this.axisToSvg('y', gaxis.fY1),
-          x2 = this.axisToSvg('x', gaxis.fX2),
-          y2 = this.axisToSvg('y', gaxis.fY2);
-
-      if (opt == 'ndc') {
-          let pw = this.getPadPainter().getPadWidth(),
-              ph = this.getPadPainter().getPadHeight();
-
-          gaxis.fX1 = x1 / pw;
-          gaxis.fX2 = x2 / pw;
-          gaxis.fY1 = (ph - y1) / ph;
-          gaxis.fY2 = (ph - y2)/ ph;
-          this.use_ndc = true;
-      } else if (opt == 'frame') {
-         let rect = this.getFramePainter().getFrameRect();
-         gaxis.fX1 = (x1 - rect.x) / rect.width;
-         gaxis.fX2 = (x2 - rect.x) / rect.width;
-         gaxis.fY1 = (y1 - rect.y) / rect.height;
-         gaxis.fY2 = (y2 - rect.y) / rect.height;
-         this.bind_frame = true;
-      }
-   }
-
-   /** @summary Redraw axis, used in standalone mode for TGaxis */
-   redraw() {
-
-      let gaxis = this.getObject(), x1, y1, x2, y2;
-
-      if (this.bind_frame) {
-         let rect = this.getFramePainter().getFrameRect();
-         x1 = Math.round(rect.x + gaxis.fX1 * rect.width);
-         x2 = Math.round(rect.x + gaxis.fX2 * rect.width);
-         y1 = Math.round(rect.y + gaxis.fY1 * rect.height);
-         y2 = Math.round(rect.y + gaxis.fY2 * rect.height);
-      } else {
-          x1 = this.axisToSvg('x', gaxis.fX1, this.use_ndc);
-          y1 = this.axisToSvg('y', gaxis.fY1, this.use_ndc);
-          x2 = this.axisToSvg('x', gaxis.fX2, this.use_ndc);
-          y2 = this.axisToSvg('y', gaxis.fY2, this.use_ndc);
-      }
-      let w = x2 - x1, h = y1 - y2,
-          vertical = Math.abs(w) < Math.abs(h),
-          sz = vertical ? h : w,
-          reverse = false,
-          min = gaxis.fWmin, max = gaxis.fWmax;
-
-      if (sz < 0) {
-         reverse = true;
-         sz = -sz;
-         if (vertical) y2 = y1; else x1 = x2;
-      }
-
-      this.configureAxis(vertical ? 'yaxis' : 'xaxis', min, max, min, max, vertical, [0, sz], {
-         time_scale: gaxis.fChopt.indexOf('t') >= 0,
-         log: (gaxis.fChopt.indexOf('G') >= 0) ? 1 : 0,
-         reverse,
-         swap_side: reverse
-      });
-
-      this.createG();
-
-      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(x1, y2) || '');
    }
 
 } // class TAxisPainter
@@ -63626,9 +63560,10 @@ class JSRootMenu {
    /** @summary Fill context menu for axis
      * @private */
    addTAxisMenu(EAxisBits, painter, faxis, kind) {
+      let is_gaxis = faxis._typename == clTGaxis;
+
       this.add('Divisions', () => this.input('Set Ndivisions', faxis.fNdivisions, 'int', 0).then(val => {
-         faxis.fNdivisions = val;
-         painter.interactiveRedraw('pad', `exec:SetNdivisions(${val})`, kind);
+         faxis.fNdivisions = val;  painter.interactiveRedraw('pad', `exec:SetNdivisions(${val})`, kind);
       }));
 
       this.add('sub:Labels');
@@ -63647,7 +63582,8 @@ class JSRootMenu {
       this.add('sub:Title');
       this.add('SetTitle', () => {
          this.input('Enter axis title', faxis.fTitle).then(t => {
-            faxis.fTitle = t; painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
+            faxis.fTitle = t;
+            painter.interactiveRedraw('pad', `exec:SetTitle("${t}")`, kind);
          });
       });
       this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), 'Center',
@@ -63655,9 +63591,14 @@ class JSRootMenu {
       this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), 'Opposite',
              () => { faxis.InvertBit(EAxisBits.kOppositeTitle); painter.redrawPad(); });
       this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), 'Rotate',
-            arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw('pad', `exec:RotateTitle(${arg})`, kind); });
-      this.addColorMenu('Color', faxis.fTitleColor,
-            arg => { faxis.fTitleColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetTitleColor'), kind); });
+            arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw('pad', is_gaxis ? `exec:SetBit(TAxis::kRotateTitle, ${arg ? true : false})` : `exec:RotateTitle(${arg})`, kind); });
+      if (is_gaxis) {
+         this.addColorMenu('Color', faxis.fTextColor,
+               arg => { faxis.fTextColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetTitleColor'), kind); });
+      } else {
+         this.addColorMenu('Color', faxis.fTitleColor,
+               arg => { faxis.fTitleColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetTitleColor'), kind); });
+      }
       this.addSizeMenu('Offset', 0, 3, 0.2, faxis.fTitleOffset,
                       arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
       a = faxis.fTitleSize >= 1;
@@ -63665,11 +63606,11 @@ class JSRootMenu {
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.add('endsub:');
       this.add('sub:Ticks');
-      if (faxis._typename == clTGaxis) {
+      if (is_gaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
-                  arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad'); });
+                  arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLineColor'), kind); });
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickSize,
-                  arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad'); });
+                  arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       } else {
          this.addColorMenu('Color', faxis.fAxisColor,
                   arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetAxisColor'), kind); });
@@ -63677,6 +63618,11 @@ class JSRootMenu {
                   arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       }
       this.add('endsub:');
+
+      if (is_gaxis)
+         this.add('Options', () => this.input('Enter TGaxis options like +L or -G', faxis.fChopt, 'string').then(arg => {
+             faxis.fChopt = arg; painter.interactiveRedraw('pad', `exec:SetOption("${arg}")`, kind);
+         }));
    }
 
    /** @summary Fill menu to edit settings properties
@@ -64522,13 +64468,6 @@ function addDragHandler(_painter, arg) {
       return change_size || change_pos;
    };
 
-   // add interactive styles when frame painter not there
-   if (_painter) {
-      let fp = _painter.getFramePainter();
-      if (!fp || fp.mode3d)
-         injectFrameStyle(_painter.draw_g);
-   }
-
    let drag_move = drag().subject(Object);
 
    drag_move
@@ -64556,11 +64495,11 @@ function addDragHandler(_painter, arg) {
          drag_painter = painter;
          drag_kind = 'move';
          drag_rect = select(painter.draw_g.node().parentNode).append('path')
-            .classed('zoom', true)
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style('cursor', 'move')
             .style('pointer-events', 'none') // let forward double click to underlying elements
-            .property('drag_handle', handle);
+            .property('drag_handle', handle)
+            .call(addHighlightStyle, true);
 
       }).on('drag', function(evnt) {
          if (!is_dragging(painter, 'move')) return;
@@ -64609,9 +64548,8 @@ function addDragHandler(_painter, arg) {
 
          setPainterTooltipEnabled(painter, false); // disable tooltip
 
-         let pad_rect = pp.getPadRect();
-
-         let handle = {
+         let pad_rect = pp.getPadRect(),
+             handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
             acc_x1: arg.x, acc_y1: arg.y,
             acc_x2: arg.x + arg.width, acc_y2: arg.y + arg.height,
@@ -64622,13 +64560,13 @@ function addDragHandler(_painter, arg) {
          drag_kind = 'resize';
          drag_rect = select(painter.draw_g.node().parentNode)
             .append('rect')
-            .classed('zoom', true)
             .style('cursor', select(this).style('cursor'))
             .attr('x', handle.acc_x1)
             .attr('y', handle.acc_y1)
             .attr('width', handle.acc_x2 - handle.acc_x1)
             .attr('height', handle.acc_y2 - handle.acc_y1)
-            .property('drag_handle', handle);
+            .property('drag_handle', handle)
+            .call(addHighlightStyle, true);
 
       }).on('drag', function(evnt) {
          if (!is_dragging(painter, 'resize')) return;
@@ -65012,14 +64950,6 @@ const TooltipHandler = {
 }; // TooltipHandler
 
 
-function injectFrameStyle(draw_g) {
-   injectStyle(`
-.jsroot rect.h1bin { stroke: #4572A7; fill: #4572A7; opacity: 0; }
-.jsroot rect.zoom { stroke: steelblue; fill-opacity: 0.1; }
-.jsroot path.zoom { stroke: steelblue; fill-opacity: 0.1; }
-.jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
-}
-
 /** @summary Set of frame interactivity methods
   * @private */
 
@@ -65033,8 +64963,6 @@ const FrameInteractive = {
       if (!this._frame_rotate && !this._frame_fixpos)
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
-
-      injectFrameStyle(this.draw_g);
 
       let main_svg = this.draw_g.select('.main_layer');
 
@@ -69118,17 +69046,16 @@ let PadButtonsHandler = {
           x = group.property('leftside') ? getButtonSize(this, 1.25) : 0, y = 0;
 
       if (this._fast_drawing) {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad');
-         ctrl.attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
-             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad')
+                            .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
+                            .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons');
-
-         ctrl.attr('name', 'Toggle').attr('x', 0).attr('y', 0)
-             .property('buttons_state', (settings.ToolBar !== 'popup'))
-             .on('click', () => toggleButtonsVisibility(this, 'toggle'))
-             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
-             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
+                            .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
+                            .property('buttons_state', (settings.ToolBar !== 'popup'))
+                            .on('click', () => toggleButtonsVisibility(this, 'toggle'))
+                            .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
+                            .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
 
          for (let k = 0; k < this._buttons.length; ++k) {
             let item = this._buttons[k], btn = item.btn;
@@ -69139,7 +69066,7 @@ let PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
-                        item.tooltip + (iscan ? '' : (' on pad ' + this.this_pad_name)) + (item.keyname ? ' (keyshortcut ' + item.keyname + ')' : ''));
+                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''));
 
             if (group.property('vertical'))
                 svg.attr('x', y).attr('y', x);
@@ -72034,17 +71961,6 @@ async function drawTPadSnapshot(dom, snap /*, opt*/) {
 
 /** @summary draw TGaxis object
   * @private */
-function drawTGaxis(dom, obj, opt) {
-   let painter = new TAxisPainter(dom, obj, false);
-   painter.disable_zooming = true;
-   return ensureTCanvas(painter, false).then(() => {
-      if (opt) painter.convertTo(opt);
-      return painter.redraw();
-   }).then(() => painter);
-}
-
-/** @summary draw TGaxis object
-  * @private */
 function drawTFrame(dom, obj, opt) {
    let fp = new TFramePainter(dom, obj);
    return ensureTCanvas(fp, false).then(() => {
@@ -72058,7 +71974,6 @@ __proto__: null,
 TCanvasPainter: TCanvasPainter,
 TPadPainter: TPadPainter,
 drawTFrame: drawTFrame,
-drawTGaxis: drawTGaxis,
 drawTPadSnapshot: drawTPadSnapshot,
 ensureTCanvas: ensureTCanvas
 });
@@ -75242,28 +75157,26 @@ class THistPainter extends ObjectPainter {
 
          let main = this.getMainPainter() || this;
 
-         menu.addchk(main.isTooltipAllowed(), 'Show tooltips', function() {
-            main.setTooltipAllowed('toggle');
-         });
+         menu.addchk(main.isTooltipAllowed(), 'Show tooltips', () => main.setTooltipAllowed('toggle'));
 
-         menu.addchk(fp.enable_highlight, 'Highlight bins', function() {
+         menu.addchk(fp.enable_highlight, 'Highlight bins', () => {
             fp.enable_highlight = !fp.enable_highlight;
             if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
          if (isFunc(fp?.render3D)) {
-            menu.addchk(main.options.FrontBox, 'Front box', function() {
+            menu.addchk(main.options.FrontBox, 'Front box', () => {
                main.options.FrontBox = !main.options.FrontBox;
                fp.render3D();
             });
-            menu.addchk(main.options.BackBox, 'Back box', function() {
+            menu.addchk(main.options.BackBox, 'Back box', () => {
                main.options.BackBox = !main.options.BackBox;
                fp.render3D();
             });
          }
 
          if (this.draw_content) {
-            menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
+            menu.addchk(!this.options.Zero, 'Suppress zeros', () => {
                this.options.Zero = !this.options.Zero;
                this.interactiveRedraw('pad');
             });
@@ -75275,17 +75188,13 @@ class THistPainter extends ObjectPainter {
          }
 
          if (isFunc(main.control?.reset))
-            menu.add('Reset camera', function() {
-               main.control.reset();
-            });
+            menu.add('Reset camera', () => main.control.reset());
       }
 
       menu.addAttributesMenu(this);
 
       if (this.histogram_updated && fp.zoomChangedInteractive())
-         menu.add('Let update zoom', function() {
-            fp.zoomChangedInteractive('reset');
-         });
+         menu.add('Let update zoom', () => fp.zoomChangedInteractive('reset'));
 
       return true;
    }
@@ -76856,8 +76765,9 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:rect')
-                                .attr('class', 'tooltip_bin h1bin')
-                                .style('pointer-events', 'none');
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .call(addHighlightStyle);
 
          res.changed = ttrect.property('current_bin') !== findbin;
 
@@ -77347,7 +77257,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      if (!this.isTH2Poly()) {
+      if (!this.isTH2Poly() && this.getPadPainter()?.iscan) {
          let kind = this.is_projection || '';
          if (kind) kind += this.projection_widthX;
          if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
@@ -77360,9 +77270,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
          menu.add('endsub:');
-
-         menu.add('Auto zoom-in', () => this.autoZoom());
       }
+
+      if (!this.isTH2Poly())
+         menu.add('Auto zoom-in', () => this.autoZoom());
 
       let opts = this.getSupportedDrawOptions();
 
@@ -79643,8 +79554,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append('svg:path')
-                            .attr('class', 'tooltip_bin h1bin')
-                            .style('pointer-events', 'none');
+                            .attr('class', 'tooltip_bin')
+                            .style('pointer-events', 'none')
+                            .call(addHighlightStyle);
 
             res.changed = ttrect.property('current_bin') !== foundindx;
 
@@ -79692,8 +79604,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
             if (ttrect.empty())
                ttrect = this.draw_g.append('svg:path')
-                                   .attr('class', 'tooltip_bin h1bin')
+                                   .attr('class', 'tooltip_bin')
                                    .style('pointer-events', 'none')
+                                   .call(addHighlightStyle)
                                    .style('opacity', '0.7');
 
             res.changed = ttrect.property('current_bin') !== i;
@@ -79791,8 +79704,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:path')
-                                .attr('class', 'tooltip_bin h1bin')
-                                .style('pointer-events', 'none');
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .call(addHighlightStyle);
 
          let binid = i*10000 + j, path;
 
@@ -97573,7 +97487,7 @@ const drawFuncs = { lst: [
    { name: 'TCurlyLine', sameas: clTPolyLine },
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
-   { name: clTGaxis, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTGaxis) },
+   { name: clTGaxis, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGaxisPainter$1; }).then(h => h.TGaxisPainter) },
    { name: clTBox, icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
    { name: 'TWbox', sameas: clTBox },
    { name: 'TSliderBox', sameas: clTBox },
@@ -107701,8 +107615,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       if (ttrect.empty())
          ttrect = this.draw_g.append('svg:rect')
-                             .attr('class', 'tooltip_bin h1bin')
-                             .style('pointer-events', 'none');
+                             .attr('class', 'tooltip_bin')
+                             .style('pointer-events', 'none')
+                             .call(addHighlightStyle);
 
       hint.changed = ttrect.property('current_bin') !== hint.d3bin;
 
@@ -107901,8 +107816,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
          if (hint.ismark) {
             ttbin.append('svg:rect')
-                 .attr('class','h1bin')
-                 .style('pointer-events','none')
+                 .style('pointer-events', 'none')
+                 .call(addHighlightStyle)
                  .style('opacity', '0.3')
                  .attr('x', Math.round(hint.x - hint.radius))
                  .attr('y', Math.round(hint.y - hint.radius))
@@ -110184,6 +110099,162 @@ __proto__: null,
 TArrowPainter: TArrowPainter
 });
 
+/** @summary Drawing TGaxis
+  * @private */
+class TGaxisPainter extends TAxisPainter {
+
+   /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
+   convertTo(opt) {
+      let gaxis = this.getObject(),
+          x1 = this.axisToSvg('x', gaxis.fX1),
+          y1 = this.axisToSvg('y', gaxis.fY1),
+          x2 = this.axisToSvg('x', gaxis.fX2),
+          y2 = this.axisToSvg('y', gaxis.fY2);
+
+      if (opt == 'ndc') {
+          let pw = this.getPadPainter().getPadWidth(),
+              ph = this.getPadPainter().getPadHeight();
+
+          gaxis.fX1 = x1 / pw;
+          gaxis.fX2 = x2 / pw;
+          gaxis.fY1 = (ph - y1) / ph;
+          gaxis.fY2 = (ph - y2)/ ph;
+          this.use_ndc = true;
+      } else if (opt == 'frame') {
+         let rect = this.getFramePainter().getFrameRect();
+         gaxis.fX1 = (x1 - rect.x) / rect.width;
+         gaxis.fX2 = (x2 - rect.x) / rect.width;
+         gaxis.fY1 = (y1 - rect.y) / rect.height;
+         gaxis.fY2 = (y2 - rect.y) / rect.height;
+         this.bind_frame = true;
+      }
+   }
+
+   /** @summary Drag moving handle */
+   moveDrag(dx, dy) {
+      this.gaxis_x += dx;
+      this.gaxis_y += dy;
+      this.getG().attr('transform', makeTranslate(this.gaxis_x, this.gaxis_y));
+   }
+
+   /** @summary Drag end handle */
+   moveEnd(not_changed) {
+      if (not_changed) return;
+
+      let fx, fy, gaxis = this.getObject();
+      if (this.bind_frame) {
+         let rect = this.getFramePainter().getFrameRect();
+         fx = (this.gaxis_x - rect.x) / rect.width;
+         fy = (this.gaxis_y - rect.y) / rect.height;
+      } else {
+         fx = this.svgToAxis('x', this.gaxis_x, this.use_ndc);
+         fy = this.svgToAxis('y', this.gaxis_y, this.use_ndc);
+      }
+
+      if (this.vertical) {
+         gaxis.fX1 = gaxis.fX2 = fx;
+         if (this.reverse) {
+            gaxis.fY2 = fy + (gaxis.fY2 - gaxis.fY1);
+            gaxis.fY1 = fy;
+         } else {
+            gaxis.fY1 = fy + (gaxis.fY1 - gaxis.fY2);
+            gaxis.fY2 = fy;
+         }
+      } else {
+         if (this.reverse) {
+            gaxis.fX1 = fx + (gaxis.fX1 - gaxis.fX2);
+            gaxis.fX2 = fx;
+         } else {
+            gaxis.fX2 = fx + (gaxis.fX2 - gaxis.fX1);
+            gaxis.fX1 = fx;
+         }
+         gaxis.fY1 = gaxis.fY2 = fy;
+      }
+
+      this.submitAxisExec(`SetX1(${gaxis.fX1});;SetX2(${gaxis.fX2});;SetY1(${gaxis.fY1});;SetY2(${gaxis.fY2})`);
+   }
+
+   /** @summary Redraw axis, used in standalone mode for TGaxis */
+   redraw() {
+
+      let gaxis = this.getObject(), x1, y1, x2, y2;
+
+      if (this.bind_frame) {
+         let rect = this.getFramePainter().getFrameRect();
+         x1 = Math.round(rect.x + gaxis.fX1 * rect.width);
+         x2 = Math.round(rect.x + gaxis.fX2 * rect.width);
+         y1 = Math.round(rect.y + gaxis.fY1 * rect.height);
+         y2 = Math.round(rect.y + gaxis.fY2 * rect.height);
+      } else {
+         x1 = this.axisToSvg('x', gaxis.fX1, this.use_ndc);
+         y1 = this.axisToSvg('y', gaxis.fY1, this.use_ndc);
+         x2 = this.axisToSvg('x', gaxis.fX2, this.use_ndc);
+         y2 = this.axisToSvg('y', gaxis.fY2, this.use_ndc);
+      }
+      let w = x2 - x1, h = y1 - y2,
+          vertical = Math.abs(w) < Math.abs(h),
+          sz = vertical ? h : w,
+          reverse = false,
+          min = gaxis.fWmin, max = gaxis.fWmax;
+
+      if (sz < 0) {
+         reverse = true;
+         sz = -sz;
+         if (vertical)
+            y2 = y1;
+         else
+            x1 = x2;
+      }
+
+      this.configureAxis(vertical ? 'yaxis' : 'xaxis', min, max, min, max, vertical, [0, sz], {
+         time_scale: gaxis.fChopt.indexOf('t') >= 0,
+         log: (gaxis.fChopt.indexOf('G') >= 0) ? 1 : 0,
+         reverse,
+         swap_side: reverse
+      });
+
+      this.createG();
+
+      this.gaxis_x = x1;
+      this.gaxis_y = y2;
+
+      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(this.gaxis_x, this.gaxis_y) || '').then(() => {
+
+         addMoveHandler(this);
+
+         assignContextMenu(this);
+
+         return this;
+      });
+   }
+
+   /** @summary Fill TGaxis context */
+   fillContextMenu(menu) {
+      let gaxis = this.getObject();
+
+      menu.addTAxisMenu(EAxisBits, this, gaxis, '');
+
+      menu.addAttributesMenu(this);
+   }
+
+
+   /** @summary Draw TGaxis object */
+   static async draw(dom, obj, opt) {
+      let painter = new TGaxisPainter(dom, obj, false);
+
+      return ensureTCanvas(painter, false).then(() => {
+         if (opt) painter.convertTo(opt);
+         return painter.redraw();
+      });
+   }
+
+} // class TGaxisPainter
+
+var TGaxisPainter$1 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TGaxisPainter: TGaxisPainter
+});
+
 /**
  * @summary Painter for TASImage object.
  *
@@ -111684,12 +111755,13 @@ class RAxisPainter extends RObjectPainter {
          let box = label_g.node().getBBox();
 
          label_g.append('rect')
-                 .classed('zoom', true)
+                 .classed('drag',true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style('cursor', 'move');
+                 .style('cursor', 'move')
+                 .call(addHighlightStyle, true);
          if (this.vertical) {
             this.drag_pos0 = pos[0];
          } else {
@@ -111711,7 +111783,7 @@ class RAxisPainter extends RObjectPainter {
       if (!offset) label_g.attr('transform', null);
 
       if (arg == 'stop') {
-         label_g.select('rect.zoom').remove();
+         label_g.select('rect.drag').remove();
          delete this.drag_pos0;
          if (offset != label_g.property('fix_offset')) {
             label_g.property('fix_offset', offset);
@@ -111767,13 +111839,13 @@ class RAxisPainter extends RObjectPainter {
             alt_pos[curr_indx] = this.vertical ? acc_y : acc_x;
 
             drag_rect = title_g.append('rect')
-                 .classed('zoom', true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style('cursor', 'move');
-//                 .style('pointer-events','none'); // let forward double click to underlying elements
+                 .style('cursor', 'move')
+                 .call(addHighlightStyle, true);
+              // .style('pointer-events','none'); // let forward double click to underlying elements
           }).on('drag', evnt => {
                if (!drag_rect) return;
 
@@ -119343,8 +119415,9 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:rect')
-                                .attr('class','tooltip_bin h1bin')
-                                .style('pointer-events','none');
+                                .attr('class','tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .call(addHighlightStyle);
 
          res.changed = ttrect.property('current_bin') !== findbin;
 
@@ -119689,19 +119762,19 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      let kind = this.is_projection || '';
-      if (kind) kind += this.projection_widthX;
-      if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
-         kind = `X${this.projection_widthX}_Y${this.projection_widthY}`;
+      if (this.getPadPainter()?.iscan) {
+         let kind = this.is_projection || '';
+         if (kind) kind += this.projection_widthX;
+         if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
+            kind = `X${this.projection_widthX}_Y${this.projection_widthY}`;
+         let kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
+         if (kind) kinds.unshift('Off');
 
-      menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
-
-      let kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
-      if (kind) kinds.unshift('Off');
-
-      for (let k = 0; k < kinds.length; ++k)
-         menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-      menu.add('endsub:');
+         menu.add('sub:Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
+         for (let k = 0; k < kinds.length; ++k)
+            menu.addchk(kind == kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
+         menu.add('endsub:');
+      }
 
       menu.add('Auto zoom-in', () => this.autoZoom());
 
@@ -120840,8 +120913,9 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:path')
-                                .attr('class','tooltip_bin h1bin')
-                                .style('pointer-events','none');
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .call(addHighlightStyle);
 
          let i1 = i, i2 = i+1,
              j1 = j, j2 = j+1,
@@ -121858,6 +121932,7 @@ exports.TabsDisplay = TabsDisplay;
 exports._ensureJSROOT = _ensureJSROOT;
 exports._loadJSDOM = _loadJSDOM;
 exports.addDrawFunc = addDrawFunc;
+exports.addHighlightStyle = addHighlightStyle;
 exports.addMethods = addMethods;
 exports.atob_func = atob_func;
 exports.browser = browser$1;
