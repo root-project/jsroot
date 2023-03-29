@@ -203,7 +203,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      if (!this.isTH2Poly()) {
+      if (!this.isTH2Poly() && this.getPadPainter()?.iscan) {
          let kind = this.is_projection || '';
          if (kind) kind += this.projection_widthX;
          if ((this.projection_widthX != this.projection_widthY) && (this.is_projection == 'XY'))
@@ -216,9 +216,10 @@ class TH2Painter extends THistPainter {
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
          menu.add('endsub:');
-
-         menu.add('Auto zoom-in', () => this.autoZoom());
       }
+
+      if (!this.isTH2Poly())
+         menu.add('Auto zoom-in', () => this.autoZoom());
 
       let opts = this.getSupportedDrawOptions();
 
