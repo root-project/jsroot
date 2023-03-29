@@ -29,7 +29,7 @@
 
       function UserHandler(kind, info) {
          if (!info) {
-            document.getElementById("user_tooltip").innerHTML = 'No info';
+            document.getElementById('user_tooltip').innerHTML = 'No info';
             last_hbin = -1;
             return false;
          }
@@ -37,7 +37,7 @@
          last_hbin = info.bin;
 
          // show info
-         document.getElementById("user_tooltip").innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
+         document.getElementById('user_tooltip').innerHTML = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
 
          let h1 = createHistogram('TH1I', 20);
          // copy content from TH2 to TH1
@@ -64,7 +64,7 @@
       }
 
       /** Fill context menu, call_back must be invoked to show menu
-        * kind argument may indicate special element like "x" or "y" axis */
+        * kind argument may indicate special element like 'x' or 'y' axis */
       function CustomContextMenu(menu, kind) {
          // optional separator
          menu.add('separator');

@@ -93,15 +93,13 @@
       </style>
    </head>
    <body>
-
       <div id="panel">
          <h1 id="version"><a href=".." style="color:green">JSROOT</a></h1>
          <div id="content"></div>
          <br/>
       </div>
 
-      <div id="viewer">
-      </div>
+      <div id="viewer"></div>
    </body>
 
    <script type="module">
@@ -139,17 +137,17 @@
       let host = window.location.host;
 
       if (host.indexOf('localhost') >= 0) {
-         filepath = 'https://jsroot.gsi.de/files/'; // "https://root.cern/js/files/"
+         filepath = 'https://jsroot.gsi.de/files/'; // 'https://root.cern/js/files/'
          use_zstd = false;
       } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
          filepath = 'https://root.cern/js/files/';
          use_zstd = false;
       }
 
-      if (window.location.protocol == "file:") {
-         jsroot_path = "../index.htm";
-         demo_path = "../demo/",
-         filepath = "https://jsroot.gsi.de/files/";
+      if (window.location.protocol == 'file:') {
+         jsroot_path = '../index.htm';
+         demo_path = '../demo/',
+         filepath = 'https://jsroot.gsi.de/files/';
       }
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
@@ -176,10 +174,10 @@
             if (!viewer) {
                document.getElementById('viewer').innerHTML = '';
                viewer = document.createElement('iframe');
-               viewer.id = "viewer_frame";
+               viewer.id = 'viewer_frame';
                document.getElementById('viewer').appendChild(viewer);
             }
-            viewer.src = jsroot_path + durl + (opt.length > 0 ? ("&opt=" + opt) : '') + extra_opts;
+            viewer.src = jsroot_path + durl + (opt ? `&opt=${opt}` : '') + extra_opts;
             viewer.focus();
           } else {
 
@@ -188,21 +186,21 @@
 
              if (jsonname) {
                 httpRequest(jsonname, 'object')
-                      .then(obj => draw("viewer", obj, opt));
+                      .then(obj => draw('viewer', obj, opt));
              } else {
                 openFile(filename)
                       .then(file => file.readObject(itemname))
-                      .then(obj => draw("viewer", obj, opt));
+                      .then(obj => draw('viewer', obj, opt));
              }
           }
       };
 
       function setPageTitle(title) {
-         let arr = document.getElementsByTagName("meta");
+         let arr = document.getElementsByTagName('meta');
          for (let k=0;k<arr.length;++k) {
             let elem = arr[k];
-            if (elem.getAttribute("property") == "og:title")
-              elem.setAttribute("content", title);
+            if (elem.getAttribute('property') == 'og:title')
+              elem.setAttribute('content', title);
          }
       }
 
@@ -211,7 +209,7 @@
              event.preventDefault();
 
              if (event.ctrlKey)
-                return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
+                return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
 
              window.location.hash = shortname;
              if (elem.title) setPageTitle(elem.title);
@@ -224,7 +222,7 @@
             let running = (keyid !== null); // indication that test running - no need to relaunch events
             keyid = select_key || 'TH1'; optid = -1;
             testfile = testobj = null;
-            let ii = decodeUrl().get("interval");
+            let ii = decodeUrl().get('interval');
             if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                  else testinterval = interval;
             if (running) return;
@@ -302,27 +300,27 @@
          createRootColors(); // ensure default colors
 
          if (url.length > 0) {
-            if (no_interactive) url += "&interactive=0";
+            if (no_interactive) url += '&interactive=0';
 
             testfile = testobj = null;
             // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
 
             let d = decodeUrl(url),
-                layout = d.get("layout", "simple"),
-                nobrowser = d.has("nobrowser");
+                layout = d.get('layout', 'simple'),
+                nobrowser = d.has('nobrowser');
 
             if (nobrowser) {
                document.getElementById('viewer').innerHTML = '';
                hpainter = new HierarchyPainter('root', null);
-               hpainter.setDisplay(layout, "viewer");
+               hpainter.setDisplay(layout, 'viewer');
             } else {
                document.getElementById('viewer').innerHTML =
-                   "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>" +
-                   '<div id="browser"></div></div>' +
-                   '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
+                   `<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>` +
+                   `<div id='browser'></div></div>` +
+                   `<div id='right-div' style='float:right; width:73%; height:100%;'></div>`;
 
                hpainter = new HierarchyPainter('root', 'browser');
-               hpainter.setDisplay(layout,"right-div");
+               hpainter.setDisplay(layout, 'right-div');
             }
 
             hpainter.startGUI(null, url).then(TestContinue, TestFailure);
@@ -330,19 +328,19 @@
             testfile = testobj = null;
             httpRequest(jsonname, 'object').then(obj => {
                testobj = obj;
-               return draw("viewer", obj, opt).then(TestContinue, TestFailure);
+               return draw('viewer', obj, opt).then(TestContinue, TestFailure);
             });
          } else if (filename.length > 0) {
              openFile(filename)
                    .then(file => { testfile = file; return testfile.readObject(itemname); })
-                   .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
+                   .then(obj => { testobj = obj; return draw('viewer', obj, opt); })
                    .then(TestContinue, TestFailure);
          } else if (itemname.length > 0) {
              testfile.readObject(itemname)
-                      .then(obj => { testobj = obj; return draw("viewer", obj, opt); })
+                      .then(obj => { testobj = obj; return draw('viewer', obj, opt); })
                       .then(TestContinue, TestFailure);
          } else {
-             draw("viewer", testobj, opt).then(TestContinue, TestFailure);
+             draw('viewer', testobj, opt).then(TestContinue, TestFailure);
          }
       }
 
@@ -370,15 +368,15 @@
       let d = decodeUrl();
 
       select_key = d.get('select');
-      if (!select_key && d.has("geom")) select_key = 'TGeo';
+      if (!select_key && d.has('geom')) select_key = 'TGeo';
 
       if (d.has('dark')) {
          settings.DarkMode = true;
-         document.getElementById("panel").style.background = 'black';
-         document.getElementById("viewer").style.background = 'black';
+         document.getElementById('panel').style.background = 'black';
+         document.getElementById('viewer').style.background = 'black';
       }
 
-      document.getElementById( 'version' ).title = version + ", " + source_dir;
+      document.getElementById( 'version' ).title = `${version}, ${source_dir}`;
 
       let content = document.getElementById( 'content' );
 
@@ -437,7 +435,7 @@
                aaa.textContent = '<dflt>';
 
             if (aaa.textContent != '<dflt>')
-               shortname += "_" + aaa.textContent.toLowerCase().replace(' ', '_');
+               shortname += '_' + aaa.textContent.toLowerCase().replace(' ', '_');
 
             let prefix = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
 
@@ -478,7 +476,7 @@
             setListener(aaa, shortname, url, filename, itemname, opt, jsonname);
 
             if (n < opts.length-1) {
-               content.appendChild(document.createTextNode(", "));
+               content.appendChild(document.createTextNode(', '));
             } else {
                content.appendChild(document.createElement('br'));
             }
@@ -506,7 +504,7 @@
              runBigTest(10,true);
           });
 
-          content.appendChild(document.createTextNode(", "));
+          content.appendChild(document.createTextNode(', '));
 
           aaa = document.createElement( 'a' );
           aaa.textContent = 'slow';
