@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '28/03/2023';
+let version_date = '29/03/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -7897,7 +7897,7 @@ function floatToString(value, fmt, ret_fmt) {
 
       let se = value.toExponential(prec);
 
-      return ret_fmt ? [se, '5.'+prec+'e'] : se;
+      return ret_fmt ? [se, `5.${prec}e`] : se;
    }
 
    let sg = value.toFixed(prec);
@@ -7910,7 +7910,7 @@ function floatToString(value, fmt, ret_fmt) {
       }
 
       let l = 0;
-      while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
+      while ((l < sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
@@ -8013,7 +8013,8 @@ class TRandom {
   * @private */
 function buildSvgCurve(p, args) {
 
-   if (!args) args = { };
+   if (!args)
+      args = {};
    if (!args.line)
       args.calc = true;
    else if (args.ndig === undefined)
@@ -56043,8 +56044,8 @@ async function createRender3D(width, height, render3d, args) {
       // try to use WebGL inside node.js - need to create headless context
       promise = Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(node_canvas => {
          args.canvas = node_canvas.default.createCanvas(width, height);
-         args.canvas.addEventListener = function() { }; // dummy
-         args.canvas.removeEventListener = function() { }; // dummy
+         args.canvas.addEventListener = () => {}; // dummy
+         args.canvas.removeEventListener = () => {}; // dummy
          args.canvas.style = {};
          return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
       }).then(node_gl => {
@@ -68714,7 +68715,7 @@ class BrowserLayout {
 
       // need to get touches events handling in drag
       if (browser$1.touches && !main.on('touchmove'))
-         main.on('touchmove', function() { });
+         main.on('touchmove', () => {});
 
       if (!height || isStr(height)) height = this.last_hsepar_height || 20;
 
@@ -69017,7 +69018,7 @@ class BrowserLayout {
 
         // need to get touches events handling in drag
         if (browser$1.touches && !main.on('touchmove'))
-           main.on('touchmove', function() { });
+           main.on('touchmove', () => {});
 
         this.adjustSeparators(250, null, true, true);
      }
@@ -72081,8 +72082,8 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Autoplace legend on the frame
-     * @return {Promise} */
-   async autoPlaceLegend(pt, pad) {
+     * @return {Promise} with boolean flag if position was changed  */
+   async autoPlaceLegend(pt, pad, keep_origin) {
       let main_svg = this.getFrameSvg().select('.main_layer'),
           svg_code = main_svg.node().outerHTML;
 
@@ -72098,11 +72099,8 @@ class TPavePainter extends ObjectPainter {
       return svgToImage(svg_code).then(canvas => {
          if (!canvas) return false;
 
-         const context = canvas.getContext("2d");
-
-         let data = context.getImageData(0, 0, canvas.width, canvas.height);
-
-         let arr = data.data;
+         const context = canvas.getContext('2d'),
+               arr = context.getImageData(0, 0, canvas.width, canvas.height).data;
 
          let nX = 100, nY = 100,
              boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
@@ -72151,13 +72149,15 @@ class TPavePainter extends ObjectPainter {
                   return true;
                }
       }).then(res => {
-         if (!res) {
-            pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
-            pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
-            let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
-            pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
-            pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
-         }
+         if (res || keep_origin)
+            return res;
+
+         pt.fX1NDC = Math.max(lm ?? 0, pt.fX2NDC - 0.3);
+         pt.fX2NDC = Math.min(pt.fX1NDC + 0.3, 1 - rm);
+         let h0 = Math.max(pt.fPrimitives ? pt.fPrimitives.arr.length*0.05 : 0, 0.2);
+         pt.fY2NDC = Math.min(1 - tm, pt.fY1NDC + h0);
+         pt.fY1NDC = Math.max(pt.fY2NDC - h0, bm);
+         return true;
       });
    }
 
@@ -73034,7 +73034,7 @@ class TPavePainter extends ObjectPainter {
 
       menu.add(`header: ${pave._typename}::${pave.fName}`);
       if (this.isStats()) {
-         menu.add('Default position', function() {
+         menu.add('Default position', () => {
             pave.fX2NDC = gStyle.fStatX;
             pave.fX1NDC = pave.fX2NDC - gStyle.fStatW;
             pave.fY2NDC = gStyle.fStatY;
@@ -73078,7 +73078,7 @@ class TPavePainter extends ObjectPainter {
          function AddStatOpt(pos, name) {
             let opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
-            menu.addchk(opt, name, opt * 100 + pos, function(arg) {
+            menu.addchk(opt, name, opt * 100 + pos, arg => {
                let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit,
                    oldopt = parseInt(arg / 100);
                newopt -= (oldopt > 0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
@@ -73117,7 +73117,7 @@ class TPavePainter extends ObjectPainter {
 
          menu.add('separator');
       } else if (pave.fName === 'title') {
-         menu.add('Default position', function() {
+         menu.add('Default position', () => {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
             pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
             pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
@@ -73126,7 +73126,7 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw(true, 'pave_moved');
          });
 
-         menu.add('Save to gStyle', function() {
+         menu.add('Save to gStyle', () => {
             gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
             gStyle.fTitleY = pave.fY2NDC;
             if (this.fillatt) this.fillatt.saveToStyle('fTitleColor', 'fTitleStyle');
@@ -73134,6 +73134,12 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
+      } else if (pave._typename === clTLegend) {
+         menu.add('Autoplace', () => {
+            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
+               if (res) this.interactiveRedraw(true, 'pave_moved');
+            });
+         });
       }
 
       if (this.UseTextColor)
@@ -83415,11 +83421,11 @@ function getNodeMatrix(kind, node) {
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
          geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
 
-      // if (node.fFinder._typename === 'TGeoPatternCylR') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphR') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
-      // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
+      // if (node.fFinder._typename === 'TGeoPatternCylR') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphR') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphTheta') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphPhi') {}
+      // if (node.fFinder._typename === 'TGeoPatternHoneycomb') {}
       switch(node.fFinder._typename) {
         case 'TGeoPatternX':
         case 'TGeoPatternY':
@@ -90865,6 +90871,7 @@ function build(obj, opt) {
       }
 
       mesh.name = clones.getNodeName(entry.nodeid);
+      mesh.stack = entry.stack;
 
       obj3d.add(mesh);
 
@@ -92144,7 +92151,7 @@ function createMemberStreamer(element, file) {
       default:
          console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
 
-         member.func = function(/*buf, obj*/) { };  // do nothing, fix in the future
+         member.func = function(/*buf, obj*/) {};  // do nothing, fix in the future
    }
 
    return member;
@@ -93504,7 +93511,7 @@ class TDirectory {
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
-         if (!key || (key.fName!==keyname)) continue;
+         if (!key || (key.fName !== keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
@@ -93677,7 +93684,7 @@ class TFile {
          if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? '?' : '&') + file.fUseStampPar;
 
          for (let n = first; n < last; n += 2) {
-            ranges += (n > first ? ',' : '=') + (place[n] + '-' + (place[n] + place[n + 1] - 1));
+            ranges += (n > first ? ',' : '=') + `${place[n]}-${place[n]+place[n+1]-1}`;
             totalsz += place[n + 1]; // accumulated total size
          }
          if (last - first > 2)
@@ -93690,7 +93697,7 @@ class TFile {
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
 
-            if (progress_callback && isFunc(xhr.addEventListener)) {
+            if (isFunc(progress_callback) && isFunc(xhr.addEventListener)) {
                let sum1 = 0, sum2 = 0, sum_total = 0;
                for (let n = 1; n < place.length; n += 2) {
                   sum_total += place[n];
@@ -93700,7 +93707,7 @@ class TFile {
                if (!sum_total) sum_total = 1;
 
                let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
-               xhr.addEventListener('progress', function(oEvent) {
+               xhr.addEventListener('progress', oEvent => {
                   if (oEvent.lengthComputable)
                      progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
                });
@@ -95613,7 +95620,7 @@ class TDrawSelector extends TSelector {
    }
 
    /** @summary Show progress */
-   ShowProgress(/*value*/) { }
+   ShowProgress(/*value*/) {}
 
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
@@ -98198,9 +98205,13 @@ async function drawList(dom, lst, opt) {
   * @private */
 function folderHierarchy(item, obj) {
 
-   if (!obj?.fFolders) return false;
+   if (!obj?.fFolders)
+      return false;
 
-   if (obj.fFolders.arr.length === 0) { item._more = false; return true; }
+   if (obj.fFolders.arr.length === 0) {
+      item._more = false;
+      return true;
+   }
 
    item._childs = [];
 
@@ -98414,7 +98425,7 @@ function objectHierarchy(top, obj, args = undefined) {
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2) val = '0'+val;
          if (item._value)
-            item._value += (k%4 === 0) ? ' | ' : ' ';
+            item._value += (k % 4 === 0) ? ' | ' : ' ';
 
          item._value += val;
       }
@@ -98438,7 +98449,7 @@ function objectHierarchy(top, obj, args = undefined) {
       arrcompress = true;
       for (let k = 0; k < obj.length; ++k) {
          let typ = typeof obj[k];
-         if ((typ === 'number') || (typ === 'boolean') || (typ == 'string' && (obj[k].length < 16))) continue;
+         if ((typ === 'number') || (typ === 'boolean') || ((typ == 'string') && (obj[k].length < 16))) continue;
          arrcompress = false; break;
       }
    }
