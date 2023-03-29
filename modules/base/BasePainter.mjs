@@ -104,7 +104,7 @@ function floatToString(value, fmt, ret_fmt) {
 
       let se = value.toExponential(prec);
 
-      return ret_fmt ? [se, '5.'+prec+'e'] : se;
+      return ret_fmt ? [se, `5.${prec}e`] : se;
    }
 
    let sg = value.toFixed(prec);
@@ -117,7 +117,7 @@ function floatToString(value, fmt, ret_fmt) {
       }
 
       let l = 0;
-      while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
+      while ((l < sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
@@ -220,7 +220,8 @@ class TRandom {
   * @private */
 function buildSvgCurve(p, args) {
 
-   if (!args) args = { };
+   if (!args)
+      args = {};
    if (!args.line)
       args.calc = true;
    else if (args.ndig === undefined)

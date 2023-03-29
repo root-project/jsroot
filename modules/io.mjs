@@ -1258,7 +1258,7 @@ function createMemberStreamer(element, file) {
       default:
          console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
 
-         member.func = function(/*buf, obj*/) { };  // do nothing, fix in the future
+         member.func = function(/*buf, obj*/) {};  // do nothing, fix in the future
    }
 
    return member;

@@ -1668,11 +1668,11 @@ function getNodeMatrix(kind, node) {
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
          geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
 
-      // if (node.fFinder._typename === 'TGeoPatternCylR') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphR') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
-      // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
-      // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
+      // if (node.fFinder._typename === 'TGeoPatternCylR') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphR') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphTheta') {}
+      // if (node.fFinder._typename === 'TGeoPatternSphPhi') {}
+      // if (node.fFinder._typename === 'TGeoPatternHoneycomb') {}
       switch(node.fFinder._typename) {
         case 'TGeoPatternX':
         case 'TGeoPatternY':
