@@ -133,15 +133,11 @@ class TGaxisPainter extends TAxisPainter {
       });
    }
 
+
    /** @summary Fill TGaxis context */
    fillContextMenu(menu) {
-      let gaxis = this.getObject();
-
-      menu.addTAxisMenu(EAxisBits, this, gaxis, '');
-
-      menu.addAttributesMenu(this);
+      menu.addTAxisMenu(EAxisBits, this, this.getObject(), '');
    }
-
 
    /** @summary Draw TGaxis object */
    static async draw(dom, obj, opt) {
