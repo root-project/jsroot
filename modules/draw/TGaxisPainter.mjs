@@ -1,5 +1,3 @@
-import { isBatchMode } from '../core.mjs';
-import { pointer as d3_pointer } from '../d3.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -78,7 +76,7 @@ class TGaxisPainter extends TAxisPainter {
          gaxis.fY1 = gaxis.fY2 = fy;
       }
 
-      this.getCanvPainter()?.submitExec(this, `SetX1(${gaxis.fX1});;SetX2(${gaxis.fX2});;SetY1(${gaxis.fY1});;SetY2(${gaxis.fY2})`);
+      this.submitAxisExec(`SetX1(${gaxis.fX1});;SetX2(${gaxis.fX2});;SetY1(${gaxis.fY1});;SetY2(${gaxis.fY2})`);
    }
 
    /** @summary Redraw axis, used in standalone mode for TGaxis */
@@ -126,24 +124,14 @@ class TGaxisPainter extends TAxisPainter {
       this.gaxis_y = y2;
 
       return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), makeTranslate(this.gaxis_x, this.gaxis_y) || '').then(() => {
-         if (!isBatchMode()) {
-            addMoveHandler(this);
 
-            assignContextMenu(this);
+         addMoveHandler(this);
 
-            this.draw_g.on('click', evnt => {
-               let pp = this.getPadPainter();
-               if (!pp) return;
-               evnt.preventDefault();
-               let m = d3_pointer(evnt, pp.getPadSvg().node());
-               pp.selectObjectPainter(this, { x: m[0], y: m[1] });
-            });
-         }
+         assignContextMenu(this);
 
          return this;
       });
    }
-
 
    /** @summary Draw TGaxis object */
    static async draw(dom, obj, opt) {
