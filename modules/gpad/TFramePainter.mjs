@@ -115,13 +115,6 @@ function addDragHandler(_painter, arg) {
       return change_size || change_pos;
    };
 
-   // add interactive styles when frame painter not there
-   if (_painter) {
-      let fp = _painter.getFramePainter();
-      if (!fp || fp.mode3d)
-         injectFrameStyle(_painter.draw_g);
-   }
-
    let drag_move = d3_drag().subject(Object);
 
    drag_move
@@ -604,11 +597,6 @@ const TooltipHandler = {
 } // TooltipHandler
 
 
-function injectFrameStyle(draw_g) {
-   injectStyle(`
-.jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
-}
-
 /** @summary Set of frame interactivity methods
   * @private */
 
@@ -622,8 +610,6 @@ const FrameInteractive = {
       if (!this._frame_rotate && !this._frame_fixpos)
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
-
-      injectFrameStyle(this.draw_g);
 
       let main_svg = this.draw_g.select('.main_layer');
 
