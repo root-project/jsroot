@@ -806,7 +806,7 @@ class RH1Painter extends RHistPainter {
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:rect')
                                 .attr('class','tooltip_bin h1bin')
-                                .style('pointer-events','none');
+                                .style('pointer-events', 'none');
 
          res.changed = ttrect.property('current_bin') !== findbin;
 

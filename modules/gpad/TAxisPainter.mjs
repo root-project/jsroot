@@ -2,7 +2,7 @@ import { gStyle, settings, constants, isBatchMode, clTAxis, clTGaxis } from '../
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
-import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
@@ -764,12 +764,13 @@ class TAxisPainter extends ObjectPainter {
          alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
          drag_rect = title_g.append('rect')
-              .classed('zoom', true)
               .attr('x', box.x)
               .attr('y', box.y)
               .attr('width', box.width)
               .attr('height', box.height)
               .style('cursor', 'move');
+
+         addHighlightStyle(drag_rect);
 //                 .style('pointer-events','none'); // let forward double click to underlying elements
       }).on('drag', evnt => {
          if (!drag_rect) return;

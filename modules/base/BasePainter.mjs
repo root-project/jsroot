@@ -687,11 +687,16 @@ async function _loadJSDOM() {
 /** @summary Return translate string for transform attribute of some svg element
   * @return string or null if x and y are zeros
   * @private */
-function makeTranslate(x,y)
-{
+function makeTranslate(x,y) {
    if (y) return `translate(${x},${y})`;
    if (x) return `translate(${x})`;
    return null;
+}
+
+/** @summary Configure special style using for zooming or moving of elements */
+function addHighlightStyle(elem) {
+   elem.style('stroke', 'steelblue')
+       .style('fill-opacity', '0.1');
 }
 
 /** @summary Create image based on SVG
@@ -750,4 +755,4 @@ async function svgToImage(svg, image_format) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, svgToImage };
+         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
