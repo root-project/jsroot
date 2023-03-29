@@ -768,10 +768,9 @@ class TAxisPainter extends ObjectPainter {
               .attr('y', box.y)
               .attr('width', box.width)
               .attr('height', box.height)
-              .style('cursor', 'move');
-
-         addHighlightStyle(drag_rect);
-//                 .style('pointer-events','none'); // let forward double click to underlying elements
+              .style('cursor', 'move')
+              .call(addHighlightStyle, true);
+         //   .style('pointer-events','none'); // let forward double click to underlying elements
       }).on('drag', evnt => {
          if (!drag_rect) return;
 

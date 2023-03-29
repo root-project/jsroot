@@ -152,8 +152,8 @@ function addDragHandler(_painter, arg) {
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style('cursor', 'move')
             .style('pointer-events', 'none') // let forward double click to underlying elements
-            .property('drag_handle', handle);
-         addHighlightStyle(drag_rect);
+            .property('drag_handle', handle)
+            .call(addHighlightStyle, true);
 
       }).on('drag', function(evnt) {
          if (!is_dragging(painter, 'move')) return;
@@ -219,8 +219,8 @@ function addDragHandler(_painter, arg) {
             .attr('y', handle.acc_y1)
             .attr('width', handle.acc_x2 - handle.acc_x1)
             .attr('height', handle.acc_y2 - handle.acc_y1)
-            .property('drag_handle', handle);
-         addHighlightStyle(drag_rect);
+            .property('drag_handle', handle)
+            .call(addHighlightStyle, true);
 
       }).on('drag', function(evnt) {
          if (!is_dragging(painter, 'resize')) return;
@@ -606,7 +606,6 @@ const TooltipHandler = {
 
 function injectFrameStyle(draw_g) {
    injectStyle(`
-.jsroot rect.h1bin { stroke: #4572A7; fill: #4572A7; opacity: 0; }
 .jsroot svg:not(:root) { overflow: hidden; }`, draw_g.node());
 }
 

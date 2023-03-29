@@ -1,7 +1,7 @@
 import { gStyle, isStr, createTPolyLine, kNoZoom } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
-import { floatToString, TRandom } from '../base/BasePainter.mjs';
+import { floatToString, TRandom, addHighlightStyle } from '../base/BasePainter.mjs';
 import { RHistPainter } from './RHistPainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 
@@ -1265,8 +1265,9 @@ class RH2Painter extends RHistPainter {
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append('svg:path')
-                                .attr('class','tooltip_bin h1bin')
-                                .style('pointer-events','none');
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .call(addHighlightStyle);
 
          let i1 = i, i2 = i+1,
              j1 = j, j2 = j+1,

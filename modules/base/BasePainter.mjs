@@ -693,10 +693,15 @@ function makeTranslate(x,y) {
    return null;
 }
 
-/** @summary Configure special style using for zooming or moving of elements */
-function addHighlightStyle(elem) {
-   elem.style('stroke', 'steelblue')
-       .style('fill-opacity', '0.1');
+/** @summary Configure special style used for highlight or dragging elements */
+function addHighlightStyle(elem, drag) {
+   if (drag)
+      elem.style('stroke', 'steelblue')
+          .style('fill-opacity', '0.1');
+   else
+      elem.style('stroke', '#4572A7')
+          .style('fill', '#4572A7')
+          .style('opacity', '0');
 }
 
 /** @summary Create image based on SVG

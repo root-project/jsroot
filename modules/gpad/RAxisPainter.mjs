@@ -371,12 +371,13 @@ class RAxisPainter extends RObjectPainter {
          let box = label_g.node().getBBox();
 
          label_g.append('rect')
+                 .classed('drag',true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style('cursor', 'move');
-         addHighlightStyle(label_g);
+                 .style('cursor', 'move')
+                 .call(addHighlightStyle, true);
          if (this.vertical) {
             this.drag_pos0 = pos[0];
          } else {
@@ -398,7 +399,7 @@ class RAxisPainter extends RObjectPainter {
       if (!offset) label_g.attr('transform', null);
 
       if (arg == 'stop') {
-         label_g.select('rect.zoom').remove();
+         label_g.select('rect.drag').remove();
          delete this.drag_pos0;
          if (offset != label_g.property('fix_offset')) {
             label_g.property('fix_offset', offset);
@@ -458,11 +459,9 @@ class RAxisPainter extends RObjectPainter {
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
-                 .style('cursor', 'move');
+                 .style('cursor', 'move')
+                 .call(addHighlightStyle, true);
               // .style('pointer-events','none'); // let forward double click to underlying elements
-
-              addHighlightStyle(drag_rect);
-
           }).on('drag', evnt => {
                if (!drag_rect) return;
 
