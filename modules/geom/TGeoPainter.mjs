@@ -5330,6 +5330,7 @@ function build(obj, opt) {
       }
 
       mesh.name = clones.getNodeName(entry.nodeid);
+      mesh.stack = entry.stack;
 
       obj3d.add(mesh);
 
