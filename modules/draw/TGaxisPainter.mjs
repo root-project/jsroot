@@ -172,10 +172,17 @@ class TGaxisPainter extends TAxisPainter {
          return Number.isFinite(v) ? v : 0.;
       }
 
-      res._vmin = res.eval(smin);
-      res._vmax = res.eval(smax);
-      res._vrange = res._vmax - res._vmin;
-      if (!res._vrange) res._vrange = 1;
+      let vmin = res.eval(smin), vmax = res.eval(smax);
+      if ((vmin < vmax) === (smin < smax)) {
+         res._vmin = vmin;
+         res._vk = 1/(vmax - vmin);
+      } else if (vmin === vmax) {
+         res._vmin = 0;
+         res._vk = 1;
+      } else {
+         res._vmin = vmax;
+         res._vk = 1/(vmin - vmax);
+      }
       res._range = [0, 100];
       res.range = function(arr) {
          if (arr) {
@@ -189,8 +196,8 @@ class TGaxisPainter extends TAxisPainter {
       res.domain = function() { return res._domain; };
 
       res.toGraph = function(v) {
-         let rel = (res.eval(v) - res._vmin) / res._vrange;
-         return res._range[0] * (1-rel) + res._range[1] * rel;
+         let rel = (res.eval(v) - res._vmin) * res._vk;
+         return res._range[0] * (1 - rel) + res._range[1] * rel;
       };
 
       res.ticks = function(arg) { return res._scale.ticks(arg); };
