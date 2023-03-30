@@ -10991,7 +10991,7 @@ function getSvgLineStyle(indx) {
 }
 
 /**
-  * @summary Handle for line attributes
+  * @summary Handle for text attributes
   * @private
   */
 
@@ -11090,15 +11090,18 @@ class TAttTextHandler {
 
    /** @summary Returns alternating size - which defined by sz1 variable */
    getAltSize(sz1, h) {
-      if (!sz1) sz1 = this.size ;
+      if (!sz1) sz1 = this.size;
       return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
    }
+
+   /** @summary Get font index - without precision */
+   getGedFont() { return Math.floor(this.font/10); }
 
    /** @summary Change text font from GED */
    setGedFont(value) {
       let v = parseInt(value);
       if ((v > 0) && (v < 17))
-         this.font = v*10 + (this.font % 10);
+         this.change(v*10 + (this.font % 10));
       return this.font;
    }
 
@@ -63397,30 +63400,6 @@ class JSRootMenu {
          this.add('angle');
    }
 
-   /** @summary Fill context menu for text attributes
-     * @private */
-   addTextAttributesMenu(painter, prefix) {
-      let obj = painter.getObject();
-      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign === undefined) || (obj?.fTextFont === undefined)) return;
-
-      this.add('sub:' + (prefix || 'Text'));
-      this.addColorMenu('color', obj.fTextColor,
-         arg => { painter.getObject().fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
-
-      let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
-
-      this.add('sub:align');
-      for (let n = 0; n < align.length; ++n)
-         this.addchk(align[n] == obj.fTextAlign, align[n], align[n],
-            arg => { painter.getObject().fTextAlign = parseInt(arg); painter.interactiveRedraw('pad', `exec:SetTextAlign(${arg})`); });
-      this.add('endsub:');
-
-      this.addFontMenu('font', obj.fTextFont,
-         fnt => { painter.getObject().fTextFont = fnt; painter.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); });
-
-      this.add('endsub:');
-   }
-
    /** @summary Add line style menu
      * @private */
    addLineStyleMenu(name, value, set_func) {
@@ -63461,27 +63440,30 @@ class JSRootMenu {
    /** @summary Add font selection menu
      * @private */
    addFontMenu(name, value, set_func) {
+      let prec = value && Number.isInteger(value) ? value % 10 : 2;
+
       this.add('sub:' + name, () => {
          this.input('Enter font id from [0..20]', Math.floor(value/10), 'int', 0, 20).then(id => {
-            if ((id >= 0) && (id <= 20)) set_func(id*10 + 2);
+            if ((id >= 0) && (id <= 20)) set_func(id*10 + prec);
          });
       });
 
       this.add('column:');
 
       for (let n = 1; n < 20; ++n) {
-         let handler = new FontHandler(n*10+2, 14),
+         let id = n*10 + prec,
+             handler = new FontHandler(id, 14),
              txt = select(document.createElementNS('http://www.w3.org/2000/svg', 'text')),
-             fullname = handler.getFontName(),
-             name = ' ' + fullname.split(' ')[0] + ' ';
-         if (handler.weight) { name = 'b' + name; fullname += ' ' + handler.weight; }
-         if (handler.style) { name = handler.style[0] + name; fullname += ' ' + handler.style; }
-         txt.attr('x', 1).attr('y',15).text(name);
+             fullname = handler.getFontName(), qual = '';
+         if (handler.weight) { qual += 'b'; fullname += ' ' + handler.weight; }
+         if (handler.style) { qual += handler.style[0]; fullname += ' ' + handler.style; }
+         if (qual) qual = ' ' + qual;
+         txt.attr('x', 1).attr('y',15).text(fullname.split(' ')[0] + qual);
          handler.setFont(txt);
 
-         let rect = (value != n*10+2) ? '' : `<rect width='90' height='18' style='fill:none;stroke:black'></rect>`,
+         let rect = (value != id) ? '' : `<rect width='90' height='18' style='fill:none;stroke:black'></rect>`,
              svg = `<svg width='90' height='18'>${txt.node().outerHTML}${rect}</svg>`;
-         this.add(svg, n, arg => set_func(parseInt(arg)*10+2), fullname);
+         this.add(svg, id, arg => set_func(parseInt(arg)), `${id}: ${fullname}`);
 
          if (n == 10) {
             this.add('endcolumn:');
@@ -63490,6 +63472,26 @@ class JSRootMenu {
       }
 
       this.add('endcolumn:');
+      this.add('endsub:');
+   }
+
+   /** @summary Add align selection menu
+     * @private */
+   addAlignMenu(name, value, set_func) {
+      this.add(`sub:${name}`, () => {
+         this.input('Enter align like 12 or 31', value).then(arg => {
+            let id = parseInt(arg);
+            if ((id < 11) || (id > 33)) return;
+            let h = Math.floor(id/10), v = id % 10;
+            if ((h > 0) && (h < 4) && (v > 0) && (v < 4)) set_func(id);
+         });
+      });
+
+      const hnames = ['left', 'middle', 'right'], vnames = ['bottom', 'centered', 'top'];
+      for (let h = 1; h < 4; ++h)
+         for (let v = 1; v < 4; ++v)
+            this.addchk(h*10+v == value, `${h*10+v}: ${hnames[h-1]} ${vnames[h-1]}`, h*10+v, arg => set_func(parseInt(arg)));
+
       this.add('endsub:');
    }
 
@@ -63503,7 +63505,7 @@ class JSRootMenu {
       if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
-         this.add('sub:' + preffix + 'Line att');
+         this.add(`sub:${preffix}Line att`);
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
          this.addColorMenu('color', painter.lineatt.color,
@@ -63530,7 +63532,7 @@ class JSRootMenu {
       }
 
       if (painter.fillatt?.used) {
-         this.add('sub:' + preffix + 'Fill att');
+         this.add(`sub:${preffix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
@@ -63543,7 +63545,7 @@ class JSRootMenu {
       }
 
       if (painter.markeratt?.used) {
-         this.add('sub:' + preffix + 'Marker att');
+         this.add(`sub:${preffix}Marker att`);
          this.addColorMenu('color', painter.markeratt.color,
             arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));});
          this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size,
@@ -63553,7 +63555,6 @@ class JSRootMenu {
          let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
 
          for (let n = 0; n < supported.length; ++n) {
-
             let clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
                 svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
@@ -63563,6 +63564,31 @@ class JSRootMenu {
          this.add('endsub:');
          this.add('endsub:');
       }
+
+      if (painter.textatt?.used) {
+         this.add(`sub:${preffix}Text att`);
+
+         this.addFontMenu('font', painter.textatt.font,
+                         arg => { painter.textatt.change(arg); painter.interactiveRedraw(true, `exec:SetTextFont(${arg})`); });
+
+         let rel = painter.textatt.size < 1.;
+
+         this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size,
+            arg => { painter.textatt.change(undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`); });
+
+         this.addColorMenu('color', painter.textatt.color,
+            arg => { painter.textatt.change(undefined, undefined, arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
+
+         this.addAlignMenu('align', painter.textatt.align, arg => {
+            painter.textatt.change(undefined, undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
+         });
+
+         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle,
+            arg => { painter.textatt.change(undefined,  undefined, undefined, undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`); });
+
+         this.add('endsub:');
+      }
+
    }
 
    /** @summary Fill context menu for axis
@@ -71998,7 +72024,6 @@ class TPavePainter extends ObjectPainter {
       super(dom, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
-      this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
    /** @summary Autoplace legend on the frame
@@ -72084,8 +72109,6 @@ class TPavePainter extends ObjectPainter {
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
-
-      this.UseTextColor = false;
 
       if (!this.Enabled) {
          this.removeG();
@@ -72302,8 +72325,6 @@ class TPavePainter extends ObjectPainter {
       if (!pave.fLabel || !pave.fLabel.trim())
          return this;
 
-      this.UseTextColor = true;
-
       this.createAttText({ attr: pave });
 
       this.startTextDrawing(this.textatt.font, height/1.2);
@@ -72344,12 +72365,9 @@ class TPavePainter extends ObjectPainter {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-
       this.createAttText({ attr: pt });
 
       this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
-
-      this.UseTextColor = true;
 
       if (nlines == 1) {
          this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
@@ -72449,10 +72467,7 @@ class TPavePainter extends ObjectPainter {
                   let x = entry.fX ? entry.fX*width : margin_x,
                       y = entry.fY ? (1 - entry.fY)*height : texty,
                       color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  if (!color) {
-                     color = this.textatt.color;
-                     this.UseTextColor = true;
-                  }
+                  if (!color) color = this.textatt.color;
 
                   let sub_g = text_g.append('svg:g');
 
@@ -72480,7 +72495,7 @@ class TPavePainter extends ObjectPainter {
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
                      if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   }
-                  if (!arg.color) { this.UseTextColor = true; arg.color = this.textatt.color; }
+                  if (!arg.color) arg.color = this.textatt.color;
                   this.drawText(arg);
                }
                break;
@@ -72529,8 +72544,6 @@ class TPavePainter extends ObjectPainter {
          this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g });
 
          promises.push(this.finishTextDrawing(lbl_g));
-
-         this.UseTextColor = true;
       }
 
       return Promise.all(promises).then(() => this);
@@ -73061,9 +73074,6 @@ class TPavePainter extends ObjectPainter {
             });
          });
       }
-
-      if (this.UseTextColor)
-         menu.addTextAttributesMenu(this);
 
       menu.addAttributesMenu(this);
 
