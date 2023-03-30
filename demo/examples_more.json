@@ -68,7 +68,8 @@
       { "name": "greyscale", "json": "web6canv/greyscale.json.gz", "title": "40K TBox objects with different fill attributes" },
       { "name": "para", "json": "web6canv/StandAloneaPara.json.gz", "title": "TTree drawing into TParallelCoord object" },
       { "name": "pie", "json": "web6canv/piechart.json.gz", "title": "Testing native TPie painting" },
-      { "name": "trans", "json": "web6canv/transparency.json.gz", "title": "Testing with TGraph without axes" }
+      { "name": "trans", "json": "web6canv/transparency.json.gz", "title": "Testing with TGraph without axes" },
+      { "name": "gaxis2", "json": "web6canv/gaxis2.json.gz", "title": "TGaxis with custom function, output of tutorials/graphics/gaxis2.C macro" }
    ],
    "RCanvas" : [
       { "name": "raxis", "json": "rcanvas/raxis.json.gz", "title": "RAxis drawings from raxis.cxx macro" },
