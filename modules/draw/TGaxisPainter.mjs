@@ -1,8 +1,11 @@
+import { clTF1 } from '../core.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { EAxisBits, TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
+import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
+
 
 /** @summary Drawing TGaxis
   * @private */
@@ -115,7 +118,8 @@ class TGaxisPainter extends TAxisPainter {
          time_scale: gaxis.fChopt.indexOf('t') >= 0,
          log: (gaxis.fChopt.indexOf('G') >= 0) ? 1 : 0,
          reverse,
-         swap_side: reverse
+         swap_side: reverse,
+         axis_func: this.axis_func
       });
 
       this.createG();
@@ -133,10 +137,22 @@ class TGaxisPainter extends TAxisPainter {
       });
    }
 
-
    /** @summary Fill TGaxis context */
    fillContextMenu(menu) {
       menu.addTAxisMenu(EAxisBits, this, this.getObject(), '');
+   }
+
+   checkFuncion() {
+      let gaxis = this.getObject();
+      if (!gaxis.fFunctionName)
+         this.axis_func = null;
+      else
+         this.axis_func = this.getPadPainter()?.findInPrimitives(gaxis.fFunctionName, clTF1);
+
+      if (this.axis_func) {
+         proivdeEvalPar(this.axis_func);
+         console.log('find TGaxis func=', gaxis.fFunctionName, this.axis_func);
+      }
    }
 
    /** @summary Draw TGaxis object */
@@ -145,6 +161,7 @@ class TGaxisPainter extends TAxisPainter {
 
       return ensureTCanvas(painter, false).then(() => {
          if (opt) painter.convertTo(opt);
+         painter.checkFuncion();
          return painter.redraw();
       });
    }

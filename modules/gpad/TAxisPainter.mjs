@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, isBatchMode, clTAxis, clTGaxis } from '../core.mjs';
+import { gStyle, settings, constants, isBatchMode, isFunc, clTAxis, clTGaxis } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
@@ -397,6 +397,7 @@ class TAxisPainter extends ObjectPainter {
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
+      this.axis_func = opts.axis_func || null;
 
       let axis = this.getObject();
 
@@ -525,6 +526,14 @@ class TAxisPainter extends ObjectPainter {
          this.order = 0;
          this.ndig = 0;
          this.format = this.formatNormal;
+      }
+
+      if (isFunc(this.axis_func?.evalPar)) {
+         this.format_origin = this.format;
+         this.format = function(d, asticks, fmt) {
+            console.log(`produce ticks for ${d}`,  this.axis_func.evalPar(d));
+            return this.format_origin(this.axis_func.evalPar(d), asticks, fmt);
+         }
       }
    }
 
@@ -868,7 +877,7 @@ class TAxisPainter extends ObjectPainter {
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
             // FIXME: for labels last tick is smaller,
-            if (/*(this.kind == 'labels') || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
+            if (/*(this.kind == 'labels') || */ (this.format(handle.tick, true) !== null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
