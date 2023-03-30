@@ -27,7 +27,6 @@ class TPavePainter extends ObjectPainter {
       super(dom, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
-      this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
    /** @summary Autoplace legend on the frame
@@ -113,8 +112,6 @@ class TPavePainter extends ObjectPainter {
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
-
-      this.UseTextColor = false;
 
       if (!this.Enabled) {
          this.removeG();
@@ -331,8 +328,6 @@ class TPavePainter extends ObjectPainter {
       if (!pave.fLabel || !pave.fLabel.trim())
          return this;
 
-      this.UseTextColor = true;
-
       this.createAttText({ attr: pave });
 
       this.startTextDrawing(this.textatt.font, height/1.2);
@@ -373,12 +368,9 @@ class TPavePainter extends ObjectPainter {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-
       this.createAttText({ attr: pt });
 
       this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
-
-      this.UseTextColor = true;
 
       if (nlines == 1) {
          this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
@@ -478,10 +470,7 @@ class TPavePainter extends ObjectPainter {
                   let x = entry.fX ? entry.fX*width : margin_x,
                       y = entry.fY ? (1 - entry.fY)*height : texty,
                       color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  if (!color) {
-                     color = this.textatt.color;
-                     this.UseTextColor = true;
-                  }
+                  if (!color) color = this.textatt.color;
 
                   let sub_g = text_g.append('svg:g');
 
@@ -509,7 +498,7 @@ class TPavePainter extends ObjectPainter {
                      if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
                      if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   }
-                  if (!arg.color) { this.UseTextColor = true; arg.color = this.textatt.color; }
+                  if (!arg.color) arg.color = this.textatt.color;
                   this.drawText(arg);
                }
                break;
@@ -558,8 +547,6 @@ class TPavePainter extends ObjectPainter {
          this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g });
 
          promises.push(this.finishTextDrawing(lbl_g));
-
-         this.UseTextColor = true;
       }
 
       return Promise.all(promises).then(() => this);
@@ -1090,9 +1077,6 @@ class TPavePainter extends ObjectPainter {
             });
          });
       }
-
-      if (this.UseTextColor)
-         menu.addTextAttributesMenu(this);
 
       menu.addAttributesMenu(this);
 

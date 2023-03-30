@@ -372,30 +372,6 @@ class JSRootMenu {
          this.add('angle');
    }
 
-   /** @summary Fill context menu for text attributes
-     * @private */
-   addTextAttributesMenu(painter, prefix) {
-      let obj = painter.getObject();
-      if ((obj?.fTextColor === undefined) || (obj?.fTextAlign === undefined) || (obj?.fTextFont === undefined)) return;
-
-      this.add('sub:' + (prefix || 'Text'));
-      this.addColorMenu('color', obj.fTextColor,
-         arg => { painter.getObject().fTextColor = arg; painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
-
-      let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
-
-      this.add('sub:align');
-      for (let n = 0; n < align.length; ++n)
-         this.addchk(align[n] == obj.fTextAlign, align[n], align[n],
-            arg => { painter.getObject().fTextAlign = parseInt(arg); painter.interactiveRedraw('pad', `exec:SetTextAlign(${arg})`); });
-      this.add('endsub:');
-
-      this.addFontMenu('font', obj.fTextFont,
-         fnt => { painter.getObject().fTextFont = fnt; painter.interactiveRedraw(true, `exec:SetTextFont(${fnt})`); });
-
-      this.add('endsub:');
-   }
-
    /** @summary Add line style menu
      * @private */
    addLineStyleMenu(name, value, set_func) {
