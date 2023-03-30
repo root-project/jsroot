@@ -1,4 +1,5 @@
 import { clTF1 } from '../core.mjs';
+import { scaleLinear as d3_scaleLinear } from '../d3.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { EAxisBits, TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -142,6 +143,7 @@ class TGaxisPainter extends TAxisPainter {
       menu.addTAxisMenu(EAxisBits, this, this.getObject(), '');
    }
 
+   /** @summary Check if there is function for TGaxis can be found */
    checkFuncion() {
       let gaxis = this.getObject();
       if (!gaxis.fFunctionName)
@@ -149,10 +151,40 @@ class TGaxisPainter extends TAxisPainter {
       else
          this.axis_func = this.getPadPainter()?.findInPrimitives(gaxis.fFunctionName, clTF1);
 
-      if (this.axis_func) {
+      if (this.axis_func)
          proivdeEvalPar(this.axis_func);
-         console.log('find TGaxis func=', gaxis.fFunctionName, this.axis_func);
-      }
+   }
+
+   /** @summary Create handle for custom function in the axis */
+   createFuncHandle(func, smin, smax) {
+
+      let res = function(v) { return res.toGraph(v); };
+      res._func = func;
+      res._domain = [smin, smax];
+      res._linear = d3_scaleLinear().domain(res._domain).range([0,1]);
+      res._vmin = func.evalPar(smin);
+      res._vmax = func.evalPar(smax);
+      res._range = [0, 100];
+      res.range = function(arr) {
+         if (arr) {
+            res._range = arr;
+            return res;
+         } else {
+            return res._range;
+         }
+      };
+
+      res.domain = function() { return res._domain; };
+
+      res.toGraph = function(v) {
+         let value = res._func.evalPar(v),
+             rel = (value - res._vmin) / (res._vmax - res._vmin);
+         return res._range[0] * (1-rel) + res._range[1] * rel;
+      };
+
+      res.ticks = function(arg) { return res._linear.ticks(arg); };
+
+      return res;
    }
 
    /** @summary Draw TGaxis object */

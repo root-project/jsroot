@@ -347,7 +347,7 @@ const AxisPainterMethods = {
 
 
 /**
- * @summary Painter for TAxis/TGaxis objects
+ * @summary Painter for TAxis object
  *
  * @private
  */
@@ -397,19 +397,22 @@ class TAxisPainter extends ObjectPainter {
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
-      this.axis_func = opts.axis_func || null;
 
       let axis = this.getObject();
 
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = getTimeOffset(axis);
+      } else if (opts.axis_func) {
+         this.kind = 'func';
       } else {
          this.kind = !axis.fLabels ? 'normal' : 'labels';
       }
 
       if (this.kind == 'time') {
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+      } else if (this.kind == 'func') {
+         this.func = this.createFuncHandle(opts.axis_func, smin, smax);
       } else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase =  10;
@@ -528,13 +531,6 @@ class TAxisPainter extends ObjectPainter {
          this.format = this.formatNormal;
       }
 
-      if (isFunc(this.axis_func?.evalPar)) {
-         this.format_origin = this.format;
-         this.format = function(d, asticks, fmt) {
-            console.log(`produce ticks for ${d}`,  this.axis_func.evalPar(d));
-            return this.format_origin(this.axis_func.evalPar(d), asticks, fmt);
-         }
-      }
    }
 
    /** @summary Return scale min */
