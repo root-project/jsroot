@@ -528,7 +528,6 @@ class JSRootMenu {
          let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
 
          for (let n = 0; n < supported.length; ++n) {
-
             let clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
                 svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
@@ -552,6 +551,21 @@ class JSRootMenu {
 
          this.addColorMenu('color', painter.textatt.color,
             arg => { painter.textatt.change(undefined, undefined, arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
+
+         let hnames = ['left', 'middle', 'right'], vnames = ['bottom', 'centered', 'top'];
+         this.add('sub:align');
+         for (let h = 1; h < 4; ++h)
+            for (let v = 1; v < 4; ++v) {
+               let pat = h*10 + v;
+               this.addchk(pat == painter.textatt.align, `${pat}: ${hnames[h-1]} ${vnames[h-1]}`, pat, arg => {
+                  painter.textatt.change(undefined, undefined, undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
+               });
+            }
+         this.add('endsub:');
+
+         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle,
+            arg => { painter.textatt.change(undefined,  undefined, undefined, undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`); });
+
          this.add('endsub:');
       }
 
