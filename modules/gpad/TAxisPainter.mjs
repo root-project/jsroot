@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, isBatchMode, isFunc, clTAxis, clTGaxis } from '../core.mjs';
+import { gStyle, settings, constants, isBatchMode, clTAxis, clTGaxis } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
@@ -411,11 +411,9 @@ class TAxisPainter extends ObjectPainter {
 
       if (this.kind == 'time') {
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
-      } else if (this.kind == 'func') {
-         this.func = this.createFuncHandle(opts.axis_func, smin, smax);
       } else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
-            this.logbase =  10;
+            this.logbase = 10;
          else if (this.log === 3)
             this.logbase = Math.E;
          else
@@ -435,7 +433,10 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = d3_scaleLog().base(this.logbase).domain([smin, smax]);
+         if (this.kind == 'func')
+            this.func = this.createFuncHandle(opts.axis_func, this.logbase, smin, smax);
+         else
+            this.func = d3_scaleLog().base(this.logbase).domain([smin, smax]);
       } else if (this.symlog) {
          let v = Math.max(Math.abs(smin), Math.abs(smax));
          if (Number.isInteger(this.symlog) && (this.symlog > 0))
@@ -443,6 +444,8 @@ class TAxisPainter extends ObjectPainter {
          else
             v *= 0.01;
          this.func = d3_scaleSymlog().constant(v).domain([smin, smax]);
+      } else if (this.kind == 'func') {
+         this.func = this.createFuncHandle(opts.axis_func, 0, smin, smax);
       } else {
          this.func = d3_scaleLinear().domain([smin,smax]);
       }
@@ -648,7 +651,7 @@ class TAxisPainter extends ObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == 'normal') && !this.log && (handle.major.length > 0)) {
+      if (((this.kind == 'normal') || (this.kind == 'func')) && !this.log && (handle.major.length > 0)) {
 
          let maxorder = 0, minorder = 0, exclorder3 = false;
 

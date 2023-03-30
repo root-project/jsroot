@@ -1,5 +1,5 @@
 import { clTF1 } from '../core.mjs';
-import { scaleLinear as d3_scaleLinear } from '../d3.mjs';
+import { scaleLinear as d3_scaleLinear, scaleLog as d3_scaleLog } from '../d3.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { EAxisBits, TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -156,14 +156,26 @@ class TGaxisPainter extends TAxisPainter {
    }
 
    /** @summary Create handle for custom function in the axis */
-   createFuncHandle(func, smin, smax) {
+   createFuncHandle(func, logbase, smin, smax) {
 
       let res = function(v) { return res.toGraph(v); };
       res._func = func;
       res._domain = [smin, smax];
-      res._linear = d3_scaleLinear().domain(res._domain).range([0,1]);
-      res._vmin = func.evalPar(smin);
-      res._vmax = func.evalPar(smax);
+      res._scale = logbase ? d3_scaleLog().base(logbase) : d3_scaleLinear();
+      res._scale.domain(res._domain).range([0,100]);
+      res.eval = function(v) {
+         try {
+            v = res._func.evalPar(v);
+         } catch(err) {
+            v = 0;
+         }
+         return Number.isFinite(v) ? v : 0.;
+      }
+
+      res._vmin = res.eval(smin);
+      res._vmax = res.eval(smax);
+      res._vrange = res._vmax - res._vmin;
+      if (!res._vrange) res._vrange = 1;
       res._range = [0, 100];
       res.range = function(arr) {
          if (arr) {
@@ -177,12 +189,11 @@ class TGaxisPainter extends TAxisPainter {
       res.domain = function() { return res._domain; };
 
       res.toGraph = function(v) {
-         let value = res._func.evalPar(v),
-             rel = (value - res._vmin) / (res._vmax - res._vmin);
+         let rel = (res.eval(v) - res._vmin) / res._vrange;
          return res._range[0] * (1-rel) + res._range[1] * rel;
       };
 
-      res.ticks = function(arg) { return res._linear.ticks(arg); };
+      res.ticks = function(arg) { return res._scale.ticks(arg); };
 
       return res;
    }
