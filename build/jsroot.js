@@ -59427,7 +59427,7 @@ const AxisPainterMethods = {
 
 
 /**
- * @summary Painter for TAxis/TGaxis objects
+ * @summary Painter for TAxis object
  *
  * @private
  */
@@ -59483,6 +59483,8 @@ class TAxisPainter extends ObjectPainter {
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = getTimeOffset(axis);
+      } else if (opts.axis_func) {
+         this.kind = 'func';
       } else {
          this.kind = !axis.fLabels ? 'normal' : 'labels';
       }
@@ -59491,7 +59493,7 @@ class TAxisPainter extends ObjectPainter {
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
-            this.logbase =  10;
+            this.logbase = 10;
          else if (this.log === 3)
             this.logbase = Math.E;
          else
@@ -59511,7 +59513,10 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = log().base(this.logbase).domain([smin, smax]);
+         if (this.kind == 'func')
+            this.func = this.createFuncHandle(opts.axis_func, this.logbase, smin, smax);
+         else
+            this.func = log().base(this.logbase).domain([smin, smax]);
       } else if (this.symlog) {
          let v = Math.max(Math.abs(smin), Math.abs(smax));
          if (Number.isInteger(this.symlog) && (this.symlog > 0))
@@ -59519,6 +59524,8 @@ class TAxisPainter extends ObjectPainter {
          else
             v *= 0.01;
          this.func = symlog().constant(v).domain([smin, smax]);
+      } else if (this.kind == 'func') {
+         this.func = this.createFuncHandle(opts.axis_func, 0, smin, smax);
       } else {
          this.func = linear().domain([smin,smax]);
       }
@@ -59606,6 +59613,7 @@ class TAxisPainter extends ObjectPainter {
          this.ndig = 0;
          this.format = this.formatNormal;
       }
+
    }
 
    /** @summary Return scale min */
@@ -59723,7 +59731,7 @@ class TAxisPainter extends ObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == 'normal') && !this.log && (handle.major.length > 0)) {
+      if (((this.kind == 'normal') || (this.kind == 'func')) && !this.log && (handle.major.length > 0)) {
 
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
@@ -59948,7 +59956,7 @@ class TAxisPainter extends ObjectPainter {
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
             // FIXME: for labels last tick is smaller,
-            if (/*(this.kind == 'labels') || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
+            if (/*(this.kind == 'labels') || */ (this.format(handle.tick, true) !== null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
@@ -69743,15 +69751,12 @@ class TPadPainter extends ObjectPainter {
      * @desc used to find title drawing
      * @private */
    findInPrimitives(objname, objtype) {
-      let match = obj => (obj.fName == objname) && (objtype ? (obj._typename == objtype) : true);
+      const match = obj => obj && (obj?.fName == objname) && (objtype ? (obj?._typename == objtype) : true);
 
-      if (this._snap_primitives) {
-         let snap = this._snap_primitives.find(snap => (snap.fKind === webSnapIds.kObject) ? match(snap.fSnapshot) : false);
-         if (snap) return snap.fSnapshot;
-      }
+      let snap = this._snap_primitives?.find(snap => match((snap.fKind === webSnapIds.kObject) ? snap.fSnapshot : null));
+      if (snap) return snap.fSnapshot;
 
-      let arr = this.pad?.fPrimitives?.arr;
-      return arr ? arr.find(match) : null;
+      return this.pad?.fPrimitives?.arr.find(match);
    }
 
    /** @summary Try to find painter for specified object
@@ -108220,6 +108225,7 @@ function proivdeEvalPar(obj) {
                .replace(/\b(cos)\b/gi, 'Math.cos')
                .replace(/\b(tan)\b/gi, 'Math.tan')
                .replace(/\b(exp)\b/gi, 'Math.exp')
+               .replace(/\b(log10)\b/gi, 'Math.log10')
                .replace(/\b(pow)\b/gi, 'Math.pow')
                .replace(/pi/g, 'Math.PI');
   for (let n = 2; n < 10; ++n)
@@ -110217,7 +110223,8 @@ class TGaxisPainter extends TAxisPainter {
          time_scale: gaxis.fChopt.indexOf('t') >= 0,
          log: (gaxis.fChopt.indexOf('G') >= 0) ? 1 : 0,
          reverse,
-         swap_side: reverse
+         swap_side: reverse,
+         axis_func: this.axis_func
       });
 
       this.createG();
@@ -110235,10 +110242,71 @@ class TGaxisPainter extends TAxisPainter {
       });
    }
 
-
    /** @summary Fill TGaxis context */
    fillContextMenu(menu) {
       menu.addTAxisMenu(EAxisBits, this, this.getObject(), '');
+   }
+
+   /** @summary Check if there is function for TGaxis can be found */
+   checkFuncion() {
+      let gaxis = this.getObject();
+      if (!gaxis.fFunctionName)
+         this.axis_func = null;
+      else
+         this.axis_func = this.getPadPainter()?.findInPrimitives(gaxis.fFunctionName, clTF1);
+
+      if (this.axis_func)
+         proivdeEvalPar(this.axis_func);
+   }
+
+   /** @summary Create handle for custom function in the axis */
+   createFuncHandle(func, logbase, smin, smax) {
+
+      let res = function(v) { return res.toGraph(v); };
+      res._func = func;
+      res._domain = [smin, smax];
+      res._scale = logbase ? log().base(logbase) : linear();
+      res._scale.domain(res._domain).range([0,100]);
+      res.eval = function(v) {
+         try {
+            v = res._func.evalPar(v);
+         } catch(err) {
+            v = 0;
+         }
+         return Number.isFinite(v) ? v : 0.;
+      };
+
+      let vmin = res.eval(smin), vmax = res.eval(smax);
+      if ((vmin < vmax) === (smin < smax)) {
+         res._vmin = vmin;
+         res._vk = 1/(vmax - vmin);
+      } else if (vmin === vmax) {
+         res._vmin = 0;
+         res._vk = 1;
+      } else {
+         res._vmin = vmax;
+         res._vk = 1/(vmin - vmax);
+      }
+      res._range = [0, 100];
+      res.range = function(arr) {
+         if (arr) {
+            res._range = arr;
+            return res;
+         } else {
+            return res._range;
+         }
+      };
+
+      res.domain = function() { return res._domain; };
+
+      res.toGraph = function(v) {
+         let rel = (res.eval(v) - res._vmin) * res._vk;
+         return res._range[0] * (1 - rel) + res._range[1] * rel;
+      };
+
+      res.ticks = function(arg) { return res._scale.ticks(arg); };
+
+      return res;
    }
 
    /** @summary Draw TGaxis object */
@@ -110247,6 +110315,7 @@ class TGaxisPainter extends TAxisPainter {
 
       return ensureTCanvas(painter, false).then(() => {
          if (opt) painter.convertTo(opt);
+         painter.checkFuncion();
          return painter.redraw();
       });
    }

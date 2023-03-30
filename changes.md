@@ -16,8 +16,9 @@
 13. Let change physical node visibility in TGeo drawings
 14. Use TGaxis attributes from gStyle - fAxisMaxDigits, fStripDecimals and exponent offset
 15. Implement "projxy" draw option for TH2 - like projxy3 or projx1_y5
-16. Fix - rescan sumw2 when update TH1
-17. Fix - correct placing for TLegend header
+16. Support custom function in TGaxis - when drawn in TWebCanvas
+17. Fix - rescan sumw2 when update TH1
+18. Fix - correct placing for TLegend header
 
 
 ## Changes in 7.3.1
