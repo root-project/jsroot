@@ -1930,7 +1930,7 @@ class HierarchyPainter extends BasePainter {
             drawopt = '';
          }
 
-         if (!updating) showProgress('Loading ' + display_itemname);
+         if (!updating) showProgress(`Loading ${display_itemname} ...`);
 
          return this.getObject(display_itemname, drawopt).then(result => {
 
@@ -1941,7 +1941,7 @@ class HierarchyPainter extends BasePainter {
 
             if (!obj) return complete();
 
-            if (!updating) showProgress('Drawing ' + display_itemname);
+            if (!updating) showProgress(`Drawing ${display_itemname} ...`);
 
             let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
 

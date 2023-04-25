@@ -3441,7 +3441,7 @@ class TGeoPainter extends ObjectPainter {
             }
           };
 
-      showProgress('Loading macro ' + script_name);
+      showProgress(`Loading macro ${script_name}`);
 
       return httpRequest(script_name, 'text').then(script => {
          let lines = script.split('\n'), indx = 0;
