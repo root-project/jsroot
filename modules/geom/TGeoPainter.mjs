@@ -3492,7 +3492,7 @@ class TGeoPainter extends ObjectPainter {
       // array for descriptors for each node
       // if array too large (>1M), use JS object while only ~1K nodes are expected to be used
       if (recreate) {
-         // if (draw_msg.kind !== "draw") return false;
+         // if (draw_msg.kind !== 'draw') return false;
          nodes = (draw_msg.numnodes > 1e6) ? { length: draw_msg.numnodes } : new Array(draw_msg.numnodes); // array for all nodes
       }
 
@@ -3521,8 +3521,8 @@ class TGeoPainter extends ObjectPainter {
          nsegm = draw_msg.cfg.nsegm;
 
       if (nsegm) {
-         old_gradpersegm = geoCfg("GradPerSegm");
-         geoCfg("GradPerSegm", 360 / Math.max(nsegm,6));
+         old_gradpersegm = geoCfg('GradPerSegm');
+         geoCfg('GradPerSegm', 360 / Math.max(nsegm,6));
       }
 
       for (let cnt = 0; cnt < draw_msg.visibles.length; ++cnt) {
@@ -3534,7 +3534,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (old_gradpersegm)
-         geoCfg("GradPerSegm", old_gradpersegm);
+         geoCfg('GradPerSegm', old_gradpersegm);
 
       return true;
    }
