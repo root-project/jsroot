@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '30/03/2023';
+let version_date = '25/04/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -88968,7 +88968,7 @@ class TGeoPainter extends ObjectPainter {
       // array for descriptors for each node
       // if array too large (>1M), use JS object while only ~1K nodes are expected to be used
       if (recreate) {
-         // if (draw_msg.kind !== "draw") return false;
+         // if (draw_msg.kind !== 'draw') return false;
          nodes = (draw_msg.numnodes > 1e6) ? { length: draw_msg.numnodes } : new Array(draw_msg.numnodes); // array for all nodes
       }
 
@@ -88997,8 +88997,8 @@ class TGeoPainter extends ObjectPainter {
          nsegm = draw_msg.cfg.nsegm;
 
       if (nsegm) {
-         old_gradpersegm = geoCfg("GradPerSegm");
-         geoCfg("GradPerSegm", 360 / Math.max(nsegm,6));
+         old_gradpersegm = geoCfg('GradPerSegm');
+         geoCfg('GradPerSegm', 360 / Math.max(nsegm,6));
       }
 
       for (let cnt = 0; cnt < draw_msg.visibles.length; ++cnt) {
@@ -89010,7 +89010,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (old_gradpersegm)
-         geoCfg("GradPerSegm", old_gradpersegm);
+         geoCfg('GradPerSegm', old_gradpersegm);
 
       return true;
    }
@@ -122097,6 +122097,7 @@ exports.drawingJSON = drawingJSON;
 exports.findFunction = findFunction;
 exports.floatToString = floatToString;
 exports.gStyle = gStyle;
+exports.geoCfg = geoCfg;
 exports.getAbsPosInCanvas = getAbsPosInCanvas;
 exports.getActivePad = getActivePad;
 exports.getDocument = getDocument;
