@@ -3,7 +3,7 @@ import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
-import { floatToString, makeTranslate, compressSVG, svgToImage } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -929,7 +929,7 @@ class TPavePainter extends ObjectPainter {
 
          let origin = d3_pointer(evnt, this.draw_g.node());
 
-         zoom_rect = this.draw_g.append('svg:rect').attr('class', 'zoom').attr('id', 'colzoomRect');
+         zoom_rect = this.draw_g.append('svg:rect').attr('id', 'colzoomRect').call(addHighlightStyle, true);
 
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];
