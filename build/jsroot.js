@@ -65307,8 +65307,8 @@ const FrameInteractive = {
 
          this.zoom_rect = this.getFrameSvg()
                               .append('rect')
-                              .attr('class', 'zoom')
-                              .style('pointer-events','none');
+                              .style('pointer-events','none')
+                              .call(addHighlightStyle, true);
       }
 
       this.zoom_rect.attr('x', x).attr('y', y).attr('width', w).attr('height', h);
@@ -65500,12 +65500,12 @@ const FrameInteractive = {
       setPainterTooltipEnabled(this, false);
 
       this.zoom_rect = this.getFrameSvg().append('rect')
-            .attr('class', 'zoom')
             .attr('id', 'zoomRect')
             .attr('x', this.zoom_curr[0])
             .attr('y', this.zoom_curr[1])
             .attr('width', this.zoom_origin[0] - this.zoom_curr[0])
-            .attr('height', this.zoom_origin[1] - this.zoom_curr[1]);
+            .attr('height', this.zoom_origin[1] - this.zoom_curr[1])
+            .call(addHighlightStyle, true);
 
       select(window).on('touchmove.zoomRect', evnt => this.moveTouchZoom(evnt))
                        .on('touchcancel.zoomRect', evnt => this.endTouchZoom(evnt))
@@ -68764,7 +68764,7 @@ class BrowserLayout {
 
    /** @summary Show status information inside special fields of browser layout */
    showStatus(...msgs) {
-      if (!this.status_layout) return;
+      if (!isObject(this.status_layout) || !isFunc(this.status_layout.getGridFrame)) return;
 
       let maxh = 0;
       for (let n = 0; n < 4; ++n) {
@@ -72935,7 +72935,7 @@ class TPavePainter extends ObjectPainter {
 
          let origin = pointer(evnt, this.draw_g.node());
 
-         zoom_rect = this.draw_g.append('svg:rect').attr('class', 'zoom').attr('id', 'colzoomRect');
+         zoom_rect = this.draw_g.append('svg:rect').attr('id', 'colzoomRect').call(addHighlightStyle, true);
 
          if (this._palette_vertical) {
             sel1 = sel2 = origin[1];
@@ -80317,45 +80317,6 @@ class TH3Painter extends THistPainter {
       return lines;
    }
 
-   /** @summary Provides 3D rendering configuration
-     * @return {Object} with scene, renderer and other attributes
-     * @private */
-   get3DCfg() {
-      let main = this.getFramePainter();
-      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer) {
-
-         let scale_x = 1, scale_y = 1, scale_z = 1,
-             offset_x = 0, offset_y = 0, offset_z = 0;
-
-         if (main.scale_xmax > main.scale_xmin) {
-            scale_x = 2*main.size_x3d/(main.scale_xmax - main.scale_xmin);
-            offset_x = (main.scale_xmax + main.scale_xmin) / 2 * scale_x;
-         }
-
-         if (main.scale_ymax > main.scale_ymin) {
-            scale_y = 2*main.size_y3d/(main.scale_ymax - main.scale_ymin);
-            offset_y = (main.scale_ymax + main.scale_ymin) / 2 * scale_y;
-         }
-
-         if (main.scale_zmax > main.scale_zmin) {
-            scale_z = 2*main.size_z3d/(main.scale_zmax - main.scale_zmin);
-            offset_z = (main.scale_zmax + main.scale_zmin) / 2 * scale_z - main.size_z3d;
-         }
-
-         return {
-            webgl: main.webgl,
-            scene: main.scene,
-            scene_width: main.scene_width,
-            scene_height: main.scene_height,
-            toplevel: main.toplevel,
-            renderer: main.renderer,
-            camera: main.camera,
-            scale_x, scale_y, scale_z,
-            offset_x, offset_y, offset_z
-         };
-     }
-   }
-
    /** @summary draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed
      * @return {Promise|false} either Promise or just false that drawing cannot be performed */
@@ -85635,6 +85596,46 @@ function buildCompositeVolume(comp, maxlvl, side) {
 }
 
 
+/** @summary Provides 3D rendering configuration from histogram painter
+  * @return {Object} with scene, renderer and other attributes
+  * @private */
+function getHistPainter3DCfg(painter) {
+   let main = painter?.getFramePainter();
+   if (painter.mode3d && isFunc(main?.create3DScene) && main.renderer) {
+
+      let scale_x = 1, scale_y = 1, scale_z = 1,
+          offset_x = 0, offset_y = 0, offset_z = 0;
+
+      if (main.scale_xmax > main.scale_xmin) {
+         scale_x = 2 * main.size_x3d/(main.scale_xmax - main.scale_xmin);
+         offset_x = (main.scale_xmax + main.scale_xmin) / 2 * scale_x;
+      }
+
+      if (main.scale_ymax > main.scale_ymin) {
+         scale_y = 2 * main.size_y3d/(main.scale_ymax - main.scale_ymin);
+         offset_y = (main.scale_ymax + main.scale_ymin) / 2 * scale_y;
+      }
+
+      if (main.scale_zmax > main.scale_zmin) {
+         scale_z = 2 * main.size_z3d/(main.scale_zmax - main.scale_zmin);
+         offset_z = (main.scale_zmax + main.scale_zmin) / 2 * scale_z - main.size_z3d;
+      }
+
+      return {
+         webgl: main.webgl,
+         scene: main.scene,
+         scene_width: main.scene_width,
+         scene_height: main.scene_height,
+         toplevel: main.toplevel,
+         renderer: main.renderer,
+         camera: main.camera,
+         scale_x, scale_y, scale_z,
+         offset_x, offset_y, offset_z
+      };
+  }
+}
+
+
 /** @summary create list entity for geo object
   * @private */
 function createList(parent, lst, name, title) {
@@ -85955,8 +85956,7 @@ class TGeoPainter extends ObjectPainter {
 
       super(dom, obj);
 
-      let mp = this.getMainPainter();
-      if (isFunc(mp?.get3DCfg) && mp.get3DCfg())
+      if (getHistPainter3DCfg(this.getMainPainter()))
          this.superimpose = true;
 
       if (gm) this.geo_manager = gm;
@@ -86795,7 +86795,7 @@ class TGeoPainter extends ObjectPainter {
          advanced.add(this.ctrl, 'ortho_camera').name('Orhographic camera')
                  .listen().onChange(() => this.changeCamera());
 
-        advanced.add(this, 'resetAdvanced').name('Reset');
+         advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
       // Transformation Options
@@ -87958,8 +87958,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Initial scene creation */
    async createScene(w, h) {
       if (this.superimpose) {
-         let mp = this.getMainPainter(),
-             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+         let cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg?.renderer) {
             this._scene = cfg.scene;
@@ -90256,8 +90255,7 @@ class TGeoPainter extends ObjectPainter {
     /** @summary Redraw TGeo object inside TPad */
    redraw() {
       if (this.superimpose) {
-         let mp = this.getMainPainter(),
-             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+         let cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg) {
             this._toplevel.scale.set(cfg.scale_x ?? 1, cfg.scale_y ?? 1, cfg.scale_z ?? 1);
