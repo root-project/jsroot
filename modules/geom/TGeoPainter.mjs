@@ -1180,7 +1180,8 @@ class TGeoPainter extends ObjectPainter {
       this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
-      if (main.style('position') == 'static') main.style('position','relative');
+      if (main.style('position') == 'static')
+         main.style('position', 'relative');
 
       let dom = this._datgui.domElement;
       dom.style.position = 'absolute';
@@ -4451,7 +4452,7 @@ class TGeoPainter extends ObjectPainter {
             can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
          }
 
-         if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
+         this._toolbar?.cleanup(); // remove toolbar
 
          this.helpText();
 
@@ -4459,36 +4460,35 @@ class TGeoPainter extends ObjectPainter {
 
          disposeThreejsObject(this._full_geom);
 
-         if (this._tcontrols)
-            this._tcontrols.dispose();
+         this._tcontrols?.dispose();
 
-         if (this._controls)
-            this._controls.cleanup();
+         this._controls?.cleanup();
 
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
 
-         if (this._datgui)
-            this._datgui.destroy();
+         this._datgui?.destroy();
 
-         if (this._worker) this._worker.terminate();
+         this._worker?.terminate();
 
          delete this._animating;
 
          let obj = this.getGeometry();
          if (obj && this.ctrl.is_main) {
-            if (obj.$geo_painter===this) delete obj.$geo_painter; else
-            if (obj.fVolume && obj.fVolume.$geo_painter===this) delete obj.fVolume.$geo_painter;
+            if (obj.$geo_painter === this)
+               delete obj.$geo_painter;
+            else if (obj.fVolume?.$geo_painter === this)
+               delete obj.fVolume.$geo_painter;
          }
 
          if (this._main_painter) {
             let pos = this._main_painter._slave_painters.indexOf(this);
-            if (pos >= 0) this._main_painter._slave_painters.splice(pos,1);
+            if (pos >= 0) this._main_painter._slave_painters.splice(pos, 1);
          }
 
-         for (let k = 0; k < this._slave_painters.length;++k) {
+         for (let k = 0; k < this._slave_painters.length; ++k) {
             let slave = this._slave_painters[k];
-            if (slave && (slave._main_painter===this)) slave._main_painter = null;
+            if (slave?._main_painter === this) slave._main_painter = null;
          }
 
          delete this.geo_manager;
