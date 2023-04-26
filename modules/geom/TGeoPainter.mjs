@@ -2286,7 +2286,11 @@ class TGeoPainter extends ObjectPainter {
             getBoundingBox(mesh, box3);
       });
 
-      if (scalar !== undefined)
+      if (scalar == 'original') {
+         box3.translate(new Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
+         box3.min.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+         box3.max.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+      } else if (scalar !== undefined)
          box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
 
       return box3;
@@ -4000,7 +4004,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl._axis)
          return norender ? null : this.render3D();
 
-      let box = this.getGeomBoundingBox(this._toplevel),
+      let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
           text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
           center = [0,0,0],
