@@ -753,6 +753,9 @@ class TGeoPainter extends ObjectPainter {
    decodeOptions(opt) {
       if (!isStr(opt)) opt = '';
 
+      if (this.superimpose && (opt.indexOf('same') == 0))
+         opt = opt.slice(4);
+
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
                   _count: false, wireframe: false,
@@ -793,7 +796,6 @@ class TGeoPainter extends ObjectPainter {
 
          let name = opt.substring(p1+1, p2);
          opt = opt.slice(0,p1) + opt.slice(p2);
-         // console.log(`Modify visibility ${sign} : ${name}`);
 
          this.modifyVisisbility(name, sign);
       }
