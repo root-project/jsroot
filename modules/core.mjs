@@ -5,7 +5,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '25/04/2023';
+let version_date = '26/04/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -243,6 +243,8 @@ let settings = {
      * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
      * @default 200 */
    MaxRanges: 200,
+  /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
+   WithCredentials: false,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
@@ -859,6 +861,9 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
    }
 
    xhr.kind = kind;
+
+   if (settings.WithCredentials)
+      xhr.withCredentials = true;
 
    if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
       xhr.addEventListener('progress', function(oEvent) {
