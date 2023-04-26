@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '25/04/2023';
+let version_date = '26/04/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -248,6 +248,8 @@ let settings = {
      * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
      * @default 200 */
    MaxRanges: 200,
+  /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
+   WithCredentials: false,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
    /** @summary Show only last cycle for objects in TFile */
@@ -865,6 +867,9 @@ function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_cal
 
    xhr.kind = kind;
 
+   if (settings.WithCredentials)
+      xhr.withCredentials = true;
+
    if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
       xhr.addEventListener('progress', function(oEvent) {
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
@@ -984,8 +989,7 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const clTObject = 'TObject', clTNamed = 'TNamed',
-      clTString = 'TString', clTObjString = 'TObjString',
+const prefROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -1838,6 +1842,7 @@ loadScript: loadScript,
 nsREX: nsREX,
 parse: parse,
 parseMulti: parseMulti,
+prefROOT: prefROOT,
 registerMethods: registerMethods,
 setBatchMode: setBatchMode,
 settings: settings,
@@ -11264,7 +11269,7 @@ class ObjectPainter extends BasePainter {
       if (!obj?._typename || !isFunc(pp?.getObjectDrawSettings))
          return [];
 
-      return pp.getObjectDrawSettings(`ROOT.${obj._typename}`, 'nosame')?.opts;
+      return pp.getObjectDrawSettings(prefROOT + obj._typename, 'nosame')?.opts;
    }
 
    /** @summary Central place to update objects drawing
@@ -57189,7 +57194,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
       if (!this.mode3d) return;
 
-      if (!this.clear3dCanvas) {
+      if (!isFunc(this.clear3dCanvas)) {
          console.error(`Strange, why mode3d=${this.mode3d} is configured!!!!`);
          return;
       }
@@ -57199,7 +57204,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       this.clear3dCanvas();
 
       disposeThreejsObject(this.scene);
-      if (this.control) this.control.cleanup();
+      this.control?.cleanup();
 
       cleanupRender3D(this.renderer);
 
@@ -80308,6 +80313,23 @@ class TH3Painter extends THistPainter {
       return lines;
    }
 
+   /** @summary Provides 3D rendering configuration
+     * @return {Object} with scene, renderer and other attributes
+     * @private */
+   get3DCfg() {
+      let main = this.getFramePainter();
+      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer)
+         return {
+            webgl: main.webgl,
+            scene: main.scene,
+            scene_width: main.scene_width,
+            scene_height: main.scene_height,
+            toplevel: main.toplevel,
+            renderer: main.renderer,
+            camera: main.camera
+         };
+   }
+
    /** @summary draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed
      * @return {Promise|false} either Promise or just false that drawing cannot be performed */
@@ -80356,7 +80378,7 @@ class TH3Painter extends THistPainter {
                if (bin_content <= content_lmt) continue;
                let num = Math.round(bin_content*coef);
 
-               for (let n=0;n<num;++n) {
+               for (let n = 0; n < num; ++n) {
                   let binx = histo.fXaxis.GetBinCoord(i + rnd.random()),
                       biny = histo.fYaxis.GetBinCoord(j + rnd.random()),
                       binz = histo.fZaxis.GetBinCoord(k + rnd.random());
@@ -80375,7 +80397,7 @@ class TH3Painter extends THistPainter {
 
          mesh.bins = bins;
          mesh.painter = this;
-         mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
+         mesh.tip_color = histo.fMarkerColor === 3 ? 0xFF0000 : 0x00FF00;
 
          mesh.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.index)) {
@@ -80705,16 +80727,11 @@ class TH3Painter extends THistPainter {
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            let lcolor = this.getColor(histo.fLineColor),
-                helper_material = new LineBasicMaterial({ color: lcolor }),
-                lines = null;
-
-            if (helper_kind[nseq] === 1) {
-               // reuse positions from the mesh - only special index was created
-               lines = createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq]);
-            } else {
-               lines = createLineSegments(helper_positions[nseq], helper_material);
-            }
+            let helper_material = new LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
+                lines = (helper_kind[nseq] === 1)
+                   // reuse positions from the mesh - only special index was created
+                   ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
+                   : createLineSegments(helper_positions[nseq], helper_material);
 
             main.toplevel.add(lines);
          }
@@ -80765,7 +80782,7 @@ class TH3Painter extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
       let obj = this.getHisto();
-      if (obj) obj = obj['f'+axis.toUpperCase()+'axis'];
+      if (obj) obj = obj[`f${axis.toUpperCase()}axis`];
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
@@ -80782,7 +80799,7 @@ class TH3Painter extends THistPainter {
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
 
       // first find minimum
-      let min = histo.getBinContent(i1 + 1, j1 + 1, k1+1);
+      let min = histo.getBinContent(i1+1, j1+1, k1+1);
       for (i = i1; i < i2; ++i)
          for (j = j1; j < j2; ++j)
             for (k = k1; k < k2; ++k)
@@ -83768,7 +83785,7 @@ function createServerGeometry(rd, nsegm) {
 
    }
 
-   // shape handle is similar to created in JSROOT.GeoPainter
+   // shape handle is similar to created in TGeoPainter
    return {
       _typename: '$$Shape$$', // indicate that shape can be used as is
       ready: true,
@@ -85600,7 +85617,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: 'ROOT.' + clTList,
+       _kind: prefROOT + clTList,
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -85911,6 +85928,10 @@ class TGeoPainter extends ObjectPainter {
          obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       super(dom, obj);
+
+      let mp = this.getMainPainter();
+      if (isFunc(mp?.get3DCfg) && mp.get3DCfg())
+         this.superimpose = true;
 
       if (gm) this.geo_manager = gm;
 
@@ -86656,7 +86677,8 @@ class TGeoPainter extends ObjectPainter {
       this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
-      if (main.style('position') == 'static') main.style('position','relative');
+      if (main.style('position') == 'static')
+         main.style('position', 'relative');
 
       let dom = this._datgui.domElement;
       dom.style.position = 'absolute';
@@ -87162,7 +87184,7 @@ class TGeoPainter extends ObjectPainter {
 
          let lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
-         for (let k = 0; k < lst.length; ++k)
+         for (let k = 0; k < lst?.length; ++k)
             if (lst[k] !== this)
                lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
       }
@@ -87234,7 +87256,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add orbit control */
    addOrbitControls() {
 
-      if (this._controls || !this._webgl || isBatchMode()) return;
+      if (this._controls || !this._webgl || isBatchMode() || this.superimpose) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -87320,7 +87342,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols) return;
+      if (this._tcontrols || this.superimpose) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
@@ -87903,6 +87925,26 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Initial scene creation */
    async createScene(w, h) {
+      if (this.superimpose) {
+         let mp = this.getMainPainter(),
+             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+
+         if (cfg?.renderer) {
+            this._scene = cfg.scene;
+            this._scene_width = cfg.scene_width;
+            this._scene_height = cfg.scene_height;
+            this._renderer = cfg.renderer;
+            this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
+
+            this._toplevel = new Object3D();
+            this._scene.add(this._toplevel);
+
+            this._camera = cfg.camera;
+         }
+
+         return this._renderer?.jsroot_dom;
+      }
+
       // three.js 3D drawing
       this._scene = new Scene();
       this._scene.fog = new Fog(0xffffff, 1, 10000);
@@ -88093,11 +88135,10 @@ class TGeoPainter extends ObjectPainter {
      * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
      * @param keep_zoom - tries to keep zomming factor of the camera */
    adjustCameraPosition(arg, keep_zoom) {
-      if (!this._toplevel) return;
+      if (!this._toplevel || this.superimpose) return;
 
-      let force = (arg === true), first_time = (arg == 'first') || force;
-
-      let box = this.getGeomBoundingBox(this._toplevel);
+      let force = (arg === true), first_time = (arg == 'first') || force,
+          box = this.getGeomBoundingBox(this._toplevel);
 
       // let box2 = new Box3().makeEmpty();
       // box2.expandByObject(this._toplevel, true);
@@ -88917,7 +88958,7 @@ class TGeoPainter extends ObjectPainter {
             }
           };
 
-      showProgress('Loading macro ' + script_name);
+      showProgress(`Loading macro ${script_name}`);
 
       return httpRequest(script_name, 'text').then(script => {
          let lines = script.split('\n'), indx = 0;
@@ -89914,57 +89955,59 @@ class TGeoPainter extends ObjectPainter {
 
          this.removeSSAO();
 
-         this.clearTopPainter(); // remove as pointer
-
          let can3d = 0;
-         if (this._on_pad) {
-            let fp = this.getFramePainter();
-            if (fp?.mode3d) {
-               fp.clear3dCanvas();
-               fp.mode3d = false;
+
+         if (!this.superimpose) {
+            this.clearTopPainter(); // remove as pointer
+
+            if (this._on_pad) {
+               let fp = this.getFramePainter();
+               if (fp?.mode3d) {
+                  fp.clear3dCanvas();
+                  fp.mode3d = false;
+               }
+            } else {
+               can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
             }
-         } else {
-            can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
+
+            disposeThreejsObject(this._scene);
          }
 
-         if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
+         this._toolbar?.cleanup(); // remove toolbar
 
          this.helpText();
 
-         disposeThreejsObject(this._scene);
-
          disposeThreejsObject(this._full_geom);
 
-         if (this._tcontrols)
-            this._tcontrols.dispose();
+         this._tcontrols?.dispose();
 
-         if (this._controls)
-            this._controls.cleanup();
+         this._controls?.cleanup();
 
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
 
-         if (this._datgui)
-            this._datgui.destroy();
+         this._datgui?.destroy();
 
-         if (this._worker) this._worker.terminate();
+         this._worker?.terminate();
 
          delete this._animating;
 
          let obj = this.getGeometry();
          if (obj && this.ctrl.is_main) {
-            if (obj.$geo_painter===this) delete obj.$geo_painter; else
-            if (obj.fVolume && obj.fVolume.$geo_painter===this) delete obj.fVolume.$geo_painter;
+            if (obj.$geo_painter === this)
+               delete obj.$geo_painter;
+            else if (obj.fVolume?.$geo_painter === this)
+               delete obj.fVolume.$geo_painter;
          }
 
          if (this._main_painter) {
             let pos = this._main_painter._slave_painters.indexOf(this);
-            if (pos >= 0) this._main_painter._slave_painters.splice(pos,1);
+            if (pos >= 0) this._main_painter._slave_painters.splice(pos, 1);
          }
 
-         for (let k = 0; k < this._slave_painters.length;++k) {
+         for (let k = 0; k < this._slave_painters.length; ++k) {
             let slave = this._slave_painters[k];
-            if (slave && (slave._main_painter===this)) slave._main_painter = null;
+            if (slave?._main_painter === this) slave._main_painter = null;
          }
 
          delete this.geo_manager;
@@ -89995,7 +90038,8 @@ class TGeoPainter extends ObjectPainter {
          delete this._render_resolveFuncs;
       }
 
-      cleanupRender3D(this._renderer);
+      if (!this.superimpose)
+         cleanupRender3D(this._renderer);
 
       delete this._scene;
       delete this._scene_size;
@@ -90495,9 +90539,9 @@ function browserIconClick(hitem, hpainter) {
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
    switch(hitem._kind) {
-      case 'ROOT.' + clTEveTrack: icon = 'img_evetrack'; break;
-      case 'ROOT.' + clTEvePointSet: icon = 'img_evepoints'; break;
-      case 'ROOT.' + clTPolyMarker3D: icon = 'img_evepoints'; break;
+      case prefROOT + clTEveTrack: icon = 'img_evetrack'; break;
+      case prefROOT + clTEvePointSet: icon = 'img_evepoints'; break;
+      case prefROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
    }
    if (icon) {
       let drawitem = findItemWithPainter(hitem);
@@ -90512,8 +90556,8 @@ function getBrowserIcon(hitem, hpainter) {
   * @private */
 function createItem(node, obj, name) {
    let sub = {
-      _kind: 'ROOT.' + obj._typename,
-      _name: name ? name : getObjectName(obj),
+      _kind: prefROOT + obj._typename,
+      _name: name || getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,
       _geoobj: obj,
@@ -97329,7 +97373,7 @@ function treeHierarchy(node, obj) {
 
       let subitem = {
             _name: ClearName(branch.fName),
-            _kind: 'ROOT.' + branch._typename,
+            _kind: prefROOT + branch._typename,
             _title: branch.fTitle,
             _obj: branch
       };
@@ -97355,7 +97399,7 @@ function treeHierarchy(node, obj) {
                  bnode._childs.push({
                     _name: '@size',
                     _title: 'container size',
-                    _kind: 'ROOT.TLeafElement',
+                    _kind: prefROOT + 'TLeafElement',
                     _icon: 'img_leaf',
                     _obj: bobj.fLeaves.arr[0],
                     _more: false
@@ -97376,7 +97420,7 @@ function treeHierarchy(node, obj) {
                      bnode._childs.push({
                         _name: key+'()',
                         _title: `function ${key} of class ${object_class}`,
-                        _kind: 'ROOT.' + clTBranchFunc, // fictional class, only for drawing
+                        _kind: prefROOT + clTBranchFunc, // fictional class, only for drawing
                         _obj: { _typename: clTBranchFunc, branch: bobj, func: key },
                         _more: false
                      });
@@ -97395,7 +97439,7 @@ function treeHierarchy(node, obj) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
             let leafitem = {
                _name : ClearName(branch.fLeaves.arr[j].fName),
-               _kind : 'ROOT.' + branch.fLeaves.arr[j]._typename,
+               _kind : prefROOT + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
             };
             subitem._childs.push(leafitem);
@@ -97432,7 +97476,7 @@ async function import_more() { return Promise.resolve().then(function () { retur
 
 async function import_geo() {
    return Promise.resolve().then(function () { return TGeoPainter$1; }).then(geo => {
-      let handle = getDrawHandle('ROOT.TGeoVolumeAssembly');
+      let handle = getDrawHandle(prefROOT + 'TGeoVolumeAssembly');
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });
@@ -97602,7 +97646,7 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   let search = (kind.indexOf('ROOT.') == 0) ? kind.slice(5) : 'kind:' + kind, counter = 0;
+   let search = (kind.indexOf(prefROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
       if (isStr(h.name)) {
@@ -97612,7 +97656,7 @@ function getDrawHandle(kind, selector) {
       }
 
       if (h.sameas) {
-         let hs = getDrawHandle('ROOT.' + h.sameas, selector);
+         let hs = getDrawHandle(prefROOT + h.sameas, selector);
          if (hs) {
             for (let key in hs)
                if (h[key] === undefined)
@@ -97689,7 +97733,7 @@ function getDrawSettings(kind, selector) {
    if (isany && (res.opts === null)) res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf('ROOT.') == 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prefROOT) == 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push('inspect');
@@ -97703,7 +97747,7 @@ function getDrawSettings(kind, selector) {
 
 /** @summary Set default draw option for provided class */
 function setDefaultDrawOpt(classname, opt) {
-   let handle = getDrawHandle('ROOT.' + classname, 0);
+   let handle = getDrawHandle(prefROOT + classname, 0);
    if (handle)
       handle.dflt = opt;
 }
@@ -97730,7 +97774,7 @@ async function draw(dom, obj, opt) {
    let handle, type_info;
    if ('_typename' in obj) {
       type_info = 'type ' + obj._typename;
-      handle = getDrawHandle('ROOT.' + obj._typename, opt);
+      handle = getDrawHandle(prefROOT + obj._typename, opt);
    } else if ('_kind' in obj) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
@@ -97841,7 +97885,7 @@ async function redraw(dom, obj, opt) {
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
-      handle = getDrawHandle(`ROOT.${obj._typename}`);
+      handle = getDrawHandle(prefROOT + obj._typename);
    if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
@@ -97894,7 +97938,7 @@ function addStreamerInfosForPainter(lst) {
          let element = si.fElements.arr[j];
          if (element.fTypeName !== 'BASE') continue;
 
-         let handle = getDrawHandle('ROOT.' + element.fName);
+         let handle = getDrawHandle(prefROOT + element.fName);
          if (handle && !handle.for_derived)
             handle = null;
 
@@ -97913,7 +97957,7 @@ function addStreamerInfosForPainter(lst) {
    }
 
    lst.arr.forEach(si => {
-      if (getDrawHandle('ROOT.' + si.fName) !== null) return;
+      if (getDrawHandle(prefROOT + si.fName) !== null) return;
 
       let handle = checkBaseClasses(si, 0);
       if (handle) {
@@ -98155,7 +98199,7 @@ function folderHierarchy(item, obj) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
          _name: chld.fName,
-         _kind: `ROOT.${chld._typename}`,
+         _kind: prefROOT + chld._typename,
          _obj: chld
       });
    }
@@ -98183,7 +98227,7 @@ function taskHierarchy(item, obj) {
       let chld = obj.fTasks.arr[i];
       item._childs.push({
          _name: chld.fName,
-         _kind: 'ROOT.' + chld._typename,
+         _kind: prefROOT + chld._typename,
          _obj: chld
       });
    }
@@ -98228,13 +98272,13 @@ function listHierarchy(folder, lst) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
           item = !obj?._typename ? {
             _name: i.toString(),
-            _kind: 'ROOT.NULL',
+            _kind: prefROOT + 'NULL',
             _title: 'NULL',
             _value: 'null',
             _obj: null
           } : {
             _name: obj.fName || obj.name,
-            _kind: `ROOT.${obj._typename}`,
+            _kind: prefROOT + obj._typename,
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
           };
@@ -98284,7 +98328,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       let item = {
          _name: key.fName + ';' + key.fCycle,
          _cycle: key.fCycle,
-         _kind: 'ROOT.' + key.fClassName,
+         _kind: prefROOT + key.fClassName,
          _title: key.fTitle,
          _keyname: key.fName,
          _readobj: null,
@@ -98313,7 +98357,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       } else if ((key.fClassName == clTList) && (key.fName == nameStreamerInfo)) {
          if (settings.SkipStreamerInfos) continue;
          item._name = nameStreamerInfo;
-         item._kind = 'ROOT.' + clTStreamerInfoList;
+         item._kind = prefROOT + clTStreamerInfoList;
          item._title = 'List of streamer infos for binary I/O';
          item._readobj = file.fStreamerInfos;
       }
@@ -98397,7 +98441,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (!top._title) {
       if (obj._typename)
-         top._title = 'ROOT.' + obj._typename;
+         top._title = prefROOT + obj._typename;
       else if (isarray)
          top._title = 'Array len: ' + obj.length;
    }
@@ -98497,7 +98541,7 @@ function objectHierarchy(top, obj, args = undefined) {
          } else {
 
             if (fld.$kind || fld._typename)
-               item._kind = item._title = 'ROOT.' + (fld.$kind || fld._typename);
+               item._kind = item._title = prefROOT + (fld.$kind || fld._typename);
 
             if (fld._typename) {
                item._title = fld._typename;
@@ -98735,7 +98779,7 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-const kindTFile = 'ROOT.TFile';
+const kindTFile = prefROOT + 'TFile';
 
 /**
   * @summary Painter of hierarchical structures
@@ -99185,7 +99229,7 @@ class HierarchyPainter extends BasePainter {
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf('ROOT.') == 0))
+      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf(prefROOT) == 0))
          can_menu = can_click = true;
 
       if (!img2) img2 = img1;
@@ -99561,7 +99605,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = 'item';
-      let selector = (hitem._kind == 'ROOT.TKey' && hitem._more) ? 'noinspect' : '',
+      let selector = (hitem._kind == prefROOT + 'TKey' && hitem._more) ? 'noinspect' : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == 'icon') {
@@ -99636,7 +99680,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if (isStr(hitem._kind) && (hitem._kind.indexOf('ROOT.') === 0) && sett.inspect && (can_draw !== false))
+         if (isStr(hitem._kind) && (hitem._kind.indexOf(prefROOT) === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, 'inspect', true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -99827,7 +99871,7 @@ class HierarchyPainter extends BasePainter {
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add('Expand', () => this.expandItem(itemname));
 
-            if (hitem._kind === 'ROOT.' + clTStyle)
+            if (hitem._kind === prefROOT + clTStyle)
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
@@ -99956,7 +100000,7 @@ class HierarchyPainter extends BasePainter {
             drawopt = '';
          }
 
-         if (!updating) showProgress('Loading ' + display_itemname);
+         if (!updating) showProgress(`Loading ${display_itemname} ...`);
 
          return this.getObject(display_itemname, drawopt).then(result => {
 
@@ -99967,14 +100011,14 @@ class HierarchyPainter extends BasePainter {
 
             if (!obj) return complete();
 
-            if (!updating) showProgress('Drawing ' + display_itemname);
+            if (!updating) showProgress(`Drawing ${display_itemname} ...`);
 
-            let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
+            let handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || '';
-               handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
+               handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
             }
 
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
@@ -100040,7 +100084,7 @@ class HierarchyPainter extends BasePainter {
       select(frame).on('dragover', function(ev) {
          let itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
-         if (isStr(ditem?._kind) && (ditem._kind.indexOf('ROOT.') == 0))
+         if (isStr(ditem?._kind) && (ditem._kind.indexOf(prefROOT) == 0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
       }).on('dragenter', function() {
          select(this).classed('jsroot_drag_area', true);
@@ -100436,7 +100480,7 @@ class HierarchyPainter extends BasePainter {
 
             if (handle?.expand_item) {
                _obj = _obj[handle.expand_item];
-              handle = (_obj && _obj._typename) ? getDrawHandle('ROOT.'+_obj._typename, '::expand') : null;
+              handle = _obj?._typename ? getDrawHandle(prefROOT + _obj._typename, '::expand') : null;
             }
 
             if (handle?.expand || handle?.get_expand) {
@@ -100550,7 +100594,7 @@ class HierarchyPainter extends BasePainter {
       if (isfileopened) return;
 
       return httpRequest(filepath, 'object').then(res => {
-         let h1 = { _jsonfile: filepath, _kind: 'ROOT.' + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
+         let h1 = { _jsonfile: filepath, _kind: prefROOT + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
@@ -100742,7 +100786,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (!req && (item._kind.indexOf('ROOT.') != 0))
+         if (!req && (item._kind.indexOf(prefROOT) != 0))
            req = 'item.json.gz?compact=3';
       }
 
@@ -100834,7 +100878,8 @@ class HierarchyPainter extends BasePainter {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
                      let typename = 'kind:' + item._kind;
-                     if (item._kind.indexOf('ROOT.') == 0) typename = item._kind.slice(5);
+                     if (item._kind.indexOf(prefROOT) == 0)
+                        typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
                      if (!canDrawHandle(typename) || drawopt)
                         addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
@@ -100884,7 +100929,7 @@ class HierarchyPainter extends BasePainter {
       let node = this.findItem(itemname),
           sett = getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = getDrawHandle(node._kind),
-          root_type = isStr(node._kind) ? node._kind.indexOf('ROOT.') == 0 : false;
+          root_type = isStr(node._kind) ? node._kind.indexOf(prefROOT) == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push('inspect');
@@ -101139,7 +101184,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      let handle = obj._typename ? getDrawHandle(`ROOT.${obj._typename}`) : null;
+      let handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
@@ -111032,7 +111077,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    if (item._childs && !asleaf)
       for (let n = 0; n < item._childs.length; ++n) {
          let leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf('ROOT.TLeaf') == 0) && (leaf_cnt < 2)) {
+         if (leaf && leaf._kind && (leaf._kind.indexOf(prefROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
             if (leaf_cnt++ > 0) expr += ':';
             expr += leaf._name;
          }
@@ -122128,6 +122173,7 @@ exports.nsREX = nsREX;
 exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
+exports.prefROOT = prefROOT;
 exports.readStyleFromURL = readStyleFromURL;
 exports.redraw = redraw;
 exports.registerForResize = registerForResize;
