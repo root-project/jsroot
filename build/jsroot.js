@@ -1003,7 +1003,8 @@ const prefROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString 
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
-      clTH1 = 'TH1', clTH2 = 'TH2', clTH3 = 'TH3', clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
+      clTH1 = 'TH1', clTH1I = 'TH1I', clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH3 = 'TH3',
+      clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
       nsREX = 'ROOT::Experimental::',
       kNoZoom = -1111, kNoStats = BIT(9);
@@ -1130,7 +1131,7 @@ function create$1(typename, target) {
                        fSumw2: [], fOption: '', fFunctions: create$1(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
-      case 'TH1I':
+      case clTH1I:
       case 'TH1L64':
       case 'TH1F':
       case 'TH1D':
@@ -1143,9 +1144,9 @@ function create$1(typename, target) {
          create$1(clTH1, obj);
          extend$1(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
-      case 'TH2I':
+      case clTH2I:
       case 'TH2L64':
-      case 'TH2F':
+      case clTH2F:
       case 'TH2D':
       case 'TH2S':
       case 'TH2C':
@@ -1779,7 +1780,10 @@ clTGraphPolar: clTGraphPolar,
 clTGraphPolargram: clTGraphPolargram,
 clTGraphTime: clTGraphTime,
 clTH1: clTH1,
+clTH1I: clTH1I,
 clTH2: clTH2,
+clTH2F: clTH2F,
+clTH2I: clTH2I,
 clTH3: clTH3,
 clTHStack: clTHStack,
 clTHashList: clTHashList,
@@ -105337,13 +105341,13 @@ class THStackPainter extends ObjectPainter {
           numhistos = histos ? histos.arr.length : 0;
 
       if (!numhistos) {
-         let histo = createHistogram('TH1I', 100);
+         let histo = createHistogram(clTH1I, 100);
          histo.fTitle = stack.fTitle;
          return histo;
       }
 
       let h0 = histos.arr[0],
-          histo = createHistogram((this.options.ndim == 1) ? 'TH1I' : 'TH2I', h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+          histo = createHistogram((this.options.ndim == 1) ? clTH1I : clTH2I, h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = 'axis_hist';
       Object.assign(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
@@ -105893,7 +105897,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (graph.fMinimum != kNoZoom) uzmin = graph.fMinimum;
       if (graph.fMaximum != kNoZoom) uzmax = graph.fMaximum;
 
-      let histo = createHistogram('TH2I', 10, 10);
+      let histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
       histo.fTitle = graph.fTitle;
       histo.fXaxis.fXmin = uxmin;
@@ -107002,7 +107006,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
           minimum0 = minimum, maximum0 = maximum;
 
       if (!histo) {
-         histo = graph.fHistogram = createHistogram('TH1F', 100);
+         histo = graph.fHistogram = createHistogram(clTH1I, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
@@ -108412,7 +108416,7 @@ class TF1Painter extends ObjectPainter {
          if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      let histo = create$1('TH1I'),
+      let histo = create$1(clTH1I),
           tf1 = this.getObject();
 
       histo.fName = tf1.fName + '_hist';
@@ -108715,7 +108719,7 @@ class TEfficiencyPainter extends ObjectPainter {
    createHisto(eff) {
       const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
             nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
-            hist = createHistogram('TH2F', nbinsx, nbinsy);
+            hist = createHistogram(clTH2F, nbinsx, nbinsy);
       Object.assign(hist.fXaxis, eff.fTotalHistogram.fXaxis);
       Object.assign(hist.fYaxis, eff.fTotalHistogram.fYaxis);
       hist.fName = 'eff_histo';
@@ -109226,7 +109230,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       if (!histo) {
          let xaxis, yaxis;
          if (this._3d) {
-            histo = create$1('TH2I');
+            histo = create$1(clTH2I);
             xaxis = histo.fXaxis;
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
@@ -109241,7 +109245,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
             xaxis = histo.fYaxis;
             yaxis = histo.fZaxis;
          } else {
-            histo = create$1('TH1I');
+            histo = create$1(clTH1I);
             xaxis = histo.fXaxis;
             yaxis = histo.fYaxis;
          }
@@ -109649,9 +109653,9 @@ function createTF2Histogram(func, hist = undefined) {
             }
 
             if (!iserr && Number.isFinite(z)) {
-               if (!hist) hist = createHistogram('TH2F', npx, npy);
+               if (!hist) hist = createHistogram(clTH2F, npx, npy);
                isany = true;
-               hist.setBinContent(hist.getBin(i+1,j+1), z);
+               hist.setBinContent(hist.getBin(i + 1, j + 1), z);
             }
          }
 
@@ -109660,7 +109664,7 @@ function createTF2Histogram(func, hist = undefined) {
    }
 
    if (!use_saved_points && !hist)
-      hist = createHistogram('TH2F', npx, npy);
+      hist = createHistogram(clTH2F, npx, npy);
 
    if (!iserr && isany) {
       hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
@@ -109676,7 +109680,7 @@ function createTF2Histogram(func, hist = undefined) {
       dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
       dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
-      if (!hist) hist = createHistogram('TH2F', npx+1, npy+1);
+      if (!hist) hist = createHistogram(clTH2F, npx+1, npy+1);
 
       hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
       hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
@@ -109840,7 +109844,7 @@ class TSplinePainter extends ObjectPainter {
          if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      let histo = create$1('TH1I');
+      let histo = create$1(clTH1I);
 
       histo.fName = spline.fName + '_hist';
       histo.fTitle = spline.fTitle;
@@ -122091,7 +122095,10 @@ exports.clTGraphPolar = clTGraphPolar;
 exports.clTGraphPolargram = clTGraphPolargram;
 exports.clTGraphTime = clTGraphTime;
 exports.clTH1 = clTH1;
+exports.clTH1I = clTH1I;
 exports.clTH2 = clTH2;
+exports.clTH2F = clTH2F;
+exports.clTH2I = clTH2I;
 exports.clTH3 = clTH3;
 exports.clTHStack = clTHStack;
 exports.clTHashList = clTHashList;
