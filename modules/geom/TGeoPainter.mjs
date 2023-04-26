@@ -1,7 +1,7 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, getPromise,
-         clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
+         prefROOT, clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -124,7 +124,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: 'ROOT.' + clTList,
+       _kind: prefROOT + clTList,
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -5046,9 +5046,9 @@ function browserIconClick(hitem, hpainter) {
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
    switch(hitem._kind) {
-      case 'ROOT.' + clTEveTrack: icon = 'img_evetrack'; break;
-      case 'ROOT.' + clTEvePointSet: icon = 'img_evepoints'; break;
-      case 'ROOT.' + clTPolyMarker3D: icon = 'img_evepoints'; break;
+      case prefROOT + clTEveTrack: icon = 'img_evetrack'; break;
+      case prefROOT + clTEvePointSet: icon = 'img_evepoints'; break;
+      case prefROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
    }
    if (icon) {
       let drawitem = findItemWithPainter(hitem);
@@ -5063,8 +5063,8 @@ function getBrowserIcon(hitem, hpainter) {
   * @private */
 function createItem(node, obj, name) {
    let sub = {
-      _kind: 'ROOT.' + obj._typename,
-      _name: name ? name : getObjectName(obj),
+      _kind: prefROOT + obj._typename,
+      _name: name || getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,
       _geoobj: obj,

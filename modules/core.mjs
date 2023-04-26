@@ -979,8 +979,7 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const clTObject = 'TObject', clTNamed = 'TNamed',
-      clTString = 'TString', clTObjString = 'TObjString',
+const prefROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -1738,7 +1737,7 @@ async function _ensureJSROOT() {
 }
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
-         browser, internals, constants, settings, gStyle, atob_func, btoa_func,
+         browser, internals, constants, settings, gStyle, atob_func, btoa_func, prefROOT,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond,

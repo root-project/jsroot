@@ -1,6 +1,6 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         prefROOT, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
@@ -17,7 +17,7 @@ async function import_more() { return import('./draw/more.mjs'); }
 
 async function import_geo() {
    return import('./geom/TGeoPainter.mjs').then(geo => {
-      let handle = getDrawHandle('ROOT.TGeoVolumeAssembly');
+      let handle = getDrawHandle(prefROOT + 'TGeoVolumeAssembly');
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });
@@ -187,7 +187,7 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   let search = (kind.indexOf('ROOT.') == 0) ? kind.slice(5) : 'kind:' + kind, counter = 0;
+   let search = (kind.indexOf(prefROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
       if (isStr(h.name)) {
@@ -197,7 +197,7 @@ function getDrawHandle(kind, selector) {
       }
 
       if (h.sameas) {
-         let hs = getDrawHandle('ROOT.' + h.sameas, selector);
+         let hs = getDrawHandle(prefROOT + h.sameas, selector);
          if (hs) {
             for (let key in hs)
                if (h[key] === undefined)
@@ -274,7 +274,7 @@ function getDrawSettings(kind, selector) {
    if (isany && (res.opts === null)) res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf('ROOT.') == 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prefROOT) == 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push('inspect');
@@ -288,7 +288,7 @@ function getDrawSettings(kind, selector) {
 
 /** @summary Set default draw option for provided class */
 function setDefaultDrawOpt(classname, opt) {
-   let handle = getDrawHandle('ROOT.' + classname, 0);
+   let handle = getDrawHandle(prefROOT + classname, 0);
    if (handle)
       handle.dflt = opt;
 }
@@ -315,7 +315,7 @@ async function draw(dom, obj, opt) {
    let handle, type_info;
    if ('_typename' in obj) {
       type_info = 'type ' + obj._typename;
-      handle = getDrawHandle('ROOT.' + obj._typename, opt);
+      handle = getDrawHandle(prefROOT + obj._typename, opt);
    } else if ('_kind' in obj) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
@@ -426,7 +426,7 @@ async function redraw(dom, obj, opt) {
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
-      handle = getDrawHandle(`ROOT.${obj._typename}`);
+      handle = getDrawHandle(prefROOT + obj._typename);
    if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
@@ -479,7 +479,7 @@ function addStreamerInfosForPainter(lst) {
          let element = si.fElements.arr[j];
          if (element.fTypeName !== 'BASE') continue;
 
-         let handle = getDrawHandle('ROOT.' + element.fName);
+         let handle = getDrawHandle(prefROOT + element.fName);
          if (handle && !handle.for_derived)
             handle = null;
 
@@ -498,7 +498,7 @@ function addStreamerInfosForPainter(lst) {
    }
 
    lst.arr.forEach(si => {
-      if (getDrawHandle('ROOT.' + si.fName) !== null) return;
+      if (getDrawHandle(prefROOT + si.fName) !== null) return;
 
       let handle = checkBaseClasses(si, 0);
       if (handle) {
