@@ -62,7 +62,8 @@
       { "name": "kdtree", "url": "?nobrowser&file=$$$tutorials_math.root&item=kdTreeBinning4;1/[0]", "title": "Draw only TH2Poly from tutorials/math/kdTreeBinning.C macro" }
    ],
    "TH3" : [
-      { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" }
+      { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" },
+      { "name": "geo", "url": "?nobrowser&files=[$$$histpainter6.root,$$$/geom/tess.root]&item=[histpainter6.root/draw_th3_box;1/h3box,tess.root/tess]&opt=[box]", "title": "Superimpose TH3 with geometry" }
    ],
    "TWebCanvas": [
       { "name": "greyscale", "json": "web6canv/greyscale.json.gz", "title": "40K TBox objects with different fill attributes" },
