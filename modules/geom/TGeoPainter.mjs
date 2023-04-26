@@ -4734,6 +4734,18 @@ class TGeoPainter extends ObjectPainter {
 
     /** @summary Redraw TGeo object inside TPad */
    redraw() {
+      if (this.superimpose) {
+         let mp = this.getMainPainter(),
+             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+
+         if (cfg) {
+            this._toplevel.scale.set(cfg.scale_x ?? 1, cfg.scale_y ?? 1, cfg.scale_z ?? 1);
+            this._toplevel.position.set(cfg.offset_x ?? 0, cfg.offset_y ?? 0, cfg.offset_z ?? 0);
+            this._toplevel.updateMatrix();
+            this._toplevel.updateMatrixWorld();
+         }
+      }
+
       if (this._did_update)
          return this.startRedraw();
 
