@@ -18,8 +18,9 @@
 15. Implement "projxy" draw option for TH2 - like projxy3 or projx1_y5
 16. Support custom function in TGaxis - when drawn in TWebCanvas
 17. Introduce settings.WithCredentials, set xhr.withCredentials = true when submitting HTTP requests
-18. Fix - rescan sumw2 when update TH1
-19. Fix - correct placing for TLegend header
+18. Let superimpose TH3 and geo drawings
+19. Fix - rescan sumw2 when update TH1
+20. Fix - correct placing for TLegend header
 
 
 ## Changes in 7.3.1

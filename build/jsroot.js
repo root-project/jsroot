@@ -80322,7 +80322,26 @@ class TH3Painter extends THistPainter {
      * @private */
    get3DCfg() {
       let main = this.getFramePainter();
-      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer)
+      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer) {
+
+         let scale_x = 1, scale_y = 1, scale_z = 1,
+             offset_x = 0, offset_y = 0, offset_z = 0;
+
+         if (main.scale_xmax > main.scale_xmin) {
+            scale_x = 2*main.size_x3d/(main.scale_xmax - main.scale_xmin);
+            offset_x = (main.scale_xmax + main.scale_xmin) / 2 * scale_x;
+         }
+
+         if (main.scale_ymax > main.scale_ymin) {
+            scale_y = 2*main.size_y3d/(main.scale_ymax - main.scale_ymin);
+            offset_y = (main.scale_ymax + main.scale_ymin) / 2 * scale_y;
+         }
+
+         if (main.scale_zmax > main.scale_zmin) {
+            scale_z = 2*main.size_z3d/(main.scale_zmax - main.scale_zmin);
+            offset_z = (main.scale_zmax + main.scale_zmin) / 2 * scale_z - main.size_z3d;
+         }
+
          return {
             webgl: main.webgl,
             scene: main.scene,
@@ -80330,8 +80349,11 @@ class TH3Painter extends THistPainter {
             scene_height: main.scene_height,
             toplevel: main.toplevel,
             renderer: main.renderer,
-            camera: main.camera
+            camera: main.camera,
+            scale_x, scale_y, scale_z,
+            offset_x, offset_y, offset_z
          };
+     }
    }
 
    /** @summary draw 3D histogram as scatter plot
@@ -86250,6 +86272,9 @@ class TGeoPainter extends ObjectPainter {
    decodeOptions(opt) {
       if (!isStr(opt)) opt = '';
 
+      if (this.superimpose && (opt.indexOf('same') == 0))
+         opt = opt.slice(4);
+
       let res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: 0,
                   _count: false, wireframe: false,
@@ -86290,7 +86315,6 @@ class TGeoPainter extends ObjectPainter {
 
          let name = opt.substring(p1+1, p2);
          opt = opt.slice(0,p1) + opt.slice(p2);
-         // console.log(`Modify visibility ${sign} : ${name}`);
 
          this.modifyVisisbility(name, sign);
       }
@@ -87783,7 +87807,11 @@ class TGeoPainter extends ObjectPainter {
             getBoundingBox(mesh, box3);
       });
 
-      if (scalar !== undefined)
+      if (scalar == 'original') {
+         box3.translate(new Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
+         box3.min.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+         box3.max.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+      } else if (scalar !== undefined)
          box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
 
       return box3;
@@ -87942,6 +87970,13 @@ class TGeoPainter extends ObjectPainter {
 
             this._toplevel = new Object3D();
             this._scene.add(this._toplevel);
+
+            if (cfg.scale_x || cfg.scale_y || cfg.scale_z)
+               this._toplevel.scale.set(cfg.scale_x, cfg.scale_y, cfg.scale_z);
+            if (cfg.offset_x || cfg.offset_y || cfg.offset_z)
+               this._toplevel.position.set(cfg.offset_x, cfg.offset_y, cfg.offset_z);
+            this._toplevel.updateMatrix();
+            this._toplevel.updateMatrixWorld();
 
             this._camera = cfg.camera;
          }
@@ -89490,7 +89525,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl._axis)
          return norender ? null : this.render3D();
 
-      let box = this.getGeomBoundingBox(this._toplevel),
+      let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
           text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
           center = [0,0,0],
@@ -90220,6 +90255,18 @@ class TGeoPainter extends ObjectPainter {
 
     /** @summary Redraw TGeo object inside TPad */
    redraw() {
+      if (this.superimpose) {
+         let mp = this.getMainPainter(),
+             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+
+         if (cfg) {
+            this._toplevel.scale.set(cfg.scale_x ?? 1, cfg.scale_y ?? 1, cfg.scale_z ?? 1);
+            this._toplevel.position.set(cfg.offset_x ?? 0, cfg.offset_y ?? 0, cfg.offset_z ?? 0);
+            this._toplevel.updateMatrix();
+            this._toplevel.updateMatrixWorld();
+         }
+      }
+
       if (this._did_update)
          return this.startRedraw();
 
