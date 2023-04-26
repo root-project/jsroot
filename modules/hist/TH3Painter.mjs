@@ -1,6 +1,5 @@
-import { gStyle, settings } from '../core.mjs';
-import { REVISION, Matrix4,
-         BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+import { gStyle, settings, isFunc } from '../core.mjs';
+import { REVISION, Matrix4, BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineBasicMaterial, SphereGeometry } from '../three.mjs';
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -183,6 +182,23 @@ class TH3Painter extends THistPainter {
          lines.push(`entries = ${floatToString(binz, gStyle.fStatFormat)}`);
 
       return lines;
+   }
+
+   /** @summary Provides 3D rendering configuration
+     * @return {Object} with scene, renderer and other attributes
+     * @private */
+   get3DCfg() {
+      let main = this.getFramePainter();
+      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer)
+         return {
+            webgl: main.webgl,
+            scene: main.scene,
+            scene_width: main.scene_width,
+            scene_height: main.scene_height,
+            toplevel: main.toplevel,
+            renderer: main.renderer,
+            camera: main.camera
+         };
    }
 
    /** @summary draw 3D histogram as scatter plot

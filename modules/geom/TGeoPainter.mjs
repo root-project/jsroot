@@ -436,6 +436,10 @@ class TGeoPainter extends ObjectPainter {
 
       super(dom, obj);
 
+      let mp = this.getMainPainter();
+      if (isFunc(mp?.get3DCfg) && mp.get3DCfg())
+         this.superimpose = true;
+
       if (gm) this.geo_manager = gm;
 
       this.no_default_title = true; // do not set title to main DIV
@@ -1687,7 +1691,7 @@ class TGeoPainter extends ObjectPainter {
 
          let lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
-         for (let k = 0; k < lst.length; ++k)
+         for (let k = 0; k < lst?.length; ++k)
             if (lst[k] !== this)
                lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
       }
@@ -1759,7 +1763,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add orbit control */
    addOrbitControls() {
 
-      if (this._controls || !this._webgl || isBatchMode()) return;
+      if (this._controls || !this._webgl || isBatchMode() || this.superimpose) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -1845,7 +1849,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols) return;
+      if (this._tcontrols || this.superimpose) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
@@ -2428,6 +2432,26 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Initial scene creation */
    async createScene(w, h) {
+      if (this.superimpose) {
+         let mp = this.getMainPainter(),
+             cfg = isFunc(mp?.get3DCfg) ? mp.get3DCfg() : null;
+
+         if (cfg?.renderer) {
+            this._scene = cfg.scene;
+            this._scene_width = cfg.scene_width;
+            this._scene_height = cfg.scene_height;
+            this._renderer = cfg.renderer;
+            this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
+
+            this._toplevel = new Object3D();
+            this._scene.add(this._toplevel);
+
+            this._camera = cfg.camera;
+         }
+
+         return this._renderer?.jsroot_dom;
+      }
+
       // three.js 3D drawing
       this._scene = new Scene();
       this._scene.fog = new Fog(0xffffff, 1, 10000);
@@ -2618,11 +2642,10 @@ class TGeoPainter extends ObjectPainter {
      * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
      * @param keep_zoom - tries to keep zomming factor of the camera */
    adjustCameraPosition(arg, keep_zoom) {
-      if (!this._toplevel) return;
+      if (!this._toplevel || this.superimpose) return;
 
-      let force = (arg === true), first_time = (arg == 'first') || force;
-
-      let box = this.getGeomBoundingBox(this._toplevel);
+      let force = (arg === true), first_time = (arg == 'first') || force,
+          box = this.getGeomBoundingBox(this._toplevel);
 
       // let box2 = new Box3().makeEmpty();
       // box2.expandByObject(this._toplevel, true);
@@ -4439,24 +4462,27 @@ class TGeoPainter extends ObjectPainter {
 
          this.removeSSAO();
 
-         this.clearTopPainter(); // remove as pointer
-
          let can3d = 0;
-         if (this._on_pad) {
-            let fp = this.getFramePainter();
-            if (fp?.mode3d) {
-               fp.clear3dCanvas();
-               fp.mode3d = false;
+
+         if (!this.superimpose) {
+            this.clearTopPainter(); // remove as pointer
+
+            if (this._on_pad) {
+               let fp = this.getFramePainter();
+               if (fp?.mode3d) {
+                  fp.clear3dCanvas();
+                  fp.mode3d = false;
+               }
+            } else {
+               can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
             }
-         } else {
-            can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
+
+            disposeThreejsObject(this._scene);
          }
 
          this._toolbar?.cleanup(); // remove toolbar
 
          this.helpText();
-
-         disposeThreejsObject(this._scene);
 
          disposeThreejsObject(this._full_geom);
 
@@ -4519,7 +4545,8 @@ class TGeoPainter extends ObjectPainter {
          delete this._render_resolveFuncs;
       }
 
-      cleanupRender3D(this._renderer);
+      if (!this.superimpose)
+         cleanupRender3D(this._renderer);
 
       delete this._scene;
       delete this._scene_size;
