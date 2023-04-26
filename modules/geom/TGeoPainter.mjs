@@ -2446,6 +2446,13 @@ class TGeoPainter extends ObjectPainter {
             this._toplevel = new Object3D();
             this._scene.add(this._toplevel);
 
+            if (cfg.scale_x || cfg.scale_y || cfg.scale_z)
+               this._toplevel.scale.set(cfg.scale_x, cfg.scale_y, cfg.scale_z);
+            if (cfg.offset_x || cfg.offset_y || cfg.offset_z)
+               this._toplevel.position.set(cfg.offset_x, cfg.offset_y, cfg.offset_z);
+            this._toplevel.updateMatrix();
+            this._toplevel.updateMatrixWorld();
+
             this._camera = cfg.camera;
          }
 
