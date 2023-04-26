@@ -184,45 +184,6 @@ class TH3Painter extends THistPainter {
       return lines;
    }
 
-   /** @summary Provides 3D rendering configuration
-     * @return {Object} with scene, renderer and other attributes
-     * @private */
-   get3DCfg() {
-      let main = this.getFramePainter();
-      if (this.mode3d && isFunc(main?.create3DScene) && main.renderer) {
-
-         let scale_x = 1, scale_y = 1, scale_z = 1,
-             offset_x = 0, offset_y = 0, offset_z = 0;
-
-         if (main.scale_xmax > main.scale_xmin) {
-            scale_x = 2*main.size_x3d/(main.scale_xmax - main.scale_xmin);
-            offset_x = (main.scale_xmax + main.scale_xmin) / 2 * scale_x;
-         }
-
-         if (main.scale_ymax > main.scale_ymin) {
-            scale_y = 2*main.size_y3d/(main.scale_ymax - main.scale_ymin);
-            offset_y = (main.scale_ymax + main.scale_ymin) / 2 * scale_y;
-         }
-
-         if (main.scale_zmax > main.scale_zmin) {
-            scale_z = 2*main.size_z3d/(main.scale_zmax - main.scale_zmin);
-            offset_z = (main.scale_zmax + main.scale_zmin) / 2 * scale_z - main.size_z3d;
-         }
-
-         return {
-            webgl: main.webgl,
-            scene: main.scene,
-            scene_width: main.scene_width,
-            scene_height: main.scene_height,
-            toplevel: main.toplevel,
-            renderer: main.renderer,
-            camera: main.camera,
-            scale_x, scale_y, scale_z,
-            offset_x, offset_y, offset_z
-         };
-     }
-   }
-
    /** @summary draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed
      * @return {Promise|false} either Promise or just false that drawing cannot be performed */
