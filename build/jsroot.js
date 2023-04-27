@@ -85607,8 +85607,8 @@ function buildCompositeVolume(comp, maxlvl, side) {
   * @return {Object} with scene, renderer and other attributes
   * @private */
 function getHistPainter3DCfg(painter) {
-   let main = painter?.getFramePainter();
-   if (painter.mode3d && isFunc(main?.create3DScene) && main.renderer) {
+   let main =  painter?.getFramePainter();
+   if (painter?.mode3d && isFunc(main?.create3DScene) && main?.renderer) {
 
       let scale_x = 1, scale_y = 1, scale_z = 1,
           offset_x = 0, offset_y = 0, offset_z = 0;
