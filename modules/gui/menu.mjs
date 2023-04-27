@@ -6,6 +6,7 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
+
 /**
  * @summary Abstract class for creating context menu
  *
@@ -657,6 +658,7 @@ class JSRootMenu {
       this.addSizeMenu('Max ranges', 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, 'Maximal number of ranges in single http request');
 
       this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; });
+      this.addchk(settings.WithCredentials, 'With credentials', flag => { settings.WithCredentials = flag; }, 'Submit http request with user credentials');
 
       this.add('endsub:');
 

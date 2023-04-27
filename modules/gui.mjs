@@ -26,7 +26,8 @@ function readStyleFromURL(url) {
       let optimize = d.get('optimize');
       if (optimize) {
          optimize = parseInt(optimize);
-         if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
+         if (Number.isInteger(optimize))
+            settings.OptimizeDraw = optimize;
       }
    }
 
@@ -45,6 +46,9 @@ function readStyleFromURL(url) {
 
    if (d.has('prefer_saved_points'))
       settings.PreferSavedPoints = true;
+
+   if (d.has('with_credentials'))
+      settings.WithCredentials = true;
 
    let inter = d.get('interactive');
    if (inter === 'nomenu')
@@ -74,8 +78,8 @@ function readStyleFromURL(url) {
    get_bool('tooltip', 'Tooltip');
 
    let mathjax = d.get('mathjax', null), latex = d.get('latex', null);
-
-   if ((mathjax !== null) && (mathjax != '0') && (latex === null)) latex = 'math';
+   if ((mathjax !== null) && (mathjax != '0') && (latex === null))
+      latex = 'math';
    if (latex !== null)
       settings.Latex = constants.Latex.fromString(latex);
 
