@@ -64100,18 +64100,18 @@ class StandaloneMenu extends JSRootMenu {
          outer.style.top = top + 'px';
 
          injectStyle(
-            `.jsroot_ctxt_container {
-                position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;
-                min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;
-                font-size: 13px; color: rgb(0, 0, 0, 0.8);
-             }
-             .jsroot_ctxt_column { float: left; }
-             .jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }
-             .jsroot_ctxt_header { background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px; }
-             .jsroot_ctxt_text { margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap; }
-             .jsroot_ctxt_extraText { margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6); }
-             .jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }
-             .jsroot_ctxt_item:hover { background-color: rgb(235, 235, 235); }`, this.element);
+            `.jsroot_ctxt_container {`+
+            `   position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;`+
+            `   min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;`+
+            `   font-size: 13px; color: rgb(0, 0, 0, 0.8);`+
+            `}`+
+            `.jsroot_ctxt_column { float: left; }`+
+            `.jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }`+
+            `.jsroot_ctxt_header { background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px; }`+
+            `.jsroot_ctxt_text { margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap; }`+
+            `.jsroot_ctxt_extraText { margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6); }`+
+            `.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }`+
+            `.jsroot_ctxt_item:hover { background-color: rgb(235, 235, 235); }`, this.element);
       } else if ((left < 0) && (top == left)) {
          // column
          outer.className = 'jsroot_ctxt_column';
@@ -64330,13 +64330,13 @@ class StandaloneMenu extends JSRootMenu {
           </div>`);
 
       injectStyle(
-         `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }
-          .jsroot_dialog { z-index: 100001; position: absolute; left: 50%; top: 50%; }
-          .jsroot_dialog_body { position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white; }
-          .jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }
-          .jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }
-          .jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }
-          .jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
+         `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }`+
+         `.jsroot_dialog { z-index: 100001; position: absolute; left: 50%; top: 50%; }`+
+         `.jsroot_dialog_body { position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white; }`+
+         `.jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }`+
+         `.jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }`+
+         `.jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }`+
+         `.jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
 
       return new Promise(resolveFunc => {
          element.on('keyup', evnt => {
@@ -67528,9 +67528,9 @@ class GridDisplay extends MDIDisplay {
 
       if (!this.simple_layout) {
          injectStyle(
-            `.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }
-             .jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }
-             .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`, dom.node(), 'grid_style');
+            '.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }'+
+            '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }'+
+            '.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }', dom.node(), 'grid_style');
          this.createGroup(this, dom, num, arr, sizes, chld_sizes);
       }
    }
@@ -67901,15 +67901,15 @@ class TabsDisplay extends MDIDisplay {
           text_color = settings.DarkMode ? '#ddd' : 'inherit';
 
       injectStyle(
-         `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }
-          .jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }
-          .jsroot_tabs_labels .jsroot_tabs_label {
-             color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;
-             margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;
-          }
-          .jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }
-          .jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
-          dom.node(), 'tabs_style');
+         `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }`+
+         `.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }`+
+         `.jsroot_tabs_labels .jsroot_tabs_label {`+
+             `color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;`+
+             `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`+
+         `}`+
+         `.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }`+
+         `.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
+         dom.node(), 'tabs_style');
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
@@ -68156,14 +68156,14 @@ class FlexibleDisplay extends MDIDisplay {
           top = dom.select('.jsroot_flex_top');
 
       injectStyle(
-         `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }
-          .jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }
-          .jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }
-          .jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }
-          .jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }
-          .jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }
-          .jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }
-          .jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
+         `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }`+
+         `.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }`+
+         `.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }`+
+         `.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }`+
+         `.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }`+
+         `.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }`+
+         `.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }`+
+         `.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
 
       if (top.empty())
          top = dom.append('div').classed('jsroot_flex_top', true);
@@ -68507,23 +68507,23 @@ class BrowserLayout {
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
-         `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }
-          .jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0; border: 0; }
-          .jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }
-          .jsroot_browser_area input { ${input_style} }
-          .jsroot_browser_area select { ${input_style} }
-          .jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }
-          .jsroot_browser_btns { pointer-events: all; opacity: 0; display:flex; flex-direction: column; }
-          .jsroot_browser_btns:hover { opacity: 0.3; }
-          .jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }
-          .jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }
-          .jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }
-          .jsroot_float_browser { border: solid 3px white; }
-          .jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }
-          .jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }
-          .jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }
-          .jsroot_h_separator { cursor: ns-resize; background-color: azure; }
-          .jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), 'browser_layout_style');
+         `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }`+
+         `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0; border: 0; }`+
+         `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }`+
+         `.jsroot_browser_area input { ${input_style} }`+
+         `.jsroot_browser_area select { ${input_style} }`+
+         `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }`+
+         `.jsroot_browser_btns { pointer-events: all; opacity: 0; display:flex; flex-direction: column; }`+
+         `.jsroot_browser_btns:hover { opacity: 0.3; }`+
+         `.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }`+
+         `.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }`+
+         `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
+         `.jsroot_float_browser { border: solid 3px white; }`+
+         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`+
+         `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`+
+         `.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`+
+         `.jsroot_h_separator { cursor: ns-resize; background-color: azure; }`+
+         `.jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
@@ -85817,19 +85817,19 @@ class Toolbar {
    constructor(container, bright) {
       this.bright = bright;
 
-      this.element = container.append('div').attr('class','geo_toolbar_group');
+      this.element = container.append('div').attr('class', 'geo_toolbar_group');
 
       injectStyle(
-         `.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }
-          .geo_toolbar_group:first-child { margin-left: 2px; }
-          .geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }
-          .geo_toolbar_group a svg { position: relative; top: 2px; }
-          .geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }
-          .geo_toolbar_btn path .active,
-          .geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }
-          .geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }
-          .geo_toolbar_btn_bright path .active,
-          .geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }`, this.element.node());
+         '.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }'+
+         '.geo_toolbar_group:first-child { margin-left: 2px; }'+
+         '.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }'+
+         '.geo_toolbar_group a svg { position: relative; top: 2px; }'+
+         '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
+         '.geo_toolbar_btn path .active, '+
+         '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
+         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }'+
+         '.geo_toolbar_btn_bright path .active,'+
+         '.geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }', this.element.node());
    }
 
    /** @summary add buttons */
