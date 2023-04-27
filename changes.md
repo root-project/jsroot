@@ -19,8 +19,9 @@
 16. Support custom function in TGaxis - when drawn in TWebCanvas
 17. Introduce settings.WithCredentials, set xhr.withCredentials = true when submitting HTTP requests
 18. Let superimpose TH3 and geo drawings
-19. Fix - rescan sumw2 when update TH1
-20. Fix - correct placing for TLegend header
+19. Apply pad draw options like 'gridx' or 'logy' to all subpads
+20. Fix - rescan sumw2 when update TH1
+21. Fix - correct placing for TLegend header
 
 
 ## Changes in 7.3.1
