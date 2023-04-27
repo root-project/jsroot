@@ -1718,9 +1718,9 @@ class HierarchyPainter extends BasePainter {
                addr += separ() + 'monitoring=' + this.getMonitoringInterval();
 
             if (files.length == 1)
-               addr += separ() + 'file=' + files[0];
+               addr += `${separ()}file=${files[0]}`;
             else if (files.length > 1)
-               addr += separ() + 'files=' + JSON.stringify(files);
+               addr += `${separ()}files=${JSON.stringify(files)}`;
 
             if (this.disp_kind)
                addr += separ() + 'layout=' + this.disp_kind.replace(/ /g, '');
@@ -1746,7 +1746,8 @@ class HierarchyPainter extends BasePainter {
                            item = _item;
                            opt = _opt;
                         } else if (top.getPadPainter() === p.getPadPainter()) {
-                           if (_opt.indexOf('same ') == 0) _opt = _opt.slice(5);
+                           if (_opt.indexOf('same ') == 0)
+                              _opt = _opt.slice(5);
                            item += '+' + _item;
                            opt += '+' + _opt;
                         }
@@ -1787,11 +1788,11 @@ class HierarchyPainter extends BasePainter {
                let filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(source_dir) == 0)
                   filepath = filepath.slice(source_dir.length);
-               filepath = fileprop.kind + '=' + filepath;
+               filepath = `${fileprop.kind}=${filepath}`;
                if (fileprop.itemname) {
                   let name = fileprop.itemname;
                   if (name.search(/\+| |\,/) >= 0) name = `'${name}'`;
-                  filepath += '&item=' + name;
+                  filepath += `&item=${name}`;
                }
 
                menu.addDrawMenu('Draw in new tab', sett.opts,
