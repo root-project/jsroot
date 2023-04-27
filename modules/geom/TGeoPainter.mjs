@@ -321,19 +321,19 @@ class Toolbar {
    constructor(container, bright) {
       this.bright = bright;
 
-      this.element = container.append('div').attr('class','geo_toolbar_group');
+      this.element = container.append('div').attr('class', 'geo_toolbar_group');
 
       injectStyle(
-         `.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }
-          .geo_toolbar_group:first-child { margin-left: 2px; }
-          .geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }
-          .geo_toolbar_group a svg { position: relative; top: 2px; }
-          .geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }
-          .geo_toolbar_btn path .active,
-          .geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }
-          .geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }
-          .geo_toolbar_btn_bright path .active,
-          .geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }`, this.element.node());
+         '.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }'+
+         '.geo_toolbar_group:first-child { margin-left: 2px; }'+
+         '.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }'+
+         '.geo_toolbar_group a svg { position: relative; top: 2px; }'+
+         '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
+         '.geo_toolbar_btn path .active, '+
+         '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
+         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }'+
+         '.geo_toolbar_btn_bright path .active,'+
+         '.geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }', this.element.node());
    }
 
    /** @summary add buttons */
