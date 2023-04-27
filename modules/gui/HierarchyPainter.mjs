@@ -703,6 +703,8 @@ function onlineHierarchy(node, obj) {
    return false;
 }
 
+/** @summary Check if draw handle for specified object can do expand
+  * @private */
 function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
