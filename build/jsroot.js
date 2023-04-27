@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '26/04/2023';
+let version_date = '27/04/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -989,7 +989,7 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const prefROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
+const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -1846,7 +1846,7 @@ loadScript: loadScript,
 nsREX: nsREX,
 parse: parse,
 parseMulti: parseMulti,
-prefROOT: prefROOT,
+prROOT: prROOT,
 registerMethods: registerMethods,
 setBatchMode: setBatchMode,
 settings: settings,
@@ -11273,7 +11273,7 @@ class ObjectPainter extends BasePainter {
       if (!obj?._typename || !isFunc(pp?.getObjectDrawSettings))
          return [];
 
-      return pp.getObjectDrawSettings(prefROOT + obj._typename, 'nosame')?.opts;
+      return pp.getObjectDrawSettings(prROOT + obj._typename, 'nosame')?.opts;
    }
 
    /** @summary Central place to update objects drawing
@@ -62555,7 +62555,8 @@ function closeCurrentWindow() {
    window.open('', '_self').close();
 }
 
-
+/** @summary Tries to open ui5
+  * @private */
 function tryOpenOpenUI(sources, args) {
    if (!sources || (sources.length == 0)) {
       if (args.rejectFunc) {
@@ -62605,8 +62606,9 @@ function tryOpenOpenUI(sources, args) {
 }
 
 
-// return Promise let loader wait before dependent source will be invoked
-
+/** @summary load openui5
+  * @return {Promise} for loading ready
+  * @private */
 async function loadOpenui5(args) {
    // very simple - openui5 was loaded before and will be used as is
    if (typeof sap == 'object')
@@ -62666,7 +62668,6 @@ async function loadOpenui5(args) {
 
       tryOpenOpenUI(openui5_sources, args);
    });
-
 }
 
 // some icons taken from http://uxrepo.com/
@@ -62776,6 +62777,8 @@ function registerForResize(handle, delay) {
    });
 }
 
+/** @summary Detect mouse right button
+  * @private */
 function detectRightButton(event) {
    if ('buttons' in event) return event.buttons === 2;
    if ('which' in event) return event.which === 3;
@@ -62893,6 +62896,8 @@ function selectgStyle(name) {
    }
 }
 
+/** @summary Save object as a cookie
+  * @private */
 function saveCookie(obj, expires, name) {
    let arg = (expires <= 0) ? '' : btoa_func(JSON.stringify(obj)),
        d = new Date();
@@ -62900,6 +62905,8 @@ function saveCookie(obj, expires, name) {
    document.cookie = `${name}=${arg}; expires=${d.toUTCString()}; SameSite=None; Secure; path=/;`;
 }
 
+/** @summary Read cookie with specified name
+  * @private */
 function readCookie(name) {
    if (typeof document == 'undefined') return null;
    let decodedCookie = decodeURIComponent(document.cookie),
@@ -62959,7 +62966,6 @@ function readStyle(only_check = false, name = 'jsroot_style') {
 }
 
 let _saveFileFunc = null;
-
 
 /** @summary Returns image file content as it should be stored on the disc
   * @desc Replaces all kind of base64 coding
@@ -63694,6 +63700,7 @@ class JSRootMenu {
       this.addSizeMenu('Max ranges', 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, 'Maximal number of ranges in single http request');
 
       this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; });
+      this.addchk(settings.WithCredentials, 'With credentials', flag => { settings.WithCredentials = flag; }, 'Submit http request with user credentials');
 
       this.add('endsub:');
 
@@ -85644,7 +85651,7 @@ function createList(parent, lst, name, title) {
 
    let list_item = {
        _name: name,
-       _kind: prefROOT + clTList,
+       _kind: prROOT + clTList,
        _title: title,
        _more: true,
        _geoobj: lst,
@@ -90588,9 +90595,9 @@ function browserIconClick(hitem, hpainter) {
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
    switch(hitem._kind) {
-      case prefROOT + clTEveTrack: icon = 'img_evetrack'; break;
-      case prefROOT + clTEvePointSet: icon = 'img_evepoints'; break;
-      case prefROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
+      case prROOT + clTEveTrack: icon = 'img_evetrack'; break;
+      case prROOT + clTEvePointSet: icon = 'img_evepoints'; break;
+      case prROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
    }
    if (icon) {
       let drawitem = findItemWithPainter(hitem);
@@ -90605,7 +90612,7 @@ function getBrowserIcon(hitem, hpainter) {
   * @private */
 function createItem(node, obj, name) {
    let sub = {
-      _kind: prefROOT + obj._typename,
+      _kind: prROOT + obj._typename,
       _name: name || getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,
@@ -97422,7 +97429,7 @@ function treeHierarchy(node, obj) {
 
       let subitem = {
             _name: ClearName(branch.fName),
-            _kind: prefROOT + branch._typename,
+            _kind: prROOT + branch._typename,
             _title: branch.fTitle,
             _obj: branch
       };
@@ -97448,7 +97455,7 @@ function treeHierarchy(node, obj) {
                  bnode._childs.push({
                     _name: '@size',
                     _title: 'container size',
-                    _kind: prefROOT + 'TLeafElement',
+                    _kind: prROOT + 'TLeafElement',
                     _icon: 'img_leaf',
                     _obj: bobj.fLeaves.arr[0],
                     _more: false
@@ -97469,7 +97476,7 @@ function treeHierarchy(node, obj) {
                      bnode._childs.push({
                         _name: key+'()',
                         _title: `function ${key} of class ${object_class}`,
-                        _kind: prefROOT + clTBranchFunc, // fictional class, only for drawing
+                        _kind: prROOT + clTBranchFunc, // fictional class, only for drawing
                         _obj: { _typename: clTBranchFunc, branch: bobj, func: key },
                         _more: false
                      });
@@ -97488,7 +97495,7 @@ function treeHierarchy(node, obj) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
             let leafitem = {
                _name : ClearName(branch.fLeaves.arr[j].fName),
-               _kind : prefROOT + branch.fLeaves.arr[j]._typename,
+               _kind : prROOT + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
             };
             subitem._childs.push(leafitem);
@@ -97525,7 +97532,7 @@ async function import_more() { return Promise.resolve().then(function () { retur
 
 async function import_geo() {
    return Promise.resolve().then(function () { return TGeoPainter$1; }).then(geo => {
-      let handle = getDrawHandle(prefROOT + 'TGeoVolumeAssembly');
+      let handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });
@@ -97695,7 +97702,7 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   let search = (kind.indexOf(prefROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
+   let search = (kind.indexOf(prROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       let h = drawFuncs.lst[i];
       if (isStr(h.name)) {
@@ -97705,7 +97712,7 @@ function getDrawHandle(kind, selector) {
       }
 
       if (h.sameas) {
-         let hs = getDrawHandle(prefROOT + h.sameas, selector);
+         let hs = getDrawHandle(prROOT + h.sameas, selector);
          if (hs) {
             for (let key in hs)
                if (h[key] === undefined)
@@ -97782,7 +97789,7 @@ function getDrawSettings(kind, selector) {
    if (isany && (res.opts === null)) res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf(prefROOT) == 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prROOT) == 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push('inspect');
@@ -97796,7 +97803,7 @@ function getDrawSettings(kind, selector) {
 
 /** @summary Set default draw option for provided class */
 function setDefaultDrawOpt(classname, opt) {
-   let handle = getDrawHandle(prefROOT + classname, 0);
+   let handle = getDrawHandle(prROOT + classname, 0);
    if (handle)
       handle.dflt = opt;
 }
@@ -97823,7 +97830,7 @@ async function draw(dom, obj, opt) {
    let handle, type_info;
    if ('_typename' in obj) {
       type_info = 'type ' + obj._typename;
-      handle = getDrawHandle(prefROOT + obj._typename, opt);
+      handle = getDrawHandle(prROOT + obj._typename, opt);
    } else if ('_kind' in obj) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
@@ -97934,7 +97941,7 @@ async function redraw(dom, obj, opt) {
 
    let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
-      handle = getDrawHandle(prefROOT + obj._typename);
+      handle = getDrawHandle(prROOT + obj._typename);
    if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
@@ -97987,7 +97994,7 @@ function addStreamerInfosForPainter(lst) {
          let element = si.fElements.arr[j];
          if (element.fTypeName !== 'BASE') continue;
 
-         let handle = getDrawHandle(prefROOT + element.fName);
+         let handle = getDrawHandle(prROOT + element.fName);
          if (handle && !handle.for_derived)
             handle = null;
 
@@ -98006,7 +98013,7 @@ function addStreamerInfosForPainter(lst) {
    }
 
    lst.arr.forEach(si => {
-      if (getDrawHandle(prefROOT + si.fName) !== null) return;
+      if (getDrawHandle(prROOT + si.fName) !== null) return;
 
       let handle = checkBaseClasses(si, 0);
       if (handle) {
@@ -98248,7 +98255,7 @@ function folderHierarchy(item, obj) {
       let chld = obj.fFolders.arr[i];
       item._childs.push( {
          _name: chld.fName,
-         _kind: prefROOT + chld._typename,
+         _kind: prROOT + chld._typename,
          _obj: chld
       });
    }
@@ -98276,7 +98283,7 @@ function taskHierarchy(item, obj) {
       let chld = obj.fTasks.arr[i];
       item._childs.push({
          _name: chld.fName,
-         _kind: prefROOT + chld._typename,
+         _kind: prROOT + chld._typename,
          _obj: chld
       });
    }
@@ -98321,13 +98328,13 @@ function listHierarchy(folder, lst) {
       let obj = ismap ? lst.arr[i].first : lst.arr[i],
           item = !obj?._typename ? {
             _name: i.toString(),
-            _kind: prefROOT + 'NULL',
+            _kind: prROOT + 'NULL',
             _title: 'NULL',
             _value: 'null',
             _obj: null
           } : {
             _name: obj.fName || obj.name,
-            _kind: prefROOT + obj._typename,
+            _kind: prROOT + obj._typename,
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
           };
@@ -98377,7 +98384,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       let item = {
          _name: key.fName + ';' + key.fCycle,
          _cycle: key.fCycle,
-         _kind: prefROOT + key.fClassName,
+         _kind: prROOT + key.fClassName,
          _title: key.fTitle,
          _keyname: key.fName,
          _readobj: null,
@@ -98406,7 +98413,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       } else if ((key.fClassName == clTList) && (key.fName == nameStreamerInfo)) {
          if (settings.SkipStreamerInfos) continue;
          item._name = nameStreamerInfo;
-         item._kind = prefROOT + clTStreamerInfoList;
+         item._kind = prROOT + clTStreamerInfoList;
          item._title = 'List of streamer infos for binary I/O';
          item._readobj = file.fStreamerInfos;
       }
@@ -98490,7 +98497,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (!top._title) {
       if (obj._typename)
-         top._title = prefROOT + obj._typename;
+         top._title = prROOT + obj._typename;
       else if (isarray)
          top._title = 'Array len: ' + obj.length;
    }
@@ -98590,7 +98597,7 @@ function objectHierarchy(top, obj, args = undefined) {
          } else {
 
             if (fld.$kind || fld._typename)
-               item._kind = item._title = prefROOT + (fld.$kind || fld._typename);
+               item._kind = item._title = prROOT + (fld.$kind || fld._typename);
 
             if (fld._typename) {
                item._title = fld._typename;
@@ -98824,11 +98831,13 @@ function onlineHierarchy(node, obj) {
    return false;
 }
 
+/** @summary Check if draw handle for specified object can do expand
+  * @private */
 function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-const kindTFile = prefROOT + 'TFile';
+const kindTFile = prROOT + 'TFile';
 
 /**
   * @summary Painter of hierarchical structures
@@ -99278,7 +99287,7 @@ class HierarchyPainter extends BasePainter {
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf(prefROOT) == 0))
+      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) == 0))
          can_menu = can_click = true;
 
       if (!img2) img2 = img1;
@@ -99654,7 +99663,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = 'item';
-      let selector = (hitem._kind == prefROOT + 'TKey' && hitem._more) ? 'noinspect' : '',
+      let selector = (hitem._kind == prROOT + 'TKey' && hitem._more) ? 'noinspect' : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == 'icon') {
@@ -99729,7 +99738,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if (isStr(hitem._kind) && (hitem._kind.indexOf(prefROOT) === 0) && sett.inspect && (can_draw !== false))
+         if (isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, 'inspect', true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -99837,9 +99846,9 @@ class HierarchyPainter extends BasePainter {
                addr += separ() + 'monitoring=' + this.getMonitoringInterval();
 
             if (files.length == 1)
-               addr += separ() + 'file=' + files[0];
+               addr += `${separ()}file=${files[0]}`;
             else if (files.length > 1)
-               addr += separ() + 'files=' + JSON.stringify(files);
+               addr += `${separ()}files=${JSON.stringify(files)}`;
 
             if (this.disp_kind)
                addr += separ() + 'layout=' + this.disp_kind.replace(/ /g, '');
@@ -99865,7 +99874,8 @@ class HierarchyPainter extends BasePainter {
                            item = _item;
                            opt = _opt;
                         } else if (top.getPadPainter() === p.getPadPainter()) {
-                           if (_opt.indexOf('same ') == 0) _opt = _opt.slice(5);
+                           if (_opt.indexOf('same ') == 0)
+                              _opt = _opt.slice(5);
                            item += '+' + _item;
                            opt += '+' + _opt;
                         }
@@ -99906,11 +99916,11 @@ class HierarchyPainter extends BasePainter {
                let filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(exports.source_dir) == 0)
                   filepath = filepath.slice(exports.source_dir.length);
-               filepath = fileprop.kind + '=' + filepath;
+               filepath = `${fileprop.kind}=${filepath}`;
                if (fileprop.itemname) {
                   let name = fileprop.itemname;
                   if (name.search(/\+| |\,/) >= 0) name = `'${name}'`;
-                  filepath += '&item=' + name;
+                  filepath += `&item=${name}`;
                }
 
                menu.addDrawMenu('Draw in new tab', sett.opts,
@@ -99920,7 +99930,7 @@ class HierarchyPainter extends BasePainter {
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add('Expand', () => this.expandItem(itemname));
 
-            if (hitem._kind === prefROOT + clTStyle)
+            if (hitem._kind === prROOT + clTStyle)
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
@@ -100062,12 +100072,12 @@ class HierarchyPainter extends BasePainter {
 
             if (!updating) showProgress(`Drawing ${display_itemname} ...`);
 
-            let handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
+            let handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || '';
-               handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
+               handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
             }
 
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt != 'expand'))
@@ -100133,7 +100143,7 @@ class HierarchyPainter extends BasePainter {
       select(frame).on('dragover', function(ev) {
          let itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
-         if (isStr(ditem?._kind) && (ditem._kind.indexOf(prefROOT) == 0))
+         if (isStr(ditem?._kind) && (ditem._kind.indexOf(prROOT) == 0))
             ev.preventDefault(); // let accept drop, otherwise it will be refuced
       }).on('dragenter', function() {
          select(this).classed('jsroot_drag_area', true);
@@ -100529,7 +100539,7 @@ class HierarchyPainter extends BasePainter {
 
             if (handle?.expand_item) {
                _obj = _obj[handle.expand_item];
-              handle = _obj?._typename ? getDrawHandle(prefROOT + _obj._typename, '::expand') : null;
+              handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
             }
 
             if (handle?.expand || handle?.get_expand) {
@@ -100643,7 +100653,7 @@ class HierarchyPainter extends BasePainter {
       if (isfileopened) return;
 
       return httpRequest(filepath, 'object').then(res => {
-         let h1 = { _jsonfile: filepath, _kind: prefROOT + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
+         let h1 = { _jsonfile: filepath, _kind: prROOT + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
@@ -100835,7 +100845,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (!req && (item._kind.indexOf(prefROOT) != 0))
+         if (!req && (item._kind.indexOf(prROOT) != 0))
            req = 'item.json.gz?compact=3';
       }
 
@@ -100927,7 +100937,7 @@ class HierarchyPainter extends BasePainter {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
                      let typename = 'kind:' + item._kind;
-                     if (item._kind.indexOf(prefROOT) == 0)
+                     if (item._kind.indexOf(prROOT) == 0)
                         typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
                      if (!canDrawHandle(typename) || drawopt)
@@ -100978,7 +100988,7 @@ class HierarchyPainter extends BasePainter {
       let node = this.findItem(itemname),
           sett = getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = getDrawHandle(node._kind),
-          root_type = isStr(node._kind) ? node._kind.indexOf(prefROOT) == 0 : false;
+          root_type = isStr(node._kind) ? node._kind.indexOf(prROOT) == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push('inspect');
@@ -101233,7 +101243,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, isany = false;
       if (!mdi) return false;
 
-      let handle = obj._typename ? getDrawHandle(prefROOT + obj._typename) : null;
+      let handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
@@ -101879,7 +101889,8 @@ function readStyleFromURL(url) {
       let optimize = d.get('optimize');
       if (optimize) {
          optimize = parseInt(optimize);
-         if (Number.isInteger(optimize)) settings.OptimizeDraw = optimize;
+         if (Number.isInteger(optimize))
+            settings.OptimizeDraw = optimize;
       }
    }
 
@@ -101898,6 +101909,9 @@ function readStyleFromURL(url) {
 
    if (d.has('prefer_saved_points'))
       settings.PreferSavedPoints = true;
+
+   if (d.has('with_credentials'))
+      settings.WithCredentials = true;
 
    let inter = d.get('interactive');
    if (inter === 'nomenu')
@@ -101927,8 +101941,8 @@ function readStyleFromURL(url) {
    get_bool('tooltip', 'Tooltip');
 
    let mathjax = d.get('mathjax', null), latex = d.get('latex', null);
-
-   if ((mathjax !== null) && (mathjax != '0') && (latex === null)) latex = 'math';
+   if ((mathjax !== null) && (mathjax != '0') && (latex === null))
+      latex = 'math';
    if (latex !== null)
       settings.Latex = constants$1.Latex.fromString(latex);
 
@@ -111126,7 +111140,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    if (item._childs && !asleaf)
       for (let n = 0; n < item._childs.length; ++n) {
          let leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf(prefROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
+         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
             if (leaf_cnt++ > 0) expr += ':';
             expr += leaf._name;
          }
@@ -122225,7 +122239,7 @@ exports.nsREX = nsREX;
 exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
-exports.prefROOT = prefROOT;
+exports.prROOT = prROOT;
 exports.readStyleFromURL = readStyleFromURL;
 exports.redraw = redraw;
 exports.registerForResize = registerForResize;
