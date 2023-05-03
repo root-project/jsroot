@@ -1,4 +1,5 @@
 import { TGraphPainter } from './TGraphPainter.mjs';
+import { TH2Painter } from './TH2Painter.mjs';
 
 class TScatterPainter extends TGraphPainter {
 
@@ -10,7 +11,14 @@ class TScatterPainter extends TGraphPainter {
    getGraph() { return this.getObject()?.fGraph; }
 
    decodeOptions(opt) {
-      this.options = { Axis: 'AXIS', original: opt || '' };
+      this.options = { Axis: 'AXISZ', original: opt || '' };
+   }
+
+  /** @summary Draw axis histogram
+    * @private */
+   async drawAxisHisto() {
+      let histo = this.createHistogram();
+      return TH2Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
    /** @summary Actual drawing of TScatter */
