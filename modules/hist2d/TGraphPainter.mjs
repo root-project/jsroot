@@ -37,6 +37,18 @@ class TGraphPainter extends ObjectPainter {
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
+   /** @summary Return drawn graph object */
+   getGraph() { return this.getObject(); }
+
+   /** @summary Return histogram object used for axis drawings */
+   getHistogram() { return this.getObject()?.fHistogram; }
+
+   /** @summary Set histogram object to graph */
+   setHistogram(histo) {
+      let obj = this.getObject();
+      if (obj) obj.fHistogram = histo;
+   }
+
    /** @summary Redraw graph
      * @desc may redraw histogram which was used to draw axes
      * @return {Promise} for ready */
@@ -62,7 +74,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns object if this drawing TGraphMultiErrors object */
    get_gme() {
-      let graph = this.getObject();
+      let graph = this.getGraph();
       return graph?._typename == clTGraphMultiErrors ? graph : null;
    }
 
@@ -72,7 +84,7 @@ class TGraphPainter extends ObjectPainter {
       if (isStr(opt) && (opt.indexOf('same ') == 0))
          opt = opt.slice(5);
 
-      let graph = this.getObject(),
+      let graph = this.getGraph(),
           is_gme = !!this.get_gme(),
           blocks_gme = [],
           has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
@@ -210,7 +222,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Extract errors for TGraphMultiErrors */
    extractGmeErrors(nblock) {
       if (!this.bins) return;
-      let gr = this.getObject();
+      let gr = this.getGraph();
       this.bins.forEach(bin => {
          bin.eylow  = gr.fEyL[nblock][bin.indx];
          bin.eyhigh = gr.fEyH[nblock][bin.indx];
@@ -219,7 +231,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Create bins for TF1 drawing */
    createBins() {
-      let gr = this.getObject();
+      let gr = this.getGraph();
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
@@ -294,15 +306,16 @@ class TGraphPainter extends ObjectPainter {
       if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.9;
       if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
-      let graph = this.getObject(),
-          histo = graph.fHistogram,
+      let graph = this.getGraph(),
+          histo = this.getHistogram(),
           minimum0 = minimum, maximum0 = maximum;
 
       if (!histo) {
-         histo = graph.fHistogram = createHistogram(clTH1I, 100);
+         histo = createHistogram(clTH1I, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
+         this.setHistogram(histo);
       } else if ((histo.fMaximum != kNoZoom) && (histo.fMinimum != kNoZoom)) {
          minimum = histo.fMinimum;
          maximum = histo.fMaximum;
@@ -332,10 +345,10 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Check if user range can be unzommed
      * @desc Used when graph points covers larger range than provided histogram */
    unzoomUserRange(dox, doy /*, doz*/) {
-      let graph = this.getObject();
+      let graph = this.getGraph();
       if (this._own_histogram || !graph) return false;
 
-      let histo = graph.fHistogram;
+      let histo = this.getHistogram();
 
       dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
       doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
@@ -475,7 +488,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary draw TGraph bins with specified options
      * @desc Can be called several times */
    drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
-      let graph = this.getObject(),
+      let graph = this.getGraph(),
           excl_width = 0, drawbins = null;
 
       if (main_block && lineatt.excl_side) {
@@ -829,7 +842,7 @@ class TGraphPainter extends ObjectPainter {
    drawGraph() {
 
       let pmain = this.get_main(),
-          graph = this.getObject();
+          graph = this.getGraph();
       if (!pmain) return;
 
       // special mode for TMultiGraph 3d drawing
@@ -943,7 +956,7 @@ class TGraphPainter extends ObjectPainter {
       if (findbin === null) return null;
 
       let d = d3_select(findbin).datum(),
-          gr = this.getObject(),
+          gr = this.getGraph(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
@@ -1091,7 +1104,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Check editable flag for TGraph
      * @desc if arg specified changes or toggles editable flag */
    testEditable(arg) {
-      let obj = this.getObject();
+      let obj = this.getGraph();
       if (!obj) return false;
       if ((arg == 'toggle') || ((arg !== undefined) && (!arg != obj.TestBit(kNotEditable))))
          obj.InvertBit(kNotEditable);
@@ -1111,7 +1124,7 @@ class TGraphPainter extends ObjectPainter {
           ismark = (this.draw_kind == 'mark'),
           pmain = this.get_main(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gr = this.getObject(),
+          gr = this.getGraph(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: best.bin ? funcs.grx(best.bin.x) : best.linex,
                   y: best.bin ? funcs.gry(best.bin.y) : best.liney,
@@ -1248,7 +1261,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Complete moving */
    moveEnd(not_changed) {
-      let exec = '', graph = this.getObject(), last = graph?.fNpoints-1;
+      let exec = '', graph = this.getGraph(), last = graph?.fNpoints-1;
 
       const changeBin = bin => {
          exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
@@ -1337,7 +1350,7 @@ class TGraphPainter extends ObjectPainter {
       if (opt && (opt != this.options.original))
          this.decodeOptions(opt);
 
-      let graph = this.getObject();
+      let graph = this.getGraph();
       // TODO: make real update of TGraph object content
       graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
@@ -1367,8 +1380,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range
      * @desc allow to zoom TGraph only when at least one point in the range */
-   canZoomInside(axis,min,max) {
-      let gr = this.getObject();
+   canZoomInside(axis, min, max) {
+      let gr = this.getGraph();
       if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
 
       for (let n = 0; n < gr.fNpoints; ++n)
@@ -1393,7 +1406,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Find TF1/TF2 in TGraph list of functions */
    findFunc() {
-      let gr = this.getObject();
+      let gr = this.getGraph();
       if (gr?.fFunctions?.arr)
          return gr?.fFunctions?.arr.find(func => (func._typename == clTF1) || (func._typename == clTF2));
       return null;
@@ -1401,7 +1414,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Find stat box in TGraph list of functions */
    findStat() {
-      let gr = this.getObject();
+      let gr = this.getGraph();
       if (gr?.fFunctions?.arr)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
             let func = gr.fFunctions.arr[i];
@@ -1445,7 +1458,7 @@ class TGraphPainter extends ObjectPainter {
       stats.AddText(func.fName);
 
       // while TF1 was found, one can be sure that stats is existing
-      this.getObject().fFunctions.Add(stats);
+      this.getGraph().fFunctions.Add(stats);
 
       return stats;
    }
@@ -1469,7 +1482,7 @@ class TGraphPainter extends ObjectPainter {
      * @return {Promise} */
    async drawNextFunction(indx) {
 
-      let graph = this.getObject();
+      let graph = this.getGraph();
 
       if (indx >= (graph?.fFunctions?.arr?.length || 0))
          return this;
