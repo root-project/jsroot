@@ -1354,15 +1354,9 @@ class TGraphPainter extends ObjectPainter {
       return false;
    }
 
-   /** @summary Update TGraph object */
-   updateObject(obj, opt) {
-      if (!this.matchObjectType(obj)) return false;
-
-      if (opt && (opt != this.options.original))
-         this.decodeOptions(opt);
-
-      let graph = this.getGraph();
-      // TODO: make real update of TGraph object content
+   /** @summary Update object members
+     * @private */
+   _updateMembers(graph, obj) {
       graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
       graph.fX = obj.fX;
@@ -1370,6 +1364,17 @@ class TGraphPainter extends ObjectPainter {
       graph.fNpoints = obj.fNpoints;
       graph.fMinimum = obj.fMinimum;
       graph.fMaximum = obj.fMaximum;
+   }
+
+   /** @summary Update TGraph object */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj)) return false;
+
+      if (opt && (opt != this.options.original))
+         this.decodeOptions(opt);
+
+      this._updateMembers(this.getObject(), obj);
+
       this.createBins();
 
       delete this.$redraw_hist;

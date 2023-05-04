@@ -49,6 +49,18 @@ class TScatterPainter extends TGraphPainter {
       return pal;
    }
 
+   /** @summary Update TScatter members */
+   _updateMembers(scatter, obj) {
+      scatter.fBits = obj.fBits;
+      scatter.fTitle = obj.fTitle;
+      scatter.fNpoints = obj.fNpoints;
+      scatter.fColor = obj.fColor;
+      scatter.fSize = obj.fSize;
+      scatter.fMargin = obj.fMargin;
+      scatter.fScale = obj.fScale;
+      super._updateMembers(scatter.fGraph, obj.fGraph);
+   }
+
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       let fpainter = this.get_main(),
@@ -72,6 +84,9 @@ class TScatterPainter extends TGraphPainter {
           maxc = Math.max.apply(Math, scatter.fColor),
           mins = Math.min.apply(Math, scatter.fSize),
           maxs = Math.max.apply(Math, scatter.fSize);
+
+      if (maxc <= minc) maxc = minc + 1;
+      if (maxs <= mins) maxs = mins + 1;
 
       fpainter.zmin = minc;
       fpainter.zmax = maxc;
