@@ -1,4 +1,7 @@
+import { clTPaletteAxis, isFunc } from '../core.mjs';
+import { getColorPalette } from '../base/colors.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
+import { HistContour } from './THistPainter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 
 class TScatterPainter extends TGraphPainter {
@@ -12,7 +15,7 @@ class TScatterPainter extends TGraphPainter {
    getGraph() { return this.getObject()?.fGraph; }
 
    decodeOptions(opt) {
-      this.options = { Axis: 'AXISZ', original: opt || '' };
+      this.options = { Axis: 'AXIS', original: opt || '' };
    }
 
   /** @summary Draw axis histogram
@@ -22,7 +25,13 @@ class TScatterPainter extends TGraphPainter {
       return TH2Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
-   drawNextFunction() { return this; }
+   findPalette(force) {
+      let gr = this.getGraph(),
+          pal = gr?.fFunctions?.arr?.find(func => (func._typename == clTPaletteAxis));
+      if (!pal && gr && force) {
+      }
+      return pal;
+   }
 
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
@@ -30,6 +39,22 @@ class TScatterPainter extends TGraphPainter {
           hpainter = this.getMainPainter(),
           scatter = this.getObject();
       if (!fpainter || !hpainter || !scatter) return;
+
+      let pal = this.findPalette();
+      if (pal)
+         pal.$main_painter = this;
+
+      if (!this.fPalette) {
+         let pp = this.getPadPainter();
+         if (isFunc(pp?.getCustomPalette))
+            this.fPalette = pp.getCustomPalette();
+      }
+      if (!this.fPalette)
+         this.fPalette = getColorPalette(this.options.Palette);
+
+      this.fContour = new HistContour(0.5, 250);
+      this.fContour.createNormal(30);
+      this.fContour.configIndicies(0, 0);
 
       this.createG(!fpainter.pad_layer);
 
@@ -45,7 +70,7 @@ class TScatterPainter extends TGraphPainter {
              fcol = scatter.fColor[i],
              fsz = scatter.fSize[i];
 
-          let col = hpainter.fContour.getPaletteColor(hpainter.fPalette, fcol);
+          let col = this.fContour.getPaletteColor(this.fPalette, fcol);
 
           this.draw_g.append('svg:circle')
                      .attr('cx', grx)

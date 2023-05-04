@@ -1407,21 +1407,12 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Find TF1/TF2 in TGraph list of functions */
    findFunc() {
-      let gr = this.getGraph();
-      if (gr?.fFunctions?.arr)
-         return gr?.fFunctions?.arr.find(func => (func._typename == clTF1) || (func._typename == clTF2));
-      return null;
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTF1) || (func._typename == clTF2));
    }
 
    /** @summary Find stat box in TGraph list of functions */
    findStat() {
-      let gr = this.getGraph();
-      if (gr?.fFunctions?.arr)
-         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
-            let func = gr.fFunctions.arr[i];
-            if ((func._typename == clTPaveStats) && (func.fName == 'stats')) return func;
-         }
-      return null;
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTPaveStats) && (func.fName == 'stats'));
    }
 
    /** @summary Create stat box */
@@ -1518,11 +1509,11 @@ class TGraphPainter extends ObjectPainter {
 
       if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis)
          promise = painter.drawAxisHisto().then(hist_painter => {
-            if (hist_painter) {
-               painter.axes_draw = true;
-               if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = 'hist';
-            }
+            if (!hist_painter) return;
+            painter.axes_draw = true;
+            if (!painter._own_histogram)
+               painter.$primary = true;
+            hist_painter.$secondary = 'hist';
          });
 
       return promise.then(() => {
