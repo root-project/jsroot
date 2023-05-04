@@ -1,5 +1,6 @@
 import { clTPaletteAxis, isFunc } from '../core.mjs';
 import { getColorPalette } from '../base/colors.mjs';
+import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
 import { HistContour } from './THistPainter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
@@ -52,14 +53,19 @@ class TScatterPainter extends TGraphPainter {
       if (!this.fPalette)
          this.fPalette = getColorPalette(this.options.Palette);
 
-      this.fContour = new HistContour(0.5, 250);
+      let minc = Math.min.apply(Math, scatter.fColor),
+          maxc = Math.max.apply(Math, scatter.fColor),
+          mins = Math.min.apply(Math, scatter.fSize),
+          maxs = Math.max.apply(Math, scatter.fSize);
+
+      fpainter.zmin = minc;
+      fpainter.zmax = maxc;
+
+      this.fContour = new HistContour(minc, maxc);
       this.fContour.createNormal(30);
       this.fContour.configIndicies(0, 0);
 
       this.createG(!fpainter.pad_layer);
-
-      // this.createAttLine({ attr: graph });
-      // this.createAttFill({ attr: graph });
 
       let funcs = fpainter.getGrFuncs();
 
@@ -67,16 +73,14 @@ class TScatterPainter extends TGraphPainter {
          let pnt = this.bins[i],
              grx = funcs.grx(pnt.x),
              gry = funcs.gry(pnt.y),
-             fcol = scatter.fColor[i],
-             fsz = scatter.fSize[i];
+             size = scatter.fScale * ((scatter.fSize[i] - mins) / (maxs - mins)),
+             color = this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]);
 
-          let col = this.fContour.getPaletteColor(this.fPalette, fcol);
+          let handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
 
-          this.draw_g.append('svg:circle')
-                     .attr('cx', grx)
-                     .attr('cy', gry)
-                     .attr('r', 20)
-                     .style('fill', col);
+          this.draw_g.append('svg:path')
+                     .attr('d', handle.create(grx, gry))
+                     .call(handle.func);
       }
 
       return this;
