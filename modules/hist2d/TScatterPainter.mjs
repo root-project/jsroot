@@ -16,11 +16,6 @@ class TScatterPainter extends TGraphPainter {
    /** @summary Return drawn graph object */
    getGraph() { return this.getObject()?.fGraph; }
 
-   /** @summary Decode option */
-   decodeOptions(opt) {
-      this.options = { Axis: 'AXIS', original: opt || '' };
-   }
-
    /** @summary Return margins for histogram ranges */
    getHistRangeMargin() { return this.getObject()?.fMargin ?? 0.1; }
 
@@ -33,10 +28,15 @@ class TScatterPainter extends TGraphPainter {
 
   /** @summary Provide palette, create if necessary
     * @private */
-   getPalette(force) {
+   getPalette() {
       let gr = this.getGraph(),
           pal = gr?.fFunctions?.arr?.find(func => (func._typename == clTPaletteAxis));
-      if (!pal && gr && force) {
+
+      if (pal) return pal;
+
+      if (this.options.PadPalette) {
+         pal = this.getPadPainter()?.findInPrimitives('palette', clTPaletteAxis);
+      } else if (gr) {
          pal = create(clTPaletteAxis);
 
          let fp = this.get_main();
@@ -56,7 +56,7 @@ class TScatterPainter extends TGraphPainter {
           scatter = this.getObject();
       if (!fpainter || !hpainter || !scatter) return;
 
-      let pal = this.getPalette(true);
+      let pal = this.getPalette();
       if (pal)
          pal.$main_painter = this;
 

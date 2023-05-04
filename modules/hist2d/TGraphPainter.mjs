@@ -119,7 +119,7 @@ class TGraphPainter extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
          if (opt.indexOf(';') > 0) {
@@ -136,6 +136,8 @@ class TGraphPainter extends ObjectPainter {
 
       // check pad options first
       res.PadStats = d.check('USE_PAD_STATS');
+      res.PadPalette = d.check('USE_PAD_PALETTE');
+
       let hopt = '';
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
       if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
@@ -203,7 +205,7 @@ class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          let pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === graph)) res.Axis = 'AXIS';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
       } else if (res.Axis.indexOf('A') < 0) {
          res.Axis = 'AXIS,' + res.Axis;
       }
