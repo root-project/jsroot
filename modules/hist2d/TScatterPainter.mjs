@@ -10,6 +10,7 @@ class TScatterPainter extends TGraphPainter {
    constructor(dom, obj) {
       super(dom, obj);
       this._need_2dhist = true;
+      this._not_adjust_hrange = true;
    }
 
    /** @summary Return drawn graph object */
@@ -40,10 +41,11 @@ class TScatterPainter extends TGraphPainter {
 
          let fp = this.get_main();
 
-         Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.01, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
-         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
+         Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
+         Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
          gr.fFunctions.AddFirst(pal, '');
       }
+
       return pal;
    }
 

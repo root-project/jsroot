@@ -306,8 +306,12 @@ class TGraphPainter extends ObjectPainter {
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
-      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin * (1 - margin);
-      if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
+      if (!this._not_adjust_hrange) {
+         if ((uxmin < 0) && (xmin >= 0))
+            uxmin = xmin * (1 - margin);
+         if ((uxmax > 0) && (xmax <= 0))
+            uxmax = 0;
+      }
 
       let graph = this.getGraph(),
           histo = this.getHistogram(),
