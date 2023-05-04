@@ -332,7 +332,7 @@ class TGraphPainter extends ObjectPainter {
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
       if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
 
-      setHistTitle(histo, graph.fTitle);
+      setHistTitle(histo, this.getObject().fTitle);
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;
