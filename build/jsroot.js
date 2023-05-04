@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '27/04/2023';
+let version_date = '4/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10206,6 +10206,192 @@ class ColorPalette {
 
 } // class ColorPalette
 
+function createDefaultPalette() {
+   const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+   }, HLStoRGB = (h, l, s) => {
+      const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
+            p = 2 * l - q,
+            r = hue2rgb(p, q, h + 1/3),
+            g = hue2rgb(p, q, h),
+            b = hue2rgb(p, q, h - 1/3);
+      return '#' + toHex(r) + toHex(g) + toHex(b);
+   }, minHue = 0, maxHue = 280, maxPretty = 50, palette = [];
+   for (let i = 0; i < maxPretty; ++i) {
+      const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
+      palette.push(HLStoRGB(hue, 0.5, 1));
+   }
+   return new ColorPalette(palette);
+}
+
+function createGrayPalette() {
+   let palette = [];
+   for (let i = 0; i < 50; ++i) {
+      const code = toHex((i+2)/60);
+      palette.push('#'+code+code+code);
+   }
+   return new ColorPalette(palette);
+}
+
+/** @summary Create color palette
+  * @private */
+function getColorPalette(id) {
+   id = id || settings.Palette;
+   if ((id > 0) && (id < 10)) return createGrayPalette();
+   if (id < 51) return createDefaultPalette();
+   if (id > 113) id = 57;
+   let rgb, stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
+   switch(id) {
+      // Deep Sea
+      case 51: rgb = [[0,9,13,17,24,32,27,25,29],[0,0,0,2,37,74,113,160,221],[28,42,59,78,98,129,154,184,221]]; break;
+      // Grey Scale
+      case 52: rgb = [[0,32,64,96,128,160,192,224,255],[0,32,64,96,128,160,192,224,255],[0,32,64,96,128,160,192,224,255]]; break;
+      // Dark Body Radiator
+      case 53: rgb = [[0,45,99,156,212,230,237,234,242],[0,0,0,45,101,168,238,238,243],[0,1,1,3,9,8,11,95,230]]; break;
+      // Two-color hue (dark blue through neutral gray to bright yellow)
+      case 54: rgb = [[0,22,44,68,93,124,160,192,237],[0,16,41,67,93,125,162,194,241],[97,100,99,99,93,68,44,26,74]]; break;
+      // Rain Bow
+      case 55: rgb = [[0,5,15,35,102,196,208,199,110],[0,48,124,192,206,226,97,16,0],[99,142,198,201,90,22,13,8,2]]; break;
+      // Inverted Dark Body Radiator
+      case 56: rgb = [[242,234,237,230,212,156,99,45,0],[243,238,238,168,101,45,0,0,0],[230,95,11,8,9,3,1,1,0]]; break;
+      // Bird (default, keep float for backward compatibility)
+      case 57: rgb = [[ 53.091,15.096,19.89,5.916,45.951,135.1755,208.743,253.878,248.982],[42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],[134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]]; break;
+      // Cubehelix
+      case 58: rgb = [[0,24,2,54,176,236,202,194,255],[0,29,92,129,117,120,176,236,255],[0,68,80,34,57,172,252,245,255]]; break;
+      // Green Red Violet
+      case 59: rgb = [[13,23,25,63,76,104,137,161,206],[95,67,37,21,0,12,35,52,79],[4,3,2,6,11,22,49,98,208]]; break;
+      // Blue Red Yellow
+      case 60: rgb = [[0,61,89,122,143,160,185,204,231],[0,0,0,0,14,37,72,132,235],[0,140,224,144,4,5,6,9,13]]; break;
+      // Ocean
+      case 61: rgb = [[14,7,2,0,5,11,55,131,229],[105,56,26,1,42,74,131,171,229],[2,21,35,60,92,113,160,185,229]]; break;
+      // Color Printable On Grey
+      case 62: rgb = [[0,0,0,70,148,231,235,237,244],[0,0,0,0,0,69,67,216,244],[0,102,228,231,177,124,137,20,244]]; break;
+      // Alpine
+      case 63: rgb = [[50,56,63,68,93,121,165,192,241],[66,81,91,96,111,128,155,189,241],[97,91,75,65,77,103,143,167,217]]; break;
+      // Aquamarine
+      case 64: rgb = [[145,166,167,156,131,114,101,112,132],[158,178,179,181,163,154,144,152,159],[190,199,201,192,176,169,160,166,190]]; break;
+      // Army
+      case 65: rgb = [[93,91,99,108,130,125,132,155,174],[126,124,128,129,131,121,119,153,173],[103,94,87,85,80,85,107,120,146]]; break;
+      // Atlantic
+      case 66: rgb = [[24,40,69,90,104,114,120,132,103],[29,52,94,127,150,162,159,151,101],[29,52,96,132,162,181,184,186,131]]; break;
+      // Aurora
+      case 67: rgb = [[46,38,61,92,113,121,132,150,191],[46,36,40,69,110,135,131,92,34],[46,80,74,70,81,105,165,211,225]]; break;
+      // Avocado
+      case 68: rgb = [[0,4,12,30,52,101,142,190,237],[0,40,86,121,140,172,187,213,240],[0,9,14,18,21,23,27,35,101]]; break;
+      // Beach
+      case 69: rgb = [[198,206,206,211,198,181,161,171,244],[103,133,150,172,178,174,163,175,244],[49,54,55,66,91,130,184,224,244]]; break;
+      // Black Body
+      case 70: rgb = [[243,243,240,240,241,239,186,151,129],[0,46,99,149,194,220,183,166,147],[6,8,36,91,169,235,246,240,233]]; break;
+      // Blue Green Yellow
+      case 71: rgb = [[22,19,19,25,35,53,88,139,210],[0,32,69,108,135,159,183,198,215],[77,96,110,116,110,100,90,78,70]]; break;
+      // Brown Cyan
+      case 72: rgb = [[68,116,165,182,189,180,145,111,71],[37,82,135,178,204,225,221,202,147],[16,55,105,147,196,226,232,224,178]]; break;
+      // CMYK
+      case 73: rgb = [[61,99,136,181,213,225,198,136,24],[149,140,96,83,132,178,190,135,22],[214,203,168,135,110,100,111,113,22]]; break;
+      // Candy
+      case 74: rgb = [[76,120,156,183,197,180,162,154,140],[34,35,42,69,102,137,164,188,197],[ 64,69,78,105,142,177,205,217,198]]; break;
+      // Cherry
+      case 75: rgb = [[37,102,157,188,196,214,223,235,251],[37,29,25,37,67,91,132,185,251],[37,32,33,45,66,98,137,187,251]]; break;
+      // Coffee
+      case 76: rgb = [[79,100,119,137,153,172,192,205,250],[63,79,93,103,115,135,167,196,250],[51,59,66,61,62,70,110,160,250]]; break;
+      // Dark Rain Bow
+      case 77: rgb = [[43,44,50,66,125,172,178,155,157],[63,63,85,101,138,163,122,51,39],[121,101,58,44,47,55,57,44,43]]; break;
+      // Dark Terrain
+      case 78: rgb = [[0,41,62,79,90,87,99,140,228],[0,57,81,93,85,70,71,125,228],[95,91,91,82,60,43,44,112,228]]; break;
+      // Fall
+      case 79: rgb = [[49,59,72,88,114,141,176,205,222],[78,72,66,57,59,75,106,142,173],[ 78,55,46,40,39,39,40,41,47]]; break;
+      // Fruit Punch
+      case 80: rgb = [[243,222,201,185,165,158,166,187,219],[94,108,132,135,125,96,68,51,61],[7,9,12,19,45,89,118,146,118]]; break;
+      // Fuchsia
+      case 81: rgb = [[19,44,74,105,137,166,194,206,220],[19,28,40,55,82,110,159,181,220],[19,42,68,96,129,157,188,203,220]]; break;
+      // Grey Yellow
+      case 82: rgb = [[33,44,70,99,140,165,199,211,216],[ 38,50,76,105,140,165,191,189,167],[ 55,67,97,124,140,166,163,129,52]]; break;
+      // Green Brown Terrain
+      case 83: rgb = [[0,33,73,124,136,152,159,171,223],[0,43,92,124,134,126,121,144,223],[0,43,68,76,73,64,72,114,223]]; break;
+      // Green Pink
+      case 84: rgb = [[5,18,45,124,193,223,205,128,49],[48,134,207,230,193,113,28,0,7],[6,15,41,121,193,226,208,130,49]]; break;
+      // Island
+      case 85: rgb = [[180,106,104,135,164,188,189,165,144],[72,126,154,184,198,207,205,190,179],[41,120,158,188,194,181,145,100,62]]; break;
+      // Lake
+      case 86: rgb = [[57,72,94,117,136,154,174,192,215],[0,33,68,109,140,171,192,196,209],[116,137,173,201,200,201,203,190,187]]; break;
+      // Light Temperature
+      case 87: rgb = [[31,71,123,160,210,222,214,199,183],[40,117,171,211,231,220,190,132,65],[234,214,228,222,210,160,105,60,34]]; break;
+      // Light Terrain
+      case 88: rgb = [[123,108,109,126,154,172,188,196,218],[184,138,130,133,154,175,188,196,218],[208,130,109,99,110,122,150,171,218]]; break;
+      // Mint
+      case 89: rgb = [[105,106,122,143,159,172,176,181,207],[252,197,194,187,174,162,153,136,125],[146,133,144,155,163,167,166,162,174]]; break;
+      // Neon
+      case 90: rgb = [[171,141,145,152,154,159,163,158,177],[236,143,100,63,53,55,44,31,6],[59,48,46,44,42,54,82,112,179]]; break;
+      // Pastel
+      case 91: rgb = [[180,190,209,223,204,228,205,152,91],[93,125,147,172,181,224,233,198,158],[236,218,160,133,114,132,162,220,218]]; break;
+      // Pearl
+      case 92: rgb = [[225,183,162,135,115,111,119,145,211],[205,177,166,135,124,117,117,132,172],[186,165,155,135,126,130,150,178,226]]; break;
+      // Pigeon
+      case 93: rgb = [[39,43,59,63,80,116,153,177,223],[39,43,59,74,91,114,139,165,223],[ 39,50,59,70,85,115,151,176,223]]; break;
+      // Plum
+      case 94: rgb = [[0,38,60,76,84,89,101,128,204],[0,10,15,23,35,57,83,123,199],[0,11,22,40,63,86,97,94,85]]; break;
+      // Red Blue
+      case 95: rgb = [[94,112,141,165,167,140,91,49,27],[27,46,88,135,166,161,135,97,58],[42,52,81,106,139,158,155,137,116]]; break;
+      // Rose
+      case 96: rgb = [[30,49,79,117,135,151,146,138,147],[63,60,72,90,94,94,68,46,16],[18,28,41,56,62,63,50,36,21]]; break;
+      // Rust
+      case 97: rgb = [[0,30,63,101,143,152,169,187,230],[0,14,28,42,58,61,67,74,91],[39,26,21,18,15,14,14,13,13]]; break;
+      // Sandy Terrain
+      case 98: rgb = [[149,140,164,179,182,181,131,87,61],[62,70,107,136,144,138,117,87,74],[40,38,45,49,49,49,38,32,34]]; break;
+      // Sienna
+      case 99: rgb = [[99,112,148,165,179,182,183,183,208],[39,40,57,79,104,127,148,161,198],[15,16,18,33,51,79,103,129,177]]; break;
+      // Solar
+      case 100: rgb = [[99,116,154,174,200,196,201,201,230],[0,0,8,32,58,83,119,136,173],[5,6,7,9,9,14,17,19,24]]; break;
+      // South West
+      case 101: rgb = [[82,106,126,141,155,163,142,107,66],[ 62,44,69,107,135,152,149,132,119],[39,25,31,60,73,68,49,72,188]]; break;
+      // Starry Night
+      case 102: rgb = [[18,29,44,72,116,158,184,208,221],[27,46,71,105,146,177,189,190,183],[39,55,80,108,130,133,124,100,76]]; break;
+      // Sunset
+      case 103: rgb = [[0,48,119,173,212,224,228,228,245],[0,13,30,47,79,127,167,205,245],[0,68,75,43,16,22,55,128,245]]; break;
+      // Temperature Map
+      case 104: rgb = [[34,70,129,187,225,226,216,193,179],[48,91,147,194,226,229,196,110,12],[234,212,216,224,206,110,53,40,29]]; break;
+      // Thermometer
+      case 105: rgb = [[30,55,103,147,174,203,188,151,105],[0,65,138,182,187,175,121,53,9],[191,202,212,208,171,140,97,57,30]]; break;
+      // Valentine
+      case 106: rgb = [[112,97,113,125,138,159,178,188,225],[16,17,24,37,56,81,110,136,189],[38,35,46,59,78,103,130,152,201]]; break;
+      // Visible Spectrum
+      case 107: rgb = [[18,72,5,23,29,201,200,98,29],[0,0,43,167,211,117,0,0,0],[51,203,177,26,10,9,8,3,0]]; break;
+      // Water Melon
+      case 108: rgb = [[19,42,64,88,118,147,175,187,205],[19,55,89,125,154,169,161,129,70],[19,32,47,70,100,128,145,130,75]]; break;
+      // Cool
+      case 109: rgb = [[33,31,42,68,86,111,141,172,227],[255,175,145,106,88,55,15,0,0],[255,205,202,203,208,205,203,206,231]]; break;
+      // Copper
+      case 110: rgb = [[0,25,50,79,110,145,181,201,254],[0,16,30,46,63,82,101,124,179],[0,12,21,29,39,49,61,74,103]]; break;
+      // Gist Earth
+      case 111: rgb = [[0,13,30,44,72,120,156,200,247],[0,36,84,117,141,153,151,158,247],[0,94,100,82,56,66,76,131,247]]; break;
+      // Viridis
+      case 112: rgb = [[26,51,43,33,28,35,74,144,246],[9,24,55,87,118,150,180,200,222],[30,96,112,114,112,101,72,35,0]]; break;
+      // Cividis
+      case 113: rgb = [[0,5,65,97,124,156,189,224,255],[32,54,77,100,123,148,175,203,234],[77,110,107,111,120,119,111,94,70]]; break;
+      default: return createDefaultPalette();
+   }
+
+   const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2], palette = [];
+
+   for (let g = 1; g < stops.length; g++) {
+       // create the colors...
+       const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
+       for (let c = 0; c < nColorsGradient; c++) {
+          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
+                          + toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
+                          + toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
+          palette.push(col);
+       }
+    }
+
+    return new ColorPalette(palette);
+}
+
 createRootColors();
 
 const root_markers = [
@@ -10321,7 +10507,7 @@ class TAttMarkerHandler {
 
    /** @summary Prepare object to create marker
      * @private */
-    _configure() {
+   _configure() {
 
       this.x0 = this.y0 = 0;
 
@@ -72779,7 +72965,7 @@ class TPavePainter extends ObjectPainter {
           framep = this.getFramePainter(),
           zmin = 0, zmax = 100, gzmin, gzmax,
           contour = main.fContour,
-          levels = contour ? contour.getLevels() : null,
+          levels = contour?.getLevels(),
           draw_palette = main.fPalette, axis_transform = '';
 
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
@@ -73407,192 +73593,6 @@ produceLegend: produceLegend
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
-function createDefaultPalette() {
-   const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-   }, HLStoRGB = (h, l, s) => {
-      const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
-            p = 2 * l - q,
-            r = hue2rgb(p, q, h + 1/3),
-            g = hue2rgb(p, q, h),
-            b = hue2rgb(p, q, h - 1/3);
-      return '#' + toHex(r) + toHex(g) + toHex(b);
-   }, minHue = 0, maxHue = 280, maxPretty = 50, palette = [];
-   for (let i = 0; i < maxPretty; ++i) {
-      const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
-      palette.push(HLStoRGB(hue, 0.5, 1));
-   }
-   return new ColorPalette(palette);
-}
-
-function createGrayPalette() {
-   let palette = [];
-   for (let i = 0; i < 50; ++i) {
-      const code = toHex((i+2)/60);
-      palette.push('#'+code+code+code);
-   }
-   return new ColorPalette(palette);
-}
-
-/** @summary Create color palette
-  * @private */
-function getColorPalette(id) {
-   id = id || settings.Palette;
-   if ((id > 0) && (id < 10)) return createGrayPalette();
-   if (id < 51) return createDefaultPalette();
-   if (id > 113) id = 57;
-   let rgb, stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
-   switch(id) {
-      // Deep Sea
-      case 51: rgb = [[0,9,13,17,24,32,27,25,29],[0,0,0,2,37,74,113,160,221],[28,42,59,78,98,129,154,184,221]]; break;
-      // Grey Scale
-      case 52: rgb = [[0,32,64,96,128,160,192,224,255],[0,32,64,96,128,160,192,224,255],[0,32,64,96,128,160,192,224,255]]; break;
-      // Dark Body Radiator
-      case 53: rgb = [[0,45,99,156,212,230,237,234,242],[0,0,0,45,101,168,238,238,243],[0,1,1,3,9,8,11,95,230]]; break;
-      // Two-color hue (dark blue through neutral gray to bright yellow)
-      case 54: rgb = [[0,22,44,68,93,124,160,192,237],[0,16,41,67,93,125,162,194,241],[97,100,99,99,93,68,44,26,74]]; break;
-      // Rain Bow
-      case 55: rgb = [[0,5,15,35,102,196,208,199,110],[0,48,124,192,206,226,97,16,0],[99,142,198,201,90,22,13,8,2]]; break;
-      // Inverted Dark Body Radiator
-      case 56: rgb = [[242,234,237,230,212,156,99,45,0],[243,238,238,168,101,45,0,0,0],[230,95,11,8,9,3,1,1,0]]; break;
-      // Bird (default, keep float for backward compatibility)
-      case 57: rgb = [[ 53.091,15.096,19.89,5.916,45.951,135.1755,208.743,253.878,248.982],[42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],[134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]]; break;
-      // Cubehelix
-      case 58: rgb = [[0,24,2,54,176,236,202,194,255],[0,29,92,129,117,120,176,236,255],[0,68,80,34,57,172,252,245,255]]; break;
-      // Green Red Violet
-      case 59: rgb = [[13,23,25,63,76,104,137,161,206],[95,67,37,21,0,12,35,52,79],[4,3,2,6,11,22,49,98,208]]; break;
-      // Blue Red Yellow
-      case 60: rgb = [[0,61,89,122,143,160,185,204,231],[0,0,0,0,14,37,72,132,235],[0,140,224,144,4,5,6,9,13]]; break;
-      // Ocean
-      case 61: rgb = [[14,7,2,0,5,11,55,131,229],[105,56,26,1,42,74,131,171,229],[2,21,35,60,92,113,160,185,229]]; break;
-      // Color Printable On Grey
-      case 62: rgb = [[0,0,0,70,148,231,235,237,244],[0,0,0,0,0,69,67,216,244],[0,102,228,231,177,124,137,20,244]]; break;
-      // Alpine
-      case 63: rgb = [[50,56,63,68,93,121,165,192,241],[66,81,91,96,111,128,155,189,241],[97,91,75,65,77,103,143,167,217]]; break;
-      // Aquamarine
-      case 64: rgb = [[145,166,167,156,131,114,101,112,132],[158,178,179,181,163,154,144,152,159],[190,199,201,192,176,169,160,166,190]]; break;
-      // Army
-      case 65: rgb = [[93,91,99,108,130,125,132,155,174],[126,124,128,129,131,121,119,153,173],[103,94,87,85,80,85,107,120,146]]; break;
-      // Atlantic
-      case 66: rgb = [[24,40,69,90,104,114,120,132,103],[29,52,94,127,150,162,159,151,101],[29,52,96,132,162,181,184,186,131]]; break;
-      // Aurora
-      case 67: rgb = [[46,38,61,92,113,121,132,150,191],[46,36,40,69,110,135,131,92,34],[46,80,74,70,81,105,165,211,225]]; break;
-      // Avocado
-      case 68: rgb = [[0,4,12,30,52,101,142,190,237],[0,40,86,121,140,172,187,213,240],[0,9,14,18,21,23,27,35,101]]; break;
-      // Beach
-      case 69: rgb = [[198,206,206,211,198,181,161,171,244],[103,133,150,172,178,174,163,175,244],[49,54,55,66,91,130,184,224,244]]; break;
-      // Black Body
-      case 70: rgb = [[243,243,240,240,241,239,186,151,129],[0,46,99,149,194,220,183,166,147],[6,8,36,91,169,235,246,240,233]]; break;
-      // Blue Green Yellow
-      case 71: rgb = [[22,19,19,25,35,53,88,139,210],[0,32,69,108,135,159,183,198,215],[77,96,110,116,110,100,90,78,70]]; break;
-      // Brown Cyan
-      case 72: rgb = [[68,116,165,182,189,180,145,111,71],[37,82,135,178,204,225,221,202,147],[16,55,105,147,196,226,232,224,178]]; break;
-      // CMYK
-      case 73: rgb = [[61,99,136,181,213,225,198,136,24],[149,140,96,83,132,178,190,135,22],[214,203,168,135,110,100,111,113,22]]; break;
-      // Candy
-      case 74: rgb = [[76,120,156,183,197,180,162,154,140],[34,35,42,69,102,137,164,188,197],[ 64,69,78,105,142,177,205,217,198]]; break;
-      // Cherry
-      case 75: rgb = [[37,102,157,188,196,214,223,235,251],[37,29,25,37,67,91,132,185,251],[37,32,33,45,66,98,137,187,251]]; break;
-      // Coffee
-      case 76: rgb = [[79,100,119,137,153,172,192,205,250],[63,79,93,103,115,135,167,196,250],[51,59,66,61,62,70,110,160,250]]; break;
-      // Dark Rain Bow
-      case 77: rgb = [[43,44,50,66,125,172,178,155,157],[63,63,85,101,138,163,122,51,39],[121,101,58,44,47,55,57,44,43]]; break;
-      // Dark Terrain
-      case 78: rgb = [[0,41,62,79,90,87,99,140,228],[0,57,81,93,85,70,71,125,228],[95,91,91,82,60,43,44,112,228]]; break;
-      // Fall
-      case 79: rgb = [[49,59,72,88,114,141,176,205,222],[78,72,66,57,59,75,106,142,173],[ 78,55,46,40,39,39,40,41,47]]; break;
-      // Fruit Punch
-      case 80: rgb = [[243,222,201,185,165,158,166,187,219],[94,108,132,135,125,96,68,51,61],[7,9,12,19,45,89,118,146,118]]; break;
-      // Fuchsia
-      case 81: rgb = [[19,44,74,105,137,166,194,206,220],[19,28,40,55,82,110,159,181,220],[19,42,68,96,129,157,188,203,220]]; break;
-      // Grey Yellow
-      case 82: rgb = [[33,44,70,99,140,165,199,211,216],[ 38,50,76,105,140,165,191,189,167],[ 55,67,97,124,140,166,163,129,52]]; break;
-      // Green Brown Terrain
-      case 83: rgb = [[0,33,73,124,136,152,159,171,223],[0,43,92,124,134,126,121,144,223],[0,43,68,76,73,64,72,114,223]]; break;
-      // Green Pink
-      case 84: rgb = [[5,18,45,124,193,223,205,128,49],[48,134,207,230,193,113,28,0,7],[6,15,41,121,193,226,208,130,49]]; break;
-      // Island
-      case 85: rgb = [[180,106,104,135,164,188,189,165,144],[72,126,154,184,198,207,205,190,179],[41,120,158,188,194,181,145,100,62]]; break;
-      // Lake
-      case 86: rgb = [[57,72,94,117,136,154,174,192,215],[0,33,68,109,140,171,192,196,209],[116,137,173,201,200,201,203,190,187]]; break;
-      // Light Temperature
-      case 87: rgb = [[31,71,123,160,210,222,214,199,183],[40,117,171,211,231,220,190,132,65],[234,214,228,222,210,160,105,60,34]]; break;
-      // Light Terrain
-      case 88: rgb = [[123,108,109,126,154,172,188,196,218],[184,138,130,133,154,175,188,196,218],[208,130,109,99,110,122,150,171,218]]; break;
-      // Mint
-      case 89: rgb = [[105,106,122,143,159,172,176,181,207],[252,197,194,187,174,162,153,136,125],[146,133,144,155,163,167,166,162,174]]; break;
-      // Neon
-      case 90: rgb = [[171,141,145,152,154,159,163,158,177],[236,143,100,63,53,55,44,31,6],[59,48,46,44,42,54,82,112,179]]; break;
-      // Pastel
-      case 91: rgb = [[180,190,209,223,204,228,205,152,91],[93,125,147,172,181,224,233,198,158],[236,218,160,133,114,132,162,220,218]]; break;
-      // Pearl
-      case 92: rgb = [[225,183,162,135,115,111,119,145,211],[205,177,166,135,124,117,117,132,172],[186,165,155,135,126,130,150,178,226]]; break;
-      // Pigeon
-      case 93: rgb = [[39,43,59,63,80,116,153,177,223],[39,43,59,74,91,114,139,165,223],[ 39,50,59,70,85,115,151,176,223]]; break;
-      // Plum
-      case 94: rgb = [[0,38,60,76,84,89,101,128,204],[0,10,15,23,35,57,83,123,199],[0,11,22,40,63,86,97,94,85]]; break;
-      // Red Blue
-      case 95: rgb = [[94,112,141,165,167,140,91,49,27],[27,46,88,135,166,161,135,97,58],[42,52,81,106,139,158,155,137,116]]; break;
-      // Rose
-      case 96: rgb = [[30,49,79,117,135,151,146,138,147],[63,60,72,90,94,94,68,46,16],[18,28,41,56,62,63,50,36,21]]; break;
-      // Rust
-      case 97: rgb = [[0,30,63,101,143,152,169,187,230],[0,14,28,42,58,61,67,74,91],[39,26,21,18,15,14,14,13,13]]; break;
-      // Sandy Terrain
-      case 98: rgb = [[149,140,164,179,182,181,131,87,61],[62,70,107,136,144,138,117,87,74],[40,38,45,49,49,49,38,32,34]]; break;
-      // Sienna
-      case 99: rgb = [[99,112,148,165,179,182,183,183,208],[39,40,57,79,104,127,148,161,198],[15,16,18,33,51,79,103,129,177]]; break;
-      // Solar
-      case 100: rgb = [[99,116,154,174,200,196,201,201,230],[0,0,8,32,58,83,119,136,173],[5,6,7,9,9,14,17,19,24]]; break;
-      // South West
-      case 101: rgb = [[82,106,126,141,155,163,142,107,66],[ 62,44,69,107,135,152,149,132,119],[39,25,31,60,73,68,49,72,188]]; break;
-      // Starry Night
-      case 102: rgb = [[18,29,44,72,116,158,184,208,221],[27,46,71,105,146,177,189,190,183],[39,55,80,108,130,133,124,100,76]]; break;
-      // Sunset
-      case 103: rgb = [[0,48,119,173,212,224,228,228,245],[0,13,30,47,79,127,167,205,245],[0,68,75,43,16,22,55,128,245]]; break;
-      // Temperature Map
-      case 104: rgb = [[34,70,129,187,225,226,216,193,179],[48,91,147,194,226,229,196,110,12],[234,212,216,224,206,110,53,40,29]]; break;
-      // Thermometer
-      case 105: rgb = [[30,55,103,147,174,203,188,151,105],[0,65,138,182,187,175,121,53,9],[191,202,212,208,171,140,97,57,30]]; break;
-      // Valentine
-      case 106: rgb = [[112,97,113,125,138,159,178,188,225],[16,17,24,37,56,81,110,136,189],[38,35,46,59,78,103,130,152,201]]; break;
-      // Visible Spectrum
-      case 107: rgb = [[18,72,5,23,29,201,200,98,29],[0,0,43,167,211,117,0,0,0],[51,203,177,26,10,9,8,3,0]]; break;
-      // Water Melon
-      case 108: rgb = [[19,42,64,88,118,147,175,187,205],[19,55,89,125,154,169,161,129,70],[19,32,47,70,100,128,145,130,75]]; break;
-      // Cool
-      case 109: rgb = [[33,31,42,68,86,111,141,172,227],[255,175,145,106,88,55,15,0,0],[255,205,202,203,208,205,203,206,231]]; break;
-      // Copper
-      case 110: rgb = [[0,25,50,79,110,145,181,201,254],[0,16,30,46,63,82,101,124,179],[0,12,21,29,39,49,61,74,103]]; break;
-      // Gist Earth
-      case 111: rgb = [[0,13,30,44,72,120,156,200,247],[0,36,84,117,141,153,151,158,247],[0,94,100,82,56,66,76,131,247]]; break;
-      // Viridis
-      case 112: rgb = [[26,51,43,33,28,35,74,144,246],[9,24,55,87,118,150,180,200,222],[30,96,112,114,112,101,72,35,0]]; break;
-      // Cividis
-      case 113: rgb = [[0,5,65,97,124,156,189,224,255],[32,54,77,100,123,148,175,203,234],[77,110,107,111,120,119,111,94,70]]; break;
-      default: return createDefaultPalette();
-   }
-
-   const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2], palette = [];
-
-   for (let g = 1; g < stops.length; g++) {
-       // create the colors...
-       const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
-       for (let c = 0; c < nColorsGradient; c++) {
-          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
-                          + toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
-                          + toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
-          palette.push(col);
-       }
-    }
-
-    return new ColorPalette(palette);
-}
-
 
 /**
  * @summary Class to decode histograms draw options
@@ -74080,7 +74080,8 @@ class HistContour {
                this.colzmin = 0.0001*this.colzmax;
             else
                this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
-         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
+         if (this.colzmin >= this.colzmax)
+            this.colzmin = 0.0001*this.colzmax;
 
          let logmin = Math.log(this.colzmin)/Math.log(10),
              logmax = Math.log(this.colzmax)/Math.log(10),
@@ -75443,7 +75444,7 @@ class THistPainter extends ObjectPainter {
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
-      if (!pal_painter && !pal) {
+      if (!pal_painter && !pal && !this.options.Axis) {
          pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);
          if (pal_painter) {
             pal = pal_painter.getObject();
@@ -75467,10 +75468,9 @@ class THistPainter extends ObjectPainter {
          if (this.options.PadPalette)
             return null;
 
-         pal = create$1(clTPave);
+         pal = create$1(clTPaletteAxis);
 
-         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create$1(clTGaxis),
-                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
+         Object.assign(pal, { fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
@@ -75524,7 +75524,7 @@ class THistPainter extends ObjectPainter {
       let arg = '', pr;
       if (postpone_draw) arg += ';postpone';
       if (can_move && !this.do_redraw_palette) arg += ';can_move';
-      if (this.options.Cjust) arg+=';cjust';
+      if (this.options.Cjust) arg += ';cjust';
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
@@ -77352,9 +77352,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      if (!this.isTH2Poly())
+      if (!this.isTH2Poly() && !this.options.Axis)
          pp.addPadButton('th2color', 'Toggle color', 'ToggleColor');
-      pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
+      if(!this.options.Axis)
+         pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
       pp.addPadButton('th2draw3d', 'Toggle 3D mode', 'Toggle3D');
       pp.showPadButtons();
    }
@@ -79826,8 +79827,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       this.clear3DScene();
 
       let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour);
-      // draw new palette, resize frame if required
 
+      // draw new palette, resize frame if required
       return this.drawColorPalette(need_palette, true).then(pp => {
 
          let pr;
@@ -97593,6 +97594,7 @@ const drawFuncs = { lst: [
    { name: clTCutG, sameas: clTGraph },
    { name: /^RooHist/, sameas: clTGraph },
    { name: /^RooCurve/, sameas: clTGraph },
+   { name: 'TScatter', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TScatterPainter$1; }).then(h => h.TScatterPainter), opt: ';A' },
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
@@ -106812,6 +106814,18 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
+   /** @summary Return drawn graph object */
+   getGraph() { return this.getObject(); }
+
+   /** @summary Return histogram object used for axis drawings */
+   getHistogram() { return this.getObject()?.fHistogram; }
+
+   /** @summary Set histogram object to graph */
+   setHistogram(histo) {
+      let obj = this.getObject();
+      if (obj) obj.fHistogram = histo;
+   }
+
    /** @summary Redraw graph
      * @desc may redraw histogram which was used to draw axes
      * @return {Promise} for ready */
@@ -106837,7 +106851,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns object if this drawing TGraphMultiErrors object */
    get_gme() {
-      let graph = this.getObject();
+      let graph = this.getGraph();
       return graph?._typename == clTGraphMultiErrors ? graph : null;
    }
 
@@ -106847,7 +106861,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (isStr(opt) && (opt.indexOf('same ') == 0))
          opt = opt.slice(5);
 
-      let graph = this.getObject(),
+      let graph = this.getGraph(),
           is_gme = !!this.get_gme(),
           blocks_gme = [],
           has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
@@ -106882,7 +106896,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
       if (is_gme && opt) {
          if (opt.indexOf(';') > 0) {
@@ -106899,6 +106913,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       // check pad options first
       res.PadStats = d.check('USE_PAD_STATS');
+      res.PadPalette = d.check('USE_PAD_PALETTE');
+
       let hopt = '';
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
       if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
@@ -106966,7 +106982,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          let pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === graph)) res.Axis = 'AXIS';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
       } else if (res.Axis.indexOf('A') < 0) {
          res.Axis = 'AXIS,' + res.Axis;
       }
@@ -106985,7 +107001,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary Extract errors for TGraphMultiErrors */
    extractGmeErrors(nblock) {
       if (!this.bins) return;
-      let gr = this.getObject();
+      let gr = this.getGraph();
       this.bins.forEach(bin => {
          bin.eylow  = gr.fEyL[nblock][bin.indx];
          bin.eyhigh = gr.fEyH[nblock][bin.indx];
@@ -106994,7 +107010,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Create bins for TF1 drawing */
    createBins() {
-      let gr = this.getObject();
+      let gr = this.getGraph();
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
@@ -107050,6 +107066,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Return margins for histogram ranges */
+   getHistRangeMargin() { return 0.1; }
+
    /** @summary Create histogram for graph
      * @desc graph bins should be created when calling this function
      * @param {boolean} [set_x] - set X axis range
@@ -107058,26 +107077,31 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (!set_x && !set_y)
          set_x = set_y = true;
 
-      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
+      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, margin = this.getHistRangeMargin();
 
-      if (xmin >= xmax) xmax = xmin+1;
-      if (ymin >= ymax) ymax = ymin+1;
-      let dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
+      if (xmin >= xmax) xmax = xmin + 1;
+      if (ymin >= ymax) ymax = ymin + 1;
+      let dx = (xmax - xmin) * margin, dy = (ymax - ymin) * margin,
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
-      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.9;
-      if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
+      if (!this._not_adjust_hrange) {
+         if ((uxmin < 0) && (xmin >= 0))
+            uxmin = xmin * (1 - margin);
+         if ((uxmax > 0) && (xmax <= 0))
+            uxmax = 0;
+      }
 
-      let graph = this.getObject(),
-          histo = graph.fHistogram,
+      let graph = this.getGraph(),
+          histo = this.getHistogram(),
           minimum0 = minimum, maximum0 = maximum;
 
       if (!histo) {
-         histo = graph.fHistogram = createHistogram(clTH1I, 100);
+         histo = this._need_2dhist ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
+         this.setHistogram(histo);
       } else if ((histo.fMaximum != kNoZoom) && (histo.fMinimum != kNoZoom)) {
          minimum = histo.fMinimum;
          maximum = histo.fMaximum;
@@ -107085,9 +107109,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       if (graph.fMinimum != kNoZoom) minimum = ymin = graph.fMinimum;
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
+      if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
 
-      setHistTitle(histo, graph.fTitle);
+      setHistTitle(histo, this.getObject().fTitle);
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;
@@ -107107,10 +107131,10 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary Check if user range can be unzommed
      * @desc Used when graph points covers larger range than provided histogram */
    unzoomUserRange(dox, doy /*, doz*/) {
-      let graph = this.getObject();
+      let graph = this.getGraph();
       if (this._own_histogram || !graph) return false;
 
-      let histo = graph.fHistogram;
+      let histo = this.getHistogram();
 
       dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
       doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
@@ -107129,7 +107153,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns optimized bins - if optimization enabled */
    optimizeBins(maxpnt, filter_func) {
-      if ((this.bins.length < 30) && !filter_func) return this.bins;
+      if ((this.bins.length < 30) && !filter_func)
+         return this.bins;
 
       let selbins = null;
       if (isFunc(filter_func)) {
@@ -107198,6 +107223,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
           pad: pp?.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
+          fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
           getFrameWidth() { return this.pw; },
           getFrameHeight() { return this.ph; },
           grx(value) {
@@ -107250,7 +107276,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary draw TGraph bins with specified options
      * @desc Can be called several times */
    drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
-      let graph = this.getObject(),
+      let graph = this.getGraph(),
           excl_width = 0, drawbins = null;
 
       if (main_block && lineatt.excl_side) {
@@ -107604,7 +107630,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    drawGraph() {
 
       let pmain = this.get_main(),
-          graph = this.getObject();
+          graph = this.getGraph();
       if (!pmain) return;
 
       // special mode for TMultiGraph 3d drawing
@@ -107718,7 +107744,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (findbin === null) return null;
 
       let d = select(findbin).datum(),
-          gr = this.getObject(),
+          gr = this.getGraph(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
@@ -107866,7 +107892,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary Check editable flag for TGraph
      * @desc if arg specified changes or toggles editable flag */
    testEditable(arg) {
-      let obj = this.getObject();
+      let obj = this.getGraph();
       if (!obj) return false;
       if ((arg == 'toggle') || ((arg !== undefined) && (!arg != obj.TestBit(kNotEditable))))
          obj.InvertBit(kNotEditable);
@@ -107886,7 +107912,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
           ismark = (this.draw_kind == 'mark'),
           pmain = this.get_main(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gr = this.getObject(),
+          gr = this.getGraph(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: best.bin ? funcs.grx(best.bin.x) : best.linex,
                   y: best.bin ? funcs.gry(best.bin.y) : best.liney,
@@ -108023,7 +108049,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Complete moving */
    moveEnd(not_changed) {
-      let exec = '', graph = this.getObject(), last = graph?.fNpoints-1;
+      let exec = '', graph = this.getGraph(), last = graph?.fNpoints-1;
 
       const changeBin = bin => {
          exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
@@ -108112,7 +108138,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (opt && (opt != this.options.original))
          this.decodeOptions(opt);
 
-      let graph = this.getObject();
+      let graph = this.getGraph();
       // TODO: make real update of TGraph object content
       graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
@@ -108142,8 +108168,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range
      * @desc allow to zoom TGraph only when at least one point in the range */
-   canZoomInside(axis,min,max) {
-      let gr = this.getObject();
+   canZoomInside(axis, min, max) {
+      let gr = this.getGraph();
       if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
 
       for (let n = 0; n < gr.fNpoints; ++n)
@@ -108168,21 +108194,12 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Find TF1/TF2 in TGraph list of functions */
    findFunc() {
-      let gr = this.getObject();
-      if (gr?.fFunctions?.arr)
-         return gr?.fFunctions?.arr.find(func => (func._typename == clTF1) || (func._typename == clTF2));
-      return null;
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTF1) || (func._typename == clTF2));
    }
 
    /** @summary Find stat box in TGraph list of functions */
    findStat() {
-      let gr = this.getObject();
-      if (gr?.fFunctions?.arr)
-         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
-            let func = gr.fFunctions.arr[i];
-            if ((func._typename == clTPaveStats) && (func.fName == 'stats')) return func;
-         }
-      return null;
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTPaveStats) && (func.fName == 'stats'));
    }
 
    /** @summary Create stat box */
@@ -108220,7 +108237,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       stats.AddText(func.fName);
 
       // while TF1 was found, one can be sure that stats is existing
-      this.getObject().fFunctions.Add(stats);
+      this.getGraph().fFunctions.Add(stats);
 
       return stats;
    }
@@ -108244,7 +108261,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
      * @return {Promise} */
    async drawNextFunction(indx) {
 
-      let graph = this.getObject();
+      let graph = this.getGraph();
 
       if (indx >= (graph?.fFunctions?.arr?.length || 0))
          return this;
@@ -108263,7 +108280,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
      * @private */
    async drawAxisHisto() {
       let histo = this.createHistogram();
-      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis)
+      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis);
    }
 
    /** @summary Draw TGraph
@@ -108272,18 +108289,19 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       painter.decodeOptions(opt, true);
       painter.createBins();
       painter.createStat();
-      if (!settings.DragGraphs && !graph.TestBit(kNotEditable))
+      let graph = painter.getGraph();
+      if (!settings.DragGraphs && graph && !graph.TestBit(kNotEditable))
          graph.InvertBit(kNotEditable);
 
       let promise = Promise.resolve();
 
       if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis)
          promise = painter.drawAxisHisto().then(hist_painter => {
-            if (hist_painter) {
-               painter.axes_draw = true;
-               if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = 'hist';
-            }
+            if (!hist_painter) return;
+            painter.axes_draw = true;
+            if (!painter._own_histogram)
+               painter.$primary = true;
+            hist_painter.$secondary = 'hist';
          });
 
       return promise.then(() => {
@@ -108897,6 +108915,113 @@ class TEfficiencyPainter extends ObjectPainter {
 var TEfficiencyPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TEfficiencyPainter: TEfficiencyPainter
+});
+
+class TScatterPainter extends TGraphPainter$1 {
+
+   constructor(dom, obj) {
+      super(dom, obj);
+      this._need_2dhist = true;
+      this._not_adjust_hrange = true;
+   }
+
+   /** @summary Return drawn graph object */
+   getGraph() { return this.getObject()?.fGraph; }
+
+   /** @summary Return margins for histogram ranges */
+   getHistRangeMargin() { return this.getObject()?.fMargin ?? 0.1; }
+
+  /** @summary Draw axis histogram
+    * @private */
+   async drawAxisHisto() {
+      let histo = this.createHistogram();
+      return TH2Painter$2.draw(this.getDom(), histo, this.options.Axis);
+   }
+
+  /** @summary Provide palette, create if necessary
+    * @private */
+   getPalette() {
+      let gr = this.getGraph(),
+          pal = gr?.fFunctions?.arr?.find(func => (func._typename == clTPaletteAxis));
+
+      if (pal) return pal;
+
+      if (this.options.PadPalette) {
+         pal = this.getPadPainter()?.findInPrimitives('palette', clTPaletteAxis);
+      } else if (gr) {
+         pal = create$1(clTPaletteAxis);
+
+         let fp = this.get_main();
+
+         Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
+         Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
+         gr.fFunctions.AddFirst(pal, '');
+      }
+
+      return pal;
+   }
+
+   /** @summary Actual drawing of TScatter */
+   async drawGraph() {
+      let fpainter = this.get_main(),
+          hpainter = this.getMainPainter(),
+          scatter = this.getObject();
+      if (!fpainter || !hpainter || !scatter) return;
+
+      let pal = this.getPalette();
+      if (pal)
+         pal.$main_painter = this;
+
+      if (!this.fPalette) {
+         let pp = this.getPadPainter();
+         if (isFunc(pp?.getCustomPalette))
+            this.fPalette = pp.getCustomPalette();
+      }
+      if (!this.fPalette)
+         this.fPalette = getColorPalette(this.options.Palette);
+
+      let minc = Math.min.apply(Math, scatter.fColor),
+          maxc = Math.max.apply(Math, scatter.fColor),
+          mins = Math.min.apply(Math, scatter.fSize),
+          maxs = Math.max.apply(Math, scatter.fSize);
+
+      fpainter.zmin = minc;
+      fpainter.zmax = maxc;
+
+      this.fContour = new HistContour(minc, maxc);
+      this.fContour.createNormal(30);
+      this.fContour.configIndicies(0, 0);
+
+      this.createG(!fpainter.pad_layer);
+
+      let funcs = fpainter.getGrFuncs();
+
+      for (let i = 0; i < this.bins.length; ++i) {
+         let pnt = this.bins[i],
+             grx = funcs.grx(pnt.x),
+             gry = funcs.gry(pnt.y),
+             size = scatter.fScale * ((scatter.fSize[i] - mins) / (maxs - mins)),
+             color = this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]);
+
+          let handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
+
+          this.draw_g.append('svg:path')
+                     .attr('d', handle.create(grx, gry))
+                     .call(handle.func);
+      }
+
+      return this;
+   }
+
+   static async draw(dom, obj, opt) {
+      return TGraphPainter$1._drawGraph(new TScatterPainter(dom, obj), opt);
+   }
+
+} // class TScatterPainter
+
+var TScatterPainter$1 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TScatterPainter: TScatterPainter
 });
 
 class TLinePainter extends ObjectPainter {
@@ -114017,6 +114142,14 @@ class RPadPainter extends RObjectPainter {
             this.painters[k].cleanup();
             this.painters.splice(k, 1);
          }
+   }
+
+   /** @summary try to find object by name in list of pad primitives
+     * @desc used to find title drawing
+     * @private */
+   findInPrimitives(objname, objtype) {
+      console.error('findInPrimitives not implemented for RPad');
+      return null;
    }
 
    /** @summary Try to find painter for specified object
