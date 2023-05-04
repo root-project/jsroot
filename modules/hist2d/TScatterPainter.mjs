@@ -5,6 +5,7 @@ class TScatterPainter extends TGraphPainter {
 
    constructor(dom, obj) {
       super(dom, obj);
+      this._need_2dhist = true;
    }
 
    /** @summary Return drawn graph object */
@@ -21,36 +22,43 @@ class TScatterPainter extends TGraphPainter {
       return TH2Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
+   drawNextFunction() { return this; }
+
    /** @summary Actual drawing of TScatter */
-   async drawScatter() {
+   async drawGraph() {
+      let fpainter = this.get_main(),
+          hpainter = this.getMainPainter(),
+          scatter = this.getObject();
+      if (!fpainter || !hpainter || !scatter) return;
+
+      this.createG(!fpainter.pad_layer);
+
+      // this.createAttLine({ attr: graph });
+      // this.createAttFill({ attr: graph });
+
+      let funcs = fpainter.getGrFuncs();
+
+      for (let i = 0; i < this.bins.length; ++i) {
+         let pnt = this.bins[i],
+             grx = funcs.grx(pnt.x),
+             gry = funcs.gry(pnt.y),
+             fcol = scatter.fColor[i],
+             fsz = scatter.fSize[i];
+
+          let col = hpainter.fContour.getPaletteColor(hpainter.fPalette, fcol);
+
+          this.draw_g.append('svg:circle')
+                     .attr('cx', grx)
+                     .attr('cy', gry)
+                     .attr('r', 20)
+                     .style('fill', col);
+      }
+
       return this;
    }
 
-   /** @summary Draw TGraph
-     * @private */
-   static async _drawScatter(painter, opt) {
-      painter.decodeOptions(opt);
-      painter.createBins();
-
-      let promise = Promise.resolve();
-
-      if (!painter.getMainPainter() && painter.options.Axis)
-         promise = painter.drawAxisHisto().then(hist_painter => {
-            if (hist_painter) {
-               painter.axes_draw = true;
-               if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = 'hist';
-            }
-         });
-
-      return promise.then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawScatter();
-      });
-   }
-
    static async draw(dom, obj, opt) {
-      return TScatterPainter._drawScatter(new TScatterPainter(dom, obj), opt);
+      return TGraphPainter._drawGraph(new TScatterPainter(dom, obj), opt);
    }
 
 } // class TScatterPainter

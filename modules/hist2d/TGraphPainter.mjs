@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, create, createHistogram, isBatchMode, isFunc, isStr,
-         clTPaveStats, clTCutG, clTH1I, clTF1, clTF2, kNoZoom, kNoStats } from '../core.mjs';
+         clTPaveStats, clTCutG, clTH1I, clTH2I, clTF1, clTF2, kNoZoom, kNoStats } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -311,7 +311,7 @@ class TGraphPainter extends ObjectPainter {
           minimum0 = minimum, maximum0 = maximum;
 
       if (!histo) {
-         histo = createHistogram(clTH1I, 100);
+         histo = this._need_2dhist ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
@@ -367,7 +367,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns optimized bins - if optimization enabled */
    optimizeBins(maxpnt, filter_func) {
-      if ((this.bins.length < 30) && !filter_func) return this.bins;
+      if ((this.bins.length < 30) && !filter_func)
+         return this.bins;
 
       let selbins = null;
       if (isFunc(filter_func)) {
