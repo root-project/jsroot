@@ -259,9 +259,10 @@ class TH2Painter extends THistPainter {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      if (!this.isTH2Poly())
+      if (!this.isTH2Poly() && !this.options.Axis)
          pp.addPadButton('th2color', 'Toggle color', 'ToggleColor');
-      pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
+      if(!this.options.Axis)
+         pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
       pp.addPadButton('th2draw3d', 'Toggle 3D mode', 'Toggle3D');
       pp.showPadButtons();
    }
