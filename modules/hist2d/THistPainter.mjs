@@ -1861,7 +1861,7 @@ class THistPainter extends ObjectPainter {
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
-      if (!pal_painter && !pal) {
+      if (!pal_painter && !pal && !this.options.Axis) {
          pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);
          if (pal_painter) {
             pal = pal_painter.getObject();
