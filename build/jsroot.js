@@ -108131,15 +108131,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       return false;
    }
 
-   /** @summary Update TGraph object */
-   updateObject(obj, opt) {
-      if (!this.matchObjectType(obj)) return false;
-
-      if (opt && (opt != this.options.original))
-         this.decodeOptions(opt);
-
-      let graph = this.getGraph();
-      // TODO: make real update of TGraph object content
+   /** @summary Update object members
+     * @private */
+   _updateMembers(graph, obj) {
       graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
       graph.fX = obj.fX;
@@ -108147,6 +108141,17 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       graph.fNpoints = obj.fNpoints;
       graph.fMinimum = obj.fMinimum;
       graph.fMaximum = obj.fMaximum;
+   }
+
+   /** @summary Update TGraph object */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj)) return false;
+
+      if (opt && (opt != this.options.original))
+         this.decodeOptions(opt);
+
+      this._updateMembers(this.getObject(), obj);
+
       this.createBins();
 
       delete this.$redraw_hist;
@@ -108961,6 +108966,18 @@ class TScatterPainter extends TGraphPainter$1 {
       return pal;
    }
 
+   /** @summary Update TScatter members */
+   _updateMembers(scatter, obj) {
+      scatter.fBits = obj.fBits;
+      scatter.fTitle = obj.fTitle;
+      scatter.fNpoints = obj.fNpoints;
+      scatter.fColor = obj.fColor;
+      scatter.fSize = obj.fSize;
+      scatter.fMargin = obj.fMargin;
+      scatter.fScale = obj.fScale;
+      super._updateMembers(scatter.fGraph, obj.fGraph);
+   }
+
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       let fpainter = this.get_main(),
@@ -108984,6 +109001,9 @@ class TScatterPainter extends TGraphPainter$1 {
           maxc = Math.max.apply(Math, scatter.fColor),
           mins = Math.min.apply(Math, scatter.fSize),
           maxs = Math.max.apply(Math, scatter.fSize);
+
+      if (maxc <= minc) maxc = minc + 1;
+      if (maxs <= mins) maxs = mins + 1;
 
       fpainter.zmin = minc;
       fpainter.zmax = maxc;
