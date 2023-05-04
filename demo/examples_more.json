@@ -231,6 +231,7 @@
      { "name": "crown", "file": "tutorials_graphics.root", "item": "crown",  "title": "TCrown, tutorials/graphics/crown.C" },
      { "name": "zstd", "file": "zstd.root", "item": "ccdb_object", "zstd": true, "title": "File with ZSTD compression, required zstd-codec.js script" },
      { "name": "pave", "file": "tpavetext.root", "item": "ccdb_object", "title": "Drawing of plain TPaveText with TLine and custom text lines alignment" },
-     { "name": "dark", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&dark", "title": "Invert colors of histogram drawing, providing &amp;dark in URL", "notest": true }
+     { "name": "dark", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&dark", "title": "Invert colors of histogram drawing, providing &amp;dark in URL", "notest": true },
+     { "name": "scatter0", "file": "scatter.root", "item": "c1",  "title": "Canvas with new TScatter class, but no palette and histogram in the object, tutorials/graphs/scatter.C" }
    ]
 }
