@@ -1885,10 +1885,9 @@ class THistPainter extends ObjectPainter {
          if (this.options.PadPalette)
             return null;
 
-         pal = create(clTPave);
+         pal = create(clTPaletteAxis);
 
-         Object.assign(pal, { _typename: clTPaletteAxis, fName: clTPave, fH: null, fAxis: create(clTGaxis),
-                               fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
+         Object.assign(pal, { fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
