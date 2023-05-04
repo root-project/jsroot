@@ -287,6 +287,9 @@ class TGraphPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Return margins for histogram ranges */
+   getHistRangeMargin() { return 0.1; }
+
    /** @summary Create histogram for graph
      * @desc graph bins should be created when calling this function
      * @param {boolean} [set_x] - set X axis range
@@ -295,15 +298,15 @@ class TGraphPainter extends ObjectPainter {
       if (!set_x && !set_y)
          set_x = set_y = true;
 
-      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
+      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, margin = this.getHistRangeMargin();
 
-      if (xmin >= xmax) xmax = xmin+1;
-      if (ymin >= ymax) ymax = ymin+1;
-      let dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
+      if (xmin >= xmax) xmax = xmin + 1;
+      if (ymin >= ymax) ymax = ymin + 1;
+      let dx = (xmax - xmin) * margin, dy = (ymax - ymin) * margin,
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
-      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.9;
+      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin * (1 - margin);
       if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
       let graph = this.getGraph(),
@@ -323,7 +326,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (graph.fMinimum != kNoZoom) minimum = ymin = graph.fMinimum;
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >= 0)) minimum = 0.9*ymin;
+      if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
 
       setHistTitle(histo, graph.fTitle);
 
@@ -437,6 +440,7 @@ class TGraphPainter extends ObjectPainter {
           pad: pp?.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
+          fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
           getFrameWidth() { return this.pw; },
           getFrameHeight() { return this.ph; },
           grx(value) {

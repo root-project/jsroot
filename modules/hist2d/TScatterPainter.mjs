@@ -1,4 +1,4 @@
-import { clTPaletteAxis, isFunc } from '../core.mjs';
+import { clTPaletteAxis, isFunc, create } from '../core.mjs';
 import { getColorPalette } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
@@ -15,9 +15,13 @@ class TScatterPainter extends TGraphPainter {
    /** @summary Return drawn graph object */
    getGraph() { return this.getObject()?.fGraph; }
 
+   /** @summary Decode option */
    decodeOptions(opt) {
       this.options = { Axis: 'AXIS', original: opt || '' };
    }
+
+   /** @summary Return margins for histogram ranges */
+   getHistRangeMargin() { return this.getObject()?.fMargin ?? 0.1; }
 
   /** @summary Draw axis histogram
     * @private */
@@ -26,10 +30,19 @@ class TScatterPainter extends TGraphPainter {
       return TH2Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
-   findPalette(force) {
+  /** @summary Provide palette, create if necessary
+    * @private */
+   getPalette(force) {
       let gr = this.getGraph(),
           pal = gr?.fFunctions?.arr?.find(func => (func._typename == clTPaletteAxis));
       if (!pal && gr && force) {
+         pal = create(clTPaletteAxis);
+
+         let fp = this.get_main();
+
+         Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.01, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
+         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
+         gr.fFunctions.AddFirst(pal, '');
       }
       return pal;
    }
@@ -41,7 +54,7 @@ class TScatterPainter extends TGraphPainter {
           scatter = this.getObject();
       if (!fpainter || !hpainter || !scatter) return;
 
-      let pal = this.findPalette();
+      let pal = this.getPalette(true);
       if (pal)
          pal.$main_painter = this;
 
