@@ -5059,7 +5059,7 @@ function provideMenu(menu, item, hpainter) {
          menu.add('endsub:');
       }
 
-      menu.addchk(is_visible, 'Lofical vis',
+      menu.addchk(is_visible, 'Logical vis',
             geoBITS.kVisThis, ToggleMenuBit, 'Logical node visibility - all instances');
       menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
             geoBITS.kVisDaughters, ToggleMenuBit, 'Logical node daugthers visibility');
