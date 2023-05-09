@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '5/05/2023';
+let version_date = '9/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -86345,6 +86345,23 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('ZOOM', true)) res.zoom = d.partAsFloat(0, 100) / 100;
       if (d.check('ROTY', true)) res.rotatey = d.partAsFloat();
       if (d.check('ROTZ', true)) res.rotatez = d.partAsFloat();
+
+      const getCamPart = () => {
+         let neg = 1;
+         if (d.part[0] == 'N') {
+            neg = -1;
+            d.part = d.part.slice(1);
+         }
+         return neg * d.partAsFloat();
+      };
+
+      if (d.check('CAMX', true)) res.camx = getCamPart();
+      if (d.check('CAMY', true)) res.camy = getCamPart();
+      if (d.check('CAMZ', true)) res.camz = getCamPart();
+      if (d.check('CAMTX', true)) res.camtx = getCamPart();
+      if (d.check('CAMTY', true)) res.camty = getCamPart();
+      if (d.check('CAMTZ', true)) res.camtz = getCamPart();
+
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
 
       if (d.check('BLACK')) res.background = '#000000';
@@ -86531,8 +86548,16 @@ class TGeoPainter extends ObjectPainter {
       });
       menu.add('Reset camera position', () => this.focusCamera());
 
-      if (!this._geom_viewer)
-         menu.add('Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
+      if (!this._geom_viewer) {
+         menu.add('sub:Get camera position');
+         menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
+         menu.add('As positions', () => {
+            let url =  this.produceCameraUrl(true), p = url.indexOf('camtx');
+
+            menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
+         });
+         menu.add('endsub:');
+      }
 
       if (!this.ctrl.project)
          menu.addchk(this.ctrl.rotate, 'Autorotate', () => this.setAutoRotate(!this.ctrl.rotate));
@@ -88137,9 +88162,22 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Returns url parameters defining camera position.
      * @desc It is zoom, roty, rotz parameters
      * These parameters applied from default position which is shift along X axis */
-   produceCameraUrl(prec) {
+   produceCameraUrl(as_position) {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl) return;
+
+      if (as_position) {
+         let p = this._camera.position, t = this._controls.target;
+         const conv = v => {
+            let s = '';
+            if (v < 0) { s = 'n'; v = -v; }
+            return s + v.toFixed(0);
+         };
+
+         let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
+         if (t.x || t.y || t.z) res += `camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+         return res;
+      }
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
@@ -88158,9 +88196,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-      prec = prec || 0;
 
-      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
+      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -88216,9 +88253,9 @@ class TGeoPainter extends ObjectPainter {
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
       this._camera.near = this._overall_size / 350;
-      this._camera.far = this._overall_size * 12;
+      this._camera.far = this._overall_size * 100;
       this._scene.fog.near = this._overall_size * 2;
-      this._scene.fog.far = this._overall_size * 12;
+      this._scene.fog.far = this._overall_size * 100;
 
       if (first_time)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -88287,6 +88324,18 @@ class TGeoPainter extends ObjectPainter {
       this._lookat = new Vector3(midx, midy, midz);
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
+
+      if (first_time && this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
+         this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
+         this._lookat.set(this.ctrl.camtx || 0, this.ctrl.camty || 0, this.ctrl.camtz || 0);
+
+         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camtx = this.ctrl.camty = this.ctrl.camtz = undefined;
+
+         this._camera.lookAt(this._lookat);
+
+         this._camera.updateMatrixWorld();
+      }
+
 
       this.changedLight(box);
 
@@ -90544,7 +90593,7 @@ function provideMenu(menu, item, hpainter) {
          menu.add('endsub:');
       }
 
-      menu.addchk(is_visible, 'Lofical vis',
+      menu.addchk(is_visible, 'Logical vis',
             geoBITS.kVisThis, ToggleMenuBit, 'Logical node visibility - all instances');
       menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
             geoBITS.kVisDaughters, ToggleMenuBit, 'Logical node daugthers visibility');
