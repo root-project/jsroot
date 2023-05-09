@@ -1063,8 +1063,15 @@ class TGeoPainter extends ObjectPainter {
       });
       menu.add('Reset camera position', () => this.focusCamera());
 
-      if (!this._geom_viewer)
-         menu.add('Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
+      if (!this._geom_viewer) {
+         menu.add('sub:Get camera position');
+         menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
+         menu.add('As positions', () => {
+            let url =  this.produceCameraUrl(true), p = url.indexOf('camtx');
+            menu.info('Position (as url)', '&opt=' + url.slice(0,p) + '\n' + url.slice(p));
+         });
+         menu.add('endsub:');
+      }
 
       if (!this.ctrl.project)
          menu.addchk(this.ctrl.rotate, 'Autorotate', () => this.setAutoRotate(!this.ctrl.rotate));
