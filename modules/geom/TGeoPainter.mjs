@@ -860,6 +860,23 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('ZOOM', true)) res.zoom = d.partAsFloat(0, 100) / 100;
       if (d.check('ROTY', true)) res.rotatey = d.partAsFloat();
       if (d.check('ROTZ', true)) res.rotatez = d.partAsFloat();
+
+      const getCamPart = () => {
+         let neg = 1;
+         if (d.part[0] == 'N') {
+            neg = -1;
+            d.part = d.part.slice(1);
+         }
+         return neg * d.partAsFloat();
+      };
+
+      if (d.check('CAMX', true)) res.camx = getCamPart();
+      if (d.check('CAMY', true)) res.camy = getCamPart();
+      if (d.check('CAMZ', true)) res.camz = getCamPart();
+      if (d.check('CAMTX', true)) res.camtx = getCamPart();
+      if (d.check('CAMTY', true)) res.camty = getCamPart();
+      if (d.check('CAMTZ', true)) res.camtz = getCamPart();
+
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
 
       if (d.check('BLACK')) res.background = '#000000';
@@ -1047,7 +1064,7 @@ class TGeoPainter extends ObjectPainter {
       menu.add('Reset camera position', () => this.focusCamera());
 
       if (!this._geom_viewer)
-         menu.add('Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
+         menu.add('Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
 
       if (!this.ctrl.project)
          menu.addchk(this.ctrl.rotate, 'Autorotate', () => this.setAutoRotate(!this.ctrl.rotate));
@@ -2652,9 +2669,20 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Returns url parameters defining camera position.
      * @desc It is zoom, roty, rotz parameters
      * These parameters applied from default position which is shift along X axis */
-   produceCameraUrl(prec) {
+   produceCameraUrl(as_position) {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl) return;
+
+      if (as_position) {
+         let p = this._camera.position, t = this._controls.target;
+         const conv = v => {
+            let s = '';
+            if (v < 0) { s = 'n'; v = -v; }
+            return s + v.toFixed(0);
+         }
+
+         return `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)},camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+      }
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
@@ -2673,9 +2701,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-      prec = prec || 0;
 
-      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
+      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -2802,6 +2829,16 @@ class TGeoPainter extends ObjectPainter {
       this._lookat = new Vector3(midx, midy, midz);
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
+
+      if (first_time && this.ctrl.camx !== undefined && this.ctrl.camtz !== undefined) {
+         this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
+         this._lookat.set(this.ctrl.camtx, this.ctrl.camty, this.ctrl.camtz);
+
+         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camtx = this.ctrl.camty = this.ctrl.camtz = undefined;
+
+         this._camera.updateMatrixWorld();
+      }
+
 
       this.changedLight(box);
 
