@@ -1068,7 +1068,8 @@ class TGeoPainter extends ObjectPainter {
          menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
          menu.add('As positions', () => {
             let url =  this.produceCameraUrl(true), p = url.indexOf('camtx');
-            menu.info('Position (as url)', '&opt=' + url.slice(0,p) + '\n' + url.slice(p));
+
+            menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
          });
          menu.add('endsub:');
       }
@@ -2688,7 +2689,9 @@ class TGeoPainter extends ObjectPainter {
             return s + v.toFixed(0);
          }
 
-         return `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)},camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+         let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
+         if (t.x || t.y || t.z) res += `camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+         return res;
       }
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
@@ -2837,11 +2840,13 @@ class TGeoPainter extends ObjectPainter {
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
-      if (first_time && this.ctrl.camx !== undefined && this.ctrl.camtz !== undefined) {
+      if (first_time && this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
-         this._lookat.set(this.ctrl.camtx, this.ctrl.camty, this.ctrl.camtz);
+         this._lookat.set(this.ctrl.camtx || 0, this.ctrl.camty || 0, this.ctrl.camtz || 0);
 
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camtx = this.ctrl.camty = this.ctrl.camtz = undefined;
+
+         this._camera.lookAt(this._lookat);
 
          this._camera.updateMatrixWorld();
       }
