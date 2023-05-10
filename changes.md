@@ -21,9 +21,11 @@
 18. Let superimpose TH3 and geo drawings
 19. Apply pad draw options like 'gridx' or 'logy' to all subpads
 20. Support new TScatter class
-21. Fix - rescan sumw2 when update TH1
-22. Fix - correct placing for TLegend header
-23. Fix - correctly align sub/super scripts in complex TLatex
+21. Implement moving and resizing of subpads
+22. Let configure position and direction of camera for TGeo, let create URL for that
+23. Fix - rescan sumw2 when update TH1
+24. Fix - correct placing for TLegend header
+25. Fix - correctly align sub/super scripts in complex TLatex
 
 
 ## Changes in 7.3.1

@@ -64618,6 +64618,9 @@ function addDragHandler(_painter, arg) {
    let painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing) return;
 
+   if (!isFunc(arg.getDrawG))
+      arg.getDrawG = () => painter?.draw_g;
+
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
@@ -64650,7 +64653,9 @@ function addDragHandler(_painter, arg) {
          drag_rect = null;
       }
 
-      if (!painter.draw_g)
+      let draw_g = arg.getDrawG();
+
+      if (!draw_g)
          return false;
 
       let oldx = arg.x, oldy = arg.y;
@@ -64663,26 +64668,30 @@ function addDragHandler(_painter, arg) {
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
-      painter.draw_g.attr('transform', makeTranslate(newx,newy));
+      if (!arg.no_transform)
+         draw_g.attr('transform', makeTranslate(newx, newy));
 
       setPainterTooltipEnabled(painter, true);
 
-      makeResizeElements(painter.draw_g);
+      makeResizeElements(draw_g);
 
       if (change_size || change_pos) {
          if (change_size && isFunc(arg.resize))
             arg.resize(newwidth, newheight);
+
          if (change_pos && isFunc(arg.move))
             arg.move(newx, newy, newx - oldx, newy - oldy);
 
          if (change_size || change_pos) {
             if (arg.obj) {
-               let rect = pp.getPadRect();
+               let rect = arg.pad_rect ?? pp.getPadRect();
                arg.obj.fX1NDC = newx / rect.width;
                arg.obj.fX2NDC = (newx + newwidth) / rect.width;
                arg.obj.fY1NDC = 1 - (newy + newheight) / rect.height;
                arg.obj.fY2NDC = 1 - newy / rect.height;
                arg.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
+            } else if (isFunc(arg.move_resize)) {
+               arg.move_resize(newx, newy, newwidth, newheight);
             }
             if (isFunc(arg.redraw))
                arg.redraw(arg);
@@ -64705,9 +64714,7 @@ function addDragHandler(_painter, arg) {
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
 
-         let pad_rect = pp.getPadRect();
-
-         let handle = {
+         let pad_rect = arg.pad_rect ?? pp.getPadRect(), handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
             acc_x1: arg.x, acc_y1: arg.y,
             pad_w: pad_rect.width - arg.width,
@@ -64718,7 +64725,7 @@ function addDragHandler(_painter, arg) {
 
          drag_painter = painter;
          drag_kind = 'move';
-         drag_rect = select(painter.draw_g.node().parentNode).append('path')
+         drag_rect = select(arg.getDrawG().node().parentNode).append('path')
             .attr('d', `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
             .style('cursor', 'move')
             .style('pointer-events', 'none') // let forward double click to underlying elements
@@ -64772,8 +64779,7 @@ function addDragHandler(_painter, arg) {
 
          setPainterTooltipEnabled(painter, false); // disable tooltip
 
-         let pad_rect = pp.getPadRect(),
-             handle = {
+         let pad_rect = arg.pad_rect ?? pp.getPadRect(), handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
             acc_x1: arg.x, acc_y1: arg.y,
             acc_x2: arg.x + arg.width, acc_y2: arg.y + arg.height,
@@ -64782,7 +64788,7 @@ function addDragHandler(_painter, arg) {
 
          drag_painter = painter;
          drag_kind = 'resize';
-         drag_rect = select(painter.draw_g.node().parentNode)
+         drag_rect = select(arg.getDrawG().node().parentNode)
             .append('rect')
             .style('cursor', select(this).style('cursor'))
             .attr('x', handle.acc_x1)
@@ -64834,10 +64840,10 @@ function addDragHandler(_painter, arg) {
       });
 
    if (!arg.only_resize)
-      painter.draw_g.style('cursor', 'move').call(drag_move);
+      arg.getDrawG().style('cursor', 'move').call(drag_move);
 
    if (!arg.only_move)
-      makeResizeElements(painter.draw_g, drag_resize);
+      makeResizeElements(arg.getDrawG(), drag_resize);
 }
 
 const TooltipHandler = {
@@ -69809,17 +69815,31 @@ class TPadPainter extends ObjectPainter {
          if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!isBatchMode())
+         if (!isBatchMode()) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
                       .on('mouseenter', () => this.showObjectStatus())
                       .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg_pad.append('svg:g').attr('class','primitives_layer');
+            if (!this.iscan)
+               addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
+                                      getDrawG: () => this.svg_this_pad(),
+                                      pad_rect: { width, height },
+                                      minwidth: 20, minheight: 20,
+                                      move_resize: (_x, _y, _w, _h) => {
+                                         this.pad.fAbsWNDC = _w / width;
+                                         this.pad.fAbsHNDC = _h / height;
+                                         this.pad.fAbsXlowNDC = _x / width;
+                                         this.pad.fAbsYlowNDC = 1 - (_y + _h) / height;
+                                      },
+                                      redraw: () => this.interactiveRedraw('pad', 'padpos') });
+         }
+
+         svg_pad.append('svg:g').attr('class', 'primitives_layer');
          if (!isBatchMode())
             btns = svg_pad.append('svg:g')
-                          .attr('class','btns_layer')
+                          .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
@@ -71981,6 +72001,7 @@ class TCanvasPainter extends TPadPainter {
             break;
          case 'frame': // when changing frame
          case 'zoom':  // when changing zoom inside frame
+         case 'padpos': // when changing pad position
             if (!isFunc(painter.getWebPadOptions))
                painter = painter.getPadPainter();
             if (isFunc(painter.getWebPadOptions))
@@ -110757,7 +110778,7 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
-   /** @summary Produce data url from png data */
+   /** @summary Produce data url from png buffer */
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = '';
 
@@ -110822,25 +110843,31 @@ class TASImagePainter extends ObjectPainter {
 
       let promise;
 
-      if (obj.fImgBuf && obj.fPalette) {
+      if (obj.fImgBuf && obj.fPalette)
          promise = this.makeUrlFromImageBuf(obj, fp);
-      } else if (obj.fPngBuf) {
+      else if (obj.fPngBuf)
          promise = this.makeUrlFromPngBuf(obj);
-      } else {
-         promise = Promise.resolve({});
-      }
+      else
+         promise = Promise.resolve(null);
 
       return promise.then(res => {
 
-         if (res.url)
-            this.createG(fp ? true : false)
-                .append('image')
-                .attr('href', res.url)
-                .attr('width', rect.width)
-                .attr('height', rect.height)
-                .attr('preserveAspectRatio', res.constRatio ? null : 'none');
+         if (!res?.url)
+            return this;
 
-         if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
+         let img = this.createG(fp ? true : false)
+             .append('image')
+             .attr('href', res.url)
+             .attr('width', rect.width)
+             .attr('height', rect.height)
+             .attr('preserveAspectRatio', res.constRatio ? null : 'none');
+
+         if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
+            img.style('pointer-events', 'visibleFill');
+
+         assignContextMenu(this);
+
+         if (!this.isMainPainter() || !res.is_buf || !fp)
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
