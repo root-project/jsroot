@@ -656,7 +656,7 @@ class TPadPainter extends ObjectPainter {
                                          this.pad.fAbsXlowNDC = _x / width;
                                          this.pad.fAbsYlowNDC = 1 - (_y + _h) / height;
                                       },
-                                      redraw: () => this.redrawPad('resize') });
+                                      redraw: () => this.interactiveRedraw('pad', 'padpos') });
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
