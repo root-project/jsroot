@@ -120,12 +120,27 @@ class TASImagePainter extends ObjectPainter {
 
          context.putImageData(imageData, 0, 0);
 
-         return { url: canvas.toDataURL(), constRatio: obj.fConstRatio, is_buf: true };
+         return { url: canvas.toDataURL(), constRatio: obj.fConstRatio, can_zoom: true };
       });
    }
 
+   getImageZoomRange(fp, constRatio, width, height) {
+      let res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
+      if (!fp) return res;
+
+      if (fp.zoom_xmin != fp.zoom_xmax) {
+         res.xmin = Math.round(fp.zoom_xmin * width);
+         res.xmax = Math.round(fp.zoom_xmax * width);
+      }
+      if (fp.zoom_ymin != fp.zoom_ymax) {
+         res.ymin = Math.round(fp.zoom_ymin * height);
+         res.ymax = Math.round(fp.zoom_ymax * height);
+      }
+      return res;
+   }
+
    /** @summary Produce data url from png buffer */
-   async makeUrlFromPngBuf(obj) {
+   async makeUrlFromPngBuf(obj, fp) {
       let buf = obj.fPngBuf, pngbuf = '';
 
       if (isStr(buf))
@@ -134,7 +149,62 @@ class TASImagePainter extends ObjectPainter {
          for (let k = 0; k < buf.length; ++k)
             pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
 
-      return { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: true };
+
+      let res = { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: true, can_zoom: fp && !isNodeJs() };
+
+      console.log('zooming', fp?.zoom_xmin, fp?.zoom_xmax, fp?.zoom_ymin, fp?.zoom_ymax, fp?.scale_xmin, fp?.scale_xmax);
+
+      if (!res.can_zoom || ((fp?.zoom_xmin === fp?.zoom_xmax) && (fp?.zoom_ymin === fp?.zoom_ymax)))
+         return res;
+
+      return new Promise(resolveFunc => {
+
+         let image = document.createElement('img');
+
+         image.onload = () => {
+            let canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            let context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
+
+            let arr = context.getImageData(0,0, image.width, image.height).data;
+
+            let z = this.getImageZoomRange(fp, res.constRatio, image.width, image.height);
+
+            let canvas2 = document.createElement('canvas');
+            canvas2.width = z.xmax - z.xmin;
+            canvas2.height = z.ymax - z.ymin;
+
+            let context2 = canvas2.getContext('2d'),
+                imageData2 = context2.getImageData(0, 0, canvas2.width, canvas2.height),
+                arr2 = imageData2.data;
+
+            for(let i = z.ymin; i < z.ymax; ++i) {
+                let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
+                    src = ((image.height - i - 1) * image.width + z.xmin) * 4;
+                for(let j = z.xmin; j < z.xmax; ++j) {
+                   // copy rgba value for specified point
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                }
+            }
+
+            context2.putImageData(imageData2, 0, 0);
+
+            res.url = canvas2.toDataURL();
+
+            resolveFunc(res);
+         }
+
+         image.onerror = () => resolveFunc(res);
+
+         image.src = res.url;
+
+      });
    }
 
    /** @summary Draw image */
@@ -192,7 +262,7 @@ class TASImagePainter extends ObjectPainter {
       if (obj.fImgBuf && obj.fPalette)
          promise = this.makeUrlFromImageBuf(obj, fp);
       else if (obj.fPngBuf)
-         promise = this.makeUrlFromPngBuf(obj);
+         promise = this.makeUrlFromPngBuf(obj, fp);
       else
          promise = Promise.resolve(null);
 
@@ -213,7 +283,7 @@ class TASImagePainter extends ObjectPainter {
 
          assignContextMenu(this);
 
-         if (!this.isMainPainter() || !res.is_buf || !fp)
+         if (!fp || !res.can_zoom || this.getMainPainter(true))
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
@@ -228,12 +298,15 @@ class TASImagePainter extends ObjectPainter {
    canZoomInside(axis,min,max) {
       let obj = this.getObject();
 
-      if (!obj?.fImgBuf)
+      if (!obj)
          return false;
 
-      if ((axis == 'x') && ((max - min) * obj.fWidth > 3)) return true;
-
-      if ((axis == 'y') && ((max - min) * obj.fHeight > 3)) return true;
+      if (obj.fImgBuf) {
+         if ((axis == 'x') && ((max - min) * obj.fWidth > 3)) return true;
+         if ((axis == 'y') && ((max - min) * obj.fHeight > 3)) return true;
+      } else if (obj.fPngBuf) {
+         if (((axis == 'x') || (axis == 'y')) && (max - min > 0.01)) return true;
+      }
 
       return false;
    }
