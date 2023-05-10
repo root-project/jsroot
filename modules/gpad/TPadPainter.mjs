@@ -6,6 +6,7 @@ import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } fro
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
+import { addDragHandler } from './TFramePainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
 import { BrowserLayout } from '../gui/display.mjs';
@@ -637,17 +638,30 @@ class TPadPainter extends ObjectPainter {
          if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!isBatchMode())
+         if (!isBatchMode()) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
                       .on('mouseenter', () => this.showObjectStatus())
                       .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
-         svg_pad.append('svg:g').attr('class','primitives_layer');
+            if (!this.iscan)
+               addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
+                                      getDrawG: () => this.svg_this_pad(),
+                                      minwidth: 20, minheight: 20,
+                                      move_resize: (_x, _y, _w, _h) => {
+                                         this.pad.fAbsWNDC = _w / width;
+                                         this.pad.fAbsHNDC = _h / height;
+                                         this.pad.fAbsXlowNDC = _x / width;
+                                         this.pad.fAbsYlowNDC = 1 - (_y + _h) / height;
+                                      },
+                                      redraw: () => this.redrawPad('resize') });
+         }
+
+         svg_pad.append('svg:g').attr('class', 'primitives_layer');
          if (!isBatchMode())
             btns = svg_pad.append('svg:g')
-                          .attr('class','btns_layer')
+                          .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
