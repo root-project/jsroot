@@ -648,6 +648,7 @@ class TPadPainter extends ObjectPainter {
             if (!this.iscan)
                addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
                                       getDrawG: () => this.svg_this_pad(),
+                                      pad_rect: { width, height },
                                       minwidth: 20, minheight: 20,
                                       move_resize: (_x, _y, _w, _h) => {
                                          this.pad.fAbsWNDC = _w / width;
