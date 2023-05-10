@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '9/05/2023';
+let version_date = '10/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -86550,10 +86550,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (!this._geom_viewer) {
          menu.add('sub:Get camera position');
-         menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl(false)));
+         menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
          menu.add('As positions', () => {
             let url =  this.produceCameraUrl(true), p = url.indexOf('camtx');
-
             menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
          });
          menu.add('endsub:');
@@ -88162,11 +88161,12 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Returns url parameters defining camera position.
      * @desc It is zoom, roty, rotz parameters
      * These parameters applied from default position which is shift along X axis */
-   produceCameraUrl(as_position) {
+   produceCameraUrl(arg) {
 
-      if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl) return;
+      if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl)
+         return '';
 
-      if (as_position) {
+      if (arg === true) {
          let p = this._camera.position, t = this._controls.target;
          const conv = v => {
             let s = '';
@@ -88175,7 +88175,7 @@ class TGeoPainter extends ObjectPainter {
          };
 
          let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
-         if (t.x || t.y || t.z) res += `camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+         if (t.x || t.y || t.z) res += `,camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
          return res;
       }
 
@@ -88196,8 +88196,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-
-      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
+      let prec = Number.isInteger(arg) ? arg : 0;
+      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -113162,7 +113162,7 @@ class RFramePainter extends RObjectPainter {
          // take zooming out of pad or axis attributes - skip!
       // }
 
-      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoomChangedInteractive('y')) {
+      if ((opts.zoom_ymin != opts.zoom_ymax) && ((this.zoom_ymin == this.zoom_ymax) || !this.zoomChangedInteractive('y'))) {
          this.zoom_ymin = opts.zoom_ymin;
          this.zoom_ymax = opts.zoom_ymax;
       }
