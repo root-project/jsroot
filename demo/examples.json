@@ -291,7 +291,8 @@
    ],
    "TASImage" : [
       { "name": "n4254", "file": "image.root", "item": "image", "title": "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
-      { "name": "rose", "file": "rose.root", "item": "rose512", "title": "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" }
+      { "name": "rose", "file": "rose.root", "item": "rose512", "title": "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" },
+      { "name": "psview", "file": "tutorials_graphics.root", "item": "psview",  "title": "TASimage in the subpad, tutorials/graphics/psview.C" }
    ],
    "Misc" : [
      { "name": "ellipse", "file": "ellipse.root", "item": "c1;1", "title": "TEllipse class" },
