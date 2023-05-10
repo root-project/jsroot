@@ -1,5 +1,6 @@
-import { create, isNodeJs, isStr, btoa_func, clTPave, clTGaxis, clTAxis, clTPaletteAxis } from '../core.mjs';
+import { create, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
+import { assignContextMenu } from '../gui/menu.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -123,7 +124,7 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
-   /** @summary Produce data url from png data */
+   /** @summary Produce data url from png buffer */
    async makeUrlFromPngBuf(obj) {
       let buf = obj.fPngBuf, pngbuf = '';
 
@@ -188,25 +189,29 @@ class TASImagePainter extends ObjectPainter {
 
       let promise;
 
-      if (obj.fImgBuf && obj.fPalette) {
+      if (obj.fImgBuf && obj.fPalette)
          promise = this.makeUrlFromImageBuf(obj, fp);
-      } else if (obj.fPngBuf) {
+      else if (obj.fPngBuf)
          promise = this.makeUrlFromPngBuf(obj);
-      } else {
-         promise = Promise.resolve({});
-      }
+      else
+         promise = Promise.resolve(null);
 
       return promise.then(res => {
 
-         if (res.url)
-            this.createG(fp ? true : false)
-                .append('image')
-                .attr('href', res.url)
-                .attr('width', rect.width)
-                .attr('height', rect.height)
-                .attr('preserveAspectRatio', res.constRatio ? null : 'none');
+         if (!res?.url)
+            return this;
 
-         if (!res.url || !this.isMainPainter() || !res.is_buf || !fp)
+         this.createG(fp ? true : false)
+             .append('image')
+             .attr('href', res.url)
+             .attr('width', rect.width)
+             .attr('height', rect.height)
+             .style('pointer-events', 'visibleFill')
+             .attr('preserveAspectRatio', res.constRatio ? null : 'none');
+
+         assignContextMenu(this);
+
+         if (!this.isMainPainter() || !res.is_buf || !fp)
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
