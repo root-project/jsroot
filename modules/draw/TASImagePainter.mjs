@@ -1,4 +1,4 @@
-import { create, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis } from '../core.mjs';
+import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, isBatchMode } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -201,13 +201,15 @@ class TASImagePainter extends ObjectPainter {
          if (!res?.url)
             return this;
 
-         this.createG(fp ? true : false)
+         let img = this.createG(fp ? true : false)
              .append('image')
              .attr('href', res.url)
              .attr('width', rect.width)
              .attr('height', rect.height)
-             .style('pointer-events', 'visibleFill')
              .attr('preserveAspectRatio', res.constRatio ? null : 'none');
+
+         if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
+            img.style('pointer-events', 'visibleFill');
 
          assignContextMenu(this);
 
