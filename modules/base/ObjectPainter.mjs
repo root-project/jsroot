@@ -786,9 +786,12 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let title = this.getObjectHint(), obj = this.getObject();
-      if (obj?._typename)
-         title = `${obj._typename}::${title}`;
+      let name = this.getObject()?.fName || '',
+          cl = this.getClassName();
+
+      let p = cl.lastIndexOf('::');
+      if (p > 0) cl = cl.slice(p+2);
+      let title = cl && name ? `${cl}:${name}` : cl ? cl : name || 'object';
 
       menu.add(`header:${title}`);
 
@@ -797,10 +800,10 @@ class ObjectPainter extends BasePainter {
       if (isFunc(this.fillContextMenuItems))
          this.fillContextMenuItems(menu);
 
-      menu.addAttributesMenu(this);
-
       if ((menu.size() > size0) && this.showInspector('check'))
          menu.add('Inspect', this.showInspector);
+
+      menu.addAttributesMenu(this);
 
       return menu.size() > size0;
    }
