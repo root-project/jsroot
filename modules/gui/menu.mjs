@@ -1371,4 +1371,3 @@ function assignContextMenu(painter, kind) {
 }
 
 export { createMenu, closeMenu, showPainterMenu, assignContextMenu };
-

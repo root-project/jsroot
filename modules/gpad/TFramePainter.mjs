@@ -2840,4 +2840,3 @@ class TFramePainter extends ObjectPainter {
 } // class TFramePainter
 
 export { addDragHandler, TooltipHandler, FrameInteractive, TFramePainter };
-

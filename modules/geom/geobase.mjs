@@ -3840,7 +3840,6 @@ function getShapeIcon(shape) {
    return 'img_geotube';
 }
 
-
 export { kindGeo, kindEve, kindShape,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
