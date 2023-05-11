@@ -292,6 +292,16 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Fill TASImage context */
+   fillContextMenuItems(menu) {
+      let obj = this.getObject();
+      if (obj)
+         menu.addchk(obj.fConstRatio, 'Const ratio', flag => {
+            obj.fConstRatio = flag;
+            this.interactiveRedraw('pad', `exec:SetConstRatio(${flag})`);
+         }, 'Change const ratio flag of image');
+   }
+
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
       let obj = this.getObject();
@@ -299,12 +309,7 @@ class TASImagePainter extends ObjectPainter {
       if (!obj)
          return false;
 
-      if (obj.fImgBuf) {
-         if ((axis == 'x') && ((max - min) * obj.fWidth > 3)) return true;
-         if ((axis == 'y') && ((max - min) * obj.fHeight > 3)) return true;
-      } else if (obj.fPngBuf) {
-         if (((axis == 'x') || (axis == 'y')) && (max - min > 0.01)) return true;
-      }
+      if (((axis == 'x') || (axis == 'y')) && (max - min > 0.01)) return true;
 
       return false;
    }
@@ -350,7 +355,6 @@ class TASImagePainter extends ObjectPainter {
          return pal_painter.drawPave('');
       }
 
-
       let prev_name = this.selectCurrentPad(this.getPadName());
 
       return TPavePainter.draw(this.getDom(), this.draw_palette).then(p => {
@@ -376,15 +380,8 @@ class TASImagePainter extends ObjectPainter {
    }
 
    /** @summary Redraw image */
-   redraw(reason) {
-      let img = this.draw_g?.select('image'),
-          fp = this.getFramePainter();
-
-      if (img && !img.empty() && (reason !== 'zoom') && fp) {
-         img.attr('width', fp.getFrameWidth()).attr('height', fp.getFrameHeight());
-      } else {
-         return this.drawImage();
-      }
+   redraw() {
+      return this.drawImage();
    }
 
    /** @summary Process click on TASImage-defined buttons */

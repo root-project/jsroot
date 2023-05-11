@@ -792,12 +792,17 @@ class ObjectPainter extends BasePainter {
 
       menu.add(`header:${title}`);
 
+      let size0 = menu.size();
+
+      if (isFunc(this.fillContextMenuItems))
+         this.fillContextMenuItems(menu);
+
       menu.addAttributesMenu(this);
 
-      if ((menu.size() > 0) && this.showInspector('check'))
+      if ((menu.size() > size0) && this.showInspector('check'))
          menu.add('Inspect', this.showInspector);
 
-      return menu.size() > 0;
+      return menu.size() > size0;
    }
 
    /** @summary shows objects status
