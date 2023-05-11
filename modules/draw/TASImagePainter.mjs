@@ -118,7 +118,7 @@ class TASImagePainter extends ObjectPainter {
       let res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
       if (!fp) return res;
 
-      let offx = 0, offy = 0;
+      let offx = 0, offy = 0, sizex = width, sizey = height;
 
       if (constRatio && fp) {
          let image_ratio = height/width,
@@ -127,21 +127,21 @@ class TASImagePainter extends ObjectPainter {
          if (image_ratio > frame_ratio) {
             let w2 = height / frame_ratio;
             offx = Math.round((w2 - width)/2);
-            width = Math.round(w2);
+            sizex = Math.round(w2);
          } else {
             let h2 = frame_ratio * width;
             offy = Math.round((h2 - height)/2);
-            height = Math.round(h2);
+            sizey = Math.round(h2);
          }
       }
 
       if (fp.zoom_xmin != fp.zoom_xmax) {
-         res.xmin = Math.round(fp.zoom_xmin * width) - offx;
-         res.xmax = Math.round(fp.zoom_xmax * width) - offx;
+         res.xmin = Math.min(width, Math.max(0, Math.round(fp.zoom_xmin * sizex) - offx));
+         res.xmax = Math.min(width, Math.max(0, Math.round(fp.zoom_xmax * sizex) - offx));
       }
       if (fp.zoom_ymin != fp.zoom_ymax) {
-         res.ymin = Math.round(fp.zoom_ymin * height) - offy;
-         res.ymax = Math.round(fp.zoom_ymax * height) - offy;
+         res.ymin = Math.min(height, Math.max(0, Math.round(fp.zoom_ymin * sizey) - offy));
+         res.ymax = Math.min(height, Math.max(0, Math.round(fp.zoom_ymax * sizey) - offy));
       }
       return res;
    }
