@@ -2005,9 +2005,6 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process pad button click */
    clickPadButton(funcname, evnt) {
 
-       evnt?.preventDefault();
-       evnt?.stopPropagation();
-
       if (funcname == 'CanvasSnapShot')
          return this.saveAs('png', true);
 
@@ -2019,6 +2016,8 @@ class TPadPainter extends ObjectPainter {
 
       if (funcname == 'PadContextMenus') {
 
+         evnt?.preventDefault();
+         evnt?.stopPropagation();
          if (closeMenu()) return;
 
          createMenu(evnt, this).then(menu => {
@@ -2067,7 +2066,7 @@ class TPadPainter extends ObjectPainter {
 
       this.painters.forEach(pp => {
          if (isFunc(pp.clickPadButton))
-            pp.clickPadButton(funcname);
+            pp.clickPadButton(funcname, evnt);
 
          if (!done && isFunc(pp.clickButton))
             done = pp.clickButton(funcname);

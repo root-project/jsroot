@@ -4,7 +4,6 @@ import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorEx
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
 import { getElementRect } from '../base/BasePainter.mjs';
 import { cleanup, resize, selectActivePad, EAxisBits } from '../base/ObjectPainter.mjs';
-import { TAxisPainter } from './TAxisPainter.mjs';
 import { TFramePainter } from './TFramePainter.mjs';
 import { TPadPainter, clTButton } from './TPadPainter.mjs';
 
@@ -402,14 +401,11 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Handle pad button click event */
    clickPadButton(funcname, evnt) {
-      evnt?.preventDefault();
-      evnt?.stopPropagation();
-
       if (funcname == 'ToggleGed')
          return this.activateGed(this, null, 'toggle');
       if (funcname == 'ToggleStatus')
          return this.activateStatusBar('toggle');
-      super.clickPadButton(funcname);
+      super.clickPadButton(funcname, evnt);
    }
 
    /** @summary Returns true if event status shown in the canvas */
