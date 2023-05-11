@@ -647,6 +647,7 @@ class TPadPainter extends ObjectPainter {
 
             if (!this.iscan)
                addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
+                                      is_disabled: () => svg_can.property('pad_enlarged'),
                                       getDrawG: () => this.svg_this_pad(),
                                       pad_rect: { width, height },
                                       minwidth: 20, minheight: 20,
