@@ -150,9 +150,7 @@ class TASImagePainter extends ObjectPainter {
             pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
 
 
-      let res = { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: true, can_zoom: fp && !isNodeJs() };
-
-      console.log('zooming', fp?.zoom_xmin, fp?.zoom_xmax, fp?.zoom_ymin, fp?.zoom_ymax, fp?.scale_xmin, fp?.scale_xmax);
+      let res = { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: obj.fConstRatio, can_zoom: fp && !isNodeJs() };
 
       if (!res.can_zoom || ((fp?.zoom_xmin === fp?.zoom_xmax) && (fp?.zoom_ymin === fp?.zoom_ymax)))
          return res;
