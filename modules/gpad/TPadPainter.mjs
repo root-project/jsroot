@@ -17,7 +17,10 @@ function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
 }
 
-function toggleButtonsVisibility(handler, action) {
+function toggleButtonsVisibility(handler, action, evnt) {
+   evnt?.preventDefault();
+   evnt?.stopPropagation();
+
    let group = handler.getLayerSvg('btns_layer', handler.this_pad_name),
        btn = group.select("[name='Toggle']");
 
@@ -32,8 +35,13 @@ function toggleButtonsVisibility(handler, action) {
 
    let is_visible = false;
    switch(action) {
-      case 'enable': is_visible = true; break;
-      case 'enterbtn': return; // do nothing, just cleanup timeout
+      case 'enable':
+         is_visible = true;
+         handler.btns_active_flag = true;
+         break;
+      case 'enterbtn':
+         handler.btns_active_flag = true;
+         return; // do nothing, just cleanup timeout
       case 'timeout': is_visible = false; break;
       case 'toggle':
          state = !state;
@@ -42,6 +50,7 @@ function toggleButtonsVisibility(handler, action) {
          break;
       case 'disable':
       case 'leavebtn':
+         handler.btns_active_flag = false;
          if (!state) btn.property('timout_handler', setTimeout(() => toggleButtonsVisibility(handler, 'timeout'), 1200));
          return;
    }
@@ -106,7 +115,7 @@ let PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup'))
-                            .on('click', () => toggleButtonsVisibility(this, 'toggle'))
+                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
                             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
                             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
 
@@ -647,7 +656,7 @@ class TPadPainter extends ObjectPainter {
 
             if (!this.iscan)
                addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
-                                      is_disabled: () => svg_can.property('pad_enlarged'),
+                                      is_disabled: () => svg_can.property('pad_enlarged') || this.btns_active_flag,
                                       getDrawG: () => this.svg_this_pad(),
                                       pad_rect: { width, height },
                                       minwidth: 20, minheight: 20,
@@ -1996,6 +2005,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process pad button click */
    clickPadButton(funcname, evnt) {
 
+       evnt?.preventDefault();
+       evnt?.stopPropagation();
+
       if (funcname == 'CanvasSnapShot')
          return this.saveAs('png', true);
 
@@ -2006,11 +2018,6 @@ class TPadPainter extends ObjectPainter {
          return this.saveAs('png', false);
 
       if (funcname == 'PadContextMenus') {
-
-         if (evnt) {
-            evnt.preventDefault();
-            evnt.stopPropagation();
-         }
 
          if (closeMenu()) return;
 
