@@ -118,15 +118,30 @@ class TASImagePainter extends ObjectPainter {
       let res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
       if (!fp) return res;
 
-      console.log('frame dim', fp?.getFrameWidth(), fp?.getFrameHeight());
+      let offx = 0, offy = 0;
+
+      if (constRatio && fp) {
+         let image_ratio = height/width,
+             frame_ratio = fp.getFrameHeight() / fp.getFrameWidth();
+
+         if (image_ratio > frame_ratio) {
+            let w2 = height / frame_ratio;
+            offx = Math.round((w2 - width)/2);
+            width = Math.round(w2);
+         } else {
+            let h2 = frame_ratio * width;
+            offy = Math.round((h2 - height)/2);
+            height = Math.round(h2);
+         }
+      }
 
       if (fp.zoom_xmin != fp.zoom_xmax) {
-         res.xmin = Math.round(fp.zoom_xmin * width);
-         res.xmax = Math.round(fp.zoom_xmax * width);
+         res.xmin = Math.round(fp.zoom_xmin * width) - offx;
+         res.xmax = Math.round(fp.zoom_xmax * width) - offx;
       }
       if (fp.zoom_ymin != fp.zoom_ymax) {
-         res.ymin = Math.round(fp.zoom_ymin * height);
-         res.ymax = Math.round(fp.zoom_ymax * height);
+         res.ymin = Math.round(fp.zoom_ymin * height) - offy;
+         res.ymax = Math.round(fp.zoom_ymax * height) - offy;
       }
       return res;
    }
@@ -270,6 +285,9 @@ class TASImagePainter extends ObjectPainter {
 
          if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
             img.style('pointer-events', 'visibleFill');
+
+         if (!isBatchMode() && res.can_zoom)
+            img.style('cursor', 'pointer');
 
          assignContextMenu(this);
 
