@@ -1,6 +1,7 @@
 import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, isBatchMode } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -15,9 +16,18 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Decode options string  */
    decodeOptions(opt) {
+      const d = new DrawOptions(opt);
+
       this.options = { Zscale: false };
 
-      if (opt && (opt.indexOf('z') >= 0)) this.options.Zscale = true;
+      let obj = this.getObject();
+
+      if (d.check('CONST')) {
+         this.options.constRatio = true;
+         if (obj) obj.fConstRatio = true;
+         console.log('use const');
+      }
+      if (d.check('Z')) this.options.Zscale = true;
    }
 
    /** @summary Create RGBA buffers */

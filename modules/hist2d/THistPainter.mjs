@@ -1,6 +1,6 @@
 import { gStyle, BIT, settings, constants, internals, create, isObject, isFunc, isStr, getPromise,
-         clTList, clTPave, clTPaveText, clTPaveStats, clTPaletteAxis,
-         clTAxis, clTGaxis, clTF1, clTProfile, kNoZoom, clTCutG, kNoStats } from '../core.mjs';
+         clTList, clTPaveText, clTPaveStats, clTPaletteAxis,
+         clTAxis, clTF1, clTProfile, kNoZoom, clTCutG, kNoStats } from '../core.mjs';
 import { getColor, getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
