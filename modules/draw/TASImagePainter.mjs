@@ -78,24 +78,14 @@ class TASImagePainter extends ObjectPainter {
 
       if (min >= max) max = min + 1;
 
-      let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
-
-      if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
-         xmin = Math.round(fp.zoom_xmin * obj.fWidth);
-         xmax = Math.round(fp.zoom_xmax * obj.fWidth);
-      }
-
-      if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
-         ymin = Math.round(fp.zoom_ymin * obj.fHeight);
-         ymax = Math.round(fp.zoom_ymax * obj.fHeight);
-      }
+      let z = this.getImageZoomRange(fp, obj.fConstRatio, obj.fWidth, obj.fHeight);
 
       let pr = isNodeJs() ?
-                 import('canvas').then(h => h.default.createCanvas(xmax - xmin, ymax - ymin)) :
+                 import('canvas').then(h => h.default.createCanvas(z.xmax - z.xmin, z.ymax - z.ymin)) :
                  new Promise(resolveFunc => {
                     let c = document.createElement('canvas');
-                    c.width = xmax - xmin;
-                    c.height = ymax - ymin;
+                    c.width = z.xmax - z.xmin;
+                    c.height = z.ymax - z.ymin;
                     resolveFunc(c);
                  });
 
@@ -105,10 +95,10 @@ class TASImagePainter extends ObjectPainter {
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
              arr = imageData.data;
 
-         for(let i = ymin; i < ymax; ++i) {
-            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
+         for(let i = z.ymin; i < z.ymax; ++i) {
+            let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
                 row = i * obj.fWidth;
-            for(let j = xmin; j < xmax; ++j) {
+            for(let j = z.xmin; j < z.xmax; ++j) {
                let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
                // copy rgba value for specified point
                arr[dst++] = this.rgba[iii++];
@@ -127,6 +117,8 @@ class TASImagePainter extends ObjectPainter {
    getImageZoomRange(fp, constRatio, width, height) {
       let res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
       if (!fp) return res;
+
+      console.log('frame dim', fp?.getFrameWidth(), fp?.getFrameHeight());
 
       if (fp.zoom_xmin != fp.zoom_xmax) {
          res.xmin = Math.round(fp.zoom_xmin * width);
