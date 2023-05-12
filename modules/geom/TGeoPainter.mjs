@@ -501,16 +501,15 @@ class TGeoPainter extends ObjectPainter {
          update_browser: true,
          light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
          trans_radial: 0,
-         trans_z: 0
+         trans_z: 0,
+         depthMethodItems: [
+            { name: 'Default', value: 'dflt' },
+            { name: 'Raytraicing', value: 'ray' },
+            { name: 'Boundary box', value: 'box' },
+            { name: 'Mesh size', value: 'size' },
+            { name: 'Central point', value: 'pnt' }
+          ]
       };
-
-      this.ctrl.depthMethodItems = [
-         { name: 'Default', value: 'dflt' },
-         { name: 'Raytraicing', value: 'ray' },
-         { name: 'Boundary box', value: 'box' },
-         { name: 'Mesh size', value: 'size' },
-         { name: 'Central point', value: 'pnt' }
-       ];
 
       this.ctrl.ssao.outputItems = [
          { name: 'Default', value: SSAOPass.OUTPUT.Default },
@@ -803,7 +802,8 @@ class TGeoPainter extends ObjectPainter {
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
-                   project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
+                   project: '', is_main: false, tracks: false, showtop: false, can_rotate: true,
+                   camera_kind: 'perspective',
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
@@ -847,8 +847,8 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
       if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check('ORTHO_CAMERA_ROTATE')) { res.ortho_camera = true; res.can_rotate = true; }
-      if (d.check('ORTHO_CAMERA')) { res.ortho_camera = true; res.can_rotate = false; }
+      if (d.check('ORTHO_CAMERA_ROTATE')) { res.camera_kind = 'orthoXOY'; res.can_rotate = true; }
+      if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('MOUSE_CLICK')) res.mouse_click = true;
 
       if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
@@ -1314,7 +1314,7 @@ class TGeoPainter extends ObjectPainter {
                      .listen().onChange(() => this.changedWireFrame());
 
       this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { 'none': 0, 'show': 1, 'center': 2 }).name('Axes')
+      appearance.add(this.ctrl, '_axis', { none: 0, show: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
@@ -1336,7 +1336,13 @@ class TGeoPainter extends ObjectPainter {
              .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
 
-         advanced.add(this.ctrl, 'ortho_camera').name('Orhographic camera')
+         advanced.add(this.ctrl, 'camera_kind', {
+            'Perspective': 'perspective',
+            'Orthographic (XOY)': 'orthoXOY',
+            'Orthographic (XOZ)': 'orthoXOZ'
+         }).name('Camera kind').listen().onChange(() => this.changeCamera());
+
+         advanced.add(this.ctrl, 'can_rotate').name('Ortho allow rotate')
                  .listen().onChange(() => this.changeCamera());
 
          advanced.add(this, 'resetAdvanced').name('Reset');
@@ -1907,10 +1913,10 @@ class TGeoPainter extends ObjectPainter {
                this._last_hidden.forEach(obj => { obj.visible = true; });
             delete this._last_hidden;
             delete this._last_manifest;
-            this.render3D();
          } else {
             this.adjustCameraPosition(true);
          }
+         this.render3D();
       }
    }
 
@@ -2466,7 +2472,7 @@ class TGeoPainter extends ObjectPainter {
           delete this._camera;
        }
 
-      if (this.ctrl.ortho_camera) {
+      if (this.ctrl.camera_kind.indexOf('ortho') == 0) {
          this._camera = new OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
       } else {
          this._camera = new PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
@@ -2676,15 +2682,13 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Returns url parameters defining camera position.
-     * @desc It is zoom, roty, rotz parameters
-     * These parameters applied from default position which is shift along X axis */
+     * @desc Either absolute position are provided (arg == true) or zoom, roty, rotz parameters */
    produceCameraUrl(arg) {
 
-      if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl)
-         return '';
-
       if (arg === true) {
-         let p = this._camera.position, t = this._controls.target;
+         let p = this._camera?.position, t = this._controls?.target;
+         if (!p || !t) return '';
+
          const conv = v => {
             let s = '';
             if (v < 0) { s = 'n'; v = -v; }
@@ -2695,6 +2699,9 @@ class TGeoPainter extends ObjectPainter {
          if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
          return res;
       }
+
+      if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl)
+         return '';
 
       let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
@@ -2790,19 +2797,18 @@ class TGeoPainter extends ObjectPainter {
                cc.value = cc.max;
          }
 
-      if (this.ctrl.ortho_camera) {
-         this._camera.left = box.min.x;
-         this._camera.right = box.max.x;
-         this._camera.top = box.max.y;
-         this._camera.bottom = box.min.y;
-      }
-
       // this._camera.far = 100000000000;
 
-      this._camera.updateProjectionMatrix();
+      // this._camera.updateProjectionMatrix();
 
       let k = 2*this.ctrl.zoom,
           max_all = Math.max(sizex,sizey,sizez);
+
+      this._lookat = new Vector3(midx, midy, midz);
+      this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
+
+      this._camera.updateMatrixWorld();
+      this._camera.updateProjectionMatrix();
 
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
 
@@ -2823,9 +2829,18 @@ class TGeoPainter extends ObjectPainter {
             this._camera.position.applyEuler(euler);
             this._camera.position.add(new Vector3(midx,midy,midz));
          }
-
-      } else if (this.ctrl.ortho_camera) {
-         this._camera.position.set(midx, midy, Math.max(sizex,sizey));
+      } else if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
+         this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
+         this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
+         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
+      } else if (this.ctrl.camera_kind == 'orthoXOY') {
+         this._camera.position.set(0, 0, midz + sizez*2);
+         this._lookat.set(0, 0, midz);
+         this._camera.left = box.min.x;
+         this._camera.right = box.max.x;
+         this._camera.top = box.max.y;
+         this._camera.bottom = box.min.y;
+         this._camera.zoom = this.ctrl.zoom || 1;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -2838,17 +2853,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
       }
 
-      this._lookat = new Vector3(midx, midy, midz);
-      this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
-
-      if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
-         this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
-         this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
-         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
-         this._camera.lookAt(this._lookat);
-         this._camera.updateMatrixWorld();
-      }
+      this._camera.updateProjectionMatrix();
 
       this.changedLight(box);
 
@@ -2904,7 +2910,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary focus camera on speicifed position */
    focusCamera(focus, autoClip) {
 
-      if (this.ctrl.project || this.ctrl.ortho_camera)
+      if (this.ctrl.project || this.ctrl.camera_kind.indexOf('ortho') == 0)
          return this.adjustCameraPosition();
 
       let box = new Box3();
@@ -4112,7 +4118,7 @@ class TGeoPainter extends ObjectPainter {
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
           colors = ['red','green','blue'],
-          ortho = this.ctrl.ortho_camera,
+          ortho = false,
           yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
           numaxis = 3;
 
@@ -4124,7 +4130,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
       // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
-      if (this.ctrl.ortho_camera) {
+      if (this.ctrl.camera_kind.indexOf('ortho') == 0) {
          numaxis = 2;
          labels[0] = labels[2];
          colors[0] = colors[2];
