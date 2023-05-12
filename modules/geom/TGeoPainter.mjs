@@ -3796,7 +3796,7 @@ class TGeoPainter extends ObjectPainter {
           info = main.querySelector('.geo_info');
 
       if (!msg) {
-         info.remove();
+         info?.remove();
       } else {
          let spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
          if (!info) {
