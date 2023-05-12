@@ -1342,13 +1342,13 @@ class TGeoPainter extends ObjectPainter {
          advanced.add(this.ctrl, 'camera_kind', {
             'Perspective': 'perspective',
             'Perspective (Floor XOZ)': 'perspXOZ',
-            'Perspective (YOZ)': 'perspYOZ',
-            'Perspective (XOY)': 'perspXOY',
+            'Perspective (Floor YOZ)': 'perspYOZ',
+            'Perspective (Floor XOY)': 'perspXOY',
             'Orthographic (XOY)': 'orthoXOY',
             'Orthographic (XOZ)': 'orthoXOZ',
             'Orthographic (ZOY)': 'orthoZOY',
             'Orthographic (ZOX)': 'orthoZOX',
-            'Orthographic (XnOY)': 'orthoXOY',
+            'Orthographic (XnOY)': 'orthoXNOY',
             'Orthographic (XnOZ)': 'orthoXNOZ',
             'Orthographic (ZnOY)': 'orthoZNOY',
             'Orthographic (ZnOX)': 'orthoZNOX'
@@ -2872,7 +2872,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.y;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
-         this._camera.up.set(0, -sign, 0);
+         this._camera.up.set(0, 1, 0);
          this._camera.position.set(0, midy + sign*sizey*2, 0);
          this._lookat.set(0, midy, 0);
          this._camera.left = box.min.x;
@@ -2890,7 +2890,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.y;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
-         this._camera.up.set(sign, 0, 0);
+         this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, 0);
          this._lookat.set(0, midy, 0);
          this._camera.left = box.min.z;
@@ -2905,12 +2905,13 @@ class TGeoPainter extends ObjectPainter {
             case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
          }
       } else if (this.ctrl.camera_kind == 'perspXOZ') {
+         this._camera.up.set(0,1,0);
          this._camera.position.set(midx - 3*max_all, midy, midz);
       } else if (this.ctrl.camera_kind == 'perspYOZ') {
          this._camera.up.set(1,0,0);
          this._camera.position.set(midx, midy - 3*max_all, midz);
       } else if (this.ctrl.camera_kind == 'perspXOY') {
-         this._camera.up.set(0,0, 1);
+         this._camera.up.set(0,0,1);
          this._camera.position.set(midx - 3*max_all, midy, midz);
       } else if (this.ctrl._yup) {
          this._camera.up.set(0,1,0);
