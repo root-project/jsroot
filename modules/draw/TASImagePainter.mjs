@@ -301,7 +301,7 @@ class TASImagePainter extends ObjectPainter {
 
          assignContextMenu(this);
 
-         if (!fp || !res.can_zoom || this.getMainPainter(true))
+         if (!fp || !res.can_zoom)
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
@@ -320,6 +320,11 @@ class TASImagePainter extends ObjectPainter {
             obj.fConstRatio = flag;
             this.interactiveRedraw('pad', `exec:SetConstRatio(${flag})`);
          }, 'Change const ratio flag of image');
+      if (obj?.fPalette)
+         menu.addchk(this.options.Zscale, 'Color palette', flag => {
+            this.options.Zscale = flag;
+            this.drawColorPalette(flag, true);
+         }, 'Toggle color palette');
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -428,6 +433,7 @@ class TASImagePainter extends ObjectPainter {
    /** @summary Draw TASImage object */
    static async draw(dom, obj, opt) {
       let painter = new TASImagePainter(dom, obj, opt);
+      painter.setAsMainPainter();
       painter.decodeOptions(opt);
       return ensureTCanvas(painter, false)
                  .then(() => painter.drawImage())
