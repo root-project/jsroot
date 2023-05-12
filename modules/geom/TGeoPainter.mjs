@@ -850,6 +850,8 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('ORTHO_CAMERA_ROTATE')) { res.camera_kind = 'orthoXOY'; res.can_rotate = true; }
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
+      if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
+      if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
       if (d.check('MOUSE_CLICK')) res.mouse_click = true;
 
       if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
@@ -1339,6 +1341,9 @@ class TGeoPainter extends ObjectPainter {
 
          advanced.add(this.ctrl, 'camera_kind', {
             'Perspective': 'perspective',
+            'Perspective (Floor XOZ)': 'perspXOZ',
+            'Perspective (YOZ)': 'perspYOZ',
+            'Perspective (XOY)': 'perspXOY',
             'Orthographic (XOY)': 'orthoXOY',
             'Orthographic (XOZ)': 'orthoXOZ',
             'Orthographic (ZOY)': 'orthoZOY',
@@ -2705,6 +2710,10 @@ class TGeoPainter extends ObjectPainter {
          return this.ctrl.camera_kind + (zoom == 100 ? '' : `,zoom=${zoom}`);
       }
 
+      let kind = '';
+      if (this.ctrl.camera_kind != 'perspective')
+        kind = this.ctrl.camera_kind + ',';
+
       if (arg === true) {
          let p = this._camera?.position, t = this._controls?.target;
          if (!p || !t) return '';
@@ -2715,7 +2724,7 @@ class TGeoPainter extends ObjectPainter {
             return s + v.toFixed(0);
          }
 
-         let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
+         let res = `${kind}camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
          if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
          return res;
       }
@@ -2740,7 +2749,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
+      return `${kind}roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -2895,9 +2904,19 @@ class TGeoPainter extends ObjectPainter {
             case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break;
             case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
          }
+      } else if (this.ctrl.camera_kind == 'perspXOZ') {
+         this._camera.position.set(midx - 3*max_all, midy, midz);
+      } else if (this.ctrl.camera_kind == 'perspYOZ') {
+         this._camera.up.set(1,0,0);
+         this._camera.position.set(midx, midy - 3*max_all, midz);
+      } else if (this.ctrl.camera_kind == 'perspXOY') {
+         this._camera.up.set(0,0, 1);
+         this._camera.position.set(midx - 3*max_all, midy, midz);
       } else if (this.ctrl._yup) {
+         this._camera.up.set(0,1,0);
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
+         this._camera.up.set(0,0,1);
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
       }
 
