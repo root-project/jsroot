@@ -4198,7 +4198,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
       // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
-      if (this.isOrthoCamera() == 0) {
+      if (this.isOrthoCamera()) {
          numaxis = 2;
          labels[0] = labels[2];
          colors[0] = colors[2];
