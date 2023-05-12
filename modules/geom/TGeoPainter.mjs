@@ -849,6 +849,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('ORTHO_CAMERA_ROTATE')) { res.camera_kind = 'orthoXOY'; res.can_rotate = true; }
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
+      if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
       if (d.check('MOUSE_CLICK')) res.mouse_click = true;
 
       if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
@@ -1064,12 +1065,12 @@ class TGeoPainter extends ObjectPainter {
       menu.add('Reset camera position', () => this.focusCamera());
 
       if (!this._geom_viewer) {
-         menu.add('sub:Get camera position');
-         menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
-         menu.add('As positions', () => {
-            let url =  this.produceCameraUrl(true), p = url.indexOf('camlx');
-            menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
-         });
+         menu.add('sub:Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
+         if (!this.isOrthoCamera())
+            menu.add('As absolute positions', () => {
+               let url =  this.produceCameraUrl(true), p = url.indexOf('camlx');
+               menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
+            });
          menu.add('endsub:');
       }
 
@@ -2463,6 +2464,11 @@ class TGeoPainter extends ObjectPainter {
       if (need_render) this.render3D();
    }
 
+   /** @summary Returns true if orthogarphic camera is used */
+   isOrthoCamera() {
+      return this.ctrl.camera_kind.indexOf('ortho') == 0;
+   }
+
    /** @summary Create configured camera */
    createCamera() {
 
@@ -2472,7 +2478,7 @@ class TGeoPainter extends ObjectPainter {
           delete this._camera;
        }
 
-      if (this.ctrl.camera_kind.indexOf('ortho') == 0) {
+      if (this.isOrthoCamera()) {
          this._camera = new OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
       } else {
          this._camera = new PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
@@ -2685,6 +2691,14 @@ class TGeoPainter extends ObjectPainter {
      * @desc Either absolute position are provided (arg == true) or zoom, roty, rotz parameters */
    produceCameraUrl(arg) {
 
+      if (!this._camera)
+         return '';
+
+      if (this._camera.isOrthographicCamera) {
+         let zoom = Math.round(this._camera.zoom * 100)
+         return this.ctrl.camera_kind + (zoom == 100 ? '' : `,zoom=${zoom}`);
+      }
+
       if (arg === true) {
          let p = this._camera?.position, t = this._controls?.target;
          if (!p || !t) return '';
@@ -2720,8 +2734,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-      let prec = Number.isInteger(arg) ? arg : 0;
-      return `roty${roty.toFixed(prec)},rotz${rotz.toFixed(prec)},zoom${zoom.toFixed(prec)}`;
+      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -2910,7 +2923,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary focus camera on speicifed position */
    focusCamera(focus, autoClip) {
 
-      if (this.ctrl.project || this.ctrl.camera_kind.indexOf('ortho') == 0)
+      if (this.ctrl.project || this.isOrthoCamera())
          return this.adjustCameraPosition();
 
       let box = new Box3();
@@ -4130,7 +4143,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
       // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
-      if (this.ctrl.camera_kind.indexOf('ortho') == 0) {
+      if (this.isOrthoCamera() == 0) {
          numaxis = 2;
          labels[0] = labels[2];
          colors[0] = colors[2];
