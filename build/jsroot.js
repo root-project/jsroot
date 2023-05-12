@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/05/2023';
+let version_date = '12/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12065,18 +12065,26 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let title = this.getObjectHint(), obj = this.getObject();
-      if (obj?._typename)
-         title = `${obj._typename}::${title}`;
+      let name = this.getObject()?.fName || '',
+          cl = this.getClassName();
+
+      let p = cl.lastIndexOf('::');
+      if (p > 0) cl = cl.slice(p+2);
+      let title = cl && name ? `${cl}:${name}` : cl ? cl : name || 'object';
 
       menu.add(`header:${title}`);
 
-      menu.addAttributesMenu(this);
+      let size0 = menu.size();
 
-      if ((menu.size() > 0) && this.showInspector('check'))
+      if (isFunc(this.fillContextMenuItems))
+         this.fillContextMenuItems(menu);
+
+      if ((menu.size() > size0) && this.showInspector('check'))
          menu.add('Inspect', this.showInspector);
 
-      return menu.size() > 0;
+      menu.addAttributesMenu(this);
+
+      return menu.size() > size0;
    }
 
    /** @summary shows objects status
@@ -64706,6 +64714,7 @@ function addDragHandler(_painter, arg) {
    drag_move
       .on('start', function(evnt) {
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
+         if (isFunc(arg.is_disabled) && arg.is_disabled()) return;
 
          closeMenu(); // close menu
 
@@ -64773,6 +64782,7 @@ function addDragHandler(_painter, arg) {
    drag_resize
       .on('start', function(evnt) {
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
+         if (isFunc(arg.is_disabled) && arg.is_disabled()) return;
 
          evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
@@ -69194,7 +69204,10 @@ function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
 }
 
-function toggleButtonsVisibility(handler, action) {
+function toggleButtonsVisibility(handler, action, evnt) {
+   evnt?.preventDefault();
+   evnt?.stopPropagation();
+
    let group = handler.getLayerSvg('btns_layer', handler.this_pad_name),
        btn = group.select("[name='Toggle']");
 
@@ -69209,8 +69222,13 @@ function toggleButtonsVisibility(handler, action) {
 
    let is_visible = false;
    switch(action) {
-      case 'enable': is_visible = true; break;
-      case 'enterbtn': return; // do nothing, just cleanup timeout
+      case 'enable':
+         is_visible = true;
+         handler.btns_active_flag = true;
+         break;
+      case 'enterbtn':
+         handler.btns_active_flag = true;
+         return; // do nothing, just cleanup timeout
       case 'timeout': is_visible = false; break;
       case 'toggle':
          state = !state;
@@ -69219,6 +69237,7 @@ function toggleButtonsVisibility(handler, action) {
          break;
       case 'disable':
       case 'leavebtn':
+         handler.btns_active_flag = false;
          if (!state) btn.property('timout_handler', setTimeout(() => toggleButtonsVisibility(handler, 'timeout'), 1200));
          return;
    }
@@ -69283,7 +69302,7 @@ let PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup'))
-                            .on('click', () => toggleButtonsVisibility(this, 'toggle'))
+                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
                             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
                             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
 
@@ -69824,6 +69843,7 @@ class TPadPainter extends ObjectPainter {
 
             if (!this.iscan)
                addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
+                                      is_disabled: () => svg_can.property('pad_enlarged') || this.btns_active_flag,
                                       getDrawG: () => this.svg_this_pad(),
                                       pad_rect: { width, height },
                                       minwidth: 20, minheight: 20,
@@ -71183,11 +71203,8 @@ class TPadPainter extends ObjectPainter {
 
       if (funcname == 'PadContextMenus') {
 
-         if (evnt) {
-            evnt.preventDefault();
-            evnt.stopPropagation();
-         }
-
+         evnt?.preventDefault();
+         evnt?.stopPropagation();
          if (closeMenu()) return;
 
          createMenu$1(evnt, this).then(menu => {
@@ -71236,7 +71253,7 @@ class TPadPainter extends ObjectPainter {
 
       this.painters.forEach(pp => {
          if (isFunc(pp.clickPadButton))
-            pp.clickPadButton(funcname);
+            pp.clickPadButton(funcname, evnt);
 
          if (!done && isFunc(pp.clickButton))
             done = pp.clickButton(funcname);
@@ -71790,8 +71807,10 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Handle pad button click event */
    clickPadButton(funcname, evnt) {
-      if (funcname == 'ToggleGed') return this.activateGed(this, null, 'toggle');
-      if (funcname == 'ToggleStatus') return this.activateStatusBar('toggle');
+      if (funcname == 'ToggleGed')
+         return this.activateGed(this, null, 'toggle');
+      if (funcname == 'ToggleStatus')
+         return this.activateStatusBar('toggle');
       super.clickPadButton(funcname, evnt);
    }
 
@@ -73181,11 +73200,10 @@ class TPavePainter extends ObjectPainter {
          });
    }
 
-   /** @summary Fill context menu for the TPave object */
-   fillContextMenu(menu) {
+   /** @summary Fill context menu items for the TPave object */
+   fillContextMenuItems(menu) {
       let pave = this.getObject();
 
-      menu.add(`header: ${pave._typename}::${pave.fName}`);
       if (this.isStats()) {
          menu.add('Default position', () => {
             pave.fX2NDC = gStyle.fStatX;
@@ -73294,13 +73312,6 @@ class TPavePainter extends ObjectPainter {
             });
          });
       }
-
-      menu.addAttributesMenu(this);
-
-      if ((menu.size() > 0) && this.showInspector('check'))
-         menu.add('Inspect', this.showInspector);
-
-      return menu.size() > 0;
    }
 
    /** @summary Show pave context menu */
@@ -75167,13 +75178,11 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Fill histogram context menu */
-   fillContextMenu(menu) {
+   fillContextMenuItems(menu) {
 
       let histo = this.getHisto(),
           fp = this.getFramePainter();
       if (!histo) return;
-
-      menu.add(`header:${histo._typename}::${histo.fName}`);
 
       if (this.options.Axis <= 0)
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
@@ -75241,12 +75250,8 @@ class THistPainter extends ObjectPainter {
             menu.add('Reset camera', () => main.control.reset());
       }
 
-      menu.addAttributesMenu(this);
-
       if (this.histogram_updated && fp.zoomChangedInteractive())
          menu.add('Let update zoom', () => fp.zoomChangedInteractive('reset'));
-
-      return true;
    }
 
    /** @summary Auto zoom into histogram non-empty range
@@ -77033,8 +77038,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
  * @private
  */
 
-function setHistTitle(histo, title)
-{
+function setHistTitle(histo, title) {
    if (!histo) return;
    if (title.indexOf(';') < 0) {
       histo.fTitle = title;
@@ -108154,13 +108158,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary Fill context menu */
-   fillContextMenu(menu) {
-      super.fillContextMenu(menu);
-
+   fillContextMenuItems(menu) {
       if (!this.snapid)
          menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
-
-      return menu.size() > 0;
    }
 
    /** @summary Execute menu command
@@ -110669,9 +110669,18 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Decode options string  */
    decodeOptions(opt) {
+      const d = new DrawOptions(opt);
+
       this.options = { Zscale: false };
 
-      if (opt && (opt.indexOf('z') >= 0)) this.options.Zscale = true;
+      let obj = this.getObject();
+
+      if (d.check('CONST')) {
+         this.options.constRatio = true;
+         if (obj) obj.fConstRatio = true;
+         console.log('use const');
+      }
+      if (d.check('Z')) this.options.Zscale = true;
    }
 
    /** @summary Create RGBA buffers */
@@ -110732,24 +110741,14 @@ class TASImagePainter extends ObjectPainter {
 
       if (min >= max) max = min + 1;
 
-      let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
-
-      if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
-         xmin = Math.round(fp.zoom_xmin * obj.fWidth);
-         xmax = Math.round(fp.zoom_xmax * obj.fWidth);
-      }
-
-      if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
-         ymin = Math.round(fp.zoom_ymin * obj.fHeight);
-         ymax = Math.round(fp.zoom_ymax * obj.fHeight);
-      }
+      let z = this.getImageZoomRange(fp, obj.fConstRatio, obj.fWidth, obj.fHeight);
 
       let pr = isNodeJs() ?
-                 Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => h.default.createCanvas(xmax - xmin, ymax - ymin)) :
+                 Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => h.default.createCanvas(z.xmax - z.xmin, z.ymax - z.ymin)) :
                  new Promise(resolveFunc => {
                     let c = document.createElement('canvas');
-                    c.width = xmax - xmin;
-                    c.height = ymax - ymin;
+                    c.width = z.xmax - z.xmin;
+                    c.height = z.ymax - z.ymin;
                     resolveFunc(c);
                  });
 
@@ -110759,10 +110758,10 @@ class TASImagePainter extends ObjectPainter {
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
              arr = imageData.data;
 
-         for(let i = ymin; i < ymax; ++i) {
-            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
+         for(let i = z.ymin; i < z.ymax; ++i) {
+            let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
                 row = i * obj.fWidth;
-            for(let j = xmin; j < xmax; ++j) {
+            for(let j = z.xmin; j < z.xmax; ++j) {
                let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
                // copy rgba value for specified point
                arr[dst++] = this.rgba[iii++];
@@ -110774,12 +110773,44 @@ class TASImagePainter extends ObjectPainter {
 
          context.putImageData(imageData, 0, 0);
 
-         return { url: canvas.toDataURL(), constRatio: obj.fConstRatio, is_buf: true };
+         return { url: canvas.toDataURL(), constRatio: obj.fConstRatio, can_zoom: true };
       });
    }
 
+   getImageZoomRange(fp, constRatio, width, height) {
+      let res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
+      if (!fp) return res;
+
+      let offx = 0, offy = 0, sizex = width, sizey = height;
+
+      if (constRatio && fp) {
+         let image_ratio = height/width,
+             frame_ratio = fp.getFrameHeight() / fp.getFrameWidth();
+
+         if (image_ratio > frame_ratio) {
+            let w2 = height / frame_ratio;
+            offx = Math.round((w2 - width)/2);
+            sizex = Math.round(w2);
+         } else {
+            let h2 = frame_ratio * width;
+            offy = Math.round((h2 - height)/2);
+            sizey = Math.round(h2);
+         }
+      }
+
+      if (fp.zoom_xmin != fp.zoom_xmax) {
+         res.xmin = Math.min(width, Math.max(0, Math.round(fp.zoom_xmin * sizex) - offx));
+         res.xmax = Math.min(width, Math.max(0, Math.round(fp.zoom_xmax * sizex) - offx));
+      }
+      if (fp.zoom_ymin != fp.zoom_ymax) {
+         res.ymin = Math.min(height, Math.max(0, Math.round(fp.zoom_ymin * sizey) - offy));
+         res.ymax = Math.min(height, Math.max(0, Math.round(fp.zoom_ymax * sizey) - offy));
+      }
+      return res;
+   }
+
    /** @summary Produce data url from png buffer */
-   async makeUrlFromPngBuf(obj) {
+   async makeUrlFromPngBuf(obj, fp) {
       let buf = obj.fPngBuf, pngbuf = '';
 
       if (isStr(buf))
@@ -110788,7 +110819,60 @@ class TASImagePainter extends ObjectPainter {
          for (let k = 0; k < buf.length; ++k)
             pngbuf += String.fromCharCode(buf[k] < 0 ? 256 + buf[k] : buf[k]);
 
-      return { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: true };
+
+      let res = { url: 'data:image/png;base64,' + btoa_func(pngbuf), constRatio: obj.fConstRatio, can_zoom: fp && !isNodeJs() };
+
+      if (!res.can_zoom || ((fp?.zoom_xmin === fp?.zoom_xmax) && (fp?.zoom_ymin === fp?.zoom_ymax)))
+         return res;
+
+      return new Promise(resolveFunc => {
+
+         let image = document.createElement('img');
+
+         image.onload = () => {
+            let canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            let context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
+
+            let arr = context.getImageData(0,0, image.width, image.height).data;
+
+            let z = this.getImageZoomRange(fp, res.constRatio, image.width, image.height);
+
+            let canvas2 = document.createElement('canvas');
+            canvas2.width = z.xmax - z.xmin;
+            canvas2.height = z.ymax - z.ymin;
+
+            let context2 = canvas2.getContext('2d'),
+                imageData2 = context2.getImageData(0, 0, canvas2.width, canvas2.height),
+                arr2 = imageData2.data;
+
+            for(let i = z.ymin; i < z.ymax; ++i) {
+                let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
+                    src = ((image.height - i - 1) * image.width + z.xmin) * 4;
+                for(let j = z.xmin; j < z.xmax; ++j) {
+                   // copy rgba value for specified point
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                   arr2[dst++] = arr[src++];
+                }
+            }
+
+            context2.putImageData(imageData2, 0, 0);
+
+            res.url = canvas2.toDataURL();
+
+            resolveFunc(res);
+         };
+
+         image.onerror = () => resolveFunc(res);
+
+         image.src = res.url;
+
+      });
    }
 
    /** @summary Draw image */
@@ -110846,7 +110930,7 @@ class TASImagePainter extends ObjectPainter {
       if (obj.fImgBuf && obj.fPalette)
          promise = this.makeUrlFromImageBuf(obj, fp);
       else if (obj.fPngBuf)
-         promise = this.makeUrlFromPngBuf(obj);
+         promise = this.makeUrlFromPngBuf(obj, fp);
       else
          promise = Promise.resolve(null);
 
@@ -110865,9 +110949,12 @@ class TASImagePainter extends ObjectPainter {
          if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
             img.style('pointer-events', 'visibleFill');
 
+         if (!isBatchMode() && res.can_zoom)
+            img.style('cursor', 'pointer');
+
          assignContextMenu(this);
 
-         if (!this.isMainPainter() || !res.is_buf || !fp)
+         if (!fp || !res.can_zoom || this.getMainPainter(true))
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
@@ -110878,16 +110965,24 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Fill TASImage context */
+   fillContextMenuItems(menu) {
+      let obj = this.getObject();
+      if (obj)
+         menu.addchk(obj.fConstRatio, 'Const ratio', flag => {
+            obj.fConstRatio = flag;
+            this.interactiveRedraw('pad', `exec:SetConstRatio(${flag})`);
+         }, 'Change const ratio flag of image');
+   }
+
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis,min,max) {
       let obj = this.getObject();
 
-      if (!obj?.fImgBuf)
+      if (!obj)
          return false;
 
-      if ((axis == 'x') && ((max - min) * obj.fWidth > 3)) return true;
-
-      if ((axis == 'y') && ((max - min) * obj.fHeight > 3)) return true;
+      if (((axis == 'x') || (axis == 'y')) && (max - min > 0.01)) return true;
 
       return false;
    }
@@ -110933,7 +111028,6 @@ class TASImagePainter extends ObjectPainter {
          return pal_painter.drawPave('');
       }
 
-
       let prev_name = this.selectCurrentPad(this.getPadName());
 
       return TPavePainter.draw(this.getDom(), this.draw_palette).then(p => {
@@ -110959,15 +111053,8 @@ class TASImagePainter extends ObjectPainter {
    }
 
    /** @summary Redraw image */
-   redraw(reason) {
-      let img = this.draw_g?.select('image'),
-          fp = this.getFramePainter();
-
-      if (img && !img.empty() && (reason !== 'zoom') && fp) {
-         img.attr('width', fp.getFrameWidth()).attr('height', fp.getFrameHeight());
-      } else {
-         return this.drawImage();
-      }
+   redraw() {
+      return this.drawImage();
    }
 
    /** @summary Process click on TASImage-defined buttons */
@@ -115479,11 +115566,8 @@ class RPadPainter extends RObjectPainter {
 
       if (funcname == 'PadContextMenus') {
 
-         if (evnt) {
-            evnt.preventDefault();
-            evnt.stopPropagation();
-         }
-
+         evnt?.preventDefault();
+         evnt?.stopPropagation();
          if (closeMenu()) return;
 
          createMenu$1(evnt, this).then(menu => {
@@ -115534,7 +115618,7 @@ class RPadPainter extends RObjectPainter {
          let pp = this.painters[i];
 
          if (isFunc(pp.clickPadButton))
-            pp.clickPadButton(funcname);
+            pp.clickPadButton(funcname, evnt);
 
          if (!done && isFunc(pp.clickButton))
             done = pp.clickButton(funcname);
@@ -116860,8 +116944,10 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Handle pad button click event
      * @private */
    clickPadButton(funcname, evnt) {
-      if (funcname == 'ToggleGed') return this.activateGed(this, null, 'toggle');
-      if (funcname == 'ToggleStatus') return this.activateStatusBar('toggle');
+      if (funcname == 'ToggleGed')
+         return this.activateGed(this, null, 'toggle');
+      if (funcname == 'ToggleStatus')
+         return this.activateStatusBar('toggle');
       super.clickPadButton(funcname, evnt);
    }
 
@@ -118786,9 +118872,7 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Fill histogram context menu */
-   fillContextMenu(menu) {
-
-      menu.add('header:v7histo::anyname');
+   fillContextMenuItems(menu) {
 
       if (this.draw_content) {
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
@@ -118844,12 +118928,8 @@ class RHistPainter extends RObjectPainter {
             menu.add('Reset camera', () => main.control.reset());
       }
 
-      menu.addAttributesMenu(this);
-
       if (this.histogram_updated && fp.zoomChangedInteractive())
          menu.add('Let update zoom', () => fp.zoomChangedInteractive('reset'));
-
-      return true;
    }
 
    /** @summary Update palette drawing */
