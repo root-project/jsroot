@@ -1340,7 +1340,13 @@ class TGeoPainter extends ObjectPainter {
          advanced.add(this.ctrl, 'camera_kind', {
             'Perspective': 'perspective',
             'Orthographic (XOY)': 'orthoXOY',
-            'Orthographic (XOZ)': 'orthoXOZ'
+            'Orthographic (XOZ)': 'orthoXOZ',
+            'Orthographic (ZOY)': 'orthoZOY',
+            'Orthographic (ZOX)': 'orthoZOX',
+            'Orthographic (XnOY)': 'orthoXOY',
+            'Orthographic (XnOZ)': 'orthoXNOZ',
+            'Orthographic (ZnOY)': 'orthoZNOY',
+            'Orthographic (ZnOX)': 'orthoZNOX'
          }).name('Camera kind').listen().onChange(() => this.changeCamera());
 
          advanced.add(this.ctrl, 'can_rotate').name('Ortho allow rotate')
@@ -2823,6 +2829,8 @@ class TGeoPainter extends ObjectPainter {
       this._camera.updateMatrixWorld();
       this._camera.updateProjectionMatrix();
 
+      let sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
+
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
 
          let prev_zoom = this.calculateZoom();
@@ -2846,13 +2854,41 @@ class TGeoPainter extends ObjectPainter {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
          this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
-      } else if (this.ctrl.camera_kind == 'orthoXOY') {
-         this._camera.position.set(0, 0, midz + sizez*2);
+      } else if ((this.ctrl.camera_kind == 'orthoXOY') || (this.ctrl.camera_kind == 'orthoXNOY')) {
+         this._camera.up.set(0, 1, 0);
+         this._camera.position.set(0, 0, midz + sign*sizez*2);
          this._lookat.set(0, 0, midz);
          this._camera.left = box.min.x;
          this._camera.right = box.max.x;
          this._camera.top = box.max.y;
          this._camera.bottom = box.min.y;
+         this._camera.zoom = this.ctrl.zoom || 1;
+      } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
+         this._camera.up.set(0, -sign, 0);
+         this._camera.position.set(0, midy + sign*sizey*2, 0);
+         this._lookat.set(0, midy, 0);
+         this._camera.left = box.min.x;
+         this._camera.right = box.max.x;
+         this._camera.top = box.max.z;
+         this._camera.bottom = box.min.z;
+         this._camera.zoom = this.ctrl.zoom || 1;
+      } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
+         this._camera.up.set(0, 1, 0);
+         this._camera.position.set(midx - sign*sizex*2, 0, 0);
+         this._lookat.set(midx, 0, 0);
+         this._camera.left = box.min.z;
+         this._camera.right = box.max.z;
+         this._camera.top = box.max.y;
+         this._camera.bottom = box.min.y;
+         this._camera.zoom = this.ctrl.zoom || 1;
+      } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
+         this._camera.up.set(sign, 0, 0);
+         this._camera.position.set(0, midy - sign*sizey*2, 0);
+         this._lookat.set(0, midy, 0);
+         this._camera.left = box.min.z;
+         this._camera.right = box.max.z;
+         this._camera.top = box.max.x;
+         this._camera.bottom = box.min.x;
          this._camera.zoom = this.ctrl.zoom || 1;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
