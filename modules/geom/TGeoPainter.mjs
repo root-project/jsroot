@@ -2821,15 +2821,14 @@ class TGeoPainter extends ObjectPainter {
       // this._camera.updateProjectionMatrix();
 
       let k = 2*this.ctrl.zoom,
-          max_all = Math.max(sizex,sizey,sizez);
+          max_all = Math.max(sizex,sizey,sizez),
+          sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       this._lookat = new Vector3(midx, midy, midz);
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
 
       this._camera.updateMatrixWorld();
       this._camera.updateProjectionMatrix();
-
-      let sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
 
@@ -2862,7 +2861,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.right = box.max.x;
          this._camera.top = box.max.y;
          this._camera.bottom = box.min.y;
-         this._camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
          this._camera.up.set(0, -sign, 0);
          this._camera.position.set(0, midy + sign*sizey*2, 0);
@@ -2871,7 +2870,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.right = box.max.x;
          this._camera.top = box.max.z;
          this._camera.bottom = box.min.z;
-         this._camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - sign*sizex*2, 0, 0);
@@ -2880,7 +2879,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.right = box.max.z;
          this._camera.top = box.max.y;
          this._camera.bottom = box.min.y;
-         this._camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(sign, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, 0);
@@ -2889,7 +2888,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.right = box.max.z;
          this._camera.top = box.max.x;
          this._camera.bottom = box.min.x;
-         this._camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -2900,6 +2899,24 @@ class TGeoPainter extends ObjectPainter {
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
+      }
+
+      if (this._camera.isOrthographicCamera && this.isOrthoCamera() && this._scene_width && this._scene_height) {
+         let screen_ratio = this._scene_width / this._scene_height,
+             szx = (this._camera.right - this._camera.left), szy = this._camera.top - this._camera.bottom;
+
+         if (screen_ratio > szx / szy) {
+            // screen wider than actual geometry
+            let m = (this._camera.right + this._camera.left) / 2;
+            this._camera.left = m - szy * screen_ratio / 2;
+            this._camera.right = m + szy * screen_ratio / 2;
+         } else {
+            // screen heigher than actual geometry
+            let m = (this._camera.top - this._camera.bottom) / 2;
+            this._camera.top  = m + szx / screen_ratio / 2;
+            this._camera.bottom = m - szx / screen_ratio / 2;
+         }
+
       }
 
       this._camera.lookAt(this._lookat);
@@ -4770,14 +4787,14 @@ class TGeoPainter extends ObjectPainter {
       this._scene_height = height;
 
       if (this._camera && this._renderer) {
-         if (this._camera.type == 'PerspectiveCamera')
+         if (this._camera.isPerspectiveCamera)
             this._camera.aspect = this._scene_width / this._scene_height;
+         else if (this._camera.isOrthographicCamera)
+            this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
-         if (this._effectComposer)
-            this._effectComposer.setSize( this._scene_width, this._scene_height );
-         if (this._bloomComposer)
-            this._bloomComposer.setSize( this._scene_width, this._scene_height );
+         this._effectComposer?.setSize( this._scene_width, this._scene_height );
+         this._bloomComposer?.setSize( this._scene_width, this._scene_height );
 
          if (this.isStage(stageInit))
             this.render3D();
