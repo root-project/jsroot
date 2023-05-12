@@ -2923,8 +2923,10 @@ class TGeoPainter extends ObjectPainter {
    /** @summary focus camera on speicifed position */
    focusCamera(focus, autoClip) {
 
-      if (this.ctrl.project || this.isOrthoCamera())
-         return this.adjustCameraPosition();
+      if (this.ctrl.project || this.isOrthoCamera()) {
+         this.adjustCameraPosition(true);
+         return this.render3D();
+      }
 
       let box = new Box3();
       if (focus === undefined) {
