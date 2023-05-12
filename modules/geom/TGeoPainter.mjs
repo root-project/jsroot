@@ -873,9 +873,9 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('CAMX', true)) res.camx = getCamPart();
       if (d.check('CAMY', true)) res.camy = getCamPart();
       if (d.check('CAMZ', true)) res.camz = getCamPart();
-      if (d.check('CAMTX', true)) res.camtx = getCamPart();
-      if (d.check('CAMTY', true)) res.camty = getCamPart();
-      if (d.check('CAMTZ', true)) res.camtz = getCamPart();
+      if (d.check('CAMLX', true)) res.camlx = getCamPart();
+      if (d.check('CAMLY', true)) res.camly = getCamPart();
+      if (d.check('CAMLZ', true)) res.camlz = getCamPart();
 
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
 
@@ -1067,7 +1067,7 @@ class TGeoPainter extends ObjectPainter {
          menu.add('sub:Get camera position');
          menu.add('As rotation', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
          menu.add('As positions', () => {
-            let url =  this.produceCameraUrl(true), p = url.indexOf('camtx');
+            let url =  this.produceCameraUrl(true), p = url.indexOf('camlx');
             menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
          });
          menu.add('endsub:');
@@ -2690,7 +2690,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
-         if (t.x || t.y || t.z) res += `,camtx${conv(t.x)},camty${conv(t.y)},camtz${conv(t.z)}`;
+         if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
          return res;
       }
 
@@ -2840,17 +2840,13 @@ class TGeoPainter extends ObjectPainter {
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
-      if (first_time && this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
+      if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
-         this._lookat.set(this.ctrl.camtx || 0, this.ctrl.camty || 0, this.ctrl.camtz || 0);
-
-         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camtx = this.ctrl.camty = this.ctrl.camtz = undefined;
-
+         this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
+         this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
          this._camera.lookAt(this._lookat);
-
          this._camera.updateMatrixWorld();
       }
-
 
       this.changedLight(box);
 
@@ -2864,7 +2860,7 @@ class TGeoPainter extends ObjectPainter {
          this.startDrawGeometry();
    }
 
-   /** @summary Specifies camera position */
+   /** @summary Specifies camera position as rotation around geometry center */
    setCameraPosition(rotatey, rotatez, zoom) {
       if (!this.ctrl) return;
       this.ctrl.rotatey = rotatey || 0;
@@ -2876,6 +2872,20 @@ class TGeoPainter extends ObjectPainter {
          preserve_zoom = true;
       }
       this.adjustCameraPosition(false, preserve_zoom);
+   }
+
+   /** @summary Specifies camera position and point to which it looks to
+       @desc Both specified in absolute coordinates */
+   setCameraPositionAndLook(camx, camy, camz, lookx, looky, lookz) {
+      if (!this.ctrl)
+         return;
+      this.ctrl.camx = camx;
+      this.ctrl.camy = camy;
+      this.ctrl.camz = camz;
+      this.ctrl.camlx = lookx;
+      this.ctrl.camly = looky;
+      this.ctrl.camlz = lookz;
+      this.adjustCameraPosition(false);
    }
 
    /** @summary focus on item */
