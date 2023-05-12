@@ -1422,6 +1422,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.createSpecialEffects();
 
+      delete this._scene_size; // ensure reassign of camera position
+
       this._first_drawing = true;
       this.startDrawGeometry(true);
    }
