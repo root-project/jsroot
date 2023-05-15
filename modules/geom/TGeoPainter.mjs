@@ -2935,7 +2935,7 @@ class TGeoPainter extends ObjectPainter {
             this._camera.right = m + szy * screen_ratio / 2;
          } else {
             // screen heigher than actual geometry
-            let m = (this._camera.top - this._camera.bottom) / 2;
+            let m = (this._camera.top + this._camera.bottom) / 2;
             this._camera.top  = m + szx / screen_ratio / 2;
             this._camera.bottom = m - szx / screen_ratio / 2;
          }
