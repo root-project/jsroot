@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '12/05/2023';
+let version_date = '15/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -84804,11 +84804,16 @@ class ClonedNodes {
           force = isObject(options) || (options === 'force');
 
       for(let lvl = 0; lvl <= stack.length; ++lvl) {
-         let nchld = (lvl > 0) ? stack[lvl-1] : 0;
-         // extract current node
-         if (lvl > 0)  node = this.nodes[node.chlds[nchld]];
+         let nchld = (lvl > 0) ? stack[lvl-1] : 0,
+             // extract current node
+             child = (lvl > 0) ? this.nodes[node.chlds[nchld]] : node,
+             obj3d = undefined;
+         if (!child) {
+            console.error(`Wrong stack ${JSON.stringify(stack)} for nodes at level ${lvl}, node.id ${node.id}, numnodes ${this.nodes.length}, nchld ${nchld}, numchilds ${node.chlds.length}, chldid ${node.chlds[nchld]}`);
+            return null;
+         }
 
-         let obj3d = undefined;
+         node = child;
 
          if (three_prnt.children)
             for (let i = 0; i < three_prnt.children.length; ++i) {
@@ -86321,7 +86326,8 @@ class TGeoPainter extends ObjectPainter {
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
-                   project: '', is_main: false, tracks: false, showtop: false, can_rotate: true,
+                   project: '', projectPos: undefined,
+                   is_main: false, tracks: false, showtop: false, can_rotate: true,
                    camera_kind: 'perspective',
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
@@ -86366,9 +86372,11 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
       if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check('ORTHO_CAMERA_ROTATE')) { res.camera_kind = 'orthoXOY'; res.can_rotate = true; }
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
+      if (d.check('CAN_ROTATE')) res.can_rotate = true;
+      if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
+      if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
       if (d.check('MOUSE_CLICK')) res.mouse_click = true;
 
       if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
@@ -86463,7 +86471,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('OPACITY',true))
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
-      if (d.check('AXISCENTER') || d.check('AC')) res._axis = 2;
+      if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
 
       if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
       if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
@@ -86679,7 +86687,7 @@ class TGeoPainter extends ObjectPainter {
 
       // axes drawing always triggers rendering
       if (arg != 'norender')
-         this.drawSimpleAxis();
+         this.drawAxes();
    }
 
    /** @summary Should be called when autorotate property changed */
@@ -86692,7 +86700,7 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
-      this.drawSimpleAxis();
+      this.drawAxes();
    }
 
    /** @summary Method should be called to change background color */
@@ -86833,18 +86841,37 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
                      .listen().onChange(() => this.changedWireFrame());
 
-      this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { none: 0, show: 1, center: 2 }).name('Axes')
+      appearance.add(this.ctrl, '_axis', { none: 0, side: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
 
-      appearance.add(this, 'focusCamera').name('Reset camera position');
+      // Camera options
+      let camera = this._datgui.addFolder('Camera');
+
+      camera.add(this.ctrl, 'camera_kind', {
+            'Perspective': 'perspective',
+            'Perspective (Floor XOZ)': 'perspXOZ',
+            'Perspective (Floor YOZ)': 'perspYOZ',
+            'Perspective (Floor XOY)': 'perspXOY',
+            'Orthographic (XOY)': 'orthoXOY',
+            'Orthographic (XOZ)': 'orthoXOZ',
+            'Orthographic (ZOY)': 'orthoZOY',
+            'Orthographic (ZOX)': 'orthoZOX',
+            'Orthographic (XnOY)': 'orthoXNOY',
+            'Orthographic (XnOZ)': 'orthoXNOZ',
+            'Orthographic (ZnOY)': 'orthoZNOY',
+            'Orthographic (ZnOX)': 'orthoZNOX'
+      }).name('Kind').listen().onChange(() => this.changeCamera());
+
+      camera.add(this.ctrl, 'can_rotate').name('Allow rotate')
+                .listen().onChange(() => { this._controls.enableRotate = this.ctrl.can_rotate; });
+
+      camera.add(this, 'focusCamera').name('Reset position');
 
       // Advanced Options
-
       if (this._webgl) {
          let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
@@ -86855,21 +86882,6 @@ class TGeoPainter extends ObjectPainter {
          advanced.add( this.ctrl, 'depthMethod', depthcfg)
              .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
-
-         advanced.add(this.ctrl, 'camera_kind', {
-            'Perspective': 'perspective',
-            'Orthographic (XOY)': 'orthoXOY',
-            'Orthographic (XOZ)': 'orthoXOZ',
-            'Orthographic (ZOY)': 'orthoZOY',
-            'Orthographic (ZOX)': 'orthoZOX',
-            'Orthographic (XnOY)': 'orthoXOY',
-            'Orthographic (XnOZ)': 'orthoXNOZ',
-            'Orthographic (ZnOY)': 'orthoZNOY',
-            'Orthographic (ZnOX)': 'orthoZNOX'
-         }).name('Camera kind').listen().onChange(() => this.changeCamera());
-
-         advanced.add(this.ctrl, 'can_rotate').name('Ortho allow rotate')
-                 .listen().onChange(() => this.changeCamera());
 
          advanced.add(this, 'resetAdvanced').name('Reset');
       }
@@ -86944,10 +86956,10 @@ class TGeoPainter extends ObjectPainter {
       if (this._controls) {
           this._controls.cleanup();
           delete this._controls;
-       }
+      }
 
-       this.removeBloom();
-       this.removeSSAO();
+      this.removeBloom();
+      this.removeSSAO();
 
       // recreate camera
       this.createCamera();
@@ -87371,7 +87383,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
-      if (!this.ctrl.can_rotate) this._controls.enableRotate = false;
+      if (!this.ctrl.can_rotate)
+         this._controls.enableRotate = false;
 
       this._controls.contextMenu = this.orbitContext.bind(this);
 
@@ -88224,6 +88237,10 @@ class TGeoPainter extends ObjectPainter {
          return this.ctrl.camera_kind + (zoom == 100 ? '' : `,zoom=${zoom}`);
       }
 
+      let kind = '';
+      if (this.ctrl.camera_kind != 'perspective')
+        kind = this.ctrl.camera_kind + ',';
+
       if (arg === true) {
          let p = this._camera?.position, t = this._controls?.target;
          if (!p || !t) return '';
@@ -88234,7 +88251,7 @@ class TGeoPainter extends ObjectPainter {
             return s + v.toFixed(0);
          };
 
-         let res = `camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
+         let res = `${kind}camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
          if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
          return res;
       }
@@ -88259,7 +88276,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (roty < 0) roty += 360;
       if (rotz < 0) rotz += 360;
-      return `roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
+      return `${kind}roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 
    /** @summary Calculates current zoom factor */
@@ -88294,7 +88311,8 @@ class TGeoPainter extends ObjectPainter {
           sizez = box.max.z - box.min.z,
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
-          midz = (box.max.z + box.min.z)/2;
+          midz = (box.max.z + box.min.z)/2,
+          more = this.ctrl._axis ? 0.1 : 0;
 
       if (this._scene_size && !force) {
          const d = this._scene_size, test = (v1, v2, scale) => {
@@ -88376,37 +88394,37 @@ class TGeoPainter extends ObjectPainter {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(0, 0, midz + sign*sizez*2);
          this._lookat.set(0, 0, midz);
-         this._camera.left = box.min.x;
-         this._camera.right = box.max.x;
-         this._camera.top = box.max.y;
-         this._camera.bottom = box.min.y;
+         this._camera.left = box.min.x - more*sizex;
+         this._camera.right = box.max.x + more*sizex;
+         this._camera.top = box.max.y + more*sizey;
+         this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
-         this._camera.up.set(0, -sign, 0);
-         this._camera.position.set(0, midy + sign*sizey*2, 0);
+         this._camera.up.set(0, 0, 1);
+         this._camera.position.set(0, midy - sign*sizey*2, 0);
          this._lookat.set(0, midy, 0);
-         this._camera.left = box.min.x;
-         this._camera.right = box.max.x;
-         this._camera.top = box.max.z;
-         this._camera.bottom = box.min.z;
+         this._camera.left = box.min.x - more*sizex;
+         this._camera.right = box.max.x + more*sizex;
+         this._camera.top = box.max.z + more*sizez;
+         this._camera.bottom = box.min.z - more*sizez;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - sign*sizex*2, 0, 0);
          this._lookat.set(midx, 0, 0);
-         this._camera.left = box.min.z;
-         this._camera.right = box.max.z;
-         this._camera.top = box.max.y;
-         this._camera.bottom = box.min.y;
+         this._camera.left = box.min.z - more*sizez;
+         this._camera.right = box.max.z + more*sizez;
+         this._camera.top = box.max.y + more*sizey;
+         this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
-         this._camera.up.set(sign, 0, 0);
+         this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, 0);
          this._lookat.set(0, midy, 0);
-         this._camera.left = box.min.z;
-         this._camera.right = box.max.z;
-         this._camera.top = box.max.x;
-         this._camera.bottom = box.min.x;
+         this._camera.left = box.min.z - more*sizez;
+         this._camera.right = box.max.z + more*sizez;
+         this._camera.top = box.max.x + more*sizex;
+         this._camera.bottom = box.min.x - more*sizex;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
@@ -88414,9 +88432,20 @@ class TGeoPainter extends ObjectPainter {
             case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break;
             case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
          }
+      } else if (this.ctrl.camera_kind == 'perspXOZ') {
+         this._camera.up.set(0,1,0);
+         this._camera.position.set(midx - 3*max_all, midy, midz);
+      } else if (this.ctrl.camera_kind == 'perspYOZ') {
+         this._camera.up.set(1,0,0);
+         this._camera.position.set(midx, midy - 3*max_all, midz);
+      } else if (this.ctrl.camera_kind == 'perspXOY') {
+         this._camera.up.set(0,0,1);
+         this._camera.position.set(midx - 3*max_all, midy, midz);
       } else if (this.ctrl._yup) {
+         this._camera.up.set(0,1,0);
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
+         this._camera.up.set(0,0,1);
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
       }
 
@@ -88431,7 +88460,7 @@ class TGeoPainter extends ObjectPainter {
             this._camera.right = m + szy * screen_ratio / 2;
          } else {
             // screen heigher than actual geometry
-            let m = (this._camera.top - this._camera.bottom) / 2;
+            let m = (this._camera.top + this._camera.bottom) / 2;
             this._camera.top  = m + szx / screen_ratio / 2;
             this._camera.bottom = m - szx / screen_ratio / 2;
          }
@@ -89485,6 +89514,14 @@ class TGeoPainter extends ObjectPainter {
 
       this._last_camera_position = origin; // remember current camera position
 
+      if (this.ctrl._axis) {
+         let vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
+         this.getExtrasContainer('get', 'axis')?.traverse(obj3d => {
+            if (isFunc(obj3d._axis_flip))
+               obj3d._axis_flip(vect);
+         });
+      }
+
       if (!this.ctrl.project)
          produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
@@ -89692,7 +89729,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw axes if configured, otherwise just remove completely
      * @return {Promise} when norender not specified */
-   drawSimpleAxis(norender) {
+   drawAxes(norender) {
       this.getExtrasContainer('delete', 'axis');
 
       if (!this.ctrl._axis)
@@ -89700,14 +89737,13 @@ class TGeoPainter extends ObjectPainter {
 
       let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
-          text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
-          center = [0,0,0],
-          names = ['x','y','z'],
-          labels = ['X','Y','Z'],
-          colors = ['red','green','blue'],
-          ortho = false,
-          yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
-          numaxis = 3;
+          text_size = 0.02 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z),
+          center = [0, 0, 0],
+          names = ['x', 'y', 'z'],
+          labels = ['X', 'Y', 'Z'],
+          colors = ['red', 'green', 'blue'],
+          ortho = this.isOrthoCamera(),
+          ckind = this.ctrl.camera_kind ?? 'perspective';
 
       if (this.ctrl._axis == 2)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -89716,16 +89752,9 @@ class TGeoPainter extends ObjectPainter {
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 
-      // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
-      if (this.isOrthoCamera()) {
-         numaxis = 2;
-         labels[0] = labels[2];
-         colors[0] = colors[2];
-         yup[0] = yup[2];
-         ortho = true;
-      }
-
-      for (let naxis = 0; naxis < numaxis; ++naxis) {
+      for (let naxis = 0; naxis < 3; ++naxis) {
+         // exclude axis which is not seen
+         if (ortho && ckind.indexOf(labels[naxis]) < 0) continue;
 
          let buf = new Float32Array(6),
              color = colors[naxis],
@@ -89744,7 +89773,7 @@ class TGeoPainter extends ObjectPainter {
             return val.toExponential(2);
          };
 
-         let lbl = valueToString(box.max[name]);
+         let lbl = valueToString(box.max[name]) + ' ' + labels[naxis];
 
          buf[0] = box.min.x;
          buf[1] = box.min.y;
@@ -89755,9 +89784,9 @@ class TGeoPainter extends ObjectPainter {
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; lbl = (yup[0] && !ortho) ? `${labels[0]} ${lbl}` : `${lbl} ${labels[0]}`; break;
-           case 1: buf[4] = box.max.y; lbl = yup[1] ? `${lbl} ${labels[1]}` : `${labels[1]} ${lbl}`; break;
-           case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
+           case 0: buf[3] = box.max.x; break;
+           case 1: buf[4] = box.max.y; break;
+           case 2: buf[5] = box.max.z; break;
          }
 
          if (this.ctrl._axis == 2)
@@ -89787,41 +89816,80 @@ class TGeoPainter extends ObjectPainter {
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
+
+         function setSideRotation(mesh, normal) {
+            mesh._other_side = false;
+            mesh._axis_norm = normal ?? new Vector3(1, 0, 0);
+            mesh._axis_flip = function(vect) {
+               let other_side = vect.dot(this._axis_norm) < 0;
+               if (this._other_side != other_side) {
+                  this._other_side = other_side;
+                  this.rotateY(Math.PI);
+               }
+            };
+         }
+         function setTopRotation(mesh, first_angle = -1) {
+            mesh._last_angle = first_angle;
+            mesh._axis_flip = function(vect) {
+               let angle = 0;
+               switch (this._axis_name) {
+                  case 'x': angle = -Math.atan2(vect.y, vect.z); break;
+                  case 'y': angle = -Math.atan2(vect.z, vect.x); break;
+                  default: angle = Math.atan2(vect.y, vect.x);
+               }
+               angle = Math.round(angle / Math.PI * 2 + 2) % 4;
+               if (this._last_angle != angle) {
+                  this.rotateX((angle - this._last_angle) * Math.PI/2);
+                  this._last_angle = angle;
+               }
+            };
+         }
          let textbox = new Box3().setFromObject(mesh);
+
+         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
 
-         if (yup[naxis]) {
-            switch (naxis) {
-               case 0:
-                  if (!ortho) {
-                     mesh.rotateY(Math.PI);
-                     mesh.translateX(-textbox.max.x-text_size*0.5);
-                  } else {
-                     mesh.translateX(text_size*0.5);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 1:
-                  if (!ortho) {
-                     mesh.rotateX(-Math.PI/2);
-                     mesh.rotateY(-Math.PI/2);
-                  } else {
-                     mesh.rotateZ(Math.PI/2);
-                  }
-                  mesh.translateX(text_size*0.5);
-                  mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 2: mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
-           }
-         } else {
-            switch (naxis) {
-               case 0: mesh.rotateX(Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
-               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
-               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+         mesh._axis_name = name;
+
+         if (naxis === 0) {
+            if (ortho && ckind.indexOf('OX') > 0) {
+               setTopRotation(mesh, 0);
+            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setSideRotation(mesh, new Vector3(0, 0, -1));
+            } else {
+               setSideRotation(mesh, new Vector3(0, 1, 0));
+               mesh.rotateX(Math.PI/2);
             }
+
+            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+         } else if (naxis == 1) {
+            if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setTopRotation(mesh, 2);
+               mesh.rotateX(-Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+            } else {
+               setSideRotation(mesh);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+            }
+
+         } else if (naxis == 2) {
+            if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
+               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
+               mesh.rotateY(-Math.PI/2);
+               if (zox) mesh.rotateX(-Math.PI/2);
+            } else {
+               setTopRotation(mesh);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateZ(Math.PI/2);
+            }
+            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
          }
 
          container.add(mesh);
@@ -89832,39 +89900,48 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_draw = true; // skip from clipping
          textbox = new Box3().setFromObject(mesh);
 
+         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
+
+         mesh._axis_name = name;
+
          mesh.translateX(buf[0]);
          mesh.translateY(buf[1]);
          mesh.translateZ(buf[2]);
 
-         if (yup[naxis]) {
-            switch (naxis) {
-               case 0:
-                  if (!ortho) {
-                     mesh.rotateY(Math.PI);
-                     mesh.translateX(text_size*0.5);
-                  } else {
-                     mesh.translateX(-textbox.max.x-text_size*0.5);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 1:
-                  if (!ortho) {
-                     mesh.rotateX(-Math.PI/2);
-                     mesh.rotateY(-Math.PI/2);
-                  } else {
-                     mesh.rotateZ(Math.PI/2);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
-                  mesh.translateX(-textbox.max.x-text_size*0.5);
-                  break;
-               case 2: mesh.rotateY(-Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+         if (naxis === 0) {
+            if (ortho && ckind.indexOf('OX') > 0) {
+               setTopRotation(mesh, 0);
+            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setSideRotation(mesh, new Vector3(0, 0, -1));
+            } else {
+               setSideRotation(mesh, new Vector3(0, 1, 0));
+               mesh.rotateX(Math.PI/2);
             }
-         } else {
-            switch (naxis) {
-               case 0: mesh.rotateX(Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
-               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
-               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
+         } else if (naxis == 1) {
+            if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setTopRotation(mesh, 2);
+               mesh.rotateX(-Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+            } else {
+               setSideRotation(mesh);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
             }
+         } else if (naxis == 2) {
+            if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
+               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
+               mesh.rotateY(-Math.PI/2);
+               if (zox) mesh.rotateX(-Math.PI/2);
+            } else {
+               setTopRotation(mesh);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateZ(Math.PI/2);
+            }
+            mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
          }
 
          container.add(mesh);
@@ -89880,7 +89957,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
          this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
-      return this.drawSimpleAxis();
+      return this.drawAxes();
    }
 
    /** @summary Set auto rotate mode */
@@ -90073,7 +90150,7 @@ class TGeoPainter extends ObjectPainter {
             this.changedTransformation('norender');
 
          if (full_redraw && this.ctrl._axis)
-            this.drawSimpleAxis(true);
+            this.drawAxes(true);
 
          this._scene.overrideMaterial = null;
 

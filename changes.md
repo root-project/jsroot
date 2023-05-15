@@ -22,11 +22,12 @@
 19. Apply pad draw options like 'gridx' or 'logy' to all subpads
 20. Support new TScatter class
 21. Implement moving and resizing of subpads
-22. Let configure position and direction of camera for TGeo, let create URL for that
-23. Implement zooming in the TASImage
-24. Fix - rescan sumw2 when update TH1
-25. Fix - correct placing for TLegend header
-26. Fix - correctly align sub/super scripts in complex TLatex
+22. Implement zooming in the TASImage
+23. Let configure position and direction of camera for TGeo, let create URL for that
+24. Support many orthographic cameras, axes drawing, labels rotation
+25. Fix - rescan sumw2 when update TH1
+26. Fix - correct placing for TLegend header
+27. Fix - correctly align sub/super scripts in complex TLatex
 
 
 ## Changes in 7.3.1
