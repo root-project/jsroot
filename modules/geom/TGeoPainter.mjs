@@ -4292,12 +4292,16 @@ class TGeoPainter extends ObjectPainter {
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
 
-         function axis_rotate_Y(vect) {
-            if (this._other_side === undefined) this._other_side = false;
-            let other_side = vect.dot(this._axis_norm) < 0;
-            if (this._other_side == other_side) return;
-            this._other_side = other_side;
-            this.rotateY(Math.PI);
+         function setSideRotation(mesh, normal) {
+            mesh._other_side = false;
+            mesh._axis_norm = normal ?? new Vector3(1, 0, 0);
+            mesh._axis_flip = function(vect) {
+               let other_side = vect.dot(this._axis_norm) < 0;
+               if (this._other_side != other_side) {
+                  this._other_side = other_side;
+                  this.rotateY(Math.PI);
+               }
+            }
          };
 
          function axis_rotate_UP(vect) {
@@ -4316,7 +4320,7 @@ class TGeoPainter extends ObjectPainter {
 
          let textbox = new Box3().setFromObject(mesh);
 
-         text3d.translate(0, -textbox.max.y/2, 0);
+         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
@@ -4325,15 +4329,13 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_name = name;
 
          if (naxis === 0) {
-            text3d.translate(-textbox.max.x*0.5, 0, 0);
-            mesh._axis_flip = axis_rotate_Y;
-
             if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
-               mesh._axis_norm = new Vector3(0, 0, -1);
+               setSideRotation(mesh, new Vector3(0, 0, -1));
             } else {
-               mesh._axis_norm = new Vector3(0, 1, 0);
+               setSideRotation(mesh, new Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
+
             mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
          } else if (naxis == 1) {
             if (this.ctrl._yup) {
@@ -4341,11 +4343,9 @@ class TGeoPainter extends ObjectPainter {
                mesh._last_angle = 2;
                mesh.rotateX(-Math.PI/2);
                mesh.rotateY(-Math.PI/2);
-               mesh.translateX(text_size*0.5);
+               mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
             } else {
-               text3d.translate(-textbox.max.x*0.5, 0, 0);
-               mesh._axis_flip = axis_rotate_Y;
-               mesh._axis_norm = new Vector3(1, 0, 0);
+               setSideRotation(mesh);
                mesh.rotateX(Math.PI/2);
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
@@ -4353,17 +4353,14 @@ class TGeoPainter extends ObjectPainter {
 
          } else if (naxis == 2) {
             if (this.ctrl._yup) {
-               text3d.translate(-textbox.max.x*0.5, 0, 0);
-               mesh._axis_flip = axis_rotate_Y;
-               mesh._axis_norm = new Vector3(1, 0, 0);
+               setSideRotation(mesh);
                mesh.rotateY(-Math.PI/2);
-               mesh.translateX(textbox.max.x*0.5);
             } else {
                mesh._axis_flip = axis_rotate_UP;
                mesh.rotateX(Math.PI/2);
                mesh.rotateZ(Math.PI/2);
             }
-            mesh.translateX(text_size*0.5);
+            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
          }
 
          container.add(mesh);
@@ -4374,7 +4371,7 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_draw = true; // skip from clipping
          textbox = new Box3().setFromObject(mesh);
 
-         text3d.translate(0, -textbox.max.y/2, 0);
+         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
 
          mesh._axis_name = name;
 
@@ -4383,13 +4380,10 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateZ(buf[2]);
 
          if (naxis === 0) {
-            text3d.translate(-textbox.max.x*0.5, 0, 0);
-            mesh._axis_flip = axis_rotate_Y;
-
             if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
-               mesh._axis_norm = new Vector3(0, 0, -1);
+               setSideRotation(mesh, new Vector3(0, 0, -1));
             } else {
-               mesh._axis_norm = new Vector3(0, 1, 0);
+               setSideRotation(mesh, new Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
             mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
@@ -4399,28 +4393,23 @@ class TGeoPainter extends ObjectPainter {
                mesh._last_angle = 2;
                mesh.rotateX(-Math.PI/2);
                mesh.rotateY(-Math.PI/2);
-               mesh.translateX(-textbox.max.x-text_size*0.5);
+               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
             } else {
-               text3d.translate(-textbox.max.x*0.5, 0, 0);
-               mesh._axis_flip = axis_rotate_Y;
-               mesh._axis_norm = new Vector3(1, 0, 0);
+               setSideRotation(mesh);
                mesh.rotateX(Math.PI/2);
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
             }
          } else if (naxis == 2) {
             if (this.ctrl._yup) {
-               text3d.translate(-textbox.max.x*0.5, 0, 0);
-               mesh._axis_flip = axis_rotate_Y;
+               setSideRotation(mesh);
                mesh.rotateY(-Math.PI/2);
-               mesh._axis_norm = new Vector3(1, 0, 0);
-               mesh.translateX(textbox.max.x*0.5);
             } else {
                mesh._axis_flip = axis_rotate_UP;
                mesh.rotateX(Math.PI/2);
                mesh.rotateZ(Math.PI/2);
             }
-            mesh.translateX(-textbox.max.x - text_size*0.5);
+            mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
          }
 
          container.add(mesh);
