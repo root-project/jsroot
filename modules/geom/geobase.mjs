@@ -3095,11 +3095,16 @@ class ClonedNodes {
           force = isObject(options) || (options === 'force');
 
       for(let lvl = 0; lvl <= stack.length; ++lvl) {
-         let nchld = (lvl > 0) ? stack[lvl-1] : 0;
-         // extract current node
-         if (lvl > 0)  node = this.nodes[node.chlds[nchld]];
+         let nchld = (lvl > 0) ? stack[lvl-1] : 0,
+             // extract current node
+             child = (lvl > 0) ? this.nodes[node.chlds[nchld]] : node,
+             obj3d = undefined;
+         if (!child) {
+            console.error(`Wrong stack ${JSON.stringify(stack)} for nodes at level ${lvl}, node.id ${node.id}, numnodes ${this.nodes.length}, nchld ${nchld}, numchilds ${node.chlds.length}, chldid ${node.chlds[nchld]}`);
+            return null;
+         }
 
-         let obj3d = undefined;
+         node = child;
 
          if (three_prnt.children)
             for (let i = 0; i < three_prnt.children.length; ++i) {
