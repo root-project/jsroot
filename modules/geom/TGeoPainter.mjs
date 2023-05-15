@@ -4260,7 +4260,7 @@ class TGeoPainter extends ObjectPainter {
 
          switch (naxis) {
            case 0: buf[3] = box.max.x; lbl += ' ' + labels[0]; break;
-           case 1: buf[4] = box.max.y; lbl = yup[1] ? `${lbl} ${labels[1]}` : `${labels[1]} ${lbl}`; break;
+           case 1: buf[4] = box.max.y; lbl += ' ' + labels[1]; break;
            case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
          }
 
@@ -4292,79 +4292,78 @@ class TGeoPainter extends ObjectPainter {
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
 
-         function axis_flip_Y(vect) {
-            if (this._other_side === undefined) this._other_side = false;
-            let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
-            if (this._other_side == other_side) return;
-            this._other_side = other_side;
-            this.rotateY(Math.PI);
-            this.translateX(-this._axis_shift);
-         };
-
-         function axis_flip_X(vect) {
+         function axis_rotate_Y(vect) {
             if (this._other_side === undefined) this._other_side = false;
             let other_side = vect.dot(this._axis_norm) < 0;
             if (this._other_side == other_side) return;
             this._other_side = other_side;
             this.rotateY(Math.PI);
-            this.translateX(-this._axis_shift);
+         };
+
+         function axis_rotate_UP(vect) {
+            if (this._last_angle === undefined) this._last_angle = -1;
+            let angle = (this._axis_name == 'y') ?  -Math.atan2(vect.z, vect.x) : Math.atan2(vect.y, vect.x);
+
+            angle = Math.round(angle / Math.PI * 2 + 2) % 4;
+            if (this._last_angle === angle) return;
+            if (this._axis_name == 'y')
+               this.rotateX((angle - this._last_angle) * Math.PI/2);
+            else
+               this.rotateX((angle - this._last_angle) * Math.PI/2);
+            this._last_angle = angle;
          };
 
 
-
          let textbox = new Box3().setFromObject(mesh);
+
+         text3d.translate(0, -textbox.max.y/2, 0);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
 
+         mesh._axis_name = name;
+
          if (naxis === 0) {
-            mesh._axis_shift = textbox.max.x;
-            mesh._axis_flip = axis_flip_X;
+            text3d.translate(-textbox.max.x*0.5, 0, 0);
+            mesh._axis_flip = axis_rotate_Y;
 
-           if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
-              mesh._axis_norm = new Vector3(0, 0, -1);
-           } else {
-              mesh._axis_norm = new Vector3(0, 1, 0);
-              mesh.rotateX(Math.PI/2);
-           }
-           mesh.translateX(text_size*0.5);
-           mesh.translateY(-textbox.max.y/2);
-         }
-
-         if (yup[naxis] || ortho) {
-            switch (naxis) {
-               case 0:
-                  //if (!ortho) {
-                  //   mesh.rotateY(Math.PI);
-                  //   mesh.translateX(-textbox.max.x-text_size*0.5);
-                  //} else {
-                  //   mesh.translateX(text_size*0.5);
-                  //}
-                  //mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 1:
-                  if (!ortho) {
-                     mesh.rotateX(-Math.PI/2);
-                     mesh.rotateY(-Math.PI/2);
-                  } else {
-                     mesh.rotateZ(Math.PI/2);
-                  }
-                  mesh.translateX(text_size*0.5);
-                  mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 2:
-                  mesh.rotateY(-Math.PI/2);
-                  mesh.translateX(text_size*0.5);
-                  mesh.translateY(-textbox.max.y/2);
-                  break;
-           }
-         } else {
-            switch (naxis) {
-               //case 0: mesh.rotateX(Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
-               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
-               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+               mesh._axis_norm = new Vector3(0, 0, -1);
+            } else {
+               mesh._axis_norm = new Vector3(0, 1, 0);
+               mesh.rotateX(Math.PI/2);
             }
+            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+         } else if (naxis == 1) {
+            if (this.ctrl._yup) {
+               mesh._axis_flip = axis_rotate_UP;
+               mesh._last_angle = 2;
+               mesh.rotateX(-Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(text_size*0.5);
+            } else {
+               text3d.translate(-textbox.max.x*0.5, 0, 0);
+               mesh._axis_flip = axis_rotate_Y;
+               mesh._axis_norm = new Vector3(1, 0, 0);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+            }
+
+         } else if (naxis == 2) {
+            if (this.ctrl._yup) {
+               text3d.translate(-textbox.max.x*0.5, 0, 0);
+               mesh._axis_flip = axis_rotate_Y;
+               mesh._axis_norm = new Vector3(1, 0, 0);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(textbox.max.x*0.5);
+            } else {
+               mesh._axis_flip = axis_rotate_UP;
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateZ(Math.PI/2);
+            }
+            mesh.translateX(text_size*0.5);
          }
 
          container.add(mesh);
@@ -4375,61 +4374,53 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_draw = true; // skip from clipping
          textbox = new Box3().setFromObject(mesh);
 
+         text3d.translate(0, -textbox.max.y/2, 0);
+
+         mesh._axis_name = name;
+
          mesh.translateX(buf[0]);
          mesh.translateY(buf[1]);
          mesh.translateZ(buf[2]);
 
-        if (naxis === 0) {
-           mesh._axis_shift = textbox.max.x;
-           mesh._axis_flip = axis_flip_X;
+         if (naxis === 0) {
+            text3d.translate(-textbox.max.x*0.5, 0, 0);
+            mesh._axis_flip = axis_rotate_Y;
 
-           if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
-              mesh._axis_norm = new Vector3(0, 0, -1);
-           } else {
-              mesh._axis_norm = new Vector3(0, 1, 0);
-              mesh.rotateX(Math.PI/2);
-           }
-           mesh.translateX(-text_size*0.5 - textbox.max.x);
-           mesh.translateY(-textbox.max.y/2);
-        }
-
-        //if (naxis == 0) {
-        //    mesh.translateX(-text_size*0.5 - textbox.max.x);
-        //    mesh.translateY(-textbox.max.y/2);
-        //    mesh._axis_shift = textbox.max.x;
-        //    mesh._axis_flip = axis_flip_Y;
-        // }
-
-
-         if (yup[naxis]) {
-            switch (naxis) {
-               case 0:
-                  //if (!ortho) {
-                  //   mesh.rotateY(Math.PI);
-                  //   mesh.translateX(text_size*0.5);
-                  //} else {
-                  //   mesh.translateX(-textbox.max.x-text_size*0.5);
-                  //}
-                  //mesh.translateY(-textbox.max.y/2);
-                  break;
-               case 1:
-                  if (!ortho) {
-                     mesh.rotateX(-Math.PI/2);
-                     mesh.rotateY(-Math.PI/2);
-                  } else {
-                     mesh.rotateZ(Math.PI/2);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
-                  mesh.translateX(-textbox.max.x-text_size*0.5);
-                  break;
-               case 2: mesh.rotateY(-Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+               mesh._axis_norm = new Vector3(0, 0, -1);
+            } else {
+               mesh._axis_norm = new Vector3(0, 1, 0);
+               mesh.rotateX(Math.PI/2);
             }
-         } else {
-            switch (naxis) {
-               //case 0: mesh.rotateX(Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
-               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
-               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
+         } else if (naxis == 1) {
+            if (this.ctrl._yup) {
+               mesh._axis_flip = axis_rotate_UP;
+               mesh._last_angle = 2;
+               mesh.rotateX(-Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(-textbox.max.x-text_size*0.5);
+            } else {
+               text3d.translate(-textbox.max.x*0.5, 0, 0);
+               mesh._axis_flip = axis_rotate_Y;
+               mesh._axis_norm = new Vector3(1, 0, 0);
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateY(-Math.PI/2);
+               mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
             }
+         } else if (naxis == 2) {
+            if (this.ctrl._yup) {
+               text3d.translate(-textbox.max.x*0.5, 0, 0);
+               mesh._axis_flip = axis_rotate_Y;
+               mesh.rotateY(-Math.PI/2);
+               mesh._axis_norm = new Vector3(1, 0, 0);
+               mesh.translateX(textbox.max.x*0.5);
+            } else {
+               mesh._axis_flip = axis_rotate_UP;
+               mesh.rotateX(Math.PI/2);
+               mesh.rotateZ(Math.PI/2);
+            }
+            mesh.translateX(-textbox.max.x - text_size*0.5);
          }
 
          container.add(mesh);
