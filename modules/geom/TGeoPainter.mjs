@@ -802,7 +802,8 @@ class TGeoPainter extends ObjectPainter {
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
-                   project: '', is_main: false, tracks: false, showtop: false, can_rotate: true,
+                   project: '', projectPos: undefined,
+                   is_main: false, tracks: false, showtop: false, can_rotate: true,
                    camera_kind: 'perspective',
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
@@ -946,7 +947,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('OPACITY',true))
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
-      if (d.check('AXISCENTER') || d.check('AC')) res._axis = 2;
+      if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
 
       if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
       if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
@@ -1162,7 +1163,7 @@ class TGeoPainter extends ObjectPainter {
 
       // axes drawing always triggers rendering
       if (arg != 'norender')
-         this.drawSimpleAxis();
+         this.drawAxes();
    }
 
    /** @summary Should be called when autorotate property changed */
@@ -1175,7 +1176,7 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
-      this.drawSimpleAxis();
+      this.drawAxes();
    }
 
    /** @summary Method should be called to change background color */
@@ -1316,8 +1317,7 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
                      .listen().onChange(() => this.changedWireFrame());
 
-      this.ctrl._axis_cfg = 0;
-      appearance.add(this.ctrl, '_axis', { none: 0, show: 1, center: 2 }).name('Axes')
+      appearance.add(this.ctrl, '_axis', { none: 0, side: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
       if (!this.ctrl.project)
@@ -3989,6 +3989,19 @@ class TGeoPainter extends ObjectPainter {
 
       this._last_camera_position = origin; // remember current camera position
 
+      // console.log('test camera position', this.ctrl._axis, this._camera.position, this._controls?.target || this._lookat);
+
+      if (this.ctrl._axis) {
+         let vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
+         this._toplevel.traverse(obj3d => {
+            if (isFunc(obj3d._axis_flip)) {
+               // console.log('axis_label', obj3d._axis_label, vect.dot(obj3d._axis_label_vect));
+
+               obj3d._axis_flip(vect);
+            }
+         });
+      }
+
       if (!this.ctrl.project)
          produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
@@ -4196,7 +4209,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw axes if configured, otherwise just remove completely
      * @return {Promise} when norender not specified */
-   drawSimpleAxis(norender) {
+   drawAxes(norender) {
       this.getExtrasContainer('delete', 'axis');
 
       if (!this.ctrl._axis)
@@ -4204,14 +4217,13 @@ class TGeoPainter extends ObjectPainter {
 
       let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
-          text_size = 0.02 * Math.max((box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
-          center = [0,0,0],
-          names = ['x','y','z'],
-          labels = ['X','Y','Z'],
-          colors = ['red','green','blue'],
-          ortho = false,
-          yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
-          numaxis = 3;
+          text_size = 0.02 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z),
+          center = [0, 0, 0],
+          names = ['x', 'y', 'z'],
+          labels = ['X', 'Y', 'Z'],
+          colors = ['red', 'green', 'blue'],
+          ortho = this.isOrthoCamera(),
+          yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup];
 
       if (this.ctrl._axis == 2)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -4220,16 +4232,9 @@ class TGeoPainter extends ObjectPainter {
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 
-      // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
-      if (this.isOrthoCamera()) {
-         numaxis = 2;
-         labels[0] = labels[2];
-         colors[0] = colors[2];
-         yup[0] = yup[2];
-         ortho = true;
-      }
-
-      for (let naxis = 0; naxis < numaxis; ++naxis) {
+      for (let naxis = 0; naxis < 3; ++naxis) {
+         // exclude axis which is not seen
+         if (ortho && this.ctrl.camera_kind.indexOf(labels[naxis]) < 0) continue;
 
          let buf = new Float32Array(6),
              color = colors[naxis],
@@ -4259,7 +4264,7 @@ class TGeoPainter extends ObjectPainter {
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; lbl = (yup[0] && !ortho) ? `${labels[0]} ${lbl}` : `${lbl} ${labels[0]}`; break;
+           case 0: buf[3] = box.max.x; lbl += ' ' + labels[0]; break;
            case 1: buf[4] = box.max.y; lbl = yup[1] ? `${lbl} ${labels[1]}` : `${labels[1]} ${lbl}`; break;
            case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
          }
@@ -4291,22 +4296,40 @@ class TGeoPainter extends ObjectPainter {
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
+
+
          let textbox = new Box3().setFromObject(mesh);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
 
-         if (yup[naxis]) {
+        if (naxis === 0) {
+            mesh.translateX(text_size*0.5);
+            mesh.translateY(-textbox.max.y/2);
+            mesh._axis_shift = textbox.max.x;
+
+            mesh._axis_flip = function(vect) {
+               let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
+
+               if (this._other_side == other_side) return;
+               this._other_side = other_side;
+
+               this.rotateY(Math.PI);
+               this.translateX(-this._axis_shift);
+            }
+         }
+
+         if (yup[naxis] || ortho) {
             switch (naxis) {
                case 0:
-                  if (!ortho) {
-                     mesh.rotateY(Math.PI);
-                     mesh.translateX(-textbox.max.x-text_size*0.5);
-                  } else {
-                     mesh.translateX(text_size*0.5);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
+                  //if (!ortho) {
+                  //   mesh.rotateY(Math.PI);
+                  //   mesh.translateX(-textbox.max.x-text_size*0.5);
+                  //} else {
+                  //   mesh.translateX(text_size*0.5);
+                  //}
+                  //mesh.translateY(-textbox.max.y/2);
                   break;
                case 1:
                   if (!ortho) {
@@ -4318,7 +4341,11 @@ class TGeoPainter extends ObjectPainter {
                   mesh.translateX(text_size*0.5);
                   mesh.translateY(-textbox.max.y/2);
                   break;
-               case 2: mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 2:
+                  mesh.rotateY(-Math.PI/2);
+                  mesh.translateX(text_size*0.5);
+                  mesh.translateY(-textbox.max.y/2);
+                  break;
            }
          } else {
             switch (naxis) {
@@ -4340,16 +4367,31 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateY(buf[1]);
          mesh.translateZ(buf[2]);
 
+         if (naxis == 0) {
+            mesh.translateX(-text_size*0.5 - textbox.max.x);
+            mesh.translateY(-textbox.max.y/2);
+            mesh._axis_shift = textbox.max.x;
+
+            mesh._axis_flip = function(vect) {
+               let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
+               if (this._other_side == other_side) return;
+               this._other_side = other_side;
+               this.rotateY(Math.PI);
+               this.translateX(-this._axis_shift);
+            }
+         }
+
+
          if (yup[naxis]) {
             switch (naxis) {
                case 0:
-                  if (!ortho) {
-                     mesh.rotateY(Math.PI);
-                     mesh.translateX(text_size*0.5);
-                  } else {
-                     mesh.translateX(-textbox.max.x-text_size*0.5);
-                  }
-                  mesh.translateY(-textbox.max.y/2);
+                  //if (!ortho) {
+                  //   mesh.rotateY(Math.PI);
+                  //   mesh.translateX(text_size*0.5);
+                  //} else {
+                  //   mesh.translateX(-textbox.max.x-text_size*0.5);
+                  //}
+                  //mesh.translateY(-textbox.max.y/2);
                   break;
                case 1:
                   if (!ortho) {
@@ -4384,7 +4426,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
          this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
-      return this.drawSimpleAxis();
+      return this.drawAxes();
    }
 
    /** @summary Set auto rotate mode */
@@ -4577,7 +4619,7 @@ class TGeoPainter extends ObjectPainter {
             this.changedTransformation('norender');
 
          if (full_redraw && this.ctrl._axis)
-            this.drawSimpleAxis(true);
+            this.drawAxes(true);
 
          this._scene.overrideMaterial = null;
 
