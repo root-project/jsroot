@@ -3989,16 +3989,11 @@ class TGeoPainter extends ObjectPainter {
 
       this._last_camera_position = origin; // remember current camera position
 
-      // console.log('test camera position', this.ctrl._axis, this._camera.position, this._controls?.target || this._lookat);
-
       if (this.ctrl._axis) {
          let vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
-         this._toplevel.traverse(obj3d => {
-            if (isFunc(obj3d._axis_flip)) {
-               // console.log('axis_label', obj3d._axis_label, vect.dot(obj3d._axis_label_vect));
-
+         this.getExtrasContainer('get', 'axis')?.traverse(obj3d => {
+            if (isFunc(obj3d._axis_flip))
                obj3d._axis_flip(vect);
-            }
          });
       }
 
@@ -4297,6 +4292,25 @@ class TGeoPainter extends ObjectPainter {
          mesh = new Mesh(text3d, textMaterial);
          mesh._axis_draw = true; // skip from clipping
 
+         function axis_flip_Y(vect) {
+            if (this._other_side === undefined) this._other_side = false;
+            let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
+            if (this._other_side == other_side) return;
+            this._other_side = other_side;
+            this.rotateY(Math.PI);
+            this.translateX(-this._axis_shift);
+         };
+
+         function axis_flip_X(vect) {
+            if (this._other_side === undefined) this._other_side = false;
+            let other_side = vect.dot(this._axis_norm) < 0;
+            if (this._other_side == other_side) return;
+            this._other_side = other_side;
+            this.rotateY(Math.PI);
+            this.translateX(-this._axis_shift);
+         };
+
+
 
          let textbox = new Box3().setFromObject(mesh);
 
@@ -4304,20 +4318,18 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
 
-        if (naxis === 0) {
-            mesh.translateX(text_size*0.5);
-            mesh.translateY(-textbox.max.y/2);
+         if (naxis === 0) {
             mesh._axis_shift = textbox.max.x;
+            mesh._axis_flip = axis_flip_X;
 
-            mesh._axis_flip = function(vect) {
-               let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
-
-               if (this._other_side == other_side) return;
-               this._other_side = other_side;
-
-               this.rotateY(Math.PI);
-               this.translateX(-this._axis_shift);
-            }
+           if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+              mesh._axis_norm = new Vector3(0, 0, -1);
+           } else {
+              mesh._axis_norm = new Vector3(0, 1, 0);
+              mesh.rotateX(Math.PI/2);
+           }
+           mesh.translateX(text_size*0.5);
+           mesh.translateY(-textbox.max.y/2);
          }
 
          if (yup[naxis] || ortho) {
@@ -4349,7 +4361,7 @@ class TGeoPainter extends ObjectPainter {
            }
          } else {
             switch (naxis) {
-               case 0: mesh.rotateX(Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
+               //case 0: mesh.rotateX(Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
                case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
                case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
             }
@@ -4367,19 +4379,26 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateY(buf[1]);
          mesh.translateZ(buf[2]);
 
-         if (naxis == 0) {
-            mesh.translateX(-text_size*0.5 - textbox.max.x);
-            mesh.translateY(-textbox.max.y/2);
-            mesh._axis_shift = textbox.max.x;
+        if (naxis === 0) {
+           mesh._axis_shift = textbox.max.x;
+           mesh._axis_flip = axis_flip_X;
 
-            mesh._axis_flip = function(vect) {
-               let other_side = vect.dot(new Vector3(0, 0, -1)) < 0;
-               if (this._other_side == other_side) return;
-               this._other_side = other_side;
-               this.rotateY(Math.PI);
-               this.translateX(-this._axis_shift);
-            }
-         }
+           if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+              mesh._axis_norm = new Vector3(0, 0, -1);
+           } else {
+              mesh._axis_norm = new Vector3(0, 1, 0);
+              mesh.rotateX(Math.PI/2);
+           }
+           mesh.translateX(-text_size*0.5 - textbox.max.x);
+           mesh.translateY(-textbox.max.y/2);
+        }
+
+        //if (naxis == 0) {
+        //    mesh.translateX(-text_size*0.5 - textbox.max.x);
+        //    mesh.translateY(-textbox.max.y/2);
+        //    mesh._axis_shift = textbox.max.x;
+        //    mesh._axis_flip = axis_flip_Y;
+        // }
 
 
          if (yup[naxis]) {
@@ -4407,7 +4426,7 @@ class TGeoPainter extends ObjectPainter {
             }
          } else {
             switch (naxis) {
-               case 0: mesh.rotateX(Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               //case 0: mesh.rotateX(Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
                case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
                case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
             }
