@@ -848,9 +848,9 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
       if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check('ORTHO_CAMERA_ROTATE')) { res.camera_kind = 'orthoXOY'; res.can_rotate = true; }
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
+      if (d.check('CAN_ROTATE')) res.can_rotate = true;
       if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
       if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
       if (d.check('MOUSE_CLICK')) res.mouse_click = true;
@@ -2875,8 +2875,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.y;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
-         this._camera.up.set(0, 1, 0);
-         this._camera.position.set(0, midy + sign*sizey*2, 0);
+         this._camera.up.set(0, 0, 1);
+         this._camera.position.set(0, midy - sign*sizey*2, 0);
          this._lookat.set(0, midy, 0);
          this._camera.left = box.min.x;
          this._camera.right = box.max.x;
@@ -4218,7 +4218,7 @@ class TGeoPainter extends ObjectPainter {
           labels = ['X', 'Y', 'Z'],
           colors = ['red', 'green', 'blue'],
           ortho = this.isOrthoCamera(),
-          yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup];
+          ckind = this.ctrl.camera_kind ?? 'perspective';
 
       if (this.ctrl._axis == 2)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -4229,7 +4229,7 @@ class TGeoPainter extends ObjectPainter {
 
       for (let naxis = 0; naxis < 3; ++naxis) {
          // exclude axis which is not seen
-         if (ortho && this.ctrl.camera_kind.indexOf(labels[naxis]) < 0) continue;
+         if (ortho && ckind.indexOf(labels[naxis]) < 0) continue;
 
          let buf = new Float32Array(6),
              color = colors[naxis],
@@ -4248,7 +4248,7 @@ class TGeoPainter extends ObjectPainter {
             return val.toExponential(2);
          };
 
-         let lbl = valueToString(box.max[name]);
+         let lbl = valueToString(box.max[name]) + ' ' + labels[naxis];
 
          buf[0] = box.min.x;
          buf[1] = box.min.y;
@@ -4259,9 +4259,9 @@ class TGeoPainter extends ObjectPainter {
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; lbl += ' ' + labels[0]; break;
-           case 1: buf[4] = box.max.y; lbl += ' ' + labels[1]; break;
-           case 2: buf[5] = box.max.z; lbl += ' ' + labels[2]; break;
+           case 0: buf[3] = box.max.x; break;
+           case 1: buf[4] = box.max.y; break;
+           case 2: buf[5] = box.max.z; break;
          }
 
          if (this.ctrl._axis == 2)
@@ -4304,19 +4304,22 @@ class TGeoPainter extends ObjectPainter {
             }
          };
 
-         function axis_rotate_UP(vect) {
-            if (this._last_angle === undefined) this._last_angle = -1;
-            let angle = (this._axis_name == 'y') ?  -Math.atan2(vect.z, vect.x) : Math.atan2(vect.y, vect.x);
-
-            angle = Math.round(angle / Math.PI * 2 + 2) % 4;
-            if (this._last_angle === angle) return;
-            if (this._axis_name == 'y')
-               this.rotateX((angle - this._last_angle) * Math.PI/2);
-            else
-               this.rotateX((angle - this._last_angle) * Math.PI/2);
-            this._last_angle = angle;
+         function setTopRotation(mesh, first_angle = -1) {
+            mesh._last_angle = first_angle;
+            mesh._axis_flip = function(vect) {
+               let angle = 0;
+               switch (this._axis_name) {
+                  case 'x': angle = -Math.atan2(vect.y, vect.z); break;
+                  case 'y': angle = -Math.atan2(vect.z, vect.x); break;
+                  default: angle = Math.atan2(vect.y, vect.x);
+               }
+               angle = Math.round(angle / Math.PI * 2 + 2) % 4;
+               if (this._last_angle != angle) {
+                  this.rotateX((angle - this._last_angle) * Math.PI/2);
+                  this._last_angle = angle;
+               }
+            }
          };
-
 
          let textbox = new Box3().setFromObject(mesh);
 
@@ -4329,7 +4332,9 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_name = name;
 
          if (naxis === 0) {
-            if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+            if (ortho && ckind.indexOf('OX') > 0) {
+               setTopRotation(mesh, 0);
+            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setSideRotation(mesh, new Vector3(0, 0, -1));
             } else {
                setSideRotation(mesh, new Vector3(0, 1, 0));
@@ -4338,9 +4343,8 @@ class TGeoPainter extends ObjectPainter {
 
             mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
          } else if (naxis == 1) {
-            if (this.ctrl._yup) {
-               mesh._axis_flip = axis_rotate_UP;
-               mesh._last_angle = 2;
+            if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setTopRotation(mesh, 2);
                mesh.rotateX(-Math.PI/2);
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
@@ -4352,11 +4356,13 @@ class TGeoPainter extends ObjectPainter {
             }
 
          } else if (naxis == 2) {
-            if (this.ctrl._yup) {
-               setSideRotation(mesh);
+            if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
+               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
+               if (zox) mesh.rotateX(-Math.PI/2);
             } else {
-               mesh._axis_flip = axis_rotate_UP;
+               setTopRotation(mesh);
                mesh.rotateX(Math.PI/2);
                mesh.rotateZ(Math.PI/2);
             }
@@ -4380,7 +4386,9 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateZ(buf[2]);
 
          if (naxis === 0) {
-            if (ortho ? this.ctrl.camera_kind.indexOf('OY') > 0 : this.ctrl._yup) {
+            if (ortho && ckind.indexOf('OX') > 0) {
+               setTopRotation(mesh, 0);
+            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setSideRotation(mesh, new Vector3(0, 0, -1));
             } else {
                setSideRotation(mesh, new Vector3(0, 1, 0));
@@ -4388,9 +4396,8 @@ class TGeoPainter extends ObjectPainter {
             }
             mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
          } else if (naxis == 1) {
-            if (this.ctrl._yup) {
-               mesh._axis_flip = axis_rotate_UP;
-               mesh._last_angle = 2;
+            if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+               setTopRotation(mesh, 2);
                mesh.rotateX(-Math.PI/2);
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
@@ -4401,11 +4408,13 @@ class TGeoPainter extends ObjectPainter {
                mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
             }
          } else if (naxis == 2) {
-            if (this.ctrl._yup) {
-               setSideRotation(mesh);
+            if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
+               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
+               if (zox) mesh.rotateX(-Math.PI/2);
             } else {
-               mesh._axis_flip = axis_rotate_UP;
+               setTopRotation(mesh);
                mesh.rotateX(Math.PI/2);
                mesh.rotateZ(Math.PI/2);
             }
