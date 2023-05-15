@@ -1324,22 +1324,10 @@ class TGeoPainter extends ObjectPainter {
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
 
-      appearance.add(this, 'focusCamera').name('Reset camera position');
+      // Camera options
+      let camera = this._datgui.addFolder('Camera');
 
-      // Advanced Options
-
-      if (this._webgl) {
-         let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
-         this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
-
-         advanced.add(this.ctrl, 'depthTest').name('Depth test')
-            .listen().onChange(() => this.changedDepthTest());
-
-         advanced.add( this.ctrl, 'depthMethod', depthcfg)
-             .name('Rendering order')
-             .onChange(method => this.changedDepthMethod(method));
-
-         advanced.add(this.ctrl, 'camera_kind', {
+      camera.add(this.ctrl, 'camera_kind', {
             'Perspective': 'perspective',
             'Perspective (Floor XOZ)': 'perspXOZ',
             'Perspective (Floor YOZ)': 'perspYOZ',
@@ -1352,10 +1340,24 @@ class TGeoPainter extends ObjectPainter {
             'Orthographic (XnOZ)': 'orthoXNOZ',
             'Orthographic (ZnOY)': 'orthoZNOY',
             'Orthographic (ZnOX)': 'orthoZNOX'
-         }).name('Camera kind').listen().onChange(() => this.changeCamera());
+      }).name('Kind').listen().onChange(() => this.changeCamera());
 
-         advanced.add(this.ctrl, 'can_rotate').name('Ortho allow rotate')
-                 .listen().onChange(() => this.changeCamera());
+      camera.add(this.ctrl, 'can_rotate').name('Allow rotate')
+                .listen().onChange(() => { this._controls.enableRotate = this.ctrl.can_rotate; });
+
+      camera.add(this, 'focusCamera').name('Reset position');
+
+      // Advanced Options
+      if (this._webgl) {
+         let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
+         this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
+
+         advanced.add(this.ctrl, 'depthTest').name('Depth test')
+            .listen().onChange(() => this.changedDepthTest());
+
+         advanced.add( this.ctrl, 'depthMethod', depthcfg)
+             .name('Rendering order')
+             .onChange(method => this.changedDepthMethod(method));
 
          advanced.add(this, 'resetAdvanced').name('Reset');
       }
@@ -1430,10 +1432,10 @@ class TGeoPainter extends ObjectPainter {
       if (this._controls) {
           this._controls.cleanup();
           delete this._controls;
-       }
+      }
 
-       this.removeBloom();
-       this.removeSSAO();
+      this.removeBloom();
+      this.removeSSAO();
 
       // recreate camera
       this.createCamera();
@@ -1857,7 +1859,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
-      if (!this.ctrl.can_rotate) this._controls.enableRotate = false;
+      if (!this.ctrl.can_rotate)
+         this._controls.enableRotate = false;
 
       this._controls.contextMenu = this.orbitContext.bind(this);
 
