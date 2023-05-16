@@ -2241,8 +2241,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Check if instancing can be used for the nodes */
-   testInstancing(draw_nodes, build_shapes)
-   {
+   testInstancing(draw_nodes, build_shapes) {
       if (this.ctrl.project || !this.ctrl.instancing)
          return false;
 
@@ -2275,11 +2274,10 @@ class TGeoPainter extends ObjectPainter {
 
       let make_sense = false;
 
-      build_shapes.forEach((shape, n) => {
+      build_shapes.forEach(shape => {
          shape.instances?.forEach(instance => {
-            make_sense = instance.entries.length > 1;
-
-            console.log(`shape ${n} instance for node ${instance.nodeid} cnts ${instance.entries.length}`);
+            if (instance.entries.length > 1)
+               make_sense = true;
          });
       });
 
@@ -2287,8 +2285,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Build instanced meshes when it makes sense */
-   buildInstancedMeshes(toplevel, draw_nodes, build_shapes)
-   {
+   buildInstancedMeshes(toplevel, draw_nodes, build_shapes) {
       build_shapes.forEach(shape => {
          shape.instances?.forEach(instance => {
             let entry0 = instance.entries[0],
@@ -2299,7 +2296,7 @@ class TGeoPainter extends ObjectPainter {
             prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
 
             if (instance.entries.length == 1) {
-               console.log('single entry');
+               // console.log('single entry');
                let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl),
                    matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
 
@@ -2324,7 +2321,7 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.info.num_faces += shape.nfaces;
 
             } else {
-               console.log('Instanced entry', instance.entries.length);
+               // console.log('Instanced entry', instance.entries.length);
 
                let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
