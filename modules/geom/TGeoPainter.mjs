@@ -798,7 +798,7 @@ class TGeoPainter extends ObjectPainter {
                   _full: false, _axis: 0, instancing: false,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxlimit: 100000,
+                   more: 1, maxfaces: 0,
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
@@ -884,6 +884,8 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('CAMLZ', true)) res.camlz = getCamPart();
 
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
+      if (d.check('MAXNODES', true)) res.maxnodes = d.partAsInt();
+      if (d.check('MAXFACES', true)) res.maxfaces = d.partAsInt();
 
       if (d.check('BLACK')) res.background = '#000000';
       if (d.check('WHITE')) res.background = '#FFFFFF';
@@ -2029,7 +2031,7 @@ class TGeoPainter extends ObjectPainter {
             }
          }
 
-         this._current_face_limit = this.ctrl.maxlimit;
+         this._current_face_limit = this.ctrl.maxfaces;
          if (matrix) this._current_face_limit *= 1.25;
 
          // here we decide if we need worker for the drawings
@@ -2257,6 +2259,10 @@ class TGeoPainter extends ObjectPainter {
 
          if (shape.instances === undefined)
             shape.instances = [];
+
+         // ignore shape without geometry
+         if (!shape.geom || (shape.nfaces === 0))
+            continue;
 
          let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
 
@@ -3959,6 +3965,7 @@ class TGeoPainter extends ObjectPainter {
             if (!maxnodes)
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
+
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes);
 
@@ -4030,8 +4037,8 @@ class TGeoPainter extends ObjectPainter {
       return promise.then(() => {
 
          // this is limit for the visible faces, number of volumes does not matter
-         if (this._first_drawing)
-            this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
+         if (this._first_drawing && !this.ctrl.maxfaces)
+            this.ctrl.maxfaces = (this._webgl ? 200000 : 100000) * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
