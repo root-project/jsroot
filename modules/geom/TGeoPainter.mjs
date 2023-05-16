@@ -1668,14 +1668,14 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-            unique = obj.visible && ((obj.stack !== undefined) || (obj.geo_name !== undefined));
+            unique = obj.visible && ((obj.stack !== undefined) || (obj.stacks !== undefined) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
 
          if (obj.jsroot_special) unique = false;
 
-         for (let k = 0; (k < n) && unique;++k)
+         for (let k = 0; (k < n) && unique; ++k)
             if (intersects[k].object === obj)
                unique = false;
 
@@ -1883,6 +1883,8 @@ class TGeoPainter extends ObjectPainter {
                info = obj.geo_name;
             else if (obj.stack)
                info = this.getStackFullName(obj.stack);
+            else if (obj.stacks && intersects[k].instanceId !== undefined && intersects[k].instanceId < obj.stacks.length)
+               info = this.getStackFullName(obj.stacks[intersects[k].instanceId]);
             if (!info) continue;
 
             if (info.indexOf('<prnt>') == 0)
@@ -1899,7 +1901,8 @@ class TGeoPainter extends ObjectPainter {
                   if ((geo_index !== undefined) && isStr(tooltip))
                      tooltip += ' indx:' + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
+               if (active_mesh.stack)
+                  resolve = this.resolveStack(active_mesh.stack);
             }
          }
 
@@ -2170,13 +2173,9 @@ class TGeoPainter extends ObjectPainter {
 
          // final stage, create all meshes
 
-
-
          let tm0 = new Date().getTime(), ready = true,
              toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
              collected_shapes = this.testInstancing(this._draw_nodes, this._build_shapes);
-
-         console.log('INSTANCING', collected_shapes?.length);
 
          if (collected_shapes) {
             this.buildInstancedMeshes(toplevel, collected_shapes);
@@ -2307,7 +2306,6 @@ class TGeoPainter extends ObjectPainter {
             prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
 
             if (instance.entries.length == 1) {
-               // console.log('single entry');
                let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl),
                    matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
 
@@ -2332,8 +2330,6 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.info.num_faces += shape.nfaces;
 
             } else {
-               // console.log('Instanced entry', instance.entries.length);
-
                let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
                instance.entries.forEach((entry,i) => {
