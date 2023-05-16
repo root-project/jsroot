@@ -4,7 +4,7 @@ import { httpRequest, decodeUrl, browser, source_dir,
          prROOT, clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
-         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
+         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, InstancedMesh,
          Euler, Quaternion, MathUtils,
          Mesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, BufferAttribute,
@@ -2267,18 +2267,81 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      build_shapes.forEach((shape,n) => {
+      let make_sense = false;
+
+      build_shapes.forEach((shape, n) => {
          shape.instances?.forEach(instance => {
-            // console.log(`shape ${n} instance for node ${instance.nodeid} cnts ${instance.entries.length}`);
+            make_sense = instance.entries.length > 1;
+
+            console.log(`shape ${n} instance for node ${instance.nodeid} cnts ${instance.entries.length}`);
          });
       });
 
-      return false;
+      return make_sense;
    }
 
    /** @summary Build instanced meshes when it makes sense */
    buildInstancedMeshes(toplevel, draw_nodes, build_shapes)
    {
+      build_shapes.forEach(shape => {
+         shape.instances?.forEach(instance => {
+            let entry0 = instance.entries[0],
+                prop = this._clones.getDrawEntryProperties(entry0, getRootColors());
+
+            prop.material.wireframe = this.ctrl.wireframe;
+
+            prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
+
+            this.ctrl.info.num_meshes++;
+            this.ctrl.info.num_faces += shape.nfaces*instance.entries.length;
+
+            if (instance.entries.length == 1) {
+               console.log('single entry');
+               let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl);
+
+               let mesh = new Mesh(shape.geom, prop.material);
+
+               obj3d.add(mesh);
+
+               if (obj3d.absMatrix) {
+                  mesh.matrix.copy(obj3d.absMatrix);
+                  mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+                  mesh.updateMatrixWorld();
+               }
+
+               // keep full stack of nodes
+               mesh.stack = entry0.stack;
+
+            } else {
+               console.log('Instanced entry', instance.entries.length);
+
+               let mesh = new InstancedMesh(shape.geom, prop.material, instance.entries.length);
+
+               mesh.stacks = [];
+
+               instance.entries.forEach((entry,i) => {
+
+                  let info = this._clones.resolveStack(entry.stack, true);
+
+                  console.log(`matrix ${i}`, info.matrix.determinant().toFixed(2), JSON.stringify(info.matrix.elements));
+
+                  mesh.setMatrixAt(i, info.matrix);
+
+                  mesh.stacks.push(entry.stack);
+
+               });
+
+               toplevel.add(mesh);
+
+
+
+               mesh.renderOrder = 1;
+
+               mesh.$jsroot_order = 1;
+            }
+         });
+      });
+
    }
 
    /** @summary Insert appropriate mesh for given entry */
@@ -2421,7 +2484,7 @@ class TGeoPainter extends ObjectPainter {
 
       topitem.traverse(mesh => {
          if (check_any || (mesh.stack && (mesh instanceof Mesh)) ||
-             (mesh.main_track && (mesh instanceof LineSegments)))
+             (mesh.main_track && (mesh instanceof LineSegments)) || (mesh.stacks && (mesh instanceof InstancedMesh)))
             getBoundingBox(mesh, box3);
       });
 
@@ -2831,7 +2894,10 @@ class TGeoPainter extends ObjectPainter {
       // console.log('min,max', box.min.x, box.max.x, box2.min.x, box2.max.x);
 
       // if detect of coordinates fails - ignore
-      if (!Number.isFinite(box.min.x)) return;
+      if (!Number.isFinite(box.min.x)) {
+         console.log('FAILS to get geometry bounding box');
+         return;
+      }
 
       let sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
