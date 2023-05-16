@@ -2818,7 +2818,8 @@ class ClonedNodes {
       return node ? node.name : '';
    }
 
-   /** @summary Returns description for provide stack */
+   /** @summary Returns description for provided stack
+     * @desc If specified, absolute matrix is also calculated */
    resolveStack(stack, withmatrix) {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix || '' };
@@ -3037,11 +3038,8 @@ class ClonedNodes {
 
       let volume = node.fVolume;
 
-      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
-
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
-
-      if (volume) prop.linewidth = volume.fLineWidth;
+      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume, shape: volume.fShape, material: null,
+                   chlds: volume.fNodes?.arr, linewidth: volume.fLineWidth };
 
       if (visible) {
 
