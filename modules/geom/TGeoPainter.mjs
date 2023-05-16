@@ -25,7 +25,7 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh,
+         countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh, createFlippedGeom,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape, getShapeIcon } from './geobase.mjs';
 
@@ -2292,14 +2292,16 @@ class TGeoPainter extends ObjectPainter {
 
             prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
 
-            this.ctrl.info.num_meshes++;
-            this.ctrl.info.num_faces += shape.nfaces*instance.entries.length;
-
             if (instance.entries.length == 1) {
                console.log('single entry');
-               let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl);
+               let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl),
+                   matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
 
-               let mesh = new Mesh(shape.geom, prop.material);
+               if (matrix.determinant() > -0.9) {
+                  mesh = new Mesh(shape.geom, prop.material);
+               } else {
+                  mesh = createFlippedMesh(shape, prop.material);
+               }
 
                obj3d.add(mesh);
 
@@ -2312,32 +2314,65 @@ class TGeoPainter extends ObjectPainter {
                // keep full stack of nodes
                mesh.stack = entry0.stack;
 
+               this.ctrl.info.num_meshes++;
+               this.ctrl.info.num_faces += shape.nfaces;
+
             } else {
                console.log('Instanced entry', instance.entries.length);
 
-               let mesh = new InstancedMesh(shape.geom, prop.material, instance.entries.length);
-
-               mesh.stacks = [];
+               let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
                instance.entries.forEach((entry,i) => {
 
                   let info = this._clones.resolveStack(entry.stack, true);
 
-                  console.log(`matrix ${i}`, info.matrix.determinant().toFixed(2), JSON.stringify(info.matrix.elements));
-
-                  mesh.setMatrixAt(i, info.matrix);
-
-                  mesh.stacks.push(entry.stack);
-
+                  if (info.matrix.determinant() > -0.9) {
+                     arr1.push(info.matrix);
+                     stacks1.push(entry.stack);
+                  } else {
+                     arr2.push(info.matrix);
+                     stacks2.push(entry.stack);
+                  }
                });
 
-               toplevel.add(mesh);
+               if (arr1.length > 0) {
+                  let mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
 
+                  mesh1.stacks = stacks1;
+                  arr1.forEach((matrix,i) => mesh1.setMatrixAt(i, matrix));
 
+                  toplevel.add(mesh1);
 
-               mesh.renderOrder = 1;
+                  mesh1.renderOrder = 1;
 
-               mesh.$jsroot_order = 1;
+                  mesh1.$jsroot_order = 1;
+                  this.ctrl.info.num_meshes++;
+                  this.ctrl.info.num_faces += shape.nfaces*arr1.length;
+               }
+
+               if (arr2.length > 0) {
+                  if (shape.geomZ === undefined)
+                     shape.geomZ = createFlippedGeom(shape.geom);
+
+                  let mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+
+                  mesh2.stacks = stacks2;
+                  arr2.forEach((matrix,i) => {
+                     let m = new Matrix4();
+                     m.makeScale(1,1,-1);
+                     matrix.multiply(m);
+                     mesh2.setMatrixAt(i, matrix);
+                  });
+                  mesh2._flippedMesh = true;
+
+                  toplevel.add(mesh2);
+
+                  mesh2.renderOrder = 1;
+
+                  mesh2.$jsroot_order = 1;
+                  this.ctrl.info.num_meshes++;
+                  this.ctrl.info.num_faces += shape.nfaces*arr2.length;
+               }
             }
          });
       });
