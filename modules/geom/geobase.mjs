@@ -3587,12 +3587,25 @@ function createFlippedMesh(shape, material) {
 }
 
 /** @summary extract code of Box3.expandByObject
-  * @desc Major difference - do not traverse hierarchy
+  * @desc Major difference - do not traverse hierarchy, support InstancedMesh
   * @private */
 function getBoundingBox(node, box3, local_coordinates) {
    if (!node?.geometry) return box3;
 
    if (!box3) box3 = new Box3().makeEmpty();
+
+   if (node.isInstancedMesh) {
+      let m = new Matrix4(), b = new Box3().makeEmpty();
+
+      node.geometry.computeBoundingBox();
+
+      for ( let i = 0; i < node.count; i ++ ) {
+         node.getMatrixAt( i, m );
+         b.copy( node.geometry.boundingBox ).applyMatrix4( m );
+         box3.union( b );
+      }
+      return box3;
+   }
 
    if (!local_coordinates) node.updateWorldMatrix(false, false);
 
