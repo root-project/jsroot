@@ -2170,12 +2170,16 @@ class TGeoPainter extends ObjectPainter {
 
          // final stage, create all meshes
 
+
+
          let tm0 = new Date().getTime(), ready = true,
              toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
-             is_instancing = this.testInstancing(this._draw_nodes, this._build_shapes);
+             collected_shapes = this.testInstancing(this._draw_nodes, this._build_shapes);
 
-         if (is_instancing) {
-            this.buildInstancedMeshes(toplevel, this._draw_nodes, this._build_shapes);
+         console.log('INSTANCING', collected_shapes?.length);
+
+         if (collected_shapes) {
+            this.buildInstancedMeshes(toplevel, collected_shapes);
             ready = true;
          } else
 
@@ -2243,7 +2247,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Check if instancing can be used for the nodes */
    testInstancing(draw_nodes, build_shapes) {
       if (this.ctrl.project || !this.ctrl.instancing)
-         return false;
+         return null;
+
+      let used_shapes = [];
 
       for (let n = 0; n < draw_nodes.length; ++n) {
          let entry = this._draw_nodes[n];
@@ -2256,12 +2262,14 @@ class TGeoPainter extends ObjectPainter {
             return false;
          }
 
-         if (shape.instances === undefined)
-            shape.instances = [];
-
          // ignore shape without geometry
          if (!shape.geom || (shape.nfaces === 0))
             continue;
+
+         if (shape.instances === undefined) {
+            shape.instances = [];
+            used_shapes.push(shape);
+         }
 
          let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
 
@@ -2274,20 +2282,23 @@ class TGeoPainter extends ObjectPainter {
 
       let make_sense = false;
 
-      build_shapes.forEach(shape => {
+      used_shapes.forEach(shape => {
          shape.instances?.forEach(instance => {
             if (instance.entries.length > 1)
                make_sense = true;
          });
       });
 
-      return make_sense;
+      if (!make_sense)
+         used_shapes.forEach(shape => { delete shape.instances; });
+
+      return make_sense ? used_shapes : null;
    }
 
    /** @summary Build instanced meshes when it makes sense */
-   buildInstancedMeshes(toplevel, draw_nodes, build_shapes) {
-      build_shapes.forEach(shape => {
-         shape.instances?.forEach(instance => {
+   buildInstancedMeshes(toplevel, used_shapes) {
+      used_shapes.forEach(shape => {
+         shape.instances.forEach(instance => {
             let entry0 = instance.entries[0],
                 prop = this._clones.getDrawEntryProperties(entry0, getRootColors());
 
@@ -2378,6 +2389,8 @@ class TGeoPainter extends ObjectPainter {
                }
             }
          });
+
+         delete shape.instances;
       });
 
    }
