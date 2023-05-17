@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '15/05/2023';
+let version_date = '17/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -7975,9 +7975,16 @@ class DrawOptions {
 
    /** @summary Returns remaining part of found option as integer. */
    partAsInt(offset, dflt) {
+      let mult = 1, last = this.part ? this.part[this.part.length - 1] : '';
+      if (last == 'K')
+         mult = 1e3;
+      else if (last == 'M')
+         mult = 1e6;
+      else if (last == 'G')
+         mult = 1e9;
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseInt(val, 10) : Number.NaN;
-      return !Number.isInteger(val) ? (dflt || 0) : val + (offset || 0);
+      return !Number.isInteger(val) ? (dflt || 0) : mult*val + (offset || 0);
    }
 
    /** @summary Returns remaining part of found option as float. */
@@ -41968,6 +41975,170 @@ class Scene extends Object3D {
 
 		console.warn( 'THREE.Scene: autoUpdate was renamed to matrixWorldAutoUpdate in r144.' );
 		this.matrixWorldAutoUpdate = value;
+
+	}
+
+}
+
+class InstancedBufferAttribute extends BufferAttribute {
+
+	constructor( array, itemSize, normalized, meshPerAttribute = 1 ) {
+
+		super( array, itemSize, normalized );
+
+		this.isInstancedBufferAttribute = true;
+
+		this.meshPerAttribute = meshPerAttribute;
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.meshPerAttribute = source.meshPerAttribute;
+
+		return this;
+
+	}
+
+	toJSON() {
+
+		const data = super.toJSON();
+
+		data.meshPerAttribute = this.meshPerAttribute;
+
+		data.isInstancedBufferAttribute = true;
+
+		return data;
+
+	}
+
+}
+
+const _instanceLocalMatrix = /*@__PURE__*/ new Matrix4();
+const _instanceWorldMatrix = /*@__PURE__*/ new Matrix4();
+
+const _instanceIntersects = [];
+
+const _identity = /*@__PURE__*/ new Matrix4();
+const _mesh = /*@__PURE__*/ new Mesh();
+
+class InstancedMesh extends Mesh {
+
+	constructor( geometry, material, count ) {
+
+		super( geometry, material );
+
+		this.isInstancedMesh = true;
+
+		this.instanceMatrix = new InstancedBufferAttribute( new Float32Array( count * 16 ), 16 );
+		this.instanceColor = null;
+
+		this.count = count;
+
+		this.frustumCulled = false;
+
+		for ( let i = 0; i < count; i ++ ) {
+
+			this.setMatrixAt( i, _identity );
+
+		}
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.instanceMatrix.copy( source.instanceMatrix );
+
+		if ( source.instanceColor !== null ) this.instanceColor = source.instanceColor.clone();
+
+		this.count = source.count;
+
+		return this;
+
+	}
+
+	getColorAt( index, color ) {
+
+		color.fromArray( this.instanceColor.array, index * 3 );
+
+	}
+
+	getMatrixAt( index, matrix ) {
+
+		matrix.fromArray( this.instanceMatrix.array, index * 16 );
+
+	}
+
+	raycast( raycaster, intersects ) {
+
+		const matrixWorld = this.matrixWorld;
+		const raycastTimes = this.count;
+
+		_mesh.geometry = this.geometry;
+		_mesh.material = this.material;
+
+		if ( _mesh.material === undefined ) return;
+
+		for ( let instanceId = 0; instanceId < raycastTimes; instanceId ++ ) {
+
+			// calculate the world matrix for each instance
+
+			this.getMatrixAt( instanceId, _instanceLocalMatrix );
+
+			_instanceWorldMatrix.multiplyMatrices( matrixWorld, _instanceLocalMatrix );
+
+			// the mesh represents this single instance
+
+			_mesh.matrixWorld = _instanceWorldMatrix;
+
+			_mesh.raycast( raycaster, _instanceIntersects );
+
+			// process the result of raycast
+
+			for ( let i = 0, l = _instanceIntersects.length; i < l; i ++ ) {
+
+				const intersect = _instanceIntersects[ i ];
+				intersect.instanceId = instanceId;
+				intersect.object = this;
+				intersects.push( intersect );
+
+			}
+
+			_instanceIntersects.length = 0;
+
+		}
+
+	}
+
+	setColorAt( index, color ) {
+
+		if ( this.instanceColor === null ) {
+
+			this.instanceColor = new InstancedBufferAttribute( new Float32Array( this.instanceMatrix.count * 3 ), 3 );
+
+		}
+
+		color.toArray( this.instanceColor.array, index * 3 );
+
+	}
+
+	setMatrixAt( index, matrix ) {
+
+		matrix.toArray( this.instanceMatrix.array, index * 16 );
+
+	}
+
+	updateMorphTargets() {
+
+	}
+
+	dispose() {
+
+		this.dispatchEvent( { type: 'dispose' } );
 
 	}
 
@@ -84527,7 +84698,8 @@ class ClonedNodes {
       return node ? node.name : '';
    }
 
-   /** @summary Returns description for provide stack */
+   /** @summary Returns description for provided stack
+     * @desc If specified, absolute matrix is also calculated */
    resolveStack(stack, withmatrix) {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix || '' };
@@ -84746,11 +84918,8 @@ class ClonedNodes {
 
       let volume = node.fVolume;
 
-      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
-
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
-
-      if (volume) prop.linewidth = volume.fLineWidth;
+      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume, shape: volume.fShape, material: null,
+                   chlds: volume.fNodes?.arr, linewidth: volume.fLineWidth };
 
       {
 
@@ -84886,6 +85055,172 @@ class ClonedNodes {
       }
 
       return three_prnt;
+   }
+
+   /** @summary Create mesh for single physical node */
+   createEntryMesh(ctrl, toplevel, entry, shape, colors) {
+      if (!shape.geom || (shape.nfaces === 0)) {
+         // node is visible, but shape does not created
+         this.createObject3D(entry.stack, toplevel, 'delete_mesh');
+         return null;
+      }
+
+      let prop = this.getDrawEntryProperties(entry, colors),
+          obj3d = this.createObject3D(entry.stack, toplevel, ctrl),
+          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+
+      prop.material.wireframe = ctrl.wireframe;
+
+      prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+
+      if (matrix.determinant() > -0.9) {
+         mesh = new Mesh(shape.geom, prop.material);
+      } else {
+         mesh = createFlippedMesh(shape, prop.material);
+      }
+
+      obj3d.add(mesh);
+
+      if (obj3d.absMatrix) {
+         mesh.matrix.copy(obj3d.absMatrix);
+         mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+         mesh.updateMatrixWorld();
+      }
+
+      // keep full stack of nodes
+      mesh.stack = entry.stack;
+      mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
+
+      // keep hierarchy level
+      mesh.$jsroot_order = obj3d.$jsroot_depth;
+
+      // set initial render order, when camera moves, one must refine it
+      //mesh.$jsroot_order = mesh.renderOrder =
+      //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
+
+      return mesh;
+
+   }
+
+   /** @summary Check if instancing can be used for the nodes */
+   createInstancedMeshes(ctrl, toplevel, draw_nodes, build_shapes, colors) {
+      if (ctrl.instancing < 0)
+         return false;
+
+      // first delete previous data
+      let used_shapes = [], max_entries = 1;
+
+      for (let n = 0; n < draw_nodes.length; ++n) {
+         let entry = draw_nodes[n];
+         if (entry.done) continue;
+
+         /// shape can be provided with entry itself
+         let shape = entry.server_shape || build_shapes[entry.shapeid];
+         if (!shape?.ready) {
+            console.warn('shape is not ready');
+            return false;
+         }
+
+         // ignore shape without geometry
+         if (!shape.geom || (shape.nfaces === 0))
+            continue;
+
+         if (shape.instances === undefined) {
+            shape.instances = [];
+            used_shapes.push(shape);
+         }
+
+         let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
+
+         if (instance) {
+            instance.entries.push(entry);
+            max_entries = Math.max(max_entries, instance.entries.length);
+         } else {
+            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ]});
+         }
+      }
+
+      let make_sense = ctrl.instancing > 0 ? (max_entries > 2) :
+                        (draw_nodes.length > 10000) && (max_entries > 10);
+
+      if (!make_sense) {
+         used_shapes.forEach(shape => { delete shape.instances; });
+         return false;
+      }
+
+      used_shapes.forEach(shape => {
+         shape.instances.forEach(instance => {
+            let entry0 = instance.entries[0],
+                prop = this.getDrawEntryProperties(entry0, colors);
+
+            prop.material.wireframe = ctrl.wireframe;
+
+            prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+
+            if (instance.entries.length == 1) {
+               this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
+
+               ctrl.info.num_meshes++;
+               ctrl.info.num_faces += shape.nfaces;
+
+            } else {
+               let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
+
+               instance.entries.forEach(entry => {
+
+                  let info = this.resolveStack(entry.stack, true);
+
+                  if (info.matrix.determinant() > -0.9) {
+                     arr1.push(info.matrix);
+                     stacks1.push(entry.stack);
+                  } else {
+                     arr2.push(info.matrix);
+                     stacks2.push(entry.stack);
+                  }
+               });
+
+               if (arr1.length > 0) {
+                  let mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
+
+                  mesh1.stacks = stacks1;
+                  arr1.forEach((matrix,i) => mesh1.setMatrixAt(i, matrix));
+
+                  toplevel.add(mesh1);
+
+                  mesh1.renderOrder = 1;
+
+                  mesh1.$jsroot_order = 1;
+                  ctrl.info.num_meshes++;
+                  ctrl.info.num_faces += shape.nfaces*arr1.length;
+               }
+
+               if (arr2.length > 0) {
+                  if (shape.geomZ === undefined)
+                     shape.geomZ = createFlippedGeom(shape.geom);
+
+                  let mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+
+                  mesh2.stacks = stacks2;
+                  let m = new Matrix4().makeScale(1,1,-1);
+                  arr2.forEach((matrix,i) => {
+                     mesh2.setMatrixAt(i, matrix.multiply(m));
+                  });
+                  mesh2._flippedMesh = true;
+
+                  toplevel.add(mesh2);
+
+                  mesh2.renderOrder = 1;
+                  mesh2.$jsroot_order = 1;
+                  ctrl.info.num_meshes++;
+                  ctrl.info.num_faces += shape.nfaces*arr2.length;
+               }
+            }
+         });
+
+         delete shape.instances;
+      });
+
+      return true;
    }
 
    /** @summary Get volume boundary */
@@ -85223,6 +85558,60 @@ class ClonedNodes {
    }
 }
 
+function createFlippedGeom(geom) {
+
+   let pos = geom.getAttribute('position').array,
+       norm = geom.getAttribute('normal').array,
+       index = geom.getIndex();
+
+   if (index) {
+      // we need to unfold all points to
+      let arr = index.array,
+          i0 = geom.drawRange.start,
+          ilen = geom.drawRange.count;
+      if (i0 + ilen > arr.length) ilen = arr.length - i0;
+
+      let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+      for (let ii = 0; ii < ilen; ++ii) {
+         let k = arr[i0 + ii];
+         if ((k < 0) || (k*3 >= pos.length))
+            console.log(`strange index ${k*3} totallen = ${pos.length}`);
+         dpos[ii*3] = pos[k*3];
+         dpos[ii*3+1] = pos[k*3+1];
+         dpos[ii*3+2] = pos[k*3+2];
+         dnorm[ii*3] = norm[k*3];
+         dnorm[ii*3+1] = norm[k*3+1];
+         dnorm[ii*3+2] = norm[k*3+2];
+      }
+
+      pos = dpos; norm = dnorm;
+   }
+
+   let len = pos.length,
+       newpos = new Float32Array(len),
+       newnorm = new Float32Array(len);
+
+   // we should swap second and third point in each face
+   for (let n = 0, shift = 0; n < len; n += 3) {
+      newpos[n]   = pos[n+shift];
+      newpos[n+1] = pos[n+1+shift];
+      newpos[n+2] = -pos[n+2+shift];
+
+      newnorm[n]   = norm[n+shift];
+      newnorm[n+1] = norm[n+1+shift];
+      newnorm[n+2] = -norm[n+2+shift];
+
+      shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+   }
+
+   let geomZ = new BufferGeometry();
+   geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
+   geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
+
+   return geomZ;
+}
+
+
 /** @summary Create flipped mesh for the shape
   * @desc When transformation matrix includes one or several inversion of axis,
   * one should inverse geometry object, otherwise three.js cannot correctly draw it
@@ -85231,63 +85620,11 @@ class ClonedNodes {
   * @private */
 function createFlippedMesh(shape, material) {
 
-   let flip =  new Vector3(1,1,-1);
+   if (shape.geomZ === undefined)
+      shape.geomZ = createFlippedGeom(shape.geom);
 
-   if (shape.geomZ === undefined) {
-
-      let pos = shape.geom.getAttribute('position').array,
-          norm = shape.geom.getAttribute('normal').array,
-          index = shape.geom.getIndex();
-
-      if (index) {
-         // we need to unfold all points to
-         let arr = index.array,
-             i0 = shape.geom.drawRange.start,
-             ilen = shape.geom.drawRange.count;
-         if (i0 + ilen > arr.length) ilen = arr.length - i0;
-
-         let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
-         for (let ii = 0; ii < ilen; ++ii) {
-            let k = arr[i0 + ii];
-            if ((k < 0) || (k*3 >= pos.length))
-               console.log(`strange index ${k*3} totallen = ${pos.length}`);
-            dpos[ii*3] = pos[k*3];
-            dpos[ii*3+1] = pos[k*3+1];
-            dpos[ii*3+2] = pos[k*3+2];
-            dnorm[ii*3] = norm[k*3];
-            dnorm[ii*3+1] = norm[k*3+1];
-            dnorm[ii*3+2] = norm[k*3+2];
-         }
-
-         pos = dpos; norm = dnorm;
-      }
-
-      let len = pos.length, n, shift = 0,
-          newpos = new Float32Array(len),
-          newnorm = new Float32Array(len);
-
-      // we should swap second and third point in each face
-      for (n = 0; n < len; n += 3) {
-         newpos[n]   = pos[n+shift];
-         newpos[n+1] = pos[n+1+shift];
-         newpos[n+2] = -pos[n+2+shift];
-
-         newnorm[n]   = norm[n+shift];
-         newnorm[n+1] = norm[n+1+shift];
-         newnorm[n+2] = -norm[n+2+shift];
-
-         shift+=3; if (shift===6) shift=-3; // values 0,3,-3
-      }
-
-      shape.geomZ = new BufferGeometry();
-      shape.geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
-      shape.geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
-      // normals are calculated with normal geometry and correctly scaled
-      // geom.computeVertexNormals();
-   }
-
-   let mesh = new Mesh( shape.geomZ, material );
-   mesh.scale.copy(flip);
+   let mesh = new Mesh(shape.geomZ, material);
+   mesh.scale.copy(new Vector3(1,1,-1));
    mesh.updateMatrix();
 
    mesh._flippedMesh = true;
@@ -85296,12 +85633,25 @@ function createFlippedMesh(shape, material) {
 }
 
 /** @summary extract code of Box3.expandByObject
-  * @desc Major difference - do not traverse hierarchy
+  * @desc Major difference - do not traverse hierarchy, support InstancedMesh
   * @private */
 function getBoundingBox(node, box3, local_coordinates) {
    if (!node?.geometry) return box3;
 
    if (!box3) box3 = new Box3().makeEmpty();
+
+   if (node.isInstancedMesh) {
+      let m = new Matrix4(), b = new Box3().makeEmpty();
+
+      node.geometry.computeBoundingBox();
+
+      for ( let i = 0; i < node.count; i ++ ) {
+         node.getMatrixAt( i, m );
+         b.copy( node.geometry.boundingBox ).applyMatrix4( m );
+         box3.union( b );
+      }
+      return box3;
+   }
 
    if (!local_coordinates) node.updateWorldMatrix(false, false);
 
@@ -85918,7 +86268,7 @@ class GeoDrawingControl extends InteractiveControl {
 
    constructor(mesh, bloom) {
       super();
-      this.mesh = (mesh && mesh.material) ? mesh : null;
+      this.mesh = mesh?.material ? mesh : null;
       this.bloom = bloom;
    }
 
@@ -85928,9 +86278,38 @@ class GeoDrawingControl extends InteractiveControl {
    }
 
    /** @summary draw special */
-   drawSpecial(col /*, indx*/) {
+   drawSpecial(col, indx) {
       let c = this.mesh;
-      if (!c || !c.material) return;
+      if (!c?.material) return;
+
+      if (c.isInstancedMesh) {
+
+         if (c._highlight_mesh) {
+            c.remove(c._highlight_mesh);
+            delete c._highlight_mesh;
+         }
+
+         if (col && indx !== undefined) {
+            let h = new Mesh(c.geometry, c.material.clone());
+
+            if (this.bloom) {
+               h.layers.enable(_BLOOM_SCENE);
+               h.material.emissive = new Color$1(0x00ff00);
+            } else {
+               h.material.color = new Color$1( col );
+               h.material.opacity = 1.;
+            }
+            let m = new Matrix4();
+            c.getMatrixAt(indx, m);
+            h.applyMatrix4(m);
+            c.add(h);
+
+            h.jsroot_special = true; // exclude from intersections
+
+            c._highlight_mesh = h;
+         }
+         return true;
+      }
 
       if (col) {
          if (!c.origin)
@@ -86319,10 +86698,10 @@ class TGeoPainter extends ObjectPainter {
          opt = opt.slice(4);
 
       let res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: 0,
+                  _full: false, _axis: 0, instancing: 0,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxlimit: 100000,
+                   more: 1, maxfaces: 0,
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
@@ -86372,6 +86751,9 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
       if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
+      if (d.check('NOINSTANCING')) res.instancing = -1; // disable usage of InstancedMesh
+      if (d.check('INSTANCING')) res.instancing = 1; // force usage of InstancedMesh
+
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
       if (d.check('CAN_ROTATE')) res.can_rotate = true;
@@ -86405,8 +86787,6 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('CAMLY', true)) res.camly = getCamPart();
       if (d.check('CAMLZ', true)) res.camlz = getCamPart();
 
-      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
-
       if (d.check('BLACK')) res.background = '#000000';
       if (d.check('WHITE')) res.background = '#FFFFFF';
 
@@ -86425,9 +86805,12 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('R3D_', true))
          res.Render3D = constants$1.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check('MORE3')) res.more = 3;
-      if (d.check('MORE')) res.more = 2;
-      if (d.check('ALL')) { res.more = 10; res.vislevel = 9; }
+      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2);
+      if (d.check('ALL')) { res.more = 100; res.vislevel = 99; }
+
+      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
+      if (d.check('MAXNODES', true)) res.maxnodes = d.partAsInt();
+      if (d.check('MAXFACES', true)) res.maxfaces = d.partAsInt();
 
       if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
 
@@ -87025,6 +87408,17 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Return stack for the item from list of intersection
+     * @private */
+   getIntersectStack(item) {
+      let obj = item?.object;
+      if (!obj) return null;
+      if (obj.stack)
+         return obj.stack;
+      if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
+         return obj.stacks[item.instanceId];
+   }
+
    /** @summary Show context menu for orbit control
      * @private */
    orbitContext(evnt, intersects) {
@@ -87033,9 +87427,8 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
-               let obj = intersects[n].object;
-               if (obj.stack) numnodes++;
-               if (obj.geo_name) numitems++;
+               if (this.getIntersectStack(intersects[n])) numnodes++;
+               if (intersects[n].geo_name) numitems++;
             }
 
          if (numnodes + numitems === 0) {
@@ -87047,7 +87440,7 @@ class TGeoPainter extends ObjectPainter {
 
             for (let n = 0; n < intersects.length; ++n) {
                let obj = intersects[n].object,
-                   name, itemname, hdr;
+                   name, itemname, hdr, stack = this.getIntersectStack(intersects[n]);
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
@@ -87056,9 +87449,9 @@ class TGeoPainter extends ObjectPainter {
                   name = itemname.slice(itemname.lastIndexOf('/')+1);
                   if (!name) name = itemname;
                   hdr = name;
-               } else if (obj.stack) {
-                  name = this._clones.getStackName(obj.stack);
-                  itemname = this.getStackFullName(obj.stack);
+               } else if (stack) {
+                  name = this._clones.getStackName(stack);
+                  itemname = this.getStackFullName(stack);
                   hdr = this.getItemName();
                   if (name.indexOf('Nodes/') === 0)
                      hdr = name.slice(6);
@@ -87085,9 +87478,10 @@ class TGeoPainter extends ObjectPainter {
                   if (cnt > 1)
                      menu.add('Hide all before', n, indx => {
                         let items = [];
-                        for (let i = 0; i < indx; ++i)
-                           if (intersects[i].object.stack)
-                              items.push(this.getStackFullName(intersects[i].object.stack));
+                        for (let i = 0; i < indx; ++i) {
+                           let stack = this.getIntersectStack(intersects[i]);
+                           if (stack) items.push(this.getStackFullName(stack));
+                        }
                         this.hidePhysicalNode(items);
                      });
                } else if (obj.geo_name) {
@@ -87153,14 +87547,14 @@ class TGeoPainter extends ObjectPainter {
 
                      this.testGeomChanges();// while many volumes may disappear, recheck all of them
                   }, 'Hide all logical nodes of that kind');
-                  menu.add('Hide only this', n, function(indx) {
-                     this._clones.setPhysNodeVisibility(intersects[indx].object?.stack, false);
+                  menu.add('Hide only this', n, indx => {
+                     this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
                   if (n > 1)
-                     menu.add('Hide all before', n, function(indx) {
+                     menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
-                           this._clones.setPhysNodeVisibility(intersects[k].object?.stack, false);
+                           this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
                }
@@ -87188,14 +87582,14 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-            unique = obj.visible && ((obj.stack !== undefined) || (obj.geo_name !== undefined));
+             unique = obj.visible && (this.getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
 
          if (obj.jsroot_special) unique = false;
 
-         for (let k = 0; (k < n) && unique;++k)
+         for (let k = 0; (k < n) && unique; ++k)
             if (intersects[k].object === obj)
                unique = false;
 
@@ -87393,16 +87787,16 @@ class TGeoPainter extends ObjectPainter {
          // painter already cleaned up, ignore any incoming events
          if (!this.ctrl || !this._controls) return;
 
-         let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
+         let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index, geo_stack;
 
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
-            let obj = intersects[k].object, info = null;
+            let obj = intersects[k].object, info = null, stack = this.getIntersectStack(intersects[k]);
             if (!obj || !obj.visible) continue;
             if (obj.geo_object)
                info = obj.geo_name;
-            else if (obj.stack)
-               info = this.getStackFullName(obj.stack);
+            else if (stack)
+               info = this.getStackFullName(stack);
             if (!info) continue;
 
             if (info.indexOf('<prnt>') == 0)
@@ -87419,7 +87813,12 @@ class TGeoPainter extends ObjectPainter {
                   if ((geo_index !== undefined) && isStr(tooltip))
                      tooltip += ' indx:' + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack) resolve = this.resolveStack(active_mesh.stack);
+               geo_stack = stack;
+
+               if (geo_stack) {
+                  resolve = this.resolveStack(geo_stack);
+                  if (obj.stacks) geo_index = intersects[k].instanceId;
+               }
             }
          }
 
@@ -87430,7 +87829,8 @@ class TGeoPainter extends ObjectPainter {
             this.activateInBrowser(names);
          }
 
-         if (!resolve?.obj) return tooltip;
+         if (!resolve?.obj)
+            return tooltip;
 
          let lines = provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
@@ -87551,7 +87951,7 @@ class TGeoPainter extends ObjectPainter {
             }
          }
 
-         this._current_face_limit = this.ctrl.maxlimit;
+         this._current_face_limit = this.ctrl.maxfaces;
          if (matrix) this._current_face_limit *= 1.25;
 
          // here we decide if we need worker for the drawings
@@ -87691,31 +88091,36 @@ class TGeoPainter extends ObjectPainter {
          // final stage, create all meshes
 
          let tm0 = new Date().getTime(), ready = true,
-             toplevel = this.ctrl.project ? this._full_geom : this._toplevel;
+             toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
+             build_instanced = false;
 
-         for (let n = 0; n < this._draw_nodes.length; ++n) {
-            let entry = this._draw_nodes[n];
-            if (entry.done) continue;
+         if (!this.ctrl.project)
+            build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
-            /// shape can be provided with entry itself
-            let shape = entry.server_shape || this._build_shapes[entry.shapeid];
-            if (!shape.ready) {
-               if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
-               ready = false;
-               continue;
+         if (!build_instanced)
+            for (let n = 0; n < this._draw_nodes.length; ++n) {
+               let entry = this._draw_nodes[n];
+               if (entry.done) continue;
+
+               /// shape can be provided with entry itself
+               let shape = entry.server_shape || this._build_shapes[entry.shapeid];
+               if (!shape.ready) {
+                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
+                  ready = false;
+                  continue;
+               }
+
+               entry.done = true;
+               shape.used = true; // indicate that shape was used in building
+
+               if (this.createEntryMesh(entry, shape, toplevel)) {
+                  this.ctrl.info.num_meshes++;
+                  this.ctrl.info.num_faces += shape.nfaces;
+               }
+
+               let tm1 = new Date().getTime();
+               if (tm1 - tm0 > 500) { ready = false; break; }
             }
-
-            entry.done = true;
-            shape.used = true; // indicate that shape was used in building
-
-            if (this.createEntryMesh(entry, shape, toplevel)) {
-               this.ctrl.info.num_meshes++;
-               this.ctrl.info.num_faces += shape.nfaces;
-            }
-
-            let tm1 = new Date().getTime();
-            if (tm1 - tm0 > 500) { ready = false; break; }
-         }
 
          if (ready) {
             if (this.ctrl.project) {
@@ -87757,12 +88162,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Insert appropriate mesh for given entry */
    createEntryMesh(entry, shape, toplevel) {
 
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         this._clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         return false;
-      }
-
       // workaround for the TGeoOverlap, where two branches should get predefined color
       if (this._splitColors && entry.stack) {
          if (entry.stack[0] === 0)
@@ -87771,49 +88170,18 @@ class TGeoPainter extends ObjectPainter {
             entry.custom_color = 'blue';
       }
 
-      let prop = this._clones.getDrawEntryProperties(entry, getRootColors()),
-          obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl),
-          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+      let mesh = this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
 
-      prop.material.wireframe = this.ctrl.wireframe;
-
-      prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-         mesh.updateMatrixWorld();
-      }
-
-      // keep full stack of nodes
-      mesh.stack = entry.stack;
-      mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
-
-      // keep hierarchy level
-      mesh.$jsroot_order = obj3d.$jsroot_depth;
-
-      // set initial render order, when camera moves, one must refine it
-      //mesh.$jsroot_order = mesh.renderOrder =
-      //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
-
-      if (this.ctrl._debug || this.ctrl._full) {
+      if (mesh && (this.ctrl._debug || this.ctrl._full)) {
          let wfg = new WireframeGeometry( mesh.geometry ),
-             wfm = new LineBasicMaterial({ color: prop.fillcolor, linewidth: prop.linewidth || 1 }),
+             wfm = new LineBasicMaterial({ color: mesh.material.color, linewidth: 1 }),
              helper = new LineSegments(wfg, wfm);
-         obj3d.add(helper);
+         mesh.parent.add(helper);
       }
 
-      if (this.ctrl._bound || this.ctrl._full) {
+      if (mesh && (this.ctrl._bound || this.ctrl._full)) {
          let boxHelper = new BoxHelper( mesh );
-         obj3d.add( boxHelper );
+         mesh.parent.add(boxHelper);
       }
 
       return true;
@@ -87894,7 +88262,7 @@ class TGeoPainter extends ObjectPainter {
 
       topitem.traverse(mesh => {
          if (check_any || (mesh.stack && (mesh instanceof Mesh)) ||
-             (mesh.main_track && (mesh instanceof LineSegments)))
+             (mesh.main_track && (mesh instanceof LineSegments)) || (mesh.stacks && (mesh instanceof InstancedMesh)))
             getBoundingBox(mesh, box3);
       });
 
@@ -88122,7 +88490,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._animating = false;
 
-         this.ctrl.bothSides = false; // both sides need for clipping
+         this.ctrl.doubleside = false; // both sides need for clipping
          this.createSpecialEffects();
 
          if (this._fit_main_area && !this._webgl) {
@@ -88304,7 +88672,10 @@ class TGeoPainter extends ObjectPainter {
       // console.log('min,max', box.min.x, box.max.x, box2.min.x, box2.max.x);
 
       // if detect of coordinates fails - ignore
-      if (!Number.isFinite(box.min.x)) return;
+      if (!Number.isFinite(box.min.x)) {
+         console.log('FAILS to get geometry bounding box');
+         return;
+      }
 
       let sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -88353,12 +88724,8 @@ class TGeoPainter extends ObjectPainter {
                cc.value = cc.max;
          }
 
-      // this._camera.far = 100000000000;
-
-      // this._camera.updateProjectionMatrix();
-
       let k = 2*this.ctrl.zoom,
-          max_all = Math.max(sizex,sizey,sizez),
+          max_all = Math.max(sizex, sizey, sizez),
           sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       this._lookat = new Vector3(midx, midy, midz);
@@ -89329,8 +89696,9 @@ class TGeoPainter extends ObjectPainter {
             if (!lvl && this.geo_manager.fVisLevel)
                lvl = this.geo_manager.fVisLevel;
             if (!maxnodes)
-               maxnodes = this.geo_manager.fMaxVisNodes;
+               maxnodes = this.geo_manager.fMaxVisNodes * (this.ctrl.more || 1);
          }
+
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes);
 
@@ -89402,8 +89770,8 @@ class TGeoPainter extends ObjectPainter {
       return promise.then(() => {
 
          // this is limit for the visible faces, number of volumes does not matter
-         if (this._first_drawing)
-            this.ctrl.maxlimit = (this._webgl ? 200000 : 100000) * this.ctrl.more;
+         if (this._first_drawing && !this.ctrl.maxfaces)
+            this.ctrl.maxfaces = (this._webgl ? 200000 : 100000) * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
@@ -89585,7 +89953,6 @@ class TGeoPainter extends ObjectPainter {
          this._camera.layers.set( _ENTIRE_SCENE );
          this._renderer.render(this._scene, this._camera);
       } else {
-    //     this._renderer.logarithmicDepthBuffer = true;
          this._renderer.render(this._scene, this._camera);
       }
 
@@ -90085,7 +90452,7 @@ class TGeoPainter extends ObjectPainter {
             }
          });
 
-      this.ctrl.bothSides = any_clipping;
+      this.ctrl.doubleside = any_clipping;
 
       if (!without_render) this.render3D(0);
 
@@ -91002,6 +91369,7 @@ function drawAxis3D() {
   * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
   * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
   * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
+  * @param {Number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
@@ -91021,6 +91389,11 @@ function build(obj, opt) {
    if (!opt.frustum) opt.frustum = null;
 
    opt.res_mesh = opt.res_faces = 0;
+
+   if (opt.instancing === undefined)
+      opt.instancing = -1;
+
+   opt.info = { num_meshes: 0, num_faces: 0 };
 
    let clones = null, visibles = null;
 
@@ -91113,6 +91486,11 @@ function build(obj, opt) {
    let toplevel = new Object3D();
    toplevel.clones = clones; // keep reference on JSROOT data
 
+   let colors = getRootColors();
+
+   if (clones.createInstancedMeshes(opt, toplevel, visibles, shapes, colors))
+      return toplevel;
+
    for (let n = 0; n < visibles.length; ++n) {
       let entry = visibles[n];
       if (entry.done) continue;
@@ -91122,50 +91500,17 @@ function build(obj, opt) {
          console.warn('shape marked as not ready when should');
          break;
       }
+
+      let mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
+
       entry.done = true;
       shape.used = true; // indicate that shape was used in building
 
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         continue;
+      if (mesh) {
+         opt.info.num_meshes++;
+         opt.info.num_faces += shape.nfaces;
+         mesh.name = clones.getNodeName(entry.nodeid);
       }
-
-      let prop = clones.getDrawEntryProperties(entry, getRootColors());
-
-      opt.res_mesh++;
-      opt.res_faces += shape.nfaces;
-
-      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
-
-      prop.material.wireframe = opt.wireframe;
-
-      prop.material.side = opt.doubleside ? DoubleSide : FrontSide;
-
-      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      mesh.name = clones.getNodeName(entry.nodeid);
-      mesh.stack = entry.stack;
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-         mesh.updateMatrixWorld();
-      }
-
-      // specify rendering order, required for transparency handling
-      //if (obj3d.$jsroot_depth !== undefined)
-      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
-      //else
-      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
    }
 
    return toplevel;
