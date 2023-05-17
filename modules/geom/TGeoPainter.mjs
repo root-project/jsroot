@@ -2221,7 +2221,7 @@ class TGeoPainter extends ObjectPainter {
              toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
              build_instanced = false;
 
-         if (!this.ctrl.project)
+         if (!this.ctrl.project && !isBatchMode())
             build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
          if (!build_instanced)
@@ -5502,6 +5502,7 @@ function drawAxis3D() {
   * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
   * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
   * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
+  * @param {Number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
@@ -5521,6 +5522,11 @@ function build(obj, opt) {
    if (!opt.frustum) opt.frustum = null;
 
    opt.res_mesh = opt.res_faces = 0;
+
+   if (opt.instancing === undefined)
+      opt.instancing = -1;
+
+   opt.info = { num_meshes: 0, num_faces: 0 };
 
    let clones = null, visibles = null;
 
@@ -5613,6 +5619,11 @@ function build(obj, opt) {
    let toplevel = new Object3D();
    toplevel.clones = clones; // keep reference on JSROOT data
 
+   let colors = getRootColors();
+
+   if (clones.createInstancedMeshes(opt, toplevel, visibles, shapes, colors))
+      return toplevel;
+
    for (let n = 0; n < visibles.length; ++n) {
       let entry = visibles[n];
       if (entry.done) continue;
@@ -5622,50 +5633,17 @@ function build(obj, opt) {
          console.warn('shape marked as not ready when should');
          break;
       }
+
+      let mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
+
       entry.done = true;
       shape.used = true; // indicate that shape was used in building
 
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         continue;
+      if (mesh) {
+         opt.info.num_meshes++;
+         opt.info.num_faces += shape.nfaces;
+         mesh.name = clones.getNodeName(entry.nodeid);
       }
-
-      let prop = clones.getDrawEntryProperties(entry, getRootColors());
-
-      opt.res_mesh++;
-      opt.res_faces += shape.nfaces;
-
-      let obj3d = clones.createObject3D(entry.stack, toplevel, opt);
-
-      prop.material.wireframe = opt.wireframe;
-
-      prop.material.side = opt.doubleside ? DoubleSide : FrontSide;
-
-      let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      mesh.name = clones.getNodeName(entry.nodeid);
-      mesh.stack = entry.stack;
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-         mesh.updateMatrixWorld();
-      }
-
-      // specify rendering order, required for transparency handling
-      //if (obj3d.$jsroot_depth !== undefined)
-      //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
-      //else
-      //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
    }
 
    return toplevel;

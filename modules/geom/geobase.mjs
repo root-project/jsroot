@@ -1,7 +1,7 @@
 import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
          MeshLambertMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
-import { isObject, isFunc, isBatchMode, BIT } from '../core.mjs';
+import { isObject, isFunc, BIT } from '../core.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
 
@@ -3224,7 +3224,7 @@ class ClonedNodes {
 
    /** @summary Check if instancing can be used for the nodes */
    createInstancedMeshes(ctrl, toplevel, draw_nodes, build_shapes, colors) {
-      if (isBatchMode() || ctrl.instancing < 0)
+      if (ctrl.instancing < 0)
          return false;
 
       // first delete previous data

@@ -45,6 +45,10 @@
          if (d.has('dflt') || d.has('dflt_colors'))
             opt.dflt_colors = true;
 
+         // enable usage of InstancedMesh
+         if (d.has('instancing'))
+            opt.instancing = 1;
+
          // function demonstrate creation of three.js model
          let obj3d = build(obj, opt);
 
