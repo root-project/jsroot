@@ -4,9 +4,9 @@ import { httpRequest, decodeUrl, browser, source_dir,
          prROOT, clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
-         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, InstancedMesh,
+         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, 
          Euler, Quaternion, MathUtils,
-         Mesh, MeshLambertMaterial, MeshBasicMaterial,
+         Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
@@ -404,9 +404,29 @@ class GeoDrawingControl extends InteractiveControl {
    }
 
    /** @summary draw special */
-   drawSpecial(col /*, indx*/) {
+   drawSpecial(col, indx) {
       let c = this.mesh;
-      if (!c || !c.material) return;
+      if (!c?.material) return;
+
+      if (c.isInstancedMesh) {
+
+         if (c._highl_index !== undefined) {
+            c.setColorAt(c._highl_index, c.material.color);
+            delete c._highl_index;
+            c.instanceColor.needsUpdate = true;
+         }
+
+         if (col && indx !== undefined) {
+            if (!c.instanceColor)
+               for (let i = 0; i < c.count; i++)
+                  c.setColorAt(i, c.material.color);
+
+            c.setColorAt(indx, new Color(col));
+            c._highl_index = indx;
+            c.instanceColor.needsUpdate = true;
+         }
+         return true;
+      }
 
       if (col) {
          if (!c.origin)
@@ -1505,6 +1525,17 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Return stack for the item from list of intersection
+     * @private */
+   getIntersectStack(item) {
+      let obj = item?.object;
+      if (!obj) return null;
+      if (obj.stack)
+         return obj.stack;
+      if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
+         return obj.stacks[item.instanceId];
+   }
+
    /** @summary Show context menu for orbit control
      * @private */
    orbitContext(evnt, intersects) {
@@ -1513,9 +1544,8 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
-               let obj = intersects[n].object;
-               if (obj.stack) numnodes++;
-               if (obj.geo_name) numitems++;
+               if (this.getIntersectStack(intersects[n])) numnodes++;
+               if (intersects[n].geo_name) numitems++;
             }
 
          if (numnodes + numitems === 0) {
@@ -1527,7 +1557,7 @@ class TGeoPainter extends ObjectPainter {
 
             for (let n = 0; n < intersects.length; ++n) {
                let obj = intersects[n].object,
-                   name, itemname, hdr;
+                   name, itemname, hdr, stack = this.getIntersectStack(intersects[n]);
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
@@ -1536,9 +1566,9 @@ class TGeoPainter extends ObjectPainter {
                   name = itemname.slice(itemname.lastIndexOf('/')+1);
                   if (!name) name = itemname;
                   hdr = name;
-               } else if (obj.stack) {
-                  name = this._clones.getStackName(obj.stack);
-                  itemname = this.getStackFullName(obj.stack);
+               } else if (stack) {
+                  name = this._clones.getStackName(stack);
+                  itemname = this.getStackFullName(stack);
                   hdr = this.getItemName();
                   if (name.indexOf('Nodes/') === 0)
                      hdr = name.slice(6);
@@ -1565,9 +1595,10 @@ class TGeoPainter extends ObjectPainter {
                   if (cnt > 1)
                      menu.add('Hide all before', n, indx => {
                         let items = [];
-                        for (let i = 0; i < indx; ++i)
-                           if (intersects[i].object.stack)
-                              items.push(this.getStackFullName(intersects[i].object.stack));
+                        for (let i = 0; i < indx; ++i) {
+                           let stack = this.getIntersectStack(intersects[i]);
+                           if (stack) items.push(this.getStackFullName(stack));
+                        }
                         this.hidePhysicalNode(items);
                      });
                } else if (obj.geo_name) {
@@ -1633,14 +1664,14 @@ class TGeoPainter extends ObjectPainter {
 
                      this.testGeomChanges();// while many volumes may disappear, recheck all of them
                   }, 'Hide all logical nodes of that kind');
-                  menu.add('Hide only this', n, function(indx) {
-                     this._clones.setPhysNodeVisibility(intersects[indx].object?.stack, false);
+                  menu.add('Hide only this', n, indx => {
+                     this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
                   if (n > 1)
-                     menu.add('Hide all before', n, function(indx) {
+                     menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
-                           this._clones.setPhysNodeVisibility(intersects[k].object?.stack, false);
+                           this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
                }
@@ -1668,7 +1699,7 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-            unique = obj.visible && ((obj.stack !== undefined) || (obj.stacks !== undefined) || (obj.geo_name !== undefined));
+             unique = obj.visible && (this.getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
@@ -1873,18 +1904,16 @@ class TGeoPainter extends ObjectPainter {
          // painter already cleaned up, ignore any incoming events
          if (!this.ctrl || !this._controls) return;
 
-         let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
+         let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index, geo_stack;
 
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
-            let obj = intersects[k].object, info = null;
+            let obj = intersects[k].object, info = null, stack = this.getIntersectStack(intersects[k]);
             if (!obj || !obj.visible) continue;
             if (obj.geo_object)
                info = obj.geo_name;
-            else if (obj.stack)
-               info = this.getStackFullName(obj.stack);
-            else if (obj.stacks && intersects[k].instanceId !== undefined && intersects[k].instanceId < obj.stacks.length)
-               info = this.getStackFullName(obj.stacks[intersects[k].instanceId]);
+            else if (stack)
+               info = this.getStackFullName(stack);
             if (!info) continue;
 
             if (info.indexOf('<prnt>') == 0)
@@ -1901,8 +1930,12 @@ class TGeoPainter extends ObjectPainter {
                   if ((geo_index !== undefined) && isStr(tooltip))
                      tooltip += ' indx:' + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack)
-                  resolve = this.resolveStack(active_mesh.stack);
+               geo_stack = stack;
+
+               if (geo_stack) {
+                  resolve = this.resolveStack(geo_stack);
+                  if (obj.stacks) geo_index = intersects[k].instanceId;
+               }
             }
          }
 
@@ -1913,7 +1946,8 @@ class TGeoPainter extends ObjectPainter {
             this.activateInBrowser(names);
          }
 
-         if (!resolve?.obj) return tooltip;
+         if (!resolve?.obj)
+            return tooltip;
 
          let lines = provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
