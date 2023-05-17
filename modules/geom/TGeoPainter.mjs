@@ -2289,12 +2289,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Insert appropriate mesh for given entry */
    createEntryMesh(entry, shape, toplevel) {
 
-      if (!shape.geom || (shape.nfaces === 0)) {
-         // node is visible, but shape does not created
-         this._clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
-         return false;
-      }
-
       // workaround for the TGeoOverlap, where two branches should get predefined color
       if (this._splitColors && entry.stack) {
          if (entry.stack[0] === 0)
@@ -2303,49 +2297,18 @@ class TGeoPainter extends ObjectPainter {
             entry.custom_color = 'blue';
       }
 
-      let prop = this._clones.getDrawEntryProperties(entry, getRootColors()),
-          obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl),
-          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+      let mesh = this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
 
-      prop.material.wireframe = this.ctrl.wireframe;
-
-      prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
-
-      if (matrix.determinant() > -0.9) {
-         mesh = new Mesh(shape.geom, prop.material);
-      } else {
-         mesh = createFlippedMesh(shape, prop.material);
-      }
-
-      obj3d.add(mesh);
-
-      if (obj3d.absMatrix) {
-         mesh.matrix.copy(obj3d.absMatrix);
-         mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-         mesh.updateMatrixWorld();
-      }
-
-      // keep full stack of nodes
-      mesh.stack = entry.stack;
-      mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
-
-      // keep hierarchy level
-      mesh.$jsroot_order = obj3d.$jsroot_depth;
-
-      // set initial render order, when camera moves, one must refine it
-      //mesh.$jsroot_order = mesh.renderOrder =
-      //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
-
-      if (this.ctrl._debug || this.ctrl._full) {
+      if (mesh && (this.ctrl._debug || this.ctrl._full)) {
          let wfg = new WireframeGeometry( mesh.geometry ),
-             wfm = new LineBasicMaterial({ color: prop.fillcolor, linewidth: prop.linewidth || 1 }),
+             wfm = new LineBasicMaterial({ color: mesh.material.color, linewidth: 1 }),
              helper = new LineSegments(wfg, wfm);
-         obj3d.add(helper);
+         mesh.parent.add(helper);
       }
 
-      if (this.ctrl._bound || this.ctrl._full) {
+      if (mesh && (this.ctrl._bound || this.ctrl._full)) {
          let boxHelper = new BoxHelper( mesh );
-         obj3d.add( boxHelper );
+         mesh.parent.add(boxHelper);
       }
 
       return true;

@@ -3177,6 +3177,51 @@ class ClonedNodes {
       return three_prnt;
    }
 
+   /** @summary Create mesh for single physical node */
+   createEntryMesh(ctrl, toplevel, entry, shape, colors) {
+      if (!shape.geom || (shape.nfaces === 0)) {
+         // node is visible, but shape does not created
+         this.createObject3D(entry.stack, toplevel, 'delete_mesh');
+         return null;
+      }
+
+      let prop = this.getDrawEntryProperties(entry, colors),
+          obj3d = this.createObject3D(entry.stack, toplevel, ctrl),
+          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+
+      prop.material.wireframe = ctrl.wireframe;
+
+      prop.material.side = ctrl.bothSides ? DoubleSide : FrontSide;
+
+      if (matrix.determinant() > -0.9) {
+         mesh = new Mesh(shape.geom, prop.material);
+      } else {
+         mesh = createFlippedMesh(shape, prop.material);
+      }
+
+      obj3d.add(mesh);
+
+      if (obj3d.absMatrix) {
+         mesh.matrix.copy(obj3d.absMatrix);
+         mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+         mesh.updateMatrixWorld();
+      }
+
+      // keep full stack of nodes
+      mesh.stack = entry.stack;
+      mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
+
+      // keep hierarchy level
+      mesh.$jsroot_order = obj3d.$jsroot_depth;
+
+      // set initial render order, when camera moves, one must refine it
+      //mesh.$jsroot_order = mesh.renderOrder =
+      //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
+
+      return mesh;
+
+   }
+
    /** @summary Check if instancing can be used for the nodes */
    createInstancedMeshes(ctrl, toplevel, draw_nodes, build_shapes, colors) {
       if (isBatchMode() || ctrl.instancing < 0)
@@ -3233,25 +3278,7 @@ class ClonedNodes {
             prop.material.side = ctrl.bothSides ? DoubleSide : FrontSide;
 
             if (instance.entries.length == 1) {
-               let obj3d = this.createObject3D(entry0.stack, toplevel, ctrl),
-                   matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
-
-               if (matrix.determinant() > -0.9) {
-                  mesh = new Mesh(shape.geom, prop.material);
-               } else {
-                  mesh = createFlippedMesh(shape, prop.material);
-               }
-
-               obj3d.add(mesh);
-
-               if (obj3d.absMatrix) {
-                  mesh.matrix.copy(obj3d.absMatrix);
-                  mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-                  mesh.updateMatrixWorld();
-               }
-
-               // keep full stack of nodes
-               mesh.stack = entry0.stack;
+               this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
 
                ctrl.info.num_meshes++;
                ctrl.info.num_faces += shape.nfaces;
@@ -3313,7 +3340,7 @@ class ClonedNodes {
          delete shape.instances;
       });
 
-      return used_shapes;
+      return true;
    }
 
    /** @summary Get volume boundary */
