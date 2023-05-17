@@ -309,6 +309,17 @@ function updateBrowserIcons(obj, hpainter) {
 }
 
 
+/** @summary Return stack for the item from list of intersection
+  * @private */
+function getIntersectStack(item) {
+   let obj = item?.object;
+   if (!obj) return null;
+   if (obj.stack)
+      return obj.stack;
+   if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
+      return obj.stacks[item.instanceId];
+}
+
 /**
   * @summary Toolbar for geometry painter
   *
@@ -1534,17 +1545,6 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Return stack for the item from list of intersection
-     * @private */
-   getIntersectStack(item) {
-      let obj = item?.object;
-      if (!obj) return null;
-      if (obj.stack)
-         return obj.stack;
-      if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
-         return obj.stacks[item.instanceId];
-   }
-
    /** @summary Show context menu for orbit control
      * @private */
    orbitContext(evnt, intersects) {
@@ -1553,7 +1553,7 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
-               if (this.getIntersectStack(intersects[n])) numnodes++;
+               if (getIntersectStack(intersects[n])) numnodes++;
                if (intersects[n].geo_name) numitems++;
             }
 
@@ -1566,7 +1566,7 @@ class TGeoPainter extends ObjectPainter {
 
             for (let n = 0; n < intersects.length; ++n) {
                let obj = intersects[n].object,
-                   name, itemname, hdr, stack = this.getIntersectStack(intersects[n]);
+                   name, itemname, hdr, stack = getIntersectStack(intersects[n]);
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
@@ -1605,7 +1605,7 @@ class TGeoPainter extends ObjectPainter {
                      menu.add('Hide all before', n, indx => {
                         let items = [];
                         for (let i = 0; i < indx; ++i) {
-                           let stack = this.getIntersectStack(intersects[i]);
+                           let stack = getIntersectStack(intersects[i]);
                            if (stack) items.push(this.getStackFullName(stack));
                         }
                         this.hidePhysicalNode(items);
@@ -1674,13 +1674,13 @@ class TGeoPainter extends ObjectPainter {
                      this.testGeomChanges();// while many volumes may disappear, recheck all of them
                   }, 'Hide all logical nodes of that kind');
                   menu.add('Hide only this', n, indx => {
-                     this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[indx]), false);
+                     this._clones.setPhysNodeVisibility(getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
                   if (n > 1)
                      menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
-                           this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[k]), false);
+                           this._clones.setPhysNodeVisibility(getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
                }
@@ -1708,7 +1708,7 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-             unique = obj.visible && (this.getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
+             unique = obj.visible && (getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
@@ -1917,7 +1917,7 @@ class TGeoPainter extends ObjectPainter {
 
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
-            let obj = intersects[k].object, info = null, stack = this.getIntersectStack(intersects[k]);
+            let obj = intersects[k].object, info = null, stack = getIntersectStack(intersects[k]);
             if (!obj || !obj.visible) continue;
             if (obj.geo_object)
                info = obj.geo_name;
