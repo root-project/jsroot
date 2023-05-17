@@ -3236,8 +3236,13 @@ class ClonedNodes {
 
          /// shape can be provided with entry itself
          let shape = entry.server_shape || build_shapes[entry.shapeid];
+         if (!shape) {
+            console.warn(`No shape ${entry.shapeid} at all for physical node`);
+            return false;
+         }
+
          if (!shape?.ready) {
-            console.warn('shape is not ready');
+            console.warn(`why shape ${entry.shapeid} is not ready`);
             return false;
          }
 
