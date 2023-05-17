@@ -25,7 +25,7 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry, createFlippedMesh, createFlippedGeom,
+         countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape, getShapeIcon } from './geobase.mjs';
 
@@ -913,10 +913,6 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('CAMLY', true)) res.camly = getCamPart();
       if (d.check('CAMLZ', true)) res.camlz = getCamPart();
 
-      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
-      if (d.check('MAXNODES', true)) res.maxnodes = d.partAsInt();
-      if (d.check('MAXFACES', true)) res.maxfaces = d.partAsInt();
-
       if (d.check('BLACK')) res.background = '#000000';
       if (d.check('WHITE')) res.background = '#FFFFFF';
 
@@ -935,9 +931,12 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('R3D_', true))
          res.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check('MORE3')) res.more = 3;
-      if (d.check('MORE')) res.more = 2;
-      if (d.check('ALL')) { res.more = 10; res.vislevel = 9; }
+      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2);
+      if (d.check('ALL')) { res.more = 100; res.vislevel = 99; }
+
+      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
+      if (d.check('MAXNODES', true)) res.maxnodes = d.partAsInt();
+      if (d.check('MAXFACES', true)) res.maxfaces = d.partAsInt();
 
       if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
 
@@ -2617,7 +2616,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._animating = false;
 
-         this.ctrl.bothSides = false; // both sides need for clipping
+         this.ctrl.doubleside = false; // both sides need for clipping
          this.createSpecialEffects();
 
          if (this._fit_main_area && !this._webgl) {
@@ -3827,7 +3826,7 @@ class TGeoPainter extends ObjectPainter {
             if (!lvl && this.geo_manager.fVisLevel)
                lvl = this.geo_manager.fVisLevel;
             if (!maxnodes)
-               maxnodes = this.geo_manager.fMaxVisNodes;
+               maxnodes = this.geo_manager.fMaxVisNodes * (this.ctrl.more || 1);
          }
 
          this._clones.setVisLevel(lvl);
@@ -4585,7 +4584,7 @@ class TGeoPainter extends ObjectPainter {
             }
          });
 
-      this.ctrl.bothSides = any_clipping;
+      this.ctrl.doubleside = any_clipping;
 
       if (!without_render) this.render3D(0);
 

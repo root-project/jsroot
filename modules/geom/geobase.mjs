@@ -3191,7 +3191,7 @@ class ClonedNodes {
 
       prop.material.wireframe = ctrl.wireframe;
 
-      prop.material.side = ctrl.bothSides ? DoubleSide : FrontSide;
+      prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
 
       if (matrix.determinant() > -0.9) {
          mesh = new Mesh(shape.geom, prop.material);
@@ -3275,7 +3275,7 @@ class ClonedNodes {
 
             prop.material.wireframe = ctrl.wireframe;
 
-            prop.material.side = ctrl.bothSides ? DoubleSide : FrontSide;
+            prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
 
             if (instance.entries.length == 1) {
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
