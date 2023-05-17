@@ -2220,7 +2220,7 @@ class TGeoPainter extends ObjectPainter {
              toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
              build_instanced = false;
 
-         if (!this.ctrl.project && !isBatchMode())
+         if (!this.ctrl.project)
             build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
          if (!build_instanced)
