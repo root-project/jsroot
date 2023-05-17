@@ -931,7 +931,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('R3D_', true))
          res.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2);
+      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2) ?? 2;
       if (d.check('ALL')) { res.more = 100; res.vislevel = 99; }
 
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
@@ -2210,7 +2210,8 @@ class TGeoPainter extends ObjectPainter {
             } else {
                this.ctrl.info.num_shapes = res.shapes;
                this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
-               if (res.notusedshapes < 30) return true;
+               return true;
+               //if (res.notusedshapes < 30) return true;
             }
          }
 
@@ -2231,7 +2232,8 @@ class TGeoPainter extends ObjectPainter {
                /// shape can be provided with entry itself
                let shape = entry.server_shape || this._build_shapes[entry.shapeid];
                if (!shape.ready) {
-                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
+                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when it should');
+                  console.warn(`shape ${entry.shapeid} not yet ready`);
                   ready = false;
                   continue;
                }
