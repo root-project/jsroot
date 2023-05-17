@@ -1,7 +1,7 @@
-import { FrontSide, Object3D, Box3, Mesh, Vector2, Vector3, Matrix4,
+import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
          MeshLambertMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
-import { isObject, isFunc, BIT } from '../core.mjs';
+import { isObject, isFunc, isBatchMode, BIT } from '../core.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
 
@@ -3175,6 +3175,145 @@ class ClonedNodes {
       }
 
       return three_prnt;
+   }
+
+   /** @summary Check if instancing can be used for the nodes */
+   createInstancedMeshes(ctrl, toplevel, draw_nodes, build_shapes, colors) {
+      if (isBatchMode() || ctrl.instancing < 0)
+         return false;
+
+      // first delete previous data
+      let used_shapes = [], max_entries = 1;
+
+      for (let n = 0; n < draw_nodes.length; ++n) {
+         let entry = draw_nodes[n];
+         if (entry.done) continue;
+
+         /// shape can be provided with entry itself
+         let shape = entry.server_shape || build_shapes[entry.shapeid];
+         if (!shape?.ready) {
+            console.warn('shape is not ready');
+            return false;
+         }
+
+         // ignore shape without geometry
+         if (!shape.geom || (shape.nfaces === 0))
+            continue;
+
+         if (shape.instances === undefined) {
+            shape.instances = [];
+            used_shapes.push(shape);
+         }
+
+         let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
+
+         if (instance) {
+            instance.entries.push(entry);
+            max_entries = Math.max(max_entries, instance.entries.length);
+         } else {
+            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ]});
+         }
+      }
+
+      let make_sense = ctrl.instancing > 0 ? (max_entries > 2) :
+                        (draw_nodes.length > 10000) && (max_entries > 10);
+
+      if (!make_sense) {
+         used_shapes.forEach(shape => { delete shape.instances; });
+         return false;
+      }
+
+      used_shapes.forEach(shape => {
+         shape.instances.forEach(instance => {
+            let entry0 = instance.entries[0],
+                prop = this.getDrawEntryProperties(entry0, colors);
+
+            prop.material.wireframe = ctrl.wireframe;
+
+            prop.material.side = ctrl.bothSides ? DoubleSide : FrontSide;
+
+            if (instance.entries.length == 1) {
+               let obj3d = this.createObject3D(entry0.stack, toplevel, ctrl),
+                   matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+
+               if (matrix.determinant() > -0.9) {
+                  mesh = new Mesh(shape.geom, prop.material);
+               } else {
+                  mesh = createFlippedMesh(shape, prop.material);
+               }
+
+               obj3d.add(mesh);
+
+               if (obj3d.absMatrix) {
+                  mesh.matrix.copy(obj3d.absMatrix);
+                  mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+                  mesh.updateMatrixWorld();
+               }
+
+               // keep full stack of nodes
+               mesh.stack = entry0.stack;
+
+               ctrl.info.num_meshes++;
+               ctrl.info.num_faces += shape.nfaces;
+
+            } else {
+               let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
+
+               instance.entries.forEach(entry => {
+
+                  let info = this.resolveStack(entry.stack, true);
+
+                  if (info.matrix.determinant() > -0.9) {
+                     arr1.push(info.matrix);
+                     stacks1.push(entry.stack);
+                  } else {
+                     arr2.push(info.matrix);
+                     stacks2.push(entry.stack);
+                  }
+               });
+
+               if (arr1.length > 0) {
+                  let mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
+
+                  mesh1.stacks = stacks1;
+                  arr1.forEach((matrix,i) => mesh1.setMatrixAt(i, matrix));
+
+                  toplevel.add(mesh1);
+
+                  mesh1.renderOrder = 1;
+
+                  mesh1.$jsroot_order = 1;
+                  ctrl.info.num_meshes++;
+                  ctrl.info.num_faces += shape.nfaces*arr1.length;
+               }
+
+               if (arr2.length > 0) {
+                  if (shape.geomZ === undefined)
+                     shape.geomZ = createFlippedGeom(shape.geom);
+
+                  let mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+
+                  mesh2.stacks = stacks2;
+                  let m = new Matrix4().makeScale(1,1,-1);
+                  arr2.forEach((matrix,i) => {
+                     mesh2.setMatrixAt(i, matrix.multiply(m));
+                  });
+                  mesh2._flippedMesh = true;
+
+                  toplevel.add(mesh2);
+
+                  mesh2.renderOrder = 1;
+                  mesh2.$jsroot_order = 1;
+                  ctrl.info.num_meshes++;
+                  ctrl.info.num_faces += shape.nfaces*arr2.length;
+               }
+            }
+         });
+
+         delete shape.instances;
+      });
+
+      return used_shapes;
    }
 
    /** @summary Get volume boundary */

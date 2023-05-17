@@ -2219,36 +2219,35 @@ class TGeoPainter extends ObjectPainter {
 
          let tm0 = new Date().getTime(), ready = true,
              toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
-             collected_shapes = this.testInstancing(this._draw_nodes, this._build_shapes);
+             build_instanced = false;
 
-         if (collected_shapes) {
-            this.buildInstancedMeshes(toplevel, collected_shapes);
-            ready = true;
-         } else
+         if (!this.ctrl.project)
+            build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
-         for (let n = 0; n < this._draw_nodes.length; ++n) {
-            let entry = this._draw_nodes[n];
-            if (entry.done) continue;
+         if (!build_instanced)
+            for (let n = 0; n < this._draw_nodes.length; ++n) {
+               let entry = this._draw_nodes[n];
+               if (entry.done) continue;
 
-            /// shape can be provided with entry itself
-            let shape = entry.server_shape || this._build_shapes[entry.shapeid];
-            if (!shape.ready) {
-               if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
-               ready = false;
-               continue;
+               /// shape can be provided with entry itself
+               let shape = entry.server_shape || this._build_shapes[entry.shapeid];
+               if (!shape.ready) {
+                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
+                  ready = false;
+                  continue;
+               }
+
+               entry.done = true;
+               shape.used = true; // indicate that shape was used in building
+
+               if (this.createEntryMesh(entry, shape, toplevel)) {
+                  this.ctrl.info.num_meshes++;
+                  this.ctrl.info.num_faces += shape.nfaces;
+               }
+
+               let tm1 = new Date().getTime();
+               if (tm1 - tm0 > 500) { ready = false; break; }
             }
-
-            entry.done = true;
-            shape.used = true; // indicate that shape was used in building
-
-            if (this.createEntryMesh(entry, shape, toplevel)) {
-               this.ctrl.info.num_meshes++;
-               this.ctrl.info.num_faces += shape.nfaces;
-            }
-
-            let tm1 = new Date().getTime();
-            if (tm1 - tm0 > 500) { ready = false; break; }
-         }
 
          if (ready) {
             if (this.ctrl.project) {
@@ -2285,152 +2284,6 @@ class TGeoPainter extends ObjectPainter {
       console.error(`never come here, stage ${this.drawing_stage}`);
 
       return false;
-   }
-
-   /** @summary Check if instancing can be used for the nodes */
-   testInstancing(draw_nodes, build_shapes) {
-      if (this.ctrl.project || isBatchMode() || this.ctrl.instancing < 0)
-         return null;
-
-      // first delete previous data
-      let used_shapes = [], max_entries = 1;
-
-      for (let n = 0; n < draw_nodes.length; ++n) {
-         let entry = this._draw_nodes[n];
-         if (entry.done) continue;
-
-         /// shape can be provided with entry itself
-         let shape = entry.server_shape || build_shapes[entry.shapeid];
-         if (!shape?.ready) {
-            console.warn('shape is not ready');
-            return false;
-         }
-
-         // ignore shape without geometry
-         if (!shape.geom || (shape.nfaces === 0))
-            continue;
-
-         if (shape.instances === undefined) {
-            shape.instances = [];
-            used_shapes.push(shape);
-         }
-
-         let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
-
-         if (instance) {
-            instance.entries.push(entry);
-            max_entries = Math.max(max_entries, instance.entries.length);
-         } else {
-            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ]});
-         }
-      }
-
-      let make_sense = this.ctrl.instancing > 0 ? (max_entries > 2) :
-                        (draw_nodes.length > 10000) && (max_entries > 10);
-
-      if (!make_sense) {
-         used_shapes.forEach(shape => { delete shape.instances; });
-         return null;
-      }
-
-      return used_shapes;
-   }
-
-   /** @summary Build instanced meshes when it makes sense */
-   buildInstancedMeshes(toplevel, used_shapes) {
-      used_shapes.forEach(shape => {
-         shape.instances.forEach(instance => {
-            let entry0 = instance.entries[0],
-                prop = this._clones.getDrawEntryProperties(entry0, getRootColors());
-
-            prop.material.wireframe = this.ctrl.wireframe;
-
-            prop.material.side = this.ctrl.bothSides ? DoubleSide : FrontSide;
-
-            if (instance.entries.length == 1) {
-               let obj3d = this._clones.createObject3D(entry0.stack, toplevel, this.ctrl),
-                   matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
-
-               if (matrix.determinant() > -0.9) {
-                  mesh = new Mesh(shape.geom, prop.material);
-               } else {
-                  mesh = createFlippedMesh(shape, prop.material);
-               }
-
-               obj3d.add(mesh);
-
-               if (obj3d.absMatrix) {
-                  mesh.matrix.copy(obj3d.absMatrix);
-                  mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-                  mesh.updateMatrixWorld();
-               }
-
-               // keep full stack of nodes
-               mesh.stack = entry0.stack;
-
-               this.ctrl.info.num_meshes++;
-               this.ctrl.info.num_faces += shape.nfaces;
-
-            } else {
-               let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
-
-               instance.entries.forEach((entry,i) => {
-
-                  let info = this._clones.resolveStack(entry.stack, true);
-
-                  if (info.matrix.determinant() > -0.9) {
-                     arr1.push(info.matrix);
-                     stacks1.push(entry.stack);
-                  } else {
-                     arr2.push(info.matrix);
-                     stacks2.push(entry.stack);
-                  }
-               });
-
-               if (arr1.length > 0) {
-                  let mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
-
-                  mesh1.stacks = stacks1;
-                  arr1.forEach((matrix,i) => mesh1.setMatrixAt(i, matrix));
-
-                  toplevel.add(mesh1);
-
-                  mesh1.renderOrder = 1;
-
-                  mesh1.$jsroot_order = 1;
-                  this.ctrl.info.num_meshes++;
-                  this.ctrl.info.num_faces += shape.nfaces*arr1.length;
-               }
-
-               if (arr2.length > 0) {
-                  if (shape.geomZ === undefined)
-                     shape.geomZ = createFlippedGeom(shape.geom);
-
-                  let mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
-
-                  mesh2.stacks = stacks2;
-                  arr2.forEach((matrix,i) => {
-                     let m = new Matrix4();
-                     m.makeScale(1,1,-1);
-                     matrix.multiply(m);
-                     mesh2.setMatrixAt(i, matrix);
-                  });
-                  mesh2._flippedMesh = true;
-
-                  toplevel.add(mesh2);
-
-                  mesh2.renderOrder = 1;
-
-                  mesh2.$jsroot_order = 1;
-                  this.ctrl.info.num_meshes++;
-                  this.ctrl.info.num_faces += shape.nfaces*arr2.length;
-               }
-            }
-         });
-
-         delete shape.instances;
-      });
-
    }
 
    /** @summary Insert appropriate mesh for given entry */
