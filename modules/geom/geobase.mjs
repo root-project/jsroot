@@ -3179,7 +3179,13 @@ class ClonedNodes {
 
    /** @summary Create mesh for single physical node */
    createEntryMesh(ctrl, toplevel, entry, shape, colors) {
-      if (!shape.geom || (shape.nfaces === 0)) {
+      if (!shape || !shape.ready)
+         return null;
+
+      entry.done = true; // mark entry is created
+      shape.used = true; // indicate that shape was used in building
+
+      if (!shape.geom || !shape.nfaces) {
          // node is visible, but shape does not created
          this.createObject3D(entry.stack, toplevel, 'delete_mesh');
          return null;
@@ -3214,6 +3220,11 @@ class ClonedNodes {
       // keep hierarchy level
       mesh.$jsroot_order = obj3d.$jsroot_depth;
 
+      if (ctrl.info?.num_meshes !== undefined) {
+         ctrl.info.num_meshes++;
+         ctrl.info.num_faces += shape.nfaces;
+      }
+
       // set initial render order, when camera moves, one must refine it
       //mesh.$jsroot_order = mesh.renderOrder =
       //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
@@ -3236,18 +3247,13 @@ class ClonedNodes {
 
          /// shape can be provided with entry itself
          let shape = entry.server_shape || build_shapes[entry.shapeid];
-         if (!shape) {
-            console.warn(`No shape ${entry.shapeid} at all for physical node`);
-            return false;
-         }
-
-         if (!shape?.ready) {
-            console.warn(`why shape ${entry.shapeid} is not ready`);
+         if (!shape || !shape.ready) {
+            console.warn(`Problem with shape id ${entry.shapeid} when building`);
             return false;
          }
 
          // ignore shape without geometry
-         if (!shape.geom || (shape.nfaces === 0))
+         if (!shape.geom || !shape.nfaces)
             continue;
 
          if (shape.instances === undefined) {
@@ -3274,6 +3280,7 @@ class ClonedNodes {
       }
 
       used_shapes.forEach(shape => {
+         shape.used = true;
          shape.instances.forEach(instance => {
             let entry0 = instance.entries[0],
                 prop = this.getDrawEntryProperties(entry0, colors);
@@ -3284,15 +3291,10 @@ class ClonedNodes {
 
             if (instance.entries.length == 1) {
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
-
-               ctrl.info.num_meshes++;
-               ctrl.info.num_faces += shape.nfaces;
-
             } else {
                let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
                instance.entries.forEach(entry => {
-
                   let info = this.resolveStack(entry.stack, true);
 
                   if (info.matrix.determinant() > -0.9) {
@@ -3302,6 +3304,7 @@ class ClonedNodes {
                      arr2.push(info.matrix);
                      stacks2.push(entry.stack);
                   }
+                  entry.done = true;
                });
 
                if (arr1.length > 0) {

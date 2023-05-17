@@ -2232,20 +2232,8 @@ class TGeoPainter extends ObjectPainter {
 
                /// shape can be provided with entry itself
                let shape = entry.server_shape || this._build_shapes[entry.shapeid];
-               if (!shape.ready) {
-                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when it should');
-                  console.warn(`shape ${entry.shapeid} not yet ready`);
-                  ready = false;
-                  continue;
-               }
 
-               entry.done = true;
-               shape.used = true; // indicate that shape was used in building
-
-               if (this.createEntryMesh(entry, shape, toplevel)) {
-                  this.ctrl.info.num_meshes++;
-                  this.ctrl.info.num_faces += shape.nfaces;
-               }
+               this.createEntryMesh(entry, shape, toplevel);
 
                let tm1 = new Date().getTime();
                if (tm1 - tm0 > 500) { ready = false; break; }
@@ -2346,9 +2334,6 @@ class TGeoPainter extends ObjectPainter {
          let entry = nodes[k],
              shape = entry.server_shape;
          if (!shape?.ready) continue;
-
-         entry.done = true;
-         shape.used = true; // indicate that shape was used in building
 
          if (this.createEntryMesh(entry, shape, this._toplevel))
             real_nodes.push(entry);
@@ -5634,14 +5619,8 @@ function build(obj, opt) {
 
       let mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
 
-      entry.done = true;
-      shape.used = true; // indicate that shape was used in building
-
-      if (mesh) {
-         opt.info.num_meshes++;
-         opt.info.num_faces += shape.nfaces;
+      if (mesh)
          mesh.name = clones.getNodeName(entry.nodeid);
-      }
    }
 
    return toplevel;
