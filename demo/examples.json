@@ -194,7 +194,7 @@
      { "name": "building", "asurl": true, "file": "geom/building.root", "item": "geom;1", "opt": "allz", "title": "Geometry from tutorials/geom/building.C" },
      { "name": "alice", "asurl": true, "file": "https://root.cern/files/alice2.root", "item": "Geometry;1", "opt": "dsize;macro:https://root.cern/js/files/geomAlice.C;black;vislvl2", "title": "ALICE geometry" },
      { "name": "atlas", "asurl": true, "file": "https://root.cern/files/atlas.root", "item": "atlas;1", "opt": "dflt;black;dsize", "title":"ATLAS geometry" },
-     { "name": "cms", "asurl": true, "file": "https://root.cern/files/cms.root", "item": "cms;1", "opt": "dsize;macro:https://root.cern/files/cms_cmse.C;clipxyz;black", "title": "CMS geomtery" },
+     { "name": "cms", "asurl": true, "file": "https://root.cern/files/cms.root", "item": "cms;1", "opt": "all;clipxyz;zoom70;macro:https://root.cern/files/cms_cmse.C", "title": "CMS geomtery" },
      { "name": "animate", "asurl": true, "file": "https://root.cern/files/cms.root", "item": "cms;1/OCMS/CMSE_1", "opt": "vislvl4;dflt;trr300;trz300;rotate;zoom90;black;ctrl", "title": "Animated and transformed CMS geomtery", "notest":true },
      { "name": "lhcb", "asurl": true, "file": "https://root.cern/files/lhcbfull.root", "item": "Geometry;1", "opt": "all;dflt;black", "title": "LHCb geometry" },
      { "name": "eve", "asurl": true, "json": "geom/evegeoshape.json.gz", "opt": "dray", "title": "Example of drawing snapshot of volumes from EVE" },
