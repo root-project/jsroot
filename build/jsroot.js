@@ -85059,7 +85059,13 @@ class ClonedNodes {
 
    /** @summary Create mesh for single physical node */
    createEntryMesh(ctrl, toplevel, entry, shape, colors) {
-      if (!shape.geom || (shape.nfaces === 0)) {
+      if (!shape || !shape.ready)
+         return null;
+
+      entry.done = true; // mark entry is created
+      shape.used = true; // indicate that shape was used in building
+
+      if (!shape.geom || !shape.nfaces) {
          // node is visible, but shape does not created
          this.createObject3D(entry.stack, toplevel, 'delete_mesh');
          return null;
@@ -85094,6 +85100,11 @@ class ClonedNodes {
       // keep hierarchy level
       mesh.$jsroot_order = obj3d.$jsroot_depth;
 
+      if (ctrl.info?.num_meshes !== undefined) {
+         ctrl.info.num_meshes++;
+         ctrl.info.num_faces += shape.nfaces;
+      }
+
       // set initial render order, when camera moves, one must refine it
       //mesh.$jsroot_order = mesh.renderOrder =
       //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
@@ -85116,13 +85127,13 @@ class ClonedNodes {
 
          /// shape can be provided with entry itself
          let shape = entry.server_shape || build_shapes[entry.shapeid];
-         if (!shape?.ready) {
-            console.warn('shape is not ready');
+         if (!shape || !shape.ready) {
+            console.warn(`Problem with shape id ${entry.shapeid} when building`);
             return false;
          }
 
          // ignore shape without geometry
-         if (!shape.geom || (shape.nfaces === 0))
+         if (!shape.geom || !shape.nfaces)
             continue;
 
          if (shape.instances === undefined) {
@@ -85149,6 +85160,7 @@ class ClonedNodes {
       }
 
       used_shapes.forEach(shape => {
+         shape.used = true;
          shape.instances.forEach(instance => {
             let entry0 = instance.entries[0],
                 prop = this.getDrawEntryProperties(entry0, colors);
@@ -85159,15 +85171,10 @@ class ClonedNodes {
 
             if (instance.entries.length == 1) {
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
-
-               ctrl.info.num_meshes++;
-               ctrl.info.num_faces += shape.nfaces;
-
             } else {
                let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
                instance.entries.forEach(entry => {
-
                   let info = this.resolveStack(entry.stack, true);
 
                   if (info.matrix.determinant() > -0.9) {
@@ -85177,6 +85184,7 @@ class ClonedNodes {
                      arr2.push(info.matrix);
                      stacks2.push(entry.stack);
                   }
+                  entry.done = true;
                });
 
                if (arr1.length > 0) {
@@ -85508,7 +85516,7 @@ class ClonedNodes {
 
          res.shapes++;
          if (!item.used) res.notusedshapes++;
-         res.faces += item.nfaces*item.refcnt;
+         res.faces += item.nfaces * item.refcnt;
 
          if (res.faces >= limit) {
             res.done = true;
@@ -86183,6 +86191,17 @@ function updateBrowserIcons(obj, hpainter) {
 }
 
 
+/** @summary Return stack for the item from list of intersection
+  * @private */
+function getIntersectStack(item) {
+   let obj = item?.object;
+   if (!obj) return null;
+   if (obj.stack)
+      return obj.stack;
+   if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
+      return obj.stacks[item.instanceId];
+}
+
 /**
   * @summary Toolbar for geometry painter
   *
@@ -86805,7 +86824,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('R3D_', true))
          res.Render3D = constants$1.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2);
+      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2) ?? 2;
       if (d.check('ALL')) { res.more = 100; res.vislevel = 99; }
 
       if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
@@ -87030,40 +87049,87 @@ class TGeoPainter extends ObjectPainter {
          ctrl.trans_z = ctrl.trans_radial = 0;
 
       this._toplevel.traverse(mesh => {
-         if (mesh.stack === undefined) return;
+         if (mesh.stack !== undefined) {
 
-         let node = mesh.parent;
+            let node = mesh.parent;
 
-         if (arg == 'reset') {
-            if (node.matrix0) {
-               node.matrix.copy(node.matrix0);
-               node.matrix.decompose( node.position, node.quaternion, node.scale );
-               node.matrixWorldNeedsUpdate = true;
+            if (arg == 'reset') {
+               if (node.matrix0) {
+                  node.matrix.copy(node.matrix0);
+                  node.matrix.decompose(node.position, node.quaternion, node.scale);
+                  node.matrixWorldNeedsUpdate = true;
+               }
+               delete node.matrix0;
+               delete node.vect0;
+               delete node.vect1;
+               delete node.minvert;
+               return;
             }
-            delete node.matrix0;
-            delete node.vect0;
-            delete node.vect1;
-            delete node.minvert;
-            return;
+
+            if (node.vect0 === undefined) {
+               node.matrix0 = node.matrix.clone();
+               node.minvert = new Matrix4().copy(node.matrixWorld).invert();
+
+               let box3 = getBoundingBox(mesh, null, true),
+                   signz = mesh._flippedMesh ? -1 : 1;
+
+               // real center of mesh in local coordinates
+               node.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
+               node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
+            }
+
+            vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
+
+            node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
+            node.matrix.decompose(node.position, node.quaternion, node.scale);
+            node.matrixWorldNeedsUpdate = true;
+         } else if (mesh.stacks !== undefined) {
+
+            mesh.instanceMatrix.needsUpdate = true;
+
+            if (arg == 'reset') {
+               mesh.trans?.forEach((item,i) => {
+                  mesh.setMatrixAt(i, item.matrix0);
+               });
+               delete mesh.trans;
+               return;
+            }
+
+            if (mesh.trans === undefined) {
+               mesh.trans = new Array(mesh.count);
+
+               mesh.geometry.computeBoundingBox();
+
+               for (let i = 0; i < mesh.count; i++) {
+                  let item = {
+                     matrix0: new Matrix4(),
+                     minvert: new Matrix4()
+                  };
+
+                  mesh.trans[i] = item;
+
+                  mesh.getMatrixAt(i, item.matrix0);
+                  item.minvert.copy(item.matrix0).invert();
+
+                  let box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0),
+                      signz = 1; //mesh._flippedMesh ? -1 : 1;
+
+                  item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2);// .applyMatrix4(item.matrix0);
+                  item.vect1 = new Vector3(0,0,0).applyMatrix4(item.minvert);
+               }
+            }
+
+            let mm = new Matrix4();
+
+            mesh.trans?.forEach((item,i) => {
+               vect2.set(ctrl.trans_radial * item.vect0.x, ctrl.trans_radial * item.vect0.y, ctrl.trans_z * item.vect0.z).applyMatrix4(item.minvert).sub(item.vect1);
+
+               mm.multiplyMatrices(item.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
+
+               mesh.setMatrixAt(i, mm);
+            });
+
          }
-
-         if (node.vect0 === undefined) {
-            node.matrix0 = node.matrix.clone();
-            node.minvert = new Matrix4().copy(node.matrixWorld).invert();
-
-            let box3 = getBoundingBox(mesh, null, true),
-                signz = mesh._flippedMesh ? -1 : 1;
-
-            // real center of mesh in local coordinates
-            node.vect0 = new Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
-            node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
-         }
-
-         vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
-
-         node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
-         node.matrix.decompose( node.position, node.quaternion, node.scale );
-         node.matrixWorldNeedsUpdate = true;
       });
 
       this._toplevel.updateMatrixWorld();
@@ -87408,17 +87474,6 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Return stack for the item from list of intersection
-     * @private */
-   getIntersectStack(item) {
-      let obj = item?.object;
-      if (!obj) return null;
-      if (obj.stack)
-         return obj.stack;
-      if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
-         return obj.stacks[item.instanceId];
-   }
-
    /** @summary Show context menu for orbit control
      * @private */
    orbitContext(evnt, intersects) {
@@ -87427,7 +87482,7 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
-               if (this.getIntersectStack(intersects[n])) numnodes++;
+               if (getIntersectStack(intersects[n])) numnodes++;
                if (intersects[n].geo_name) numitems++;
             }
 
@@ -87440,7 +87495,7 @@ class TGeoPainter extends ObjectPainter {
 
             for (let n = 0; n < intersects.length; ++n) {
                let obj = intersects[n].object,
-                   name, itemname, hdr, stack = this.getIntersectStack(intersects[n]);
+                   name, itemname, hdr, stack = getIntersectStack(intersects[n]);
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
@@ -87479,7 +87534,7 @@ class TGeoPainter extends ObjectPainter {
                      menu.add('Hide all before', n, indx => {
                         let items = [];
                         for (let i = 0; i < indx; ++i) {
-                           let stack = this.getIntersectStack(intersects[i]);
+                           let stack = getIntersectStack(intersects[i]);
                            if (stack) items.push(this.getStackFullName(stack));
                         }
                         this.hidePhysicalNode(items);
@@ -87548,13 +87603,13 @@ class TGeoPainter extends ObjectPainter {
                      this.testGeomChanges();// while many volumes may disappear, recheck all of them
                   }, 'Hide all logical nodes of that kind');
                   menu.add('Hide only this', n, indx => {
-                     this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[indx]), false);
+                     this._clones.setPhysNodeVisibility(getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
                   if (n > 1)
                      menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
-                           this._clones.setPhysNodeVisibility(this.getIntersectStack(intersects[k]), false);
+                           this._clones.setPhysNodeVisibility(getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
                }
@@ -87582,7 +87637,7 @@ class TGeoPainter extends ObjectPainter {
       for (let n = intersects.length - 1; n >= 0; --n) {
 
          let obj = intersects[n].object,
-             unique = obj.visible && (this.getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
+             unique = obj.visible && (getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
@@ -87791,7 +87846,7 @@ class TGeoPainter extends ObjectPainter {
 
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
-            let obj = intersects[k].object, info = null, stack = this.getIntersectStack(intersects[k]);
+            let obj = intersects[k].object, info = null, stack = getIntersectStack(intersects[k]);
             if (!obj || !obj.visible) continue;
             if (obj.geo_object)
                info = obj.geo_name;
@@ -88077,6 +88132,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this.isStage(stageBuild)) {
             // building shapes
+
             let res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
@@ -88084,7 +88140,8 @@ class TGeoPainter extends ObjectPainter {
             } else {
                this.ctrl.info.num_shapes = res.shapes;
                this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
-               if (res.notusedshapes < 30) return true;
+               return true;
+               //if (res.notusedshapes < 30) return true;
             }
          }
 
@@ -88104,19 +88161,8 @@ class TGeoPainter extends ObjectPainter {
 
                /// shape can be provided with entry itself
                let shape = entry.server_shape || this._build_shapes[entry.shapeid];
-               if (!shape.ready) {
-                  if (this.isStage(stageBuildReady)) console.warn('shape marked as not ready when should');
-                  ready = false;
-                  continue;
-               }
 
-               entry.done = true;
-               shape.used = true; // indicate that shape was used in building
-
-               if (this.createEntryMesh(entry, shape, toplevel)) {
-                  this.ctrl.info.num_meshes++;
-                  this.ctrl.info.num_faces += shape.nfaces;
-               }
+               this.createEntryMesh(entry, shape, toplevel);
 
                let tm1 = new Date().getTime();
                if (tm1 - tm0 > 500) { ready = false; break; }
@@ -88217,9 +88263,6 @@ class TGeoPainter extends ObjectPainter {
          let entry = nodes[k],
              shape = entry.server_shape;
          if (!shape?.ready) continue;
-
-         entry.done = true;
-         shape.used = true; // indicate that shape was used in building
 
          if (this.createEntryMesh(entry, shape, this._toplevel))
             real_nodes.push(entry);
@@ -89771,7 +89814,7 @@ class TGeoPainter extends ObjectPainter {
 
          // this is limit for the visible faces, number of volumes does not matter
          if (this._first_drawing && !this.ctrl.maxfaces)
-            this.ctrl.maxfaces = (this._webgl ? 200000 : 100000) * this.ctrl.more;
+            this.ctrl.maxfaces = 200000 * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
@@ -91503,14 +91546,8 @@ function build(obj, opt) {
 
       let mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
 
-      entry.done = true;
-      shape.used = true; // indicate that shape was used in building
-
-      if (mesh) {
-         opt.info.num_meshes++;
-         opt.info.num_faces += shape.nfaces;
+      if (mesh)
          mesh.name = clones.getNodeName(entry.nodeid);
-      }
    }
 
    return toplevel;
