@@ -1167,40 +1167,87 @@ class TGeoPainter extends ObjectPainter {
          ctrl.trans_z = ctrl.trans_radial = 0;
 
       this._toplevel.traverse(mesh => {
-         if (mesh.stack === undefined) return;
+         if (mesh.stack !== undefined) {
 
-         let node = mesh.parent;
+            let node = mesh.parent;
 
-         if (arg == 'reset') {
-            if (node.matrix0) {
-               node.matrix.copy(node.matrix0);
-               node.matrix.decompose( node.position, node.quaternion, node.scale );
-               node.matrixWorldNeedsUpdate = true;
+            if (arg == 'reset') {
+               if (node.matrix0) {
+                  node.matrix.copy(node.matrix0);
+                  node.matrix.decompose(node.position, node.quaternion, node.scale);
+                  node.matrixWorldNeedsUpdate = true;
+               }
+               delete node.matrix0;
+               delete node.vect0;
+               delete node.vect1;
+               delete node.minvert;
+               return;
             }
-            delete node.matrix0;
-            delete node.vect0;
-            delete node.vect1;
-            delete node.minvert;
-            return;
+
+            if (node.vect0 === undefined) {
+               node.matrix0 = node.matrix.clone();
+               node.minvert = new Matrix4().copy(node.matrixWorld).invert();
+
+               let box3 = getBoundingBox(mesh, null, true),
+                   signz = mesh._flippedMesh ? -1 : 1;
+
+               // real center of mesh in local coordinates
+               node.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
+               node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
+            }
+
+            vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
+
+            node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
+            node.matrix.decompose(node.position, node.quaternion, node.scale);
+            node.matrixWorldNeedsUpdate = true;
+         } else if (mesh.stacks !== undefined) {
+
+            mesh.instanceMatrix.needsUpdate = true;
+
+            if (arg == 'reset') {
+               mesh.trans?.forEach((item,i) => {
+                  mesh.setMatrixAt(i, item.matrix0);
+               });
+               delete mesh.trans;
+               return;
+            }
+
+            if (mesh.trans === undefined) {
+               mesh.trans = new Array(mesh.count);
+
+               mesh.geometry.computeBoundingBox();
+
+               for (let i = 0; i < mesh.count; i++) {
+                  let item = {
+                     matrix0: new Matrix4(),
+                     minvert: new Matrix4()
+                  }
+
+                  mesh.trans[i] = item;
+
+                  mesh.getMatrixAt(i, item.matrix0);
+                  item.minvert.copy(item.matrix0).invert();
+
+                  let box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0),
+                      signz = 1; //mesh._flippedMesh ? -1 : 1;
+
+                  item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2);// .applyMatrix4(item.matrix0);
+                  item.vect1 = new Vector3(0,0,0).applyMatrix4(item.minvert);
+               }
+            }
+
+            let mm = new Matrix4();
+
+            mesh.trans?.forEach((item,i) => {
+               vect2.set(ctrl.trans_radial * item.vect0.x, ctrl.trans_radial * item.vect0.y, ctrl.trans_z * item.vect0.z).applyMatrix4(item.minvert).sub(item.vect1);
+
+               mm.multiplyMatrices(item.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
+
+               mesh.setMatrixAt(i, mm);
+            });
+
          }
-
-         if (node.vect0 === undefined) {
-            node.matrix0 = node.matrix.clone();
-            node.minvert = new Matrix4().copy(node.matrixWorld).invert();
-
-            let box3 = getBoundingBox(mesh, null, true),
-                signz = mesh._flippedMesh ? -1 : 1;
-
-            // real center of mesh in local coordinates
-            node.vect0 = new Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
-            node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
-         }
-
-         vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
-
-         node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
-         node.matrix.decompose( node.position, node.quaternion, node.scale );
-         node.matrixWorldNeedsUpdate = true;
       });
 
       this._toplevel.updateMatrixWorld();
