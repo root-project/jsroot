@@ -824,7 +824,7 @@ class TGeoPainter extends ObjectPainter {
          opt = opt.slice(4);
 
       let res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: 0, instancing: false,
+                  _full: false, _axis: 0, instancing: 0,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxfaces: 0,
@@ -877,7 +877,8 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
       if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check('INSTANCING')) res.instancing = true; // try to use InstancedMesh
+      if (d.check('NOINSTANCING')) res.instancing = -1; // disable usage of InstancedMesh
+      if (d.check('INSTANCING')) res.instancing = 1; // force usage of InstancedMesh
 
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
@@ -2288,10 +2289,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Check if instancing can be used for the nodes */
    testInstancing(draw_nodes, build_shapes) {
-      if (this.ctrl.project || !this.ctrl.instancing)
+      if (this.ctrl.project || isBatchMode() || this.ctrl.instancing < 0)
          return null;
 
-      let used_shapes = [];
+      // first delete previous data
+      let used_shapes = [], max_entries = 1;
 
       for (let n = 0; n < draw_nodes.length; ++n) {
          let entry = this._draw_nodes[n];
@@ -2317,24 +2319,21 @@ class TGeoPainter extends ObjectPainter {
 
          if (instance) {
             instance.entries.push(entry);
+            max_entries = Math.max(max_entries, instance.entries.length);
          } else {
             shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ]});
          }
       }
 
-      let make_sense = false;
+      let make_sense = this.ctrl.instancing > 0 ? (max_entries > 2) :
+                        (draw_nodes.length > 10000) && (max_entries > 10);
 
-      used_shapes.forEach(shape => {
-         shape.instances?.forEach(instance => {
-            if (instance.entries.length > 1)
-               make_sense = true;
-         });
-      });
-
-      if (!make_sense)
+      if (!make_sense) {
          used_shapes.forEach(shape => { delete shape.instances; });
+         return null;
+      }
 
-      return make_sense ? used_shapes : null;
+      return used_shapes;
    }
 
    /** @summary Build instanced meshes when it makes sense */
@@ -4258,8 +4257,6 @@ class TGeoPainter extends ObjectPainter {
 
       this.testCameraPosition(tmout === -1);
 
-      let tm3 = new Date();
-
       // its needed for outlinePass - do rendering, most consuming time
       if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0)) {
          this._effectComposer.render();
@@ -4271,13 +4268,10 @@ class TGeoPainter extends ObjectPainter {
          this._camera.layers.set( _ENTIRE_SCENE );
          this._renderer.render(this._scene, this._camera);
       } else {
-    //     this._renderer.logarithmicDepthBuffer = true;
          this._renderer.render(this._scene, this._camera);
       }
 
       let tm2 = new Date();
-
-      console.log('render', tm2.getTime() - tm3.getTime(), 'camera', tm3.getTime() - tm1.getTime());
 
       this.last_render_tm = tm2.getTime();
 
