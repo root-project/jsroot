@@ -3633,7 +3633,7 @@ class ClonedNodes {
 
          res.shapes++;
          if (!item.used) res.notusedshapes++;
-         res.faces += item.nfaces*item.refcnt;
+         res.faces += item.nfaces * item.refcnt;
 
          if (res.faces >= limit) {
             res.done = true;

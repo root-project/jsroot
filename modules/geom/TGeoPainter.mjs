@@ -2203,6 +2203,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this.isStage(stageBuild)) {
             // building shapes
+
             let res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
@@ -3899,7 +3900,7 @@ class TGeoPainter extends ObjectPainter {
 
          // this is limit for the visible faces, number of volumes does not matter
          if (this._first_drawing && !this.ctrl.maxfaces)
-            this.ctrl.maxfaces = (this._webgl ? 200000 : 100000) * this.ctrl.more;
+            this.ctrl.maxfaces = 200000 * this.ctrl.more;
 
          // set top painter only when first child exists
          this.setAsMainPainter();
