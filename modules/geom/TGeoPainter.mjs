@@ -4,7 +4,7 @@ import { httpRequest, decodeUrl, browser, source_dir,
          prROOT, clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
-         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, 
+         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
          Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, BufferAttribute,
@@ -394,7 +394,7 @@ class GeoDrawingControl extends InteractiveControl {
 
    constructor(mesh, bloom) {
       super();
-      this.mesh = (mesh && mesh.material) ? mesh : null;
+      this.mesh = mesh?.material ? mesh : null;
       this.bloom = bloom;
    }
 
@@ -410,20 +410,29 @@ class GeoDrawingControl extends InteractiveControl {
 
       if (c.isInstancedMesh) {
 
-         if (c._highl_index !== undefined) {
-            c.setColorAt(c._highl_index, c.material.color);
-            delete c._highl_index;
-            c.instanceColor.needsUpdate = true;
+         if (c._highlight_mesh) {
+            c.remove(c._highlight_mesh);
+            delete c._highlight_mesh;
          }
 
          if (col && indx !== undefined) {
-            if (!c.instanceColor)
-               for (let i = 0; i < c.count; i++)
-                  c.setColorAt(i, c.material.color);
+            let h = new Mesh(c.geometry, c.material.clone());
 
-            c.setColorAt(indx, new Color(col));
-            c._highl_index = indx;
-            c.instanceColor.needsUpdate = true;
+            if (this.bloom) {
+               h.layers.enable(_BLOOM_SCENE);
+               h.material.emissive = new Color(0x00ff00);
+            } else {
+               h.material.color = new Color( col );
+               h.material.opacity = 1.;
+            }
+            let m = new Matrix4();
+            c.getMatrixAt(indx, m);
+            h.applyMatrix4(m);
+            c.add(h);
+
+            h.jsroot_special = true; // exclude from intersections
+
+            c._highlight_mesh = h;
          }
          return true;
       }
