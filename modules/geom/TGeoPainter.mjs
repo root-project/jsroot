@@ -2850,12 +2850,8 @@ class TGeoPainter extends ObjectPainter {
                cc.value = cc.max;
          }
 
-      // this._camera.far = 100000000000;
-
-      // this._camera.updateProjectionMatrix();
-
       let k = 2*this.ctrl.zoom,
-          max_all = Math.max(sizex,sizey,sizez),
+          max_all = Math.max(sizex, sizey, sizez),
           sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       this._lookat = new Vector3(midx, midy, midz);
