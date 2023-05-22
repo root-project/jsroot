@@ -4337,7 +4337,7 @@ class TGeoPainter extends ObjectPainter {
 
          let textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
 
-         let text3d = new TextGeometry(Math.round(x2-x1).toFixed(0), { font: HelveticerRegularFont, size: Math.abs(y2-y1), height: 0, curveSegments: 5 });
+         let text3d = new TextGeometry(x_handle.format(x2-x1, true), { font: HelveticerRegularFont, size: Math.abs(y2-y1), height: 0, curveSegments: 5 });
 
          let mesh = new Mesh(text3d, textMaterial);
 
@@ -4353,6 +4353,10 @@ class TGeoPainter extends ObjectPainter {
          let container = this.getExtrasContainer('create', 'overlay');
 
          let dd = (ymax - ymin)*0.03;
+
+         let lineMaterial = new LineBasicMaterial({ color: 'black' }),
+             textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
+
 
          let xticks = x_handle.createTicks();
 
@@ -4370,10 +4374,27 @@ class TGeoPainter extends ObjectPainter {
             buf[pos++] = x;
             buf[pos++] = ymin + dd;
             buf[pos++] = 0;
+
+            let text3d = new TextGeometry(x_handle.format(x, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
+            text3d.computeBoundingBox();
+            let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
+                text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+
+            text3d.translate(-text_width/2, 0, 0);
+
+            let mesh = new Mesh(text3d, textMaterial);
+            mesh.translateX(x);
+            mesh.translateY(ymax - dd*1.2 - text_height);
+            container.add(mesh);
+
+            mesh = new Mesh(text3d, textMaterial);
+            mesh.translateX(x);
+            mesh.translateY(ymin + dd*1.2);
+            container.add(mesh);
+
          });
 
-         let lineMaterial = new LineBasicMaterial({ color: 'green' }),
-             line = createLineSegments(buf, lineMaterial);
+         let line = createLineSegments(buf, lineMaterial);
 
          container.add(line);
 
@@ -4395,6 +4416,22 @@ class TGeoPainter extends ObjectPainter {
             buf[pos++] = xmax - dd;
             buf[pos++] = y;
             buf[pos++] = 0;
+
+            let text3d = new TextGeometry(y_handle.format(y, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
+            text3d.computeBoundingBox();
+            let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
+                text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+            text3d.translate(0, -text_height/2, 0);
+
+            let mesh = new Mesh(text3d, textMaterial);
+            mesh.translateX(xmin + 1.2*dd);
+            mesh.translateY(y);
+            container.add(mesh);
+
+            mesh = new Mesh(text3d, textMaterial);
+            mesh.translateX(xmax - 1.2*dd - text_width);
+            mesh.translateY(y);
+            container.add(mesh);
          });
 
          line = createLineSegments(buf, lineMaterial);
