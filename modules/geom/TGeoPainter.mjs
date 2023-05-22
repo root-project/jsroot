@@ -2929,31 +2929,36 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
       } else if ((this.ctrl.camera_kind == 'orthoXOY') || (this.ctrl.camera_kind == 'orthoXNOY')) {
          this._camera.up.set(0, 1, 0);
-         this._camera.position.set(0, 0, midz + sign*sizez*2);
-         this._lookat.set(0, 0, midz);
+         this._camera.position.set(sign < 0 ? midx*2 : 0, 0, midz + sign*sizez*2);
+         this._lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.y + more*sizey;
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
          this._camera.up.set(0, 0, 1);
-         this._camera.position.set(0, midy - sign*sizey*2, 0);
-         this._lookat.set(0, midy, 0);
+         this._camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
+         this._lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.z + more*sizez;
          this._camera.bottom = box.min.z - more*sizez;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(1,0,0), Math.PI/2);
+         this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
-         this._camera.position.set(midx - sign*sizex*2, 0, 0);
-         this._lookat.set(midx, 0, 0);
+         this._camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
+         this._lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.y + more*sizey;
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,-1,0), Math.PI/2);
+         this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, 0);
@@ -2963,6 +2968,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera.top = box.max.x + more*sizex;
          this._camera.bottom = box.min.x - more*sizex;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         // this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,0,1), Math.PI/2);
+         //this._camera.orthoSign = sign;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -4044,6 +4051,8 @@ class TGeoPainter extends ObjectPainter {
       this._camera.updateMatrixWorld();
       let origin = this._camera.position.clone();
 
+      console.log('move',this._camera.left, this._camera.right, origin.x, origin.y, origin.z );
+
       if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          let dist = this._last_camera_position.distanceTo(origin);
@@ -4385,6 +4394,8 @@ class TGeoPainter extends ObjectPainter {
                 text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
 
             text3d.translate(-text_width/2, 0, 0);
+            if (this._camera.orthoSign < 0)
+               text3d.rotateY(Math.PI);
 
             let mesh = new Mesh(text3d, textMaterial);
             mesh.translateX(x);
@@ -4424,6 +4435,10 @@ class TGeoPainter extends ObjectPainter {
             let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
             text3d.translate(0, -text_height/2, 0);
+            if (this._camera.orthoSign < 0) {
+               text3d.rotateY(Math.PI);
+               text3d.translate(text_width, 0, 0);
+            }
 
             let mesh = new Mesh(text3d, textMaterial);
             mesh.translateX(xmin + 1.2*dd);
@@ -4434,6 +4449,11 @@ class TGeoPainter extends ObjectPainter {
             mesh.translateX(xmax - 1.2*dd - text_width);
             mesh.translateY(y);
             container.add(mesh);
+
+            if (this._camera.orthoRotation) {
+               container.quaternion.copy(this._camera.orthoRotation);
+               container.updateMatrix();
+            }
          });
 
          return true;
