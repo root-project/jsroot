@@ -4360,8 +4360,9 @@ class TGeoPainter extends ObjectPainter {
 
          let xticks = x_handle.createTicks();
 
-         let nsegm = xticks.major.length*2, buf = new Float32Array(nsegm*6), pos = 0;
          xticks.major.forEach(x => {
+            let buf = new Float32Array(2*6), pos = 0;
+
             buf[pos++] = x;
             buf[pos++] = ymax;
             buf[pos++] = 0;
@@ -4374,6 +4375,9 @@ class TGeoPainter extends ObjectPainter {
             buf[pos++] = x;
             buf[pos++] = ymin + dd;
             buf[pos++] = 0;
+
+            let line = createLineSegments(buf, lineMaterial);
+            container.add(line);
 
             let text3d = new TextGeometry(x_handle.format(x, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
@@ -4394,16 +4398,11 @@ class TGeoPainter extends ObjectPainter {
 
          });
 
-         let line = createLineSegments(buf, lineMaterial);
-
-         container.add(line);
-
          let yticks = y_handle.createTicks();
 
-         nsegm = yticks.major.length*2;
-         buf = new Float32Array(nsegm*6);
-         pos = 0;
          yticks.major.forEach(y => {
+            let buf = new Float32Array(2*6), pos = 0;
+
             buf[pos++] = xmin;
             buf[pos++] = y;
             buf[pos++] = 0;
@@ -4416,6 +4415,9 @@ class TGeoPainter extends ObjectPainter {
             buf[pos++] = xmax - dd;
             buf[pos++] = y;
             buf[pos++] = 0;
+
+            let line = createLineSegments(buf, lineMaterial);
+            container.add(line);
 
             let text3d = new TextGeometry(y_handle.format(y, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
@@ -4433,11 +4435,6 @@ class TGeoPainter extends ObjectPainter {
             mesh.translateY(y);
             container.add(mesh);
          });
-
-         line = createLineSegments(buf, lineMaterial);
-
-         container.add(line);
-
 
          return true;
       }

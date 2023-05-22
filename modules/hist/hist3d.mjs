@@ -590,8 +590,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
-
-
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
          maxtextheight = Math.max(maxtextheight, draw_height);
