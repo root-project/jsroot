@@ -844,7 +844,7 @@ class TGeoPainter extends ObjectPainter {
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
-                   camera_kind: 'perspective',
+                   camera_kind: 'perspective', camera_overlay: 'none',
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
@@ -893,6 +893,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
+      if (d.check('OVERLAY', true)) res.camera_overlay = d.part.toLowerCase();
       if (d.check('CAN_ROTATE')) res.can_rotate = true;
       if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
       if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
@@ -1254,7 +1255,7 @@ class TGeoPainter extends ObjectPainter {
 
       // axes drawing always triggers rendering
       if (arg != 'norender')
-         this.drawAxes();
+         this.drawAxesAndOverlay();
    }
 
    /** @summary Should be called when autorotate property changed */
@@ -1267,7 +1268,7 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
-      this.drawAxes();
+      this.drawAxesAndOverlay();
    }
 
    /** @summary Method should be called to change background color */
@@ -1437,6 +1438,13 @@ class TGeoPainter extends ObjectPainter {
                 .listen().onChange(() => { this._controls.enableRotate = this.ctrl.can_rotate; });
 
       camera.add(this, 'focusCamera').name('Reset position');
+
+      camera.add(this.ctrl, 'camera_overlay', {
+            'None': 'none',
+            'Bar': 'bar',
+            'Axis': 'axis',
+            'Grid': 'grid'
+      }).name('Overlay').listen().onChange(() => this.changeCamera());
 
       // Advanced Options
       if (this._webgl) {
@@ -4255,13 +4263,83 @@ class TGeoPainter extends ObjectPainter {
          this._slave_painters[k].startDrawGeometry();
    }
 
-   /** @summary Draw axes if configured, otherwise just remove completely
+   /** @summary Draw axes and camera overlay */
+   drawAxesAndOverlay(norender) {
+      let res1 = this.drawAxes(),
+          res2 = this.drawOverlay();
+
+      if (!res1 && !res2)
+         return norender ? null : this.render3D();
+      else
+         return this.changedDepthMethod(norender ? 'norender' : undefined);
+   }
+
+   /** @summary Draw overlay for the orthographic cameras
      * @return {Promise} when norender not specified */
-   drawAxes(norender) {
+   drawOverlay() {
+      if ((this.ctrl.camera_overlay == 'bar') && this.isOrthoCamera()) {
+
+         let container = this.getExtrasContainer('create', 'overlay');
+
+         let x1 = this._camera.left * 0.2 + this._camera.right*0.8,
+             x2 = this._camera.left * 0.1 + this._camera.right*0.9,
+             y1 = this._camera.top * 0.82 + this._camera.bottom * 0.18,
+             y2 = this._camera.top * 0.78 + this._camera.bottom * 0.22;
+
+         let nsegm = 3, buf = new Float32Array(nsegm*6), pos = 0;
+
+         buf[pos++] = x1;
+         buf[pos++] = y1;
+         buf[pos++] = 0;
+         buf[pos++] = x1;
+         buf[pos++] = y2;
+         buf[pos++] = 0;
+
+         buf[pos++] = x1;
+         buf[pos++] = (y1+y2)/2;
+         buf[pos++] = 0;
+         buf[pos++] = x2;
+         buf[pos++] = (y1+y2)/2;
+         buf[pos++] = 0;
+
+         buf[pos++] = x2;
+         buf[pos++] = y1;
+         buf[pos++] = 0;
+         buf[pos++] = x2;
+         buf[pos++] = y2;
+         buf[pos++] = 0;
+         let lineMaterial = new LineBasicMaterial({ color: 'green' }),
+             line = createLineSegments(buf, lineMaterial);
+
+         container.add(line);
+
+         let textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
+
+         let text3d = new TextGeometry(Math.round(x2-x1).toFixed(0), { font: HelveticerRegularFont, size: Math.abs(y2-y1), height: 0, curveSegments: 5 });
+
+         let mesh = new Mesh(text3d, textMaterial);
+
+         mesh.translateX(x1);
+         mesh.translateY(y1);
+
+         container.add(mesh);
+
+
+         return true;
+      }
+
+
+      this.getExtrasContainer('delete', 'overlay');
+
+      return false;
+   }
+
+   /** @summary Draw axes if configured, otherwise just remove completely */
+   drawAxes() {
       this.getExtrasContainer('delete', 'axis');
 
       if (!this.ctrl._axis)
-         return norender ? null : this.render3D();
+         return false;
 
       let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
@@ -4478,7 +4556,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       // after creating axes trigger rendering and recalculation of depth
-      return this.changedDepthMethod(norender ? 'norender' : undefined);
+      return true;
    }
 
    /** @summary Set axes visibility 0 - off, 1 - on, 2 - centered */
@@ -4487,7 +4565,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
          this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
-      return this.drawAxes();
+      return this.drawAxesAndOverlay();
    }
 
    /** @summary Set auto rotate mode */
@@ -4679,8 +4757,10 @@ class TGeoPainter extends ObjectPainter {
          if (full_redraw && (this.ctrl.trans_radial || this.ctrl.trans_z))
             this.changedTransformation('norender');
 
-         if (full_redraw && this.ctrl._axis)
-            this.drawAxes(true);
+         if (full_redraw)
+            return this.drawAxesAndOverlay(true);
+
+      }).then(() => {
 
          this._scene.overrideMaterial = null;
 
