@@ -2946,6 +2946,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.top = box.max.z + more*sizez;
          this._camera.bottom = box.min.z - more*sizez;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [0, 2, 1];
          this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(1,0,0), Math.PI/2);
          this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
@@ -2957,17 +2958,19 @@ class TGeoPainter extends ObjectPainter {
          this._camera.top = box.max.y + more*sizey;
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [2, 1, 0];
          this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,-1,0), Math.PI/2);
          this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
-         this._camera.position.set(0, midy - sign*sizey*2, 0);
-         this._lookat.set(0, midy, 0);
+         this._camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
+         this._lookat.set(0, midy, sign > 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.x + more*sizex;
          this._camera.bottom = box.min.x - more*sizex;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [2, 0, 1];
          // this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,0,1), Math.PI/2);
          //this._camera.orthoSign = sign;
       } else if (this.ctrl.project) {
@@ -4366,28 +4369,33 @@ class TGeoPainter extends ObjectPainter {
          let lineMaterial = new LineBasicMaterial({ color: 'black' }),
              textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
 
-
          let xticks = x_handle.createTicks();
+
+         let ii = this._camera.orthoIndicies ?? [0, 1, 2];
 
          xticks.major.forEach(x => {
             let buf = new Float32Array(2*6), pos = 0;
 
-            buf[pos++] = x;
-            buf[pos++] = ymax;
-            buf[pos++] = 0;
-            buf[pos++] = x;
-            buf[pos++] = ymax - dd;
-            buf[pos++] = 0;
-            buf[pos++] = x;
-            buf[pos++] = ymin;
-            buf[pos++] = 0;
-            buf[pos++] = x;
-            buf[pos++] = ymin + dd;
-            buf[pos++] = 0;
+            buf[pos+ii[0]] = x;
+            buf[pos+ii[1]] = ymax;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = x;
+            buf[pos+ii[1]] = ymax - dd;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = x;
+            buf[pos+ii[1]] = ymin;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = x;
+            buf[pos+ii[1]] = ymin + dd;
+            buf[pos+ii[2]] = 0;
 
             let line = createLineSegments(buf, lineMaterial);
             container.add(line);
 
+            /*
             let text3d = new TextGeometry(x_handle.format(x, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -4406,6 +4414,7 @@ class TGeoPainter extends ObjectPainter {
             mesh.translateX(x);
             mesh.translateY(ymin + dd*1.2);
             container.add(mesh);
+            */
 
          });
 
@@ -4414,21 +4423,27 @@ class TGeoPainter extends ObjectPainter {
          yticks.major.forEach(y => {
             let buf = new Float32Array(2*6), pos = 0;
 
-            buf[pos++] = xmin;
-            buf[pos++] = y;
-            buf[pos++] = 0;
-            buf[pos++] = xmin + dd;
-            buf[pos++] = y;
-            buf[pos++] = 0;
-            buf[pos++] = xmax;
-            buf[pos++] = y;
-            buf[pos++] = 0;
-            buf[pos++] = xmax - dd;
-            buf[pos++] = y;
-            buf[pos++] = 0;
+            buf[pos+ii[0]] = xmin;
+            buf[pos+ii[1]] = y;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = xmin + dd;
+            buf[pos+ii[1]] = y;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = xmax;
+            buf[pos+ii[1]] = y;
+            buf[pos+ii[2]] = 0;
+            pos+=3;
+            buf[pos+ii[0]] = xmax - dd;
+            buf[pos+ii[1]] = y;
+            buf[pos+ii[2]] = 0;
+
 
             let line = createLineSegments(buf, lineMaterial);
             container.add(line);
+
+            /*
 
             let text3d = new TextGeometry(y_handle.format(y, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
@@ -4449,11 +4464,12 @@ class TGeoPainter extends ObjectPainter {
             mesh.translateX(xmax - 1.2*dd - text_width);
             mesh.translateY(y);
             container.add(mesh);
+            */
 
-            if (this._camera.orthoRotation) {
-               container.quaternion.copy(this._camera.orthoRotation);
-               container.updateMatrix();
-            }
+            //if (this._camera.orthoRotation) {
+            //   container.quaternion.copy(this._camera.orthoRotation);
+            //   container.updateMatrix();
+            //}
          });
 
          return true;
