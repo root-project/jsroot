@@ -1,7 +1,7 @@
 import { httpRequest, decodeUrl, browser, source_dir,
          settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, getPromise,
-         prROOT, clTNamed, clTList, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
+         prROOT, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
@@ -21,6 +21,7 @@ import { getColor, getRootColors } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
+import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { kindGeo, kindEve,
          clTGeoBBox, clTGeoCompositeShape,
@@ -4277,14 +4278,35 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Draw overlay for the orthographic cameras
      * @return {Promise} when norender not specified */
    drawOverlay() {
+
+      let x_handle, y_handle, xmin, xmax, ymin, ymax;
+      if (this.isOrthoCamera()) {
+         xmin = this._camera.left; xmax = this._camera.right;
+         ymin = this._camera.bottom; ymax = this._camera.top;
+
+         x_handle = new TAxisPainter(null, create(clTAxis));
+         x_handle.configureAxis('xaxis', xmin, xmax, xmin, xmax, false, [xmin, xmax],
+                                      { log: 0, reverse: false });
+         y_handle = new TAxisPainter(null, create(clTAxis));
+         y_handle.configureAxis('yaxis', ymin, ymax, ymin, ymax, false, [ymin, ymax],
+                                      { log: 0, reverse: false });
+       }
+
       if ((this.ctrl.camera_overlay == 'bar') && this.isOrthoCamera()) {
 
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let x1 = this._camera.left * 0.2 + this._camera.right*0.8,
-             x2 = this._camera.left * 0.1 + this._camera.right*0.9,
-             y1 = this._camera.top * 0.82 + this._camera.bottom * 0.18,
-             y2 = this._camera.top * 0.78 + this._camera.bottom * 0.22;
+         let x1 = xmin*0.2 + xmax*0.8,
+             x2 = xmin*0.1 + xmax*0.0,
+             y1 = ymax * 0.82 + ymin * 0.18,
+             y2 = ymax * 0.78 + ymin * 0.22;
+
+         let ticks = x_handle.createTicks();
+
+         if (ticks.major?.length > 1) {
+            x1 = ticks.major[ticks.major.length-2];
+            x2 = ticks.major[ticks.major.length-1];
+         }
 
          let nsegm = 3, buf = new Float32Array(nsegm*6), pos = 0;
 
@@ -4324,10 +4346,64 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-
          return true;
       }
 
+      if ((this.ctrl.camera_overlay == 'axis') && this.isOrthoCamera()) {
+         let container = this.getExtrasContainer('create', 'overlay');
+
+         let dd = (ymax - ymin)*0.03;
+
+         let xticks = x_handle.createTicks();
+
+         let nsegm = xticks.major.length*2, buf = new Float32Array(nsegm*6), pos = 0;
+         xticks.major.forEach(x => {
+            buf[pos++] = x;
+            buf[pos++] = ymax;
+            buf[pos++] = 0;
+            buf[pos++] = x;
+            buf[pos++] = ymax - dd;
+            buf[pos++] = 0;
+            buf[pos++] = x;
+            buf[pos++] = ymin;
+            buf[pos++] = 0;
+            buf[pos++] = x;
+            buf[pos++] = ymin + dd;
+            buf[pos++] = 0;
+         });
+
+         let lineMaterial = new LineBasicMaterial({ color: 'green' }),
+             line = createLineSegments(buf, lineMaterial);
+
+         container.add(line);
+
+         let yticks = y_handle.createTicks();
+
+         nsegm = yticks.major.length*2;
+         buf = new Float32Array(nsegm*6);
+         pos = 0;
+         yticks.major.forEach(y => {
+            buf[pos++] = xmin;
+            buf[pos++] = y;
+            buf[pos++] = 0;
+            buf[pos++] = xmin + dd;
+            buf[pos++] = y;
+            buf[pos++] = 0;
+            buf[pos++] = xmax;
+            buf[pos++] = y;
+            buf[pos++] = 0;
+            buf[pos++] = xmax - dd;
+            buf[pos++] = y;
+            buf[pos++] = 0;
+         });
+
+         line = createLineSegments(buf, lineMaterial);
+
+         container.add(line);
+
+
+         return true;
+      }
 
       this.getExtrasContainer('delete', 'overlay');
 
