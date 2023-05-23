@@ -1103,6 +1103,18 @@ class TGeoPainter extends ObjectPainter {
       };
    }
 
+   /** @summary Get list of supported camera overlays - used in context menu and dat.gui */
+   getCameraOverlays() {
+      return {
+         'None': 'none',
+         'Bar': 'bar',
+         'Axis': 'axis',
+         'Grid': 'grid',
+         'Grid background': 'gridb',
+         'Grid foreground': 'gridf'
+      }
+   }
+
    /** @summary Fill context menu */
    fillContextMenu(menu) {
       menu.add('header: Draw options');
@@ -1145,13 +1157,29 @@ class TGeoPainter extends ObjectPainter {
                menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
             });
 
-         menu.add('separator');
+         menu.add('sub:Kind');
          let camera_kinds = this.getCameraKinds();
          for (let name in camera_kinds)
             menu.addchk(this.ctrl.camera_kind == camera_kinds[name], name, camera_kinds[name], arg => {
                this.ctrl.camera_kind = arg;
                this.changeCamera();
             });
+         menu.add('endsub:');
+
+         if (this.isOrthoCamera()) {
+            menu.addchk(this.ctrl.can_rotate, 'Can rotate', () => {
+               this.ctrl.can_rotate = !this.ctrl.can_rotate;
+               this._controls.enableRotate = this.ctrl.can_rotate;
+            });
+            menu.add('sub:Overlay');
+            let camera_overlays = this.getCameraOverlays();
+            for (let name in camera_overlays)
+               menu.addchk(this.ctrl.camera_overlay == camera_overlays[name], name, camera_overlays[name], arg => {
+                  this.ctrl.camera_overlay = arg;
+                  this.changeCamera();
+               });
+            menu.add('endsub:');
+         }
 
          menu.add('endsub:');
       }
@@ -1461,14 +1489,8 @@ class TGeoPainter extends ObjectPainter {
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      camera.add(this.ctrl, 'camera_overlay', {
-            'None': 'none',
-            'Bar': 'bar',
-            'Axis': 'axis',
-            'Grid': 'grid',
-            'Grid background': 'gridb',
-            'Grid foreground': 'gridf'
-      }).name('Overlay').listen().onChange(() => this.changeCamera());
+      camera.add(this.ctrl, 'camera_overlay', this.getCameraOverlays())
+            .name('Overlay').listen().onChange(() => this.changeCamera());
 
       // Advanced Options
       if (this._webgl) {
