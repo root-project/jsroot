@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '17/05/2023';
+let version_date = '23/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -57292,7 +57292,8 @@ const Box3D = {
                 new Vector3(0, 0, 0), new Vector3(0, 0, 1) ],
     Indexes: [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ],
     Normals: [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ],
-    Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5]  // segments addresses Vertices
+    Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5],  // segments addresses Vertices
+    MeshSegments: undefined
 };
 
 // these segments address vertices from the mesh, we can use positions from box mesh
@@ -58032,8 +58033,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
-
-
 
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
@@ -59892,7 +59891,7 @@ class TAxisPainter extends ObjectPainter {
       } else if (this.kind == 'func') {
          this.func = this.createFuncHandle(opts.axis_func, 0, smin, smax);
       } else {
-         this.func = linear().domain([smin,smax]);
+         this.func = linear().domain([smin, smax]);
       }
 
       if (this.vertical ^ this.reverse) {
@@ -86726,7 +86725,7 @@ class TGeoPainter extends ObjectPainter {
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
-                   camera_kind: 'perspective',
+                   camera_kind: 'perspective', camera_overlay: 'none',
                    clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
@@ -86775,6 +86774,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = false; }
       if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = false; }
+      if (d.check('OVERLAY', true)) res.camera_overlay = d.part.toLowerCase();
       if (d.check('CAN_ROTATE')) res.can_rotate = true;
       if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
       if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
@@ -87136,7 +87136,7 @@ class TGeoPainter extends ObjectPainter {
 
       // axes drawing always triggers rendering
       if (arg != 'norender')
-         this.drawAxes();
+         this.drawAxesAndOverlay();
    }
 
    /** @summary Should be called when autorotate property changed */
@@ -87149,7 +87149,7 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(this.ctrl._axis))
          this.ctrl._axis = parseInt(this.ctrl._axis);
 
-      this.drawAxes();
+      this.drawAxesAndOverlay();
    }
 
    /** @summary Method should be called to change background color */
@@ -87319,6 +87319,15 @@ class TGeoPainter extends ObjectPainter {
                 .listen().onChange(() => { this._controls.enableRotate = this.ctrl.can_rotate; });
 
       camera.add(this, 'focusCamera').name('Reset position');
+
+      camera.add(this.ctrl, 'camera_overlay', {
+            'None': 'none',
+            'Bar': 'bar',
+            'Axis': 'axis',
+            'Grid': 'grid',
+            'Grid background': 'gridb',
+            'Grid foreground': 'gridf'
+      }).name('Overlay').listen().onChange(() => this.changeCamera());
 
       // Advanced Options
       if (this._webgl) {
@@ -88726,7 +88735,7 @@ class TGeoPainter extends ObjectPainter {
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2,
-          more = this.ctrl._axis ? 0.1 : 0;
+          more = this.ctrl._axis || (this.ctrl.camera_overlay == 'bar')  ? 0.2 : 0.1;
 
       if (this._scene_size && !force) {
          const d = this._scene_size, test = (v1, v2, scale) => {
@@ -88802,40 +88811,54 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
       } else if ((this.ctrl.camera_kind == 'orthoXOY') || (this.ctrl.camera_kind == 'orthoXNOY')) {
          this._camera.up.set(0, 1, 0);
-         this._camera.position.set(0, 0, midz + sign*sizez*2);
-         this._lookat.set(0, 0, midz);
+         this._camera.position.set(sign < 0 ? midx*2 : 0, 0, midz + sign*sizez*2);
+         this._lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.y + more*sizey;
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midz, sizez/2];
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
          this._camera.up.set(0, 0, 1);
-         this._camera.position.set(0, midy - sign*sizey*2, 0);
-         this._lookat.set(0, midy, 0);
+         this._camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
+         this._lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.z + more*sizez;
          this._camera.bottom = box.min.z - more*sizez;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [0, 2, 1];
+         this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
+         this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midy, -sizey/2];
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
-         this._camera.position.set(midx - sign*sizex*2, 0, 0);
-         this._lookat.set(midx, 0, 0);
+         this._camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
+         this._lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.y + more*sizey;
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [2, 1, 0];
+         this._camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
+         this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midx, -sizex/2];
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
-         this._camera.position.set(0, midy - sign*sizey*2, 0);
-         this._lookat.set(0, midy, 0);
+         this._camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
+         this._lookat.set(0, midy, sign > 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.x + more*sizex;
          this._camera.bottom = box.min.x - more*sizex;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
+         this._camera.orthoIndicies = [2, 0, 1];
+         this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2).rotateY(Math.PI/2);
+         this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midy, -sizey/2];
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -89915,8 +89938,10 @@ class TGeoPainter extends ObjectPainter {
      * @param force - if specified, forces calculations of render order */
    testCameraPosition(force) {
       this._camera.updateMatrixWorld();
-      let origin = this._camera.position.clone();
 
+      this.drawOverlay();
+
+      let origin = this._camera.position.clone();
       if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          let dist = this._last_camera_position.distanceTo(origin);
@@ -90137,13 +90162,203 @@ class TGeoPainter extends ObjectPainter {
          this._slave_painters[k].startDrawGeometry();
    }
 
-   /** @summary Draw axes if configured, otherwise just remove completely
-     * @return {Promise} when norender not specified */
-   drawAxes(norender) {
+   /** @summary Draw axes and camera overlay */
+   drawAxesAndOverlay(norender) {
+      let res1 = this.drawAxes(),
+          res2 = this.drawOverlay();
+
+      if (!res1 && !res2)
+         return norender ? null : this.render3D();
+      else
+         return this.changedDepthMethod(norender ? 'norender' : undefined);
+   }
+
+   /** @summary Draw overlay for the orthographic cameras */
+   drawOverlay() {
+
+      this.getExtrasContainer('delete', 'overlay');
+      if (!this.isOrthoCamera() || (this.ctrl.camera_overlay == 'none'))
+         return false;
+
+      let zoom = 0.5 / this._camera.zoom,
+          midx = (this._camera.left + this._camera.right) / 2,
+          midy = (this._camera.bottom + this._camera.top) / 2,
+          xmin = midx - (this._camera.right - this._camera.left) * zoom,
+          xmax = midx + (this._camera.right - this._camera.left) * zoom,
+          ymin = midy - (this._camera.top - this._camera.bottom) * zoom,
+          ymax = midy + (this._camera.top - this._camera.bottom) * zoom,
+          tick_size = (ymax - ymin) * 0.02,
+          text_size = (ymax - ymin) * 0.015,
+          grid_gap = (ymax - ymin) * 0.001,
+          x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
+          y1 = ymin + text_size * 3, y2 = ymax - text_size * 3;
+
+      let  x_handle = new TAxisPainter(null, create$1(clTAxis));
+      x_handle.configureAxis('xaxis', x1, x2, x1, x2, false, [x1, x2],
+                             { log: 0, reverse: false });
+      let y_handle = new TAxisPainter(null, create$1(clTAxis));
+      y_handle.configureAxis('yaxis', y1, y2, y1, y2, false, [y1, y2],
+                              { log: 0, reverse: false });
+
+      let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2], midZ = 0, gridZ = 0;
+
+      if (this._camera.orthoZ)
+         gridZ = midZ = this._camera.orthoZ[0];
+
+      const addPoint = (x, y, z) => {
+         buf[pos+ii[0]] = x;
+         buf[pos+ii[1]] = y;
+         buf[pos+ii[2]] = z ?? gridZ;
+         pos += 3;
+      }, createText = (lbl, size) => {
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+         text3d.computeBoundingBox();
+         text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
+         text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+
+         text3d.translate(-text3d._width/2, -text3d._height/2, 0);
+         if (this._camera.orthoSign < 0)
+            text3d.rotateY(Math.PI);
+
+         if (isFunc(this._camera.orthoRotation))
+            this._camera.orthoRotation(text3d);
+
+         return text3d;
+      }, createTextMesh = (geom, material, x, y, z) => {
+         let tgt = [0, 0, 0];
+         tgt[ii[0]] = x;
+         tgt[ii[1]] = y;
+         tgt[ii[2]] = z ?? gridZ;
+         let mesh = new Mesh(geom, material);
+         mesh.translateX(tgt[0]).translateY(tgt[1]).translateZ(tgt[2]);
+         return mesh;
+      };
+
+      if (this.ctrl.camera_overlay == 'bar') {
+
+         let container = this.getExtrasContainer('create', 'overlay');
+
+         let x1 = xmin * 0.15 + xmax * 0.85,
+             x2 = xmin * 0.05 + xmax * 0.95,
+             y1 = ymax * 0.9 + ymin * 0.1,
+             y2 = ymax * 0.86 + ymin * 0.14;
+
+         let ticks = x_handle.createTicks();
+
+         if (ticks.major?.length > 1) {
+            x1 = ticks.major[ticks.major.length-2];
+            x2 = ticks.major[ticks.major.length-1];
+         }
+
+         buf = new Float32Array(3*6); pos = 0;
+
+         addPoint(x1, y1, midZ);
+         addPoint(x1, y2, midZ);
+
+         addPoint(x1, (y1 + y2) / 2, midZ);
+         addPoint(x2, (y1 + y2) / 2, midZ);
+
+         addPoint(x2, y1, midZ);
+         addPoint(x2, y2, midZ);
+
+         let lineMaterial = new LineBasicMaterial({ color: 'green' }),
+             textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
+
+         container.add(createLineSegments(buf, lineMaterial));
+
+         let text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
+
+         container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8, midZ));
+         return true;
+      }
+
+      let show_grid = this.ctrl.camera_overlay.indexOf('grid') == 0;
+
+      if (show_grid && this._camera.orthoZ) {
+         if (this.ctrl.camera_overlay == 'gridf')
+            gridZ += this._camera.orthoSign * this._camera.orthoZ[1];
+         else if (this.ctrl.camera_overlay == 'gridb')
+            gridZ -= this._camera.orthoSign * this._camera.orthoZ[1];
+      }
+
+      if ((this.ctrl.camera_overlay == 'axis') || show_grid) {
+
+         let container = this.getExtrasContainer('create', 'overlay');
+
+         let lineMaterial = new LineBasicMaterial({ color: new Color$1('black') }),
+             gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color$1(0xbbbbbb) }) : null,
+             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color$1(0xdddddd), dashSize: 2, gapSize: 2 }) : null,
+             textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
+
+         let xticks = x_handle.createTicks();
+
+         while (xticks.next()) {
+            let x = xticks.tick, k = (xticks.kind == 1) ? 1. : 0.6;
+
+            if (show_grid) {
+               buf = new Float32Array(2*3); pos = 0;
+               addPoint(x, ymax - k*tick_size - grid_gap);
+               addPoint(x, ymin + k*tick_size + grid_gap);
+               container.add(createLineSegments(buf, xticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+            }
+
+            buf = new Float32Array(4*3); pos = 0;
+            addPoint(x, ymax);
+            addPoint(x, ymax - k*tick_size);
+            addPoint(x, ymin);
+            addPoint(x, ymin + k*tick_size);
+
+            container.add(createLineSegments(buf, lineMaterial));
+
+            if (xticks.kind != 1) continue;
+
+            let text3d = createText(x_handle.format(x, true), text_size);
+
+            container.add(createTextMesh(text3d, textMaterial, x, ymax - tick_size - text_size/2 - text3d._height/2));
+
+            container.add(createTextMesh(text3d, textMaterial, x, ymin + tick_size + text_size/2 + text3d._height/2));
+         }
+
+         let yticks = y_handle.createTicks();
+
+         while (yticks.next()) {
+            let y = yticks.tick, k = (yticks.kind == 1) ? 1. : 0.6;
+
+            if (show_grid) {
+               buf = new Float32Array(2*3); pos = 0;
+               addPoint(xmin + k*tick_size + grid_gap, y);
+               addPoint(xmax - k*tick_size - grid_gap, y);
+               container.add(createLineSegments(buf, yticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+            }
+
+            buf = new Float32Array(4*3); pos = 0;
+            addPoint(xmin, y);
+            addPoint(xmin + k*tick_size, y);
+            addPoint(xmax, y);
+            addPoint(xmax - k*tick_size, y);
+
+            container.add(createLineSegments(buf, lineMaterial));
+
+            if (yticks.kind != 1) continue;
+
+            let text3d = createText(y_handle.format(y, true), text_size);
+
+            container.add(createTextMesh(text3d, textMaterial, xmin + tick_size + text_size/2 + text3d._width/2, y));
+
+            container.add(createTextMesh(text3d, textMaterial, xmax - tick_size - text_size/2 - text3d._width/2, y));
+         }
+         return true;
+      }
+
+      return false;
+   }
+
+   /** @summary Draw axes if configured, otherwise just remove completely */
+   drawAxes() {
       this.getExtrasContainer('delete', 'axis');
 
       if (!this.ctrl._axis)
-         return norender ? null : this.render3D();
+         return false;
 
       let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
@@ -90358,7 +90573,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       // after creating axes trigger rendering and recalculation of depth
-      return this.changedDepthMethod(norender ? 'norender' : undefined);
+      return true;
    }
 
    /** @summary Set axes visibility 0 - off, 1 - on, 2 - centered */
@@ -90367,7 +90582,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
          this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
-      return this.drawAxes();
+      return this.drawAxesAndOverlay();
    }
 
    /** @summary Set auto rotate mode */
@@ -90559,8 +90774,10 @@ class TGeoPainter extends ObjectPainter {
          if (full_redraw && (this.ctrl.trans_radial || this.ctrl.trans_z))
             this.changedTransformation('norender');
 
-         if (full_redraw && this.ctrl._axis)
-            this.drawAxes(true);
+         if (full_redraw)
+            return this.drawAxesAndOverlay(true);
+
+      }).then(() => {
 
          this._scene.overrideMaterial = null;
 

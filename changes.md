@@ -24,11 +24,12 @@
 21. Implement moving and resizing of subpads
 22. Implement zooming in the TASImage
 23. Let configure position and direction of camera for TGeo, let create URL for that
-24. Support many orthographic cameras, axes drawing, labels rotation
-25. Support InstancedMesh for TGeo drawing, let show really large geometries
-26. Fix - rescan sumw2 when update TH1
-27. Fix - correct placing for TLegend header
-28. Fix - correctly align sub/super scripts in complex TLatex
+24. Support labels rotation for simple axis in geometry
+25. Support many orthographic cameras with overlayed grid/labels
+26. Support InstancedMesh for TGeo drawing, let show really large geometries
+27. Fix - rescan sumw2 when update TH1
+28. Fix - correct placing for TLegend header
+29. Fix - correctly align sub/super scripts in complex TLatex
 
 
 ## Changes in 7.3.1
