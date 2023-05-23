@@ -4302,7 +4302,16 @@ class TGeoPainter extends ObjectPainter {
          y_handle = new TAxisPainter(null, create(clTAxis));
          y_handle.configureAxis('yaxis', ymin, ymax, ymin, ymax, false, [ymin, ymax],
                                       { log: 0, reverse: false });
-       }
+      }
+
+      let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2];
+
+      function addPoint(x, y, z = 0) {
+         buf[pos+ii[0]] = x;
+         buf[pos+ii[1]] = y;
+         buf[pos+ii[2]] = z;
+         pos += 3;
+      }
 
       if ((this.ctrl.camera_overlay == 'bar') && this.isOrthoCamera()) {
 
@@ -4320,28 +4329,17 @@ class TGeoPainter extends ObjectPainter {
             x2 = ticks.major[ticks.major.length-1];
          }
 
-         let nsegm = 3, buf = new Float32Array(nsegm*6), pos = 0;
+         buf = new Float32Array(3*6); pos = 0;
 
-         buf[pos++] = x1;
-         buf[pos++] = y1;
-         buf[pos++] = 0;
-         buf[pos++] = x1;
-         buf[pos++] = y2;
-         buf[pos++] = 0;
+         addPoint(x1, y1);
+         addPoint(x1, y2);
 
-         buf[pos++] = x1;
-         buf[pos++] = (y1+y2)/2;
-         buf[pos++] = 0;
-         buf[pos++] = x2;
-         buf[pos++] = (y1+y2)/2;
-         buf[pos++] = 0;
+         addPoint(x1, (y1+y2)/2);
+         addPoint(x2, (y1+y2)/2);
 
-         buf[pos++] = x2;
-         buf[pos++] = y1;
-         buf[pos++] = 0;
-         buf[pos++] = x2;
-         buf[pos++] = y2;
-         buf[pos++] = 0;
+         addPoint(x2, y1);
+         addPoint(x2, y2);
+
          let lineMaterial = new LineBasicMaterial({ color: 'green' }),
              line = createLineSegments(buf, lineMaterial);
 
@@ -4371,26 +4369,13 @@ class TGeoPainter extends ObjectPainter {
 
          let xticks = x_handle.createTicks();
 
-         let ii = this._camera.orthoIndicies ?? [0, 1, 2];
-
          xticks.major.forEach(x => {
-            let buf = new Float32Array(2*6), pos = 0;
+            buf = new Float32Array(2*6); pos = 0;
 
-            buf[pos+ii[0]] = x;
-            buf[pos+ii[1]] = ymax;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = x;
-            buf[pos+ii[1]] = ymax - dd;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = x;
-            buf[pos+ii[1]] = ymin;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = x;
-            buf[pos+ii[1]] = ymin + dd;
-            buf[pos+ii[2]] = 0;
+            addPoint(x, ymax);
+            addPoint(x, ymax - dd);
+            addPoint(x, ymin);
+            addPoint(x, ymin + dd);
 
             let line = createLineSegments(buf, lineMaterial);
             container.add(line);
@@ -4421,24 +4406,11 @@ class TGeoPainter extends ObjectPainter {
          let yticks = y_handle.createTicks();
 
          yticks.major.forEach(y => {
-            let buf = new Float32Array(2*6), pos = 0;
-
-            buf[pos+ii[0]] = xmin;
-            buf[pos+ii[1]] = y;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = xmin + dd;
-            buf[pos+ii[1]] = y;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = xmax;
-            buf[pos+ii[1]] = y;
-            buf[pos+ii[2]] = 0;
-            pos+=3;
-            buf[pos+ii[0]] = xmax - dd;
-            buf[pos+ii[1]] = y;
-            buf[pos+ii[2]] = 0;
-
+            buf = new Float32Array(2*6); pos = 0;
+            addPoint(xmin, y);
+            addPoint(xmin + dd, y);
+            addPoint(xmax, y);
+            addPoint(xmax - dd, y);
 
             let line = createLineSegments(buf, lineMaterial);
             container.add(line);
