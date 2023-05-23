@@ -4052,10 +4052,10 @@ class TGeoPainter extends ObjectPainter {
      * @param force - if specified, forces calculations of render order */
    testCameraPosition(force) {
       this._camera.updateMatrixWorld();
+
+      this.drawOverlay();
+
       let origin = this._camera.position.clone();
-
-      console.log('move',this._camera.left, this._camera.right, origin.x, origin.y, origin.z );
-
       if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          let dist = this._last_camera_position.distanceTo(origin);
@@ -4294,8 +4294,13 @@ class TGeoPainter extends ObjectPainter {
       if (!this.isOrthoCamera() || (this.ctrl.camera_overlay == 'none'))
          return false;
 
-      let xmin = this._camera.left, xmax = this._camera.right,
-          ymin = this._camera.bottom, ymax = this._camera.top,
+      let zoom = 0.5 / this._camera.zoom,
+          midx = (this._camera.left + this._camera.right) / 2,
+          midy = (this._camera.bottom + this._camera.top) / 2,
+          xmin = midx - (this._camera.right - this._camera.left) * zoom,
+          xmax = midx + (this._camera.right - this._camera.left) * zoom,
+          ymin = midy - (this._camera.top - this._camera.bottom) * zoom,
+          ymax = midy + (this._camera.top - this._camera.bottom) * zoom,
           tick_size = (ymax - ymin) * 0.02,
           text_size = (ymax - ymin) * 0.015,
           grid_gap = (ymax - ymin) * 0.001,
