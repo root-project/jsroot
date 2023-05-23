@@ -196,7 +196,11 @@
      { "name": "proj2", "url": "?nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz;black,projx;black,main;black;dray]", "title": "Place main drawing not on the first place" },
      { "name": "canv", "file": "geom/south_gate.root", "item": "c1;1", "opt": "", "title": "geometry storead in the TCanvas" },
      { "name": "comp_m", "asurl": true,  "file": "geom/BarrelSeg13.root", "item": "ccdb_object;1/lVolTOFrail_22386_22386", "r3d": "svg", "opt": "", "title": "Composite shape with matrix transformation inside" },
-     { "name": "comp_m2", "asurl": true,  "file": "geom/MFTComplex_1.root", "item": "ccdb_object;1/lMF22_526107_526107", "r3d": "svg", "opt": "", "title": "Composite shape with matrix transformation inside" }
+     { "name": "comp_m2", "asurl": true,  "file": "geom/MFTComplex_1.root", "item": "ccdb_object;1/lMF22_526107_526107", "r3d": "svg", "opt": "", "title": "Composite shape with matrix transformation inside" },
+     { "name": "orthoXOZ", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoXOZ,overlayBar", "title": "XOZ orthographic camera with overlayed bar" },
+     { "name": "orthoZOY", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoZOY,overlayGridF", "title": "ZOY orthographic camera with overlayed foreground grid" },
+     { "name": "orthoZOX", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoZOX,overlayGrid,axisC", "title": "ZOX orthographic camera with overlayed grid and centred axis" },
+     { "name": "orthoZNOY", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoZNOY,overlayGrid,can_rotate", "title": "ZNOY orthographic camera with overlayed grid, can rotate" }
    ],
    "TGraph" : [
      { "name": "twopad", "file":"graph_twopad.root", "item": "c1;1", "title": "two overlays pads with different axes" },

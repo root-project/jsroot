@@ -184,7 +184,7 @@
    ],
    "TGeo" : [
      { "name": "logo", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "title": "Geometry from rootgeom.C example" },
-     { "name": "ortho", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoXOY", "title": "Example of using orthographic camera" },
+     { "name": "ortho", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"orthoXOY,overlayGridB", "title": "Example of using orthographic camera with overlayed grid" },
      { "name": "camera", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt":"roty88,rotz357,zoom149", "title":"Change camera position and zoom via URL parameters" },
      { "name": "prim", "file": "geom/geodemo.root", "layout": "vert333", "items": ["box","para","arb8","trap","gtra","trd1","trd2","xtru"], "opts": ["z","z","z","z","z","z","z","z","z"], "r3d": "svg", "title": "Basic TGeo primitives from tutorials/geom/geodemo.C, group 1" },
      { "name": "prim2", "file": "geom/geodemo.root", "layout": "vert333", "items": ["cone","coneseg","tube","tubeseg","ctub","eltu","pcon","pgon"], "opts": ["z","z","z","z","z","z","z","z"], "r3d": "svg", "title": "Basic TGeo primitives from tutorials/geom/geodemo.C, group 2" },
