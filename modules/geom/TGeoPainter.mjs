@@ -4407,7 +4407,7 @@ class TGeoPainter extends ObjectPainter {
 
          let lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
              gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
-             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: 2, gapSize: 2 }) : null,
+             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
              textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
 
          let xticks = x_handle.createTicks();
