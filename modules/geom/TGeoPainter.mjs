@@ -1444,7 +1444,9 @@ class TGeoPainter extends ObjectPainter {
             'None': 'none',
             'Bar': 'bar',
             'Axis': 'axis',
-            'Grid': 'grid'
+            'Grid': 'grid',
+            'Grid background': 'gridb',
+            'Grid foreground': 'gridf'
       }).name('Overlay').listen().onChange(() => this.changeCamera());
 
       // Advanced Options
@@ -2853,7 +2855,7 @@ class TGeoPainter extends ObjectPainter {
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2,
-          more = this.ctrl._axis ? 0.1 : 0;
+          more = this.ctrl._axis ? 0.2 : 0.1;
 
       if (this._scene_size && !force) {
          const d = this._scene_size, test = (v1, v2, scale) => {
@@ -2937,6 +2939,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
          this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midz, sizez/2];
       } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
          this._camera.up.set(0, 0, 1);
          this._camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
@@ -2949,6 +2952,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoIndicies = [0, 2, 1];
          this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
          this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midy, -sizey/2];
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
@@ -2961,6 +2965,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoIndicies = [2, 1, 0];
          this._camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
          this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midx, -sizex/2];
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
@@ -2973,6 +2978,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoIndicies = [2, 0, 1];
          this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2).rotateY(Math.PI/2);
          this._camera.orthoSign = sign;
+         this._camera.orthoZ = [midy, -sizey/2];
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -4314,12 +4320,15 @@ class TGeoPainter extends ObjectPainter {
       y_handle.configureAxis('yaxis', y1, y2, y1, y2, false, [y1, y2],
                               { log: 0, reverse: false });
 
-      let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2];
+      let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2], midZ = 0, gridZ = 0;
 
-      const addPoint = (x, y, z = 0) => {
+      if (this._camera.orthoZ)
+         gridZ = midZ = this._camera.orthoZ[0];
+
+      const addPoint = (x, y, z) => {
          buf[pos+ii[0]] = x;
          buf[pos+ii[1]] = y;
-         buf[pos+ii[2]] = z;
+         buf[pos+ii[2]] = z ?? gridZ;
          pos += 3;
       }, createText = (lbl, size) => {
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
@@ -4335,11 +4344,11 @@ class TGeoPainter extends ObjectPainter {
             this._camera.orthoRotation(text3d);
 
          return text3d;
-      }, createTextMesh = (geom, material, x, y, z = 0) => {
+      }, createTextMesh = (geom, material, x, y, z) => {
          let tgt = [0, 0, 0];
          tgt[ii[0]] = x;
          tgt[ii[1]] = y;
-         tgt[ii[2]] = z;
+         tgt[ii[2]] = z ?? gridZ;
          let mesh = new Mesh(geom, material);
          mesh.translateX(tgt[0]).translateY(tgt[1]).translateZ(tgt[2]);
          return mesh;
@@ -4363,14 +4372,14 @@ class TGeoPainter extends ObjectPainter {
 
          buf = new Float32Array(3*6); pos = 0;
 
-         addPoint(x1, y1);
-         addPoint(x1, y2);
+         addPoint(x1, y1, midZ);
+         addPoint(x1, y2, midZ);
 
-         addPoint(x1, (y1 + y2) / 2);
-         addPoint(x2, (y1 + y2) / 2);
+         addPoint(x1, (y1 + y2) / 2, midZ);
+         addPoint(x2, (y1 + y2) / 2, midZ);
 
-         addPoint(x2, y1);
-         addPoint(x2, y2);
+         addPoint(x2, y1, midZ);
+         addPoint(x2, y2, midZ);
 
          let lineMaterial = new LineBasicMaterial({ color: 'green' }),
              textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
@@ -4379,11 +4388,18 @@ class TGeoPainter extends ObjectPainter {
 
          let text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
 
-         container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8));
+         container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8, midZ));
          return true;
       }
 
-      let show_grid = this.ctrl.camera_overlay == 'grid';
+      let show_grid = this.ctrl.camera_overlay.indexOf('grid') == 0;
+
+      if (show_grid && this._camera.orthoZ) {
+         if (this.ctrl.camera_overlay == 'gridf')
+            gridZ += this._camera.orthoSign * this._camera.orthoZ[1];
+         else if (this.ctrl.camera_overlay == 'gridb')
+            gridZ -= this._camera.orthoSign * this._camera.orthoZ[1];
+      }
 
       if ((this.ctrl.camera_overlay == 'axis') || show_grid) {
 
