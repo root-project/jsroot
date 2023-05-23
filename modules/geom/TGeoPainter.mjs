@@ -2947,7 +2947,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.z - more*sizez;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
          this._camera.orthoIndicies = [0, 2, 1];
-         this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(1,0,0), Math.PI/2);
+         this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
          this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
@@ -2959,7 +2959,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.y - more*sizey;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
          this._camera.orthoIndicies = [2, 1, 0];
-         this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,-1,0), Math.PI/2);
+         this._camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
          this._camera.orthoSign = sign;
       } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
@@ -2971,8 +2971,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera.bottom = box.min.x - more*sizex;
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
          this._camera.orthoIndicies = [2, 0, 1];
-         // this._camera.orthoRotation = new Quaternion().setFromAxisAngle(new Vector3(0,0,1), Math.PI/2);
-         //this._camera.orthoSign = sign;
+         this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2).rotateY(Math.PI/2);
+         this._camera.orthoSign = sign;
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
@@ -4306,19 +4306,41 @@ class TGeoPainter extends ObjectPainter {
 
       let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2];
 
-      function addPoint(x, y, z = 0) {
+      const addPoint = (x, y, z = 0) => {
          buf[pos+ii[0]] = x;
          buf[pos+ii[1]] = y;
          buf[pos+ii[2]] = z;
          pos += 3;
-      }
+      }, createText = (lbl, size) => {
+         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+         text3d.computeBoundingBox();
+         text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
+         text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+
+         text3d.translate(-text3d._width/2, -text3d._height/2, 0);
+         if (this._camera.orthoSign < 0)
+            text3d.rotateY(Math.PI);
+
+         if (isFunc(this._camera.orthoRotation))
+            this._camera.orthoRotation(text3d);
+
+         return text3d;
+      }, createTextMesh = (geom, material, x, y, z = 0) => {
+         let tgt = [0, 0, 0];
+         tgt[ii[0]] = x;
+         tgt[ii[1]] = y;
+         tgt[ii[2]] = z;
+         let mesh = new Mesh(geom, material);
+         mesh.translateX(tgt[0]).translateY(tgt[1]).translateZ(tgt[2]);
+         return mesh;
+      };
 
       if ((this.ctrl.camera_overlay == 'bar') && this.isOrthoCamera()) {
 
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let x1 = xmin*0.2 + xmax*0.8,
-             x2 = xmin*0.1 + xmax*0.0,
+         let x1 = xmin * 0.2 + xmax * 0.8,
+             x2 = xmin * 0.1 + xmax * 0.0,
              y1 = ymax * 0.82 + ymin * 0.18,
              y2 = ymax * 0.78 + ymin * 0.22;
 
@@ -4341,28 +4363,20 @@ class TGeoPainter extends ObjectPainter {
          addPoint(x2, y2);
 
          let lineMaterial = new LineBasicMaterial({ color: 'green' }),
-             line = createLineSegments(buf, lineMaterial);
+             textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
 
-         container.add(line);
+         container.add(createLineSegments(buf, lineMaterial));
 
-         let textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
+         let text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
 
-         let text3d = new TextGeometry(x_handle.format(x2-x1, true), { font: HelveticerRegularFont, size: Math.abs(y2-y1), height: 0, curveSegments: 5 });
-
-         let mesh = new Mesh(text3d, textMaterial);
-
-         mesh.translateX(x1);
-         mesh.translateY(y1);
-
-         container.add(mesh);
-
+         container.add(createTextMesh(text3d, textMaterial, x1, y1));
          return true;
       }
 
       if ((this.ctrl.camera_overlay == 'axis') && this.isOrthoCamera()) {
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let dd = (ymax - ymin)*0.03;
+         let dd = (ymax - ymin) * 0.03;
 
          let lineMaterial = new LineBasicMaterial({ color: 'black' }),
              textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
@@ -4377,30 +4391,13 @@ class TGeoPainter extends ObjectPainter {
             addPoint(x, ymin);
             addPoint(x, ymin + dd);
 
-            let line = createLineSegments(buf, lineMaterial);
-            container.add(line);
+            container.add(createLineSegments(buf, lineMaterial));
 
-            /*
-            let text3d = new TextGeometry(x_handle.format(x, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
-            text3d.computeBoundingBox();
-            let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-                text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+            let text3d = createText(x_handle.format(x, true), dd*0.7);
 
-            text3d.translate(-text_width/2, 0, 0);
-            if (this._camera.orthoSign < 0)
-               text3d.rotateY(Math.PI);
+            container.add(createTextMesh(text3d, textMaterial, x, ymax - dd*1.2 - text3d._height/2));
 
-            let mesh = new Mesh(text3d, textMaterial);
-            mesh.translateX(x);
-            mesh.translateY(ymax - dd*1.2 - text_height);
-            container.add(mesh);
-
-            mesh = new Mesh(text3d, textMaterial);
-            mesh.translateX(x);
-            mesh.translateY(ymin + dd*1.2);
-            container.add(mesh);
-            */
-
+            container.add(createTextMesh(text3d, textMaterial, x, ymin + dd*1.2 + text3d._height/2));
          });
 
          let yticks = y_handle.createTicks();
@@ -4412,36 +4409,13 @@ class TGeoPainter extends ObjectPainter {
             addPoint(xmax, y);
             addPoint(xmax - dd, y);
 
-            let line = createLineSegments(buf, lineMaterial);
-            container.add(line);
+            container.add(createLineSegments(buf, lineMaterial));
 
-            /*
+            let text3d = createText(y_handle.format(y, true), dd*0.7);
 
-            let text3d = new TextGeometry(y_handle.format(y, true), { font: HelveticerRegularFont, size: dd*0.7, height: 0, curveSegments: 5 });
-            text3d.computeBoundingBox();
-            let text_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-                text_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(0, -text_height/2, 0);
-            if (this._camera.orthoSign < 0) {
-               text3d.rotateY(Math.PI);
-               text3d.translate(text_width, 0, 0);
-            }
+            container.add(createTextMesh(text3d, textMaterial, xmin + 1.2*dd + text3d._width/2, y));
 
-            let mesh = new Mesh(text3d, textMaterial);
-            mesh.translateX(xmin + 1.2*dd);
-            mesh.translateY(y);
-            container.add(mesh);
-
-            mesh = new Mesh(text3d, textMaterial);
-            mesh.translateX(xmax - 1.2*dd - text_width);
-            mesh.translateY(y);
-            container.add(mesh);
-            */
-
-            //if (this._camera.orthoRotation) {
-            //   container.quaternion.copy(this._camera.orthoRotation);
-            //   container.updateMatrix();
-            //}
+            container.add(createTextMesh(text3d, textMaterial, xmax - 1.2*dd - text3d._width/2, y));
          });
 
          return true;
