@@ -1085,6 +1085,24 @@ class TGeoPainter extends ObjectPainter {
       console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
    }
 
+   /** @summary Get list of supported camera kinds - used in context menu and dat.gui */
+   getCameraKinds() {
+      return {
+         'Perspective': 'perspective',
+         'Perspective (Floor XOZ)': 'perspXOZ',
+         'Perspective (Floor YOZ)': 'perspYOZ',
+         'Perspective (Floor XOY)': 'perspXOY',
+         'Orthographic (XOY)': 'orthoXOY',
+         'Orthographic (XOZ)': 'orthoXOZ',
+         'Orthographic (ZOY)': 'orthoZOY',
+         'Orthographic (ZOX)': 'orthoZOX',
+         'Orthographic (XnOY)': 'orthoXNOY',
+         'Orthographic (XnOZ)': 'orthoXNOZ',
+         'Orthographic (ZnOY)': 'orthoZNOY',
+         'Orthographic (ZnOX)': 'orthoZNOX'
+      };
+   }
+
    /** @summary Fill context menu */
    fillContextMenu(menu) {
       menu.add('header: Draw options');
@@ -1095,7 +1113,11 @@ class TGeoPainter extends ObjectPainter {
       });
       menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlOptions('toggle'));
 
-      menu.addchk(this.ctrl._axis, 'Show axes', () => this.setAxesDraw('toggle'));
+      menu.add('sub:Show axes', () => this.setAxesDraw('toggle'));
+      menu.addchk(this.ctrl._axis == 0, 'off', 0, arg => this.setAxesDraw(parseInt(arg)));
+      menu.addchk(this.ctrl._axis == 1, 'side', 1, arg => this.setAxesDraw(parseInt(arg)));
+      menu.addchk(this.ctrl._axis == 2, 'center', 2, arg => this.setAxesDraw(parseInt(arg)));
+      menu.add('endsub:');
 
       if (this.geo_manager)
          menu.addchk(this.ctrl.showtop, 'Show top volume', () => this.setShowTop(!this.ctrl.showtop));
@@ -1114,12 +1136,23 @@ class TGeoPainter extends ObjectPainter {
       menu.add('Reset camera position', () => this.focusCamera());
 
       if (!this._geom_viewer) {
-         menu.add('sub:Get camera position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
+         menu.add('sub:Camera');
+
+         menu.add('Get position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
          if (!this.isOrthoCamera())
-            menu.add('As absolute positions', () => {
+            menu.add('Absolute position', () => {
                let url =  this.produceCameraUrl(true), p = url.indexOf('camlx');
                menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
             });
+
+         menu.add('separator');
+         let camera_kinds = this.getCameraKinds();
+         for (let name in camera_kinds)
+            menu.addchk(this.ctrl.camera_kind == camera_kinds[name], name, camera_kinds[name], arg => {
+               this.ctrl.camera_kind = arg;
+               this.changeCamera();
+            });
+
          menu.add('endsub:');
       }
 
@@ -1420,20 +1453,8 @@ class TGeoPainter extends ObjectPainter {
       // Camera options
       let camera = this._datgui.addFolder('Camera');
 
-      camera.add(this.ctrl, 'camera_kind', {
-            'Perspective': 'perspective',
-            'Perspective (Floor XOZ)': 'perspXOZ',
-            'Perspective (Floor YOZ)': 'perspYOZ',
-            'Perspective (Floor XOY)': 'perspXOY',
-            'Orthographic (XOY)': 'orthoXOY',
-            'Orthographic (XOZ)': 'orthoXOZ',
-            'Orthographic (ZOY)': 'orthoZOY',
-            'Orthographic (ZOX)': 'orthoZOX',
-            'Orthographic (XnOY)': 'orthoXNOY',
-            'Orthographic (XnOZ)': 'orthoXNOZ',
-            'Orthographic (ZnOY)': 'orthoZNOY',
-            'Orthographic (ZnOX)': 'orthoZNOX'
-      }).name('Kind').listen().onChange(() => this.changeCamera());
+      camera.add(this.ctrl, 'camera_kind', this.getCameraKinds())
+            .name('Kind').listen().onChange(() => this.changeCamera());
 
       camera.add(this.ctrl, 'can_rotate').name('Allow rotate')
                 .listen().onChange(() => { this._controls.enableRotate = this.ctrl.can_rotate; });
