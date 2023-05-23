@@ -2855,7 +2855,7 @@ class TGeoPainter extends ObjectPainter {
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2,
-          more = this.ctrl._axis ? 0.2 : 0.1;
+          more = this.ctrl._axis || (this.ctrl.camera_overlay == 'bar')  ? 0.2 : 0.1;
 
       if (this._scene_size && !force) {
          const d = this._scene_size, test = (v1, v2, scale) => {
@@ -4358,10 +4358,10 @@ class TGeoPainter extends ObjectPainter {
 
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let x1 = xmin * 0.2 + xmax * 0.8,
-             x2 = xmin * 0.1 + xmax * 0.0,
-             y1 = ymax * 0.82 + ymin * 0.18,
-             y2 = ymax * 0.78 + ymin * 0.22;
+         let x1 = xmin * 0.15 + xmax * 0.85,
+             x2 = xmin * 0.05 + xmax * 0.95,
+             y1 = ymax * 0.9 + ymin * 0.1,
+             y2 = ymax * 0.86 + ymin * 0.14;
 
          let ticks = x_handle.createTicks();
 
