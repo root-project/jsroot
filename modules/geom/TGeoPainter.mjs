@@ -7,7 +7,7 @@ import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, MathUtils,
          Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
-         LineSegments, LineBasicMaterial, BufferAttribute,
+         LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
@@ -4287,22 +4287,27 @@ class TGeoPainter extends ObjectPainter {
          return this.changedDepthMethod(norender ? 'norender' : undefined);
    }
 
-   /** @summary Draw overlay for the orthographic cameras
-     * @return {Promise} when norender not specified */
+   /** @summary Draw overlay for the orthographic cameras */
    drawOverlay() {
 
-      let x_handle, y_handle, xmin, xmax, ymin, ymax;
-      if (this.isOrthoCamera()) {
-         xmin = this._camera.left; xmax = this._camera.right;
-         ymin = this._camera.bottom; ymax = this._camera.top;
+      this.getExtrasContainer('delete', 'overlay');
+      if (!this.isOrthoCamera() || (this.ctrl.camera_overlay == 'none'))
+         return false;
 
-         x_handle = new TAxisPainter(null, create(clTAxis));
-         x_handle.configureAxis('xaxis', xmin, xmax, xmin, xmax, false, [xmin, xmax],
-                                      { log: 0, reverse: false });
-         y_handle = new TAxisPainter(null, create(clTAxis));
-         y_handle.configureAxis('yaxis', ymin, ymax, ymin, ymax, false, [ymin, ymax],
-                                      { log: 0, reverse: false });
-      }
+      let xmin = this._camera.left, xmax = this._camera.right,
+          ymin = this._camera.bottom, ymax = this._camera.top,
+          tick_size = (ymax - ymin) * 0.02,
+          text_size = (ymax - ymin) * 0.015,
+          grid_gap = (ymax - ymin) * 0.001,
+          x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
+          y1 = ymin + text_size * 3, y2 = ymax - text_size * 3;
+
+      let  x_handle = new TAxisPainter(null, create(clTAxis));
+      x_handle.configureAxis('xaxis', x1, x2, x1, x2, false, [x1, x2],
+                             { log: 0, reverse: false });
+      let y_handle = new TAxisPainter(null, create(clTAxis));
+      y_handle.configureAxis('yaxis', y1, y2, y1, y2, false, [y1, y2],
+                              { log: 0, reverse: false });
 
       let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2];
 
@@ -4335,7 +4340,7 @@ class TGeoPainter extends ObjectPainter {
          return mesh;
       };
 
-      if ((this.ctrl.camera_overlay == 'bar') && this.isOrthoCamera()) {
+      if (this.ctrl.camera_overlay == 'bar') {
 
          let container = this.getExtrasContainer('create', 'overlay');
 
@@ -4356,8 +4361,8 @@ class TGeoPainter extends ObjectPainter {
          addPoint(x1, y1);
          addPoint(x1, y2);
 
-         addPoint(x1, (y1+y2)/2);
-         addPoint(x2, (y1+y2)/2);
+         addPoint(x1, (y1 + y2) / 2);
+         addPoint(x2, (y1 + y2) / 2);
 
          addPoint(x2, y1);
          addPoint(x2, y2);
@@ -4369,59 +4374,81 @@ class TGeoPainter extends ObjectPainter {
 
          let text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
 
-         container.add(createTextMesh(text3d, textMaterial, x1, y1));
+         container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8));
          return true;
       }
 
-      if ((this.ctrl.camera_overlay == 'axis') && this.isOrthoCamera()) {
+      let show_grid = this.ctrl.camera_overlay == 'grid';
+
+      if ((this.ctrl.camera_overlay == 'axis') || show_grid) {
+
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let dd = (ymax - ymin) * 0.03;
-
-         let lineMaterial = new LineBasicMaterial({ color: 'black' }),
+         let lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
+             gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
+             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: 2, gapSize: 2 }) : null,
              textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
 
          let xticks = x_handle.createTicks();
 
-         xticks.major.forEach(x => {
-            buf = new Float32Array(2*6); pos = 0;
+         while (xticks.next()) {
+            let x = xticks.tick, k = (xticks.kind == 1) ? 1. : 0.6;
 
+            if (show_grid) {
+               buf = new Float32Array(2*3); pos = 0;
+               addPoint(x, ymax - k*tick_size - grid_gap);
+               addPoint(x, ymin + k*tick_size + grid_gap);
+               container.add(createLineSegments(buf, xticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+            }
+
+            buf = new Float32Array(4*3); pos = 0;
             addPoint(x, ymax);
-            addPoint(x, ymax - dd);
+            addPoint(x, ymax - k*tick_size);
             addPoint(x, ymin);
-            addPoint(x, ymin + dd);
+            addPoint(x, ymin + k*tick_size);
 
             container.add(createLineSegments(buf, lineMaterial));
 
-            let text3d = createText(x_handle.format(x, true), dd*0.7);
+            if (xticks.kind != 1) continue;
 
-            container.add(createTextMesh(text3d, textMaterial, x, ymax - dd*1.2 - text3d._height/2));
+            let text3d = createText(x_handle.format(x, true), text_size);
 
-            container.add(createTextMesh(text3d, textMaterial, x, ymin + dd*1.2 + text3d._height/2));
-         });
+            container.add(createTextMesh(text3d, textMaterial, x, ymax - tick_size - text_size/2 - text3d._height/2));
+
+            container.add(createTextMesh(text3d, textMaterial, x, ymin + tick_size + text_size/2 + text3d._height/2));
+         }
 
          let yticks = y_handle.createTicks();
 
-         yticks.major.forEach(y => {
-            buf = new Float32Array(2*6); pos = 0;
+         while (yticks.next()) {
+            let y = yticks.tick, k = (yticks.kind == 1) ? 1. : 0.6;
+
+            if (show_grid) {
+               buf = new Float32Array(2*3); pos = 0;
+               addPoint(xmin + k*tick_size + grid_gap, y);
+               addPoint(xmax - k*tick_size - grid_gap, y);
+               container.add(createLineSegments(buf, yticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+            }
+
+            buf = new Float32Array(4*3); pos = 0;
             addPoint(xmin, y);
-            addPoint(xmin + dd, y);
+            addPoint(xmin + k*tick_size, y);
             addPoint(xmax, y);
-            addPoint(xmax - dd, y);
+            addPoint(xmax - k*tick_size, y);
 
             container.add(createLineSegments(buf, lineMaterial));
 
-            let text3d = createText(y_handle.format(y, true), dd*0.7);
+            if (yticks.kind != 1) continue;
 
-            container.add(createTextMesh(text3d, textMaterial, xmin + 1.2*dd + text3d._width/2, y));
+            let text3d = createText(y_handle.format(y, true), text_size);
 
-            container.add(createTextMesh(text3d, textMaterial, xmax - 1.2*dd - text3d._width/2, y));
-         });
+            container.add(createTextMesh(text3d, textMaterial, xmin + tick_size + text_size/2 + text3d._width/2, y));
+
+            container.add(createTextMesh(text3d, textMaterial, xmax - tick_size - text_size/2 - text3d._width/2, y));
+         };
 
          return true;
       }
-
-      this.getExtrasContainer('delete', 'overlay');
 
       return false;
    }
