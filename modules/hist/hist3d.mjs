@@ -1080,16 +1080,16 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 function convert3DtoPadNDC(x, y, z) {
 
    x = this.x_handle.gr(x);
-   y = this.x_handle.gr(y);
-   z = this.x_handle.gr(z);
+   y = this.y_handle.gr(y);
+   z = this.z_handle.gr(z);
 
    let vector = new Vector3().set( x, y, z );
 
    // map to normalized device coordinate (NDC) space
    vector.project( this.camera );
 
-   vector.x += 0.5;
-   vector.y += 0.5;
+   vector.x = (vector.x + 1) / 2;
+   vector.y = (vector.y + 1) / 2;
 
    let pp = this.getPadPainter(),
        pw = pp?.getPadWidth(),

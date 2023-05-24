@@ -20,7 +20,7 @@ async function drawText() {
    this.createAttText({ attr: text });
 
    if (annot && main?.mode3d && isFunc(main?.convert3DtoPadNDC)) {
-      let pos = main.convert3DtoPadNDC(pos_x, pos_y, text.fZ);
+      let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ);
       pos_x = pos.x;
       pos_y = pos.y;
       this.isndc = true;
