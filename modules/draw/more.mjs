@@ -1,4 +1,4 @@
-import { BIT, isBatchMode, clTLatex, clTMathText, clTPolyLine } from '../core.mjs';
+import { BIT, isBatchMode, isFunc, clTLatex, clTMathText, clTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -18,7 +18,15 @@ async function drawText() {
 
    this.createAttText({ attr: text });
 
-   if (text.TestBit(BIT(14))) {
+   if (this.matchObjectType('TAnnotation') && main?.mode3d && isFunc(main?.convert3DtoPadNDC)) {
+      let pos = main.convert3DtoPadNDC(pos_x, pos_y, text.fZ);
+
+      console.log('Convert to screen coordinates', pos.x, pos.y);
+      pos_x = pos.x;
+      pos_y = pos.y;
+      this.isndc = true;
+
+   } else if (text.TestBit(BIT(14))) {
       // NDC coordinates
       this.isndc = true;
    } else if (main && !main.mode3d) {
