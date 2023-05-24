@@ -69,7 +69,7 @@ async function drawText() {
       this.pos_dx = this.pos_dy = 0;
 
       if (!this.moveDrag)
-         this.moveDrag = function(dx,dy) {
+         this.moveDrag = function(dx, dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
             this.draw_g.attr('transform', makeTranslate(this.pos_dx, this.pos_dy));
@@ -84,8 +84,17 @@ async function drawText() {
             this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
          }
 
-      if (annot != '3d')
+      if (annot != '3d') {
          addMoveHandler(this);
+      } else {
+         main.processRender3D = true;
+         this.handleRender3D = () => {
+            let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
+                new_x = this.axisToSvg('x', pos.x, true),
+                new_y = this.axisToSvg('y', pos.y, true);
+            this.draw_g.attr('transform', makeTranslate(new_x - this.pos_x, new_y - this.pos_y));
+         };
+      }
 
       assignContextMenu(this);
 

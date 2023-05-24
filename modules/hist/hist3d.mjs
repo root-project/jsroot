@@ -340,6 +340,12 @@ function render3D(tmout) {
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
       console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
    }
+
+   if (this.processRender3D)
+      this.getPadPainter()?.painters?.forEach(objp => {
+         if (isFunc(objp.handleRender3D))
+            objp.handleRender3D();
+      });
 }
 
 /** @summary Check is 3D drawing need to be resized
