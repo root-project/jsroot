@@ -1586,10 +1586,19 @@ class TGeoPainter extends ObjectPainter {
 
       this.createSpecialEffects();
 
-      delete this._scene_size; // ensure reassign of camera position
+      // set proper position
+      this.adjustCameraPosition(true);
 
-      this._first_drawing = true;
-      this.startDrawGeometry(true);
+      // this.drawOverlay();
+
+      this.addOrbitControls();
+
+      this.render3D();
+
+      // delete this._scene_size; // ensure reassign of camera position
+
+      // this._first_drawing = true;
+      // this.startDrawGeometry(true);
    }
 
    /** @summary create bloom effect */
