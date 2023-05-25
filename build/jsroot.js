@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '24/05/2023';
+let version_date = '25/05/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69973,6 +69973,13 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Return true if this pad enlarged */
+   isPadEnlarged() {
+      if (this.iscan || !this.has_canvas)
+         return this.enlargeMain('state') == 'on';
+      return this.getCanvSvg().property('pad_enlarged') === this.pad;
+   }
+
    /** @summary Enlarge pad draw element when possible */
    enlargePad(evnt, is_dblclick) {
 
@@ -69991,7 +69998,8 @@ class TPadPainter extends ObjectPainter {
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state') == 'off') svg_can.property('pad_enlarged', null);
+         if (this.enlargeMain('state') == 'off')
+            svg_can.property('pad_enlarged', null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property('pad_enlarged', this.pad);
@@ -70495,7 +70503,7 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk(this.enlargeMain('state') == 'on', 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
+         menu.addchk(this.isPadEnlarged(), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
 
       let fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add(`Save as ${fname}.png`, fname+'.png', arg => this.saveAs('png', this.iscan, arg));

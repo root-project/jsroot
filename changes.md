@@ -32,6 +32,12 @@
 29. Fix - correctly align sub/super scripts in complex TLatex
 
 
+## Changes in 7.3.2
+1. Fix - undefined graph in TGraphPainter
+2. Fix - error in showing info in the geo painter
+3. Fix - stack limitation with Math.min.apply in tree draw
+
+
 ## Changes in 7.3.1
 1. Fix - TGeo update in the TWebCanvas
 2. Fix - several tutorials with three.js modules loading
