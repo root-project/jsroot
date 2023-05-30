@@ -212,8 +212,8 @@ function approximateLabelWidth(label, font, fsize) {
    let sum = 0;
    for (let i = 0; i < len; ++i) {
       let code = label.charCodeAt(i);
-      if ((code >= 32) && (code<127))
-         sum += base_symbols_width[code-32];
+      if ((code >= 32) && (code < 127))
+         sum += base_symbols_width[code - 32];
       else
          sum += extra_symbols_width[code] || 1000;
    }
@@ -351,14 +351,12 @@ function parseLatex(node, arg, label, curr) {
       let gg = currG();
 
       // this is indicator that gg element will be the only one, one can use directly main container
-      if ((nelements == 1) && !label && !curr.x && !curr.y) {
+      if ((nelements == 1) && !label && !curr.x && !curr.y)
          return gg;
-      }
 
       gg = gg.append('svg:g');
 
-      gg.attr('transform', makeTranslate(curr.x,curr.y));
-      return gg;
+      return gg.attr('transform', makeTranslate(curr.x, curr.y));
    };
 
    const extractSubLabel = (check_first, lbrace, rbrace) => {
@@ -431,9 +429,8 @@ function parseLatex(node, arg, label, curr) {
 
          nelements++;
 
-         let s = translateLaTeX(label.slice(0, best));
-
-         let nbeginspaces = 0, nendspaces = 0;
+         let s = translateLaTeX(label.slice(0, best)),
+             nbeginspaces = 0, nendspaces = 0;
 
          while ((nbeginspaces < s.length) && (s[nbeginspaces] == ' '))
             nbeginspaces++;
@@ -514,7 +511,7 @@ function parseLatex(node, arg, label, curr) {
 
          parseLatex(gg, arg, sublabel, subpos);
 
-         let minw = curr.fsize*0.6, xpos = 0,
+         let minw = curr.fsize * 0.6, xpos = 0,
              w = subpos.rect.width,
              y1 = Math.round(subpos.rect.y1),
              dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
@@ -880,7 +877,7 @@ let _mj_loading;
   * @desc one need not only to load script but wait for initialization
   * @private */
 async function loadMathjax() {
-   let loading = (_mj_loading !== undefined);
+   let loading = _mj_loading !== undefined;
 
    if (!loading && (typeof globalThis.MathJax != 'undefined'))
       return globalThis.MathJax;
@@ -936,8 +933,10 @@ async function loadMathjax() {
 
    let myJSDOM;
 
-   return _loadJSDOM().then(handle => { myJSDOM = handle.JSDOM; return import('mathjax'); }).then(mj => {
-
+   return _loadJSDOM().then(handle => {
+      myJSDOM = handle.JSDOM;
+      return import('mathjax');
+   }).then(mj => {
       // return Promise with mathjax loading
       mj.init({
          loader: {
