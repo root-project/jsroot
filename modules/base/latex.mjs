@@ -189,7 +189,7 @@ const symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').re
 
 /** @summary Simple replacement of latex letters
   * @private */
-const translateLaTeX = (str, more) => {
+const translateLaTeX = str => {
    while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
       str = str.slice(1, str.length - 1);
 
@@ -309,7 +309,7 @@ function parseLatex(node, arg, label, curr) {
 
    const extendPosition = (x1, y1, x2, y2) => {
       if (!curr.rect) {
-         curr.rect = { x1: x1, y1: y1, x2: x2, y2: y2 };
+         curr.rect = { x1, y1, x2, y2 };
       } else {
          curr.rect.x1 = Math.min(curr.rect.x1, x1);
          curr.rect.y1 = Math.min(curr.rect.y1, y1);
@@ -322,6 +322,11 @@ function parseLatex(node, arg, label, curr) {
 
       if (!curr.parent)
          arg.text_rect = curr.rect;
+   };
+
+   const addSpaces = nspaces => {
+      extendPosition(curr.x, curr.y, curr.x + nspaces * curr.fsize * 0.4, curr.y);
+      shiftX(nspaces * curr.fsize * 0.4);
    };
 
    /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
@@ -427,6 +432,23 @@ function parseLatex(node, arg, label, curr) {
          nelements++;
 
          let s = translateLaTeX(label.slice(0, best));
+
+         let nbeginspaces = 0, nendspaces = 0;
+
+         while ((nbeginspaces < s.length) && (s[nbeginspaces] == ' '))
+            nbeginspaces++;
+
+         if (nbeginspaces > 0) {
+            addSpaces(nbeginspaces);
+            s = s.slice(nbeginspaces);
+         }
+
+         while ((nendspaces < s.length) && (s[s.length - 1 - nendspaces] == ' '))
+            nendspaces++;
+
+         if (nendspaces > 0)
+            s = s.slice(0, s.length - nendspaces);
+
          if (s || alone) {
             // if single text element created, place it directly in the node
             let g = curr.g || (alone ? node : currG()),
@@ -466,10 +488,13 @@ function parseLatex(node, arg, label, curr) {
 
             if (!alone) {
                shiftX(rect.width);
+               addSpaces(nendspaces);
             } else if (curr.deco) {
                elem.attr('text-decoration', curr.deco);
                delete curr.deco; // inform that decoration was applied
             }
+         } else {
+            addSpaces(nendspaces);
          }
       }
 
