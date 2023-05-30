@@ -1449,6 +1449,7 @@ class TPadPainter extends ObjectPainter {
          padpainter.snapid = snap.fObjectID;
          padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
+         padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
          padpainter.createPadSvg();
 
@@ -1538,6 +1539,7 @@ class TPadPainter extends ObjectPainter {
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
       this._readonly = snap.fReadOnly ?? false; // readonly flag
       this._snap_primitives = snap?.fPrimitives; // keep list to be able find primitive
+      this._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
       let first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
