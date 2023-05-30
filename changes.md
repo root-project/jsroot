@@ -1,8 +1,8 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Upgrade d3.js to v7.8.2
-2. Upgrade three.js to r152
+1. Upgrade d3.js to v7.8.4
+2. Upgrade three.js to r152, with WebGL2 for interactive, WebGL1 for node.js
 3. Support '[cutg]' draw option for TH2
 4. Correctly handle 'same0' draw option for TH2
 5. Fix several issues with axis reverse order
