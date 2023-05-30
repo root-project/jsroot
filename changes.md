@@ -30,6 +30,7 @@
 27. Fix - rescan sumw2 when update TH1
 28. Fix - correct placing for TLegend header
 29. Fix - correctly align sub/super scripts in complex TLatex
+30. Fix - failure in normal_cdf calculation
 
 
 ## Changes in 7.3.2
