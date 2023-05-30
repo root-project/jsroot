@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.3.x
+1. Fix - failure in normal_cdf calculation
+
+
 ## Changes in 7.3.2
 1. Fix - undefined graph in TGraphPainter
 2. Fix - error in showing info in the geo painter
