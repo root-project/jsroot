@@ -888,7 +888,7 @@ async function loadMathjax() {
 
    if (loading) return promise;
 
-   let svg_config = {
+   let svg = {
        scale: 1,                      // global scaling factor for all expressions
        minScale: .5,                  // smallest scaling factor to use
        mtextInheritFont: false,       // true to make mtext elements use surrounding font
@@ -915,7 +915,7 @@ async function loadMathjax() {
          tex: {
             packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
          },
-         svg: svg_config,
+         svg,
          startup: {
             ready() {
                MathJax.startup.defaultReady();
@@ -931,10 +931,10 @@ async function loadMathjax() {
                .then(() => promise);
    }
 
-   let myJSDOM;
+   let JSDOM;
 
    return _loadJSDOM().then(handle => {
-      myJSDOM = handle.JSDOM;
+      JSDOM = handle.JSDOM;
       return import('mathjax');
    }).then(mj => {
       // return Promise with mathjax loading
@@ -945,9 +945,9 @@ async function loadMathjax() {
           tex: {
              packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
           },
-          svg: svg_config,
+          svg,
           config: {
-             JSDOM: myJSDOM
+             JSDOM
           },
           startup: {
              typeset: false,
@@ -1334,7 +1334,7 @@ async function produceMathjax(painter, mj_node, arg) {
        options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
    return loadMathjax()
-          .then(() => MathJax.tex2svgPromise(mtext, options))
+          .then(mj => mj.tex2svgPromise(mtext, options))
           .then(elem => {
               // when adding element to new node, it will be removed from original parent
               let svg = elem.querySelector('svg');
@@ -1351,7 +1351,7 @@ async function produceMathjax(painter, mj_node, arg) {
 /** @summary Just typeset HTML node with MathJax
   * @private */
 async function typesetMathjax(node) {
-   return loadMathjax().then(() => MathJax.typesetPromise(node ? [node] : undefined));
+   return loadMathjax().then(mj => mj.typesetPromise(node ? [node] : undefined));
 }
 
 export { symbols_map, translateLaTeX, producePlainText, isPlainText, produceLatex, loadMathjax, produceMathjax, typesetMathjax };
