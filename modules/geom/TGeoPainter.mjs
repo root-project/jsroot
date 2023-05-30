@@ -1150,7 +1150,7 @@ class TGeoPainter extends ObjectPainter {
          menu.add('Get position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
          if (!this.isOrthoCamera())
             menu.add('Absolute position', () => {
-               let url =  this.produceCameraUrl(true), p = url.indexOf('camlx');
+               let url = this.produceCameraUrl(true), p = url.indexOf('camlx');
                menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
             });
 
