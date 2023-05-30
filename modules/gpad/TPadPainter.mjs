@@ -661,20 +661,6 @@ class TPadPainter extends ObjectPainter {
                       .on('click', () => this.selectObjectPainter())
                       .on('mouseenter', () => this.showObjectStatus())
                       .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
-
-            if (!this.iscan)
-               addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
-                                      is_disabled: () => svg_can.property('pad_enlarged') || this.btns_active_flag,
-                                      getDrawG: () => this.svg_this_pad(),
-                                      pad_rect: { width, height },
-                                      minwidth: 20, minheight: 20,
-                                      move_resize: (_x, _y, _w, _h) => {
-                                         this.pad.fAbsWNDC = _w / width;
-                                         this.pad.fAbsHNDC = _h / height;
-                                         this.pad.fAbsXlowNDC = _x / width;
-                                         this.pad.fAbsYlowNDC = 1 - (_y + _h) / height;
-                                      },
-                                      redraw: () => this.interactiveRedraw('pad', 'padpos') });
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
@@ -684,6 +670,28 @@ class TPadPainter extends ObjectPainter {
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
+
+      if (!this.iscan && !isBatchMode())
+         addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
+                                is_disabled: () => svg_can.property('pad_enlarged') || this.btns_active_flag,
+                                getDrawG: () => this.svg_this_pad(),
+                                pad_rect: { width, height },
+                                minwidth: 20, minheight: 20,
+                                move_resize: (_x, _y, _w, _h) => {
+                                   let x0 = this.pad.fAbsXlowNDC,
+                                       y0 = this.pad.fAbsYlowNDC,
+                                       scale_w = _w / width / this.pad.fAbsWNDC,
+                                       scale_h = _h / height / this.pad.fAbsHNDC,
+                                       shift_x = _x / width - x0,
+                                       shift_y = 1 - (_y + _h) / height - y0;
+                                   this.forEachPainterInPad(p => {
+                                      p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
+                                      p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
+                                      p.pad.fAbsWNDC *= scale_w;
+                                      p.pad.fAbsHNDC *= scale_h;
+                                   }, 'pads');
+                                },
+                                redraw: () => this.interactiveRedraw('pad', 'padpos') });
 
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: !this.pad.fBorderMode ? 'none' : '' });
