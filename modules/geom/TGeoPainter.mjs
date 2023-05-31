@@ -2483,17 +2483,31 @@ class TGeoPainter extends ObjectPainter {
       return this._main_painter._toplevel;
    }
 
+   /** @summary Extend custom geometry bounding box */
+   extendCustomBoundingBox(box) {
+      if (!box) return;
+      if (!this._customBoundingBox)
+         this._customBoundingBox = new Box3().makeEmpty();
+      this._customBoundingBox.union(box);
+
+      this.adjustCameraPosition(true);
+   }
+
    /** @summary Calculate geometry bounding box */
    getGeomBoundingBox(topitem, scalar) {
       let box3 = new Box3(), check_any = !this._clones;
+      box3.makeEmpty();
+
+      if (this._customBoundingBox) {
+         box3.union(this._customBoundingBox);
+         return box3;
+      }
 
       if (!topitem) {
          box3.min.x = box3.min.y = box3.min.z = -1;
          box3.max.x = box3.max.y = box3.max.z = 1;
          return box3;
       }
-
-      box3.makeEmpty();
 
       topitem.traverse(mesh => {
          if (check_any || (mesh.stack && (mesh instanceof Mesh)) ||
@@ -4155,6 +4169,8 @@ class TGeoPainter extends ObjectPainter {
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
 
+      console.log('call render 3D', tmout);
+
       if (!this._renderer) {
          if (!this.did_cleanup)
             console.warn('renderer object not exists - check code');
@@ -5782,7 +5798,7 @@ async function drawDummy3DGeom(painter) {
    shape.fDZ = max[2] - min[2];
    shape.fShapeId = 1;
    shape.fShapeBits = 0;
-   shape.fOrigin = [0,0,0];
+   shape.fOrigin = [0, 0, 0];
 
    let obj = Object.assign(create(clTNamed),
                 { _typename: clTEveGeoShapeExtract,
@@ -5795,7 +5811,7 @@ async function drawDummy3DGeom(painter) {
       opt = 'bkgr_' +  pp.pad.fFillColor;
 
    return TGeoPainter.draw(painter.getDom(), obj, opt)
-                     .then(geop => geop.drawExtras(extra));
+                     .then(geop => { geop._dummy = true; return geop; });
 }
 
 /** @summary Direct draw function for TAxis3D
