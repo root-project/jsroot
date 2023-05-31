@@ -349,9 +349,11 @@ class TCanvasPainter extends TPadPainter {
              snap = parse(msg.slice(p1+1));
 
          this.syncDraw(true)
-             .then(() => this.ensureBrowserSize(!this.snapid, snap.fSnapshot.fCw, snap.fSnapshot.fCh))
-             .then(() => this.redrawPadSnap(snap))
+             .then(() => this.ensureBrowserSize(!this.snapid || this.enforceCanvasSize, snap.fSnapshot.fCw, snap.fSnapshot.fCh))
              .then(() => {
+                delete this.enforceCanvasSize;
+                return this.redrawPadSnap(snap);
+             }).then(() => {
                 this.completeCanvasSnapDrawing();
                 let ranges = this.getWebPadOptions(); // all data, including subpads
                 if (ranges) ranges = ':' + ranges;
