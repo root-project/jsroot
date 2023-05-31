@@ -3536,7 +3536,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.updateClipping(true);
 
-         let pr = this.render3D(100);
+         let pr = this.render3D(100, not_wait_render ? 'nopromise' : false);
 
          return not_wait_render ? this : pr;
       });
@@ -4192,7 +4192,7 @@ class TGeoPainter extends ObjectPainter {
          return this;
       }
 
-      let ret_promise = (tmout !== undefined) && (tmout > 0);
+      let ret_promise = (tmout !== undefined) && (tmout > 0) && (measure != 'nopromise');
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
@@ -4204,11 +4204,11 @@ class TGeoPainter extends ObjectPainter {
                   this._render_resolveFuncs = [];
                this._render_resolveFuncs.push(resolveFunc);
                if (!this.render_tmout)
-                  this.render_tmout = setTimeout(() => this.render3D(0, measure), tmout);
+                  this.render_tmout = setTimeout(() => this.render3D(0), tmout);
             });
 
          if (!this.render_tmout)
-            this.render_tmout = setTimeout(() => this.render3D(0, measure), tmout);
+            this.render_tmout = setTimeout(() => this.render3D(0), tmout);
          return this;
       }
 
@@ -4246,7 +4246,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.last_render_tm = tm2.getTime();
 
-      if ((this.first_render_tm === 0) && measure) {
+      if ((this.first_render_tm === 0) && (measure === true)) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
          console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
       }
@@ -4254,8 +4254,9 @@ class TGeoPainter extends ObjectPainter {
       afterRender3D(this._renderer);
 
       if (this._render_resolveFuncs) {
-         this._render_resolveFuncs.forEach(func => func(this));
+         let arr = this._render_resolveFuncs;
          delete this._render_resolveFuncs;
+         arr.forEach(func => func(this));
       }
    }
 
