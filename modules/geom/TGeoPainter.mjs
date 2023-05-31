@@ -5800,29 +5800,18 @@ function createItem(node, obj, name) {
   * @private */
 async function drawDummy3DGeom(painter) {
 
-   let extra = painter.getObject(),
-       min = [-1, -1, -1], max = [1, 1, 1];
-
-   if (extra.fP?.length)
-      for(let k = 0; k < extra.fP.length; k += 3)
-         for (let i = 0; i < 3; ++i) {
-            min[i] = Math.min(min[i], extra.fP[k+i]);
-            max[i] = Math.max(max[i], extra.fP[k+i]);
-         }
-
-
    let shape = create(clTNamed);
    shape._typename = clTGeoBBox;
-   shape.fDX = max[0] - min[0];
-   shape.fDY = max[1] - min[1];
-   shape.fDZ = max[2] - min[2];
+   shape.fDX = 1e-10;
+   shape.fDY = 1e-10;
+   shape.fDZ = 1e-10;
    shape.fShapeId = 1;
    shape.fShapeBits = 0;
    shape.fOrigin = [0, 0, 0];
 
    let obj = Object.assign(create(clTNamed),
                 { _typename: clTEveGeoShapeExtract,
-                  fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
+                  fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, 0, 0, 0, 0],
                   fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
    let opt = '', pp = painter.getPadPainter();

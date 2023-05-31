@@ -25,7 +25,6 @@ function before3DDraw(painter) {
    return pr.then(geop => {
       if (geop._dummy && isFunc(painter.get3DBox))
          geop.extendCustomBoundingBox(painter.get3DBox());
-      // return geop.drawExtras(painter.getObject());
       return geop.drawExtras(painter.getObject(), '', true, true);
    });
 }
