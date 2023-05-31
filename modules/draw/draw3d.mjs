@@ -23,6 +23,9 @@ function before3DDraw(painter) {
    let pr = main ? Promise.resolve(main) : drawDummy3DGeom(painter);
 
    return pr.then(geop => {
+      let pp = painter.getPadPainter();
+      if (pp) pp._disable_dragging = true;
+
       if (geop._dummy && isFunc(painter.get3DBox))
          geop.extendCustomBoundingBox(painter.get3DBox());
       return geop.drawExtras(painter.getObject(), '', true, true);
