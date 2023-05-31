@@ -777,6 +777,7 @@ class RPadPainter extends RObjectPainter {
          if ((rect.width == this._dbr.width) === (rect.height == this._dbr.height)) {
             let func = this._dbr.func;
             delete this._dbr;
+            delete this.enforceCanvasSize;
             func(true);
          } else {
             this._dbr.setTimer(300); // check for next resize
@@ -804,9 +805,8 @@ class RPadPainter extends RObjectPainter {
              return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
-      return sync_promise.then(() => this.ensureBrowserSize(this.enforceCanvasSize && this.pad?.fWinSize, this.pad.fWinSize[0], this.pad.fWinSize[1])).then(() => {
-         delete this.enforceCanvasSize;
 
+      return sync_promise.then(() => this.ensureBrowserSize(this.pad?.fWinSize[0], this.pad?.fWinSize[1])).then(() => {
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
          if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
@@ -1078,7 +1078,10 @@ class RPadPainter extends RObjectPainter {
    /** @summary Ensure that browser window size match to requested canvas size
      * @desc Actively used for the first canvas drawing or after intentional layout resize when browser should be adjusted
      * @private */
-   ensureBrowserSize(condition, canvW, canvH) {
+   ensureBrowserSize(canvW, canvH, condition) {
+      if (this.enforceCanvasSize)
+         condition = true;
+
       if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
          return true;
 
@@ -1088,6 +1091,7 @@ class RPadPainter extends RObjectPainter {
                this._dbr.handle = setTimeout(() => {
                   if (this._dbr) {
                      delete this._dbr;
+                     delete this.enforceCanvasSize;
                      resolveFunc(true);
                   }
                }, tmout);
@@ -1096,6 +1100,7 @@ class RPadPainter extends RObjectPainter {
 
          if (!this.resizeBrowser(canvW, canvH)) {
             delete this._dbr;
+            delete this.enforceCanvasSize;
             resolveFunc(true);
          } else if (this._dbr) {
             this._dbr.setTimer(200); // set short timer

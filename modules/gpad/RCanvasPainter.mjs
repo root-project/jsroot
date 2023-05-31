@@ -271,7 +271,7 @@ class RCanvasPainter extends RPadPainter {
              snapid = msg.slice(0,p1),
              snap = parse(msg.slice(p1+1));
          this.syncDraw(true)
-             .then(() => this.ensureBrowserSize(!this.snapid && snap?.fWinSize, snap.fWinSize[0], snap.fWinSize[1]))
+             .then(() => this.ensureBrowserSize(snap.fWinSize[0], snap.fWinSize[1], !this.snapid && snap?.fWinSize))
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
                  handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
