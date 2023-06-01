@@ -652,7 +652,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH) {
-      if (!isFunc(window?.resizeTo) || !canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+      if (!canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let rect = getElementRect(this.selectDom('origin'));
@@ -662,7 +662,10 @@ class RCanvasPainter extends RPadPainter {
           fullH = window.innerHeight - rect.height + canvH;
 
       if ((fullW > 0) && (fullH > 0) && ((rect.width != canvW) || (rect.height != canvH))) {
-         window.resizeTo(fullW, fullH);
+         if (this._websocket)
+            this._websocket.resizeWindow(fullW, fullH);
+         else if (isFunc(window?.resizeTo))
+            window.resizeTo(fullW, fullH);
          return true;
       }
    }
