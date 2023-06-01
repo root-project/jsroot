@@ -2,7 +2,7 @@
 
 ## Changes in dev
 1. Upgrade d3.js v7.6.1 -> v7.8.4
-2. Upgrade three.js r146 -> r152; use WebGL2 for interactive, WebGL1 for node.js rendering
+2. Upgrade three.js r146 -> r151
 3. Support `[cutg]` draw option for TH2
 4. Correctly handle `same0` draw option for TH2
 5. Fix several issues with axis reverse order, support on lego plots
