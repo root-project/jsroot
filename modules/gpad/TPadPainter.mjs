@@ -512,6 +512,8 @@ class TPadPainter extends ObjectPainter {
          .property('draw_width', rect.width)
          .property('draw_height', rect.height);
 
+      console.log('Create canvas SVG', rect.width, rect.height);
+
       this._pad_x = 0;
       this._pad_y = 0;
       this._pad_width = rect.width;
@@ -1198,6 +1200,9 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with result */
    checkCanvasResize(size, force) {
 
+      if (this._ignore_resize)
+         return false;
+
       if (this._dbr) {
          // special case of invoked intentially web browser resize to keep layout of canvas the same
          clearTimeout(this._dbr.handle);
@@ -1213,7 +1218,7 @@ class TPadPainter extends ObjectPainter {
             delete this.enforceCanvasSize;
             func(true);
          } else {
-            this._dbr.setTimer(300); // check for next resize
+            this._dbr.setTimer(200); // check for next resize
          }
          return false;
       }

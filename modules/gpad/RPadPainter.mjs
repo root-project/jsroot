@@ -765,6 +765,9 @@ class RPadPainter extends RObjectPainter {
    /** @summary Check resize of canvas */
    checkCanvasResize(size, force) {
 
+      if (this._ignore_resize)
+         return false;
+
       if (this._dbr) {
          // special case of invoked intentially web browser resize to keep layout of canvas the same
          clearTimeout(this._dbr.handle);
@@ -780,7 +783,7 @@ class RPadPainter extends RObjectPainter {
             delete this.enforceCanvasSize;
             func(true);
          } else {
-            this._dbr.setTimer(300); // check for next resize
+            this._dbr.setTimer(200); // check for next resize
          }
          return false;
       }
