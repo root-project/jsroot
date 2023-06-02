@@ -2581,18 +2581,17 @@ async function treeDraw(tree, args) {
 
    if (isStr(args)) args = { expr: args };
 
-   if (!args.expr) args.expr = '';
+   if (!isStr(args.expr)) args.expr = '';
 
    let selector = new TDrawSelector();
 
    if (args.branch) {
-      if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args)) selector = null;
+      if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
+        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
    } else {
-      if (!selector.parseDrawExpression(tree, args)) selector = null;
+      if (!selector.parseDrawExpression(tree, args))
+          return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
    }
-
-   if (!selector)
-      return Promise.reject(Error('Fail to create selector for specified expression'));
 
    selector.setCallback(null, args.progress);
 
@@ -2676,7 +2675,7 @@ function treeIOTest(tree, args) {
       // keep console output for debug purposes
       console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
 
-      if (args.showProgress)
+      if (isFunc(args.showProgress))
          args.showProgress(`br ${nbr}/${branches.length} ${br.fName}`);
 
       return treeProcess(tree, selector, drawargs).then(() => testBranch(nbr+1));
