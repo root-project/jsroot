@@ -8,13 +8,13 @@ async function extract_geo_tracks(tree, opt) {
 
    console.log('CALL async function extract_geo_tracks');
 
-   let handle = await JSROOT.require('tree');
+   let handle = await import(JSROOT.source_dir + 'modules/tree.mjs');
 
    const selector = new handle.TSelector();
 
-   selector.addBranch("ESDfriend.fTracks.fPoints","pnts");
+   selector.addBranch('ESDfriend.fTracks.fPoints', 'pnts');
 
-   let lst = JSROOT.create("TList"), numentry = 0, numtracks = 0;
+   let lst = JSROOT.create('TList'), numentry = 0, numtracks = 0;
 
    selector.Process = function() {
       // function called for every entry
@@ -28,7 +28,7 @@ async function extract_geo_tracks(tree, opt) {
          numtracks++;
          const arr = pnts[p];
          if (!arr.fNPoints) continue;
-         const track = JSROOT.create("TGeoTrack");
+         const track = JSROOT.create('TGeoTrack');
          track.fNpoints = arr.fNPoints*4;
          track.fPoints = new Float32Array(track.fNpoints*4);
          for (let k = 0; k < arr.fNPoints; ++k) {
