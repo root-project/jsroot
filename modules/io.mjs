@@ -1,7 +1,7 @@
 import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
-         clTAttLine, clTAttFill, clTAttMarker, clTStyle,
+         clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
@@ -414,7 +414,7 @@ const CustomStreamers = {
    TImagePalette: [
       {
          basename: clTObject, base: 1, func(buf, obj) {
-            if (!obj._typename) obj._typename = 'TImagePalette';
+            if (!obj._typename) obj._typename = clTImagePalette;
             buf.classStreamer(obj, clTObject);
          }
       },
@@ -430,7 +430,7 @@ const CustomStreamers = {
       { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
       { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
       { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
-      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, 'TImagePalette'); } }
+      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, clTImagePalette); } }
    ],
 
    TASImage(buf, obj) {

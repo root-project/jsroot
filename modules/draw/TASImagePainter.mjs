@@ -1,4 +1,4 @@
-import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, isBatchMode } from '../core.mjs';
+import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, clTImagePalette, isBatchMode } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -237,7 +237,7 @@ class TASImagePainter extends ObjectPainter {
             obj.fImageCompression = obj._blob[2];
             obj.fConstRatio = obj._blob[3];
             obj.fPalette = {
-                _typename: 'TImagePalette',
+                _typename: clTImagePalette,
                 fUniqueID: obj._blob[4],
                 fBits: obj._blob[5],
                 fNumPoints: obj._blob[6],
