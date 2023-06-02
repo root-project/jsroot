@@ -1001,7 +1001,8 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTGraphPolar = 'TGraphPolar', clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTPavesText = 'TPavesText',
       clTPaveLabel = 'TPaveLabel', clTDiamond = 'TDiamond',
-      clTLegend = 'TLegend', clTLegendEntry = 'TLegendEntry', clTPaletteAxis = 'TPaletteAxis',
+      clTLegend = 'TLegend', clTLegendEntry = 'TLegendEntry',
+      clTPaletteAxis = 'TPaletteAxis', clTImagePalette = 'TImagePalette',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTAnnotation = 'TAnnotation',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
@@ -1792,6 +1793,7 @@ clTH2I: clTH2I,
 clTH3: clTH3,
 clTHStack: clTHStack,
 clTHashList: clTHashList,
+clTImagePalette: clTImagePalette,
 clTLatex: clTLatex,
 clTLegend: clTLegend,
 clTLegendEntry: clTLegendEntry,
@@ -92859,7 +92861,7 @@ const CustomStreamers = {
    TImagePalette: [
       {
          basename: clTObject, base: 1, func(buf, obj) {
-            if (!obj._typename) obj._typename = 'TImagePalette';
+            if (!obj._typename) obj._typename = clTImagePalette;
             buf.classStreamer(obj, clTObject);
          }
       },
@@ -92875,7 +92877,7 @@ const CustomStreamers = {
       { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
       { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
       { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
-      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, 'TImagePalette'); } }
+      { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, clTImagePalette); } }
    ],
 
    TASImage(buf, obj) {
@@ -95189,28 +95191,10 @@ class TFile {
       this.fEND = this.fFileContent.length;
    }
 
-   /** @summary Open file
-     * @return {Promise} after file keys are read
+   /** @summary Actual file open
+     * @return {Promise} when file keys are read
      * @private */
-   async _open() {
-      if (!this.fAcceptRanges || this.fSkipHeadRequest)
-         return this.readKeys();
-
-      return httpRequest(this.fURL, 'head').then(res => {
-         const accept_ranges = res.getResponseHeader('Accept-Ranges');
-         if (!accept_ranges) this.fAcceptRanges = false;
-         const len = res.getResponseHeader('Content-Length');
-         if (len) this.fEND = parseInt(len);
-             else this.fAcceptRanges = false;
-         const kind = res.getResponseHeader('Server');
-         if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
-            this.fMaxRanges = 1;
-            this.fUseStampPar = false;
-         }
-
-         return this.readKeys();
-      });
-   }
+   async _open() { return this.readKeys(); }
 
    /** @summary read buffer(s) from the file
     * @return {Promise} with read buffers
@@ -95222,7 +95206,9 @@ class TFile {
 
       let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
-          first = 0, last = 0, blobs = [], read_callback; // array of requested segments
+          first = 0, last = 0, blobs = [], // array of requested segments
+          read_callback, first_req,
+          first_block = (place[0] === 0) && (place.length === 2);
 
       if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
@@ -95239,7 +95225,8 @@ class TFile {
 
          let fullurl = fileurl, ranges = 'bytes', totalsz = 0;
          // try to avoid browser caching by adding stamp parameter to URL
-         if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? '?' : '&') + file.fUseStampPar;
+         if (file.fUseStampPar)
+            fullurl += ((fullurl.indexOf('?') < 0) ? '?' : '&') + file.fUseStampPar;
 
          for (let n = first; n < last; n += 2) {
             ranges += (n > first ? ',' : '=') + `${place[n]}-${place[n]+place[n+1]-1}`;
@@ -95247,6 +95234,10 @@ class TFile {
          }
          if (last - first > 2)
             totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
+
+         // when read first block, allow to read more - maybe ranges are not supported and full file content will be returned
+         if (file.fAcceptRanges && first_block)
+            totalsz = Math.max(totalsz, 1e7);
 
          return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
 
@@ -95271,19 +95262,31 @@ class TFile {
                });
             }
 
+            first_req = first_block ? xhr : null;
             xhr.send(null);
          });
       }
 
       read_callback = function(res) {
 
-         if (!res && file.fUseStampPar && (place[0] === 0) && (place.length === 2)) {
+         if (!res && file.fUseStampPar && first_block) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
             return send_new_request();
          }
 
-         if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
+         if (res && first_req) {
+            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges'))
+               file.fAcceptRanges = false;
+            const kind = first_req.getResponseHeader('Server');
+
+            if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
+               file.fMaxRanges = 1;
+               file.fUseStampPar = false;
+            }
+         }
+
+         if (res && first_block && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
             file.fFileContent = new TBuffer(isStr(res) ? res : new DataView(res));
@@ -112418,7 +112421,7 @@ class TASImagePainter extends ObjectPainter {
             obj.fImageCompression = obj._blob[2];
             obj.fConstRatio = obj._blob[3];
             obj.fPalette = {
-                _typename: 'TImagePalette',
+                _typename: clTImagePalette,
                 fUniqueID: obj._blob[4],
                 fBits: obj._blob[5],
                 fNumPoints: obj._blob[6],
@@ -124027,6 +124030,7 @@ exports.clTH2I = clTH2I;
 exports.clTH3 = clTH3;
 exports.clTHStack = clTHStack;
 exports.clTHashList = clTHashList;
+exports.clTImagePalette = clTImagePalette;
 exports.clTLatex = clTLatex;
 exports.clTLegend = clTLegend;
 exports.clTLegendEntry = clTLegendEntry;

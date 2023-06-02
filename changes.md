@@ -26,10 +26,11 @@
 23. Support labels rotation for simple axis in geometry
 24. Support many orthographic cameras with overlayed grid/labels
 25. Support InstancedMesh for TGeo drawing, let show really large geometries
-26. Support 'inject=path/script_name.js' url option to inject scripts without emulating of v6
-27. Fix - rescan sumw2 when update TH1
-28. Fix - correct placing for TLegend header
-29. Fix - correctly align sub/super scripts in complex TLatex
+26. Implement 'inject=path/script_name.js' url option to inject scripts without emulating of v6
+27. Exclude 'HEAD' http request when reading ROOT file, all info can be get from first real HTTP request
+28. Fix - rescan sumw2 when update TH1
+29. Fix - correct placing for TLegend header
+30. Fix - correctly align sub/super scripts in complex TLatex
 
 
 ## Changes in 7.3.x

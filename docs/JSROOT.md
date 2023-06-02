@@ -468,7 +468,7 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
          Header set Access-Control-Allow-Origin "*"
          Header set Access-Control-Allow-Headers "range"
          Header set Access-Control-Expose-Headers "content-range,content-length,accept-ranges"
-         Header set Access-Control-Allow-Methods "HEAD,GET"
+         Header set Access-Control-Allow-Methods "GET"
       </FilesMatch>
     </IfModule>
 
