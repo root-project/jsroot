@@ -1,4 +1,4 @@
-import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
+import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTList, clTMap, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
@@ -3148,16 +3148,14 @@ class HierarchyPainter extends BasePainter {
       if (!scripts?.length && !modules?.length)
          return true;
 
-      if (internals.ignore_v6 || (use_inject && globalThis.JSROOT))
-         return loadScript(scripts);
-
-      if (use_inject) {
+      if (use_inject && !globalThis.JSROOT)
          globalThis.JSROOT = {
-            version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
+            version, gStyle, create, httpRequest, loadScript, decodeUrl,
             source_dir, settings, addUserStreamer, addDrawFunc
          };
-         return loadScript(scripts).then(() => { delete globalThis.JSROOT; return true; });
-      }
+
+      if (internals.ignore_v6 || use_inject)
+         return loadScript(scripts);
 
       return _ensureJSROOT().then(v6 => {
          return v6.require(modules)
