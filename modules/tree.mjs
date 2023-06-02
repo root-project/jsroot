@@ -1553,7 +1553,8 @@ async function treeProcess(tree, selector, args) {
 
    if (!selector || !tree.$file || !selector.numBranches()) {
       if (selector) selector.Terminate(false);
-      return Promise.reject(Error('required parameter missing for TTree::Process'));
+      console.error('required parameter missing for TTree::Process');
+      return null;
    }
 
    // central handle with all information required for reading
@@ -2141,7 +2142,8 @@ async function treeProcess(tree, selector, args) {
 
       if (!item) {
          selector.Terminate(false);
-         return Promise.reject(Error(`Fail to add branch ${selector.nameOfBranch(nn)}`));
+         console.error(`Fail to add branch ${selector.nameOfBranch(nn)}`);
+         return null;
       }
    }
 
@@ -2168,7 +2170,8 @@ async function treeProcess(tree, selector, args) {
 
    if (handle.firstentry >= handle.lastentry) {
       selector.Terminate(false);
-      return Promise.reject(Error('No any common events for selected branches'));
+      console.error('No any common events for selected branches');
+      return null;
    }
 
    handle.process_min = handle.firstentry;
