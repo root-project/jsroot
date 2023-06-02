@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '1/06/2023';
+let version_date = '2/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -97597,7 +97597,7 @@ class TDrawSelector extends TSelector {
             case 1:
                for (let n0 = 0; n0 < var0.length; ++n0) {
                   var0.buf.push(var0.get(n0));
-                  cut.buf.push(cut.value);
+                  cut.buf?.push(cut.value);
                }
                break;
             case 2:
@@ -97605,7 +97605,7 @@ class TDrawSelector extends TSelector {
                   for (let n1 = 0; n1 < var1.length; ++n1) {
                      var0.buf.push(var0.get(n0));
                      var1.buf.push(var1.get(n1));
-                     cut.buf.push(cut.value);
+                     cut.buf?.push(cut.value);
                   }
                break;
             case 3:
@@ -97615,7 +97615,7 @@ class TDrawSelector extends TSelector {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
-                        cut.buf.push(cut.value);
+                        cut.buf?.push(cut.value);
                      }
                break;
          }
@@ -97779,7 +97779,7 @@ async function treeProcess(tree, selector, args) {
    if (!args) args = {};
 
    if (!selector || !tree.$file || !selector.numBranches()) {
-      if (selector) selector.Terminate(false);
+      selector?.Terminate(false);
       return Promise.reject(Error('required parameter missing for TTree::Process'));
    }
 
@@ -98803,29 +98803,27 @@ async function treeProcess(tree, selector, args) {
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
-  * @param {function} [args.progress=undefined] - function called during histogram accumulation with argument { obj: draw_object, opt: draw_options }
-  * @return {Promise} with object like { obj: draw_object, opt: draw_options } */
+  * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+  * @return {Promise} with produced object  */
 async function treeDraw(tree, args) {
 
    if (isStr(args)) args = { expr: args };
 
-   if (!args.expr) args.expr = '';
+   if (!isStr(args.expr)) args.expr = '';
 
    let selector = new TDrawSelector();
 
    if (args.branch) {
-      if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args)) selector = null;
+      if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
+        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
    } else {
-      if (!selector.parseDrawExpression(tree, args)) selector = null;
+      if (!selector.parseDrawExpression(tree, args))
+          return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
    }
 
-   if (!selector)
-      return Promise.reject(Error('Fail to create selector for specified expression'));
+   selector.setCallback(null, args.progress);
 
-   return new Promise(resolve => {
-      selector.setCallback(resolve, args.progress);
-      treeProcess(tree, selector, args);
-   });
+   return treeProcess(tree, selector, args).then(() => selector.hist);
 }
 
 /** @summary Performs generic I/O test for all branches in the TTree
@@ -98905,7 +98903,7 @@ function treeIOTest(tree, args) {
       // keep console output for debug purposes
       console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
 
-      if (args.showProgress)
+      if (isFunc(args.showProgress))
          args.showProgress(`br ${nbr}/${branches.length} ${br.fName}`);
 
       return treeProcess(tree, selector, drawargs).then(() => testBranch(nbr+1));

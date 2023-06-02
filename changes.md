@@ -29,7 +29,12 @@
 26. Fix - rescan sumw2 when update TH1
 27. Fix - correct placing for TLegend header
 28. Fix - correctly align sub/super scripts in complex TLatex
-29. Fix - failure in normal_cdf calculation
+
+
+## Changes in 7.3.x
+1. Fix - failure in normal_cdf calculation
+2. Fix - check in TTree::Draw for null buffer
+3. Fix - do not rise exception in treeProcess
 
 
 ## Changes in 7.3.2
