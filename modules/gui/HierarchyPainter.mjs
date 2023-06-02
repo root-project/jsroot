@@ -3,7 +3,7 @@ import { version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTList, clTMap, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
-import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo } from '../io.mjs';
+import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
 import { BasePainter, getElementRect, _loadJSDOM } from '../base/BasePainter.mjs';
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -3144,12 +3144,20 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
-   async loadScripts(scripts, modules) {
+   async loadScripts(scripts, modules, use_inject) {
       if (!scripts?.length && !modules?.length)
          return true;
 
-      if (internals.ignore_v6)
+      if (internals.ignore_v6 || (use_inject && globalThis.JSROOT))
          return loadScript(scripts);
+
+      if (use_inject) {
+         globalThis.JSROOT = {
+            version, gStyle, httpRequest, createHttpRequest, loadScript, decodeUrl,
+            source_dir, settings, addUserStreamer, addDrawFunc
+         };
+         return loadScript(scripts).then(() => { delete globalThis.JSROOT; return true; });
+      }
 
       return _ensureJSROOT().then(v6 => {
          return v6.require(modules)
@@ -3220,6 +3228,8 @@ class HierarchyPainter extends BasePainter {
       };
 
       let prereq = GetOption('prereq') || '',
+          load = GetOption('load'),
+          inject = GetOption('inject'),
           filesdir = d.get('path') || '', // path used in normal gui
           filesarr = GetOptionAsArray('#file;files'),
           jsonarr = GetOptionAsArray('#json;jsons'),
@@ -3250,8 +3260,6 @@ class HierarchyPainter extends BasePainter {
       if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
 
       if (title) document.title = title;
-
-      let load = GetOption('load');
 
       if (expanditems.length == 0 && (GetOption('expand') === '')) expanditems.push('');
 
@@ -3318,7 +3326,9 @@ class HierarchyPainter extends BasePainter {
 
          if (load || prereq) {
             promise = this.loadScripts(load, prereq); load = ''; prereq = '';
-         } else if (browser_kind) {
+         } else if (inject) {
+            promise = this.loadScripts(inject, '', true); inject = '';
+         } if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
