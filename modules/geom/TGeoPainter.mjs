@@ -2108,7 +2108,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols || this.superimpose) return;
+      if (this._tcontrols || this.superimpose || !this._webgl || isBatchMode()) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
