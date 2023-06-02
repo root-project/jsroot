@@ -1551,7 +1551,7 @@ async function treeProcess(tree, selector, args) {
    if (!args) args = {};
 
    if (!selector || !tree.$file || !selector.numBranches()) {
-      if (selector) selector.Terminate(false);
+      selector?.Terminate(false);
       return Promise.reject(Error('required parameter missing for TTree::Process'));
    }
 
@@ -2575,8 +2575,8 @@ async function treeProcess(tree, selector, args) {
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
-  * @param {function} [args.progress=undefined] - function called during histogram accumulation with argument { obj: draw_object, opt: draw_options }
-  * @return {Promise} with object like { obj: draw_object, opt: draw_options } */
+  * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+  * @return {Promise} with produced object  */
 async function treeDraw(tree, args) {
 
    if (isStr(args)) args = { expr: args };
@@ -2594,10 +2594,9 @@ async function treeDraw(tree, args) {
    if (!selector)
       return Promise.reject(Error('Fail to create selector for specified expression'));
 
-   return new Promise(resolve => {
-      selector.setCallback(resolve, args.progress);
-      treeProcess(tree, selector, args);
-   });
+   selector.setCallback(null, args.progress);
+
+   return treeProcess(tree, selector, args).then(() => selector.hist);
 }
 
 /** @summary Performs generic I/O test for all branches in the TTree
