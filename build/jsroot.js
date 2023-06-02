@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.3.2
+// https://root.cern/js/ v7.3.3
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -11,7 +11,7 @@ let version_id = '7.3.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '30/05/2023';
+let version_date = '2/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -80187,7 +80187,7 @@ class TDrawSelector extends TSelector {
             case 1:
                for (let n0 = 0; n0 < var0.length; ++n0) {
                   var0.buf.push(var0.get(n0));
-                  cut.buf.push(cut.value);
+                  cut.buf?.push(cut.value);
                }
                break;
             case 2:
@@ -80195,7 +80195,7 @@ class TDrawSelector extends TSelector {
                   for (let n1 = 0; n1 < var1.length; ++n1) {
                      var0.buf.push(var0.get(n0));
                      var1.buf.push(var1.get(n1));
-                     cut.buf.push(cut.value);
+                     cut.buf?.push(cut.value);
                   }
                break;
             case 3:
@@ -80205,7 +80205,7 @@ class TDrawSelector extends TSelector {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
-                        cut.buf.push(cut.value);
+                        cut.buf?.push(cut.value);
                      }
                break;
          }
