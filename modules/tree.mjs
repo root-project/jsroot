@@ -1369,7 +1369,7 @@ class TDrawSelector extends TSelector {
             case 1:
                for (let n0 = 0; n0 < var0.length; ++n0) {
                   var0.buf.push(var0.get(n0));
-                  cut.buf.push(cut.value);
+                  cut.buf?.push(cut.value);
                }
                break;
             case 2:
@@ -1377,7 +1377,7 @@ class TDrawSelector extends TSelector {
                   for (let n1 = 0; n1 < var1.length; ++n1) {
                      var0.buf.push(var0.get(n0));
                      var1.buf.push(var1.get(n1));
-                     cut.buf.push(cut.value);
+                     cut.buf?.push(cut.value);
                   }
                break;
             case 3:
@@ -1387,7 +1387,7 @@ class TDrawSelector extends TSelector {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
-                        cut.buf.push(cut.value);
+                        cut.buf?.push(cut.value);
                      }
                break;
          }
