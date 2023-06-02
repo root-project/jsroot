@@ -1468,12 +1468,12 @@ function findBrachStreamerElement(branch, file) {
    }
 
    // first check branch fID - in many cases gut guess
-   if (match_elem(arr[branch.fID])) return arr[branch.fID];
-
-   // console.warn(`Missmatch with branch name ${branch.fName} and extracted element ${match_name} ${s_elem?.fName}`);
+   if (match_elem(arr[branch.fID]))
+      return arr[branch.fID];
 
    for (let k = 0; k < arr.length; ++k)
-      if ((k !== branch.fID) && match_elem(arr[k])) return arr[k];
+      if ((k !== branch.fID) && match_elem(arr[k]))
+         return arr[k];
 
    console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
 
@@ -1484,8 +1484,8 @@ function findBrachStreamerElement(branch, file) {
   * @private */
 function defineMemberTypeName(file, parent_class, member_name) {
    let s_i = file.findStreamerInfo(parent_class),
-      arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
-      elem = null;
+       arr = s_i?.fElements?.arr,
+       elem = null;
    if (!arr) return '';
 
    for (let k = 0; k < arr.length; ++k) {
@@ -1499,7 +1499,8 @@ function defineMemberTypeName(file, parent_class, member_name) {
    if (!elem) return '';
 
    let clname = elem.fTypeName;
-   if (clname[clname.length - 1] === '*') clname = clname.slice(0, clname.length - 1);
+   if (clname[clname.length - 1] === '*')
+      clname = clname.slice(0, clname.length - 1);
 
    return clname;
 }
@@ -1859,7 +1860,10 @@ async function treeProcess(tree, selector, args) {
          if (elem.fType === kAny) {
 
             let streamer = handle.file.getStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
-            if (!streamer) { elem = null; console.warn('not found streamer!'); } else
+            if (!streamer) {
+               elem = null;
+               console.warn('not found streamer!');
+             } else
                member = {
                   name: target_name,
                   typename: branch.fClassName,
@@ -2152,15 +2156,16 @@ async function treeProcess(tree, selector, args) {
 
       if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
       for (let n = 0; n < item.numbaskets; ++n)
-         if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n)) handle.simple_read = false;
+         if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n))
+            handle.simple_read = false;
    }
 
    // now calculate entries range
 
    handle.firstentry = handle.lastentry = 0;
    for (let nn = 0; nn < handle.arr.length; ++nn) {
-      let branch = handle.arr[nn].branch, e1 = branch.fFirstEntry;
-      if (e1 === undefined) e1 = (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0);
+      let branch = handle.arr[nn].branch,
+          e1 = branch.fFirstEntry ?? (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0);
       handle.firstentry = Math.max(handle.firstentry, e1);
       handle.lastentry = (nn === 0) ? (e1 + branch.fEntries) : Math.min(handle.lastentry, e1 + branch.fEntries);
    }
@@ -2191,7 +2196,8 @@ async function treeProcess(tree, selector, args) {
 
       for (let k = 0; k < handle.arr.length; ++k) {
          let elem = handle.arr[k];
-         if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar)) handle.process_arrays = false;
+         if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar))
+            handle.process_arrays = false;
       }
 
       if (handle.process_arrays) {
@@ -2253,7 +2259,7 @@ async function treeProcess(tree, selector, args) {
          handle.progress_showtm = tm;
 
          let portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
-            (handle.process_max - handle.process_min);
+                       (handle.process_max - handle.process_min);
 
          handle.selector.ShowProgress(portion);
       }
@@ -2727,7 +2733,7 @@ function treeHierarchy(node, obj) {
 
       if (nb_branches > 0) {
          subitem._more = true;
-         subitem._expand = function(bnode,bobj) {
+         subitem._expand = function(bnode, bobj) {
             // really create all sub-branch items
             if (!bobj) return false;
 
