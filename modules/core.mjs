@@ -461,6 +461,10 @@ async function loadScript(url) {
       if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0))
          return httpRequest(url, 'text').then(code => injectCode(code));
 
+      // local files, read and use it
+      if (url.indexOf('./') == 0)
+         return import('fs').then(fs => injectCode(fs.readFileSync(url)));
+
       return import(/* webpackIgnore: true */ url);
    }
 
