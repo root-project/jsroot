@@ -36,12 +36,12 @@ To automate files loading and objects drawing, one can provide number of URL par
 - expand - item name(s) to be expanded in the hierarchy browser
 - focus - item name to be focused on in the hierarchy browser
 - title - set browser title
-- layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
+- layout - can be 'simple', 'flex', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - browser - layout of the browser 'fix' (default), 'float', 'no' (hidden), 'off' (fully disabled)
 - nobrowser - do not display file browser (same as browser=no)
 - float - display floating browser (same as browser=float)
 - status - configure status line 'no' (default), 'off' (completely disable), 'size'
-- load - name of extra JavaScript to load
+- inject - name of extra JavaScript to load, see several examples in demo/ subdir
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
 - paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
 - interactive - enable/disable interactive functions 0 - disable all, 1 - enable all

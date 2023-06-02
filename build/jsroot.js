@@ -434,7 +434,7 @@ async function injectCode(code) {
 }
 
 /** @summary Load script or CSS file into the browser
-  * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
+  * @param {String} url - script or css file URL (or array, in this case they all loaded sequentially)
   * @return {Promise} */
 async function loadScript(url) {
    if (!url)
@@ -465,6 +465,10 @@ async function loadScript(url) {
          return null;
       if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0))
          return httpRequest(url, 'text').then(code => injectCode(code));
+
+      // local files, read and use it
+      if (url.indexOf('./') == 0)
+         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => injectCode(fs.readFileSync(url)));
 
       return import(/* webpackIgnore: true */ url);
    }
@@ -88562,7 +88566,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols || this.superimpose) return;
+      if (this._tcontrols || this.superimpose || !this._webgl || isBatchMode()) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
@@ -92919,6 +92923,13 @@ const CustomStreamers = {
 
    TMethodCall: clTObject
 };
+
+
+/** @summary Add custom streamer
+  * @public */
+function addUserStreamer(type, user_streamer) {
+   CustomStreamers[type] = user_streamer;
+}
 
 
 /** @summary these are streamers which do not handle version regularly
@@ -102784,11 +102795,17 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Load and execute scripts, kept to support v6 applications
      * @private */
-   async loadScripts(scripts, modules) {
+   async loadScripts(scripts, modules, use_inject) {
       if (!scripts?.length && !modules?.length)
          return true;
 
-      if (internals.ignore_v6)
+      if (use_inject && !globalThis.JSROOT)
+         globalThis.JSROOT = {
+            version, gStyle, create: create$1, httpRequest, loadScript, decodeUrl,
+            source_dir: exports.source_dir, settings, addUserStreamer, addDrawFunc
+         };
+
+      if (internals.ignore_v6 || use_inject)
          return loadScript(scripts);
 
       return _ensureJSROOT().then(v6 => {
@@ -102860,6 +102877,8 @@ class HierarchyPainter extends BasePainter {
       };
 
       let prereq = GetOption('prereq') || '',
+          load = GetOption('load'),
+          inject = GetOption('inject'),
           filesdir = d.get('path') || '', // path used in normal gui
           filesarr = GetOptionAsArray('#file;files'),
           jsonarr = GetOptionAsArray('#json;jsons'),
@@ -102890,8 +102909,6 @@ class HierarchyPainter extends BasePainter {
       if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
 
       if (title) document.title = title;
-
-      let load = GetOption('load');
 
       if (expanditems.length == 0 && (GetOption('expand') === '')) expanditems.push('');
 
@@ -102958,7 +102975,9 @@ class HierarchyPainter extends BasePainter {
 
          if (load || prereq) {
             promise = this.loadScripts(load, prereq); load = ''; prereq = '';
-         } else if (browser_kind) {
+         } else if (inject) {
+            promise = this.loadScripts(inject, '', true); inject = '';
+         } if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
