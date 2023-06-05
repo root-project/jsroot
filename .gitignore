@@ -9,6 +9,7 @@ docs/jsdocfull/
 *.html
 demo/node/node_modules
 demo/node/*.svg
+demo/node/*.png
 node_modules/
 libs/three/node_modules/
 libs/d3/node_modules/
