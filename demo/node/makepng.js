@@ -8,4 +8,6 @@ let file = await openFile('https://root.cern/js/files/hsimple.root');
 let obj = await file.readObject('hpxpy;1');
 let svg = await makeSVG({ object: obj, option: 'lego2', width: 1200, height: 800 });
 let buf = await svgToImage(svg, 'png', true);
+
+console.log(`create PNG image test.png size ${buf.byteLength}`);
 writeFileSync('test.png', buf);

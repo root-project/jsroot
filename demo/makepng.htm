@@ -8,9 +8,11 @@
    <body>
       <h3>SVG image</h3>
       <div id="draw_svg" style="width: 600px; height:400px"></div>
+      <div id="info_svg"></div>
 
       <h3>PNG image</h3>
       <div id="draw_png" style="width: 600px; height:400px"></div>
+      <div id="info_png"></div>
    </body>
 
    <script type='module'>
@@ -23,11 +25,15 @@
        .then(svg => {
           // makeSVG returns SVG code which can be directly applied
           document.getElementById('draw_svg').innerHTML = svg;
+          document.getElementById('info_svg').innerHTML = `SVG image size ${svg.length}`;
 
            return svgToImage(svg);
        }).then(canvas => {
            // here HTMLCanvas element is returned
           document.getElementById('draw_png').appendChild(canvas);
+
+          document.getElementById('info_png').innerHTML = `PNG image created`;
+
        });
 
    </script>
