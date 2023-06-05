@@ -34,6 +34,9 @@ class RPadPainter extends RObjectPainter {
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
+
+      if (this.selectDom()?.property('_batch_mode'))
+         this.batch_mode = true;
    }
 
    /** @summary Indicates that is not Root6 pad painter
