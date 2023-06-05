@@ -92,7 +92,7 @@ class TPavePainter extends ObjectPainter {
                if (test(ix, iy)) {
                   pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
                   pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                  pt.fY2NDC = 1 - tm - (iy-1)/nY * (1 - bm - tm);
+                  pt.fY2NDC = 1 - tm - (iy - 1)/nY * (1 - bm - tm);
                   pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
                   return true;
                }
@@ -119,12 +119,12 @@ class TPavePainter extends ObjectPainter {
       }
 
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(),
-          fp = this.getFramePainter(), pp = this.getPadPainter();
+          fp = this.getFramePainter(), pp = this.getPadPainter(),
+          pad = pp.getRootPad(true);
 
       if (pt.fInit === 0) {
          this.stored = Object.assign({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
-         let pad = pp.getRootPad(true);
 
          if ((pt._typename == clTPaletteAxis) && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             if (fp) {
@@ -165,9 +165,16 @@ class TPavePainter extends ObjectPainter {
             pt.fX2NDC = pt.fY2NDC = 0.9;
          }
 
-         if ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC) && (pt._typename == clTLegend))
-            await this.autoPlaceLegend(pt, pad);
       }
+
+      if ((pt._typename == clTLegend) && (pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC)) {
+         let res_autoplace = await this.autoPlaceLegend(pt, pad);
+         if (!res_autoplace) {
+            pt.fX1NDC = fp.fX2NDC - 0.2; pt.fX2NDC = fp.fX2NDC;
+            pt.fY1NDC = fp.fY2NDC - 0.1; pt.fY2NDC = fp.fY2NDC;
+         }
+      }
+
 
       // fill stats before drawing to have coordinates early
       if (this.isStats() && !this.NoFillStats && !pp?._fast_drawing) {
