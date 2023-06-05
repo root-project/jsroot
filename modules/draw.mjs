@@ -546,7 +546,8 @@ async function makeSVG(args) {
    async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
-          .style('width', args.width + 'px').style('height', args.height + 'px');
+          .style('width', args.width + 'px').style('height', args.height + 'px')
+          .property('_batch_mode', true);
 
       internals.svg_3ds = undefined;
 

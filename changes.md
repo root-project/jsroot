@@ -28,6 +28,7 @@
 25. Support InstancedMesh for TGeo drawing, let show really large geometries
 26. Implement 'inject=path/script_name.js' url option to inject scripts without emulating of v6
 27. Exclude 'HEAD' http request when reading ROOT file, all info can be get from first real HTTP request
+28. Proper implementation of makeSVG for normal browser mode
 28. Fix - rescan sumw2 when update TH1
 29. Fix - correct placing for TLegend header
 30. Fix - correctly align sub/super scripts in complex TLatex

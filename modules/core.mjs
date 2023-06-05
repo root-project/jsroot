@@ -92,6 +92,8 @@ let constants = {
       WebGLImage: 2,
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
+      /** @summary Use WebGL rendering, but for batch image production */
+      WebGLBatch: 4,
       fromString(s) {
          if ((s === 'webgl') || (s == 'gl')) return this.WebGL;
          if (s === 'img') return this.WebGLImage;

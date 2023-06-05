@@ -165,6 +165,11 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    render3d = getRender3DKind(render3d);
 
+   if (render3d === constants.Render3D.WebGL) {
+      if (isFunc(this.selectDom) && this.selectDom()?.property('_batch_mode'))
+         render3d = constants.Render3D.WebGLBatch;
+   }
+
    assign3DHandler(this);
 
    let sz = this.getSizeFor3d(undefined, render3d);
@@ -307,7 +312,7 @@ function render3D(tmout) {
 
    if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-   if ((tmout > 0) && !this.usesvg && !isBatchMode()) {
+   if ((tmout > 0) && !this.usesvg && !isBatchMode() && (this.renderer?.jsroot_render3d !== constants.Render3D.WebGLBatch)) {
       if (!this.render_tmout)
          this.render_tmout = setTimeout(() => this.render3D(0), tmout);
       return;

@@ -313,7 +313,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
-            elem.attr('transform', makeTranslate(size.x,size.y));
+            elem.attr('transform', makeTranslate(size.x, size.y));
 
          } else {
 
@@ -430,6 +430,9 @@ async function createRender3D(width, height, render3d, args) {
          return r;
       });
 
+   } else if (render3d == rc.WebGLBatch) {
+      need_workaround = true;
+      promise = Promise.resolve(new WebGLRenderer(args));
    } else {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
@@ -441,7 +444,7 @@ async function createRender3D(width, height, render3d, args) {
    return promise.then(renderer => {
 
       if (need_workaround) {
-          if (!internals.svg_3ds) internals.svg_3ds = [];
+         if (!internals.svg_3ds) internals.svg_3ds = [];
          renderer.workaround_id = internals.svg_3ds.length;
          internals.svg_3ds[renderer.workaround_id] = '<svg></svg>'; // dummy, provided in afterRender3D
 
@@ -500,9 +503,14 @@ function beforeRender3D(renderer) {
 function afterRender3D(renderer) {
 
    let rc = constants.Render3D;
-   if (renderer.jsroot_render3d == rc.WebGL) return;
 
-   if (renderer.jsroot_render3d == rc.SVG) {
+   if (renderer.jsroot_render3d == rc.WebGLBatch) {
+      if (renderer.workaround_id !== undefined) {
+         let dataUrl = renderer.domElement.toDataURL('image/png'),
+             svg = `<image width="${renderer.domElement.width}" height="${renderer.domElement.height}" href="${dataUrl}"></image>`;
+         internals.svg_3ds[renderer.workaround_id] = svg;
+      }
+   } else if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
       if (isBatchMode()) {
          internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
@@ -548,8 +556,9 @@ function afterRender3D(renderer) {
   * @desc Used only in batch mode for SVG images generation
   * @private */
 internals.processSvgWorkarounds = function(svg, keep_workarounds) {
-   if (!internals.svg_3ds) return svg;
-   for (let k = 0;  k < internals.svg_3ds.length; ++k)
+   if (!internals.svg_3ds)
+      return svg;
+   for (let k = 0; k < internals.svg_3ds.length; ++k)
       svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, internals.svg_3ds[k]);
    if (!keep_workarounds)
       internals.svg_3ds = undefined;
