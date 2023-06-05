@@ -712,9 +712,12 @@ function addHighlightStyle(elem, drag) {
 }
 
 /** @summary Create image based on SVG
-  * @return {Promise} with produced image in base64 form (or canvas when no image_format specified)
+  * @param {string} svg - svg code of the image
+  * @param {string} [image_format] - image format like 'png' or 'jpeg'
+  * @param {boolean} [as_buffer] - return Buffer object for image
+  * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
-async function svgToImage(svg, image_format) {
+async function svgToImage(svg, image_format, as_buffer) {
 
    if (image_format == 'svg')
       return svg;
@@ -735,13 +738,15 @@ async function svgToImage(svg, image_format) {
    if (isNodeJs())
       return import('canvas').then(async handle => {
 
-         const img = await handle.default.loadImage(img_src);
+         return handle.default.loadImage(img_src).then(img => {
+            const canvas = handle.default.createCanvas(img.width, img.height);
 
-         const canvas = handle.default.createCanvas(img.width, img.height);
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-         canvas.getContext('2d').drawImage(img, 0, 0);
+            if (as_buffer) return canvas.toBuffer('image/' + image_format);
 
-         return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+            return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+         });
       });
 
    return new Promise(resolveFunc => {
