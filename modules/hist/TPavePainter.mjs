@@ -88,11 +88,11 @@ class TPavePainter extends ObjectPainter {
          };
 
          for (let ix = 0; ix < (nX - needW); ++ix)
-            for (let iy = nY-needH-1; iy >= 0; --iy)
+            for (let iy = nY-needH - 1; iy >= 0; --iy)
                if (test(ix, iy)) {
                   pt.fX1NDC = lm + ix / nX * (1 - lm - rm);
                   pt.fX2NDC = pt.fX1NDC + legWidth * (1 - lm - rm);
-                  pt.fY2NDC = 1 - tm - (iy - 1)/nY * (1 - bm - tm);
+                  pt.fY2NDC = 1 - tm - iy/nY * (1 - bm - tm);
                   pt.fY1NDC = pt.fY2NDC - legHeight * (1 - bm - tm);
                   return true;
                }
