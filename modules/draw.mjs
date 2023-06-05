@@ -524,7 +524,13 @@ function addStreamerInfosForPainter(lst) {
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
   * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
-  * @return {Promise} with svg code */
+  * @return {Promise} with svg code
+  * @example
+  * // how makeSVG can be used in node.js
+  * import { openFile, makeSVG } from 'jsroot';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let object = await file.readObject('hpxpy;1');
+  * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
 async function makeSVG(args) {
 
    if (!args) args = {};
