@@ -899,7 +899,8 @@ class THistPainter extends ObjectPainter {
 
             if (obj.fFunctions)
                for (let n = 0; n < obj.fFunctions.arr.length; ++n) {
-                  let func = obj.fFunctions.arr[n];
+                  let func = obj.fFunctions.arr[n],
+                      fopt = obj.fFunctions.opt[n];
                   if (!func?._typename || !this.needDrawFunc(histo, func)) continue;
 
                   let funcpainter = null, func_indx = -1;
@@ -916,7 +917,7 @@ class THistPainter extends ObjectPainter {
                      funcpainter = pp?.findPainterFor(null, func.fName, func._typename);
 
                   if (funcpainter) {
-                     funcpainter.updateObject(func);
+                     funcpainter.updateObject(func, fopt);
                      if (func_indx >= 0) {
                         painters.splice(func_indx, 1);
                         update_painters.push(funcpainter);

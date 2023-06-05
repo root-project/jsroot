@@ -1322,7 +1322,8 @@ class TPadPainter extends ObjectPainter {
          while (p < this.painters.length) {
             let pp = this.painters[p++];
             if (!pp._primitive) continue;
-            if (pp.updateObject(obj.fPrimitives.arr[n])) isany = true;
+            if (pp.updateObject(obj.fPrimitives.arr[n], obj.fPrimitives.opt[n]))
+               isany = true;
             break;
          }
       }
