@@ -1051,6 +1051,12 @@ class TPavePainter extends ObjectPainter {
          menu.add('endsub:');
 
          menu.add('separator');
+      } else if (pave._typename === clTLegend) {
+         menu.add('Autoplace', () => {
+            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
+               if (res) this.interactiveRedraw(true, 'pave_moved');
+            });
+         });
       } else if (pave.fName === 'title') {
          menu.add('Default position', () => {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
@@ -1069,12 +1075,6 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
-      } else if (pave._typename === clTLegend) {
-         menu.add('Autoplace', () => {
-            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
-               if (res) this.interactiveRedraw(true, 'pave_moved');
-            });
-         });
       }
    }
 
