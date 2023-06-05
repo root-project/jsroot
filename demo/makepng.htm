@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Test SVG/PNG creation in the browser</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   </head>
+   <body>
+      <h3>SVG image</h3>
+      <div id="draw_svg" style="width: 600px; height:400px"></div>
+
+      <h3>PNG image</h3>
+      <div id="draw_png" style="width: 600px; height:400px"></div>
+   </body>
+
+   <script type='module'>
+
+      import { openFile, makeSVG, svgToImage } from '../modules/main.mjs';
+
+      openFile('https://root.cern/js/files/hsimple.root')
+       .then(file => file.readObject('hpxpy;1'))
+       .then(object => makeSVG({ object, option: 'lego2', width: 600, height: 400 }))
+       .then(svg => {
+          // makeSVG returns SVG code which can be directly applied
+          document.getElementById('draw_svg').innerHTML = svg;
+
+           return svgToImage(svg);
+       }).then(canvas => {
+           // here HTMLCanvas element is returned
+          document.getElementById('draw_png').appendChild(canvas);
+       });
+
+   </script>
+</html>
