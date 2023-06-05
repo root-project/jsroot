@@ -169,8 +169,9 @@ class TPavePainter extends ObjectPainter {
 
       let promise = Promise.resolve(true);
 
-      if ((pt._typename == clTLegend) && (pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC))
+      if ((pt._typename == clTLegend) && (this.AutoPlace || ((pt.fX1NDC == pt.fX2NDC) && (pt.fY1NDC == pt.fY2NDC))))
          promise = this.autoPlaceLegend(pt, pad).then(res => {
+            delete this.AutoPlace;
             if (!res) {
                pt.fX1NDC = fp.fX2NDC - 0.2; pt.fX2NDC = fp.fX2NDC;
                pt.fY1NDC = fp.fY2NDC - 0.1; pt.fY2NDC = fp.fY2NDC;
@@ -1158,7 +1159,7 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Update TPave object  */
-   updateObject(obj) {
+   updateObject(obj, opt) {
       if (!this.matchObjectType(obj)) return false;
 
       let pave = this.getObject();
@@ -1208,6 +1209,7 @@ class TPavePainter extends ObjectPainter {
             let oldprim = pave.fPrimitives;
             pave.fPrimitives = obj.fPrimitives;
             pave.fNColumns = obj.fNColumns;
+            this.AutoPlace = opt == 'autoplace';
             if (oldprim && oldprim.arr && pave.fPrimitives && pave.fPrimitives.arr && (oldprim.arr.length == pave.fPrimitives.arr.length)) {
                // try to sync object reference, new object does not displayed automatically
                // in ideal case one should use snapids in the entries
@@ -1266,7 +1268,7 @@ class TPavePainter extends ObjectPainter {
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
 
-                  if (!h) h = (y2-fp.fY2NDC)*0.7;
+                  if (!h) h = (y2 - fp.fY2NDC) * 0.7;
                   if (!w) w = fp.fX2NDC - fp.fX1NDC;
                   if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
                   if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
@@ -1311,6 +1313,7 @@ class TPavePainter extends ObjectPainter {
                painter.paveDrawFunc = painter.drawPaveText;
                break;
             case clTLegend:
+               painter.AutoPlace = (opt == 'autoplace');
                painter.paveDrawFunc = painter.drawLegend;
                break;
             case clTPaletteAxis:
