@@ -3083,6 +3083,7 @@ class TFile {
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @return {Promise} promise with object read
      * @example
+     * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
      * let f = await openFile('https://root.cern/js/files/hsimple.root');
      * let obj = await f.readObject('hpxpy;1');
      * console.log(`Read object of type ${obj._typename}`); */

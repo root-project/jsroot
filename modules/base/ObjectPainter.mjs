@@ -1592,6 +1592,7 @@ function getActivePad() {
   * the element even after minimal resize
   * Or one just supply object with exact sizes like { width:300, height:200, force:true };
   * @example
+  * import { resize } from 'https://root.cern/js/latest/modules/base/ObjectPainter.mjs';
   * resize('drawing', { width: 500, height: 200 });
   * resize(document.querySelector('#drawing'), true); */
 function resize(dom, arg) {
@@ -1612,6 +1613,7 @@ function resize(dom, arg) {
   * @param {string|object} dom - id or DOM element
   * @public
   * @example
+  * import { cleanup } from 'https://root.cern/js/latest/modules/base/ObjectPainter.mjs';
   * cleanup('drawing');
   * cleanup(document.querySelector('#drawing')); */
 function cleanup(dom) {

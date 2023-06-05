@@ -303,6 +303,8 @@ function setDefaultDrawOpt(classname, opt) {
   * @public
   * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
+  * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+  * import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let obj = await file.readObject('hpxpy;1');
   * await draw('drawing', obj, 'colz;logx;gridx;gridy'); */

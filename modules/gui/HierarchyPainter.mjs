@@ -715,6 +715,7 @@ const kindTFile = prROOT + 'TFile';
   * @summary Painter of hierarchical structures
   *
   * @example
+  * import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui/HierarchyPainter.mjs';
   * // create hierarchy painter in 'myTreeDiv'
   * let h = new HierarchyPainter('example', 'myTreeDiv');
   * // configure 'simple' layout in 'myMainDiv'

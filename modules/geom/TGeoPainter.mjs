@@ -5846,7 +5846,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @return {object} Object3D with created model
   * @example
-  * import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
+  * import { build } from 'https://root.cern/js/latest/modules/geom/TGeoPainter.mjs';
   * let obj3d = build(obj);
   * // this is three.js object and can be now inserted in the scene
   */

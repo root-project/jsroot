@@ -781,6 +781,7 @@ function toJSON(obj, spacing) {
   * @param {string} [url] URL string with options, document.URL will be used when not specified
   * @return {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
   * @example
+  * import { decodeUrl } from 'https://root.cern/js/latest/modules/core.mjs';
   * let d = decodeUrl('any?opt1&op2=3');
   * console.log(`Has opt1 ${d.has('opt1')}`);     // true
   * console.log(`Get opt1 ${d.get('opt1')}`);     // ''
@@ -979,6 +980,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
   * @example
+  * import { httpRequest } from 'https://root.cern/js/latest/modules/core.mjs';
   * httpRequest('https://root.cern/js/files/thstack.json.gz', 'object')
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
@@ -1308,6 +1310,7 @@ function create(typename, target) {
   * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
   * @return {Object} created histogram object
   * @example
+  * import { createHistogram } from 'https://root.cern/js/latest/modules/core.mjs';
   * let h1 = createHistogram('TH1I', 20);
   * h1.fName = 'Hist1';
   * h1.fTitle = 'Histogram title';
@@ -1384,6 +1387,7 @@ function createTGraph(npoints, xpts, ypts) {
 /** @summary Creates THStack object
   * @desc As arguments one could specify any number of histograms objects
   * @example
+  * import { createHistogram, createTHStack } from 'https://root.cern/js/latest/modules/core.mjs';
   * let nbinsx = 20;
   * let h1 = createHistogram('TH1F', nbinsx);
   * let h2 = createHistogram('TH1F', nbinsx);
@@ -1399,6 +1403,7 @@ function createTHStack() {
 /** @summary Creates TMultiGraph object
   * @desc As arguments one could specify any number of TGraph objects
   * @example
+  * import { createTGraph, createTMultiGraph } from 'https://root.cern/js/latest/modules/core.mjs';
   * let gr1 = createTGraph(100);
   * let gr2 = createTGraph(100);
   * let gr3 = createTGraph(100);
