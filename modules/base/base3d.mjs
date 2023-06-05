@@ -536,11 +536,11 @@ function afterRender3D(renderer) {
       context.putImageData(imageData, 0, 0);
 
       let dataUrl = canvas.toDataURL('image/png'),
-          svg = `<image width="${canvas.width}" height="${canvas.height}" xlink:href="${dataUrl}"></image>`;
+          svg = `<image width="${canvas.width}" height="${canvas.height}" href="${dataUrl}"></image>`;
       internals.svg_3ds[renderer.workaround_id] = svg;
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
-      d3_select(renderer.jsroot_dom).attr('xlink:href', dataUrl);
+      d3_select(renderer.jsroot_dom).attr('href', dataUrl);
    }
 }
 

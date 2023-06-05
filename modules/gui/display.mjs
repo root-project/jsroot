@@ -1211,7 +1211,6 @@ class BatchDisplay extends MDIDisplay {
       let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
-          .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);

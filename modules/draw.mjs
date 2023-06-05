@@ -556,7 +556,6 @@ async function makeSVG(args) {
 
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
-             .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
              .attr('width', args.width)
              .attr('height', args.height)
              .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
