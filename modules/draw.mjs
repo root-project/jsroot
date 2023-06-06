@@ -605,9 +605,6 @@ async function makeImage(args) {
 
          let svg = main.html();
 
-         if (main.selectAll('svg').size() == 1)
-            console.log('svg', svg);
-
          if (has_workarounds)
             svg = _wrk.processSvgWorkarounds(svg);
 
