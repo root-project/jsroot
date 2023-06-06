@@ -558,11 +558,25 @@ async function makeImage(args) {
 
       internals.svg_3ds = undefined;
 
+      function complete(res) {
+         cleanup(main.node());
+         main.remove();
+         return res;
+      }
+
       return draw(main.node(), args.object, args.option || '').then(() => {
 
          if (!isNodeJs()) {
-            let cp = getElementCanvPainter(main.node());
-            return cp?.produceImage(true, args.format).then(res => { main.remove(); return res; });
+            let promise = Promise.resolve(null),
+                cp = getElementCanvPainter(main.node()),
+                mp = getElementMainPainter(main.node());
+
+            if (isFunc(cp?.produceImage))
+               promise = cp.produceImage(true, args.format);
+            else if (isFunc(mp?.produceImage))
+               promise = mp.produceImage(args.format);
+
+            return promise.then(complete);
          }
 
          let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
@@ -591,11 +605,7 @@ async function makeImage(args) {
 
          svg = compressSVG(svg);
 
-         cleanup(main.node());
-
-         main.remove();
-
-         return svg;
+         return complete(svg);
       });
    }
 

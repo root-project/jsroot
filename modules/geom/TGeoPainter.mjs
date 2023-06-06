@@ -1162,7 +1162,6 @@ class TGeoPainter extends ObjectPainter {
             }));
          menu.add('endsub:');
 
-
          if (this.isOrthoCamera()) {
             menu.add('sub:Overlay');
             this.ctrl.cameraOverlayItems.forEach(item =>
@@ -1175,7 +1174,6 @@ class TGeoPainter extends ObjectPainter {
 
       }
       menu.add('endsub:');
-
 
       menu.addchk(this.ctrl.select_in_view, 'Select in view', () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
@@ -2828,6 +2826,19 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return this._overall_size;
+   }
+
+   /** @summary Creates image for specified format. */
+   async produceImage(format) {
+      if (!this._renderer) return;
+      this.render3D(0);
+      if (format != 'svg')
+         return this._renderer.domElement.toDataURL('image/' + format);
+
+      let dataUrl = this._renderer.domElement.toDataURL('image/png'),
+          w = this._scene_width, h = this._scene_height;
+
+      return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg"><image width="${w}" height="${h}" href="${dataUrl}"/></svg>`;
    }
 
    /** @summary Create png image with drawing snapshot. */
