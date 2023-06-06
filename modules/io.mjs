@@ -1,4 +1,4 @@
-import { httpRequest, createHttpRequest, BIT, loadScript, internals, settings,
+import { createHttpRequest, BIT, loadScript, internals, settings,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
@@ -3167,7 +3167,7 @@ class TFile {
 
       this.fStreamerInfos = lst;
 
-      if (internals.addStreamerInfosForPainter)
+      if (isFunc(internals.addStreamerInfosForPainter))
          internals.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {

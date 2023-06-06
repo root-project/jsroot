@@ -5,7 +5,7 @@ import { HelveticerRegularJson, Font, WebGLRenderer, /*WebGL1Renderer, */ WebGLR
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from '../three.mjs';
-import { browser, settings, constants, internals, isBatchMode, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
+import { browser, settings, constants, isBatchMode, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
@@ -381,15 +381,14 @@ function assign3DHandler(painter) {
 /** @summary Special way to insert WebGL drawing into produced SVG batch code
   * @desc Used only in batch mode for SVG images generation
   * @private */
-function processSvgWorkarounds(svg, keep_workarounds) {
+function processSvgWorkarounds(svg) {
    if (!this.svg_3ds)
       return svg;
    this.svg_3ds.forEach((entry,k) => {
       let repl = entry.svg ?? `<image width="${entry.width}" height="${entry.height}" href="${entry.dataUrl}"></image>`;
       svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, repl);
    });
-   if (!keep_workarounds)
-      delete this.svg_3ds;
+   delete this.svg_3ds;
    return svg;
 }
 

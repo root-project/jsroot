@@ -1390,10 +1390,6 @@ class RPadPainter extends RObjectPainter {
       }
 
       let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
-
-      if (internals.processSvgWorkarounds)
-         svg = internals.processSvgWorkarounds(svg);
-
       svg = compressSVG(svg);
 
       return svgToImage(svg, file_format).then(res => {
