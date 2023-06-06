@@ -429,10 +429,6 @@ async function createRender3D(width, height, render3d, args) {
          need_workaround = true;
          return r;
       });
-
-   } else if (render3d == rc.WebGLBatch) {
-      need_workaround = true;
-      promise = Promise.resolve(new WebGLRenderer(args));
    } else {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
@@ -504,13 +500,7 @@ function afterRender3D(renderer) {
 
    let rc = constants.Render3D;
 
-   if (renderer.jsroot_render3d == rc.WebGLBatch) {
-      if (renderer.workaround_id !== undefined) {
-         let dataUrl = renderer.domElement.toDataURL('image/png'),
-             svg = `<image width="${renderer.domElement.width}" height="${renderer.domElement.height}" href="${dataUrl}"></image>`;
-         internals.svg_3ds[renderer.workaround_id] = svg;
-      }
-   } else if (renderer.jsroot_render3d == rc.SVG) {
+   if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
       if (isBatchMode()) {
          internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();

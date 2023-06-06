@@ -4021,11 +4021,6 @@ class TGeoPainter extends ObjectPainter {
 
          this._on_pad = !!pp;
 
-         if (this.options.Render3D === constants.Render3D.WebGL) {
-            if (isFunc(this.selectDom) && this.selectDom()?.property('_batch_mode'))
-               this.options.Render3D = constants.Render3D.WebGLBatch;
-         }
-
          if (this._on_pad) {
             let size, render3d, fp;
             promise = ensureTCanvas(this,'3d').then(() => {
