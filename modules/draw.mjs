@@ -8,7 +8,7 @@ import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, is
          clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, nsREX } from './core.mjs';
 import { clTStreamerInfoList } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
-import { BasePainter, compressSVG, _loadJSDOM } from './base/BasePainter.mjs';
+import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter, clTButton } from './gpad/TPadPainter.mjs';
 
@@ -519,12 +519,13 @@ function addStreamerInfosForPainter(lst) {
   * supported ROOT classes
   * @param {object} args - function settings
   * @param {object} args.object - object for the drawing
-  * @param {string} [args.format] - image format like 'svg' (default), 'png' or 'jpeg'
-  * @param {string} [args.option] - draw options
+  * @param {string} [args.format = 'svg'] - image format like 'svg' (default), 'png' or 'jpeg'
+  * @param {string} [args.option = ''] - draw options
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
+  * @param {boolean} [args.as_buffer = false] - returns image as Buffer instance, can store directly to file
   * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
-  * @return {Promise} with svg code
+  * @return {Promise} with image code - svg as is, png/jpeg as base64 string or buffer (if as_buffer) specified
   * @example
   * // how makeSVG can be used in node.js
   * import { openFile, makeSVG } from 'jsroot';
@@ -605,7 +606,10 @@ async function makeImage(args) {
 
          svg = compressSVG(svg);
 
-         return complete(svg);
+         if (args.format == 'svg')
+            return complete(svg);
+
+         return svgToImage(svg, args.format, args.as_buffer).then(complete);
       });
    }
 
