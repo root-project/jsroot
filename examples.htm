@@ -111,7 +111,7 @@
 
       import { createRootColors } from './modules/base/colors.mjs';
 
-      import { draw } from './modules/draw.mjs';
+      import { draw, makeImage } from './modules/draw.mjs';
 
       import { openFile } from './modules/io.mjs';
 
@@ -152,7 +152,19 @@
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
-      function processClick(durl, filename, itemname, opt, jsonname) {
+      function drawEntry(entry, object, option) {
+         if (!entry?.aspng)
+            return draw('viewer', object, option);
+         return makeImage({ format: 'png', object, option, width: 800, height: 600 })
+            .then(png => {
+               let img = new Image;
+               img.src = png;
+               document.getElementById('viewer').appendChild(img);
+               return true;
+            });
+      }
+
+      function processClick(durl, filename, itemname, opt, jsonname, entry) {
 
          keyid = null; // stop execution of running test loop (if any)
 
@@ -186,11 +198,11 @@
 
              if (jsonname) {
                 httpRequest(jsonname, 'object')
-                      .then(obj => draw('viewer', obj, opt));
+                      .then(obj => drawEntry(entry, obj, opt));
              } else {
                 openFile(filename)
                       .then(file => file.readObject(itemname))
-                      .then(obj => draw('viewer', obj, opt));
+                      .then(obj => drawEntry(entry, obj, opt));
              }
           }
       };
@@ -204,7 +216,7 @@
          }
       }
 
-      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
+      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, entry) {
           elem.addEventListener( 'click', function (event) {
              event.preventDefault();
 
@@ -213,7 +225,7 @@
 
              window.location.hash = shortname;
              if (elem.title) setPageTitle(elem.title);
-             processClick(durl, filename, itemname, opt, jsonname);
+             processClick(durl, filename, itemname, opt, jsonname, entry);
          });
       };
 
@@ -328,19 +340,19 @@
             testfile = testobj = null;
             httpRequest(jsonname, 'object').then(obj => {
                testobj = obj;
-               return draw('viewer', obj, opt).then(TestContinue, TestFailure);
+               return drawEntry(entry, obj, opt).then(TestContinue, TestFailure);
             });
          } else if (filename.length > 0) {
              openFile(filename)
                    .then(file => { testfile = file; return testfile.readObject(itemname); })
-                   .then(obj => { testobj = obj; return draw('viewer', obj, opt); })
+                   .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
                    .then(TestContinue, TestFailure);
          } else if (itemname.length > 0) {
              testfile.readObject(itemname)
-                      .then(obj => { testobj = obj; return draw('viewer', obj, opt); })
+                      .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
                       .then(TestContinue, TestFailure);
          } else {
-             draw('viewer', testobj, opt).then(TestContinue, TestFailure);
+             drawEntry(entry, testobj, opt).then(TestContinue, TestFailure);
          }
       }
 
@@ -473,7 +485,7 @@
             }
 
             content.appendChild( aaa );
-            setListener(aaa, shortname, url, filename, itemname, opt, jsonname);
+            setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry);
 
             if (n < opts.length-1) {
                content.appendChild(document.createTextNode(', '));
@@ -484,7 +496,7 @@
             if (window.location.hash == '#' + shortname) {
                aaa.focus();
                if (entry.title) setPageTitle(entry.title);
-               processClick(url, filename, itemname, opt, jsonname);
+               processClick(url, filename, itemname, opt, jsonname, entry);
             }
          }
       }
