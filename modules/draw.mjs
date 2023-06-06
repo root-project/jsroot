@@ -514,12 +514,12 @@ function addStreamerInfosForPainter(lst) {
    });
 }
 
-
-/** @summary Create SVG image for provided object.
+/** @summary Create SVG/PNG/JPEG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
   * supported ROOT classes
-  * @param {object} args - contains different settings
+  * @param {object} args - function settings
   * @param {object} args.object - object for the drawing
+  * @param {string} [args.format] - image format like 'svg' (default), 'png' or 'jpeg'
   * @param {string} [args.option] - draw options
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
@@ -531,17 +531,24 @@ function addStreamerInfosForPainter(lst) {
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let object = await file.readObject('hpxpy;1');
   * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
-async function makeSVG(args) {
 
+async function makeImage(args) {
    if (!args) args = {};
-   if (!args.object) return Promise.reject(Error('No object specified to generate SVG'));
-   if (!args.width) args.width = 1200;
-   if (!args.height) args.height = 800;
+
+   if (!isObject(args.object))
+      return Promise.reject(Error('No object specified to generate SVG'));
+   if (!args.format)
+      args.format = 'svg';
+   if (!args.width)
+      args.width = 1200;
+   if (!args.height)
+      args.height = 800;
 
    if (args.use_canvas_size && (args.object?._typename == clTCanvas) && args.object.fCw && args.object.fCh) {
       args.width = args.object?.fCw;
       args.height = args.object?.fCh;
    }
+
 
    async function build(main) {
 
@@ -552,6 +559,11 @@ async function makeSVG(args) {
       internals.svg_3ds = undefined;
 
       return draw(main.node(), args.object, args.option || '').then(() => {
+
+         if (!isNodeJs()) {
+            let cp = getElementCanvPainter(main.node());
+            return cp?.produceImage(true, args.format).then(res => { main.remove(); return res; });
+         }
 
          let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
 
@@ -591,6 +603,29 @@ async function makeSVG(args) {
       return build(d3_select('body').append('div').style('visible', 'hidden'));
 
    return _loadJSDOM().then(handle => build(handle.body.append('div')));
+}
+
+
+/** @summary Create SVG image for provided object.
+  * @desc Function especially useful in Node.js environment to generate images for
+  * supported ROOT classes
+  * @param {object} args - function settings
+  * @param {object} args.object - object for the drawing
+  * @param {string} [args.option] - draw options
+  * @param {number} [args.width = 1200] - image width
+  * @param {number} [args.height = 800] - image height
+  * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
+  * @return {Promise} with svg code
+  * @example
+  * // how makeSVG can be used in node.js
+  * import { openFile, makeSVG } from 'jsroot';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let object = await file.readObject('hpxpy;1');
+  * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
+async function makeSVG(args) {
+   if (!args) args = {};
+   args.format = 'svg';
+   return makeImage(args);
 }
 
 internals.addDrawFunc = addDrawFunc;
@@ -639,4 +674,4 @@ async function drawRooPlot(dom, plot) {
 }
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw, cleanup, makeSVG, drawRooPlot, assignPadPainterDraw };
+         draw, redraw, cleanup, makeSVG, makeImage, drawRooPlot, assignPadPainterDraw };

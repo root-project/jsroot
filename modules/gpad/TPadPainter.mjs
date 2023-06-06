@@ -2024,8 +2024,7 @@ class TPadPainter extends ObjectPainter {
 
       return svgToImage(svg, file_format).then(res => {
          // reactivate border
-         if (active_pp)
-            active_pp.drawActiveBorder(null, true);
+         active_pp?.drawActiveBorder(null, true);
 
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
