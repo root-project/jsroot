@@ -2,7 +2,7 @@
 <html lang="en">
    <head>
       <meta charset="utf-8">
-      <title>Test SVG/PNG creation in the browser</title>
+      <title>Test svg/png/jpeg creation in the browser</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
       <style>
          .grid-container {
@@ -10,7 +10,7 @@
            grid-template-columns: auto auto auto;
            grid-template-rows: 20px 300px 20px 300px 20px 300px 20px;
            gap: 2px;
-           background-color: #2196F3;
+           background-color: #968;
            padding: 2px;
            height: 100%;
          }
@@ -59,7 +59,7 @@
       const width = 400, height = 300;
 
       function makeColumn(id, object, option) {
-         makeImage({ object, option, width, height, format: 'svg' })
+         makeImage({ format: 'svg', object, option, width, height })
           .then(svg => {
              // makeSVG returns SVG code which can be directly applied
              if (!svg) return;
@@ -67,7 +67,7 @@
              document.getElementById(`draw_svg${id}`).innerHTML = svg;
              document.getElementById(`info_svg${id}`).innerHTML = `SVG image size ${svg.length}`;
            });
-         makeImage({ object, option, width, height, format: 'png' })
+         makeImage({ format: 'png', object, option, width, height })
             .then(png => {
                // here png in base64 format provided
                if (!png) return;
@@ -76,8 +76,13 @@
                img.src = png;
                document.getElementById(`draw_png${id}`).appendChild(img);
                document.getElementById(`info_png${id}`).innerHTML = `PNG image base64 ${png.length}`;
+               // shows also binary buffer can be generated as well
+               makeImage({ format: 'png', as_buffer: true, object, option, width, height }).then(buf => {
+                  // such buffer can be stored in the file
+                  document.getElementById(`info_png${id}`).innerHTML += `    buf ${buf.byteLength}`;
+               });
            });
-         makeImage({ object, option, width, height, format: 'jpeg' })
+         makeImage({ format: 'jpeg', object, option, width, height })
             .then(jpeg => {
                if (!jpeg) return;
 
@@ -86,6 +91,12 @@
                img.src = jpeg;
                document.getElementById(`draw_jpeg${id}`).appendChild(img);
                document.getElementById(`info_jpeg${id}`).innerHTML = `JPEG image base64 ${jpeg.length}`;
+
+               // shows also binary buffer can be generated as well
+               makeImage({ format: 'jpeg', as_buffer: true, object, option, width, height }).then(buf => {
+                  // such buffer can be stored in the file
+                  document.getElementById(`info_jpeg${id}`).innerHTML += `    buf ${buf.byteLength}`;
+               });
            });
       }
 
@@ -99,8 +110,6 @@
       openFile('https://root.cern/js/files/geom/rootgeom.root')
          .then(file => file.readObject('simple1;1'))
          .then(geom => makeColumn('3', geom, ''));
-
-
 
    </script>
 </html>

@@ -1,4 +1,4 @@
-import { version, openFile, makeSVG, makeImage, svgToImage } from 'jsroot';
+import { version, openFile, makeImage } from 'jsroot';
 
 import { writeFileSync } from 'fs';
 
@@ -12,23 +12,23 @@ let geom = await file2.readObject('simple1;1');
 
 // testing 2D graphics
 let svg1 = await makeSVG({ object: hpxpy, option: 'col', width: 1200, height: 800 });
-let png1 = await makeImage({ format: 'png', object: hpxpy, option: 'col', width: 1200, height: 800 });
-let jpeg1 = await makeImage({ format: 'jpeg', object: hpxpy, option: 'col', width: 1200, height: 800 });
+let png1buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'col', width: 1200, height: 800 });
 let jpeg1buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'col', width: 1200, height: 800 });
 
-console.log(`Create test1.jpeg size ${jpeg1buf.byteLength}`);
+console.log(`histogram col test1.svg ${svg1.length} test1.png ${png1buf.byteLength} test1.jpeg ${jpeg1buf.byteLength}`);
 writeFileSync('test1.svg', svg1);
+writeFileSync('test1.png', png1buf);
 writeFileSync('test1.jpeg', jpeg1buf);
 
 
 // testing 3D graphics
 let svg2 = await makeSVG({ object: hpxpy, option: 'lego2', width: 1200, height: 800 });
-let png2 = await makeImage({ format: 'png', object: hpxpy, option: 'lego2', width: 1200, height: 800 });
-let jpeg2 = await makeImage({ format: 'jpeg', object: hpxpy, option: 'lego2', width: 1200, height: 800 });
+let png2buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'lego2', width: 1200, height: 800 });
 let jpeg2buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'lego2', width: 1200, height: 800 });
 
-console.log(`Create test2.jpeg size ${jpeg2buf.byteLength}`);
+console.log(`histogram lego2 test2.svg ${svg2.length} test2.png ${png2buf.byteLength} test2.jpeg ${jpeg2buf.byteLength}`);
 writeFileSync('test2.svg', svg2);
+writeFileSync('test2.png', png2buf);
 writeFileSync('test2.jpeg', jpeg2buf);
 
 
