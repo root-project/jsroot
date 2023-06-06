@@ -556,8 +556,11 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let dataUrl = canvas.toDataURL('image/' + (renderer._wrk.format ?? 'png'));
-      renderer._wrk.svg_3ds[renderer.workaround_id] = { dataUrl, width: canvas.width, height: canvas.height };
+      let format = 'image/' + (renderer._wrk.format ?? 'png'),
+          dataUrl = canvas.toDataURL(format),
+          entry = { dataUrl, width: canvas.width, height: canvas.height };
+      entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
+      renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
       d3_select(renderer.jsroot_dom).attr('href', dataUrl);

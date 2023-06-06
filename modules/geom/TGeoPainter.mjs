@@ -2673,7 +2673,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   async createScene(w, h) {
+   async createScene(w, h, full_area) {
       if (this.superimpose) {
          let cfg = getHistPainter3DCfg(this.getMainPainter());
 
@@ -2720,7 +2720,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.background = new Color(this.ctrl.background);
 
-      let _wrk = this.selectDom('original').property('_wrk');
+      let _wrk = this.selectDom('original').property('_wrk') ?? {};
+      _wrk.full_area = full_area;
 
       return createRender3D(w, h, this.options.Render3D,
             { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
@@ -4040,13 +4041,13 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               return this.createScene(size.width, size.height)
+               return this.createScene(size.width, size.height, false)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL));
             });
 
          } else {
             // activate worker
-            if (this.ctrl.use_worker > 0)
+            if ((this.ctrl.use_worker > 0) && !isBatchMode())
                this.startWorker();
 
             assign3DHandler(this);
@@ -4055,7 +4056,7 @@ class TGeoPainter extends ObjectPainter {
 
             this._fit_main_area = (size.can3d === -1);
 
-            promise = this.createScene(size.width, size.height)
+            promise = this.createScene(size.width, size.height, true)
                           .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }

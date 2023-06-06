@@ -531,7 +531,7 @@ function addStreamerInfosForPainter(lst) {
   * import { openFile, makeSVG } from 'jsroot';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let object = await file.readObject('hpxpy;1');
-  * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
+  * let svg = await makeSVG({ object, option: 'lego2,pal67', width: 1200, height: 800 }); */
 
 async function makeImage(args) {
    if (!args) args = {};
@@ -550,7 +550,9 @@ async function makeImage(args) {
       args.height = args.object?.fCh;
    }
 
-   let _wrk = { format: 'png' }; // special post-processings, used with 3D rendering
+   let _wrk = { format: 'png', as_buffer: args.as_buffer }; // special post-processings, used with 3D rendering
+   if (args.format != 'svg')
+      _wrk.format = args.format; // use format directly
 
    async function build(main) {
 
@@ -566,6 +568,10 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
+         // 3d renderer took full area, no SVG, no need to try it
+         if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
+            return _wrk.svg_3ds[0].data;
+
          let cp = getElementCanvPainter(main.node()),
              mp = getElementMainPainter(main.node());
 
@@ -577,8 +583,6 @@ async function makeImage(args) {
 
             return complete(null);
          }
-
-         // console.log(args.object._typename, args.format, 'internals.svg_3ds size', internals.svg_3ds?.length);
 
          let has_workarounds = _wrk.svg_3ds && isFunc(_wrk.processSvgWorkarounds);
 
@@ -600,6 +604,9 @@ async function makeImage(args) {
          main.selectAll('svg').each(clear_element);
 
          let svg = main.html();
+
+         if (main.selectAll('svg').size() == 1)
+            console.log('svg', svg);
 
          if (has_workarounds)
             svg = _wrk.processSvgWorkarounds(svg);
