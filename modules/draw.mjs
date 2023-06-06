@@ -567,18 +567,19 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
+         let cp = getElementCanvPainter(main.node()),
+             mp = getElementMainPainter(main.node());
+
          if (!isNodeJs()) {
-            let promise = Promise.resolve(null),
-                cp = getElementCanvPainter(main.node()),
-                mp = getElementMainPainter(main.node());
-
             if (isFunc(cp?.produceImage))
-               promise = cp.produceImage(true, args.format);
-            else if (isFunc(mp?.produceImage))
-               promise = mp.produceImage(args.format);
+               return cp.produceImage(true, args.format).then(complete);
+            if (isFunc(mp?.produceImage))
+               return mp.produceImage(args.format).then(complete);
 
-            return promise.then(complete);
+            return complete(null);
          }
+
+         console.log(args.object._typename, args.format, 'internals.svg_3ds size', internals.svg_3ds?.length);
 
          let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
 

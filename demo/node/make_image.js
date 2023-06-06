@@ -17,6 +17,7 @@ let jpeg1 = await makeImage({ format: 'jpeg', object: hpxpy, option: 'col', widt
 let jpeg1buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'col', width: 1200, height: 800 });
 
 console.log(`Create test1.jpeg size ${jpeg1buf.byteLength}`);
+writeFileSync('test1.svg', svg1);
 writeFileSync('test1.jpeg', jpeg1buf);
 
 
@@ -27,14 +28,16 @@ let jpeg2 = await makeImage({ format: 'jpeg', object: hpxpy, option: 'lego2', wi
 let jpeg2buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'lego2', width: 1200, height: 800 });
 
 console.log(`Create test2.jpeg size ${jpeg2buf.byteLength}`);
+writeFileSync('test2.svg', svg2);
 writeFileSync('test2.jpeg', jpeg2buf);
 
 
 // testing geometry
 let svg3 = await makeSVG({ object: geom, option: '', width: 1200, height: 800 });
-let png3 = await makeImage({ format: 'png', object: geom, option: '', width: 1200, height: 800 });
-let jpeg3 = await makeImage({ format: 'jpeg', object: geom, option: '', width: 1200, height: 800 });
+let png3buf = await makeImage({ format: 'png', as_buffer: true, object: geom, option: '', width: 1200, height: 800 });
 let jpeg3buf = await makeImage({ format: 'jpeg', as_buffer: true, object: geom, option: '', width: 1200, height: 800 });
 
-console.log(`Create test3.jpeg size ${jpeg3buf.byteLength}`);
+console.log(`geometry test3.svg ${svg3.length} test3.png ${png3buf.byteLength} test3.jpeg ${jpeg3buf.byteLength}`);
+writeFileSync('test3.svg', svg3);
+writeFileSync('test3.png', png3buf);
 writeFileSync('test3.jpeg', jpeg3buf);
