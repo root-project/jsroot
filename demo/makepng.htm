@@ -4,37 +4,103 @@
       <meta charset="utf-8">
       <title>Test SVG/PNG creation in the browser</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <style>
+         .grid-container {
+           display: grid;
+           grid-template-columns: auto auto auto;
+           grid-template-rows: 20px 300px 20px 300px 20px 300px 20px;
+           gap: 2px;
+           background-color: #2196F3;
+           padding: 2px;
+           height: 100%;
+         }
+
+         .grid-container > div {
+           background-color: rgba(255, 255, 255, 0.8);
+           text-align: center;
+           padding: 0 0;
+           font-size: 16px;
+         }
+     </style>
+
    </head>
    <body>
-      <h3>SVG image</h3>
-      <div id="draw_svg" style="width: 600px; height:400px"></div>
-      <div id="info_svg"></div>
+      <h1>Example usage of makeImage function</h1>
 
-      <h3>PNG image</h3>
-      <div id="draw_png" style="width: 600px; height:400px"></div>
-      <div id="info_png"></div>
+      <div class="grid-container">
+         <div>2D drawing</div>
+         <div>3D drawing</div>
+         <div>Geo drawing</div>
+         <div id="draw_svg1"></div>
+         <div id="draw_svg2"></div>
+         <div id="draw_svg3"></div>
+         <div id="info_svg1"></div>
+         <div id="info_svg2"></div>
+         <div id="info_svg3"></div>
+         <div id="draw_png1"></div>
+         <div id="draw_png2"></div>
+         <div id="draw_png3"></div>
+         <div id="info_png1"></div>
+         <div id="info_png2"></div>
+         <div id="info_png3"></div>
+         <div id="draw_jpeg1"></div>
+         <div id="draw_jpeg2"></div>
+         <div id="draw_jpeg3"></div>
+         <div id="info_jpeg1"></div>
+         <div id="info_jpeg2"></div>
+         <div id="info_jpeg3"></div>
+      </div>
    </body>
 
    <script type='module'>
 
-      import { openFile, makeSVG, svgToImage } from '../modules/main.mjs';
+      import { openFile, makeSVG, makeImage, svgToImage } from '../modules/main.mjs';
+
+      const width = 400, height = 300;
+
+      function makeColumn(id, object, option) {
+         makeImage({ object, option, width, height, format: 'svg' })
+          .then(svg => {
+             // makeSVG returns SVG code which can be directly applied
+             if (!svg) return;
+
+             document.getElementById(`draw_svg${id}`).innerHTML = svg;
+             document.getElementById(`info_svg${id}`).innerHTML = `SVG image size ${svg.length}`;
+           });
+         makeImage({ object, option, width, height, format: 'png' })
+            .then(png => {
+               // here png in base64 format provided
+               if (!png) return;
+
+               let img = new Image;
+               img.src = png;
+               document.getElementById(`draw_png${id}`).appendChild(img);
+               document.getElementById(`info_png${id}`).innerHTML = `PNG image base64 ${png.length}`;
+           });
+         makeImage({ object, option, width, height, format: 'jpeg' })
+            .then(jpeg => {
+               if (!jpeg) return;
+
+               // here png in base64 format provided
+               let img = new Image;
+               img.src = jpeg;
+               document.getElementById(`draw_jpeg${id}`).appendChild(img);
+               document.getElementById(`info_jpeg${id}`).innerHTML = `JPEG image base64 ${jpeg.length}`;
+           });
+      }
 
       openFile('https://root.cern/js/files/hsimple.root')
-       .then(file => file.readObject('hpxpy;1'))
-       .then(object => makeSVG({ object, option: 'lego2', width: 600, height: 400 }))
-       .then(svg => {
-          // makeSVG returns SVG code which can be directly applied
-          document.getElementById('draw_svg').innerHTML = svg;
-          document.getElementById('info_svg').innerHTML = `SVG image size ${svg.length}`;
+         .then(file => file.readObject('hpxpy;1'))
+         .then(hpxpy => {
+            makeColumn('1', hpxpy, 'col');
+            makeColumn('2', hpxpy, 'lego2');
+         });
 
-           return svgToImage(svg);
-       }).then(canvas => {
-           // here HTMLCanvas element is returned
-          document.getElementById('draw_png').appendChild(canvas);
+      openFile('https://root.cern/js/files/geom/rootgeom.root')
+         .then(file => file.readObject('simple1;1'))
+         .then(geom => makeColumn('3', geom, ''));
 
-          document.getElementById('info_png').innerHTML = `PNG image created`;
 
-       });
 
    </script>
 </html>
