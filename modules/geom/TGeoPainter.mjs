@@ -2834,11 +2834,19 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Creates image for specified format. */
-   async produceImage(format) {
+   async produceImage(format, as_buffer) {
       if (!this._renderer) return;
       this.render3D(0);
-      if (format != 'svg')
+      if (format != 'svg') {
+         if (as_buffer)
+            return new Promise(resolveFunc => {
+               this._renderer.domElement.toBlob(blob => {
+                  blob.arrayBuffer().then(resolveFunc);
+               },  'image/' + format);
+            });
+
          return this._renderer.domElement.toDataURL('image/' + format);
+      }
 
       let dataUrl = this._renderer.domElement.toDataURL('image/png'),
           w = this._scene_width, h = this._scene_height;

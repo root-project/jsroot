@@ -577,9 +577,9 @@ async function makeImage(args) {
 
          if (!isNodeJs()) {
             if (isFunc(cp?.produceImage))
-               return cp.produceImage(true, args.format).then(complete);
+               return cp.produceImage(true, args.format, args.as_buffer).then(complete);
             if (isFunc(mp?.produceImage))
-               return mp.produceImage(args.format).then(complete);
+               return mp.produceImage(args.format, args.as_buffer).then(complete);
 
             return complete(null);
          }
