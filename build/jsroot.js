@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '5/06/2023';
+let version_date = '6/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -786,6 +786,7 @@ function toJSON(obj, spacing) {
   * @param {string} [url] URL string with options, document.URL will be used when not specified
   * @return {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
   * @example
+  * import { decodeUrl } from 'https://root.cern/js/latest/modules/core.mjs';
   * let d = decodeUrl('any?opt1&op2=3');
   * console.log(`Has opt1 ${d.has('opt1')}`);     // true
   * console.log(`Get opt1 ${d.get('opt1')}`);     // ''
@@ -984,6 +985,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
   * @example
+  * import { httpRequest } from 'https://root.cern/js/latest/modules/core.mjs';
   * httpRequest('https://root.cern/js/files/thstack.json.gz', 'object')
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
@@ -1313,6 +1315,7 @@ function create$1(typename, target) {
   * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
   * @return {Object} created histogram object
   * @example
+  * import { createHistogram } from 'https://root.cern/js/latest/modules/core.mjs';
   * let h1 = createHistogram('TH1I', 20);
   * h1.fName = 'Hist1';
   * h1.fTitle = 'Histogram title';
@@ -1389,6 +1392,7 @@ function createTGraph(npoints, xpts, ypts) {
 /** @summary Creates THStack object
   * @desc As arguments one could specify any number of histograms objects
   * @example
+  * import { createHistogram, createTHStack } from 'https://root.cern/js/latest/modules/core.mjs';
   * let nbinsx = 20;
   * let h1 = createHistogram('TH1F', nbinsx);
   * let h2 = createHistogram('TH1F', nbinsx);
@@ -1404,6 +1408,7 @@ function createTHStack() {
 /** @summary Creates TMultiGraph object
   * @desc As arguments one could specify any number of TGraph objects
   * @example
+  * import { createTGraph, createTMultiGraph } from 'https://root.cern/js/latest/modules/core.mjs';
   * let gr1 = createTGraph(100);
   * let gr2 = createTGraph(100);
   * let gr3 = createTGraph(100);
@@ -7823,7 +7828,7 @@ function getElementRect(elem, sizearg) {
    if (!elem || elem.empty())
       return { x: 0, y: 0, width: 0, height: 0 };
 
-   if (isNodeJs() && (sizearg != 'bbox'))
+   if ((isNodeJs() && (sizearg != 'bbox')) || elem.property('_batch_mode'))
       return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
    const styleValue = name => {
@@ -8204,9 +8209,6 @@ function compressSVG(svg) {
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
    svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, '');
 
-   if (svg.indexOf('xlink:href') < 0)
-      svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, '');
-
    return svg;
 }
 
@@ -8337,16 +8339,16 @@ class BasePainter {
    testMainResize(check_level, new_size, height_factor) {
 
       let enlarge = this.enlargeMain('state'),
-          main_origin = this.selectDom('origin'),
+          origin = this.selectDom('origin'),
           main = this.selectDom(),
           lmt = 5; // minimal size
 
       if ((enlarge !== 'on') && new_size?.width && new_size?.height)
-         main_origin.style('width', new_size.width + 'px')
-                    .style('height', new_size.height + 'px');
+         origin.style('width', new_size.width + 'px')
+               .style('height', new_size.height + 'px');
 
-      let rect_origin = getElementRect(main_origin, true),
-          can_resize = main_origin.attr('can_resize'),
+      let rect_origin = getElementRect(origin, true),
+          can_resize = origin.attr('can_resize'),
           do_resize = false;
 
       if (can_resize == 'height')
@@ -8360,9 +8362,9 @@ class BasePainter {
 
          if (rect_origin.width > lmt) {
             height_factor = height_factor || 0.66;
-            main_origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
+            origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
          } else if (can_resize !== 'height') {
-            main_origin.style('width', '200px').style('height', '100px');
+            origin.style('width', '200px').style('height', '100px');
          }
       }
 
@@ -8383,9 +8385,9 @@ class BasePainter {
          main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
 
       // after change enlarge state always mark main element as resized
-      if (main_origin.property('did_enlarge')) {
+      if (origin.property('did_enlarge')) {
          rect.changed = true;
-         main_origin.property('did_enlarge', false);
+         origin.property('did_enlarge', false);
       }
 
       return rect;
@@ -8521,9 +8523,12 @@ function addHighlightStyle(elem, drag) {
 }
 
 /** @summary Create image based on SVG
-  * @return {Promise} with produced image in base64 form (or canvas when no image_format specified)
+  * @param {string} svg - svg code of the image
+  * @param {string} [image_format] - image format like 'png' or 'jpeg'
+  * @param {boolean} [as_buffer] - return Buffer object for image
+  * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
-async function svgToImage(svg, image_format) {
+async function svgToImage(svg, image_format, as_buffer) {
 
    if (image_format == 'svg')
       return svg;
@@ -8544,13 +8549,15 @@ async function svgToImage(svg, image_format) {
    if (isNodeJs())
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
 
-         const img = await handle.default.loadImage(img_src);
+         return handle.default.loadImage(img_src).then(img => {
+            const canvas = handle.default.createCanvas(img.width, img.height);
 
-         const canvas = handle.default.createCanvas(img.width, img.height);
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-         canvas.getContext('2d').drawImage(img, 0, 0);
+            if (as_buffer) return canvas.toBuffer('image/' + image_format);
 
-         return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+            return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+         });
       });
 
    return new Promise(resolveFunc => {
@@ -8563,7 +8570,12 @@ async function svgToImage(svg, image_format) {
 
          canvas.getContext('2d').drawImage(image, 0, 0);
 
-         resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
+         if (as_buffer && image_format)
+            canvas.toBlob(blob => {
+                blob.arrayBuffer().then(resolveFunc);
+             },  'image/' + image_format);
+         else
+            resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       };
       image.onerror = function(arg) {
          console.log('IMAGE ERROR', arg);
@@ -12909,6 +12921,7 @@ function getActivePad() {
   * the element even after minimal resize
   * Or one just supply object with exact sizes like { width:300, height:200, force:true };
   * @example
+  * import { resize } from 'https://root.cern/js/latest/modules/base/ObjectPainter.mjs';
   * resize('drawing', { width: 500, height: 200 });
   * resize(document.querySelector('#drawing'), true); */
 function resize(dom, arg) {
@@ -12929,6 +12942,7 @@ function resize(dom, arg) {
   * @param {string|object} dom - id or DOM element
   * @public
   * @example
+  * import { cleanup } from 'https://root.cern/js/latest/modules/base/ObjectPainter.mjs';
   * cleanup('drawing');
   * cleanup(document.querySelector('#drawing')); */
 function cleanup(dom) {
@@ -56809,7 +56823,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
-            elem.attr('transform', makeTranslate(size.x,size.y));
+            elem.attr('transform', makeTranslate(size.x, size.y));
 
          } else {
 
@@ -56874,6 +56888,21 @@ function assign3DHandler(painter) {
 }
 
 
+/** @summary Special way to insert WebGL drawing into produced SVG batch code
+  * @desc Used only in batch mode for SVG images generation
+  * @private */
+function processSvgWorkarounds(svg) {
+   if (!this.svg_3ds)
+      return svg;
+   this.svg_3ds.forEach((entry,k) => {
+      let repl = entry.svg ?? `<image width="${entry.width}" height="${entry.height}" href="${entry.dataUrl}"></image>`;
+      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, repl);
+   });
+   delete this.svg_3ds;
+   return svg;
+}
+
+
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
@@ -56881,13 +56910,14 @@ function assign3DHandler(painter) {
   * @param {object} args - different arguments for creating 3D renderer
   * @return {Promise} with renderer object
   * @private */
-async function createRender3D(width, height, render3d, args) {
+async function createRender3D(width, height, render3d, args, _wrk) {
 
    let rc = constants$1.Render3D, promise, need_workaround = false, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
+   if (_wrk === undefined) _wrk = {};
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
@@ -56925,7 +56955,6 @@ async function createRender3D(width, height, render3d, args) {
          need_workaround = true;
          return r;
       });
-
    } else {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
@@ -56935,11 +56964,15 @@ async function createRender3D(width, height, render3d, args) {
    }
 
    return promise.then(renderer => {
+      renderer._wrk = _wrk;
 
       if (need_workaround) {
-          if (!internals.svg_3ds) internals.svg_3ds = [];
-         renderer.workaround_id = internals.svg_3ds.length;
-         internals.svg_3ds[renderer.workaround_id] = '<svg></svg>'; // dummy, provided in afterRender3D
+         if (!_wrk.svg_3ds) _wrk.svg_3ds = [];
+
+         _wrk.processSvgWorkarounds = processSvgWorkarounds;
+
+         renderer.workaround_id = _wrk.svg_3ds.length;
+         _wrk.svg_3ds[renderer.workaround_id] = { svg: '<svg></svg>' }; // dummy, provided in afterRender3D
 
          // replace DOM element in renderer
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -56996,12 +57029,14 @@ function beforeRender3D(renderer) {
 function afterRender3D(renderer) {
 
    let rc = constants$1.Render3D;
-   if (renderer.jsroot_render3d == rc.WebGL) return;
+
+   if (renderer.jsroot_render3d == rc.WebGL)
+      return;
 
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
       if (isBatchMode()) {
-         internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
+         renderer._wrk.svg_3ds[renderer.workaround_id] = { svg: renderer.makeOuterHTML() };
       } else {
          let parent = renderer.jsroot_dom.parentNode;
          if (parent) {
@@ -57031,26 +57066,16 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let dataUrl = canvas.toDataURL('image/png'),
-          svg = `<image width="${canvas.width}" height="${canvas.height}" xlink:href="${dataUrl}"></image>`;
-      internals.svg_3ds[renderer.workaround_id] = svg;
+      let format = 'image/' + (renderer._wrk.format ?? 'png'),
+          dataUrl = canvas.toDataURL(format),
+          entry = { dataUrl, width: canvas.width, height: canvas.height };
+      entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
+      renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
-      select(renderer.jsroot_dom).attr('xlink:href', dataUrl);
+      select(renderer.jsroot_dom).attr('href', dataUrl);
    }
 }
-
-/** @summary Special way to insert WebGL drawing into produced SVG batch code
-  * @desc Used only in batch mode for SVG images generation
-  * @private */
-internals.processSvgWorkarounds = function(svg, keep_workarounds) {
-   if (!internals.svg_3ds) return svg;
-   for (let k = 0;  k < internals.svg_3ds.length; ++k)
-      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, internals.svg_3ds[k]);
-   if (!keep_workarounds)
-      internals.svg_3ds = undefined;
-   return svg;
-};
 
 // ========================================================================================================
 
@@ -58132,7 +58157,9 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
+   let _wrk = this.selectDom('original').property('_wrk');
+
+   return createRender3D(this.scene_width, this.scene_height, render3d, undefined, _wrk).then(r => {
 
       this.renderer = r;
 
@@ -58240,7 +58267,9 @@ function render3D(tmout) {
 
    if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-   if ((tmout > 0) && !this.usesvg && !isBatchMode()) {
+   let batch_mode = isBatchMode() || this.getCanvPainter()?.batch_mode;
+
+   if ((tmout > 0) && !this.usesvg && !batch_mode) {
       if (!this.render_tmout)
          this.render_tmout = setTimeout(() => this.render3D(0), tmout);
       return;
@@ -69308,10 +69337,8 @@ class BatchDisplay extends MDIDisplay {
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id','jsroot_batch_' + this.frames.length)
-             .attr('frame_title', title);
-
-      if (this.frames.length == 0)
-         internals.svg_3ds = undefined;
+             .attr('frame_title', title)
+             .property('_wrk', {}); // special handle for work-arounds
 
       this.frames.push(frame.node());
 
@@ -69337,18 +69364,18 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id) {
       let frame = this.frames[id];
       if (!frame) return;
-      let main = select(frame);
-      let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
+      let main = select(frame),
+          _wrk = main.property('_wrk'),
+          has_workarounds = isFunc(_wrk?.processSvgWorkarounds);
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
-          .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
       let svg = main.html();
       if (has_workarounds)
-         svg = internals.processSvgWorkarounds(svg, id != this.frames.length-1);
+         svg = _wrk.processSvgWorkarounds(svg, id != this.frames.length - 1);
 
       svg = compressSVG(svg);
 
@@ -70093,6 +70120,23 @@ class TPadPainter extends ObjectPainter {
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
+      if (this.selectDom()?.property('_batch_mode'))
+         this.batch_mode = true;
+   }
+
+   /** @summary Indicates that drawing runs in batch mode
+     * @private */
+   isBatchMode() {
+      if (this.batch_mode !== undefined)
+         return this.batch_mode;
+
+      if (isBatchMode())
+         return true;
+
+      if (!this.iscan && this.has_canvas)
+         return this.getCanvPainter()?.isBatchMode();
+
+      return false;
    }
 
    /** @summary Indicates that is is Root6 pad painter
@@ -70330,7 +70374,7 @@ class TPadPainter extends ObjectPainter {
          if (!rect.changed && (check_resize == 1))
             return false;
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          info = this.getLayerSvg('info_layer', this.this_pad_name);
@@ -70351,17 +70395,16 @@ class TPadPainter extends ObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (isBatchMode()) {
+         if (this.isBatchMode()) {
             svg.attr('xmlns', 'http://www.w3.org/2000/svg');
-            svg.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
          } else if (!this.online_canvas) {
             svg.append('svg:title').text('ROOT canvas');
          }
 
-         if (!isBatchMode() || (this.pad.fFillStyle > 0))
+         if (!this.isBatchMode() || (this.pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class','canvas_fillrect');
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter())
@@ -70370,7 +70413,7 @@ class TPadPainter extends ObjectPainter {
 
          svg.append('svg:g').attr('class','primitives_layer');
          info = svg.append('svg:g').attr('class', 'info_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg.append('svg:g')
                       .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -70383,7 +70426,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          if (this._fixed_size) {
-            render_to.style('overflow','auto');
+            render_to.style('overflow', 'auto');
             rect = { width: this.pad.fCw, height: this.pad.fCh };
             if (!rect.width || !rect.height)
                rect = getElementRect(render_to);
@@ -70444,7 +70487,7 @@ class TPadPainter extends ObjectPainter {
          let date = new Date(),
              posx = Math.round(rect.width * gStyle.fDateX),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         if (!isBatchMode() && (posx < 25)) posx = 25;
+         if (!this.isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
          dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
@@ -70542,7 +70585,7 @@ class TPadPainter extends ObjectPainter {
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_border = svg_pad.select('.root_pad_border');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_can.select('.primitives_layer')
@@ -70551,14 +70594,14 @@ class TPadPainter extends ObjectPainter {
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             svg_pad.append('svg:title').text('subpad ' + this.this_pad_name);
 
          // need to check attributes directly while attributes objects will be created later
-         if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+         if (!this.isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!isBatchMode()) {
+         if (!this.isBatchMode()) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
@@ -70567,14 +70610,14 @@ class TPadPainter extends ObjectPainter {
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg_pad.append('svg:g')
                           .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
 
-      if (!this.iscan && !isBatchMode())
+      if (!this.iscan && !this.isBatchMode())
          addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
                                 is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
                                 getDrawG: () => this.svg_this_pad(),
@@ -71148,7 +71191,7 @@ class TPadPainter extends ObjectPainter {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
+         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
@@ -71413,7 +71456,7 @@ class TPadPainter extends ObjectPainter {
       if (this.enforceCanvasSize)
          condition = true;
 
-      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
+      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.isBatchMode() || !this.use_openui || this.embed_canvas)
          return true;
 
       return new Promise(resolveFunc => {
@@ -71469,14 +71512,14 @@ class TPadPainter extends ObjectPainter {
          // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
-         if (this.batch_mode && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
+         if (this.isBatchMode() && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
 
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
+         if (!this.isBatchMode() && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind('float');
@@ -71486,7 +71529,7 @@ class TPadPainter extends ObjectPainter {
 
          this.createCanvasSvg(0);
 
-         if (!this.batch_mode)
+         if (!this.isBatchMode())
             this.addPadButtons(true);
 
          if (typeof snap.fHighlightConnect !== 'undefined')
@@ -71804,8 +71847,15 @@ class TPadPainter extends ObjectPainter {
        });
    }
 
-   /** @summary Save pad in specified format
-     * @desc Used from context menu */
+   /** @summary Save pad as image
+     * @param {string} kind - format of saved image like 'png', 'svg' or 'jpeg'
+     * @param {boolean} full_canvas - does complete canvas (true) or only frame area (false) should be saved
+     * @param {string} [filename] - name of the file which should be stored
+     * @desc Normally used from context menu
+     * @example
+     * import { getElementCanvPainter } from 'https://root.cern/js/latest/modules/base/ObjectPainter.mjs';
+     * let canvas_painter = getElementCanvPainter('drawing_div_id');
+     * canvas_painter.saveAs('png', true, 'canvas.png'); */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
          filename = (this.this_pad_name || (this.iscan ? 'canvas' : 'pad')) + '.' + kind;
@@ -71831,7 +71881,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format) {
+   async produceImage(full_canvas, file_format, as_buffer) {
 
       let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -71906,17 +71956,13 @@ class TPadPainter extends ObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
-
-      if (internals.processSvgWorkarounds)
-         svg = internals.processSvgWorkarounds(svg);
+      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
 
       svg = compressSVG(svg);
 
-      return svgToImage(svg, file_format).then(res => {
+      return svgToImage(svg, file_format, as_buffer).then(res => {
          // reactivate border
-         if (active_pp)
-            active_pp.drawActiveBorder(null, true);
+         active_pp?.drawActiveBorder(null, true);
 
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
@@ -72013,7 +72059,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(btn, tooltip, funcname, keyname) {
-      if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
+      if (!settings.ToolBar || this.isBatchMode()) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -87635,7 +87681,6 @@ class TGeoPainter extends ObjectPainter {
             }));
          menu.add('endsub:');
 
-
          if (this.isOrthoCamera()) {
             menu.add('sub:Overlay');
             this.ctrl.cameraOverlayItems.forEach(item =>
@@ -87648,7 +87693,6 @@ class TGeoPainter extends ObjectPainter {
 
       }
       menu.add('endsub:');
-
 
       menu.addchk(this.ctrl.select_in_view, 'Select in view', () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
@@ -89148,7 +89192,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   async createScene(w, h) {
+   async createScene(w, h, full_area) {
       if (this.superimpose) {
          let cfg = getHistPainter3DCfg(this.getMainPainter());
 
@@ -89195,7 +89239,12 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.background = new Color$1(this.ctrl.background);
 
-      return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(r => {
+      let _wrk = this.selectDom('original').property('_wrk') ?? {};
+      _wrk.full_area = full_area;
+
+      return createRender3D(w, h, this.options.Render3D,
+            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
+        .then(r => {
 
          this._renderer = r;
 
@@ -89301,6 +89350,27 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return this._overall_size;
+   }
+
+   /** @summary Creates image for specified format. */
+   async produceImage(format, as_buffer) {
+      if (!this._renderer) return;
+      this.render3D(0);
+      if (format != 'svg') {
+         if (as_buffer)
+            return new Promise(resolveFunc => {
+               this._renderer.domElement.toBlob(blob => {
+                  blob.arrayBuffer().then(resolveFunc);
+               },  'image/' + format);
+            });
+
+         return this._renderer.domElement.toDataURL('image/' + format);
+      }
+
+      let dataUrl = this._renderer.domElement.toDataURL('image/png'),
+          w = this._scene_width, h = this._scene_height;
+
+      return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg"><image width="${w}" height="${h}" href="${dataUrl}"/></svg>`;
    }
 
    /** @summary Create png image with drawing snapshot. */
@@ -90498,13 +90568,13 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               return this.createScene(size.width, size.height)
+               return this.createScene(size.width, size.height, false)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants$1.Render3D.WebGL));
             });
 
          } else {
             // activate worker
-            if (this.ctrl.use_worker > 0)
+            if ((this.ctrl.use_worker > 0) && !isBatchMode())
                this.startWorker();
 
             assign3DHandler(this);
@@ -90513,7 +90583,7 @@ class TGeoPainter extends ObjectPainter {
 
             this._fit_main_area = (size.can3d === -1);
 
-            promise = this.createScene(size.width, size.height)
+            promise = this.createScene(size.width, size.height, true)
                           .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
@@ -91608,12 +91678,12 @@ class TGeoPainter extends ObjectPainter {
                delete obj.fVolume.$geo_painter;
          }
 
-         if (this._main_painter) {
+         if (this._main_painter?._slave_painters) {
             let pos = this._main_painter._slave_painters.indexOf(this);
             if (pos >= 0) this._main_painter._slave_painters.splice(pos, 1);
          }
 
-         for (let k = 0; k < this._slave_painters.length; ++k) {
+         for (let k = 0; k < this._slave_painters?.length; ++k) {
             let slave = this._slave_painters[k];
             if (slave?._main_painter === this) slave._main_painter = null;
          }
@@ -92316,7 +92386,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @return {object} Object3D with created model
   * @example
-  * import { build } from './path_to_jsroot/modules/geom/TGeoPainter.mjs';
+  * import { build } from 'https://root.cern/js/latest/modules/geom/TGeoPainter.mjs';
   * let obj3d = build(obj);
   * // this is three.js object and can be now inserted in the scene
   */
@@ -95543,6 +95613,7 @@ class TFile {
      * @param {number} [cycle] - cycle number, also can be included in obj_name
      * @return {Promise} promise with object read
      * @example
+     * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
      * let f = await openFile('https://root.cern/js/files/hsimple.root');
      * let obj = await f.readObject('hpxpy;1');
      * console.log(`Read object of type ${obj._typename}`); */
@@ -95626,7 +95697,7 @@ class TFile {
 
       this.fStreamerInfos = lst;
 
-      if (internals.addStreamerInfosForPainter)
+      if (isFunc(internals.addStreamerInfosForPainter))
          internals.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {
@@ -99363,6 +99434,8 @@ function setDefaultDrawOpt(classname, opt) {
   * @public
   * @desc An extensive list of support draw options can be found on [examples page]{@link https://root.cern/js/latest/examples.htm}
   * @example
+  * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+  * import { draw } from 'https://root.cern/js/latest/modules/draw.mjs';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let obj = await file.readObject('hpxpy;1');
   * await draw('drawing', obj, 'colz;logx;gridx;gridy'); */
@@ -99572,43 +99645,80 @@ function addStreamerInfosForPainter(lst) {
    });
 }
 
-
-/** @summary Create SVG image for provided object.
+/** @summary Create SVG/PNG/JPEG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
   * supported ROOT classes
-  * @param {object} args - contains different settings
+  * @param {object} args - function settings
   * @param {object} args.object - object for the drawing
-  * @param {string} [args.option] - draw options
+  * @param {string} [args.format = 'svg'] - image format like 'svg' (default), 'png' or 'jpeg'
+  * @param {string} [args.option = ''] - draw options
   * @param {number} [args.width = 1200] - image width
   * @param {number} [args.height = 800] - image height
+  * @param {boolean} [args.as_buffer = false] - returns image as Buffer instance, can store directly to file
   * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
-  * @return {Promise} with svg code */
-async function makeSVG(args) {
+  * @return {Promise} with image code - svg as is, png/jpeg as base64 string or buffer (if as_buffer) specified
+  * @example
+  * // how makeSVG can be used in node.js
+  * import { openFile, makeSVG } from 'jsroot';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let object = await file.readObject('hpxpy;1');
+  * let svg = await makeSVG({ object, option: 'lego2,pal67', width: 1200, height: 800 }); */
 
+async function makeImage(args) {
    if (!args) args = {};
-   if (!args.object) return Promise.reject(Error('No object specified to generate SVG'));
-   if (!args.width) args.width = 1200;
-   if (!args.height) args.height = 800;
+
+   if (!isObject(args.object))
+      return Promise.reject(Error('No object specified to generate SVG'));
+   if (!args.format)
+      args.format = 'svg';
+   if (!args.width)
+      args.width = 1200;
+   if (!args.height)
+      args.height = 800;
 
    if (args.use_canvas_size && (args.object?._typename == clTCanvas) && args.object.fCw && args.object.fCh) {
       args.width = args.object?.fCw;
       args.height = args.object?.fCh;
    }
 
+   let _wrk = { format: 'png', as_buffer: args.as_buffer }; // special post-processings, used with 3D rendering
+   if (args.format != 'svg')
+      _wrk.format = args.format; // use format directly
+
    async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
-          .style('width', args.width + 'px').style('height', args.height + 'px');
+          .style('width', args.width + 'px').style('height', args.height + 'px')
+          .property('_batch_mode', true).property('_wrk', _wrk);
 
-      internals.svg_3ds = undefined;
+      function complete(res) {
+         cleanup(main.node());
+         main.remove();
+         return res;
+      }
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
-         let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
+         // 3d renderer took full area, no SVG, no need to try it
+         if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
+            return _wrk.svg_3ds[0].data;
+
+         let cp = getElementCanvPainter(main.node()),
+             mp = getElementMainPainter(main.node());
+
+         if (!isNodeJs()) {
+            if (isFunc(cp?.produceImage))
+               return cp.produceImage(true, args.format, args.as_buffer).then(complete);
+            if (isFunc(mp?.produceImage))
+               return mp.produceImage(args.format, args.as_buffer).then(complete);
+
+            return complete(null);
+         }
+
+         let has_workarounds = _wrk.svg_3ds && isFunc(_wrk.processSvgWorkarounds);
 
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
-             .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
              .attr('width', args.width)
              .attr('height', args.height)
              .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
@@ -99626,22 +99736,44 @@ async function makeSVG(args) {
          let svg = main.html();
 
          if (has_workarounds)
-            svg = internals.processSvgWorkarounds(svg);
+            svg = _wrk.processSvgWorkarounds(svg);
 
          svg = compressSVG(svg);
 
-         cleanup(main.node());
+         if (args.format == 'svg')
+            return complete(svg);
 
-         main.remove();
-
-         return svg;
+         return svgToImage(svg, args.format, args.as_buffer).then(complete);
       });
    }
 
    if (!isNodeJs())
-      return build(select('body').append('div').style('visible', 'hidden'));
+      return build(select('body').append('div').style('display', 'none'));
 
    return _loadJSDOM().then(handle => build(handle.body.append('div')));
+}
+
+
+/** @summary Create SVG image for provided object.
+  * @desc Function especially useful in Node.js environment to generate images for
+  * supported ROOT classes
+  * @param {object} args - function settings
+  * @param {object} args.object - object for the drawing
+  * @param {string} [args.option] - draw options
+  * @param {number} [args.width = 1200] - image width
+  * @param {number} [args.height = 800] - image height
+  * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
+  * @return {Promise} with svg code
+  * @example
+  * // how makeSVG can be used in node.js
+  * import { openFile, makeSVG } from 'jsroot';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let object = await file.readObject('hpxpy;1');
+  * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
+async function makeSVG(args) {
+   if (!args) args = {};
+   args.format = 'svg';
+   return makeImage(args);
 }
 
 internals.addDrawFunc = addDrawFunc;
@@ -100391,6 +100523,7 @@ const kindTFile = prROOT + 'TFile';
   * @summary Painter of hierarchical structures
   *
   * @example
+  * import { HierarchyPainter } from 'https://root.cern/js/latest/modules/gui/HierarchyPainter.mjs';
   * // create hierarchy painter in 'myTreeDiv'
   * let h = new HierarchyPainter('example', 'myTreeDiv');
   * // configure 'simple' layout in 'myMainDiv'
@@ -115760,6 +115893,24 @@ class RPadPainter extends RObjectPainter {
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
+
+      if (this.selectDom()?.property('_batch_mode'))
+         this.batch_mode = true;
+   }
+
+   /** @summary Indicates that drawing runs in batch mode
+     * @private */
+   isBatchMode() {
+      if (this.batch_mode !== undefined)
+         return this.batch_mode;
+
+      if (isBatchMode())
+         return true;
+
+      if (!this.iscan && this.has_canvas)
+         return this.getCanvPainter()?.isBatchMode();
+
+      return false;
    }
 
    /** @summary Indicates that is not Root6 pad painter
@@ -116015,7 +116166,7 @@ class RPadPainter extends RObjectPainter {
          if (!rect.changed && (check_resize == 1))
             return false;
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          frect = svg.select('.canvas_fillrect');
@@ -116035,11 +116186,11 @@ class RPadPainter extends RObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (!isBatchMode() && !this.online_canvas)
+         if (!this.isBatchMode() && !this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
 
          frect = svg.append('svg:path').attr('class','canvas_fillrect');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter(this, null))
@@ -116048,7 +116199,7 @@ class RPadPainter extends RObjectPainter {
 
          svg.append('svg:g').attr('class', 'primitives_layer');
          svg.append('svg:g').attr('class', 'info_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg.append('svg:g')
                       .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -116199,7 +116350,7 @@ class RPadPainter extends RObjectPainter {
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.select('.root_pad_border');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_parent.select('.primitives_layer')
@@ -116208,13 +116359,13 @@ class RPadPainter extends RObjectPainter {
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             svg_pad.append('svg:title').text('ROOT subpad');
 
          svg_rect = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
          svg_pad.append('svg:g').attr('class','primitives_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg_pad.append('svg:g')
                           .attr('class','btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
@@ -116223,7 +116374,7 @@ class RPadPainter extends RObjectPainter {
          if (settings.ContextMenu)
             svg_rect.on('contextmenu', evnt => this.padContextMenu(evnt));
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             svg_rect.style('pointer-events', 'visibleFill') // get events also for not visible rect
                     .on('dblclick', evnt => this.enlargePad(evnt, true))
                     .on('click', () => this.selectObjectPainter(this, null))
@@ -116542,7 +116693,7 @@ class RPadPainter extends RObjectPainter {
       return sync_promise.then(() => this.ensureBrowserSize(this.pad?.fWinSize[0], this.pad?.fWinSize[1])).then(() => {
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
+         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
@@ -116815,7 +116966,7 @@ class RPadPainter extends RObjectPainter {
       if (this.enforceCanvasSize)
          condition = true;
 
-      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
+      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.isBatchMode() || !this.use_openui || this.embed_canvas)
          return true;
 
       return new Promise(resolveFunc => {
@@ -116854,7 +117005,7 @@ class RPadPainter extends RObjectPainter {
       // let padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
 
       // if canvas size not specified in batch mode, temporary use 900x700 size
-      // if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
+      // if (this.isBatchMode() && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
       if (this.iscan && this._websocket && snap.fTitle && !this.embed_canvas && (typeof document !== 'undefined'))
          document.title = snap.fTitle;
@@ -116867,12 +117018,12 @@ class RPadPainter extends RObjectPainter {
          this.draw_object = snap;
          this.pad = snap;
 
-         if (this.batch_mode && this.iscan)
+         if (this.isBatchMode() && this.iscan)
              this._fixed_size = true;
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
+         if (!this.isBatchMode() && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
@@ -117027,7 +117178,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format) {
+   async produceImage(full_canvas, file_format, as_buffer) {
 
       let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -117097,14 +117248,10 @@ class RPadPainter extends RObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${elem.node().innerHTML}</svg>`;
-
-      if (internals.processSvgWorkarounds)
-         svg = internals.processSvgWorkarounds(svg);
-
+      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
       svg = compressSVG(svg);
 
-      return svgToImage(svg, file_format).then(res => {
+      return svgToImage(svg, file_format, as_buffer).then(res => {
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
 
@@ -117202,7 +117349,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(btn, tooltip, funcname, keyname) {
-      if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
+      if (!settings.ToolBar || this.isBatchMode()) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -124124,6 +124271,7 @@ exports.kNoStats = kNoStats;
 exports.kNoZoom = kNoZoom;
 exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
+exports.makeImage = makeImage;
 exports.makeSVG = makeSVG;
 exports.makeTranslate = makeTranslate;
 exports.nsREX = nsREX;
