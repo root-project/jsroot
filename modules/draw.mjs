@@ -614,7 +614,7 @@ async function makeImage(args) {
    }
 
    if (!isNodeJs())
-      return build(d3_select('body').append('div').style('visible', 'hidden'));
+      return build(d3_select('body').append('div').style('display', 'none'));
 
    return _loadJSDOM().then(handle => build(handle.body.append('div')));
 }

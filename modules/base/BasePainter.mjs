@@ -14,7 +14,7 @@ function getElementRect(elem, sizearg) {
    if (!elem || elem.empty())
       return { x: 0, y: 0, width: 0, height: 0 };
 
-   if (isNodeJs() && (sizearg != 'bbox'))
+   if ((isNodeJs() && (sizearg != 'bbox')) || elem.property('_batch_mode'))
       return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
    const styleValue = name => {
@@ -525,16 +525,16 @@ class BasePainter {
    testMainResize(check_level, new_size, height_factor) {
 
       let enlarge = this.enlargeMain('state'),
-          main_origin = this.selectDom('origin'),
+          origin = this.selectDom('origin'),
           main = this.selectDom(),
           lmt = 5; // minimal size
 
       if ((enlarge !== 'on') && new_size?.width && new_size?.height)
-         main_origin.style('width', new_size.width + 'px')
-                    .style('height', new_size.height + 'px');
+         origin.style('width', new_size.width + 'px')
+               .style('height', new_size.height + 'px');
 
-      let rect_origin = getElementRect(main_origin, true),
-          can_resize = main_origin.attr('can_resize'),
+      let rect_origin = getElementRect(origin, true),
+          can_resize = origin.attr('can_resize'),
           do_resize = false;
 
       if (can_resize == 'height')
@@ -548,9 +548,9 @@ class BasePainter {
 
          if (rect_origin.width > lmt) {
             height_factor = height_factor || 0.66;
-            main_origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
+            origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
          } else if (can_resize !== 'height') {
-            main_origin.style('width', '200px').style('height', '100px');
+            origin.style('width', '200px').style('height', '100px');
          }
       }
 
@@ -571,9 +571,9 @@ class BasePainter {
          main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
 
       // after change enlarge state always mark main element as resized
-      if (main_origin.property('did_enlarge')) {
+      if (origin.property('did_enlarge')) {
          rect.changed = true;
-         main_origin.property('did_enlarge', false);
+         origin.property('did_enlarge', false);
       }
 
       return rect;
