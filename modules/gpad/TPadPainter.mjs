@@ -198,6 +198,21 @@ class TPadPainter extends ObjectPainter {
          this.batch_mode = true;
    }
 
+   /** @summary Indicates that drawing runs in batch mode
+     * @private */
+   isBatchMode() {
+      if (this.batch_mode !== undefined)
+         return this.batch_mode;
+
+      if (isBatchMode())
+         return true;
+
+      if (!this.iscan && this.has_canvas)
+         return this.getCanvPainter()?.isBatchMode();
+
+      return false;
+   }
+
    /** @summary Indicates that is is Root6 pad painter
     * @private */
    isRoot6() { return true; }
@@ -433,7 +448,7 @@ class TPadPainter extends ObjectPainter {
          if (!rect.changed && (check_resize == 1))
             return false;
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          info = this.getLayerSvg('info_layer', this.this_pad_name);
@@ -454,16 +469,16 @@ class TPadPainter extends ObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (isBatchMode()) {
+         if (this.isBatchMode()) {
             svg.attr('xmlns', 'http://www.w3.org/2000/svg');
          } else if (!this.online_canvas) {
             svg.append('svg:title').text('ROOT canvas');
          }
 
-         if (!isBatchMode() || (this.pad.fFillStyle > 0))
+         if (!this.isBatchMode() || (this.pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class','canvas_fillrect');
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter())
@@ -472,7 +487,7 @@ class TPadPainter extends ObjectPainter {
 
          svg.append('svg:g').attr('class','primitives_layer');
          info = svg.append('svg:g').attr('class', 'info_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg.append('svg:g')
                       .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -546,7 +561,7 @@ class TPadPainter extends ObjectPainter {
          let date = new Date(),
              posx = Math.round(rect.width * gStyle.fDateX),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         if (!isBatchMode() && (posx < 25)) posx = 25;
+         if (!this.isBatchMode() && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
          dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
@@ -644,7 +659,7 @@ class TPadPainter extends ObjectPainter {
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_border = svg_pad.select('.root_pad_border');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_can.select('.primitives_layer')
@@ -653,14 +668,14 @@ class TPadPainter extends ObjectPainter {
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             svg_pad.append('svg:title').text('subpad ' + this.this_pad_name);
 
          // need to check attributes directly while attributes objects will be created later
-         if (!isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+         if (!this.isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!isBatchMode()) {
+         if (!this.isBatchMode()) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
@@ -669,14 +684,14 @@ class TPadPainter extends ObjectPainter {
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             btns = svg_pad.append('svg:g')
                           .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
 
-      if (!this.iscan && !isBatchMode())
+      if (!this.iscan && !this.isBatchMode())
          addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
                                 is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
                                 getDrawG: () => this.svg_this_pad(),
@@ -1250,7 +1265,7 @@ class TPadPainter extends ObjectPainter {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.batch_mode) {
+         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
@@ -1515,7 +1530,7 @@ class TPadPainter extends ObjectPainter {
       if (this.enforceCanvasSize)
          condition = true;
 
-      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.batch_mode || !this.use_openui || this.embed_canvas)
+      if (!condition || this._dbr || !canvW || !canvH || !isFunc(this.resizeBrowser) || !this.online_canvas || this.isBatchMode() || !this.use_openui || this.embed_canvas)
          return true;
 
       return new Promise(resolveFunc => {
@@ -1571,14 +1586,14 @@ class TPadPainter extends ObjectPainter {
          // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
-         if (this.batch_mode && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
+         if (this.isBatchMode() && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
 
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
          let mainid = this.selectDom().attr('id');
 
-         if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
+         if (!this.isBatchMode() && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
             // this.brlayout.toggleBrowserKind('float');
@@ -1588,7 +1603,7 @@ class TPadPainter extends ObjectPainter {
 
          this.createCanvasSvg(0);
 
-         if (!this.batch_mode)
+         if (!this.isBatchMode())
             this.addPadButtons(true);
 
          if (typeof snap.fHighlightConnect !== 'undefined')
@@ -2121,7 +2136,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(btn, tooltip, funcname, keyname) {
-      if (!settings.ToolBar || isBatchMode() || this.batch_mode) return;
+      if (!settings.ToolBar || this.isBatchMode()) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
