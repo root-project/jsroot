@@ -199,7 +199,9 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
+   let _wrk = this.selectDom('original').property('_wrk');
+
+   return createRender3D(this.scene_width, this.scene_height, render3d, undefined, _wrk).then(r => {
 
       this.renderer = r;
 

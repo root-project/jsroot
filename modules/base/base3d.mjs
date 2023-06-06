@@ -378,6 +378,22 @@ function assign3DHandler(painter) {
 }
 
 
+/** @summary Special way to insert WebGL drawing into produced SVG batch code
+  * @desc Used only in batch mode for SVG images generation
+  * @private */
+function processSvgWorkarounds(svg, keep_workarounds) {
+   if (!this.svg_3ds)
+      return svg;
+   this.svg_3ds.forEach((entry,k) => {
+      let repl = entry.svg ?? `<image width="${entry.width}" height="${entry.height}" href="${entry.dataUrl}"></image>`;
+      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, repl);
+   });
+   if (!keep_workarounds)
+      delete this.svg_3ds;
+   return svg;
+}
+
+
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
@@ -385,13 +401,14 @@ function assign3DHandler(painter) {
   * @param {object} args - different arguments for creating 3D renderer
   * @return {Promise} with renderer object
   * @private */
-async function createRender3D(width, height, render3d, args) {
+async function createRender3D(width, height, render3d, args, _wrk) {
 
    let rc = constants.Render3D, promise, need_workaround = false, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
+   if (_wrk === undefined) _wrk = {};
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
@@ -438,11 +455,15 @@ async function createRender3D(width, height, render3d, args) {
    }
 
    return promise.then(renderer => {
+      renderer._wrk = _wrk;
 
       if (need_workaround) {
-         if (!internals.svg_3ds) internals.svg_3ds = [];
-         renderer.workaround_id = internals.svg_3ds.length;
-         internals.svg_3ds[renderer.workaround_id] = '<svg></svg>'; // dummy, provided in afterRender3D
+         if (!_wrk.svg_3ds) _wrk.svg_3ds = [];
+
+         _wrk.processSvgWorkarounds = processSvgWorkarounds;
+
+         renderer.workaround_id = _wrk.svg_3ds.length;
+         _wrk.svg_3ds[renderer.workaround_id] = { svg: '<svg></svg>' }; // dummy, provided in afterRender3D
 
          // replace DOM element in renderer
          renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -500,10 +521,13 @@ function afterRender3D(renderer) {
 
    let rc = constants.Render3D;
 
+   if (renderer.jsroot_render3d == rc.WebGL)
+      return;
+
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
       if (isBatchMode()) {
-         internals.svg_3ds[renderer.workaround_id] = renderer.makeOuterHTML();
+         renderer._wrk.svg_3ds[renderer.workaround_id] = { svg: renderer.makeOuterHTML() };
       } else {
          let parent = renderer.jsroot_dom.parentNode;
          if (parent) {
@@ -533,26 +557,12 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let dataUrl = canvas.toDataURL('image/png'),
-          svg = `<image width="${canvas.width}" height="${canvas.height}" href="${dataUrl}"></image>`;
-      internals.svg_3ds[renderer.workaround_id] = svg;
+      let dataUrl = canvas.toDataURL('image/' + (renderer._wrk.format ?? 'png'));
+      renderer._wrk.svg_3ds[renderer.workaround_id] = { dataUrl, width: canvas.width, height: canvas.height };
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
       d3_select(renderer.jsroot_dom).attr('href', dataUrl);
    }
-}
-
-/** @summary Special way to insert WebGL drawing into produced SVG batch code
-  * @desc Used only in batch mode for SVG images generation
-  * @private */
-internals.processSvgWorkarounds = function(svg, keep_workarounds) {
-   if (!internals.svg_3ds)
-      return svg;
-   for (let k = 0; k < internals.svg_3ds.length; ++k)
-      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, internals.svg_3ds[k]);
-   if (!keep_workarounds)
-      internals.svg_3ds = undefined;
-   return svg;
 }
 
 // ========================================================================================================

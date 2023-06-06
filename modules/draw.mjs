@@ -550,14 +550,13 @@ async function makeImage(args) {
       args.height = args.object?.fCh;
    }
 
+   let _wrk = { format: 'png' }; // special post-processings, used with 3D rendering
 
    async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
-          .property('_batch_mode', true);
-
-      internals.svg_3ds = undefined;
+          .property('_batch_mode', true).property('_wrk', _wrk);
 
       function complete(res) {
          cleanup(main.node());
@@ -579,9 +578,9 @@ async function makeImage(args) {
             return complete(null);
          }
 
-         console.log(args.object._typename, args.format, 'internals.svg_3ds size', internals.svg_3ds?.length);
+         // console.log(args.object._typename, args.format, 'internals.svg_3ds size', internals.svg_3ds?.length);
 
-         let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
+         let has_workarounds = _wrk.svg_3ds && isFunc(_wrk.processSvgWorkarounds);
 
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -603,7 +602,7 @@ async function makeImage(args) {
          let svg = main.html();
 
          if (has_workarounds)
-            svg = internals.processSvgWorkarounds(svg);
+            svg = _wrk.processSvgWorkarounds(svg);
 
          svg = compressSVG(svg);
 

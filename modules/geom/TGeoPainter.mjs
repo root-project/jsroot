@@ -2720,7 +2720,11 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.background = new Color(this.ctrl.background);
 
-      return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(r => {
+      let _wrk = this.selectDom('original').property('_wrk');
+
+      return createRender3D(w, h, this.options.Render3D,
+            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
+        .then(r => {
 
          this._renderer = r;
 

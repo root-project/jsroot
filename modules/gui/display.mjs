@@ -1178,10 +1178,8 @@ class BatchDisplay extends MDIDisplay {
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id','jsroot_batch_' + this.frames.length)
-             .attr('frame_title', title);
-
-      if (this.frames.length == 0)
-         internals.svg_3ds = undefined;
+             .attr('frame_title', title)
+             .property('_wrk', {}); // special handle for work-arounds
 
       this.frames.push(frame.node());
 
@@ -1207,8 +1205,9 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id) {
       let frame = this.frames[id];
       if (!frame) return;
-      let main = d3_select(frame);
-      let has_workarounds = internals.svg_3ds && internals.processSvgWorkarounds;
+      let main = d3_select(frame),
+          _wrk = main.property('_wrk'),
+          has_workarounds = isFunc(_wrk?.processSvgWorkarounds);
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
           .attr('width', this.width)
@@ -1217,7 +1216,7 @@ class BatchDisplay extends MDIDisplay {
 
       let svg = main.html();
       if (has_workarounds)
-         svg = internals.processSvgWorkarounds(svg, id != this.frames.length-1);
+         svg = _wrk.processSvgWorkarounds(svg, id != this.frames.length - 1);
 
       svg = compressSVG(svg);
 
