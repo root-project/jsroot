@@ -111,6 +111,35 @@ function createSVGRenderer(as_is, precision, doc) {
       return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    }
 
+   rndr.fillTargetSVG = function(svg) {
+
+      if (isNodeJs()) {
+
+         let wrap = this.doc_wrapper;
+
+         svg.setAttribute('viewBox', wrap.svg_attr['viewBox']);
+         svg.setAttribute('width', wrap.svg_attr['width']);
+         svg.setAttribute('height', wrap.svg_attr['height']);
+         svg.style.background = wrap.svg_style.backgroundColor || '';
+
+         svg.innerHTML = wrap.accPath;
+      } else {
+         let src = this.domElement;
+
+         svg.setAttribute('viewBox', src.getAttribute('viewBox'));
+         svg.setAttribute('width', src.getAttribute('width'));
+         svg.setAttribute('height', src.getAttribute('height'));
+         svg.style.background = src.style.backgroundColor;
+
+         while (src.firstChild) {
+            let elem = src.firstChild;
+            src.removeChild(elem);
+            svg.appendChild(elem);
+         }
+
+      }
+   }
+
    rndr.setPrecision(precision);
 
    return rndr;
@@ -424,11 +453,8 @@ async function createRender3D(width, height, render3d, args, _wrk) {
       // SVG rendering
       let r = createSVGRenderer(false, 0, doc);
 
-      if (isBatchMode()) {
-         need_workaround = true;
-      } else {
-         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      }
+      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
@@ -449,7 +475,9 @@ async function createRender3D(width, height, render3d, args, _wrk) {
 
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
-         need_workaround = 1;
+         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+         r.jsroot_dom.setAttribute('width', width);
+         r.jsroot_dom.setAttribute('height', height);
          return r;
       });
    } else {
@@ -463,24 +491,8 @@ async function createRender3D(width, height, render3d, args, _wrk) {
    return promise.then(renderer => {
       renderer._wrk = _wrk;
 
-      if (need_workaround === 1) {
-         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-         renderer.jsroot_dom.setAttribute('width', width);
-         renderer.jsroot_dom.setAttribute('height', height);
-      } else if (need_workaround) {
-         if (!_wrk.svg_3ds) _wrk.svg_3ds = [];
-
-         _wrk.processSvgWorkarounds = processSvgWorkarounds;
-
-         renderer.workaround_id = _wrk.svg_3ds.length;
-         _wrk.svg_3ds[renderer.workaround_id] = { svg: '<svg></svg>' }; // dummy, provided in afterRender3D
-
-         // replace DOM element in renderer
-         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-         renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
-      } else if (!renderer.jsroot_dom) {
+      if (!renderer.jsroot_dom)
          renderer.jsroot_dom = renderer.domElement;
-      }
 
       // res.renderer.setClearColor('#000000', 1);
       // res.renderer.setClearColor(0x0, 0);
@@ -522,7 +534,8 @@ function cleanupRender3D(renderer) {
   * @desc used together with SVG
   * @private */
 function beforeRender3D(renderer) {
-   if (renderer.clearHTML) renderer.clearHTML();
+   if (isFunc(renderer.clearHTML))
+      renderer.clearHTML();
 }
 
 /** @summary Post-process result of rendering
@@ -537,15 +550,7 @@ function afterRender3D(renderer) {
 
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
-      if (isBatchMode()) {
-         renderer._wrk.svg_3ds[renderer.workaround_id] = { svg: renderer.makeOuterHTML() };
-      } else {
-         let parent = renderer.jsroot_dom.parentNode;
-         if (parent) {
-            parent.innerHTML = renderer.makeOuterHTML();
-            renderer.jsroot_dom = parent.firstChild;
-         }
-      }
+      renderer.fillTargetSVG(renderer.jsroot_dom);
    } else if (isNodeJs()) {
       // this is WebGL rendering in node.js
       let canvas = renderer.domElement,
