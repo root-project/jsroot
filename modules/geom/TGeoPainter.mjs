@@ -4096,8 +4096,10 @@ class TGeoPainter extends ObjectPainter {
    showDrawInfo(msg) {
       if (isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
-      let main = this._renderer.domElement.parentNode,
-          info = main.querySelector('.geo_info');
+      let main = this._renderer.domElement.parentNode;
+      if (!main) return;
+
+      let info = main.querySelector('.geo_info');
 
       if (!msg) {
          info?.remove();
