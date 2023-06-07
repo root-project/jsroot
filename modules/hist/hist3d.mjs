@@ -163,7 +163,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       return Promise.resolve(true);
    }
 
-   render3d = getRender3DKind(render3d);
+   render3d = getRender3DKind(render3d, this.isBatchMode());
 
    assign3DHandler(this);
 

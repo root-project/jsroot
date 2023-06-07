@@ -558,7 +558,9 @@ async function makeImage(args) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
-          .property('_batch_mode', true).property('_wrk', _wrk);
+          .property('_batch_mode', true)
+          .property('_batch_format', args.format != 'svg' ? args.format : null)
+          .property('_wrk', _wrk);
 
       function complete(res) {
          cleanup(main.node());
@@ -568,9 +570,9 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
-        if (args.format != 'svg') {
-           let only_img = main.select('svg').selectChild('image');
-           if (!only_img.empty()) {
+         if (args.format != 'svg') {
+            let only_img = main.select('svg').selectChild('image');
+            if (!only_img.empty()) {
                let href = only_img.attr('href');
 
                if (args.as_buffer) {
@@ -583,14 +585,10 @@ async function makeImage(args) {
                   return isNodeJs() ? Buffer.from(buf) : buf;
                }
                return href;
-           }
-        }
+            }
+         }
 
-         // 3d renderer took full area, no SVG, no need to try it
-         // if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
-         //   return _wrk.svg_3ds[0].data;
-
-         let cp = getElementCanvPainter(main.node()),
+        /* let cp = getElementCanvPainter(main.node()),
              mp = getElementMainPainter(main.node());
 
          if (!isNodeJs()) {
@@ -601,6 +599,7 @@ async function makeImage(args) {
 
             return complete(null);
          }
+         */
 
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')

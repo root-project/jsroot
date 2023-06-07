@@ -612,9 +612,11 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Check drawing stage */
    isStage(value) { return value === this.drawing_stage; }
 
+   isBatchMode() { return isBatchMode() || this.batch_mode; }
+
    /** @summary Create toolbar */
    createToolbar() {
-      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || isBatchMode()) return;
+      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode()) return;
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
@@ -2013,7 +2015,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add orbit control */
    addOrbitControls() {
 
-      if (this._controls || !this._webgl || isBatchMode() || this.superimpose) return;
+      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -2106,7 +2108,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols || this.superimpose || !this._webgl || isBatchMode()) return;
+      if (this._tcontrols || this.superimpose || !this._webgl || this.isBatchMode()) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
@@ -2201,7 +2203,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && source_dir.indexOf('file://') == 0) {
@@ -2673,7 +2675,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   async createScene(w, h, full_area) {
+   async createScene(w, h, render3d) {
       if (this.superimpose) {
          let cfg = getHistPainter3DCfg(this.getMainPainter());
 
@@ -2721,13 +2723,14 @@ class TGeoPainter extends ObjectPainter {
       this._scene.background = new Color(this.ctrl.background);
 
       let _wrk = this.selectDom('original').property('_wrk') ?? {};
-      _wrk.full_area = full_area;
 
-      return createRender3D(w, h, this.options.Render3D,
-            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
+      return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
         .then(r => {
 
          this._renderer = r;
+
+         if (this.batch_format)
+            r.jsroot_image_format = this.batch_format;
 
          this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
 
@@ -3326,7 +3329,7 @@ class TGeoPainter extends ObjectPainter {
      * @return {Promise} with object drawing ready */
    async drawCount(unqievis, clonetm) {
 
-      const makeTime = tm => (isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
+      const makeTime = tm => (this.isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
 
       let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
@@ -3364,7 +3367,7 @@ class TGeoPainter extends ObjectPainter {
 
       let elem = this.selectDom().style('overflow', 'auto');
 
-      if (isBatchMode())
+      if (this.isBatchMode())
          elem.property('_json_object_', res);
       else
          res.forEach(str => elem.append('p').text(str));
@@ -3377,7 +3380,7 @@ class TGeoPainter extends ObjectPainter {
             tm2 = new Date().getTime();
 
             let last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
-            if (isBatchMode())
+            if (this.isBatchMode())
                res.push(last_str);
             else
                elem.append('p').text(last_str);
@@ -4041,7 +4044,9 @@ class TGeoPainter extends ObjectPainter {
                   this.ctrl.background = pp.fillatt.color;
                fp = this.getFramePainter();
 
-               render3d = getRender3DKind();
+               this.batch_mode = pp.isBatchMode();
+
+               render3d = getRender3DKind(undefined, this.batch_mode);
                assign3DHandler(fp);
                fp.mode3d = true;
 
@@ -4049,22 +4054,29 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               return this.createScene(size.width, size.height, false)
+               return this.createScene(size.width, size.height, render3d)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL));
             });
 
          } else {
+            let dom = this.selectDom('origin');
+
+            this.batch_mode = isBatchMode() || dom.property('_batch_mode');
+            this.batch_format = dom.property('_batch_format');
+
+            let render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
+
             // activate worker
-            if ((this.ctrl.use_worker > 0) && !isBatchMode())
+            if ((this.ctrl.use_worker > 0) && !this.batch_mode)
                this.startWorker();
 
             assign3DHandler(this);
 
-            let size = this.getSizeFor3d(undefined, getRender3DKind(this.options.Render3D));
+            let size = this.getSizeFor3d(undefined, render3d);
 
             this._fit_main_area = (size.can3d === -1);
 
-            promise = this.createScene(size.width, size.height, true)
+            promise = this.createScene(size.width, size.height, render3d)
                           .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
@@ -4094,7 +4106,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary methods show info when first geometry drawing is performed */
    showDrawInfo(msg) {
-      if (isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
+      if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
       let main = this._renderer.domElement.parentNode;
       if (!main) return;
@@ -4223,7 +4235,7 @@ class TGeoPainter extends ObjectPainter {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && this._webgl /* && !isBatchMode() */) {
-         if (isBatchMode()) tmout = 1; // use minimal timeout in batch mode
+         if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {
                if (!this._render_resolveFuncs)
@@ -5064,7 +5076,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !isBatchMode()) this.showControlOptions(true);
+            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlOptions(true);
          }
 
          this.setAsMainPainter();

@@ -148,14 +148,18 @@ function createSVGRenderer(as_is, precision, doc) {
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
   * @param {value} [render3d] - preconfigured value, will be used if applicable
+  * @param {value} [is_batch] - is batch mode is configured
   * @return {value} - rendering kind, see constants.Render3D
   * @private */
-function getRender3DKind(render3d) {
-   if (!render3d) render3d = isBatchMode() ? settings.Render3DBatch : settings.Render3D;
+function getRender3DKind(render3d, is_batch) {
+   if (is_batch === undefined)
+      is_batch = isBatchMode();
+
+   if (!render3d) render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
    let rc = constants.Render3D;
 
-   if (render3d == rc.Default) render3d = isBatchMode() ? rc.WebGLImage : rc.WebGL;
-   if (isBatchMode() && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d == rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
+   if (is_batch && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
 
    return render3d;
 }
@@ -423,7 +427,7 @@ function assign3DHandler(painter) {
   * @private */
 async function createRender3D(width, height, render3d, args, _wrk) {
 
-   let rc = constants.Render3D, promise, need_workaround = false, doc = getDocument();
+   let rc = constants.Render3D, promise, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
@@ -482,16 +486,19 @@ async function createRender3D(width, height, render3d, args, _wrk) {
       // res.renderer.setClearColor(0x0, 0);
       renderer.jsroot_render3d = render3d;
 
+      // which format used to convert into images
+      renderer.jsroot_image_format = 'png';
+
       renderer.originalSetSize = renderer.setSize;
 
       // apply size to dom element
-      renderer.setSize = function(width, height) {
+      renderer.setSize = function(width, height, updateStyle) {
          if (this.jsroot_custom_dom) {
             this.jsroot_dom.setAttribute('width', width);
             this.jsroot_dom.setAttribute('height', height);
          }
 
-         this.originalSetSize(width, height);
+         this.originalSetSize(width, height, updateStyle);
       };
 
       renderer.setSize(width, height);
@@ -564,14 +571,14 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let format = 'image/' + (renderer._wrk?.format ?? 'png'),
+      let format = 'image/' + renderer.jsroot_image_format,
           dataUrl = canvas.toDataURL(format);
 
-      d3_select(renderer.jsroot_dom).attr('href', dataUrl);
+      renderer.jsroot_dom.setAttribute('href', dataUrl);
 
    } else {
-      let dataUrl = renderer.domElement.toDataURL('image/png');
-      d3_select(renderer.jsroot_dom).attr('href', dataUrl);
+      let dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
+      renderer.jsroot_dom.setAttribute('href', dataUrl);
    }
 }
 
