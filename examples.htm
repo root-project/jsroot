@@ -367,7 +367,7 @@
 
       <div id="panel">
         <div id="header">
-           <h1><div>JSROOT</div><a id="version" href="http://github.com/root-project/jsroot/releases">7.3.2</a></h1>
+           <h1><div><a href="https://root.cern/js/">JSROOT</a></div><a id="version" href="http://github.com/root-project/jsroot/releases">dev</a></h1>
            <div id="expandButton"></div>
         </div>
         <div id="panelScrim"></div>
@@ -384,7 +384,7 @@
    </body>
 
    <script type="module">
-      import { settings, httpRequest, decodeUrl, version, source_dir } from './modules/core.mjs';
+      import { settings, httpRequest, decodeUrl, version, version_id, source_dir } from './modules/core.mjs';
 
       import { cleanup } from './modules/base/ObjectPainter.mjs';
 
@@ -684,7 +684,8 @@
          document.getElementById('projects').style.background = 'black';
       }
 
-      document.getElementById( 'version' ).title = `${version}, ${source_dir}`;
+      document.getElementById('version').innerHTML = version_id;
+      document.getElementById('version').title = `${version}, ${source_dir}`;
 
       let content = document.getElementById( 'content' );
 
