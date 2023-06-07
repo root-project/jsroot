@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '6/06/2023';
+let version_date = '7/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11379,9 +11379,12 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Returns pad name where object is drawn */
-   getPadName() {
-      return this.pad_name || '';
-   }
+   getPadName() { return this.pad_name || ''; }
+
+   /** @summary Indicates that drawing runs in batch mode
+     * @private */
+   isBatchMode() { return isBatchMode() ? true : (this.getCanvPainter()?.isBatchMode() ?? false); }
+
 
    /** @summary Assign snapid to the painter
     * @desc Identifier used to communicate with server side and identifies object on the server
@@ -56540,7 +56543,7 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_style: {},
      path_attr: {},
      accPath: '',
-     createElementNS(ns,kind) {
+     createElementNS(ns, kind) {
         if (kind == 'path')
            return {
               _wrapper: this,
@@ -56581,12 +56584,17 @@ function createSVGRenderer(as_is, precision, doc) {
      }
    };
 
-   let originalDocument = globalThis.document;
-   globalThis.document = doc_wrapper;
+   let originalDocument;
+
+   if (isNodeJs()) {
+      originalDocument = globalThis.document;
+      globalThis.document = doc_wrapper;
+   }
 
    let rndr = new SVGRenderer();
 
-   globalThis.document = originalDocument;
+   if (isNodeJs())
+      globalThis.document = originalDocument;
 
    rndr.doc_wrapper = doc_wrapper; // use it to get final SVG code
 
@@ -56594,11 +56602,13 @@ function createSVGRenderer(as_is, precision, doc) {
 
    rndr.render = function (scene, camera) {
       let originalDocument = globalThis.document;
-      globalThis.document = this.doc_wrapper;
+      if (isNodeJs())
+         globalThis.document = this.doc_wrapper;
 
       this.originalRender(scene, camera);
 
-      globalThis.document = originalDocument;
+      if (isNodeJs())
+         globalThis.document = originalDocument;
    };
 
    rndr.clearHTML = function() {
@@ -56614,6 +56624,35 @@ function createSVGRenderer(as_is, precision, doc) {
       return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    };
 
+   rndr.fillTargetSVG = function(svg) {
+
+      if (isNodeJs()) {
+
+         let wrap = this.doc_wrapper;
+
+         svg.setAttribute('viewBox', wrap.svg_attr['viewBox']);
+         svg.setAttribute('width', wrap.svg_attr['width']);
+         svg.setAttribute('height', wrap.svg_attr['height']);
+         svg.style.background = wrap.svg_style.backgroundColor || '';
+
+         svg.innerHTML = wrap.accPath;
+      } else {
+         let src = this.domElement;
+
+         svg.setAttribute('viewBox', src.getAttribute('viewBox'));
+         svg.setAttribute('width', src.getAttribute('width'));
+         svg.setAttribute('height', src.getAttribute('height'));
+         svg.style.background = src.style.backgroundColor;
+
+         while (src.firstChild) {
+            let elem = src.firstChild;
+            src.removeChild(elem);
+            svg.appendChild(elem);
+         }
+
+      }
+   };
+
    rndr.setPrecision(precision);
 
    return rndr;
@@ -56622,14 +56661,18 @@ function createSVGRenderer(as_is, precision, doc) {
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
   * @param {value} [render3d] - preconfigured value, will be used if applicable
+  * @param {value} [is_batch] - is batch mode is configured
   * @return {value} - rendering kind, see constants.Render3D
   * @private */
-function getRender3DKind(render3d) {
-   if (!render3d) render3d = isBatchMode() ? settings.Render3DBatch : settings.Render3D;
+function getRender3DKind(render3d, is_batch) {
+   if (is_batch === undefined)
+      is_batch = isBatchMode();
+
+   if (!render3d) render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
    let rc = constants$1.Render3D;
 
-   if (render3d == rc.Default) render3d = isBatchMode() ? rc.WebGLImage : rc.WebGL;
-   if (isBatchMode() && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d == rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
+   if (is_batch && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
 
    return render3d;
 }
@@ -56888,21 +56931,6 @@ function assign3DHandler(painter) {
 }
 
 
-/** @summary Special way to insert WebGL drawing into produced SVG batch code
-  * @desc Used only in batch mode for SVG images generation
-  * @private */
-function processSvgWorkarounds(svg) {
-   if (!this.svg_3ds)
-      return svg;
-   this.svg_3ds.forEach((entry,k) => {
-      let repl = entry.svg ?? `<image width="${entry.width}" height="${entry.height}" href="${entry.dataUrl}"></image>`;
-      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, repl);
-   });
-   delete this.svg_3ds;
-   return svg;
-}
-
-
 /** @summary Creates renderer for the 3D drawings
   * @param {value} width - rendering width
   * @param {value} height - rendering height
@@ -56910,14 +56938,13 @@ function processSvgWorkarounds(svg) {
   * @param {object} args - different arguments for creating 3D renderer
   * @return {Promise} with renderer object
   * @private */
-async function createRender3D(width, height, render3d, args, _wrk) {
+async function createRender3D(width, height, render3d, args) {
 
-   let rc = constants$1.Render3D, promise, need_workaround = false, doc = getDocument();
+   let rc = constants$1.Render3D, promise, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
-   if (_wrk === undefined) _wrk = {};
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
@@ -56927,11 +56954,8 @@ async function createRender3D(width, height, render3d, args, _wrk) {
       // SVG rendering
       let r = createSVGRenderer(false, 0, doc);
 
-      if (isBatchMode()) {
-         need_workaround = true;
-      } else {
-         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      }
+      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
@@ -56948,49 +56972,46 @@ async function createRender3D(width, height, render3d, args, _wrk) {
          gl.canvas = args.canvas;
 
          let r = new WebGLRenderer(args);
-         // let r = new WebGL1Renderer(args);
+         // let r = new WebGL1Renderer(args); // starting from three.js r152
 
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
-         need_workaround = true;
+         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
          return r;
       });
    } else {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      select(r.jsroot_dom).attr('width', width).attr('height', height);
       promise = Promise.resolve(r);
    }
 
    return promise.then(renderer => {
-      renderer._wrk = _wrk;
-
-      if (need_workaround) {
-         if (!_wrk.svg_3ds) _wrk.svg_3ds = [];
-
-         _wrk.processSvgWorkarounds = processSvgWorkarounds;
-
-         renderer.workaround_id = _wrk.svg_3ds.length;
-         _wrk.svg_3ds[renderer.workaround_id] = { svg: '<svg></svg>' }; // dummy, provided in afterRender3D
-
-         // replace DOM element in renderer
-         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-         renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
-      } else if (!renderer.jsroot_dom) {
+      if (!renderer.jsroot_dom)
          renderer.jsroot_dom = renderer.domElement;
-      }
+      else
+         renderer.jsroot_custom_dom = true;
 
       // res.renderer.setClearColor('#000000', 1);
       // res.renderer.setClearColor(0x0, 0);
-      renderer.setSize(width, height);
       renderer.jsroot_render3d = render3d;
 
+      // which format used to convert into images
+      renderer.jsroot_image_format = 'png';
+
+      renderer.originalSetSize = renderer.setSize;
+
       // apply size to dom element
-      renderer.setJSROOTSize = function(width, height) {
-         if ((this.jsroot_render3d === constants$1.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
-            return select(this.jsroot_dom).attr('width', width).attr('height', height);
+      renderer.setSize = function(width, height, updateStyle) {
+         if (this.jsroot_custom_dom) {
+            this.jsroot_dom.setAttribute('width', width);
+            this.jsroot_dom.setAttribute('height', height);
+         }
+
+         this.originalSetSize(width, height, updateStyle);
       };
+
+      renderer.setSize(width, height);
 
       return renderer;
    });
@@ -57005,7 +57026,8 @@ function cleanupRender3D(renderer) {
    if (isNodeJs()) {
       let ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
           ext = ctxt?.getExtension('STACKGL_destroy_context');
-      if (ext) ext.destroy();
+      if (isFunc(ext?.destroy))
+          ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
       if (browser$1.isChrome && isFunc(renderer.forceContextLoss))
@@ -57020,7 +57042,8 @@ function cleanupRender3D(renderer) {
   * @desc used together with SVG
   * @private */
 function beforeRender3D(renderer) {
-   if (renderer.clearHTML) renderer.clearHTML();
+   if (isFunc(renderer.clearHTML))
+      renderer.clearHTML();
 }
 
 /** @summary Post-process result of rendering
@@ -57035,15 +57058,7 @@ function afterRender3D(renderer) {
 
    if (renderer.jsroot_render3d == rc.SVG) {
       // case of SVGRenderer
-      if (isBatchMode()) {
-         renderer._wrk.svg_3ds[renderer.workaround_id] = { svg: renderer.makeOuterHTML() };
-      } else {
-         let parent = renderer.jsroot_dom.parentNode;
-         if (parent) {
-            parent.innerHTML = renderer.makeOuterHTML();
-            renderer.jsroot_dom = parent.firstChild;
-         }
-      }
+      renderer.fillTargetSVG(renderer.jsroot_dom);
    } else if (isNodeJs()) {
       // this is WebGL rendering in node.js
       let canvas = renderer.domElement,
@@ -57066,14 +57081,14 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let format = 'image/' + (renderer._wrk.format ?? 'png'),
-          dataUrl = canvas.toDataURL(format),
-          entry = { dataUrl, width: canvas.width, height: canvas.height };
-      entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
-      renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
+      let format = 'image/' + renderer.jsroot_image_format,
+          dataUrl = canvas.toDataURL(format);
+
+      renderer.jsroot_dom.setAttribute('href', dataUrl);
+
    } else {
-      let dataUrl = renderer.domElement.toDataURL('image/png');
-      select(renderer.jsroot_dom).attr('href', dataUrl);
+      let dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
+      renderer.jsroot_dom.setAttribute('href', dataUrl);
    }
 }
 
@@ -58121,7 +58136,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       return Promise.resolve(true);
    }
 
-   render3d = getRender3DKind(render3d);
+   render3d = getRender3DKind(render3d, this.isBatchMode());
 
    assign3DHandler(this);
 
@@ -58157,9 +58172,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   let _wrk = this.selectDom('original').property('_wrk');
-
-   return createRender3D(this.scene_width, this.scene_height, render3d, undefined, _wrk).then(r => {
+   return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
 
       this.renderer = r;
 
@@ -58329,8 +58342,6 @@ function resize3D() {
    this.camera.updateProjectionMatrix();
 
    this.renderer.setSize( this.scene_width, this.scene_height );
-   if (this.renderer.setJSROOTSize)
-      this.renderer.setJSROOTSize(this.scene_width, this.scene_height);
 
    return true;
 }
@@ -69324,10 +69335,12 @@ class BatchDisplay extends MDIDisplay {
       this.jsdom_body = jsdom_body || select('body'); // d3 body handle
    }
 
+   /** @summary Call function for each frame */
    forEachFrame(userfunc) {
       this.frames.forEach(userfunc);
    }
 
+   /** @summary Create batch frame */
    createFrame(title) {
       this.beforeCreateFrame(title);
 
@@ -69337,8 +69350,7 @@ class BatchDisplay extends MDIDisplay {
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id','jsroot_batch_' + this.frames.length)
-             .attr('frame_title', title)
-             .property('_wrk', {}); // special handle for work-arounds
+             .attr('frame_title', title);
 
       this.frames.push(frame.node());
 
@@ -69364,20 +69376,21 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id) {
       let frame = this.frames[id];
       if (!frame) return;
-      let main = select(frame),
-          _wrk = main.property('_wrk'),
-          has_workarounds = isFunc(_wrk?.processSvgWorkarounds);
+      let main = select(frame);
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
-      let svg = main.html();
-      if (has_workarounds)
-         svg = _wrk.processSvgWorkarounds(svg, id != this.frames.length - 1);
+      function clear_element() {
+         const elem = select(this);
+         if (elem.style('display') == 'none') elem.remove();
+      }
+      main.selectAll('g.root_frame').each(clear_element);
+      main.selectAll('svg').each(clear_element);
 
-      svg = compressSVG(svg);
+      let svg = compressSVG(main.html());
 
       main.remove();
       return svg;
@@ -71881,7 +71894,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format, as_buffer) {
+   async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -71940,7 +71953,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          // add svg image
-         item.img = item.prnt.insert('image','.primitives_layer')     // create image object
+         item.img = item.prnt.insert('image', '.primitives_layer')     // create image object
                         .attr('x', sz2.x)
                         .attr('y', sz2.y)
                         .attr('width', canvas.width)
@@ -71960,7 +71973,7 @@ class TPadPainter extends ObjectPainter {
 
       svg = compressSVG(svg);
 
-      return svgToImage(svg, file_format, as_buffer).then(res => {
+      return svgToImage(svg, file_format).then(res => {
          // reactivate border
          active_pp?.drawActiveBorder(null, true);
 
@@ -87131,9 +87144,11 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Check drawing stage */
    isStage(value) { return value === this.drawing_stage; }
 
+   isBatchMode() { return isBatchMode() || this.batch_mode; }
+
    /** @summary Create toolbar */
    createToolbar() {
-      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || isBatchMode()) return;
+      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode()) return;
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
@@ -88532,7 +88547,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add orbit control */
    addOrbitControls() {
 
-      if (this._controls || !this._webgl || isBatchMode() || this.superimpose) return;
+      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -88625,7 +88640,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary add transformation control */
    addTransformControl() {
-      if (this._tcontrols || this.superimpose || !this._webgl || isBatchMode()) return;
+      if (this._tcontrols || this.superimpose || !this._webgl || this.isBatchMode()) return;
 
       if (!this.ctrl._debug && !this.ctrl._grid) return;
 
@@ -88720,7 +88735,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !this.isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && exports.source_dir.indexOf('file://') == 0) {
@@ -89192,7 +89207,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Initial scene creation */
-   async createScene(w, h, full_area) {
+   async createScene(w, h, render3d) {
       if (this.superimpose) {
          let cfg = getHistPainter3DCfg(this.getMainPainter());
 
@@ -89239,14 +89254,13 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.background = new Color$1(this.ctrl.background);
 
-      let _wrk = this.selectDom('original').property('_wrk') ?? {};
-      _wrk.full_area = full_area;
-
-      return createRender3D(w, h, this.options.Render3D,
-            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
+      return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true })
         .then(r => {
 
          this._renderer = r;
+
+         if (this.batch_format)
+            r.jsroot_image_format = this.batch_format;
 
          this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
 
@@ -89350,27 +89364,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return this._overall_size;
-   }
-
-   /** @summary Creates image for specified format. */
-   async produceImage(format, as_buffer) {
-      if (!this._renderer) return;
-      this.render3D(0);
-      if (format != 'svg') {
-         if (as_buffer)
-            return new Promise(resolveFunc => {
-               this._renderer.domElement.toBlob(blob => {
-                  blob.arrayBuffer().then(resolveFunc);
-               },  'image/' + format);
-            });
-
-         return this._renderer.domElement.toDataURL('image/' + format);
-      }
-
-      let dataUrl = this._renderer.domElement.toDataURL('image/png'),
-          w = this._scene_width, h = this._scene_height;
-
-      return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg"><image width="${w}" height="${h}" href="${dataUrl}"/></svg>`;
    }
 
    /** @summary Create png image with drawing snapshot. */
@@ -89845,7 +89838,7 @@ class TGeoPainter extends ObjectPainter {
      * @return {Promise} with object drawing ready */
    async drawCount(unqievis, clonetm) {
 
-      const makeTime = tm => (isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
+      const makeTime = tm => (this.isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
 
       let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
@@ -89883,7 +89876,7 @@ class TGeoPainter extends ObjectPainter {
 
       let elem = this.selectDom().style('overflow', 'auto');
 
-      if (isBatchMode())
+      if (this.isBatchMode())
          elem.property('_json_object_', res);
       else
          res.forEach(str => elem.append('p').text(str));
@@ -89896,7 +89889,7 @@ class TGeoPainter extends ObjectPainter {
             tm2 = new Date().getTime();
 
             let last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
-            if (isBatchMode())
+            if (this.isBatchMode())
                res.push(last_str);
             else
                elem.append('p').text(last_str);
@@ -90560,7 +90553,9 @@ class TGeoPainter extends ObjectPainter {
                   this.ctrl.background = pp.fillatt.color;
                fp = this.getFramePainter();
 
-               render3d = getRender3DKind();
+               this.batch_mode = pp.isBatchMode();
+
+               render3d = getRender3DKind(undefined, this.batch_mode);
                assign3DHandler(fp);
                fp.mode3d = true;
 
@@ -90568,22 +90563,29 @@ class TGeoPainter extends ObjectPainter {
 
                this._fit_main_area = (size.can3d === -1);
 
-               return this.createScene(size.width, size.height, false)
+               return this.createScene(size.width, size.height, render3d)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants$1.Render3D.WebGL));
             });
 
          } else {
+            let dom = this.selectDom('origin');
+
+            this.batch_mode = isBatchMode() || dom.property('_batch_mode');
+            this.batch_format = dom.property('_batch_format');
+
+            let render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
+
             // activate worker
-            if ((this.ctrl.use_worker > 0) && !isBatchMode())
+            if ((this.ctrl.use_worker > 0) && !this.batch_mode)
                this.startWorker();
 
             assign3DHandler(this);
 
-            let size = this.getSizeFor3d(undefined, getRender3DKind(this.options.Render3D));
+            let size = this.getSizeFor3d(undefined, render3d);
 
             this._fit_main_area = (size.can3d === -1);
 
-            promise = this.createScene(size.width, size.height, true)
+            promise = this.createScene(size.width, size.height, render3d)
                           .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
@@ -90613,10 +90615,12 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary methods show info when first geometry drawing is performed */
    showDrawInfo(msg) {
-      if (isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
+      if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
-      let main = this._renderer.domElement.parentNode,
-          info = main.querySelector('.geo_info');
+      let main = this._renderer.domElement.parentNode;
+      if (!main) return;
+
+      let info = main.querySelector('.geo_info');
 
       if (!msg) {
          info?.remove();
@@ -90740,7 +90744,7 @@ class TGeoPainter extends ObjectPainter {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && this._webgl /* && !isBatchMode() */) {
-         if (isBatchMode()) tmout = 1; // use minimal timeout in batch mode
+         if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {
                if (!this._render_resolveFuncs)
@@ -91578,7 +91582,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !isBatchMode()) this.showControlOptions(true);
+            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlOptions(true);
          }
 
          this.setAsMainPainter();
@@ -99681,15 +99685,12 @@ async function makeImage(args) {
       args.height = args.object?.fCh;
    }
 
-   let _wrk = { format: 'png', as_buffer: args.as_buffer }; // special post-processings, used with 3D rendering
-   if (args.format != 'svg')
-      _wrk.format = args.format; // use format directly
-
    async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
-          .property('_batch_mode', true).property('_wrk', _wrk);
+          .property('_batch_mode', true)
+          .property('_batch_format', args.format != 'svg' ? args.format : null);
 
       function complete(res) {
          cleanup(main.node());
@@ -99699,23 +99700,23 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
-         // 3d renderer took full area, no SVG, no need to try it
-         if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
-            return _wrk.svg_3ds[0].data;
+         if (args.format != 'svg') {
+            let only_img = main.select('svg').selectChild('image');
+            if (!only_img.empty()) {
+               let href = only_img.attr('href');
 
-         let cp = getElementCanvPainter(main.node()),
-             mp = getElementMainPainter(main.node());
-
-         if (!isNodeJs()) {
-            if (isFunc(cp?.produceImage))
-               return cp.produceImage(true, args.format, args.as_buffer).then(complete);
-            if (isFunc(mp?.produceImage))
-               return mp.produceImage(args.format, args.as_buffer).then(complete);
-
-            return complete(null);
+               if (args.as_buffer) {
+                  let p = href.indexOf('base64,'),
+                      str = atob_func(href.slice(p + 7)),
+                      buf = new ArrayBuffer(str.length),
+                      bufView = new Uint8Array(buf);
+                  for (let i = 0; i < str.length; i++)
+                     bufView[i] = str.charCodeAt(i);
+                  return isNodeJs() ? Buffer.from(buf) : buf;
+               }
+               return href;
+            }
          }
-
-         let has_workarounds = _wrk.svg_3ds && isFunc(_wrk.processSvgWorkarounds);
 
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -99727,18 +99728,10 @@ async function makeImage(args) {
             const elem = select(this);
             if (elem.style('display') == 'none') elem.remove();
          }
-         // remove containers with display: none
-         if (has_workarounds)
-            main.selectAll('g.root_frame').each(clear_element);
-
+         main.selectAll('g.root_frame').each(clear_element);
          main.selectAll('svg').each(clear_element);
 
-         let svg = main.html();
-
-         if (has_workarounds)
-            svg = _wrk.processSvgWorkarounds(svg);
-
-         svg = compressSVG(svg);
+         let svg = compressSVG(main.html());
 
          if (args.format == 'svg')
             return complete(svg);
@@ -99747,10 +99740,8 @@ async function makeImage(args) {
       });
    }
 
-   if (!isNodeJs())
-      return build(select('body').append('div').style('display', 'none'));
-
-   return _loadJSDOM().then(handle => build(handle.body.append('div')));
+   return isNodeJs() ? _loadJSDOM().then(handle => build(handle.body.append('div')))
+                     : build(select('body').append('div').style('display', 'none'));
 }
 
 
@@ -117178,7 +117169,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format, as_buffer) {
+   async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -117251,7 +117242,7 @@ class RPadPainter extends RObjectPainter {
       let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
       svg = compressSVG(svg);
 
-      return svgToImage(svg, file_format, as_buffer).then(res => {
+      return svgToImage(svg, file_format).then(res => {
          for (let k = 0; k < items.length; ++k) {
             let item = items[k];
 
