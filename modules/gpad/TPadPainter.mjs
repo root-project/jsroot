@@ -2014,7 +2014,7 @@ class TPadPainter extends ObjectPainter {
          }
 
          // add svg image
-         item.img = item.prnt.insert('image','.primitives_layer')     // create image object
+         item.img = item.prnt.insert('image', '.primitives_layer')     // create image object
                         .attr('x', sz2.x)
                         .attr('y', sz2.y)
                         .attr('width', canvas.width)
