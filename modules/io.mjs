@@ -1,4 +1,4 @@
-import { createHttpRequest, BIT, loadScript, internals, settings,
+import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
@@ -2831,8 +2831,7 @@ class TFile {
          if (res && first_req) {
             if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges'))
                file.fAcceptRanges = false;
-            const kind = first_req.getResponseHeader('Server');
-
+            const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
             if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
                file.fMaxRanges = 1;
                file.fUseStampPar = false;
