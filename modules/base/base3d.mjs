@@ -30,7 +30,7 @@ function createSVGRenderer(as_is, precision, doc) {
      svg_style: {},
      path_attr: {},
      accPath: '',
-     createElementNS(ns,kind) {
+     createElementNS(ns, kind) {
         if (kind == 'path')
            return {
               _wrapper: this,
@@ -89,11 +89,13 @@ function createSVGRenderer(as_is, precision, doc) {
 
    rndr.render = function (scene, camera) {
       let originalDocument = globalThis.document;
-      globalThis.document = this.doc_wrapper;
+      if (isNodeJs())
+         globalThis.document = this.doc_wrapper;
 
       this.originalRender(scene, camera);
 
-      globalThis.document = originalDocument;
+      if (isNodeJs())
+         globalThis.document = originalDocument;
    }
 
    rndr.clearHTML = function() {
