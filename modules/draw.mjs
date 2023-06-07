@@ -5,7 +5,7 @@ import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, is
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTAnnotation, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
-         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, nsREX } from './core.mjs';
+         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, nsREX, atob_func } from './core.mjs';
 import { clTStreamerInfoList } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
@@ -568,14 +568,23 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
-         let main_svg = main.select('svg');
+        if (args.format != 'svg') {
+           let only_img = main.select('svg').selectChild('image');
+           if (!only_img.empty()) {
+               let href = only_img.attr('href');
 
-         let only_img = main_svg.selectChild('image');
-         if (!only_img.empty()) {
-            console.log('get first image');
-            if (args.format != 'svg')
-               return args.as_buffer ? only_img.property('_buffer') : only_img.attr('href');
-         }
+               if (args.as_buffer) {
+                  let p = href.indexOf('base64,'),
+                      str = atob_func(href.slice(p + 7)),
+                      buf = new ArrayBuffer(str.length),
+                      bufView = new Uint8Array(buf);
+                  for (let i = 0; i < str.length; i++)
+                     bufView[i] = str.charCodeAt(i);
+                  return isNodeJs() ? Buffer.from(buf) : buf;
+               }
+               return href;
+           }
+        }
 
          // 3d renderer took full area, no SVG, no need to try it
          // if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
@@ -607,8 +616,8 @@ async function makeImage(args) {
          };
 
          // remove containers with display: none
-         if (has_workarounds)
-            main.selectAll('g.root_frame').each(clear_element);
+         //if (has_workarounds)
+         main.selectAll('g.root_frame').each(clear_element);
 
          main.selectAll('svg').each(clear_element);
 

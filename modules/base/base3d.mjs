@@ -482,7 +482,7 @@ async function createRender3D(width, height, render3d, args, _wrk) {
 
       // apply size to dom element
       renderer.setJSROOTSize = function(width, height) {
-         if (((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode()) || !isNodeJs())
+         if (((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode()) || isNodeJs())
             return d3_select(this.jsroot_dom).attr('width', width).attr('height', height);
       };
 
@@ -499,7 +499,8 @@ function cleanupRender3D(renderer) {
    if (isNodeJs()) {
       let ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
           ext = ctxt?.getExtension('STACKGL_destroy_context');
-      if (ext) ext.destroy();
+      if (isFunc(ext?.destroy))
+          ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
       if (browser.isChrome && isFunc(renderer.forceContextLoss))
@@ -563,12 +564,8 @@ function afterRender3D(renderer) {
       let format = 'image/' + (renderer._wrk?.format ?? 'png'),
           dataUrl = canvas.toDataURL(format);
 
-      d3_select(renderer.jsroot_dom).attr('href', dataUrl).property('_buffer', canvas.toBuffer(format));
+      d3_select(renderer.jsroot_dom).attr('href', dataUrl);
 
-      //dataBuffer = renderer._wrk.as_buffer ?
-      //entry = { dataUrl, width: canvas.width, height: canvas.height };
-      //entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
-      //renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
       d3_select(renderer.jsroot_dom).attr('href', dataUrl);
