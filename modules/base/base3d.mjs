@@ -438,11 +438,11 @@ async function createRender3D(width, height, render3d, args, _wrk) {
          gl.canvas = args.canvas;
 
          let r = new WebGLRenderer(args);
-         // let r = new WebGL1Renderer(args);
+         // let r = new WebGL1Renderer(args); // starting from three.js r152
 
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
-         need_workaround = true;
+         need_workaround = 1;
          return r;
       });
    } else {
@@ -456,7 +456,11 @@ async function createRender3D(width, height, render3d, args, _wrk) {
    return promise.then(renderer => {
       renderer._wrk = _wrk;
 
-      if (need_workaround) {
+      if (need_workaround === 1) {
+         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+         renderer.jsroot_dom.setAttribute('width', width);
+         renderer.jsroot_dom.setAttribute('height', height);
+      } else if (need_workaround) {
          if (!_wrk.svg_3ds) _wrk.svg_3ds = [];
 
          _wrk.processSvgWorkarounds = processSvgWorkarounds;
@@ -478,7 +482,7 @@ async function createRender3D(width, height, render3d, args, _wrk) {
 
       // apply size to dom element
       renderer.setJSROOTSize = function(width, height) {
-         if ((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode() && !isNodeJs())
+         if (((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode()) || !isNodeJs())
             return d3_select(this.jsroot_dom).attr('width', width).attr('height', height);
       };
 
@@ -556,11 +560,15 @@ function afterRender3D(renderer) {
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let format = 'image/' + (renderer._wrk.format ?? 'png'),
-          dataUrl = canvas.toDataURL(format),
-          entry = { dataUrl, width: canvas.width, height: canvas.height };
-      entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
-      renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
+      let format = 'image/' + (renderer._wrk?.format ?? 'png'),
+          dataUrl = canvas.toDataURL(format);
+
+      d3_select(renderer.jsroot_dom).attr('href', dataUrl).property('_buffer', canvas.toBuffer(format));
+
+      //dataBuffer = renderer._wrk.as_buffer ?
+      //entry = { dataUrl, width: canvas.width, height: canvas.height };
+      //entry.data = renderer._wrk.as_buffer ? canvas.toBuffer(format) : dataUrl;
+      //renderer._wrk.svg_3ds[renderer.workaround_id] = entry;
    } else {
       let dataUrl = renderer.domElement.toDataURL('image/png');
       d3_select(renderer.jsroot_dom).attr('href', dataUrl);

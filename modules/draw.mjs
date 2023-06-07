@@ -568,9 +568,18 @@ async function makeImage(args) {
 
       return draw(main.node(), args.object, args.option || '').then(() => {
 
+         let main_svg = main.select('svg');
+
+         let only_img = main_svg.selectChild('image');
+         if (!only_img.empty()) {
+            console.log('get first image');
+            if (args.format != 'svg')
+               return args.as_buffer ? only_img.property('_buffer') : only_img.attr('href');
+         }
+
          // 3d renderer took full area, no SVG, no need to try it
-         if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
-            return _wrk.svg_3ds[0].data;
+         // if (_wrk.full_area && (_wrk.svg_3ds?.length === 1) && (args.format != 'svg') && _wrk.svg_3ds[0].data)
+         //   return _wrk.svg_3ds[0].data;
 
          let cp = getElementCanvPainter(main.node()),
              mp = getElementMainPainter(main.node());
