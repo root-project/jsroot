@@ -461,15 +461,12 @@ async function createRender3D(width, height, render3d, args, _wrk) {
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-         r.jsroot_dom.setAttribute('width', width);
-         r.jsroot_dom.setAttribute('height', height);
          return r;
       });
    } else {
       // rendering with WebGL directly into svg image
       let r = new WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-      d3_select(r.jsroot_dom).attr('width', width).attr('height', height);
       promise = Promise.resolve(r);
    }
 
@@ -478,17 +475,26 @@ async function createRender3D(width, height, render3d, args, _wrk) {
 
       if (!renderer.jsroot_dom)
          renderer.jsroot_dom = renderer.domElement;
+      else
+         renderer.jsroot_custom_dom = true;
 
       // res.renderer.setClearColor('#000000', 1);
       // res.renderer.setClearColor(0x0, 0);
-      renderer.setSize(width, height);
       renderer.jsroot_render3d = render3d;
 
+      renderer.originalSetSize = renderer.setSize;
+
       // apply size to dom element
-      renderer.setJSROOTSize = function(width, height) {
-         if (((this.jsroot_render3d === constants.Render3D.WebGLImage) && !isBatchMode()) || isNodeJs())
-            return d3_select(this.jsroot_dom).attr('width', width).attr('height', height);
+      renderer.setSize = function(width, height) {
+         if (this.jsroot_custom_dom) {
+            this.jsroot_dom.setAttribute('width', width);
+            this.jsroot_dom.setAttribute('height', height);
+         }
+
+         this.originalSetSize(width, height);
       };
+
+      renderer.setSize(width, height);
 
       return renderer;
    });

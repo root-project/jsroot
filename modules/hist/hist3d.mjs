@@ -371,8 +371,6 @@ function resize3D() {
    this.camera.updateProjectionMatrix();
 
    this.renderer.setSize( this.scene_width, this.scene_height );
-   if (this.renderer.setJSROOTSize)
-      this.renderer.setJSROOTSize(this.scene_width, this.scene_height);
 
    return true;
 }
