@@ -2722,9 +2722,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.background = new Color(this.ctrl.background);
 
-      let _wrk = this.selectDom('original').property('_wrk') ?? {};
-
-      return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }, _wrk)
+      return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true })
         .then(r => {
 
          this._renderer = r;
@@ -2834,27 +2832,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return this._overall_size;
-   }
-
-   /** @summary Creates image for specified format. */
-   async produceImage(format, as_buffer) {
-      if (!this._renderer) return;
-      this.render3D(0);
-      if (format != 'svg') {
-         if (as_buffer)
-            return new Promise(resolveFunc => {
-               this._renderer.domElement.toBlob(blob => {
-                  blob.arrayBuffer().then(resolveFunc);
-               },  'image/' + format);
-            });
-
-         return this._renderer.domElement.toDataURL('image/' + format);
-      }
-
-      let dataUrl = this._renderer.domElement.toDataURL('image/png'),
-          w = this._scene_width, h = this._scene_height;
-
-      return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg"><image width="${w}" height="${h}" href="${dataUrl}"/></svg>`;
    }
 
    /** @summary Create png image with drawing snapshot. */

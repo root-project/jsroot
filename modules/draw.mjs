@@ -550,17 +550,12 @@ async function makeImage(args) {
       args.height = args.object?.fCh;
    }
 
-   let _wrk = { format: 'png', as_buffer: args.as_buffer }; // special post-processings, used with 3D rendering
-   if (args.format != 'svg')
-      _wrk.format = args.format; // use format directly
-
    async function build(main) {
 
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
           .property('_batch_mode', true)
-          .property('_batch_format', args.format != 'svg' ? args.format : null)
-          .property('_wrk', _wrk);
+          .property('_batch_format', args.format != 'svg' ? args.format : null);
 
       function complete(res) {
          cleanup(main.node());
@@ -588,19 +583,6 @@ async function makeImage(args) {
             }
          }
 
-        /* let cp = getElementCanvPainter(main.node()),
-             mp = getElementMainPainter(main.node());
-
-         if (!isNodeJs()) {
-            if (isFunc(cp?.produceImage))
-               return cp.produceImage(true, args.format, args.as_buffer).then(complete);
-            if (isFunc(mp?.produceImage))
-               return mp.produceImage(args.format, args.as_buffer).then(complete);
-
-            return complete(null);
-         }
-         */
-
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
              .attr('width', args.width)
@@ -624,10 +606,8 @@ async function makeImage(args) {
       });
    }
 
-   if (!isNodeJs())
-      return build(d3_select('body').append('div').style('display', 'none'));
-
-   return _loadJSDOM().then(handle => build(handle.body.append('div')));
+   return isNodeJs() ? _loadJSDOM().then(handle => build(handle.body.append('div')))
+                     : build(d3_select('body').append('div').style('display', 'none'));
 }
 
 

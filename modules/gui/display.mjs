@@ -1180,8 +1180,7 @@ class BatchDisplay extends MDIDisplay {
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id','jsroot_batch_' + this.frames.length)
-             .attr('frame_title', title)
-             .property('_wrk', {}); // special handle for work-arounds
+             .attr('frame_title', title);
 
       this.frames.push(frame.node());
 

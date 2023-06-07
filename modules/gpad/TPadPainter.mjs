@@ -1955,7 +1955,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format, as_buffer) {
+   async produceImage(full_canvas, file_format) {
 
       let use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
@@ -2034,7 +2034,7 @@ class TPadPainter extends ObjectPainter {
 
       svg = compressSVG(svg);
 
-      return svgToImage(svg, file_format, as_buffer).then(res => {
+      return svgToImage(svg, file_format).then(res => {
          // reactivate border
          active_pp?.drawActiveBorder(null, true);
 

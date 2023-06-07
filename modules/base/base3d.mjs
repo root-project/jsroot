@@ -425,14 +425,13 @@ function assign3DHandler(painter) {
   * @param {object} args - different arguments for creating 3D renderer
   * @return {Promise} with renderer object
   * @private */
-async function createRender3D(width, height, render3d, args, _wrk) {
+async function createRender3D(width, height, render3d, args) {
 
    let rc = constants.Render3D, promise, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
-   if (_wrk === undefined) _wrk = {};
 
    if (render3d == rc.WebGL) {
       // interactive WebGL Rendering
@@ -475,8 +474,6 @@ async function createRender3D(width, height, render3d, args, _wrk) {
    }
 
    return promise.then(renderer => {
-      renderer._wrk = _wrk;
-
       if (!renderer.jsroot_dom)
          renderer.jsroot_dom = renderer.domElement;
       else
