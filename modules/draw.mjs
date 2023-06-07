@@ -602,8 +602,6 @@ async function makeImage(args) {
             return complete(null);
          }
 
-         let has_workarounds = _wrk.svg_3ds && isFunc(_wrk.processSvgWorkarounds);
-
          main.select('svg')
              .attr('xmlns', 'http://www.w3.org/2000/svg')
              .attr('width', args.width)
@@ -615,18 +613,10 @@ async function makeImage(args) {
             if (elem.style('display') == 'none') elem.remove();
          };
 
-         // remove containers with display: none
-         //if (has_workarounds)
          main.selectAll('g.root_frame').each(clear_element);
-
          main.selectAll('svg').each(clear_element);
 
-         let svg = main.html();
-
-         if (has_workarounds)
-            svg = _wrk.processSvgWorkarounds(svg);
-
-         svg = compressSVG(svg);
+         let svg = compressSVG(main.html());
 
          if (args.format == 'svg')
             return complete(svg);

@@ -1165,10 +1165,12 @@ class BatchDisplay extends MDIDisplay {
       this.jsdom_body = jsdom_body || d3_select('body'); // d3 body handle
    }
 
+   /** @summary Call function for each frame */
    forEachFrame(userfunc) {
       this.frames.forEach(userfunc)
    }
 
+   /** @summary Create batch frame */
    createFrame(title) {
       this.beforeCreateFrame(title);
 
@@ -1205,20 +1207,22 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id) {
       let frame = this.frames[id];
       if (!frame) return;
-      let main = d3_select(frame),
-          _wrk = main.property('_wrk'),
-          has_workarounds = isFunc(_wrk?.processSvgWorkarounds);
+      let main = d3_select(frame);
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
-      let svg = main.html();
-      if (has_workarounds)
-         svg = _wrk.processSvgWorkarounds(svg, id != this.frames.length - 1);
+      function clear_element() {
+         const elem = d3_select(this);
+         if (elem.style('display') == 'none') elem.remove();
+      };
 
-      svg = compressSVG(svg);
+      main.selectAll('g.root_frame').each(clear_element);
+      main.selectAll('svg').each(clear_element);
+
+      let svg = compressSVG(main.html());
 
       main.remove();
       return svg;
