@@ -54,14 +54,14 @@
 
    <script type='module'>
 
-      import { openFile, makeSVG, makeImage, svgToImage } from '../modules/main.mjs';
+      import { openFile, makeImage } from '../modules/main.mjs';
 
       const width = 400, height = 300;
 
       function makeColumn(id, object, option) {
          makeImage({ format: 'svg', object, option, width, height })
           .then(svg => {
-             // makeSVG returns SVG code which can be directly applied
+             // svg is just string with code which directly can be set to HTML element
              if (!svg) return;
 
              document.getElementById(`draw_svg${id}`).innerHTML = svg;
@@ -69,7 +69,7 @@
            });
          makeImage({ format: 'png', object, option, width, height })
             .then(png => {
-               // here png in base64 format provided
+               // png in base64 format is provided
                if (!png) return;
 
                let img = new Image;
@@ -84,9 +84,9 @@
            });
          makeImage({ format: 'jpeg', object, option, width, height })
             .then(jpeg => {
+               // jpeg in base64 format provided
                if (!jpeg) return;
 
-               // here png in base64 format provided
                let img = new Image;
                img.src = jpeg;
                document.getElementById(`draw_jpeg${id}`).appendChild(img);
