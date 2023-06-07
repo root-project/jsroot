@@ -11,95 +11,33 @@
       <meta property="og:description" content="Web page shows supported ROOT classes and correspondent draw options"/>
       <meta property="og:image" content="../files/img/th2.png"/>
       <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:width" content="200" />
-      <meta property="og:image:height" content="150" />
-      <style>
-         * {
-             box-sizing: border-box;
-         }
-         body {
-            background-color: #ffffff;
-            margin: 0px;
-            font-family: 'Verdana, Geneva, sans-serif';
-            font-size: 15px;
-            line-height: 18px;
-            color: #555;
-            overflow: hidden;
-         }
-         h1 {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            margin-left: 20px;
-            font-size: 25px;
-            font-weight: normal;
-         }
-         h2 {
-            color: #999;
-            font-size: 18px;
-            font-weight: normal;
-            margin-top: 10px;
-            margin-bottom: 5px;
-         }
-         hr {
-            border: 0px;
-            height: 1px;
-            background-color: #ccc;
-            margin: 30px 0px;
-         }
-         a {
-            color: #2194CE;
-            text-decoration: none;
-         }
-         a:hover {
-            text-decoration: underline;
-         }
-         #panel {
-            position: fixed;
-            left: 0px;
-            top: 0px;
-            bottom: 0px;
-            width: 240px;
-            background: #ffffff;
-            overflow: auto;
-         }
-            #panel #content {
-               padding: 0px 10px;
-            }
-            #panel img {
-               border: 1px solid #ccc;
-            }
-            #panel #book {
-               text-align: center;
-               margin-top: 15px;
-            }
-         #viewer {
-            position: absolute;
-            border: 0px;
-            left: 240px;
-            width: calc(100% - 240px);
-            height: 100%;
-            overflow: hidden;
-         }
-
-         #viewer_frame {
-            border: 0px;
-            width: 100%;
-            height: 100%;
-         }
-
-         .link:hover {
-            text-decoration: underline;
-         }
-      </style>
+      <meta property="og:image:width" content="200"/>
+      <meta property="og:image:height" content="150"/>
+      <link rel="stylesheet" type="text/css" href="files/main.css">
    </head>
-   <body>
+
+   <body class="home">
+
       <div id="panel">
-         <h1 id="version"><a href=".." style="color:green">JSROOT</a></h1>
-         <div id="content"></div>
-         <br/>
+        <div id="header">
+           <h1><div>JSROOT</div><a id="version" href="http://github.com/root-project/jsroot/releases">7.3.2</a></h1>
+           <div id="sections">
+              <a href="latest/examples.htm">examples</a>
+              <a href="latest/api.htm">api</a>
+           </div>
+           <div id="expandButton"></div>
+        </div>
+        <div id="panelScrim"></div>
+        <div id="contentWrapper">
+           <div id="content">
+           </div>
+        </div>
       </div>
 
-      <div id="viewer"></div>
+      <div id="viewer">
+         <div id="projects">
+         </div>
+      </div>
    </body>
 
    <script type="module">
@@ -116,6 +54,21 @@
       import { openFile } from './modules/io.mjs';
 
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
+
+
+      let panel = document.getElementById('panel');
+      let expandButton = document.getElementById('expandButton');
+      let panelScrim = document.getElementById('panelScrim');
+
+      expandButton.addEventListener( 'click', event => {
+         panel.classList.toggle('open');
+         event.preventDefault();
+      });
+
+      panelScrim.onclick = event => {
+         event.preventDefault();
+         panel.classList.toggle('open');
+      };
 
       let jsroot_path = './',
           demo_path = 'demo/',
@@ -154,12 +107,12 @@
 
       function drawEntry(entry, object, option) {
          if (!entry?.aspng)
-            return draw('viewer', object, option);
+            return draw('projects', object, option);
          return makeImage({ format: 'png', object, option, width: 800, height: 600 })
             .then(png => {
                let img = new Image;
                img.src = png;
-               document.getElementById('viewer').appendChild(img);
+               document.getElementById('projects').appendChild(img);
                return true;
             });
       }
@@ -171,7 +124,7 @@
          if (getHPainter())
             getHPainter().cleanup();
 
-         cleanup('viewer');
+         cleanup('projects');
 
          if (no_interactive) {
             settings.Tooltip = 0;
@@ -182,19 +135,19 @@
          }
 
          if (durl.length > 0) {
-            let viewer = document.getElementById( 'viewer_frame' );
+            let viewer = document.getElementById( 'projects_frame' );
             if (!viewer) {
-               document.getElementById('viewer').innerHTML = '';
+               document.getElementById('projects').innerHTML = '';
                viewer = document.createElement('iframe');
-               viewer.id = 'viewer_frame';
-               document.getElementById('viewer').appendChild(viewer);
+               viewer.id = 'projects_frame';
+               document.getElementById('projects').appendChild(viewer);
             }
             viewer.src = jsroot_path + durl + (opt ? `&opt=${opt}` : '') + extra_opts;
             viewer.focus();
           } else {
 
-             document.getElementById('viewer').innerHTML = '';
-             document.getElementById('viewer').style['background-color'] = '';
+             document.getElementById('projects').innerHTML = '';
+             document.getElementById('projects').style['background-color'] = '';
 
              if (jsonname) {
                 httpRequest(jsonname, 'object')
@@ -307,7 +260,7 @@
          // if ((url.length == 0) || (keyid != 'Misc')) return runBigTest(0);
 
          if (hpainter) { hpainter.cleanup(); hpainter = null; }
-         cleanup('viewer');
+         cleanup('projects');
 
          createRootColors(); // ensure default colors
 
@@ -322,11 +275,11 @@
                 nobrowser = d.has('nobrowser');
 
             if (nobrowser) {
-               document.getElementById('viewer').innerHTML = '';
+               document.getElementById('projects').innerHTML = '';
                hpainter = new HierarchyPainter('root', null);
-               hpainter.setDisplay(layout, 'viewer');
+               hpainter.setDisplay(layout, 'projects');
             } else {
-               document.getElementById('viewer').innerHTML =
+               document.getElementById('projects').innerHTML =
                    `<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>` +
                    `<div id='browser'></div></div>` +
                    `<div id='right-div' style='float:right; width:73%; height:100%;'></div>`;
@@ -375,7 +328,7 @@
       /// start filling content
 
       // all painter assigned to viewer element will be automatically informed about resize
-      registerForResize('viewer');
+      registerForResize('projects');
 
       let d = decodeUrl();
 
@@ -385,7 +338,7 @@
       if (d.has('dark')) {
          settings.DarkMode = true;
          document.getElementById('panel').style.background = 'black';
-         document.getElementById('viewer').style.background = 'black';
+         document.getElementById('projects').style.background = 'black';
       }
 
       document.getElementById( 'version' ).title = `${version}, ${source_dir}`;
@@ -497,6 +450,7 @@
                aaa.focus();
                if (entry.title) setPageTitle(entry.title);
                processClick(url, filename, itemname, opt, jsonname, entry);
+               panel.classList.toggle('open');
             }
          }
       }
