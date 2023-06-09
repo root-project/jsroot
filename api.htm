@@ -130,6 +130,7 @@
             margin-left: 6px;
             font-size: .9rem;
          }
+
          #panel {
             position: fixed;
             z-index: 100;
@@ -143,115 +144,116 @@
             transition: 0s 0s height;
          }
 
-            #panel #expandButton {
-               width: 48px;
-               height: 48px;
-               margin-right: 4px;
-               margin-left: 4px;
-               display: none;
-               cursor: pointer;
-               background-color: var(--text-color);
-               background-size: var(--icon-size);
-               -webkit-mask-image: var(--expand-button-image);
-               -webkit-mask-position: 50% 50%;
-               -webkit-mask-repeat: no-repeat;
-               mask-image: var(--expand-button-image);
-               mask-position: 50% 50%;
-               mask-repeat: no-repeat;
-            }
+         #panel #expandButton {
+            width: 48px;
+            height: 48px;
+            margin-right: 4px;
+            margin-left: 4px;
+            display: none;
+            cursor: pointer;
+            background-color: var(--text-color);
+            background-size: var(--icon-size);
+            -webkit-mask-image: var(--expand-button-image);
+            -webkit-mask-position: 50% 50%;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: var(--expand-button-image);
+            mask-position: 50% 50%;
+            mask-repeat: no-repeat;
+         }
 
-            #contentWrapper {
-               flex: 1;
-               overflow: hidden;
-               display: flex;
-               flex-direction: column;
-            }
+         #contentWrapper {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+         }
 
-            #panel #content {
-               flex: 1;
-               overflow-y: auto;
-               overflow-x: hidden;
-               -webkit-overflow-scrolling: touch;
-               padding: 0 var(--panel-padding) var(--panel-padding) var(--panel-padding);
-            }
+         #panel #content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 var(--panel-padding) var(--panel-padding) var(--panel-padding);
+         }
 
-               #panel #content ul {
-                  list-style-type: none;
-                  padding: 0px;
-                  margin: 0px 0 20px 0;
-               }
-               #panel #content ul li {
-                  margin: 1px 0;
-               }
+         #panel #content ul {
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px 0 20px 0;
+         }
 
-               #panel #content h2:not(.hidden) {
-                  margin-top: 16px;
-                  border-top: none;
-                  padding-top: 0;
-               }
+         #panel #content ul li {
+            margin: 1px 0;
+         }
 
-               #panel #content h2:not(.hidden) ~ h2 {
-                  margin-top: 32px;
-                  border-top: var(--border-style);
-                  padding-top: 12px;
-               }
+         #panel #content h2:not(.hidden) {
+            margin-top: 16px;
+            border-top: none;
+            padding-top: 0;
+         }
 
-                    #panel #content h3 {
-                  color: var(--text-color);
-                  font-weight: 900;
-               }
+         #panel #content h2:not(.hidden) ~ h2 {
+            margin-top: 32px;
+            border-top: var(--border-style);
+            padding-top: 12px;
+         }
 
-               #panel #content a {
-                  position: relative;
-                  color: var(--text-color);
-               }
+              #panel #content h3 {
+            color: var(--text-color);
+            font-weight: 900;
+         }
 
-               #panel #content a:hover,
-               #panel #content a:hover .spacer,
-               #panel #content .selected {
-                  color: var(--color-blue);
-               }
+         #panel #content a {
+            position: relative;
+            color: var(--text-color);
+         }
 
-               #panel #content .selected {
-                  text-decoration: underline;
-               }
+         #panel #content a:hover,
+         #panel #content a:hover .spacer,
+         #panel #content .selected {
+            color: var(--color-blue);
+         }
 
-               #panel #content .hidden {
-                  display: none !important;
-               }
+         #panel #content .selected {
+            text-decoration: underline;
+         }
 
-               #panel #content #previewsToggler {
-                  cursor: pointer;
-                  float: right;
-                  margin-top: 18px;
-                  margin-bottom: -18px;
-                  opacity: 0.25;
-               }
+         #panel #content .hidden {
+            display: none !important;
+         }
 
-               #panel #content.minimal .card {
-                  background-color: transparent;
-                  margin-bottom: 4px;
-               }
+         #panel #content #previewsToggler {
+            cursor: pointer;
+            float: right;
+            margin-top: 18px;
+            margin-bottom: -18px;
+            opacity: 0.25;
+         }
 
-               #panel #content.minimal .cover {
-                  display: none;
-               }
+         #panel #content.minimal .card {
+            background-color: transparent;
+            margin-bottom: 4px;
+         }
 
-               #panel #content.minimal .title {
-                  padding: 0;
-               }
+         #panel #content.minimal .cover {
+            display: none;
+         }
 
-               #panel #content.minimal #previewsToggler {
-                  opacity: 1;
-               }
+         #panel #content.minimal .title {
+            padding: 0;
+         }
 
-               body.home #panel #content h2 {
-                  margin-bottom: 2px;
-                  padding-bottom: 0px;
-                  margin-top: 18px;
-                  border-top: none;
-                  padding-top: 6px;
-               }
+         #panel #content.minimal #previewsToggler {
+            opacity: 1;
+         }
+
+         body.home #panel #content h2 {
+            margin-bottom: 2px;
+            padding-bottom: 0px;
+            margin-top: 18px;
+            border-top: none;
+            padding-top: 6px;
+         }
 
          #viewer {
             padding-left: var(--panel-width);
@@ -263,7 +265,7 @@
             overflow: hidden;
          }
 
-         #projects {
+         #apiviewer {
             position: relative;
             border: 0px;
             width: 100%;
@@ -377,7 +379,7 @@
       </div>
 
       <div id="viewer">
-         <iframe id="projects"></iframe>
+         <iframe id="apiviewer"></iframe>
          <div id="srcviewer" style="display: none"></div>
       </div>
    </body>
@@ -504,16 +506,17 @@
       };
 
       function ProcessClick(durl) {
-         let viewer = document.getElementById( 'projects' );
-         let srcviewer = document.getElementById( 'srcviewer' );
+         let viewer = document.getElementById('apiviewer'),
+             srcviewer = document.getElementById('srcviewer');
          viewer.style.display = '';
          srcviewer.style.display = 'none';
+         srcviewer.innerHTML = '';
 
-          if (durl.indexOf('http') == 0)
-             viewer.src = durl;
-          else
-             viewer.src = jsroot_path + durl;
-          viewer.focus();
+         if (durl.indexOf('http') == 0)
+            viewer.src = durl;
+         else
+            viewer.src = jsroot_path + durl;
+         viewer.focus();
       }
 
       function SetPageTitle(title) {
@@ -526,7 +529,7 @@
        }
 
       function SetListener(elem, shortname, durl) {
-          elem.addEventListener( 'click', function (event) {
+          elem.addEventListener( 'click', event => {
              event.preventDefault();
 
              if (event.ctrlKey)
@@ -543,9 +546,11 @@
          if (srcload === 'github')
             srcload = 'https://raw.githubusercontent.com/root-project/jsroot/' + GetGithubBrunch() + entry.src;
 
-         httpRequest(srcload, 'text').then(function(res) {
-            let viewer = document.getElementById('projects'),
+         httpRequest(srcload, 'text').then(res => {
+            let viewer = document.getElementById('apiviewer'),
                 srcviewer = document.getElementById('srcviewer');
+            viewer.href = '';
+            viewer.innerHTML = '';
             viewer.style.display = 'none';
             srcviewer.style.display = 'block';
             srcviewer.innerHTML = '';
@@ -557,14 +562,13 @@
                srcviewer.appendChild(pre);
             }
             srcviewer.focus();
-
-         }).catch(function() {
+         }).catch(() => {
             console.error(`Cannot find ${srcload}`);
          });
       }
 
       function SetSourceListener(elem, shortname, entry) {
-         elem.addEventListener( 'click', function (event) {
+         elem.addEventListener( 'click', event => {
             event.preventDefault();
             window.location.hash = shortname;
             ProcessSourceClick(entry);
@@ -582,9 +586,9 @@
       for (let key in examples) {
 
          let opts = examples[key],
-             header = document.createElement( 'h2' );
+             header = document.createElement('h2');
          if ('link' in opts[0]) {
-            let ll = document.createElement( 'a' );
+            let ll = document.createElement('a');
             ll.textContent = key;
             ll.href = opts[0].link;
             ll.style.color = 'green';
@@ -608,11 +612,11 @@
             let url = entry.url, aaa = null;
 
             if (url) {
-               aaa = document.createElement( 'a' );
+               aaa = document.createElement('a');
                aaa.textContent = entry.name;
                aaa.href = jsroot_path + url;
-               if ('title' in entry) aaa.title = entry.title;
-               content.appendChild( aaa );
+               if (entry.title) aaa.title = entry.title;
+               content.appendChild(aaa);
                SetListener(aaa, shortname, url);
             }
 
@@ -638,7 +642,7 @@
                }
 
                saaa.href = srcurl;
-               content.appendChild( saaa );
+               content.appendChild(saaa);
                SetSourceListener(saaa, shortname + '_src', entry);
 
                if ((window.location.hash == '#' + shortname + '_src') || (entry.syn && window.location.hash == '#' + entry.syn + '_src')) {

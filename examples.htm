@@ -142,115 +142,116 @@
             transition: 0s 0s height;
          }
 
-            #panel #expandButton {
-               width: 48px;
-               height: 48px;
-               margin-right: 4px;
-               margin-left: 4px;
-               display: none;
-               cursor: pointer;
-               background-color: var(--text-color);
-               background-size: var(--icon-size);
-               -webkit-mask-image: var(--expand-button-image);
-               -webkit-mask-position: 50% 50%;
-               -webkit-mask-repeat: no-repeat;
-               mask-image: var(--expand-button-image);
-               mask-position: 50% 50%;
-               mask-repeat: no-repeat;
-            }
+         #panel #expandButton {
+            width: 48px;
+            height: 48px;
+            margin-right: 4px;
+            margin-left: 4px;
+            display: none;
+            cursor: pointer;
+            background-color: var(--text-color);
+            background-size: var(--icon-size);
+            -webkit-mask-image: var(--expand-button-image);
+            -webkit-mask-position: 50% 50%;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: var(--expand-button-image);
+            mask-position: 50% 50%;
+            mask-repeat: no-repeat;
+         }
 
-            #contentWrapper {
-               flex: 1;
-               overflow: hidden;
-               display: flex;
-               flex-direction: column;
-            }
+         #contentWrapper {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+         }
 
-            #panel #content {
-               flex: 1;
-               overflow-y: auto;
-               overflow-x: hidden;
-               -webkit-overflow-scrolling: touch;
-               padding: 0 var(--panel-padding) var(--panel-padding) var(--panel-padding);
-            }
+         #panel #content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 var(--panel-padding) var(--panel-padding) var(--panel-padding);
+         }
 
-               #panel #content ul {
-                  list-style-type: none;
-                  padding: 0px;
-                  margin: 0px 0 20px 0;
-               }
-               #panel #content ul li {
-                  margin: 1px 0;
-               }
+         #panel #content ul {
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px 0 20px 0;
+         }
 
-               #panel #content h2:not(.hidden) {
-                  margin-top: 16px;
-                  border-top: none;
-                  padding-top: 0;
-               }
+         #panel #content ul li {
+            margin: 1px 0;
+         }
 
-               #panel #content h2:not(.hidden) ~ h2 {
-                  margin-top: 32px;
-                  border-top: var(--border-style);
-                  padding-top: 12px;
-               }
+         #panel #content h2:not(.hidden) {
+            margin-top: 16px;
+            border-top: none;
+            padding-top: 0;
+         }
 
-                    #panel #content h3 {
-                  color: var(--text-color);
-                  font-weight: 900;
-               }
+         #panel #content h2:not(.hidden) ~ h2 {
+            margin-top: 32px;
+            border-top: var(--border-style);
+            padding-top: 12px;
+         }
 
-               #panel #content a {
-                  position: relative;
-                  color: var(--text-color);
-               }
+         #panel #content h3 {
+            color: var(--text-color);
+            font-weight: 900;
+         }
 
-               #panel #content a:hover,
-               #panel #content a:hover .spacer,
-               #panel #content .selected {
-                  color: var(--color-blue);
-               }
+         #panel #content a {
+            position: relative;
+            color: var(--text-color);
+         }
 
-               #panel #content .selected {
-                  text-decoration: underline;
-               }
+         #panel #content a:hover,
+         #panel #content a:hover .spacer,
+         #panel #content .selected {
+            color: var(--color-blue);
+         }
 
-               #panel #content .hidden {
-                  display: none !important;
-               }
+         #panel #content .selected {
+            text-decoration: underline;
+         }
 
-               #panel #content #previewsToggler {
-                  cursor: pointer;
-                  float: right;
-                  margin-top: 18px;
-                  margin-bottom: -18px;
-                  opacity: 0.25;
-               }
+         #panel #content .hidden {
+            display: none !important;
+         }
 
-               #panel #content.minimal .card {
-                  background-color: transparent;
-                  margin-bottom: 4px;
-               }
+         #panel #content #previewsToggler {
+            cursor: pointer;
+            float: right;
+            margin-top: 18px;
+            margin-bottom: -18px;
+            opacity: 0.25;
+         }
 
-               #panel #content.minimal .cover {
-                  display: none;
-               }
+         #panel #content.minimal .card {
+            background-color: transparent;
+            margin-bottom: 4px;
+         }
 
-               #panel #content.minimal .title {
-                  padding: 0;
-               }
+         #panel #content.minimal .cover {
+            display: none;
+         }
 
-               #panel #content.minimal #previewsToggler {
-                  opacity: 1;
-               }
+         #panel #content.minimal .title {
+            padding: 0;
+         }
 
-               body.home #panel #content h2 {
-                  margin-bottom: 2px;
-                  padding-bottom: 0px;
-                  margin-top: 18px;
-                  border-top: none;
-                  padding-top: 6px;
-               }
+         #panel #content.minimal #previewsToggler {
+            opacity: 1;
+         }
+
+         body.home #panel #content h2 {
+            margin-bottom: 2px;
+            padding-bottom: 0px;
+            margin-top: 18px;
+            border-top: none;
+            padding-top: 6px;
+         }
 
          #viewer {
             padding-left: var(--panel-width);
@@ -263,7 +264,7 @@
 
          }
 
-         #projects {
+         #plaindraw {
             position: relative;
             border: 0px;
             left: 0px;
@@ -272,12 +273,11 @@
             overflow: hidden;
          }
 
-         #projects_frame {
+         #guidraw {
             border: 0px;
             width: 100%;
             height: 100%;
          }
-
 
          @media all and ( min-width: 1700px ) {
             :root {
@@ -378,7 +378,7 @@
       </div>
 
       <div id="viewer">
-         <div id="projects">
+         <div id="plaindraw">
          </div>
       </div>
    </body>
@@ -452,12 +452,12 @@
 
       function drawEntry(entry, object, option) {
          if (!entry?.aspng)
-            return draw('projects', object, option);
+            return draw('plaindraw', object, option);
          return makeImage({ format: 'png', object, option, width: 800, height: 600 })
             .then(png => {
                let img = new Image;
                img.src = png;
-               document.getElementById('projects').appendChild(img);
+               document.getElementById('plaindraw').appendChild(img);
                return true;
             });
       }
@@ -469,7 +469,7 @@
          if (getHPainter())
             getHPainter().cleanup();
 
-         cleanup('projects');
+         cleanup('plaindraw');
 
          if (no_interactive) {
             settings.Tooltip = 0;
@@ -480,19 +480,19 @@
          }
 
          if (durl.length > 0) {
-            let viewer = document.getElementById( 'projects_frame' );
+            let viewer = document.getElementById('guidraw');
             if (!viewer) {
-               document.getElementById('projects').innerHTML = '';
+               document.getElementById('plaindraw').innerHTML = '';
                viewer = document.createElement('iframe');
-               viewer.id = 'projects_frame';
-               document.getElementById('projects').appendChild(viewer);
+               viewer.id = 'guidraw';
+               document.getElementById('plaindraw').appendChild(viewer);
             }
             viewer.src = jsroot_path + durl + (opt ? `&opt=${opt}` : '') + extra_opts;
             viewer.focus();
           } else {
 
-             document.getElementById('projects').innerHTML = '';
-             document.getElementById('projects').style['background-color'] = '';
+             document.getElementById('plaindraw').innerHTML = '';
+             document.getElementById('plaindraw').style['background-color'] = '';
 
              if (jsonname) {
                 httpRequest(jsonname, 'object')
@@ -605,7 +605,7 @@
          // if ((url.length == 0) || (keyid != 'Misc')) return runBigTest(0);
 
          if (hpainter) { hpainter.cleanup(); hpainter = null; }
-         cleanup('projects');
+         cleanup('plaindraw');
 
          createRootColors(); // ensure default colors
 
@@ -620,11 +620,11 @@
                 nobrowser = d.has('nobrowser');
 
             if (nobrowser) {
-               document.getElementById('projects').innerHTML = '';
+               document.getElementById('plaindraw').innerHTML = '';
                hpainter = new HierarchyPainter('root', null);
-               hpainter.setDisplay(layout, 'projects');
+               hpainter.setDisplay(layout, 'plaindraw');
             } else {
-               document.getElementById('projects').innerHTML =
+               document.getElementById('plaindraw').innerHTML =
                    `<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>` +
                    `<div id='browser'></div></div>` +
                    `<div id='right-div' style='float:right; width:73%; height:100%;'></div>`;
@@ -654,7 +654,7 @@
          }
       }
 
-      let txt = await httpRequest(demo_path + 'examples.json','text');
+      let txt = await httpRequest(demo_path + 'examples.json', 'text');
 
       examples_main = JSON.parse(txt);
       if (window.location.search.indexOf('?more') == 0) {
@@ -673,7 +673,7 @@
       /// start filling content
 
       // all painter assigned to viewer element will be automatically informed about resize
-      registerForResize('projects');
+      registerForResize('plaindraw');
 
       let d = decodeUrl();
 
@@ -683,7 +683,7 @@
       if (d.has('dark')) {
          settings.DarkMode = true;
          document.getElementById('panel').style.background = 'black';
-         document.getElementById('projects').style.background = 'black';
+         document.getElementById('plaindraw').style.background = 'black';
       }
 
       let content = document.getElementById( 'content' );
