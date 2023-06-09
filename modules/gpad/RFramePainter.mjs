@@ -265,7 +265,7 @@ class RFramePainter extends RObjectPainter {
 
       this.cleanXY(); // remove all previous configurations
 
-      if (!opts) opts = {};
+      if (!opts) opts = { ndim: 1 };
 
       this.v6axes = true;
       this.swap_xy = opts.swap_xy || false;
@@ -276,6 +276,8 @@ class RFramePainter extends RObjectPainter {
       this.logy = this.v7EvalAttr('y_log', 0);
 
       let w = this.getFrameWidth(), h = this.getFrameHeight();
+
+      this.scales_ndim = opts.ndim;
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;

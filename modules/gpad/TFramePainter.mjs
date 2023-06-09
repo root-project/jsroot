@@ -701,8 +701,6 @@ const FrameInteractive = {
       if (settings.Zooming && !this.projection) {
          if (settings.ZoomMouse) {
             svg.on('mousedown', evnt => this.startRectSel(evnt));
-            svg.on('mousemove', evnt => this.mouseMoveHanlder(evnt));
-            svg.on('mouseup', evnt => this.mouseUpHanlder(evnt));
             svg.on('dblclick', evnt => this.mouseDoubleClick(evnt));
          }
          if (settings.ZoomWheel)
@@ -819,17 +817,20 @@ const FrameInteractive = {
    },
 
    /** @summary Check mouse moving  */
-   mouseMoveHanlder(evnt) {
-      if ((evnt.buttons === 3) && this.first_shift_pos) {
+   shiftMoveHanlder(evnt) {
+      if ((evnt.buttons === this._shifting_buttons) && this._shifting_pos0) {
          let frame = this.getFrameSvg(),
              pos = d3_pointer(evnt, frame.node()),
              main_svg = this.draw_g.select('.main_layer');
-         let dx = this.first_shift_pos[0] - pos[0],
-             dy = this.first_shift_pos[1] - pos[1],
+         let dx = this._shifting_pos0[0] - pos[0],
+             dy = this._shifting_pos0[1] - pos[1],
              w = this.getFrameWidth(), h = this.getFrameHeight();
 
-         this._last_shift_dx = dx;
-         this._last_shift_dy = dy;
+         if (this.scales_ndim === 1)
+            dy = 0;
+
+         this._shifting_dx = dx;
+         this._shifting_dy = dy;
 
          main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
 
@@ -839,25 +840,33 @@ const FrameInteractive = {
       }
    },
 
-   mouseUpHanlder(evnt) {
-      if ((this._last_shift_dx !== undefined) && (this._last_shift_dy !== undefined) && this.first_shift_pos) {
+   shiftUpHanlder(evnt) {
+      evnt.preventDefault();
+
+      d3_select(window).on('mousemove.shiftHandler', null)
+                       .on('mouseup.shiftHandler', null);
+
+      if ((this._shifting_dx !== undefined) && (this._shifting_dy !== undefined) && this._shifting_pos0) {
          let w = this.getFrameWidth(), h = this.getFrameHeight(),
              main_svg = this.draw_g.select('.main_layer'),
              gr = this.getGrFuncs(),
-             xmin = gr.revertAxis('x', this._last_shift_dx),
-             xmax = gr.revertAxis('x', this._last_shift_dx + w),
-             ymin = gr.revertAxis('y', this._last_shift_dy + h),
-             ymax = gr.revertAxis('y', this._last_shift_dy);
+             xmin = gr.revertAxis('x', this._shifting_dx),
+             xmax = gr.revertAxis('x', this._shifting_dx + w),
+             ymin = gr.revertAxis('y', this._shifting_dy + h),
+             ymax = gr.revertAxis('y', this._shifting_dy);
 
 
          main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 
-         delete this._last_shift_dx;
-         delete this._last_shift_dy;
+         delete this._shifting_dx;
+         delete this._shifting_dy;
 
          setPainterTooltipEnabled(this, true);
 
-         this.zoom(xmin, xmax, ymin, ymax);
+         if (this.scales_ndim === 1)
+            this.zoomSingle('x', xmin, xmax);
+         else
+            this.zoom(xmin, xmax, ymin, ymax);
       }
 
    },
@@ -870,9 +879,14 @@ const FrameInteractive = {
       let frame = this.getFrameSvg(),
           pos = d3_pointer(evnt, frame.node());
 
-      if (evnt.buttons === 3) {
+      if ((evnt.buttons === 3) || (evnt.button === 1)) {
          this.clearInteractiveElements();
-         this.first_shift_pos = pos;
+         this._shifting_pos0 = pos;
+         this._shifting_buttons = evnt.buttons;
+
+         d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt))
+                          .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
+
          setPainterTooltipEnabled(this, false);
          evnt.preventDefault();
          evnt.stopPropagation();
@@ -1774,6 +1788,8 @@ class TFramePainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad = pp.getRootPad();
 
+      this.scales_ndim = opts.ndim;
+
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
 
@@ -1858,7 +1874,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    createXY2(opts) {
 
-      if (!opts) opts = {};
+      if (!opts) opts = { ndim: this.scales_ndim ?? 1 };
 
       this.reverse_x2 = opts.reverse_x || false;
       this.reverse_y2 = opts.reverse_y || false;
