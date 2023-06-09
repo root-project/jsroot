@@ -15,124 +15,380 @@
       <meta property="og:image:height" content="150" />
 
       <style>
+         :root {
+            color-scheme: light dark;
+
+            --background-color: #fff;
+            --secondary-background-color: #f7f7f7;
+
+            --color-blue: #049EF4;
+            --text-color: #444;
+            --secondary-text-color: #9e9e9e;
+
+            --font-size: 16px;
+            --line-height: 26px;
+
+            --border-style: 1px solid #E8E8E8;
+            --header-height: 48px;
+            --panel-width: 280px;
+            --panel-padding: 16px;
+            --icon-size: 20px;
+
+            --expand-button-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwMDAwMCI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMyAxOGgxOHYtMkgzdjJ6bTAtNWgxOHYtMkgzdjJ6bTAtN3YyaDE4VjZIM3oiLz4KPC9zdmc+Cg==");
+         }
+
+         @media (prefers-color-scheme: dark) {
+
+            :root {
+               --background-color: #222;
+               --secondary-background-color: #2e2e2e;
+
+               --text-color: #bbb;
+               --secondary-text-color: #666;
+
+               --border-style: 1px solid #444;
+            }
+
+            #previewsToggler {
+               filter: invert(100%);
+            }
+
+         }
+
+         * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+         }
+
+         html, body {
+            height: 100%;
+         }
+
+         html {
+            font-size: calc(var(--font-size) - 1px);
+            line-height: calc(var(--line-height) - 1px);
+         }
 
          body {
-            background-color: #ffffff;
+            font-family: 'Verdana, Geneva, sans-serif', monospace;
             margin: 0px;
-            font-family: 'Verdana, Geneva, sans-serif';
-            font-size: 15px;
-            color: #555;
-            overflow: hidden;
-         }
-
-         h1 {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            margin-left: 20px;
-            font-size: 25px;
-            font-weight: normal;
-         }
-
-         h2 {
-            color: #999;
-            font-size: 18px;
-            font-weight: normal;
-
-            margin-top: 10px;
-            margin-bottom: 5px;
-         }
-
-         hr {
-            border: 0px;
-            height: 1px;
-            background-color: #ccc;
-            margin: 30px 0px;
+            color: var(--text-color);
+            background-color: var(--background-color);
          }
 
          a {
-            color: #2194CE;
             text-decoration: none;
          }
 
-         a:hover {
-            text-decoration: underline;
+         h1 {
+            font-size: 18px;
+            line-height: 24px;
+            font-weight: 500;
          }
 
+         h2 {
+            padding: 0;
+            margin: 16px 0;
+            font-size: calc(var(--font-size) - 1px);
+            line-height: var(--line-height);
+            font-weight: 500;
+            color: var(--color-blue);
+         }
+
+         h3 {
+            margin: 0;
+            font-weight: 500;
+            font-size: calc(var(--font-size) - 1px);
+            line-height: var(--line-height);
+            color: var(--secondary-text-color);
+         }
+
+         h1 a {
+            color: var(--color-blue);
+         }
+
+         #header {
+            display: flex;
+            height: var(--header-height);
+            border-bottom: var(--border-style);
+            align-items: center;
+         }
+         #header h1 {
+            padding-left: var(--panel-padding);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            color: var(--color-blue);
+         }
+         #header #version {
+            border: 1px solid var(--color-blue);
+            color: var(--color-blue);
+            border-radius: 4px;
+            line-height: 16px;
+            padding: 0px 2px;
+            margin-left: 6px;
+            font-size: .9rem;
+         }
          #panel {
             position: fixed;
+            z-index: 100;
             left: 0px;
-            top: 0px;
-            bottom: 0px;
-            width: 240px;
-            background: #ffffff;
+            width: var(--panel-width);
+            height: 100%;
             overflow: auto;
+            border-right: var(--border-style);
+            display: flex;
+            flex-direction: column;
+            transition: 0s 0s height;
          }
 
-         #panel #content {
-            padding: 0px 20px;
-         }
+            #panel #expandButton {
+               width: 48px;
+               height: 48px;
+               margin-right: 4px;
+               margin-left: 4px;
+               display: none;
+               cursor: pointer;
+               background-color: var(--text-color);
+               background-size: var(--icon-size);
+               -webkit-mask-image: var(--expand-button-image);
+               -webkit-mask-position: 50% 50%;
+               -webkit-mask-repeat: no-repeat;
+               mask-image: var(--expand-button-image);
+               mask-position: 50% 50%;
+               mask-repeat: no-repeat;
+            }
 
-         #panel img {
-            border: 1px solid #ccc;
-         }
+            #contentWrapper {
+               flex: 1;
+               overflow: hidden;
+               display: flex;
+               flex-direction: column;
+            }
 
+            #panel #content {
+               flex: 1;
+               overflow-y: auto;
+               overflow-x: hidden;
+               -webkit-overflow-scrolling: touch;
+               padding: 0 var(--panel-padding) var(--panel-padding) var(--panel-padding);
+            }
 
-         #panel #book {
-            text-align: center;
-            margin-top: 15px;
-         }
+               #panel #content ul {
+                  list-style-type: none;
+                  padding: 0px;
+                  margin: 0px 0 20px 0;
+               }
+               #panel #content ul li {
+                  margin: 1px 0;
+               }
+
+               #panel #content h2:not(.hidden) {
+                  margin-top: 16px;
+                  border-top: none;
+                  padding-top: 0;
+               }
+
+               #panel #content h2:not(.hidden) ~ h2 {
+                  margin-top: 32px;
+                  border-top: var(--border-style);
+                  padding-top: 12px;
+               }
+
+                    #panel #content h3 {
+                  color: var(--text-color);
+                  font-weight: 900;
+               }
+
+               #panel #content a {
+                  position: relative;
+                  color: var(--text-color);
+               }
+
+               #panel #content a:hover,
+               #panel #content a:hover .spacer,
+               #panel #content .selected {
+                  color: var(--color-blue);
+               }
+
+               #panel #content .selected {
+                  text-decoration: underline;
+               }
+
+               #panel #content .hidden {
+                  display: none !important;
+               }
+
+               #panel #content #previewsToggler {
+                  cursor: pointer;
+                  float: right;
+                  margin-top: 18px;
+                  margin-bottom: -18px;
+                  opacity: 0.25;
+               }
+
+               #panel #content.minimal .card {
+                  background-color: transparent;
+                  margin-bottom: 4px;
+               }
+
+               #panel #content.minimal .cover {
+                  display: none;
+               }
+
+               #panel #content.minimal .title {
+                  padding: 0;
+               }
+
+               #panel #content.minimal #previewsToggler {
+                  opacity: 1;
+               }
+
+               body.home #panel #content h2 {
+                  margin-bottom: 2px;
+                  padding-bottom: 0px;
+                  margin-top: 18px;
+                  border-top: none;
+                  padding-top: 6px;
+               }
 
          #viewer {
-            position: absolute;
+            padding-left: var(--panel-width);
+            position: relative;
             border: 0px;
-            left: 240px;
-            width: calc(100% - 240px);
+            left: 0px;
+            right: 0px;
+            height: 100%;
+            overflow: hidden;
+         }
+
+         #projects {
+            position: relative;
+            border: 0px;
+            width: 100%;
             height: 100%;
             overflow: hidden;
          }
 
          #srcviewer {
-            display : none;
-            position: absolute;
+            position: relative;
             border: 0px;
-            left: 240px;
-            width: calc(100% - 240px);
+            width: 100%;
             height: 100%;
             overflow: auto;
-            margin: 5px;
          }
 
-         #srcviewer pre {
-            margin: 3px;
+         @media all and ( min-width: 1700px ) {
+            :root {
+               --panel-width: 280px;
+               --font-size: 18px;
+               --line-height: 28px;
+               --header-height: 56px;
+               --icon-size: 24px;
+            }
          }
 
-         .link:hover {
-            text-decoration: underline;
+         /* mobile */
+
+         @media all and ( max-width: 640px ) {
+
+            :root {
+               --header-height: 56px;
+               --icon-size: 24px;
+            }
+
+            #panel #expandButton {
+               display: block;
+            }
+            #panel {
+               position: absolute;
+               left: 0;
+               top: 0;
+               width: 100%;
+               right: 0;
+               z-index: 1000;
+               overflow-x: hidden;
+               transition: 0s 0s height;
+               border: none;
+               height: var(--header-height);
+               transition: 0s 0.2s height;
+            }
+            #panel.open {
+               height: 100%;
+               transition: 0s 0s height;
+            }
+
+            #panelScrim {
+               pointer-events: none;
+               background-color: rgba(0,0,0,0);
+               position: absolute;
+               left: 0;
+               right: 0;
+               top: 0;
+               bottom: 0;
+               z-index: 1000;
+               pointer-events: none;
+               transition: .2s background-color;
+            }
+            #panel.open #panelScrim {
+               pointer-events: auto;
+               background-color: rgba(0,0,0,0.4);
+            }
+
+            #contentWrapper {
+               position: absolute;
+               right: 0;
+               top: 0;
+               bottom: 0;
+               background: var(--background-color);
+               box-shadow: 0 0 8px rgba(0,0,0,.1);
+               width: calc(100vw - 60px);
+               max-width: 360px;
+               z-index: 10000;
+               transition: .25s transform;
+               overflow-x: hidden;
+               margin-right: -380px;
+               line-height: 2rem;
+            }
+            #panel.open #contentWrapper {
+               transform: translate3d(-380px, 0 ,0);
+            }
+            #viewer {
+               padding-left: 0;
+               padding-top: var(--header-height);
+            }
          }
 
       </style>
    </head>
 
-   <body>
-
+   <body class="home">
       <div id="panel">
-         <h1 id="version"><a href=".." style="color:green">JSROOT</a></h1>
-         <div id="content"></div>
-         <br/>
+        <div id="header">
+           <h1><div><a href="https://root.cern/js/">JSROOT</a></div><a id="version" href="http://github.com/root-project/jsroot/releases">dev</a></h1>
+           <div id="expandButton"></div>
+        </div>
+        <div id="panelScrim"></div>
+        <div id="contentWrapper">
+           <div id="content">
+           </div>
+        </div>
       </div>
 
-      <iframe id="viewer"></iframe>
-
-      <div id="srcviewer"></div>
-
+      <div id="viewer">
+         <iframe id="projects"></iframe>
+         <div id="srcviewer" style="display: none"></div>
+      </div>
    </body>
 
    <script type="module">
-      import { httpRequest, version, source_dir } from './modules/core.mjs';
+      import { httpRequest, version, version_id, source_dir } from './modules/core.mjs';
 
       let jsroot_path = './', filepath = '../files/';
 
-      document.getElementById( 'version' ).title = version + ', ' + source_dir;
+      document.getElementById('version').innerHTML = version_id;
+      document.getElementById('version').title = `${version}, ${source_dir}`;
 
       if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
           (window.location.host.indexOf('root.cern') < 0)) {
@@ -247,10 +503,8 @@
          ]
       };
 
-      let content = document.getElementById('content');
-
       function ProcessClick(durl) {
-         let viewer = document.getElementById( 'viewer' );
+         let viewer = document.getElementById( 'projects' );
          let srcviewer = document.getElementById( 'srcviewer' );
          viewer.style.display = '';
          srcviewer.style.display = 'none';
@@ -290,14 +544,14 @@
             srcload = 'https://raw.githubusercontent.com/root-project/jsroot/' + GetGithubBrunch() + entry.src;
 
          httpRequest(srcload, 'text').then(function(res) {
-            let viewer = document.getElementById( 'viewer' );
-            let srcviewer = document.getElementById( 'srcviewer' );
+            let viewer = document.getElementById('projects'),
+                srcviewer = document.getElementById('srcviewer');
             viewer.style.display = 'none';
             srcviewer.style.display = 'block';
             srcviewer.innerHTML = '';
 
             let lines = res.split('\n');
-            for (let k=0;k<lines.length;++k) {
+            for (let k = 0; k < lines.length; ++k) {
                let pre = document.createElement('pre');
                pre.textContent = lines[k] || ' ';
                srcviewer.appendChild(pre);
@@ -323,11 +577,12 @@
                                    .replace(/[\(\)]/g, '').replace(/[. ]/g, '_');
       }
 
+      let content = document.getElementById('content');
+
       for (let key in examples) {
 
-         let opts = examples[key];
-
-         let header = document.createElement( 'h2' );
+         let opts = examples[key],
+             header = document.createElement( 'h2' );
          if ('link' in opts[0]) {
             let ll = document.createElement( 'a' );
             ll.textContent = key;

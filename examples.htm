@@ -70,7 +70,7 @@
          }
 
          body {
-            font-family: 'Verdana, Geneva, sans-serif';
+            font-family: 'Verdana, Geneva, sans-serif', monospace;
             margin: 0px;
             color: var(--text-color);
             background-color: var(--background-color);
@@ -398,6 +398,8 @@
 
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
 
+      document.getElementById('version').innerHTML = version_id;
+      document.getElementById('version').title = `${version}, ${source_dir}`;
 
       let panel = document.getElementById('panel');
       let expandButton = document.getElementById('expandButton');
@@ -683,9 +685,6 @@
          document.getElementById('panel').style.background = 'black';
          document.getElementById('projects').style.background = 'black';
       }
-
-      document.getElementById('version').innerHTML = version_id;
-      document.getElementById('version').title = `${version}, ${source_dir}`;
 
       let content = document.getElementById( 'content' );
 
