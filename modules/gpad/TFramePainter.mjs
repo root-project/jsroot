@@ -712,8 +712,8 @@ const FrameInteractive = {
 
       if (settings.ContextMenu) {
          if (browser.touches) {
-            svg_x.on('touchstart', evnt => this.startTouchHandling('x', evnt));
-            svg_y.on('touchstart', evnt => this.startTouchHandling('y', evnt));
+            svg_x.on('touchstart', evnt => this.startSingleTouchHandling('x', evnt));
+            svg_y.on('touchstart', evnt => this.startSingleTouchHandling('y', evnt));
          }
          svg.on('contextmenu', evnt => this.showContextMenu('', evnt));
          svg_x.on('contextmenu', evnt => this.showContextMenu('x', evnt));
@@ -1120,12 +1120,18 @@ const FrameInteractive = {
       if (arr.length == 1) {
          // this is touch with single element
 
-         let now = new Date().getTime(), diff = now - (this.last_touch_time ?? 0);
-         this.last_touch_time = now;
+         let now = new Date().getTime(), tmdiff = 1e10, dx = 100, dy = 100;
 
-         if ((diff < 300) && this.zoom_curr
-             && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-             && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+         if (this.last_touch_time && this.last_touch_pos) {
+            tmdiff = now - this.last_touch_time;
+            dx = Math.abs(arr[0][0] - this.last_touch_pos[0]);
+            dy = Math.abs(arr[0][1] - this.last_touch_pos[1]);
+         }
+
+         this.last_touch_time = now;
+         this.last_touch_pos = arr[0];
+
+         if ((tmdiff < 500) && (dx < 20) && (dy < 20)) {
 
             this.clearInteractiveElements();
             this.unzoom('xyz');
@@ -1133,7 +1139,7 @@ const FrameInteractive = {
             delete this.last_touch_time;
 
          } else if (settings.ContextMenu) {
-            this.startTouchHandling('', evnt);
+            this.startSingleTouchHandling('', evnt);
          }
       }
 
@@ -1141,6 +1147,9 @@ const FrameInteractive = {
          return;
 
       this.clearInteractiveElements();
+
+      // clear single touch handler
+      this.endSingleTouchHandling(null);
 
       let pnt1 = arr[0], pnt2 = arr[1], w = this.getFrameWidth(), h = this.getFrameHeight();
 
@@ -1426,7 +1435,7 @@ const FrameInteractive = {
 
   /** @summary Activate touch handling on frame
     * @private */
-   startTouchHandling(kind, evnt) {
+   startSingleTouchHandling(kind, evnt) {
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
@@ -1441,16 +1450,14 @@ const FrameInteractive = {
 
       setPainterTooltipEnabled(this, false);
 
-      d3_select(window).on('touchmove.singleTouch', evnt => this.moveTouchHandling(evnt, kind, arr[0]))
-                       .on('touchcancel.singleTouch', evnt => this.endTouchHandling(evnt, kind, arr[0], tm))
-                       .on('touchend.singleTouch', evnt => this.endTouchHandling(evnt, kind, arr[0], tm));
+      d3_select(window).on('touchmove.singleTouch', kind ? null : evnt => this.moveTouchHandling(evnt, kind, arr[0]))
+                       .on('touchcancel.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm))
+                       .on('touchend.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm));
    },
 
    /** @summary Moving of touch pointer
     * @private */
    moveTouchHandling(evnt, kind, pos0) {
-      if (kind) return;
-
       let frame = this.getFrameSvg(),
           main_svg = this.draw_g.select('.main_layer'), pos;
 
@@ -1477,15 +1484,17 @@ const FrameInteractive = {
 
    /** @summary Process end-touch event, which can cause content menu to appear
     * @private */
-   endTouchHandling(evnt, kind, pos, tm) {
-      evnt.preventDefault();
-      evnt.stopPropagation();
+   endSingleTouchHandling(evnt, kind, pos, tm) {
+      evnt?.preventDefault();
+      evnt?.stopPropagation();
 
       setPainterTooltipEnabled(this, true);
 
       d3_select(window).on('touchmove.singleTouch', null)
                        .on('touchcancel.singleTouch', null)
                        .on('touchend.singleTouch', null);
+
+      if (evnt === null) return;
 
       if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2) {
          this.performScalesShift();
