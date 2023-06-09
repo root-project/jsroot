@@ -692,12 +692,10 @@ const FrameInteractive = {
       if (!svg.property('interactive_set')) {
          this.addFrameKeysHandler();
 
-         this.last_touch = new Date(0);
          this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
          this.zoom_rect = null;
          this.zoom_origin = null;  // original point where zooming started
          this.zoom_curr = null;    // current point for zooming
-         this.touch_cnt = 0;
       }
 
       if (settings.Zooming && !this.projection) {
@@ -772,8 +770,10 @@ const FrameInteractive = {
          // in 3dmode with orbit control ignore simple arrows
          if (this.mode3d && (key.indexOf('Ctrl') !== 0)) return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
-         this.zoom(zoom.name, zoom.min, zoom.max);
-         if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
+         if (zoom.changed) {
+            this.zoom(zoom.name, zoom.min, zoom.max);
+            this.zoomChangedInteractive(zoom.name, true);
+         }
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
@@ -819,11 +819,10 @@ const FrameInteractive = {
    /** @summary Start mouse rect zooming */
    startRectSel(evnt) {
       // ignore when touch selection is activated
-
       if (this.zoom_kind > 100) return;
 
       // ignore all events from non-left button
-      if ((evnt.which || evnt.button) !== 1) return;
+      if (evnt.button !== 0) return;
 
       evnt.preventDefault();
 
@@ -1035,52 +1034,54 @@ const FrameInteractive = {
 
    /** @summary Start touch zoom */
    startTouchZoom(evnt) {
+      evnt.preventDefault();
+      evnt.stopPropagation();
+
       // in case when zooming was started, block any other kind of events
-      // also prevent zooming together with active drggaing
-      if ((this.zoom_kind != 0) || drag_kind) {
-         evnt.preventDefault();
-         evnt.stopPropagation();
+      // also prevent zooming together with active dragging
+      if ((this.zoom_kind != 0) || drag_kind)
          return;
-      }
 
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
-      this.touch_cnt+=1;
+
+      console.log('arr.length', arr.length, arr[0]);
 
       // normally double-touch will be handled
       // touch with single click used for context menu
       if (arr.length == 1) {
          // this is touch with single element
 
-         let now = new Date(), diff = now.getTime() - this.last_touch.getTime();
-         this.last_touch = now;
+         let now = new Date().getTime(), diff = now - (this.last_touch_time ?? 0);
+         this.last_touch_time = now;
 
          if ((diff < 300) && this.zoom_curr
              && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
              && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
 
-            evnt.preventDefault();
-            evnt.stopPropagation();
-
             this.clearInteractiveElements();
             this.unzoom('xyz');
 
-            this.last_touch = new Date(0);
+            delete this.last_touch_time;
 
             this.getFrameSvg().on('touchcancel', null)
                               .on('touchend', null, true);
          } else if (settings.ContextMenu) {
             this.zoom_curr = arr[0];
-            this.getFrameSvg().on('touchcancel', evnt => this.endTouchMenu('', evnt))
+            this.getFrameSvg().on('touchmove', evnt2 => {
+                  evnt2.preventDefault();
+                  evnt2.stopPropagation();
+                  let arr2 = d3_pointers(evnt2, this.getFrameSvg().node());
+                  console.log('moving ', arr2.length, arr2[0]);
+
+
+               })
+                              .on('touchcancel', evnt => this.endTouchMenu('', evnt))
                               .on('touchend', evnt => this.endTouchMenu('', evnt));
-            evnt.preventDefault();
-            evnt.stopPropagation();
          }
       }
 
-      if ((arr.length != 2) || !settings.Zooming || !settings.ZoomTouch) return;
-
-      evnt.preventDefault();
-      evnt.stopPropagation();
+      if ((arr.length != 2) || !settings.Zooming || !settings.ZoomTouch)
+         return;
 
       this.clearInteractiveElements();
 
@@ -1169,13 +1170,11 @@ const FrameInteractive = {
 
          evnt.preventDefault();
 
-         let now = new Date();
-
-         let diff = now.getTime() - this.last_touch.getTime();
+         let diff = new Date().getTime() - (this.last_touch_time ?? 0);
 
          if ((diff > 500) && (diff < 2000) && !this.isTooltipShown()) {
             this.showContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
-            this.last_touch = new Date(0);
+            delete this.last_touch_time;
          } else {
             this.clearInteractiveElements();
          }
@@ -1212,7 +1211,7 @@ const FrameInteractive = {
       }
 
       this.clearInteractiveElements();
-      this.last_touch = new Date(0);
+      delete this.last_touch_time;
 
       if (namex == 'x2') {
          this.zoomChangedInteractive(namex, true);

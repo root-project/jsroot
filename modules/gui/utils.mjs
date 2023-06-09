@@ -282,10 +282,7 @@ function registerForResize(handle, delay) {
 /** @summary Detect mouse right button
   * @private */
 function detectRightButton(event) {
-   if ('buttons' in event) return event.buttons === 2;
-   if ('which' in event) return event.which === 3;
-   if ('button' in event) return event.button === 2;
-   return false;
+   return (event?.buttons === 2) || (event?.button === 2);
 }
 
 /** @summary Add move handlers for drawn element
