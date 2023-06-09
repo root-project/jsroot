@@ -1113,8 +1113,6 @@ const FrameInteractive = {
 
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
 
-      console.log('arr.length', arr.length, arr[0]);
-
       // normally double-touch will be handled
       // touch with single click used for context menu
       if (arr.length == 1) {
@@ -1132,20 +1130,8 @@ const FrameInteractive = {
 
             delete this.last_touch_time;
 
-            this.getFrameSvg().on('touchcancel', null)
-                              .on('touchend', null, true);
          } else if (settings.ContextMenu) {
-            this.zoom_curr = arr[0];
-            this.getFrameSvg().on('touchmove', evnt2 => {
-                  evnt2.preventDefault();
-                  evnt2.stopPropagation();
-                  let arr2 = d3_pointers(evnt2, this.getFrameSvg().node());
-                  console.log('moving ', arr2.length, arr2[0]);
-
-
-               })
-                              .on('touchcancel', evnt => this.endTouchMenu('', evnt))
-                              .on('touchend', evnt => this.endTouchMenu('', evnt));
+            this.startTouchMenu('', evnt);
          }
       }
 
@@ -1153,9 +1139,6 @@ const FrameInteractive = {
          return;
 
       this.clearInteractiveElements();
-
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
 
       let pnt1 = arr[0], pnt2 = arr[1], w = this.getFrameWidth(), h = this.getFrameHeight();
 
@@ -1230,9 +1213,6 @@ const FrameInteractive = {
 
    /** @summary End touch zooming handler */
    endTouchZoom(evnt) {
-
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
 
       if (this.zoom_kind === 0) {
          // special case - single touch can ends up with context menu
@@ -1448,42 +1428,32 @@ const FrameInteractive = {
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
-      if (!kind) kind = 'main';
-      let fld = `touch_${kind}`;
+      evnt.preventDefault();
+      evnt.stopPropagation();
+      closeMenu();
 
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
+      let tm = new Date().getTime();
 
-      this[fld] = { dt: new Date(), pos: arr[0] };
-
-      let handler = this.endTouchMenu.bind(this, kind);
-
-      this.getFrameSvg().on('touchcancel', handler)
-                        .on('touchend', handler);
+      d3_select(window).on('touchcancel.menuHandling', evnt => this.endTouchMenu(evnt, kind, arr[0], tm))
+                       .on('touchend.menuHandling', evnt => this.endTouchMenu(evnt, kind, arr[0], tm));
    },
 
    /** @summary Process end-touch event, which can cause content menu to appear
     * @private */
-   endTouchMenu(kind, evnt) {
-      let fld = 'touch_' + kind;
+   endTouchMenu(evnt, kind, pos, tm) {
+      evnt.preventDefault();
+      evnt.stopPropagation();
 
-      if (! (fld in this)) return;
+      let diff = new Date().getTime() - tm;
 
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
+      d3_select(window).on('touchcancel.menuHandling', null)
+                       .on('touchend.menuHandling', null);
 
-      let diff = new Date().getTime() - this[fld].dt.getTime();
-
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
-
-      if (diff > 500) {
+      if (diff > 700) {
          let rect = this.getFrameSvg().node().getBoundingClientRect();
-         this.showContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] });
+         this.showContextMenu(kind, { clientX: rect.left + pos[0],
+                                      clientY: rect.top + pos[1] });
       }
-
-      delete this[fld];
    },
 
    /** @summary Clear frame interactive elements */
