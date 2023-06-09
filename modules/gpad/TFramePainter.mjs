@@ -1070,8 +1070,8 @@ const FrameInteractive = {
                               .on('touchend', null, true);
          } else if (settings.ContextMenu) {
             this.zoom_curr = arr[0];
-            this.getFrameSvg().on('touchcancel', evnt => this.endTouchSel(evnt))
-                              .on('touchend', evnt => this.endTouchSel(evnt));
+            this.getFrameSvg().on('touchcancel', evnt => this.endTouchMenu('', evnt))
+                              .on('touchend', evnt => this.endTouchMenu('', evnt));
             evnt.preventDefault();
             evnt.stopPropagation();
          }
