@@ -701,6 +701,8 @@ const FrameInteractive = {
       if (settings.Zooming && !this.projection) {
          if (settings.ZoomMouse) {
             svg.on('mousedown', evnt => this.startRectSel(evnt));
+            svg.on('mousemove', evnt => this.mouseMoveHanlder(evnt));
+            svg.on('mouseup', evnt => this.mouseUpHanlder(evnt));
             svg.on('dblclick', evnt => this.mouseDoubleClick(evnt));
          }
          if (settings.ZoomWheel)
@@ -816,18 +818,71 @@ const FrameInteractive = {
       return res;
    },
 
+   /** @summary Check mouse moving  */
+   mouseMoveHanlder(evnt) {
+      if ((evnt.buttons === 3) && this.first_shift_pos) {
+         let frame = this.getFrameSvg(),
+             pos = d3_pointer(evnt, frame.node()),
+             main_svg = this.draw_g.select('.main_layer');
+         let dx = this.first_shift_pos[0] - pos[0],
+             dy = this.first_shift_pos[1] - pos[1],
+             w = this.getFrameWidth(), h = this.getFrameHeight();
+
+         this._last_shift_dx = dx;
+         this._last_shift_dy = dy;
+
+         main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
+
+         evnt.preventDefault();
+         evnt.stopPropagation();
+
+      }
+   },
+
+   mouseUpHanlder(evnt) {
+      if ((this._last_shift_dx !== undefined) && (this._last_shift_dy !== undefined) && this.first_shift_pos) {
+         let w = this.getFrameWidth(), h = this.getFrameHeight(),
+             main_svg = this.draw_g.select('.main_layer'),
+             gr = this.getGrFuncs(),
+             xmin = gr.revertAxis('x', this._last_shift_dx),
+             xmax = gr.revertAxis('x', this._last_shift_dx + w),
+             ymin = gr.revertAxis('y', this._last_shift_dy + h),
+             ymax = gr.revertAxis('y', this._last_shift_dy);
+
+
+         main_svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+         delete this._last_shift_dx;
+         delete this._last_shift_dy;
+
+         setPainterTooltipEnabled(this, true);
+
+         this.zoom(xmin, xmax, ymin, ymax);
+      }
+
+   },
+
    /** @summary Start mouse rect zooming */
    startRectSel(evnt) {
       // ignore when touch selection is activated
       if (this.zoom_kind > 100) return;
 
+      let frame = this.getFrameSvg(),
+          pos = d3_pointer(evnt, frame.node());
+
+      if (evnt.buttons === 3) {
+         this.clearInteractiveElements();
+         this.first_shift_pos = pos;
+         setPainterTooltipEnabled(this, false);
+         evnt.preventDefault();
+         evnt.stopPropagation();
+         return;
+      }
+
       // ignore all events from non-left button
       if (evnt.button !== 0) return;
 
       evnt.preventDefault();
-
-      let frame = this.getFrameSvg(),
-          pos = d3_pointer(evnt, frame.node());
 
       this.clearInteractiveElements();
 
@@ -983,7 +1038,7 @@ const FrameInteractive = {
          }
       }
 
-      let pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
+      let pnt = (kind === 1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
 
       this.clearInteractiveElements();
 
@@ -1293,12 +1348,16 @@ const FrameInteractive = {
 
    /** @summary Show frame context menu */
    showContextMenu(kind, evnt, obj) {
-      // ignore context menu when touches zooming is ongoing
+      // disable context menu left/right buttons clicked
+      if (evnt?.buttons === 3)
+         return evnt.preventDefault();
+
+      // ignore context menu when touches zooming is ongoing or
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
       let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
 
-      if (evnt.stopPropagation) {
+      if (isFunc(evnt.stopPropagation)) {
          evnt.preventDefault();
          evnt.stopPropagation(); // disable main context menu
 
