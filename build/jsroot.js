@@ -63,7 +63,7 @@ const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64
 let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
-   browser$1.isFirefox = (navigator.userAgent.indexOf('Firefox') >= 0) || (typeof InstallTrigger !== 'undefined');
+   browser$1.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
    browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
    browser$1.isChrome = !!window.chrome;
    browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
@@ -63700,10 +63700,7 @@ function registerForResize(handle, delay) {
 /** @summary Detect mouse right button
   * @private */
 function detectRightButton(event) {
-   if ('buttons' in event) return event.buttons === 2;
-   if ('which' in event) return event.which === 3;
-   if ('button' in event) return event.button === 2;
-   return false;
+   return (event?.buttons === 2) || (event?.button === 2);
 }
 
 /** @summary Add move handlers for drawn element
@@ -65522,9 +65519,8 @@ function addDragHandler(_painter, arg) {
 
          if (complete_drag(handle.x, handle.y, arg.width, arg.height) === false) {
             let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-            if (arg.ctxmenu && (spent > 600) && painter.showContextMenu) {
-               let rrr = resize_se.node().getBoundingClientRect();
-               painter.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
+            if (arg.ctxmenu && (spent > 600) && isFunc(painter.showContextMenu)) {
+               painter.showContextMenu('main', { x: 0, y: 0 });
             } else if (arg.canselect && (spent <= 600)) {
                painter.getPadPainter()?.selectObjectPainter(painter);
             }
@@ -66031,12 +66027,10 @@ const FrameInteractive = {
       if (!svg.property('interactive_set')) {
          this.addFrameKeysHandler();
 
-         this.last_touch = new Date(0);
          this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
          this.zoom_rect = null;
          this.zoom_origin = null;  // original point where zooming started
          this.zoom_curr = null;    // current point for zooming
-         this.touch_cnt = 0;
       }
 
       if (settings.Zooming && !this.projection) {
@@ -66053,8 +66047,8 @@ const FrameInteractive = {
 
       if (settings.ContextMenu) {
          if (browser$1.touches) {
-            svg_x.on('touchstart', evnt => this.startTouchMenu('x', evnt));
-            svg_y.on('touchstart', evnt => this.startTouchMenu('y', evnt));
+            svg_x.on('touchstart', evnt => this.startSingleTouchHandling('x', evnt));
+            svg_y.on('touchstart', evnt => this.startSingleTouchHandling('y', evnt));
          }
          svg.on('contextmenu', evnt => this.showContextMenu('', evnt));
          svg_x.on('contextmenu', evnt => this.showContextMenu('x', evnt));
@@ -66111,8 +66105,10 @@ const FrameInteractive = {
          // in 3dmode with orbit control ignore simple arrows
          if (this.mode3d && (key.indexOf('Ctrl') !== 0)) return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
-         this.zoom(zoom.name, zoom.min, zoom.max);
-         if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
+         if (zoom.changed) {
+            this.zoom(zoom.name, zoom.min, zoom.max);
+            this.zoomChangedInteractive(zoom.name, true);
+         }
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
@@ -66155,19 +66151,89 @@ const FrameInteractive = {
       return res;
    },
 
+   /** @summary Check mouse moving  */
+   shiftMoveHanlder(evnt, pos0) {
+      if (evnt.buttons === this._shifting_buttons) {
+         let frame = this.getFrameSvg(),
+             pos = pointer(evnt, frame.node()),
+             main_svg = this.draw_g.select('.main_layer');
+         let dx = pos0[0] - pos[0],
+             dy = pos0[1] - pos[1],
+             w = this.getFrameWidth(), h = this.getFrameHeight();
+
+         if (this.scales_ndim === 1)
+            dy = 0;
+
+         this._shifting_dx = dx;
+         this._shifting_dy = dy;
+
+         main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
+
+         evnt.preventDefault();
+         evnt.stopPropagation();
+      }
+   },
+
+   /** @summary mouse up handler for shifting */
+   shiftUpHanlder(evnt) {
+      evnt.preventDefault();
+
+      select(window).on('mousemove.shiftHandler', null)
+                       .on('mouseup.shiftHandler', null);
+
+      if ((this._shifting_dx !== undefined) && (this._shifting_dy !== undefined))
+         this.performScalesShift();
+    },
+
+    /** @summary Shift scales on defined positions */
+   performScalesShift() {
+      let w = this.getFrameWidth(), h = this.getFrameHeight(),
+          main_svg = this.draw_g.select('.main_layer'),
+          gr = this.getGrFuncs(),
+          xmin = gr.revertAxis('x', this._shifting_dx),
+          xmax = gr.revertAxis('x', this._shifting_dx + w),
+          ymin = gr.revertAxis('y', this._shifting_dy + h),
+          ymax = gr.revertAxis('y', this._shifting_dy);
+
+
+      main_svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+      delete this._shifting_dx;
+      delete this._shifting_dy;
+
+      setPainterTooltipEnabled(this, true);
+
+      if (this.scales_ndim === 1)
+         this.zoomSingle('x', xmin, xmax);
+      else
+         this.zoom(xmin, xmax, ymin, ymax);
+   },
+
    /** @summary Start mouse rect zooming */
    startRectSel(evnt) {
       // ignore when touch selection is activated
-
       if (this.zoom_kind > 100) return;
-
-      // ignore all events from non-left button
-      if ((evnt.which || evnt.button) !== 1) return;
-
-      evnt.preventDefault();
 
       let frame = this.getFrameSvg(),
           pos = pointer(evnt, frame.node());
+
+      if ((evnt.buttons === 3) || (evnt.button === 1)) {
+         this.clearInteractiveElements();
+         this._shifting_buttons = evnt.buttons;
+
+         select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt, pos))
+                          .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
+
+         setPainterTooltipEnabled(this, false);
+         evnt.preventDefault();
+         evnt.stopPropagation();
+         return;
+      }
+
+      // ignore all events from non-left button
+      if (evnt.button !== 0) return;
+
+      evnt.preventDefault();
 
       this.clearInteractiveElements();
 
@@ -66323,7 +66389,7 @@ const FrameInteractive = {
          }
       }
 
-      let pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
+      let pnt = (kind === 1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
 
       this.clearInteractiveElements();
 
@@ -66374,57 +66440,51 @@ const FrameInteractive = {
 
    /** @summary Start touch zoom */
    startTouchZoom(evnt) {
+      evnt.preventDefault();
+      evnt.stopPropagation();
+
       // in case when zooming was started, block any other kind of events
-      // also prevent zooming together with active drggaing
-      if ((this.zoom_kind != 0) || drag_kind) {
-         evnt.preventDefault();
-         evnt.stopPropagation();
+      // also prevent zooming together with active dragging
+      if ((this.zoom_kind != 0) || drag_kind)
          return;
-      }
 
       let arr = pointers(evnt, this.getFrameSvg().node());
-      this.touch_cnt+=1;
 
       // normally double-touch will be handled
       // touch with single click used for context menu
       if (arr.length == 1) {
          // this is touch with single element
 
-         let now = new Date(), diff = now.getTime() - this.last_touch.getTime();
-         this.last_touch = now;
+         let now = new Date().getTime(), tmdiff = 1e10, dx = 100, dy = 100;
 
-         if ((diff < 300) && this.zoom_curr
-             && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-             && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+         if (this.last_touch_time && this.last_touch_pos) {
+            tmdiff = now - this.last_touch_time;
+            dx = Math.abs(arr[0][0] - this.last_touch_pos[0]);
+            dy = Math.abs(arr[0][1] - this.last_touch_pos[1]);
+         }
 
-            evnt.preventDefault();
-            evnt.stopPropagation();
+         this.last_touch_time = now;
+         this.last_touch_pos = arr[0];
+
+         if ((tmdiff < 500) && (dx < 20) && (dy < 20)) {
 
             this.clearInteractiveElements();
             this.unzoom('xyz');
 
-            this.last_touch = new Date(0);
+            delete this.last_touch_time;
 
-            this.getFrameSvg().on('touchcancel', null)
-                              .on('touchend', null, true);
          } else if (settings.ContextMenu) {
-            this.zoom_curr = arr[0];
-            this.getFrameSvg().on('touchcancel', evnt => this.endTouchSel(evnt))
-                              .on('touchend', evnt => this.endTouchSel(evnt));
-            evnt.preventDefault();
-            evnt.stopPropagation();
+            this.startSingleTouchHandling('', evnt);
          }
       }
 
-      if ((arr.length != 2) || !settings.Zooming || !settings.ZoomTouch) return;
-
-      evnt.preventDefault();
-      evnt.stopPropagation();
+      if ((arr.length != 2) || !settings.Zooming || !settings.ZoomTouch)
+         return;
 
       this.clearInteractiveElements();
 
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
+      // clear single touch handler
+      this.endSingleTouchHandling(null);
 
       let pnt1 = arr[0], pnt2 = arr[1], w = this.getFrameWidth(), h = this.getFrameHeight();
 
@@ -66500,26 +66560,6 @@ const FrameInteractive = {
    /** @summary End touch zooming handler */
    endTouchZoom(evnt) {
 
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
-
-      if (this.zoom_kind === 0) {
-         // special case - single touch can ends up with context menu
-
-         evnt.preventDefault();
-
-         let now = new Date();
-
-         let diff = now.getTime() - this.last_touch.getTime();
-
-         if ((diff > 500) && (diff < 2000) && !this.isTooltipShown()) {
-            this.showContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
-            this.last_touch = new Date(0);
-         } else {
-            this.clearInteractiveElements();
-         }
-      }
-
       if (this.zoom_kind < 100) return;
 
       drag_kind = ''; // reset global flag
@@ -66551,7 +66591,7 @@ const FrameInteractive = {
       }
 
       this.clearInteractiveElements();
-      this.last_touch = new Date(0);
+      delete this.last_touch_time;
 
       if (namex == 'x2') {
          this.zoomChangedInteractive(namex, true);
@@ -66633,57 +66673,62 @@ const FrameInteractive = {
 
    /** @summary Show frame context menu */
    showContextMenu(kind, evnt, obj) {
-      // ignore context menu when touches zooming is ongoing
+      // disable context menu left/right buttons clicked
+      if (evnt?.buttons === 3)
+         return evnt.preventDefault();
+
+      // ignore context menu when touches zooming is ongoing or
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
-      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
+      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null, // object used to show context menu
+          pnt, svg_node = this.getFrameSvg().node();
 
-      if (evnt.stopPropagation) {
+      if (isFunc(evnt?.stopPropagation)) {
          evnt.preventDefault();
          evnt.stopPropagation(); // disable main context menu
+         let ms = pointer(evnt, svg_node),
+             tch = pointers(evnt, svg_node);
+         if (tch.length === 1)
+             pnt = { x: tch[0][0], y: tch[0][1], touch: true };
+         else if (ms.length === 2)
+             pnt = { x: ms[0], y: ms[1], touch: false };
+       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined)) {
+          pnt = evnt;
+          let rect = svg_node.getBoundingClientRect();
+          evnt  = { clientX: rect.left + pnt.x, clientY: rect.top + pnt.y };
+       }
 
-         if ((kind == 'painter') && obj) {
-            menu_painter = obj;
-            kind = '';
-         } else if (!kind) {
-            let ms = pointer(evnt, this.getFrameSvg().node()),
-                tch = pointers(evnt, this.getFrameSvg().node()),
-                pp = this.getPadPainter(),
-                pnt = null, sel = null;
+       if ((kind == 'painter') && obj) {
+          menu_painter = obj;
+          kind = '';
+       } else if (kind == 'main') {
+          menu_painter = this.getMainPainter(true);
+          kind = '';
+       } else if (!kind) {
+         let pp = this.getPadPainter(), sel = null;
 
-            fp = this;
-
-            if (tch.length === 1)
-               pnt = { x: tch[0][0], y: tch[0][1], touch: true };
-            else if (ms.length === 2)
-               pnt = { x: ms[0], y: ms[1], touch: false };
-
-            if (pnt && pp) {
-               pnt.painters = true; // assign painter for every tooltip
-               let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
-               for (let n = 0; n < hints.length; ++n)
-                  if (hints[n] && hints[n].menu) {
-                     let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
-            }
-
-            if (sel) menu_painter = sel;
-                else kind = 'frame';
-
-            if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
-
-            fp.setLastEventPos(pnt);
-         } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
-            exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
-
-            if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
-               exec_painter = null;
+         fp = this;
+         if (pnt && pp) {
+            pnt.painters = true; // assign painter for every tooltip
+            let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
+            for (let n = 0; n < hints.length; ++n)
+               if (hints[n]?.menu) {
+                  let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                  if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+               }
          }
-      } else if ((kind == 'painter') && obj) {
-         // this is used in 3D context menu to show special painter
-         menu_painter = obj;
-         kind = '';
+
+         if (sel) menu_painter = sel;
+             else kind = 'frame';
+
+         if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
+
+         fp.setLastEventPos(pnt);
+      } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
+         exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
+
+         if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
+            exec_painter = null;
       }
 
       if (!exec_painter) exec_painter = menu_painter;
@@ -66709,48 +66754,74 @@ const FrameInteractive = {
       });
    },
 
-  /** @summary Activate context menu handler via touch events
+  /** @summary Activate touch handling on frame
     * @private */
-   startTouchMenu(kind, evnt) {
+   startSingleTouchHandling(kind, evnt) {
       let arr = pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
-      if (!kind) kind = 'main';
-      let fld = `touch_${kind}`;
+      evnt.preventDefault();
+      evnt.stopPropagation();
+      closeMenu();
 
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
+      let tm = new Date().getTime();
 
-      this[fld] = { dt: new Date(), pos: arr[0] };
+      this._shifting_dx = 0;
+      this._shifting_dy = 0;
 
-      let handler = this.endTouchMenu.bind(this, kind);
+      setPainterTooltipEnabled(this, false);
 
-      this.getFrameSvg().on('touchcancel', handler)
-                        .on('touchend', handler);
+      select(window).on('touchmove.singleTouch', kind ? null : evnt => this.moveTouchHandling(evnt, kind, arr[0]))
+                       .on('touchcancel.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm))
+                       .on('touchend.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm));
+   },
+
+   /** @summary Moving of touch pointer
+    * @private */
+   moveTouchHandling(evnt, kind, pos0) {
+      let frame = this.getFrameSvg(),
+          main_svg = this.draw_g.select('.main_layer'), pos;
+
+      try {
+        pos = pointers(evnt, frame.node())[0];
+      } catch(err) {
+        pos = [0,0];
+        if (evnt?.changedTouches)
+           pos = [ evnt.changedTouches[0].clientX, evnt.changedTouches[0].clientY ];
+      }
+
+      let dx = pos0[0] - pos[0],
+          dy = pos0[1] - pos[1],
+          w = this.getFrameWidth(), h = this.getFrameHeight();
+
+      if (this.scales_ndim === 1)
+         dy = 0;
+
+      this._shifting_dx = dx;
+      this._shifting_dy = dy;
+
+      main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
    },
 
    /** @summary Process end-touch event, which can cause content menu to appear
     * @private */
-   endTouchMenu(kind, evnt) {
-      let fld = 'touch_' + kind;
+   endSingleTouchHandling(evnt, kind, pos, tm) {
+      evnt?.preventDefault();
+      evnt?.stopPropagation();
 
-      if (! (fld in this)) return;
+      setPainterTooltipEnabled(this, true);
 
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
+      select(window).on('touchmove.singleTouch', null)
+                       .on('touchcancel.singleTouch', null)
+                       .on('touchend.singleTouch', null);
 
-      let diff = new Date().getTime() - this[fld].dt.getTime();
+      if (evnt === null) return;
 
-      this.getFrameSvg().on('touchcancel', null)
-                        .on('touchend', null);
-
-      if (diff > 500) {
-         let rect = this.getFrameSvg().node().getBoundingClientRect();
-         this.showContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] });
+      if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2) {
+         this.performScalesShift();
+      } else if (new Date().getTime() - tm > 700) {
+         this.showContextMenu(kind, { x: pos[0], y: pos[1] });
       }
-
-      delete this[fld];
    },
 
    /** @summary Clear frame interactive elements */
@@ -67055,6 +67126,8 @@ class TFramePainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad = pp.getRootPad();
 
+      this.scales_ndim = opts.ndim;
+
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
 
@@ -67139,7 +67212,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    createXY2(opts) {
 
-      if (!opts) opts = {};
+      if (!opts) opts = { ndim: this.scales_ndim ?? 1 };
 
       this.reverse_x2 = opts.reverse_x || false;
       this.reverse_y2 = opts.reverse_y || false;
@@ -114933,7 +115006,7 @@ class RFramePainter extends RObjectPainter {
 
       this.cleanXY(); // remove all previous configurations
 
-      if (!opts) opts = {};
+      if (!opts) opts = { ndim: 1 };
 
       this.v6axes = true;
       this.swap_xy = opts.swap_xy || false;
@@ -114944,6 +115017,8 @@ class RFramePainter extends RObjectPainter {
       this.logy = this.v7EvalAttr('y_log', 0);
 
       let w = this.getFrameWidth(), h = this.getFrameHeight();
+
+      this.scales_ndim = opts.ndim;
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
