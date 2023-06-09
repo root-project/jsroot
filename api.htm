@@ -49,10 +49,6 @@
                --border-style: 1px solid #444;
             }
 
-            #previewsToggler {
-               filter: invert(100%);
-            }
-
          }
 
          * {
@@ -94,14 +90,6 @@
             line-height: var(--line-height);
             font-weight: 500;
             color: var(--color-blue);
-         }
-
-         h3 {
-            margin: 0;
-            font-weight: 500;
-            font-size: calc(var(--font-size) - 1px);
-            line-height: var(--line-height);
-            color: var(--secondary-text-color);
          }
 
          h1 a {
@@ -198,11 +186,6 @@
             padding-top: 12px;
          }
 
-              #panel #content h3 {
-            color: var(--text-color);
-            font-weight: 900;
-         }
-
          #panel #content a {
             position: relative;
             color: var(--text-color);
@@ -222,14 +205,6 @@
             display: none !important;
          }
 
-         #panel #content #previewsToggler {
-            cursor: pointer;
-            float: right;
-            margin-top: 18px;
-            margin-bottom: -18px;
-            opacity: 0.25;
-         }
-
          #panel #content.minimal .card {
             background-color: transparent;
             margin-bottom: 4px;
@@ -241,10 +216,6 @@
 
          #panel #content.minimal .title {
             padding: 0;
-         }
-
-         #panel #content.minimal #previewsToggler {
-            opacity: 1;
          }
 
          body.home #panel #content h2 {
@@ -366,7 +337,7 @@
    </head>
 
    <body class="home">
-      <div id="panel">
+      <div id="panel" class="open">
         <div id="header">
            <h1><div><a href="https://root.cern/js/">JSROOT</a></div><a id="version" href="http://github.com/root-project/jsroot/releases">dev</a></h1>
            <div id="expandButton"></div>
@@ -391,6 +362,16 @@
 
       document.getElementById('version').innerHTML = version_id;
       document.getElementById('version').title = `${version}, ${source_dir}`;
+
+      document.getElementById('expandButton').addEventListener('click', event => {
+         document.getElementById('panel').classList.toggle('open');
+         event.preventDefault();
+      });
+
+      document.getElementById('panelScrim').onclick = event => {
+         event.preventDefault();
+         document.getElementById('panel').classList.toggle('open');
+      };
 
       if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
           (window.location.host.indexOf('root.cern') < 0)) {
@@ -505,7 +486,7 @@
          ]
       };
 
-      function ProcessClick(durl) {
+      async function ProcessClick(durl) {
          let viewer = document.getElementById('apiviewer'),
              srcviewer = document.getElementById('srcviewer');
          viewer.style.display = '';
@@ -537,11 +518,11 @@
 
              window.location.hash = shortname;
              if (elem.title) SetPageTitle(elem.title);
-             ProcessClick(durl);
+             ProcessClick(durl).then(() => document.getElementById('panel').classList.toggle('open'));
           });
       }
 
-      function ProcessSourceClick(entry) {
+      async function ProcessSourceClick(entry) {
          let srcload = entry.srcload || entry.src;
          if (srcload === 'github')
             srcload = 'https://raw.githubusercontent.com/root-project/jsroot/' + GetGithubBrunch() + entry.src;
@@ -571,7 +552,7 @@
          elem.addEventListener( 'click', event => {
             event.preventDefault();
             window.location.hash = shortname;
-            ProcessSourceClick(entry);
+            ProcessSourceClick(entry).then(() => document.getElementById('panel').classList.toggle('open'));
          });
       }
 
@@ -648,7 +629,7 @@
                if ((window.location.hash == '#' + shortname + '_src') || (entry.syn && window.location.hash == '#' + entry.syn + '_src')) {
                   saaa.focus();
                   if (entry.title) SetPageTitle(entry.title);
-                  ProcessSourceClick(entry);
+                  ProcessSourceClick(entry).then(() => document.getElementById('panel').classList.toggle('open'));
                }
             }
 
@@ -656,7 +637,7 @@
 
             if ((window.location.hash == '#' + shortname) || (entry.syn && window.location.hash == '#' + entry.syn) || (entry.syn2 && window.location.hash == '#' + entry.syn2)) {
                if (aaa) aaa.focus();
-               ProcessClick(url);
+               ProcessClick(url).then(() => document.getElementById('panel').classList.toggle('open'));
             }
          }
       }

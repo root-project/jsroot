@@ -48,10 +48,6 @@
                --border-style: 1px solid #444;
             }
 
-            #previewsToggler {
-               filter: invert(100%);
-            }
-
          }
 
          * {
@@ -93,14 +89,6 @@
             line-height: var(--line-height);
             font-weight: 500;
             color: var(--color-blue);
-         }
-
-         h3 {
-            margin: 0;
-            font-weight: 500;
-            font-size: calc(var(--font-size) - 1px);
-            line-height: var(--line-height);
-            color: var(--secondary-text-color);
          }
 
          h1 a {
@@ -196,11 +184,6 @@
             padding-top: 12px;
          }
 
-         #panel #content h3 {
-            color: var(--text-color);
-            font-weight: 900;
-         }
-
          #panel #content a {
             position: relative;
             color: var(--text-color);
@@ -220,14 +203,6 @@
             display: none !important;
          }
 
-         #panel #content #previewsToggler {
-            cursor: pointer;
-            float: right;
-            margin-top: 18px;
-            margin-bottom: -18px;
-            opacity: 0.25;
-         }
-
          #panel #content.minimal .card {
             background-color: transparent;
             margin-bottom: 4px;
@@ -239,10 +214,6 @@
 
          #panel #content.minimal .title {
             padding: 0;
-         }
-
-         #panel #content.minimal #previewsToggler {
-            opacity: 1;
          }
 
          body.home #panel #content h2 {
@@ -261,7 +232,6 @@
             right: 0px;
             height: 100%;
             overflow: hidden;
-
          }
 
          #plaindraw {
@@ -352,7 +322,7 @@
                line-height: 2rem;
             }
             #panel.open #contentWrapper {
-               transform: translate3d(-380px, 0 ,0);
+               transform: translate3d(-380px,0,0);
             }
             #viewer {
                padding-left: 0;
@@ -365,7 +335,7 @@
 
    <body class="home">
 
-      <div id="panel">
+      <div id="panel" class="open">
         <div id="header">
            <h1><div><a href="https://root.cern/js/">JSROOT</a></div><a id="version" href="http://github.com/root-project/jsroot/releases">dev</a></h1>
            <div id="expandButton"></div>
@@ -401,18 +371,14 @@
       document.getElementById('version').innerHTML = version_id;
       document.getElementById('version').title = `${version}, ${source_dir}`;
 
-      let panel = document.getElementById('panel');
-      let expandButton = document.getElementById('expandButton');
-      let panelScrim = document.getElementById('panelScrim');
-
-      expandButton.addEventListener( 'click', event => {
-         panel.classList.toggle('open');
+      document.getElementById('expandButton').addEventListener('click', event => {
+         document.getElementById('panel').classList.toggle('open');
          event.preventDefault();
       });
 
-      panelScrim.onclick = event => {
+      document.getElementById('panelScrim').onclick = event => {
          event.preventDefault();
-         panel.classList.toggle('open');
+         document.getElementById('panel').classList.toggle('open');
       };
 
       let jsroot_path = './',
@@ -462,7 +428,7 @@
             });
       }
 
-      function processClick(durl, filename, itemname, opt, jsonname, entry) {
+      async function processClick(durl, filename, itemname, opt, jsonname, entry) {
 
          keyid = null; // stop execution of running test loop (if any)
 
@@ -494,14 +460,13 @@
              document.getElementById('plaindraw').innerHTML = '';
              document.getElementById('plaindraw').style['background-color'] = '';
 
-             if (jsonname) {
-                httpRequest(jsonname, 'object')
-                      .then(obj => drawEntry(entry, obj, opt));
-             } else {
-                openFile(filename)
-                      .then(file => file.readObject(itemname))
-                      .then(obj => drawEntry(entry, obj, opt));
-             }
+             if (jsonname)
+                return httpRequest(jsonname, 'object')
+                         .then(obj => drawEntry(entry, obj, opt));
+             else
+                return openFile(filename)
+                         .then(file => file.readObject(itemname))
+                         .then(obj => drawEntry(entry, obj, opt));
           }
       };
 
@@ -523,7 +488,9 @@
 
              window.location.hash = shortname;
              if (elem.title) setPageTitle(elem.title);
-             processClick(durl, filename, itemname, opt, jsonname, entry);
+             processClick(durl, filename, itemname, opt, jsonname, entry).then(() => {
+                document.getElementById('panel').classList.toggle('open');
+             })
          });
       };
 
@@ -694,7 +661,7 @@
 
          if (select_key && (key != select_key)) continue;
 
-         let header = document.createElement( 'h2' );
+         let header = document.createElement('h2');
          header.textContent = key;
          content.appendChild( header );
 
@@ -703,7 +670,7 @@
 
          let url = '', filename = '', itemname = '', jsonname = '', style = '';
 
-         for (let n = 0; n<opts.length; ++n) {
+         for (let n = 0; n < opts.length; ++n) {
             let entry = opts[n],
                 shortname = key.toLowerCase().replace(' ', '_');
 
@@ -733,7 +700,7 @@
             }
 
             let opt = entry.opt || '';
-            let aaa = document.createElement( 'a' );
+            let aaa = document.createElement('a');
 
             if ('name' in entry)
                aaa.textContent = entry.name;
@@ -776,9 +743,8 @@
 
             if (extra_opts) aaa.href += extra_opts;
 
-            if ('title' in entry) {
+            if (entry.title)
                aaa.title = entry.title;
-            }
 
             content.appendChild( aaa );
             setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry);
@@ -792,22 +758,23 @@
             if (window.location.hash == '#' + shortname) {
                aaa.focus();
                if (entry.title) setPageTitle(entry.title);
-               processClick(url, filename, itemname, opt, jsonname, entry);
-               panel.classList.toggle('open');
+               processClick(url, filename, itemname, opt, jsonname, entry).then(() => {
+                  document.getElementById('panel').classList.toggle('open');
+               })
             }
          }
       }
 
       if (window.location.search.indexOf('?more') == 0) {
-          let div = document.createElement( 'h2' );
+          let div = document.createElement('h2');
           div.textContent = 'Testing';
           content.appendChild( div );
 
-          let aaa = document.createElement( 'a' );
+          let aaa = document.createElement('a');
           aaa.textContent = 'run';
           aaa.title = 'Run all examples after each other';
           content.appendChild( aaa );
-          aaa.addEventListener( 'click', function (event) {
+          aaa.addEventListener('click', event => {
              event.preventDefault();
              window.location.hash = 'run';
              runBigTest(10,true);
@@ -819,7 +786,7 @@
           aaa.textContent = 'slow';
           aaa.title = 'Run all examples slowly after each other';
           content.appendChild( aaa );
-          aaa.addEventListener( 'click', function (event) {
+          aaa.addEventListener('click', event => {
              event.preventDefault();
              window.location.hash = 'slow';
              runBigTest(5000, true);
@@ -831,7 +798,7 @@
           aaa.textContent = 'fast';
           aaa.title = 'Run all examples very fast';
           content.appendChild( aaa );
-          aaa.addEventListener( 'click', function (event) {
+          aaa.addEventListener('click', event => {
              event.preventDefault();
              window.location.hash = 'fast';
              runBigTest(1, true);
