@@ -183,9 +183,8 @@ function addDragHandler(_painter, arg) {
 
          if (complete_drag(handle.x, handle.y, arg.width, arg.height) === false) {
             let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-            if (arg.ctxmenu && (spent > 600) && painter.showContextMenu) {
-               let rrr = resize_se.node().getBoundingClientRect();
-               painter.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
+            if (arg.ctxmenu && (spent > 600) && isFunc(painter.showContextMenu)) {
+               painter.showContextMenu('main', { x: 0, y: 0 });
             } else if (arg.canselect && (spent <= 600)) {
                painter.getPadPainter()?.selectObjectPainter(painter);
             }
@@ -1225,21 +1224,6 @@ const FrameInteractive = {
    /** @summary End touch zooming handler */
    endTouchZoom(evnt) {
 
-      if (this.zoom_kind === 0) {
-         // special case - single touch can ends up with context menu
-
-         evnt.preventDefault();
-
-         let diff = new Date().getTime() - (this.last_touch_time ?? 0);
-
-         if ((diff > 500) && (diff < 2000) && !this.isTooltipShown()) {
-            this.showContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
-            delete this.last_touch_time;
-         } else {
-            this.clearInteractiveElements();
-         }
-      }
-
       if (this.zoom_kind < 100) return;
 
       drag_kind = ''; // reset global flag
@@ -1360,54 +1344,55 @@ const FrameInteractive = {
       // ignore context menu when touches zooming is ongoing or
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
-      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
+      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null, // object used to show context menu
+          pnt, svg_node = this.getFrameSvg().node();
 
-      if (isFunc(evnt.stopPropagation)) {
+      if (isFunc(evnt?.stopPropagation)) {
          evnt.preventDefault();
          evnt.stopPropagation(); // disable main context menu
+         let ms = d3_pointer(evnt, svg_node),
+             tch = d3_pointers(evnt, svg_node);
+         if (tch.length === 1)
+             pnt = { x: tch[0][0], y: tch[0][1], touch: true };
+         else if (ms.length === 2)
+             pnt = { x: ms[0], y: ms[1], touch: false };
+       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined)) {
+          pnt = evnt;
+          let rect = svg_node.getBoundingClientRect();
+          evnt  = { clientX: rect.left + pnt.x, clientY: rect.top + pnt.y };
+       }
 
-         if ((kind == 'painter') && obj) {
-            menu_painter = obj;
-            kind = '';
-         } else if (!kind) {
-            let ms = d3_pointer(evnt, this.getFrameSvg().node()),
-                tch = d3_pointers(evnt, this.getFrameSvg().node()),
-                pp = this.getPadPainter(),
-                pnt = null, sel = null;
+       if ((kind == 'painter') && obj) {
+          menu_painter = obj;
+          kind = '';
+       } else if (kind == 'main') {
+          menu_painter = this.getMainPainter(true);
+          kind = '';
+       } else if (!kind) {
+         let pp = this.getPadPainter(), sel = null;
 
-            fp = this;
-
-            if (tch.length === 1)
-               pnt = { x: tch[0][0], y: tch[0][1], touch: true };
-            else if (ms.length === 2)
-               pnt = { x: ms[0], y: ms[1], touch: false };
-
-            if (pnt && pp) {
-               pnt.painters = true; // assign painter for every tooltip
-               let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
-               for (let n = 0; n < hints.length; ++n)
-                  if (hints[n] && hints[n].menu) {
-                     let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
-            }
-
-            if (sel) menu_painter = sel;
-                else kind = 'frame';
-
-            if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
-
-            fp.setLastEventPos(pnt);
-         } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
-            exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
-
-            if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
-               exec_painter = null;
+         fp = this;
+         if (pnt && pp) {
+            pnt.painters = true; // assign painter for every tooltip
+            let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
+            for (let n = 0; n < hints.length; ++n)
+               if (hints[n]?.menu) {
+                  let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                  if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+               }
          }
-      } else if ((kind == 'painter') && obj) {
-         // this is used in 3D context menu to show special painter
-         menu_painter = obj;
-         kind = '';
+
+         if (sel) menu_painter = sel;
+             else kind = 'frame';
+
+         if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
+
+         fp.setLastEventPos(pnt);
+      } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
+         exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
+
+         if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
+            exec_painter = null;
       }
 
       if (!exec_painter) exec_painter = menu_painter;
@@ -1499,10 +1484,7 @@ const FrameInteractive = {
       if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2) {
          this.performScalesShift();
       } else if (new Date().getTime() - tm > 700) {
-
-         let rect = this.getFrameSvg().node().getBoundingClientRect();
-         this.showContextMenu(kind, { clientX: rect.left + pos[0],
-                                      clientY: rect.top + pos[1] });
+         this.showContextMenu(kind, { x: pos[0], y: pos[1] });
       }
    },
 
