@@ -712,8 +712,8 @@ const FrameInteractive = {
 
       if (settings.ContextMenu) {
          if (browser.touches) {
-            svg_x.on('touchstart', evnt => this.startTouchMenu('x', evnt));
-            svg_y.on('touchstart', evnt => this.startTouchMenu('y', evnt));
+            svg_x.on('touchstart', evnt => this.startTouchHandling('x', evnt));
+            svg_y.on('touchstart', evnt => this.startTouchHandling('y', evnt));
          }
          svg.on('contextmenu', evnt => this.showContextMenu('', evnt));
          svg_x.on('contextmenu', evnt => this.showContextMenu('x', evnt));
@@ -817,13 +817,13 @@ const FrameInteractive = {
    },
 
    /** @summary Check mouse moving  */
-   shiftMoveHanlder(evnt) {
-      if ((evnt.buttons === this._shifting_buttons) && this._shifting_pos0) {
+   shiftMoveHanlder(evnt, pos0) {
+      if (evnt.buttons === this._shifting_buttons) {
          let frame = this.getFrameSvg(),
              pos = d3_pointer(evnt, frame.node()),
              main_svg = this.draw_g.select('.main_layer');
-         let dx = this._shifting_pos0[0] - pos[0],
-             dy = this._shifting_pos0[1] - pos[1],
+         let dx = pos0[0] - pos[0],
+             dy = pos0[1] - pos[1],
              w = this.getFrameWidth(), h = this.getFrameHeight();
 
          if (this.scales_ndim === 1)
@@ -836,39 +836,42 @@ const FrameInteractive = {
 
          evnt.preventDefault();
          evnt.stopPropagation();
-
       }
    },
 
+   /** @summary mouse up handler for shifting */
    shiftUpHanlder(evnt) {
       evnt.preventDefault();
 
       d3_select(window).on('mousemove.shiftHandler', null)
                        .on('mouseup.shiftHandler', null);
 
-      if ((this._shifting_dx !== undefined) && (this._shifting_dy !== undefined) && this._shifting_pos0) {
-         let w = this.getFrameWidth(), h = this.getFrameHeight(),
-             main_svg = this.draw_g.select('.main_layer'),
-             gr = this.getGrFuncs(),
-             xmin = gr.revertAxis('x', this._shifting_dx),
-             xmax = gr.revertAxis('x', this._shifting_dx + w),
-             ymin = gr.revertAxis('y', this._shifting_dy + h),
-             ymax = gr.revertAxis('y', this._shifting_dy);
+      if ((this._shifting_dx !== undefined) && (this._shifting_dy !== undefined))
+         this.performScalesShift();
+    },
+
+    /** @summary Shift scales on defined positions */
+   performScalesShift() {
+      let w = this.getFrameWidth(), h = this.getFrameHeight(),
+          main_svg = this.draw_g.select('.main_layer'),
+          gr = this.getGrFuncs(),
+          xmin = gr.revertAxis('x', this._shifting_dx),
+          xmax = gr.revertAxis('x', this._shifting_dx + w),
+          ymin = gr.revertAxis('y', this._shifting_dy + h),
+          ymax = gr.revertAxis('y', this._shifting_dy);
 
 
-         main_svg.attr('viewBox', `0 0 ${w} ${h}`);
+      main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 
-         delete this._shifting_dx;
-         delete this._shifting_dy;
+      delete this._shifting_dx;
+      delete this._shifting_dy;
 
-         setPainterTooltipEnabled(this, true);
+      setPainterTooltipEnabled(this, true);
 
-         if (this.scales_ndim === 1)
-            this.zoomSingle('x', xmin, xmax);
-         else
-            this.zoom(xmin, xmax, ymin, ymax);
-      }
-
+      if (this.scales_ndim === 1)
+         this.zoomSingle('x', xmin, xmax);
+      else
+         this.zoom(xmin, xmax, ymin, ymax);
    },
 
    /** @summary Start mouse rect zooming */
@@ -881,10 +884,9 @@ const FrameInteractive = {
 
       if ((evnt.buttons === 3) || (evnt.button === 1)) {
          this.clearInteractiveElements();
-         this._shifting_pos0 = pos;
          this._shifting_buttons = evnt.buttons;
 
-         d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt))
+         d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt, pos))
                           .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
 
          setPainterTooltipEnabled(this, false);
@@ -1131,7 +1133,7 @@ const FrameInteractive = {
             delete this.last_touch_time;
 
          } else if (settings.ContextMenu) {
-            this.startTouchMenu('', evnt);
+            this.startTouchHandling('', evnt);
          }
       }
 
@@ -1422,9 +1424,9 @@ const FrameInteractive = {
       });
    },
 
-  /** @summary Activate context menu handler via touch events
+  /** @summary Activate touch handling on frame
     * @private */
-   startTouchMenu(kind, evnt) {
+   startTouchHandling(kind, evnt) {
       let arr = d3_pointers(evnt, this.getFrameSvg().node());
       if (arr.length != 1) return;
 
@@ -1434,22 +1436,61 @@ const FrameInteractive = {
 
       let tm = new Date().getTime();
 
-      d3_select(window).on('touchcancel.menuHandling', evnt => this.endTouchMenu(evnt, kind, arr[0], tm))
-                       .on('touchend.menuHandling', evnt => this.endTouchMenu(evnt, kind, arr[0], tm));
+      this._shifting_dx = 0;
+      this._shifting_dy = 0;
+
+      setPainterTooltipEnabled(this, false);
+
+      d3_select(window).on('touchmove.singleTouch', evnt => this.moveTouchHandling(evnt, kind, arr[0]))
+                       .on('touchcancel.singleTouch', evnt => this.endTouchHandling(evnt, kind, arr[0], tm))
+                       .on('touchend.singleTouch', evnt => this.endTouchHandling(evnt, kind, arr[0], tm));
+   },
+
+   /** @summary Moving of touch pointer
+    * @private */
+   moveTouchHandling(evnt, kind, pos0) {
+      if (kind) return;
+
+      let frame = this.getFrameSvg(),
+          main_svg = this.draw_g.select('.main_layer'), pos;
+
+      try {
+        pos = d3_pointers(evnt, frame.node())[0];
+      } catch(err) {
+        pos = [0,0];
+        if (evnt?.changedTouches)
+           pos = [ evnt.changedTouches[0].clientX, evnt.changedTouches[0].clientY ];
+      }
+
+      let dx = pos0[0] - pos[0],
+          dy = pos0[1] - pos[1],
+          w = this.getFrameWidth(), h = this.getFrameHeight();
+
+      if (this.scales_ndim === 1)
+         dy = 0;
+
+      this._shifting_dx = dx;
+      this._shifting_dy = dy;
+
+      main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
    },
 
    /** @summary Process end-touch event, which can cause content menu to appear
     * @private */
-   endTouchMenu(evnt, kind, pos, tm) {
+   endTouchHandling(evnt, kind, pos, tm) {
       evnt.preventDefault();
       evnt.stopPropagation();
 
-      let diff = new Date().getTime() - tm;
+      setPainterTooltipEnabled(this, true);
 
-      d3_select(window).on('touchcancel.menuHandling', null)
-                       .on('touchend.menuHandling', null);
+      d3_select(window).on('touchmove.singleTouch', null)
+                       .on('touchcancel.singleTouch', null)
+                       .on('touchend.singleTouch', null);
 
-      if (diff > 700) {
+      if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2) {
+         this.performScalesShift();
+      } else if (new Date().getTime() - tm > 700) {
+
          let rect = this.getFrameSvg().node().getBoundingClientRect();
          this.showContextMenu(kind, { clientX: rect.left + pos[0],
                                       clientY: rect.top + pos[1] });
