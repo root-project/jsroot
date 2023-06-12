@@ -1077,7 +1077,7 @@ class StandaloneMenu extends JSRootMenu {
             `.jsroot_ctxt_container {`+
             `   position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;`+
             `   min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;`+
-            `   font-size: 13px; color: rgb(0, 0, 0, 0.8);`+
+            `   font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;`+
             `}`+
             `.jsroot_ctxt_column { float: left; }`+
             `.jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }`+
