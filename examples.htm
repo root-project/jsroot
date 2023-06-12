@@ -677,7 +677,7 @@
             jsonname = url = style = '';
 
             if ('url' in entry) {
-               url = entry.url.replace(/\$\$\$/g,filepath);
+               url = entry.url.replace(/\$\$\$/g, filepath);
             } else if ('json' in entry) {
                jsonname = entry.json;
                if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0)) jsonname = filepath + jsonname;
@@ -699,8 +699,8 @@
                }
             }
 
-            let opt = entry.opt || '';
-            let aaa = document.createElement('a');
+            let opt = entry.opt || '',
+                aaa = document.createElement('a');
 
             if ('name' in entry)
                aaa.textContent = entry.name;
@@ -710,7 +710,8 @@
                aaa.textContent = '<dflt>';
 
             if (aaa.textContent != '<dflt>')
-               shortname += '_' + aaa.textContent.toLowerCase().replace(' ', '_');
+               shortname += '_' + aaa.textContent.toLowerCase().replaceAll(' ', '_').replaceAll('|', 'v').replaceAll('>', 'gt')
+                                      .replaceAll('[', 'lbr').replaceAll(']', 'rbr');
 
             let prefix = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
 
