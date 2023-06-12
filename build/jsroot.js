@@ -63987,7 +63987,7 @@ class JSRootMenu {
       if (isObject(show_event) && (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
          this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY, skip_close: show_event.skip_close };
 
-      this.remove_handler = evnt => this.remove(evnt);
+      this.remove_handler = () => this.remove();
       this.element = null;
       this.cnt = 0;
    }
@@ -64008,7 +64008,7 @@ class JSRootMenu {
    size() { return this.cnt; }
 
    /** @summary Close and remove menu */
-   remove(evnt) {
+   remove() {
       if (!this.element)
          return;
 
@@ -65043,7 +65043,7 @@ class StandaloneMenu extends JSRootMenu {
             `.jsroot_ctxt_container {`+
             `   position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;`+
             `   min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;`+
-            `   font-size: 13px; color: rgb(0, 0, 0, 0.8);`+
+            `   font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;`+
             `}`+
             `.jsroot_ctxt_column { float: left; }`+
             `.jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }`+
@@ -65273,22 +65273,20 @@ class StandaloneMenu extends JSRootMenu {
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
-      let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block');
-
-      let element = select('body')
+      let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
+          element = select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class','jsroot_dialog').style('width',(args.width || 450) + 'px')
+                      .attr('class', 'jsroot_dialog').style('width', (args.width || 450) + 'px')
                       .attr('tabindex', '0')
                       .html(
-         `<div class="jsroot_dialog_body">
-            <div class="jsroot_dialog_header">${title}</div>
-            <div class="jsroot_dialog_content">${main_content}</div>
-            <div class="jsroot_dialog_footer">
-               <button class="jsroot_dialog_button">Ok</button>
-               ${args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : ''}
-           </div>
-          </div>`);
+         `<div class="jsroot_dialog_body">`+
+           `<div class="jsroot_dialog_header">${title}</div>`+
+           `<div class="jsroot_dialog_content">${main_content}</div>`+
+           `<div class="jsroot_dialog_footer">`+
+              `<button class="jsroot_dialog_button">Ok</button>`+
+              (args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : '') +
+        `</div></div>`);
 
       injectStyle(
          `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }`+
@@ -69984,18 +69982,16 @@ class BrowserLayout {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.slice(0,sl.length-2));
            this._float_top = parseInt(st.slice(0,st.length-2));
-           this._max_left = main.node().clientWidth - area.node().offsetWidth - 1;
-           this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
+           this._max_left = Math.max(0, main.node().clientWidth - area.node().offsetWidth - 1);
+           this._max_top = Math.max(0, main.node().clientHeight - area.node().offsetHeight - 1);
 
         }).filter(evnt => {
             return main.select('.jsroot_browser_title').node() === evnt.target;
         }).on('drag', evnt => {
            this._float_left += evnt.dx;
            this._float_top += evnt.dy;
-
            area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + 'px')
                .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + 'px');
-
            this.setButtonsPosition();
         });
 
@@ -103861,12 +103857,14 @@ async function buildGUI(gui_element, gui_kind = '') {
          return hpainter.initializeBrowser();
       if (!drawing)
          return;
-      let obj = null, func = internals.getCachedObject || findFunction('GetCachedObject');
+      let obj, func = internals.getCachedObject || findFunction('GetCachedObject');
       if (isFunc(func))
          obj = parse(func());
-      if (obj) hpainter._cached_draw_object = obj;
+      if (isObject(obj))
+         hpainter._cached_draw_object = obj;
       let opt = d.get('opt', '');
-      if (d.has('websocket')) opt+=';websocket';
+      if (d.has('websocket'))
+         opt += ';websocket';
       return hpainter.display('', opt);
    }).then(() => hpainter);
 }
@@ -111608,10 +111606,9 @@ class TWebPaintingPainter extends ObjectPainter {
                   npoints = parseInt(arr[k].slice(1));
 
                   for (n = 0; n < npoints; ++n)
-                     d += ((n > 0) ? 'L' : 'M') +
-                           func.x(obj.fBuf[indx++]) + ',' + func.y(obj.fBuf[indx++]);
+                     d += `${(n>0)?'L':'M'}${func.x(obj.fBuf[indx++])},${func.y(obj.fBuf[indx++])}`;
 
-                  if (oper == 'f') d+='Z';
+                  if (oper == 'f') d += 'Z';
 
                   continue;
                }

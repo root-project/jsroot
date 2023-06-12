@@ -710,8 +710,9 @@
                aaa.textContent = '<dflt>';
 
             if (aaa.textContent != '<dflt>')
-               shortname += '_' + aaa.textContent.toLowerCase().replaceAll(' ', '_').replaceAll('|', 'v').replaceAll('>', 'gt')
-                                      .replaceAll('[', 'lbr').replaceAll(']', 'rbr');
+               shortname += '_' + aaa.textContent.toLowerCase().replaceAll(' ', '_').replaceAll('>', 'gt')
+                                      .replaceAll('[]', 'braces').replaceAll('||', 'parallel')
+                                      .replaceAll('[', 'lbr').replaceAll(']', 'rbr').replaceAll('|', 'v');
 
             let prefix = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
 
