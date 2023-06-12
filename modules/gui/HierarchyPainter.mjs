@@ -3475,12 +3475,12 @@ class HierarchyPainter extends BasePainter {
          return false;
 
       let main = d3_select(`#${this.gui_div} .jsroot_browser`);
-
       // one requires top-level container
       if (main.empty())
          return false;
 
-      if ((browser_kind == 'float') && this.float_browser_disabled) browser_kind = 'fix';
+      if ((browser_kind == 'float') && this.float_browser_disabled)
+         browser_kind = 'fix';
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -3530,12 +3530,14 @@ class HierarchyPainter extends BasePainter {
       this.brlayout.setBrowserContent(guiCode);
 
       let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
-      if (title_elem) title_elem.on('contextmenu', evnt => {
+      title_elem?.on('contextmenu', evnt => {
          evnt.preventDefault();
          createMenu(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
             menu.show();
          });
+      }).on('dblclick', () => {
+         this.createBrowser(this?.brlayout?.browser_kind == 'float' ? 'fix' : 'float', true);
       });
 
       if (!this.is_online && !this.no_select) {
@@ -3544,7 +3546,7 @@ class HierarchyPainter extends BasePainter {
             let filename = main.select('.gui_urlToLoad').property('value').trim();
             if (!filename) return;
 
-            if (filename.toLowerCase().lastIndexOf('.json') == filename.length-5)
+            if (filename.toLowerCase().lastIndexOf('.json') == filename.length - 5)
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
