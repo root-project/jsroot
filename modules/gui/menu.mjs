@@ -1178,9 +1178,23 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
-            extraText.className = 'jsroot_ctxt_extraText jsroot_ctxt_text';
+            extraText.className = 'jsroot_ctxt_extraText';
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
+
+            if (d.sub)
+               extraText.addEventListener('click', evnt => {
+                  let submenu = item.querySelector('.jsroot_ctxt_container');
+                  if (submenu) {
+                     item.classList.remove('jsroot_ctxt_focus');
+                     submenu.remove();
+                  } else {
+                     item.classList.add('jsroot_ctxt_focus');
+                     this._buildContextmenu(d.sub, 0, 0, item);
+                  }
+                  evnt.preventDefault();
+                  evnt.stopPropagation();
+               });
          }
 
          hovArea.addEventListener('mouseenter', () => {
@@ -1198,7 +1212,6 @@ class StandaloneMenu extends JSRootMenu {
                item.classList.add('jsroot_ctxt_focus');
                this._buildContextmenu(d.sub, 0, 0, item);
             });
-
 
          if (d.func)
             item.addEventListener('click', evnt => {
