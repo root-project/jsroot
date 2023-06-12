@@ -185,7 +185,7 @@ let settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: true,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
-   MoveResize: true,
+   MoveResize: !browser$1.touches,
    /** @summary Configures keybord key press handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
@@ -65144,11 +65144,33 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
-            extraText.className = 'jsroot_ctxt_extraText jsroot_ctxt_text';
+            extraText.className = 'jsroot_ctxt_extraText';
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
+
+            if (d.sub && browser$1.touches)
+               extraText.addEventListener('click', evnt => {
+                  evnt.preventDefault();
+                  evnt.stopPropagation();
+                  let has_focus = item.classList.contains('jsroot_ctxt_focus'),
+                      was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
+
+                  if (has_focus) {
+                     item.querySelector('.jsroot_ctxt_container')?.remove();
+                  } else {
+                     // check other
+                     if (was_active && (was_active !== item)) {
+                        was_active.classList.remove('jsroot_ctxt_focus');
+                        was_active.querySelector('.jsroot_ctxt_container')?.remove();
+                     }
+
+                     this._buildContextmenu(d.sub, 0, 0, item);
+                  }
+                  item.classList.toggle('jsroot_ctxt_focus');
+               });
          }
 
+         if (!browser$1.touches)
          hovArea.addEventListener('mouseenter', () => {
             let focused = outer.childNodes;
             focused.forEach(d => {
@@ -65159,12 +65181,11 @@ class StandaloneMenu extends JSRootMenu {
             });
          });
 
-         if (d.sub)
+         if (d.sub && !browser$1.touches)
             hovArea.addEventListener('mouseenter', () => {
                item.classList.add('jsroot_ctxt_focus');
                this._buildContextmenu(d.sub, 0, 0, item);
             });
-
 
          if (d.func)
             item.addEventListener('click', evnt => {

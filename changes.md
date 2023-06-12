@@ -36,10 +36,11 @@
 33. Fix - correctly align sub/super scripts in complex TLatex
 
 
-## Changes in 7.3.x
+## Changes in 7.3.3
 1. Fix - failure in normal_cdf calculation
 2. Fix - check in TTree::Draw for null buffer
 3. Fix - do not rise exception in treeProcess
+4. Fix - RH1 zero line drawing only when required
 
 
 ## Changes in 7.3.2
