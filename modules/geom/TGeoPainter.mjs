@@ -4038,7 +4038,7 @@ class TGeoPainter extends ObjectPainter {
          } else {
             let dom = this.selectDom('origin');
 
-            this.batch_mode = isBatchMode() || dom.property('_batch_mode');
+            this.batch_mode = isBatchMode() || (!dom.empty() && dom.property('_batch_mode'));
             this.batch_format = dom.property('_batch_format');
 
             let render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
