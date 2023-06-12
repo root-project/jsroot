@@ -180,7 +180,7 @@ let settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: true,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
-   MoveResize: true,
+   MoveResize: !browser.touches,
    /** @summary Configures keybord key press handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
