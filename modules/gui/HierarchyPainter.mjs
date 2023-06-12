@@ -3251,12 +3251,21 @@ class HierarchyPainter extends BasePainter {
       else
          monitor = parseInt(monitor);
 
-      if (GetOption('float') !== null) { browser_kind = 'float'; browser_configured = true; } else
-      if (GetOption('fix') !== null) { browser_kind = 'fix'; browser_configured = true; }
+      if (GetOption('float') !== null) {
+         browser_kind = 'float';
+         browser_configured = true;
+      } else if (GetOption('fix') !== null) {
+         browser_kind = 'fix';
+         browser_configured = true;
+      }
+
+      if (!browser_configured && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
+         browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
 
-      if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
+      if (GetOption('files_monitoring') !== null)
+         this.files_monitoring = true;
 
       if (title) document.title = title;
 
