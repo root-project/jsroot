@@ -21,7 +21,7 @@ class JSRootMenu {
       if (isObject(show_event) && (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
          this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY, skip_close: show_event.skip_close };
 
-      this.remove_handler = evnt => this.remove(evnt);
+      this.remove_handler = () => this.remove();
       this.element = null;
       this.cnt = 0;
    }
@@ -42,7 +42,7 @@ class JSRootMenu {
    size() { return this.cnt; }
 
    /** @summary Close and remove menu */
-   remove(evnt) {
+   remove() {
       if (!this.element)
          return;
 
@@ -1307,22 +1307,20 @@ class StandaloneMenu extends JSRootMenu {
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
-      let block = d3_select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block');
-
-      let element = d3_select('body')
+      let block = d3_select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
+          element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class','jsroot_dialog').style('width',(args.width || 450) + 'px')
+                      .attr('class', 'jsroot_dialog').style('width', (args.width || 450) + 'px')
                       .attr('tabindex', '0')
                       .html(
-         `<div class="jsroot_dialog_body">
-            <div class="jsroot_dialog_header">${title}</div>
-            <div class="jsroot_dialog_content">${main_content}</div>
-            <div class="jsroot_dialog_footer">
-               <button class="jsroot_dialog_button">Ok</button>
-               ${args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : ''}
-           </div>
-          </div>`);
+         `<div class="jsroot_dialog_body">`+
+           `<div class="jsroot_dialog_header">${title}</div>`+
+           `<div class="jsroot_dialog_content">${main_content}</div>`+
+           `<div class="jsroot_dialog_footer">`+
+              `<button class="jsroot_dialog_button">Ok</button>`+
+              (args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : '') +
+        `</div></div>`);
 
       injectStyle(
          `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }`+
