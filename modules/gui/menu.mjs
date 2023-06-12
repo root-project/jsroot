@@ -19,9 +19,9 @@ class JSRootMenu {
       this.painter = painter;
       this.menuname = menuname;
       if (isObject(show_event) && (show_event.clientX !== undefined) && (show_event.clientY !== undefined))
-         this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
+         this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY, skip_close: show_event.skip_close };
 
-      this.remove_handler = () => this.remove();
+      this.remove_handler = evnt => this.remove(evnt);
       this.element = null;
       this.cnt = 0;
    }
@@ -42,16 +42,23 @@ class JSRootMenu {
    size() { return this.cnt; }
 
    /** @summary Close and remove menu */
-   remove() {
-      if (this.element !== null) {
-         this.element.remove();
-         if (isFunc(this.resolveFunc)) {
-            this.resolveFunc();
-            delete this.resolveFunc;
-         }
-         document.body.removeEventListener('click', this.remove_handler);
+   remove(evnt) {
+      if (!this.element)
+         return;
+
+      if (this.show_evnt?.skip_close) {
+         this.show_evnt.skip_close = 0;
+         return;
       }
+
+      this.element.remove();
       this.element = null;
+      if (isFunc(this.resolveFunc)) {
+         let func = this.resolveFunc;
+         delete this.resolveFunc;
+         func();
+      }
+      document.body.removeEventListener('click', this.remove_handler);
    }
 
    show(/*event*/) {
@@ -1355,16 +1362,18 @@ function createMenu(evnt, handler, menuname) {
 /** @summary Close previousely created and shown JSROOT menu
   * @param {string} [menuname] - optional menu name */
 function closeMenu(menuname) {
-   let x = document.getElementById(menuname || 'root_ctx_menu');
-   if (x) { x.parentNode.removeChild(x); return true; }
-   return false;
+   let element = document.getElementById(menuname || 'root_ctx_menu');
+   element?.remove();
+   return !!element;
 }
 
 /** @summary Fill and show context menu for painter object
   * @private */
 function showPainterMenu(evnt, painter, kind) {
-   evnt.stopPropagation(); // disable main context menu
-   evnt.preventDefault();  // disable browser context menu
+   if (isFunc(evnt.stopPropagation)) {
+      evnt.stopPropagation(); // disable main context menu
+      evnt.preventDefault();  // disable browser context menu
+   }
 
    createMenu(evnt, painter).then(menu => {
       painter.fillContextMenu(menu);
