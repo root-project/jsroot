@@ -70220,7 +70220,8 @@ class TPadPainter extends ObjectPainter {
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
-      if (this.selectDom()?.property('_batch_mode'))
+      let d = this.selectDom();
+      if (!d.empty() && d.property('_batch_mode'))
          this.batch_mode = true;
    }
 
@@ -90657,7 +90658,7 @@ class TGeoPainter extends ObjectPainter {
          } else {
             let dom = this.selectDom('origin');
 
-            this.batch_mode = isBatchMode() || dom.property('_batch_mode');
+            this.batch_mode = isBatchMode() || (!dom.empty() && dom.property('_batch_mode'));
             this.batch_format = dom.property('_batch_format');
 
             let render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
@@ -103133,12 +103134,21 @@ class HierarchyPainter extends BasePainter {
       else
          monitor = parseInt(monitor);
 
-      if (GetOption('float') !== null) { browser_kind = 'float'; browser_configured = true; } else
-      if (GetOption('fix') !== null) { browser_kind = 'fix'; browser_configured = true; }
+      if (GetOption('float') !== null) {
+         browser_kind = 'float';
+         browser_configured = true;
+      } else if (GetOption('fix') !== null) {
+         browser_kind = 'fix';
+         browser_configured = true;
+      }
+
+      if (!browser_configured && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
+         browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
 
-      if (GetOption('files_monitoring') !== null) this.files_monitoring = true;
+      if (GetOption('files_monitoring') !== null)
+         this.files_monitoring = true;
 
       if (title) document.title = title;
 
@@ -103348,12 +103358,12 @@ class HierarchyPainter extends BasePainter {
          return false;
 
       let main = select(`#${this.gui_div} .jsroot_browser`);
-
       // one requires top-level container
       if (main.empty())
          return false;
 
-      if ((browser_kind == 'float') && this.float_browser_disabled) browser_kind = 'fix';
+      if ((browser_kind == 'float') && this.float_browser_disabled)
+         browser_kind = 'fix';
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -103403,12 +103413,14 @@ class HierarchyPainter extends BasePainter {
       this.brlayout.setBrowserContent(guiCode);
 
       let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
-      if (title_elem) title_elem.on('contextmenu', evnt => {
+      title_elem?.on('contextmenu', evnt => {
          evnt.preventDefault();
          createMenu$1(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
             menu.show();
          });
+      }).on('dblclick', () => {
+         this.createBrowser(this?.brlayout?.browser_kind == 'float' ? 'fix' : 'float', true);
       });
 
       if (!this.is_online && !this.no_select) {
@@ -103417,7 +103429,7 @@ class HierarchyPainter extends BasePainter {
             let filename = main.select('.gui_urlToLoad').property('value').trim();
             if (!filename) return;
 
-            if (filename.toLowerCase().lastIndexOf('.json') == filename.length-5)
+            if (filename.toLowerCase().lastIndexOf('.json') == filename.length - 5)
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
@@ -115973,7 +115985,8 @@ class RPadPainter extends RObjectPainter {
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
 
-      if (this.selectDom()?.property('_batch_mode'))
+      let d = this.selectDom();
+      if (!d.empty() && d.property('_batch_mode'))
          this.batch_mode = true;
    }
 
