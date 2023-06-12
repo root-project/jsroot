@@ -145,8 +145,7 @@ function addDragHandler(_painter, arg) {
             pad_h: pad_rect.height - arg.height,
             drag_tm: new Date(),
             path: `v${arg.height}h${arg.width}v${-arg.height}z`,
-            clientX: evnt.sourceEvent.clientX,
-            clientY: evnt.sourceEvent.clientY
+            evnt_x: evnt.x, evnt_y: evnt.y
          };
 
          drag_painter = painter;
@@ -188,7 +187,7 @@ function addDragHandler(_painter, arg) {
             let spent = (new Date()).getTime() - handle.drag_tm.getTime();
 
             if (arg.ctxmenu && (spent > 600)) {
-               showPainterMenu({ clientX: handle.clientX, clientY: handle.clientY, skip_close: 1 }, painter);
+               showPainterMenu({ clientX: handle.evnt_x, clientY: handle.evnt_y, skip_close: 1 }, painter);
             } else if (arg.canselect && (spent <= 600)) {
                painter.getPadPainter()?.selectObjectPainter(painter);
             }
