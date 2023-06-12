@@ -360,7 +360,7 @@
 
       let jsroot_path = './', filepath = '../files/';
 
-      document.getElementById('version').innerHTML = version_id;
+      document.getElementById('version').innerHTML = version_id != 'dev' ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
 
       document.getElementById('expandButton').addEventListener('click', event => {

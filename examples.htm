@@ -368,7 +368,7 @@
 
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
 
-      document.getElementById('version').innerHTML = version_id;
+      document.getElementById('version').innerHTML = = version_id != 'dev' ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
 
       document.getElementById('expandButton').addEventListener('click', event => {
