@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
+import { settings, browser, gStyle, isBatchMode, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -1182,21 +1182,29 @@ class StandaloneMenu extends JSRootMenu {
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
-            if (d.sub)
+            if (d.sub && browser.touches)
                extraText.addEventListener('click', evnt => {
-                  let submenu = item.querySelector('.jsroot_ctxt_container');
-                  if (submenu) {
-                     item.classList.remove('jsroot_ctxt_focus');
-                     submenu.remove();
-                  } else {
-                     item.classList.add('jsroot_ctxt_focus');
-                     this._buildContextmenu(d.sub, 0, 0, item);
-                  }
                   evnt.preventDefault();
                   evnt.stopPropagation();
+                  let has_focus = item.classList.contains('jsroot_ctxt_focus'),
+                      was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
+
+                  if (has_focus) {
+                     item.querySelector('.jsroot_ctxt_container')?.remove();
+                  } else {
+                     // check other
+                     if (was_active && (was_active !== item)) {
+                        was_active.classList.remove('jsroot_ctxt_focus');
+                        was_active.querySelector('.jsroot_ctxt_container')?.remove();
+                     }
+
+                     this._buildContextmenu(d.sub, 0, 0, item);
+                  }
+                  item.classList.toggle('jsroot_ctxt_focus');
                });
          }
 
+         if (!browser.touches)
          hovArea.addEventListener('mouseenter', () => {
             let focused = outer.childNodes;
             focused.forEach(d => {
@@ -1207,7 +1215,7 @@ class StandaloneMenu extends JSRootMenu {
             })
          });
 
-         if (d.sub)
+         if (d.sub && !browser.touches)
             hovArea.addEventListener('mouseenter', () => {
                item.classList.add('jsroot_ctxt_focus');
                this._buildContextmenu(d.sub, 0, 0, item);
