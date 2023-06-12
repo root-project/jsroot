@@ -5,7 +5,7 @@ import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mj
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
-import { createMenu, closeMenu } from '../gui/menu.mjs';
+import { createMenu, closeMenu, showPainterMenu } from '../gui/menu.mjs';
 import { detectRightButton } from '../gui/utils.mjs';
 
 
@@ -39,7 +39,7 @@ function addDragHandler(_painter, arg) {
    if (!settings.MoveResize || isBatchMode()) return;
 
    let painter = _painter, pp = painter.getPadPainter();
-   if (pp?._fast_drawing) return;
+   if (pp?._fast_drawing || pp?.isBatchMode()) return;
 
    if (!isFunc(arg.getDrawG))
       arg.getDrawG = () => painter?.draw_g;
@@ -144,7 +144,9 @@ function addDragHandler(_painter, arg) {
             pad_w: pad_rect.width - arg.width,
             pad_h: pad_rect.height - arg.height,
             drag_tm: new Date(),
-            path: `v${arg.height}h${arg.width}v${-arg.height}z`
+            path: `v${arg.height}h${arg.width}v${-arg.height}z`,
+            clientX: evnt.sourceEvent.clientX,
+            clientY: evnt.sourceEvent.clientY
          };
 
          drag_painter = painter;
@@ -177,14 +179,16 @@ function addDragHandler(_painter, arg) {
       }).on('end', function(evnt) {
          if (!is_dragging(painter, 'move')) return;
 
+         evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
 
          let handle = drag_rect.property('drag_handle');
 
          if (complete_drag(handle.x, handle.y, arg.width, arg.height) === false) {
             let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-            if (arg.ctxmenu && (spent > 600) && isFunc(painter.showContextMenu)) {
-               painter.showContextMenu('main', { x: 0, y: 0 });
+
+            if (arg.ctxmenu && (spent > 600)) {
+               showPainterMenu({ clientX: handle.clientX, clientY: handle.clientY, skip_close: 1 }, painter);
             } else if (arg.canselect && (spent <= 600)) {
                painter.getPadPainter()?.selectObjectPainter(painter);
             }
