@@ -1,4 +1,4 @@
-import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, clTImagePalette, isBatchMode } from '../core.mjs';
+import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, clTImagePalette } from '../core.mjs';
 import { toHex } from '../base/colors.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -293,11 +293,13 @@ class TASImagePainter extends ObjectPainter {
              .attr('height', rect.height)
              .attr('preserveAspectRatio', res.constRatio ? null : 'none');
 
-         if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
-            img.style('pointer-events', 'visibleFill');
+         if (!this.isBatchMode()) {
+            if (settings.MoveResize || settings.ContextMenu)
+               img.style('pointer-events', 'visibleFill');
 
-         if (!isBatchMode() && res.can_zoom)
-            img.style('cursor', 'pointer');
+            if (res.can_zoom)
+               img.style('cursor', 'pointer');
+         }
 
          assignContextMenu(this);
 
