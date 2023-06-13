@@ -167,33 +167,33 @@ let settings = {
    /** @summary Way to embed 3D drawing in SVG, see {@link constants.Embed3D} for possible values */
    Embed3D: constants.Embed3D.Default,
    /** @summary Enable or disable tooltips, default on */
-   Tooltip: true,
+   Tooltip: !nodejs,
    /** @summary Time in msec for appearance of tooltips, 0 - no animation */
    TooltipAnimation: 500,
    /** @summary Enables context menu usage */
-   ContextMenu: true,
+   ContextMenu: !nodejs,
    /** @summary Global zooming flag, enable/disable any kind of interactive zooming */
-   Zooming: true,
+   Zooming: !nodejs,
    /** @summary Zooming with the mouse events */
-   ZoomMouse: true,
+   ZoomMouse: !nodejs,
    /** @summary Zooming with mouse wheel */
-   ZoomWheel: true,
+   ZoomWheel: !nodejs,
    /** @summary Zooming on touch devices */
-   ZoomTouch: true,
+   ZoomTouch: !nodejs,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
-   MoveResize: !browser.touches,
+   MoveResize: !browser.touches && !nodejs,
    /** @summary Configures keybord key press handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
-   HandleKeys: true,
+   HandleKeys: !nodejs,
    /** @summary enables drag and drop functionality */
-   DragAndDrop: true,
+   DragAndDrop: !nodejs,
    /** @summary Interactive dragging of TGraph points */
    DragGraphs: true,
    /** @summary Show progress box */
-   ProgressBox: true,
+   ProgressBox: !nodejs,
    /** @summary Show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button */
-   ToolBar: 'popup',
+   ToolBar: nodejs ? false : 'popup',
    /** @summary Position of toolbar 'left' left-bottom corner on canvas, 'right' - right-bottom corner on canvas, opposite on sub-pads */
    ToolBarSide: 'left',
    /** @summary display tool bar vertical (default false) */
@@ -239,6 +239,7 @@ let settings = {
    /** @summary Tweak browser caching with stamp URL parameter
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
+     * Can be disabled by providing &usestamp=false in URL or via Settings/Files sub-menu
      * @default true */
    UseStamp: true,
    /** @summary Maximal number of bytes ranges in http 'Range' header
@@ -256,10 +257,6 @@ let settings = {
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
    PreferSavedPoints: false
 };
-
-
-if (nodejs)
-   Object.assign(settings, { ToolBar: false, Tooltip: 0, ContextMenu: false, Zooming: false, MoveResize: false, DragAndDrop: false, ProgressBox: false });
 
 
 /** @namespace
