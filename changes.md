@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.4.0
 1. Upgrade d3.js v7.6.1 -> v7.8.4
 2. Upgrade three.js r146 -> r151
 3. Support `[cutg]` draw option for TH2
@@ -36,11 +36,12 @@
 33. Fix - correctly align sub/super scripts in complex TLatex
 
 
-## Changes in 7.3.3
+## Changes in 7.3.4
 1. Fix - failure in normal_cdf calculation
 2. Fix - check in TTree::Draw for null buffer
 3. Fix - do not rise exception in treeProcess
 4. Fix - RH1 zero line drawing only when required
+5. Fix - do not allow move float browser too far left/top
 
 
 ## Changes in 7.3.2

@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.3.99
+// https://root.cern/js/ v7.4.0
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = 'dev';
+let version_id = '7.4.0';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '13/06/2023';
+let version_date = '14/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -70,6 +70,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
    browser$1.chromeVersion = (browser$1.isChrome || browser$1.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
    browser$1.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    browser$1.touches = ('ontouchend' in document); // identify if touch events are supported
+   browser$1.smallWidth = window?.screen?.width && (window.screen.width <= 640);
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
@@ -7925,8 +7926,8 @@ function floatToString(value, fmt, ret_fmt) {
 
    if (significance) {
 
-      // when using fixed representation, one could get 0.0
-      if (value && (Number(sg) === 0.) && (prec > 0)) {
+      // when using fixed representation, one could get 0
+      if (value && (Number(sg) === 0) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 
@@ -59559,7 +59560,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    // for contour plots one requires handle with full range
    let main = painter.getFramePainter(),
-       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0}),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0}),
        histo = painter.getHisto(), // get levels
        levels = painter.getContourLevels(), // init contour if not exists
        palette = painter.getHistPalette(),
@@ -59942,7 +59943,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (painter.options.Surf === 13) {
 
-      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0 });
 
       // get levels
       let levels = painter.getContourLevels(), // init contour
@@ -59971,7 +59972,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
                 lastcolindx = colindx;
-                layerz+=0.0001*main.size_z3d; // change layers Z
+                layerz += 0.0001 * main.size_z3d; // change layers Z
              }
 
              const pos = new Float32Array(faces.length*9),
@@ -60566,7 +60567,7 @@ class TAxisPainter extends ObjectPainter {
       if (optionNoopt && this.nticks && (this.kind == 'normal'))
          this.noticksopt = true;
 
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks;
+      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] }, ticks;
 
       if (this.fixed_ticks) {
          ticks = [];
@@ -60723,8 +60724,7 @@ class TAxisPainter extends ObjectPainter {
    isCenteredLabels() {
       if (this.kind === 'labels') return true;
       if (this.log) return false;
-      let axis = this.getObject();
-      return axis && axis.TestBit(EAxisBits.kCenterLabels);
+      return this.getObject()?.TestBit(EAxisBits.kCenterLabels);
    }
 
    /** @summary Add interactive elements to draw axes title */
@@ -60899,8 +60899,8 @@ class TAxisPainter extends ObjectPainter {
       if (!axis.fModLabs) return null;
       for (let n = 0; n < axis.fModLabs.arr.length; ++n) {
          let mod = axis.fModLabs.arr[n];
-         if (mod.fLabNum === nlabel + 1) return mod;
-         if ((mod.fLabNum < 0) && (nlabel === num_labels + mod.fLabNum)) return mod;
+         if ((mod.fLabNum === nlabel + 1) ||
+             ((mod.fLabNum < 0) && (nlabel === num_labels + mod.fLabNum))) return mod;
       }
       return null;
    }
@@ -70144,7 +70144,7 @@ let PadButtonsHandler = {
       } else {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
-                            .property('buttons_state', (settings.ToolBar !== 'popup'))
+                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser$1.touches)
                             .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
                             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
                             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
@@ -70334,8 +70334,8 @@ class TPadPainter extends ObjectPainter {
           rect = {};
 
       if (this.pad) {
-         rect.szx = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fLeftMargin, this.pad.fRightMargin))*w);
-         rect.szy = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fBottomMargin, this.pad.fTopMargin))*h);
+         rect.szx = Math.round(Math.max(0, 0.5 - Math.max(this.pad.fLeftMargin, this.pad.fRightMargin))*w);
+         rect.szy = Math.round(Math.max(0, 0.5 - Math.max(this.pad.fBottomMargin, this.pad.fTopMargin))*h);
       } else {
          rect.szx = Math.round(0.5*w);
          rect.szy = Math.round(0.5*h);
@@ -70824,7 +70824,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Check if it is special object, which should be handled separately
      * @desc It can be TStyle or list of colors or palette object
-     * @return {boolean} tru if any */
+     * @return {boolean} true if any */
    checkSpecial(obj) {
 
       if (!obj) return false;
@@ -79081,7 +79081,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
          let elem = this.draw_g
                         .append('svg:path')
-                        .attr('class', 'th2_contour')
                         .attr('d', dd)
                         .style('fill', fillcolor);
 
@@ -85695,7 +85694,7 @@ class ClonedNodes {
             }
 
             if (transparency > 0)
-               opacity = (100.0 - transparency) / 100.0;
+               opacity = (100 - transparency) / 100;
             if (prop.fillcolor === undefined)
                prop.fillcolor = root_colors[mat.fFillColor];
          }
@@ -88082,7 +88081,7 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
                 .listen().onChange(() => this.changedHighlight());
 
-      appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
+      appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
 
       appearance.addColor(this.ctrl, 'background').name('Background')
@@ -88174,7 +88173,7 @@ class TGeoPainter extends ObjectPainter {
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
               .listen().onChange(bloom_handler);
 
-      blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name('Strength')
+      blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
                .listen().onChange(bloom_handler);
    }
 
@@ -103148,7 +103147,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
+      if (!browser_configured && browser$1.smallWidth)
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
@@ -110167,7 +110166,7 @@ function proivdeEvalPar(obj) {
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
    if (_func === 'gaus') _func = 'gaus(0)';
-   if (obj.fFormula && isStr(obj.fFormula.fFormula)) {
+   if (isStr(obj.fFormula?.fFormula)) {
      if (obj.fFormula.fFormula.indexOf('[](double*x,double*p)') == 0) {
         isformula = true; pprefix = 'p[';
         _func = obj.fFormula.fFormula.slice(21);
@@ -110182,51 +110181,49 @@ function proivdeEvalPar(obj) {
                parvalue = obj.fFormula.fClingParameters[pair.second];
            _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
         });
-  }
+   }
 
-  if ('formulas' in obj)
-     obj.formulas.forEach(entry => {
-       _func = _func.replaceAll(entry.fName, entry.fTitle);
-     });
+   obj.formulas?.forEach(entry => {
+      _func = _func.replaceAll(entry.fName, entry.fTitle);
+   });
 
-  _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-               .replace(/\b(TMath::Exp)/g, 'Math.exp')
-               .replace(/\b(TMath::Abs)/g, 'Math.abs');
+   _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
+                .replace(/\b(TMath::Exp)/g, 'Math.exp')
+                .replace(/\b(TMath::Abs)/g, 'Math.abs')
+                .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
+                .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
+                .replace(/expo\(/g, 'this._math.expo(this, x, ')
+                .replace(/landau\(/g, 'this._math.landau(this, x, ')
+                .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
+                .replace(/TMath::/g, 'this._math.')
+                .replace(/ROOT::Math::/g, 'this._math.');
 
-  _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
-               .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
-               .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
-               .replace(/expo\(/g, 'this._math.expo(this, x, ')
-               .replace(/landau\(/g, 'this._math.landau(this, x, ')
-               .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
-               .replace(/TMath::/g, 'this._math.')
-               .replace(/ROOT::Math::/g, 'this._math.');
+   for (let i = 0; i < obj.fNpar; ++i)
+      _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
 
-  for (let i = 0; i < obj.fNpar; ++i)
-    _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
+   _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
+                .replace(/\b(cos)\b/gi, 'Math.cos')
+                .replace(/\b(tan)\b/gi, 'Math.tan')
+                .replace(/\b(exp)\b/gi, 'Math.exp')
+                .replace(/\b(log10)\b/gi, 'Math.log10')
+                .replace(/\b(pow)\b/gi, 'Math.pow')
+                .replace(/pi/g, 'Math.PI');
+   for (let n = 2; n < 10; ++n)
+      _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
 
-  _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
-               .replace(/\b(cos)\b/gi, 'Math.cos')
-               .replace(/\b(tan)\b/gi, 'Math.tan')
-               .replace(/\b(exp)\b/gi, 'Math.exp')
-               .replace(/\b(log10)\b/gi, 'Math.log10')
-               .replace(/\b(pow)\b/gi, 'Math.pow')
-               .replace(/pi/g, 'Math.PI');
-  for (let n = 2; n < 10; ++n)
-     _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
-
-  if (isformula) {
-     _func = _func.replace(/x\[0\]/g,'x');
-     if (obj._typename === clTF2) {
-        _func = _func.replace(/x\[1\]/g,'y');
-        obj.evalPar = new Function('x', 'y', _func).bind(obj);
-     } else {
-        obj.evalPar = new Function('x', _func).bind(obj);
-     }
-  } else if (obj._typename === clTF2)
-     obj.evalPar = new Function('x', 'y', 'return ' + _func).bind(obj);
-  else
-     obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
+   if (isformula) {
+      _func = _func.replace(/x\[0\]/g,'x');
+      if (obj._typename === clTF2) {
+         _func = _func.replace(/x\[1\]/g,'y');
+         obj.evalPar = new Function('x', 'y', _func).bind(obj);
+      } else {
+         obj.evalPar = new Function('x', _func).bind(obj);
+      }
+   } else if (obj._typename === clTF2)
+      obj.evalPar = new Function('x', 'y', 'return ' + _func).bind(obj);
+   else
+      obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
 }
 
 /**
@@ -110288,13 +110285,15 @@ class TF1Painter extends ObjectPainter {
          }
       }
 
+      this._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
+
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
-         xmax = tf1.fSave[np+1];
+         xmax = tf1.fSave[np + 1];
          res = [];
          dx = 0;
          let use_histo = tf1.$histo && (xmin === xmax), bin = 0;
@@ -110337,8 +110336,8 @@ class TF1Painter extends ObjectPainter {
             ymax = Math.max(bin.y, ymax);
          });
 
-         if (ymax > 0.0) ymax *= (1 + gStyle.fHistTopMargin);
-         if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
+         if (ymax > 0) ymax *= (1 + gStyle.fHistTopMargin);
+         if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
       let histo = create$1(clTH1I),
@@ -110487,19 +110486,19 @@ class TF1Painter extends ObjectPainter {
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
-   canZoomInside(axis,min,max) {
+   canZoomInside(axis, min, max) {
       if (axis !== 'x') return false;
 
       let tf1 = this.getObject();
 
-      if (tf1.fSave.length > 0) {
+      if ((tf1.fSave.length > 0) && this._use_saved_points) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
          let nb_points = tf1.fNpx,
              xmin = tf1.fSave[nb_points + 1],
              xmax = tf1.fSave[nb_points + 2];
 
-         return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
+         return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
 
       // if function calculated, one always could zoom inside
@@ -111898,8 +111897,8 @@ class TSplinePainter extends ObjectPainter {
             ymax = Math.max(knot.fY, ymax);
          });
 
-         if (ymax > 0.0) ymax *= (1 + gStyle.fHistTopMargin);
-         if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
+         if (ymax > 0) ymax *= (1 + gStyle.fHistTopMargin);
+         if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
       let histo = create$1(clTH1I);
@@ -122717,7 +122716,6 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
 
             let elem = this.draw_g
                           .append('svg:path')
-                          .attr('class','th2_contour')
                           .attr('d', dd)
                           .style('fill', fillcolor);
 
