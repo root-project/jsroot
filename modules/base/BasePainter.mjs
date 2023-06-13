@@ -456,10 +456,12 @@ class BasePainter {
           layout = res.property('layout') || 'simple',
           layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
 
-      if (layout_selector) res = res.select(layout_selector);
+      if (layout_selector)
+         res = res.select(layout_selector);
 
       // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = d3_select('#jsroot_enlarge_div');
+      if (!is_direct && !res.empty() && use_enlarge)
+         res = d3_select('#jsroot_enlarge_div');
 
       return res;
    }
@@ -719,19 +721,6 @@ async function svgToImage(svg, image_format, as_buffer) {
    if (image_format == 'svg')
       return svg;
 
-/*   if (!isNodeJs()) {
-      const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-      svg = encodeURIComponent(doctype + svg);
-
-      svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-          let c = String.fromCharCode('0x'+p1);
-          return c === '%' ? '%25' : c;
-      });
-
-      svg = decodeURIComponent(svg);
-   }
-*/
    const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
    if (isNodeJs())
@@ -759,14 +748,12 @@ async function svgToImage(svg, image_format, as_buffer) {
          canvas.getContext('2d').drawImage(image, 0, 0);
 
          if (as_buffer && image_format)
-            canvas.toBlob(blob => {
-                blob.arrayBuffer().then(resolveFunc);
-             },  'image/' + image_format);
+            canvas.toBlob(blob => blob.arrayBuffer().then(resolveFunc), 'image/' + image_format);
          else
             resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       }
       image.onerror = function(arg) {
-         console.log('IMAGE ERROR', arg);
+         console.log(`IMAGE ERROR ${arg}`);
          resolveFunc(null);
       }
 
