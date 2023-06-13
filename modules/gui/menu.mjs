@@ -1307,11 +1307,13 @@ class StandaloneMenu extends JSRootMenu {
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
+      let w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
+
       let block = d3_select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
           element = d3_select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class', 'jsroot_dialog').style('width', (args.width || 450) + 'px')
+                      .attr('class', 'jsroot_dialog').style('width', `${w}px`)
                       .attr('tabindex', '0')
                       .html(
          `<div class="jsroot_dialog_body">`+
