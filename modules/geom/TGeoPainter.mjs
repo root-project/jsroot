@@ -5686,12 +5686,9 @@ function browserIconClick(hitem, hpainter) {
       return false; // no need to update icon - we did it ourself
    }
 
-
    // first check that geo painter assigned with the item
-   let drawitem = findItemWithPainter(hitem);
-   if (!drawitem) return false;
-
-   let newstate = drawitem._painter.extraObjectVisible(hpainter, hitem, true);
+   let drawitem = findItemWithPainter(hitem),
+       newstate = drawitem?._painter?.extraObjectVisible(hpainter, hitem, true);
 
    // return true means browser should update icon for the item
    return (newstate !== undefined) ? true : false;
@@ -5709,7 +5706,7 @@ function getBrowserIcon(hitem, hpainter) {
    }
    if (icon) {
       let drawitem = findItemWithPainter(hitem);
-      if (drawitem?._painter && drawitem._painter.extraObjectVisible(hpainter, hitem))
+      if (drawitem?._painter?.extraObjectVisible(hpainter, hitem))
          icon += ' geovis_this';
    }
    return icon;
