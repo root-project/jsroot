@@ -213,8 +213,9 @@ let settings = {
    OptimizeDraw: 1,
    /** @summary Automatically create stats box, default on */
    AutoStat: true,
-   /** @summary Default frame position in NFC */
-   FrameNDC: { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
+   /** @summary Default frame position in NFC
+     * @deprecated Use gStyle.fPad[Left/Right/Top/Bottom]Margin values instead */
+   FrameNDC: {},
    /** @summary size of pad, where many features will be deactivated like text draw or zooming  */
    SmallPad: { width: 150, height: 100 },
    /** @summary Default color palette id  */
@@ -67575,14 +67576,15 @@ class TFramePainter extends ObjectPainter {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad) {
-            Object.assign(this, settings.FrameNDC);
+            this.fX1NDC = gStyle.fPadLeftMargin;
+            this.fX2NDC = 1 - gStyle.fPadRightMargin;
+            this.fY1NDC = gStyle.fPadBottomMargin;
+            this.fY2NDC = 1 - gStyle.fPadTopMargin;
          } else {
-            Object.assign(this, {
-               fX1NDC: pad.fLeftMargin,
-               fX2NDC: 1 - pad.fRightMargin,
-               fY1NDC: pad.fBottomMargin,
-               fY2NDC: 1 - pad.fTopMargin
-            });
+            this.fX1NDC = pad.fLeftMargin;
+            this.fX2NDC = 1 - pad.fRightMargin;
+            this.fY1NDC = pad.fBottomMargin;
+            this.fY2NDC = 1 - pad.fTopMargin;
          }
       }
 
@@ -114834,10 +114836,10 @@ class RFramePainter extends RObjectPainter {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let rect = this.getPadPainter().getPadRect();
-         this.fX1NDC = this.v7EvalLength('margins_left', rect.width, settings.FrameNDC.fX1NDC) / rect.width;
-         this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, settings.FrameNDC.fY1NDC) / rect.height;
-         this.fX2NDC = 1 - this.v7EvalLength('margins_right', rect.width, 1-settings.FrameNDC.fX2NDC) / rect.width;
-         this.fY2NDC = 1 - this.v7EvalLength('margins_top', rect.height, 1-settings.FrameNDC.fY2NDC) / rect.height;
+         this.fX1NDC = this.v7EvalLength('margins_left', rect.width, gStyle.fPadLeftMargin) / rect.width;
+         this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, gStyle.fPadBottomMargin) / rect.height;
+         this.fX2NDC = 1 - this.v7EvalLength('margins_right', rect.width, gStyle.fPadRightMargin) / rect.width;
+         this.fY2NDC = 1 - this.v7EvalLength('margins_top', rect.height, gStyle.fPadTopMargin) / rect.height;
       }
 
       if (!this.fillatt)
