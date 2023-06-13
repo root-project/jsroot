@@ -1,4 +1,4 @@
-import { gStyle, createHistogram, createTPolyLine, isBatchMode, isFunc, isStr,
+import { gStyle, createHistogram, createTPolyLine, isFunc, isStr,
          clTMultiGraph, clTF2, clTProfile2D } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -1901,7 +1901,7 @@ class TH2Painter extends THistPainter {
          this.draw_g.append('svg:path')
              .attr('d', hists)
              .style('stroke', (hline_color != 'none') ? hline_color : null)
-             .style('pointer-events', isBatchMode() ? null : 'visibleFill')
+             .style('pointer-events', this.isBatchMode() ? null : 'visibleFill')
              .call(this.fillatt.func);
 
       if (bars)

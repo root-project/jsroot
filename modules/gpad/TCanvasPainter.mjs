@@ -1,4 +1,4 @@
-import { BIT, settings, create, parse, toJSON, loadScript, isBatchMode, isFunc, isStr, clTCanvas } from '../core.mjs';
+import { BIT, settings, create, parse, toJSON, loadScript, isFunc, isStr, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -735,7 +735,7 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH) {
-      if (!canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+      if (!canvW || !canvH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let rect = getElementRect(this.selectDom('origin'));
@@ -761,7 +761,7 @@ class TCanvasPainter extends TPadPainter {
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
 
-      if (!nocanvas && can.fCw && can.fCh && !isBatchMode()) {
+      if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
          let rect0 = painter.selectDom().node().getBoundingClientRect();
          if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
             painter.selectDom().style('width', can.fCw+'px').style('height', can.fCh+'px');

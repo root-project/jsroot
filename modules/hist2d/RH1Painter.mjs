@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, isBatchMode } from '../core.mjs';
+import { gStyle, settings, constants } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, DrawOptions, buildSvgCurve, addHighlightStyle } from '../base/BasePainter.mjs';
 import { RHistPainter } from './RHistPainter.mjs';
@@ -333,7 +333,7 @@ class RH1Painter extends RHistPainter {
           right = handle.i2,
           di = handle.stepi,
           histo = this.getHisto(),
-          want_tooltip = !isBatchMode() && settings.Tooltip,
+          want_tooltip = !this.isBatchMode() && settings.Tooltip,
           xaxis = this.getAxis('x'),
           res = '', lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -528,7 +528,7 @@ class RH1Painter extends RHistPainter {
          }
       }
 
-      let fill_for_interactive = !isBatchMode() && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line,
+      let fill_for_interactive = !this.isBatchMode() && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(funcs.gry(0));
@@ -554,7 +554,7 @@ class RH1Painter extends RHistPainter {
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
                    .style('fill', 'none')
-                   .style('pointer-events', isBatchMode() ? null : 'visibleFill');
+                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
 
          if (path_line) {
             if (!this.fillatt.empty() && !options.Hist)

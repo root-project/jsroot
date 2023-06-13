@@ -1,4 +1,4 @@
-import { constants, isBatchMode, isFunc, getDocument } from '../core.mjs';
+import { constants, isFunc, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -209,7 +209,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (isBatchMode() || !this.webgl)
+      if (this.isBatchMode() || !this.webgl)
          return this;
 
       this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
@@ -307,7 +307,7 @@ function render3D(tmout) {
 
    if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-   let batch_mode = isBatchMode() || this.getCanvPainter()?.batch_mode;
+   let batch_mode = this.isBatchMode();
 
    if ((tmout > 0) && !this.usesvg && !batch_mode) {
       if (!this.render_tmout)

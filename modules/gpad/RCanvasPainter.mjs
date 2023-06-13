@@ -652,7 +652,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH) {
-      if (!canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+      if (!canvW || !canvH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let rect = getElementRect(this.selectDom('origin'));
@@ -765,11 +765,10 @@ function drawRFrameTitle(reason, drag) {
 
    this.drawText(arg);
 
-   return this.finishTextDrawing().then(() => {
-      if (!isBatchMode())
-        addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                               minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) });
-   });
+   return this.finishTextDrawing().then(() =>
+      addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+                             minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) })
+   );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

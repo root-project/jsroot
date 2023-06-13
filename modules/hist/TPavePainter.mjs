@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, create, isBatchMode, isObject, isFunc, isStr,
+import { gStyle, browser, settings, clone, create, isObject, isFunc, isStr,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTDiamond, clTLegend, clTLegendEntry, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -270,7 +270,7 @@ class TPavePainter extends ObjectPainter {
                      .call(this.fillatt.func)
                      .call(this.lineatt.func);
 
-            if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
+            if (!this.isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
                interactive_element = this.draw_g.append('svg:path')
                                                 .attr('d', `M0,0H${width}V${height}H0Z`)
                                                 .call(this.fillatt.func)
@@ -280,7 +280,8 @@ class TPavePainter extends ObjectPainter {
          }
       }).then(() => {
 
-         if (isBatchMode() || (pt._typename === clTPave)) return this;
+         if (this.isBatchMode() || (pt._typename === clTPave))
+            return this;
 
          // here all kind of interactive settings
          if (interactive_element)

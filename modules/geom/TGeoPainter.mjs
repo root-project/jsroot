@@ -4211,7 +4211,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && this._webgl /* && !isBatchMode() */) {
+      if ((tmout > 0) && this._webgl) {
          if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {

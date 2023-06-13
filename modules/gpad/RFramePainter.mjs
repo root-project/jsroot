@@ -1,4 +1,4 @@
-import { gStyle, settings, create, isBatchMode, isFunc, isStr, clTAxis, nsREX } from '../core.mjs';
+import { gStyle, settings, create, isFunc, isStr, clTAxis, nsREX } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { makeTranslate} from '../base/BasePainter.mjs';
@@ -721,7 +721,7 @@ class RFramePainter extends RObjectPainter {
 
          this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:rect');
@@ -768,7 +768,7 @@ class RFramePainter extends RObjectPainter {
       }
 
       return pr.then(() => {
-         if (!isBatchMode()) {
+         if (!this.isBatchMode()) {
             top_rect.style('pointer-events', 'visibleFill');  // let process mouse events inside frame
 
             FrameInteractive.assign(this);
@@ -1169,7 +1169,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (isBatchMode()) return;
+      if (this.isBatchMode()) return;
       FrameInteractive.assign(this);
       this.addFrameKeysHandler();
    }
@@ -1178,7 +1178,7 @@ class RFramePainter extends RObjectPainter {
     * @private */
    addInteractivity(for_second_axes) {
 
-      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
+      if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
       FrameInteractive.assign(this);
       return this.addFrameInteractivity(for_second_axes);

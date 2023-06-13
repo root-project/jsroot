@@ -1,4 +1,4 @@
-import { gStyle, settings, isBatchMode, isFunc, isStr, browser, clTAxis, kNoZoom } from '../core.mjs';
+import { gStyle, settings, isFunc, isStr, browser, clTAxis, kNoZoom } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -36,7 +36,7 @@ function is_dragging(painter, kind) {
 /** @summary Add drag for interactive rectangular elements for painter
   * @private */
 function addDragHandler(_painter, arg) {
-   if (!settings.MoveResize || isBatchMode()) return;
+   if (!settings.MoveResize) return;
 
    let painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing || pp?.isBatchMode()) return;
@@ -2440,7 +2440,7 @@ class TFramePainter extends ObjectPainter {
          this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
 
          // empty title on the frame required to suppress title of the canvas
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:path');
@@ -2473,7 +2473,7 @@ class TFramePainter extends ObjectPainter {
               .attr('height', h)
               .attr('viewBox', `0 0 ${w} ${h}`);
 
-      if (!isBatchMode()) {
+      if (!this.isBatchMode()) {
          top_rect.style('pointer-events', 'visibleFill'); // let process mouse events inside frame
          FrameInteractive.assign(this);
          this.addBasicInteractivity();
@@ -2901,7 +2901,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (isBatchMode()) return;
+      if (this.isBatchMode()) return;
       FrameInteractive.assign(this);
       this.addFrameKeysHandler();
    }
@@ -2909,7 +2909,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive functionality to the frame
      * @private */
    addInteractivity(for_second_axes) {
-      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
+      if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
       FrameInteractive.assign(this);

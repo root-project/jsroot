@@ -292,7 +292,7 @@ function addMoveHandler(painter, enabled) {
    if (enabled === undefined)
       enabled = true;
 
-   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
+   if (!settings.MoveResize || painter.isBatchMode() || !painter.draw_g) return;
 
    if (!enabled) {
       if (painter.draw_g.property('assigned_move')) {
