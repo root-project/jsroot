@@ -431,7 +431,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
 
-      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect;
+      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect,
+          is_batch = this.isBatchMode();
 
       if (check_resize > 0) {
 
@@ -449,7 +450,7 @@ class TPadPainter extends ObjectPainter {
          if (!rect.changed && (check_resize == 1))
             return false;
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          info = this.getLayerSvg('info_layer', this.this_pad_name);
@@ -470,16 +471,16 @@ class TPadPainter extends ObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (this.isBatchMode()) {
+         if (is_batch) {
             svg.attr('xmlns', 'http://www.w3.org/2000/svg');
          } else if (!this.online_canvas) {
             svg.append('svg:title').text('ROOT canvas');
          }
 
-         if (!this.isBatchMode() || (this.pad.fFillStyle > 0))
+         if (!is_batch || (this.pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class','canvas_fillrect');
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter())
@@ -488,7 +489,7 @@ class TPadPainter extends ObjectPainter {
 
          svg.append('svg:g').attr('class','primitives_layer');
          info = svg.append('svg:g').attr('class', 'info_layer');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = svg.append('svg:g')
                       .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -562,7 +563,7 @@ class TPadPainter extends ObjectPainter {
          let date = new Date(),
              posx = Math.round(rect.width * gStyle.fDateX),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         if (!this.isBatchMode() && (posx < 25)) posx = 25;
+         if (!is_batch && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
          dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
@@ -653,14 +654,15 @@ class TPadPainter extends ObjectPainter {
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
           y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
-          svg_pad, svg_border, btns;
+          svg_pad, svg_border, btns,
+          is_batch = this.isBatchMode();
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
 
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_border = svg_pad.select('.root_pad_border');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_can.select('.primitives_layer')
@@ -669,14 +671,14 @@ class TPadPainter extends ObjectPainter {
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             svg_pad.append('svg:title').text('subpad ' + this.this_pad_name);
 
          // need to check attributes directly while attributes objects will be created later
-         if (!this.isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+         if (!is_batch || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!this.isBatchMode()) {
+         if (!is_batch) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
@@ -685,34 +687,36 @@ class TPadPainter extends ObjectPainter {
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = svg_pad.append('svg:g')
                           .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
 
-      if (!this.iscan && !this.isBatchMode())
-         addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
-                                is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
-                                getDrawG: () => this.svg_this_pad(),
-                                pad_rect: { width, height },
-                                minwidth: 20, minheight: 20,
-                                move_resize: (_x, _y, _w, _h) => {
-                                   let x0 = this.pad.fAbsXlowNDC,
-                                       y0 = this.pad.fAbsYlowNDC,
-                                       scale_w = _w / width / this.pad.fAbsWNDC,
-                                       scale_h = _h / height / this.pad.fAbsHNDC,
-                                       shift_x = _x / width - x0,
-                                       shift_y = 1 - (_y + _h) / height - y0;
-                                   this.forEachPainterInPad(p => {
-                                      p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
-                                      p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
-                                      p.pad.fAbsWNDC *= scale_w;
-                                      p.pad.fAbsHNDC *= scale_h;
-                                   }, 'pads');
-                                },
-                                redraw: () => this.interactiveRedraw('pad', 'padpos') });
+      if (!this.iscan && !is_batch)
+         addDragHandler(this, {
+            x, y, width: w, height: h, no_transform: true,
+            is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
+            getDrawG: () => this.svg_this_pad(),
+            pad_rect: { width, height },
+            minwidth: 20, minheight: 20,
+            move_resize: (_x, _y, _w, _h) => {
+               let x0 = this.pad.fAbsXlowNDC,
+                   y0 = this.pad.fAbsYlowNDC,
+                   scale_w = _w / width / this.pad.fAbsWNDC,
+                   scale_h = _h / height / this.pad.fAbsHNDC,
+                   shift_x = _x / width - x0,
+                   shift_y = 1 - (_y + _h) / height - y0;
+               this.forEachPainterInPad(p => {
+                  p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
+                  p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
+                  p.pad.fAbsWNDC *= scale_w;
+                  p.pad.fAbsHNDC *= scale_h;
+               }, 'pads');
+            },
+            redraw: () => this.interactiveRedraw('pad', 'padpos')
+         });
 
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: !this.pad.fBorderMode ? 'none' : '' });
