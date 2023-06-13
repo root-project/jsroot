@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 7.3.x
+## Changes in 7.3.4
 1. Fix - do not allow move float browser too far left/top
 
 

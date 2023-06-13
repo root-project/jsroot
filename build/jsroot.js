@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.3.3
+// https://root.cern/js/ v7.3.4
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.3.3';
+let version_id = '7.3.4';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '12/06/2023';
+let version_date = '13/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -53753,18 +53753,16 @@ class BrowserLayout {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.slice(0,sl.length-2));
            this._float_top = parseInt(st.slice(0,st.length-2));
-           this._max_left = main.node().clientWidth - area.node().offsetWidth - 1;
-           this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
+           this._max_left = Math.max(0, main.node().clientWidth - area.node().offsetWidth - 1);
+           this._max_top = Math.max(0, main.node().clientHeight - area.node().offsetHeight - 1);
 
         }).filter(evnt => {
             return main.select('.jsroot_browser_title').node() === evnt.target;
         }).on('drag', evnt => {
            this._float_left += evnt.dx;
            this._float_top += evnt.dy;
-
            area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + 'px')
                .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + 'px');
-
            this.setButtonsPosition();
         });
 
