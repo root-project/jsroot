@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '12/06/2023';
+let version_date = '13/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8270,10 +8270,12 @@ class BasePainter {
           layout = res.property('layout') || 'simple',
           layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
 
-      if (layout_selector) res = res.select(layout_selector);
+      if (layout_selector)
+         res = res.select(layout_selector);
 
       // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = select('#jsroot_enlarge_div');
+      if (!is_direct && !res.empty() && use_enlarge)
+         res = select('#jsroot_enlarge_div');
 
       return res;
    }
@@ -8533,19 +8535,6 @@ async function svgToImage(svg, image_format, as_buffer) {
    if (image_format == 'svg')
       return svg;
 
-/*   if (!isNodeJs()) {
-      const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-      svg = encodeURIComponent(doctype + svg);
-
-      svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-          let c = String.fromCharCode('0x'+p1);
-          return c === '%' ? '%25' : c;
-      });
-
-      svg = decodeURIComponent(svg);
-   }
-*/
    const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
    if (isNodeJs())
@@ -8573,14 +8562,12 @@ async function svgToImage(svg, image_format, as_buffer) {
          canvas.getContext('2d').drawImage(image, 0, 0);
 
          if (as_buffer && image_format)
-            canvas.toBlob(blob => {
-                blob.arrayBuffer().then(resolveFunc);
-             },  'image/' + image_format);
+            canvas.toBlob(blob => blob.arrayBuffer().then(resolveFunc), 'image/' + image_format);
          else
             resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       };
       image.onerror = function(arg) {
-         console.log('IMAGE ERROR', arg);
+         console.log(`IMAGE ERROR ${arg}`);
          resolveFunc(null);
       };
 
@@ -58184,7 +58171,7 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (isBatchMode() || !this.webgl)
+      if (this.isBatchMode() || !this.webgl)
          return this;
 
       this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
@@ -58282,7 +58269,7 @@ function render3D(tmout) {
 
    if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-   let batch_mode = isBatchMode() || this.getCanvPainter()?.batch_mode;
+   let batch_mode = this.isBatchMode();
 
    if ((tmout > 0) && !this.usesvg && !batch_mode) {
       if (!this.render_tmout)
@@ -60742,7 +60729,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!settings.MoveResize || isBatchMode()) return;
+      if (!settings.MoveResize || this.isBatchMode()) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
@@ -61210,7 +61197,7 @@ class TAxisPainter extends ObjectPainter {
 
          labelsMaxWidth = maxw;
 
-         if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
+         if (settings.Zooming && !this.disable_zooming && !this.isBatchMode()) {
             let labelSize = Math.max(this.labelsFont.size, 5),
                 r = axis_g.append('svg:rect')
                           .attr('class', 'axis_zoom')
@@ -63710,7 +63697,7 @@ function addMoveHandler(painter, enabled) {
    if (enabled === undefined)
       enabled = true;
 
-   if (!settings.MoveResize || isBatchMode() || !painter.draw_g) return;
+   if (!settings.MoveResize || painter.isBatchMode() || !painter.draw_g) return;
 
    if (!enabled) {
       if (painter.draw_g.property('assigned_move')) {
@@ -65369,7 +65356,7 @@ function showPainterMenu(evnt, painter, kind) {
 /** @summary Assign handler for context menu for painter draw element
   * @private */
 function assignContextMenu(painter, kind) {
-   if (!isBatchMode() && painter?.draw_g)
+   if (!painter?.isBatchMode() && painter?.draw_g)
       painter.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, painter, kind) : null);
 }
 
@@ -65400,7 +65387,7 @@ function is_dragging(painter, kind) {
 /** @summary Add drag for interactive rectangular elements for painter
   * @private */
 function addDragHandler(_painter, arg) {
-   if (!settings.MoveResize || isBatchMode()) return;
+   if (!settings.MoveResize) return;
 
    let painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing || pp?.isBatchMode()) return;
@@ -67804,7 +67791,7 @@ class TFramePainter extends ObjectPainter {
          this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
 
          // empty title on the frame required to suppress title of the canvas
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:path');
@@ -67837,7 +67824,7 @@ class TFramePainter extends ObjectPainter {
               .attr('height', h)
               .attr('viewBox', `0 0 ${w} ${h}`);
 
-      if (!isBatchMode()) {
+      if (!this.isBatchMode()) {
          top_rect.style('pointer-events', 'visibleFill'); // let process mouse events inside frame
          FrameInteractive.assign(this);
          this.addBasicInteractivity();
@@ -68265,7 +68252,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (isBatchMode()) return;
+      if (this.isBatchMode()) return;
       FrameInteractive.assign(this);
       this.addFrameKeysHandler();
    }
@@ -68273,7 +68260,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive functionality to the frame
      * @private */
    addInteractivity(for_second_axes) {
-      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
+      if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
       FrameInteractive.assign(this);
@@ -70474,7 +70461,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
 
-      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect;
+      let factor = null, svg = null, lmt = 5, rect = null, btns, info, frect,
+          is_batch = this.isBatchMode();
 
       if (check_resize > 0) {
 
@@ -70492,7 +70480,7 @@ class TPadPainter extends ObjectPainter {
          if (!rect.changed && (check_resize == 1))
             return false;
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          info = this.getLayerSvg('info_layer', this.this_pad_name);
@@ -70513,16 +70501,16 @@ class TPadPainter extends ObjectPainter {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         if (this.isBatchMode()) {
+         if (is_batch) {
             svg.attr('xmlns', 'http://www.w3.org/2000/svg');
          } else if (!this.online_canvas) {
             svg.append('svg:title').text('ROOT canvas');
          }
 
-         if (!this.isBatchMode() || (this.pad.fFillStyle > 0))
+         if (!is_batch || (this.pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class','canvas_fillrect');
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter())
@@ -70531,7 +70519,7 @@ class TPadPainter extends ObjectPainter {
 
          svg.append('svg:g').attr('class','primitives_layer');
          info = svg.append('svg:g').attr('class', 'info_layer');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = svg.append('svg:g')
                       .attr('class','btns_layer')
                       .property('leftside', settings.ToolBarSide == 'left')
@@ -70605,7 +70593,7 @@ class TPadPainter extends ObjectPainter {
          let date = new Date(),
              posx = Math.round(rect.width * gStyle.fDateX),
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         if (!this.isBatchMode() && (posx < 25)) posx = 25;
+         if (!is_batch && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
          dt.attr('transform', makeTranslate(posx, posy))
            .style('text-anchor', 'start')
@@ -70696,14 +70684,15 @@ class TPadPainter extends ObjectPainter {
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
           y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
-          svg_pad, svg_border, btns;
+          svg_pad, svg_border, btns,
+          is_batch = this.isBatchMode();
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
 
       if (only_resize) {
          svg_pad = this.svg_this_pad();
          svg_border = svg_pad.select('.root_pad_border');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
       } else {
          svg_pad = svg_can.select('.primitives_layer')
@@ -70712,14 +70701,14 @@ class TPadPainter extends ObjectPainter {
              .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
-         if (!this.isBatchMode())
+         if (!is_batch)
             svg_pad.append('svg:title').text('subpad ' + this.this_pad_name);
 
          // need to check attributes directly while attributes objects will be created later
-         if (!this.isBatchMode() || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+         if (!is_batch || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
             svg_border = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         if (!this.isBatchMode()) {
+         if (!is_batch) {
             svg_border.style('pointer-events', 'visibleFill') // get events also for not visible rect
                       .on('dblclick', evnt => this.enlargePad(evnt, true))
                       .on('click', () => this.selectObjectPainter())
@@ -70728,34 +70717,36 @@ class TPadPainter extends ObjectPainter {
          }
 
          svg_pad.append('svg:g').attr('class', 'primitives_layer');
-         if (!this.isBatchMode())
+         if (!is_batch)
             btns = svg_pad.append('svg:g')
                           .attr('class', 'btns_layer')
                           .property('leftside', settings.ToolBarSide != 'left')
                           .property('vertical', settings.ToolBarVert);
       }
 
-      if (!this.iscan && !this.isBatchMode())
-         addDragHandler(this, { x, y, width: w, height: h, no_transform: true,
-                                is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
-                                getDrawG: () => this.svg_this_pad(),
-                                pad_rect: { width, height },
-                                minwidth: 20, minheight: 20,
-                                move_resize: (_x, _y, _w, _h) => {
-                                   let x0 = this.pad.fAbsXlowNDC,
-                                       y0 = this.pad.fAbsYlowNDC,
-                                       scale_w = _w / width / this.pad.fAbsWNDC,
-                                       scale_h = _h / height / this.pad.fAbsHNDC,
-                                       shift_x = _x / width - x0,
-                                       shift_y = 1 - (_y + _h) / height - y0;
-                                   this.forEachPainterInPad(p => {
-                                      p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
-                                      p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
-                                      p.pad.fAbsWNDC *= scale_w;
-                                      p.pad.fAbsHNDC *= scale_h;
-                                   }, 'pads');
-                                },
-                                redraw: () => this.interactiveRedraw('pad', 'padpos') });
+      if (!this.iscan && !is_batch)
+         addDragHandler(this, {
+            x, y, width: w, height: h, no_transform: true,
+            is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
+            getDrawG: () => this.svg_this_pad(),
+            pad_rect: { width, height },
+            minwidth: 20, minheight: 20,
+            move_resize: (_x, _y, _w, _h) => {
+               let x0 = this.pad.fAbsXlowNDC,
+                   y0 = this.pad.fAbsYlowNDC,
+                   scale_w = _w / width / this.pad.fAbsWNDC,
+                   scale_h = _h / height / this.pad.fAbsHNDC,
+                   shift_x = _x / width - x0,
+                   shift_y = 1 - (_y + _h) / height - y0;
+               this.forEachPainterInPad(p => {
+                  p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
+                  p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
+                  p.pad.fAbsWNDC *= scale_w;
+                  p.pad.fAbsHNDC *= scale_h;
+               }, 'pads');
+            },
+            redraw: () => this.interactiveRedraw('pad', 'padpos')
+         });
 
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: !this.pad.fBorderMode ? 'none' : '' });
@@ -73055,7 +73046,7 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH) {
-      if (!canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+      if (!canvW || !canvH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let rect = getElementRect(this.selectDom('origin'));
@@ -73081,7 +73072,7 @@ class TCanvasPainter extends TPadPainter {
       let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
 
-      if (!nocanvas && can.fCw && can.fCh && !isBatchMode()) {
+      if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
          let rect0 = painter.selectDom().node().getBoundingClientRect();
          if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
             painter.selectDom().style('width', can.fCw+'px').style('height', can.fCh+'px');
@@ -73425,7 +73416,7 @@ class TPavePainter extends ObjectPainter {
                      .call(this.fillatt.func)
                      .call(this.lineatt.func);
 
-            if (!isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
+            if (!this.isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty())
                interactive_element = this.draw_g.append('svg:path')
                                                 .attr('d', `M0,0H${width}V${height}H0Z`)
                                                 .call(this.fillatt.func)
@@ -73435,7 +73426,8 @@ class TPavePainter extends ObjectPainter {
          }
       }).then(() => {
 
-         if (isBatchMode() || (pt._typename === clTPave)) return this;
+         if (this.isBatchMode() || (pt._typename === clTPave))
+            return this;
 
          // here all kind of interactive settings
          if (interactive_element)
@@ -77224,7 +77216,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 2),
           histo = this.getHisto(),
-          want_tooltip = !isBatchMode() && settings.Tooltip,
+          want_tooltip = !this.isBatchMode() && settings.Tooltip,
           xaxis = histo.fXaxis,
           res = '', lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -77502,7 +77494,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
                    .style('fill', 'none')
-                   .style('pointer-events', isBatchMode() ? null : 'visibleFill');
+                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
 
          if (path_line) {
             if (!this.fillatt.empty() && !draw_hist)
@@ -77525,7 +77517,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             this.draw_g.append('svg:path')
                 .attr('d', hints_marker)
                 .style('fill', 'none')
-                .style('pointer-events', isBatchMode() ? null : 'visibleFill');
+                .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
       }
 
       if (res && draw_hist)
@@ -79937,7 +79929,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          this.draw_g.append('svg:path')
              .attr('d', hists)
              .style('stroke', (hline_color != 'none') ? hline_color : null)
-             .style('pointer-events', isBatchMode() ? null : 'visibleFill')
+             .style('pointer-events', this.isBatchMode() ? null : 'visibleFill')
              .call(this.fillatt.func);
 
       if (bars)
@@ -90848,7 +90840,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && this._webgl /* && !isBatchMode() */) {
+      if ((tmout > 0) && this._webgl) {
          if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {
@@ -92320,12 +92312,9 @@ function browserIconClick(hitem, hpainter) {
       return false; // no need to update icon - we did it ourself
    }
 
-
    // first check that geo painter assigned with the item
-   let drawitem = findItemWithPainter(hitem);
-   if (!drawitem) return false;
-
-   let newstate = drawitem._painter.extraObjectVisible(hpainter, hitem, true);
+   let drawitem = findItemWithPainter(hitem),
+       newstate = drawitem?._painter?.extraObjectVisible(hpainter, hitem, true);
 
    // return true means browser should update icon for the item
    return (newstate !== undefined) ? true : false;
@@ -92343,7 +92332,7 @@ function getBrowserIcon(hitem, hpainter) {
    }
    if (icon) {
       let drawitem = findItemWithPainter(hitem);
-      if (drawitem?._painter && drawitem._painter.extraObjectVisible(hpainter, hitem))
+      if (drawitem?._painter?.extraObjectVisible(hpainter, hitem))
          icon += ' geovis_this';
    }
    return icon;
@@ -106464,7 +106453,7 @@ async function drawText$1() {
    this.drawText(arg);
 
    return this.finishTextDrawing().then(() => {
-      if (isBatchMode()) return this;
+      if (this.isBatchMode()) return this;
 
       this.pos_dx = this.pos_dy = 0;
 
@@ -108351,7 +108340,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                    .call(this.gridatt.func);
             }
 
-         if (isBatchMode()) return;
+         if (this.isBatchMode()) return;
 
          TooltipHandler.assign(this);
 
@@ -109369,7 +109358,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          if (options.skip_errors_x0 || options.skip_errors_y0)
             visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
 
-         if (!isBatchMode() && settings.Tooltip && main_block)
+         if (!this.isBatchMode() && settings.Tooltip && main_block)
             visible.append('svg:path')
                    .style('fill', 'none')
                    .style('pointer-events', 'visibleFill')
@@ -109396,7 +109385,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          this.markeratt.resetPos();
 
          let path = '', pnt, grx, gry,
-             want_tooltip = !isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
+             want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
              hints_marker = '', hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
@@ -109533,7 +109522,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          this.extractGmeErrors(0); // ensure that first block kept at the end
       }
 
-      if (!isBatchMode()) {
+      if (!this.isBatchMode()) {
          addMoveHandler(this, this.testEditable());
          assignContextMenu(this);
       }
@@ -112742,11 +112731,13 @@ class TASImagePainter extends ObjectPainter {
              .attr('height', rect.height)
              .attr('preserveAspectRatio', res.constRatio ? null : 'none');
 
-         if (!isBatchMode() && (settings.MoveResize || settings.ContextMenu))
-            img.style('pointer-events', 'visibleFill');
+         if (!this.isBatchMode()) {
+            if (settings.MoveResize || settings.ContextMenu)
+               img.style('pointer-events', 'visibleFill');
 
-         if (!isBatchMode() && res.can_zoom)
-            img.style('cursor', 'pointer');
+            if (res.can_zoom)
+               img.style('cursor', 'pointer');
+         }
 
          assignContextMenu(this);
 
@@ -114097,7 +114088,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, side) {
-      if (!settings.MoveResize || isBatchMode()) return;
+      if (!settings.MoveResize || this.isBatchMode()) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, alt_pos, curr_indx,
@@ -114418,7 +114409,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add zomming rect to axis drawing */
    addZoomingRect(axis_g, side, lgaps) {
-      if (settings.Zooming && !this.disable_zooming && !isBatchMode()) {
+      if (settings.Zooming && !this.disable_zooming && !this.isBatchMode()) {
          let sz = Math.max(lgaps[side], 10),
              d = this.vertical ? `v${this.gr_range}h${-side*sz}v${-this.gr_range}`
                                : `h${this.gr_range}v${side*sz}h${-this.gr_range}`;
@@ -114664,7 +114655,7 @@ class RAxisPainter extends RObjectPainter {
 
       let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y));
 
-      if (isBatchMode()) return promise;
+      if (this.isBatchMode()) return promise;
 
       return promise.then(() => {
          if (settings.ContextMenu)
@@ -115504,7 +115495,7 @@ class RFramePainter extends RObjectPainter {
 
          this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
 
-         if (!isBatchMode())
+         if (!this.isBatchMode())
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:rect');
@@ -115551,7 +115542,7 @@ class RFramePainter extends RObjectPainter {
       }
 
       return pr.then(() => {
-         if (!isBatchMode()) {
+         if (!this.isBatchMode()) {
             top_rect.style('pointer-events', 'visibleFill');  // let process mouse events inside frame
 
             FrameInteractive.assign(this);
@@ -115950,7 +115941,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (isBatchMode()) return;
+      if (this.isBatchMode()) return;
       FrameInteractive.assign(this);
       this.addFrameKeysHandler();
    }
@@ -115959,7 +115950,7 @@ class RFramePainter extends RObjectPainter {
     * @private */
    addInteractivity(for_second_axes) {
 
-      if (isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
+      if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
       FrameInteractive.assign(this);
       return this.addFrameInteractivity(for_second_axes);
@@ -118928,7 +118919,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(canvW, canvH) {
-      if (!canvW || !canvH || isBatchMode() || this.embed_canvas || this.batch_mode)
+      if (!canvW || !canvH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
       let rect = getElementRect(this.selectDom('origin'));
@@ -119041,11 +119032,10 @@ function drawRFrameTitle(reason, drag) {
 
    this.drawText(arg);
 
-   return this.finishTextDrawing().then(() => {
-      if (!isBatchMode())
-        addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                               minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) });
-   });
+   return this.finishTextDrawing().then(() =>
+      addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+                             minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) })
+   );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -119464,7 +119454,7 @@ class RPalettePainter extends RObjectPainter {
 
       let promise = framep.z_handle.drawAxis(this.draw_g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
 
-      if (isBatchMode() || drag)
+      if (this.isBatchMode() || drag)
          return promise;
 
       return promise.then(() => {
@@ -119682,14 +119672,15 @@ class RPavePainter extends RObjectPainter {
 
       return this.drawContent().then(() => {
 
-         if (isBatchMode()) return this;
+         if (!this.isBatchMode()) {
 
-         // TODO: provide pave context menu as in v6
-         if (settings.ContextMenu && this.paveContextMenu)
-            this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
+            // TODO: provide pave context menu as in v6
+            if (settings.ContextMenu && this.paveContextMenu)
+               this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
-         addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-                                minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+            addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
+                                   minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+         }
 
          return this;
       });
@@ -121282,7 +121273,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
           right = handle.i2,
           di = handle.stepi,
           histo = this.getHisto(),
-          want_tooltip = !isBatchMode() && settings.Tooltip,
+          want_tooltip = !this.isBatchMode() && settings.Tooltip,
           xaxis = this.getAxis('x'),
           res = '', lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -121477,7 +121468,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
          }
       }
 
-      let fill_for_interactive = !isBatchMode() && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line,
+      let fill_for_interactive = !this.isBatchMode() && this.fillatt.empty() && options.Hist && settings.Tooltip && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(funcs.gry(0));
@@ -121503,7 +121494,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
                this.draw_g.append('svg:path')
                    .attr('d', hints_err)
                    .style('fill', 'none')
-                   .style('pointer-events', isBatchMode() ? null : 'visibleFill');
+                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
 
          if (path_line) {
             if (!this.fillatt.empty() && !options.Hist)
