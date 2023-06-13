@@ -567,7 +567,7 @@ class TAxisPainter extends ObjectPainter {
       if (optionNoopt && this.nticks && (this.kind == 'normal'))
          this.noticksopt = true;
 
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks;
+      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] }, ticks;
 
       if (this.fixed_ticks) {
          ticks = [];
@@ -724,8 +724,7 @@ class TAxisPainter extends ObjectPainter {
    isCenteredLabels() {
       if (this.kind === 'labels') return true;
       if (this.log) return false;
-      let axis = this.getObject();
-      return axis && axis.TestBit(EAxisBits.kCenterLabels);
+      return this.getObject()?.TestBit(EAxisBits.kCenterLabels);
    }
 
    /** @summary Add interactive elements to draw axes title */
@@ -900,8 +899,8 @@ class TAxisPainter extends ObjectPainter {
       if (!axis.fModLabs) return null;
       for (let n = 0; n < axis.fModLabs.arr.length; ++n) {
          let mod = axis.fModLabs.arr[n];
-         if (mod.fLabNum === nlabel + 1) return mod;
-         if ((mod.fLabNum < 0) && (nlabel === num_labels + mod.fLabNum)) return mod;
+         if ((mod.fLabNum === nlabel + 1) ||
+             ((mod.fLabNum < 0) && (nlabel === num_labels + mod.fLabNum))) return mod;
       }
       return null;
    }
