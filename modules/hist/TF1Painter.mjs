@@ -130,6 +130,8 @@ class TF1Painter extends ObjectPainter {
          }
       }
 
+      this._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
+
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
@@ -329,19 +331,19 @@ class TF1Painter extends ObjectPainter {
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
-   canZoomInside(axis,min,max) {
+   canZoomInside(axis, min, max) {
       if (axis !== 'x') return false;
 
       let tf1 = this.getObject();
 
-      if (tf1.fSave.length > 0) {
+      if ((tf1.fSave.length > 0) && this._use_saved_points) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
          let nb_points = tf1.fNpx,
              xmin = tf1.fSave[nb_points + 1],
              xmax = tf1.fSave[nb_points + 2];
 
-         return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
+         return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
 
       // if function calculated, one always could zoom inside
