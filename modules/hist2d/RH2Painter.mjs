@@ -736,7 +736,6 @@ class RH2Painter extends RHistPainter {
 
             let elem = this.draw_g
                           .append('svg:path')
-                          .attr('class','th2_contour')
                           .attr('d', dd)
                           .style('fill', fillcolor);
 
