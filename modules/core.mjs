@@ -65,6 +65,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
    browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
    browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    browser.touches = ('ontouchend' in document); // identify if touch events are supported
+   browser.smallWidth = window?.screen?.width && (window.screen.width <= 640);
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)

@@ -1,5 +1,5 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, decodeUrl,
-         source_dir, settings, internals, findFunction,
+         source_dir, settings, internals, browser, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTList, clTMap, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
@@ -3259,7 +3259,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && !isBatchMode() && (typeof document !== 'undefined') && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
+      if (!browser_configured && browser.smallWidth)
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
