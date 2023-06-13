@@ -60,7 +60,7 @@ const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1
 /** @summary btoa function in all environments */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
-let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false };
+let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
    browser$1.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
@@ -70,7 +70,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
    browser$1.chromeVersion = (browser$1.isChrome || browser$1.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
    browser$1.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    browser$1.touches = ('ontouchend' in document); // identify if touch events are supported
-   browser$1.smallWidth = window?.screen?.width && (window.screen.width <= 640);
+   browser$1.screenWidth = window.screen?.width ?? 1200;
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
@@ -65258,11 +65258,13 @@ class StandaloneMenu extends JSRootMenu {
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
+      let w = Math.min(args.width || 450, Math.round(0.9*browser$1.screenWidth));
+
       let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
           element = select('body')
                       .append('div')
                       .attr('id',dlg_id)
-                      .attr('class', 'jsroot_dialog').style('width', (args.width || 450) + 'px')
+                      .attr('class', 'jsroot_dialog').style('width', `${w}px`)
                       .attr('tabindex', '0')
                       .html(
          `<div class="jsroot_dialog_body">`+
@@ -103146,7 +103148,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && browser$1.smallWidth)
+      if (!browser_configured && (browser$1.screenWidth <= 640))
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
