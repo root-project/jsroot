@@ -540,6 +540,7 @@
             for (let k = 0; k < lines.length; ++k) {
                let pre = document.createElement('pre');
                pre.textContent = lines[k] || ' ';
+               pre.style = 'margin: 0px;';
                srcviewer.appendChild(pre);
             }
             srcviewer.focus();
@@ -551,6 +552,10 @@
       function SetSourceListener(elem, shortname, entry) {
          elem.addEventListener( 'click', event => {
             event.preventDefault();
+
+            if (event.ctrlKey)
+                return window.open(elem.href, '_blank');
+
             window.location.hash = shortname;
             ProcessSourceClick(entry).then(() => document.getElementById('panel').classList.toggle('open'));
          });

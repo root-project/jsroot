@@ -480,7 +480,7 @@
       }
 
       function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, entry) {
-          elem.addEventListener( 'click', function (event) {
+          elem.addEventListener('click', event => {
              event.preventDefault();
 
              if (event.ctrlKey)
