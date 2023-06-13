@@ -111,8 +111,8 @@ function floatToString(value, fmt, ret_fmt) {
 
    if (significance) {
 
-      // when using fixed representation, one could get 0.0
-      if (value && (Number(sg) === 0.) && (prec > 0)) {
+      // when using fixed representation, one could get 0
+      if (value && (Number(sg) === 0) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 

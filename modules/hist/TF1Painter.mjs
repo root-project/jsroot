@@ -181,8 +181,8 @@ class TF1Painter extends ObjectPainter {
             ymax = Math.max(bin.y, ymax);
          });
 
-         if (ymax > 0.0) ymax *= (1 + gStyle.fHistTopMargin);
-         if (ymin < 0.0) ymin *= (1 + gStyle.fHistTopMargin);
+         if (ymax > 0) ymax *= (1 + gStyle.fHistTopMargin);
+         if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
       let histo = create(clTH1I),

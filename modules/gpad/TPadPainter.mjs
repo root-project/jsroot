@@ -114,7 +114,7 @@ let PadButtonsHandler = {
       } else {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
-                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser.smallWidth)
+                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
                             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
                             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
@@ -304,8 +304,8 @@ class TPadPainter extends ObjectPainter {
           rect = {};
 
       if (this.pad) {
-         rect.szx = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fLeftMargin, this.pad.fRightMargin))*w);
-         rect.szy = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fBottomMargin, this.pad.fTopMargin))*h);
+         rect.szx = Math.round(Math.max(0, 0.5 - Math.max(this.pad.fLeftMargin, this.pad.fRightMargin))*w);
+         rect.szy = Math.round(Math.max(0, 0.5 - Math.max(this.pad.fBottomMargin, this.pad.fTopMargin))*h);
       } else {
          rect.szx = Math.round(0.5*w);
          rect.szy = Math.round(0.5*h);

@@ -3067,7 +3067,7 @@ class ClonedNodes {
             }
 
             if (transparency > 0)
-               opacity = (100.0 - transparency) / 100.0;
+               opacity = (100 - transparency) / 100;
             if (prop.fillcolor === undefined)
                prop.fillcolor = root_colors[mat.fFillColor];
          }

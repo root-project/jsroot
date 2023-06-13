@@ -1597,7 +1597,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    // for contour plots one requires handle with full range
    let main = painter.getFramePainter(),
-       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0}),
+       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0}),
        histo = painter.getHisto(), // get levels
        levels = painter.getContourLevels(), // init contour if not exists
        palette = painter.getHistPalette(),
@@ -1980,7 +1980,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (painter.options.Surf === 13) {
 
-      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0 });
 
       // get levels
       let levels = painter.getContourLevels(), // init contour
@@ -2009,7 +2009,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
                 lastcolindx = colindx;
-                layerz+=0.0001*main.size_z3d; // change layers Z
+                layerz += 0.0001 * main.size_z3d; // change layers Z
              }
 
              const pos = new Float32Array(faces.length*9),

@@ -1453,7 +1453,7 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
                 .listen().onChange(() => this.changedHighlight());
 
-      appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
+      appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
 
       appearance.addColor(this.ctrl, 'background').name('Background')
@@ -1545,7 +1545,7 @@ class TGeoPainter extends ObjectPainter {
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
               .listen().onChange(bloom_handler);
 
-      blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name('Strength')
+      blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
                .listen().onChange(bloom_handler);
    }
 
