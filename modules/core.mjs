@@ -208,8 +208,9 @@ let settings = {
    OptimizeDraw: 1,
    /** @summary Automatically create stats box, default on */
    AutoStat: true,
-   /** @summary Default frame position in NFC */
-   FrameNDC: { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
+   /** @summary Default frame position in NFC
+     * @deprecated Use gStyle.fPad[Left/Right/Top/Bottom]Margin values instead */
+   FrameNDC: {},
    /** @summary size of pad, where many features will be deactivated like text draw or zooming  */
    SmallPad: { width: 150, height: 100 },
    /** @summary Default color palette id  */

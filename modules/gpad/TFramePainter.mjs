@@ -2224,14 +2224,15 @@ class TFramePainter extends ObjectPainter {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad) {
-            Object.assign(this, settings.FrameNDC);
+            this.fX1NDC = gStyle.fPadLeftMargin;
+            this.fX2NDC = 1 - gStyle.fPadRightMargin;
+            this.fY1NDC = gStyle.fPadBottomMargin;
+            this.fY2NDC = 1 - gStyle.fPadTopMargin;
          } else {
-            Object.assign(this, {
-               fX1NDC: pad.fLeftMargin,
-               fX2NDC: 1 - pad.fRightMargin,
-               fY1NDC: pad.fBottomMargin,
-               fY2NDC: 1 - pad.fTopMargin
-            });
+            this.fX1NDC = pad.fLeftMargin;
+            this.fX2NDC = 1 - pad.fRightMargin;
+            this.fY1NDC = pad.fBottomMargin;
+            this.fY2NDC = 1 - pad.fTopMargin;
          }
       }
 

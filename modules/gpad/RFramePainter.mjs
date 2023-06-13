@@ -61,10 +61,10 @@ class RFramePainter extends RObjectPainter {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let rect = this.getPadPainter().getPadRect();
-         this.fX1NDC = this.v7EvalLength('margins_left', rect.width, settings.FrameNDC.fX1NDC) / rect.width;
-         this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, settings.FrameNDC.fY1NDC) / rect.height;
-         this.fX2NDC = 1 - this.v7EvalLength('margins_right', rect.width, 1-settings.FrameNDC.fX2NDC) / rect.width;
-         this.fY2NDC = 1 - this.v7EvalLength('margins_top', rect.height, 1-settings.FrameNDC.fY2NDC) / rect.height;
+         this.fX1NDC = this.v7EvalLength('margins_left', rect.width, gStyle.fPadLeftMargin) / rect.width;
+         this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, gStyle.fPadBottomMargin) / rect.height;
+         this.fX2NDC = 1 - this.v7EvalLength('margins_right', rect.width, gStyle.fPadRightMargin) / rect.width;
+         this.fY2NDC = 1 - this.v7EvalLength('margins_top', rect.height, gStyle.fPadTopMargin) / rect.height;
       }
 
       if (!this.fillatt)
