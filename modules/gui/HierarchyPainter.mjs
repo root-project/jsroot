@@ -3259,7 +3259,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
+      if (!browser_configured && !isBatchMode() && (typeof document !== 'undefined') && (document?.body?.scrollWidth !== undefined) && (document.body.scrollWidth <= 640))
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
