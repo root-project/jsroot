@@ -18,10 +18,13 @@ let version_date = '14/06/2023';
   * Like '7.0.0 14/04/2022' */
 let version = version_id + ' ' + version_date;
 
-/** @summary Location of JSROOT scripts
-  * @desc Automatically detected and used to load other scripts or modules */
+/** @summary Location of JSROOT modules
+  * @desc Automatically detected and used to dynamically load other modules
+  * @private */
 exports.source_dir = '';
 
+/** @summary Is node.js flag
+  * @private */
 let nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
 
 /** @summary internal data
@@ -43,23 +46,30 @@ const src = (typeof document === 'undefined' && typeof location === 'undefined' 
    }
 }
 
+/** @summary Is batch mode flag
+  * @private */
 let batch_mode = nodejs;
 
 /** @summary Indicates if running in batch mode */
 function isBatchMode() { return batch_mode; }
 
-/** @summary Set batch mode */
+/** @summary Set batch mode
+  * @private */
 function setBatchMode(on) { batch_mode = !!on; }
 
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-/** @summary atob function in all environments */
+/** @summary atob function in all environments
+  * @private */
 const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
 
-/** @summary btoa function in all environments */
+/** @summary btoa function in all environments
+  * @private */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
+/** @summary browser detection flags
+  * @private */
 let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
@@ -727,8 +737,8 @@ function parseMulti(json) {
 }
 
 /** @summary Method converts JavaScript object into ROOT-like JSON
-  * @desc Produced JSON can be used in parse() again
-  * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+  * @desc When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+  * Or one can again parse json with {@link parse} function
   * @param {object} obj - JavaScript object to convert
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code */
@@ -95477,7 +95487,7 @@ class TFile {
                });
             } else if (first_block_retry && isFunc(xhr.addEventListener)) {
                xhr.addEventListener('progress', oEvent => {
-                  if (!oEvent.total || oEvent.total > 3e7) {
+                  if (!oEvent.total || oEvent.total > 5e7) {
                      console.error(`Try to load very large file ${oEvent.total} at once - abort`);
                      xhr.abort();
                   }
@@ -95505,8 +95515,16 @@ class TFile {
          }
 
          if (res && first_req) {
-            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges'))
+            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
                file.fAcceptRanges = false;
+               if (res?.byteLength === place[1]) {
+                  // special case with cernbox, let try to get full size content 
+                  console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to read full file`);
+                  first_block_retry = true;
+                  return send_new_request();
+               }
+            }
+
             const kind = browser$1.isFirefox ? first_req.getResponseHeader('Server') : '';
             if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
                file.fMaxRanges = 1;
@@ -96378,11 +96396,13 @@ class TNodejsFile extends TFile {
 /**
   * @summary Proxy to read file contenxt
   *
-  * @desc Should implement followinf methods
-  *        openFile() - return Promise with true when file can be open normally
-  *        getFileName() - returns string with file name
-  *        getFileSize() - returns size of file
-  *        readBuffer(pos, len) - return promise with DataView for requested position and length
+  * @desc Should implement following methods:
+  *
+  * - openFile() - return Promise with true when file can be open normally
+  * - getFileName() - returns string with file name
+  * - getFileSize() - returns size of file
+  * - readBuffer(pos, len) - return promise with DataView for requested position and length
+  *
   * @private
   */
 
@@ -99792,7 +99812,7 @@ function addStreamerInfosForPainter(lst) {
 
 /** @summary Create SVG/PNG/JPEG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
-  * supported ROOT classes
+  * supported ROOT classes, but also can be used from web browser
   * @param {object} args - function settings
   * @param {object} args.object - object for the drawing
   * @param {string} [args.format = 'svg'] - image format like 'svg' (default), 'png' or 'jpeg'
@@ -99803,12 +99823,12 @@ function addStreamerInfosForPainter(lst) {
   * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
   * @return {Promise} with image code - svg as is, png/jpeg as base64 string or buffer (if as_buffer) specified
   * @example
-  * // how makeSVG can be used in node.js
-  * import { openFile, makeSVG } from 'jsroot';
+  * // how makeImage can be used in node.js
+  * import { openFile, makeImage } from 'jsroot';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let object = await file.readObject('hpxpy;1');
-  * let svg = await makeSVG({ object, option: 'lego2,pal67', width: 1200, height: 800 }); */
-
+  * let png64 = await makeImage({ format: 'png', object, option: 'lego2,pal67', width: 1200, height: 800 });
+  * let pngbuf = await makeImage({ format: 'png', as_buffer: true, object, option: 'lego2,pal67', width: 1200, height: 800 }); */
 async function makeImage(args) {
    if (!args) args = {};
 
@@ -119024,7 +119044,8 @@ function drawRPadSnapshot(dom, snap /*, opt*/) {
   * @param {Object} painter  - painter object to process
   * @param {string|boolean} frame_kind  - false for no frame or '3d' for special 3D mode
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
-  * @return {Promise} for ready */
+  * @return {Promise} for ready
+  * @private */
 async function ensureRCanvas(painter, frame_kind) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
