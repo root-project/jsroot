@@ -347,9 +347,10 @@ Following draw options could be specified (separated by semicolon or ';'):
    - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occlusion)
    - wire - instead of filled surfaces only wireframe will be drawn
    - vislvlN - maximal hierarchy depth of visible nodes (like vislvl6)
-   - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
-   - more3 - show 3 times more volumes as usual
+   - moreN - show N times more volumes as usual (normally ~10000 nodes and ~200000 elementary faces are shown)
    - all - try to display all geometry volumes (may lead to browser hanging)
+   - maxnodesN - configure maximal number of rendered nodes (like maxnodes100K)
+   - maxfacesN - configure maximal number of rendered faces (like maxfaces3M)
    - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
    - nohighlight - disable volumes highlighting (can be activated via context menu)
    - hscene - enable highlight of extra objects like tracks or hits
