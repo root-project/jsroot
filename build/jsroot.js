@@ -861,120 +861,114 @@ function findFunction(name) {
 }
 
 
-/** @summary Assign methods to request
-  * @private */
-function setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback) {
-   xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : function() {};
-   xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
-
-   if (!kind) kind = 'buf';
-
-   let method = 'GET', is_async = true, p = kind.indexOf(';sync');
-   if (p > 0) { kind = kind.slice(0,p); is_async = false; }
-   switch (kind) {
-      case 'head': method = 'HEAD'; break;
-      case 'posttext': method = 'POST'; kind = 'text'; break;
-      case 'postbuf':  method = 'POST'; kind = 'buf'; break;
-      case 'post':
-      case 'multi': method = 'POST'; break;
-   }
-
-   xhr.kind = kind;
-
-   if (settings.WithCredentials)
-      xhr.withCredentials = true;
-
-   if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
-      xhr.addEventListener('progress', function(oEvent) {
-         if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
-            this.did_abort = true;
-            this.abort();
-            this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
-         }
-      }.bind(xhr));
-
-   xhr.onreadystatechange = function() {
-
-      if (this.did_abort) return;
-
-      if ((this.readyState === 2) && this.expected_size) {
-         let len = parseInt(this.getResponseHeader('Content-Length'));
-         if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
-            this.did_abort = true;
-            this.abort();
-            return this.error_callback(Error(`Server response size ${len} larger than expected ${this.expected_size}. Abort I/O operation`), 599);
-         }
-      }
-
-      if (this.readyState != 4) return;
-
-      if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
-          // in these special cases browsers not always set status
-          !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
-            return this.error_callback(Error(`Fail to load url ${url}`), this.status);
-      }
-
-      if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') == 'gzip'))
-         // special handling of gzipped JSON objects in Node.js
-         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
-             let res = handle.unzipSync(Buffer.from(this.response)),
-                 obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
-            return this.http_callback(parse(obj));
-         });
-
-      switch(this.kind) {
-         case 'xml': return this.http_callback(this.responseXML);
-         case 'text': return this.http_callback(this.responseText);
-         case 'object': return this.http_callback(parse(this.responseText));
-         case 'multi': return this.http_callback(parseMulti(this.responseText));
-         case 'head': return this.http_callback(this);
-      }
-
-      // if no response type is supported, return as text (most probably, will fail)
-      if (this.responseType === undefined)
-         return this.http_callback(this.responseText);
-
-      if ((this.kind == 'bin') && ('byteLength' in this.response)) {
-         // if string representation in requested - provide it
-
-         let filecontent = '', u8Arr = new Uint8Array(this.response);
-         for (let i = 0; i < u8Arr.length; ++i)
-            filecontent += String.fromCharCode(u8Arr[i]);
-
-         return this.http_callback(filecontent);
-      }
-
-      this.http_callback(this.response);
-   };
-
-   xhr.open(method, url, is_async);
-
-   if ((kind == 'bin') || (kind == 'buf'))
-      xhr.responseType = 'arraybuffer';
-
-   if (nodejs && (method == 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
-      xhr.nodejs_checkzip = true;
-      xhr.responseType = 'arraybuffer';
-   }
-
-   return xhr;
-}
-
 /** @summary Method to create http request, without promise can be used only in browser environment
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
-   if (isNodeJs()) {
-      if (!use_promise)
-         throw Error('Not allowed to create http requests in node without promise');
-      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => {
-         let xhr = new h.default();
-         setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
-         return xhr;
-      });
+
+   function configureXhr(xhr) {
+      xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
+      xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
+
+      if (!kind) kind = 'buf';
+
+      let method = 'GET', is_async = true, p = kind.indexOf(';sync');
+      if (p > 0) { kind = kind.slice(0,p); is_async = false; }
+      switch (kind) {
+         case 'head': method = 'HEAD'; break;
+         case 'posttext': method = 'POST'; kind = 'text'; break;
+         case 'postbuf':  method = 'POST'; kind = 'buf'; break;
+         case 'post':
+         case 'multi': method = 'POST'; break;
+      }
+
+      xhr.kind = kind;
+
+      if (settings.WithCredentials)
+         xhr.withCredentials = true;
+
+      if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
+         xhr.addEventListener('progress', function(oEvent) {
+            if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
+               this.did_abort = true;
+               this.abort();
+               this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
+            }
+         }.bind(xhr));
+
+      xhr.onreadystatechange = function() {
+
+         if (this.did_abort) return;
+
+         if ((this.readyState === 2) && this.expected_size) {
+            let len = parseInt(this.getResponseHeader('Content-Length'));
+            if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
+               this.did_abort = true;
+               this.abort();
+               return this.error_callback(Error(`Server response size ${len} larger than expected ${this.expected_size}. Abort I/O operation`), 599);
+            }
+         }
+
+         if (this.readyState != 4) return;
+
+         if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
+             // in these special cases browsers not always set status
+             !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
+               return this.error_callback(Error(`Fail to load url ${url}`), this.status);
+         }
+
+         if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') == 'gzip'))
+            // special handling of gzipped JSON objects in Node.js
+            return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
+                let res = handle.unzipSync(Buffer.from(this.response)),
+                    obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+               return this.http_callback(parse(obj));
+            });
+
+         switch(this.kind) {
+            case 'xml': return this.http_callback(this.responseXML);
+            case 'text': return this.http_callback(this.responseText);
+            case 'object': return this.http_callback(parse(this.responseText));
+            case 'multi': return this.http_callback(parseMulti(this.responseText));
+            case 'head': return this.http_callback(this);
+         }
+
+         // if no response type is supported, return as text (most probably, will fail)
+         if (this.responseType === undefined)
+            return this.http_callback(this.responseText);
+
+         if ((this.kind == 'bin') && ('byteLength' in this.response)) {
+            // if string representation in requested - provide it
+
+            let filecontent = '', u8Arr = new Uint8Array(this.response);
+            for (let i = 0; i < u8Arr.length; ++i)
+               filecontent += String.fromCharCode(u8Arr[i]);
+
+            return this.http_callback(filecontent);
+         }
+
+         this.http_callback(this.response);
+      };
+
+      xhr.open(method, url, is_async);
+
+      if ((kind == 'bin') || (kind == 'buf'))
+         xhr.responseType = 'arraybuffer';
+
+      if (nodejs && (method == 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
+         xhr.nodejs_checkzip = true;
+         xhr.responseType = 'arraybuffer';
+      }
+
+      return xhr;
    }
 
-   let xhr = new XMLHttpRequest();
-   setRequestMethods(xhr, url, kind, user_accept_callback, user_reject_callback);
+   if (isNodeJs()) {
+      if (!use_promise)
+         throw Error('Not allowed to create http requests in node.js without promise');
+      return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => configureXhr(new h.default()));
+   }
+
+   let xhr = configureXhr(new XMLHttpRequest());
    return use_promise ? Promise.resolve(xhr) : xhr;
 }
 
@@ -95518,7 +95512,7 @@ class TFile {
             if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
                file.fAcceptRanges = false;
                if (res?.byteLength === place[1]) {
-                  // special case with cernbox, let try to get full size content 
+                  // special case with cernbox, let try to get full size content
                   console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to read full file`);
                   first_block_retry = true;
                   return send_new_request();
@@ -95583,7 +95577,7 @@ class TFile {
 
             let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
-            if (hdr_range && hdr_range.indexOf('bytes') >= 0) {
+            if (isStr(hdr_range) && hdr_range.indexOf('bytes') >= 0) {
                let parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-\/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
