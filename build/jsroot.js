@@ -95423,7 +95423,7 @@ class TFile {
           promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
           first = 0, last = 0, blobs = [], // array of requested segments
           read_callback, first_req,
-          first_block = (place[0] === 0) && (place.length === 2);
+          first_block = (place[0] === 0) && (place.length === 2), first_block_retry = false;
 
       if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
@@ -95475,6 +95475,13 @@ class TFile {
                   if (oEvent.lengthComputable)
                      progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
                });
+            } else if (first_block_retry && isFunc(xhr.addEventListener)) {
+               xhr.addEventListener('progress', oEvent => {
+                  if (!oEvent.total || oEvent.total > 3e7) {
+                     console.error(`Try to load very large file ${oEvent.total} at once - abort`);
+                     xhr.abort();
+                  }
+               });
             }
 
             first_req = first_block ? xhr : null;
@@ -95484,10 +95491,17 @@ class TFile {
 
       read_callback = function(res) {
 
-         if (!res && file.fUseStampPar && first_block) {
+         if (!res && first_block) {
             // if fail to read file with stamp parameter, try once again without it
-            file.fUseStampPar = false;
-            return send_new_request();
+            if (file.fUseStampPar) {
+               file.fUseStampPar = false;
+               return send_new_request();
+            }
+            if (file.fAcceptRanges) {
+               file.fAcceptRanges = false;
+               first_block_retry = true;
+               return send_new_request();
+            }
          }
 
          if (res && first_req) {
