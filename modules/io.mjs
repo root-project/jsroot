@@ -2846,7 +2846,7 @@ class TFile {
             if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
                file.fAcceptRanges = false;
                if (res?.byteLength === place[1]) {
-                  // special case with cernbox, let try to get full size content 
+                  // special case with cernbox, let try to get full size content
                   console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to read full file`);
                   first_block_retry = true;
                   return send_new_request();
@@ -2911,7 +2911,7 @@ class TFile {
 
             let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
-            if (hdr_range && hdr_range.indexOf('bytes') >= 0) {
+            if (isStr(hdr_range) && hdr_range.indexOf('bytes') >= 0) {
                let parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-\/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
