@@ -3519,7 +3519,7 @@ class TGeoPainter extends ObjectPainter {
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
          this._clones.setVisLevel(lvl);
-         this._clones.setMaxVisNodes(maxnodes);
+         this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
 
          this._clones.name_prefix = name_prefix;
 
