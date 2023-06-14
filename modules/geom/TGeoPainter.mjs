@@ -5456,7 +5456,7 @@ class TGeoPainter extends ObjectPainter {
          painter._main_painter._slave_painters.push(painter);
       }
 
-      if (is_eve && !painter.ctrl.vislevel || (painter.ctrl.vislevel < 9))
+      if (is_eve && (!painter.ctrl.vislevel || (painter.ctrl.vislevel < 9)))
          painter.ctrl.vislevel = 9;
 
       if (extras) {
