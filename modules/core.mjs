@@ -12,10 +12,13 @@ let version_date = '14/06/2023';
   * Like '7.0.0 14/04/2022' */
 let version = version_id + ' ' + version_date;
 
-/** @summary Location of JSROOT scripts
-  * @desc Automatically detected and used to load other scripts or modules */
+/** @summary Location of JSROOT modules
+  * @desc Automatically detected and used to dynamically load other modules
+  * @private */
 let source_dir = '';
 
+/** @summary Is node.js flag
+  * @private */
 let nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
 
 /** @summary internal data
@@ -38,23 +41,30 @@ if (src && isStr(src)) {
    }
 }
 
+/** @summary Is batch mode flag
+  * @private */
 let batch_mode = nodejs;
 
 /** @summary Indicates if running in batch mode */
 function isBatchMode() { return batch_mode; }
 
-/** @summary Set batch mode */
+/** @summary Set batch mode
+  * @private */
 function setBatchMode(on) { batch_mode = !!on; }
 
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
 
-/** @summary atob function in all environments */
+/** @summary atob function in all environments
+  * @private */
 const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
 
-/** @summary btoa function in all environments */
+/** @summary btoa function in all environments
+  * @private */
 const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
 
+/** @summary browser detection flags
+  * @private */
 let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
@@ -722,8 +732,8 @@ function parseMulti(json) {
 }
 
 /** @summary Method converts JavaScript object into ROOT-like JSON
-  * @desc Produced JSON can be used in parse() again
-  * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+  * @desc When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+  * Or one can again parse json with {@link parse} function
   * @param {object} obj - JavaScript object to convert
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code */

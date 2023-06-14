@@ -516,7 +516,7 @@ function addStreamerInfosForPainter(lst) {
 
 /** @summary Create SVG/PNG/JPEG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
-  * supported ROOT classes
+  * supported ROOT classes, but also can be used from web browser
   * @param {object} args - function settings
   * @param {object} args.object - object for the drawing
   * @param {string} [args.format = 'svg'] - image format like 'svg' (default), 'png' or 'jpeg'
@@ -527,12 +527,12 @@ function addStreamerInfosForPainter(lst) {
   * @param {boolean} [args.use_canvas_size = false] - if configured used size stored in TCanvas object
   * @return {Promise} with image code - svg as is, png/jpeg as base64 string or buffer (if as_buffer) specified
   * @example
-  * // how makeSVG can be used in node.js
-  * import { openFile, makeSVG } from 'jsroot';
+  * // how makeImage can be used in node.js
+  * import { openFile, makeImage } from 'jsroot';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let object = await file.readObject('hpxpy;1');
-  * let svg = await makeSVG({ object, option: 'lego2,pal67', width: 1200, height: 800 }); */
-
+  * let png64 = await makeImage({ format: 'png', object, option: 'lego2,pal67', width: 1200, height: 800 });
+  * let pngbuf = await makeImage({ format: 'png', as_buffer: true, object, option: 'lego2,pal67', width: 1200, height: 800 }); */
 async function makeImage(args) {
    if (!args) args = {};
 
