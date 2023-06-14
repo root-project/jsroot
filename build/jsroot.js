@@ -84967,8 +84967,10 @@ class ClonedNodes {
    }
 
    /** @summary Set maximal number of visible nodes */
-   setMaxVisNodes(v) {
+   setMaxVisNodes(v, more) {
       this.maxnodes = Number.isFinite(v) ? v : 10000;
+      if (more && Number.isFinite(more))
+         this.maxnodes *= more;
    }
 
    /** @summary Returns configured maximal number of visible nodes */
@@ -90607,11 +90609,11 @@ class TGeoPainter extends ObjectPainter {
             if (!lvl && this.geo_manager.fVisLevel)
                lvl = this.geo_manager.fVisLevel;
             if (!maxnodes)
-               maxnodes = this.geo_manager.fMaxVisNodes * (this.ctrl.more || 1);
+               maxnodes = this.geo_manager.fMaxVisNodes;
          }
 
          this._clones.setVisLevel(lvl);
-         this._clones.setMaxVisNodes(maxnodes);
+         this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
 
          this._clones.name_prefix = name_prefix;
 
@@ -92082,7 +92084,7 @@ class TGeoPainter extends ObjectPainter {
          painter._main_painter._slave_painters.push(painter);
       }
 
-      if (is_eve && !painter.ctrl.vislevel || (painter.ctrl.vislevel < 9))
+      if (is_eve && (!painter.ctrl.vislevel || (painter.ctrl.vislevel < 9)))
          painter.ctrl.vislevel = 9;
 
       if (extras) {

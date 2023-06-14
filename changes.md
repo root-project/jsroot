@@ -35,6 +35,8 @@
 32. Fix - rescan sumw2 when update TH1
 33. Fix - correct placing for TLegend header
 34. Fix - correctly align sub/super scripts in complex TLatex
+35. Fix - correctly set visibility level for geo drawing
+36. Fix - use more factor for number of nodes in geo drawing
 
 
 ## Changes in 7.3.4
