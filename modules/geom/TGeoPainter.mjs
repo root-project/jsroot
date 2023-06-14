@@ -2247,7 +2247,9 @@ class TGeoPainter extends ObjectPainter {
          let job = {
             collect: this._current_face_limit,   // indicator for the command
             flags: this._clones.getVisibleFlags(),
-            matrix: matrix ? matrix.elements : null
+            matrix: matrix ? matrix.elements : null,
+            vislevel: this._clones.getVisLevel(),
+            maxvisnodes: this._clones.getMaxVisNodes()
          };
 
          this.submitToWorker(job);
