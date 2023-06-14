@@ -88040,6 +88040,28 @@ class TGeoPainter extends ObjectPainter {
 
       this._datgui.painter = this;
 
+      if (!this.ctrl.project) {
+         let selection = this._datgui.addFolder('Selection');
+
+         if (!this.ctrl.maxnodes)
+            this.ctrl.maxnodes = this._clones?.getMaxVisNodes() ?? 10000;
+         if (!this.ctrl.vislevel)
+            this.ctrl.vislevel = this._clones?.getVisLevel() ?? 3;
+         if (!this.ctrl.maxfaces)
+            this.ctrl.maxfaces = 200000 * this.ctrl.more;
+         this.ctrl.more = 1;
+
+         selection.add(this.ctrl, 'vislevel', 1, 99, 1)
+                     .name('fVisLevel')
+                     .listen().onChange(() => this.startRedraw(500));
+         selection.add(this.ctrl, 'maxnodes', 0, 500000, 1000)
+                  .name('fMaxVisNodes')
+                  .listen().onChange(() => this.startRedraw(500));
+         selection.add(this.ctrl, 'maxfaces', 0, 5000000, 100000)
+                  .name('Max faces')
+                  .listen().onChange(() => this.startRedraw(500));
+      }
+
       if (this.ctrl.project) {
 
          let bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01),
@@ -88856,7 +88878,9 @@ class TGeoPainter extends ObjectPainter {
          let job = {
             collect: this._current_face_limit,   // indicator for the command
             flags: this._clones.getVisibleFlags(),
-            matrix: matrix ? matrix.elements : null
+            matrix: matrix ? matrix.elements : null,
+            vislevel: this._clones.getVisLevel(),
+            maxvisnodes: this._clones.getMaxVisNodes()
          };
 
          this.submitToWorker(job);
@@ -92028,7 +92052,15 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Start geometry redraw */
-   startRedraw() {
+   startRedraw(tmout) {
+      if (tmout) {
+         if (this._redraw_timer)
+            clearTimeout(this._redraw_timer);
+         this._redraw_timer = setTimeout(() => this.startRedraw(), tmout);
+         return;
+      }
+
+      delete this._redraw_timer;
       delete this._did_update;
 
       this.clearDrawings();
