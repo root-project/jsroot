@@ -847,7 +847,7 @@ class TGeoPainter extends ObjectPainter {
          exact = false;
       }
 
-      this.findNodeWithVolume(regexp, function(arg) {
+      this.findNodeWithVolume(regexp, arg => {
          setInvisibleAll(arg.node.fVolume, (sign !== '+'));
          return exact ? arg : null; // continue search if not exact expression provided
       });
@@ -1283,11 +1283,10 @@ class TGeoPainter extends ObjectPainter {
                   mesh.getMatrixAt(i, item.matrix0);
                   item.minvert.copy(item.matrix0).invert();
 
-                  let box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0),
-                      signz = 1; //mesh._flippedMesh ? -1 : 1;
+                  let box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
 
-                  item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2);// .applyMatrix4(item.matrix0);
-                  item.vect1 = new Vector3(0,0,0).applyMatrix4(item.minvert);
+                  item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, (box3.max.z + box3.min.z) / 2);
+                  item.vect1 = new Vector3(0, 0, 0).applyMatrix4(item.minvert);
                }
             }
 
@@ -1760,14 +1759,14 @@ class TGeoPainter extends ObjectPainter {
                let wireframe = this.accessObjectWireFrame(obj);
 
                if (wireframe !== undefined)
-                  menu.addchk(wireframe, 'Wireframe', n, function(indx) {
+                  menu.addchk(wireframe, 'Wireframe', n, indx => {
                      let m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.render3D();
-                  });
+                  }, 'Toggle wireframe mode for the node');
 
                if (cnt > 1)
-                  menu.add('Manifest', n, function(indx) {
+                  menu.add('Manifest', n, indx => {
 
                      if (this._last_manifest)
                         this._last_manifest.wireframe = !this._last_manifest.wireframe;
@@ -1787,15 +1786,15 @@ class TGeoPainter extends ObjectPainter {
                      this._last_manifest.wireframe = !this._last_manifest.wireframe;
 
                      this.render3D();
-                  });
+                  }, 'Manifest selected node');
 
 
-               menu.add('Focus', n, function(indx) {
+               menu.add('Focus', n, indx => {
                   this.focusCamera(intersects[indx].object);
                });
 
                if (!this._geom_viewer) {
-                  menu.add('Hide', n, function(indx) {
+                  menu.add('Hide', n, indx => {
                      let resolve = this._clones.resolveStack(intersects[indx].object.stack);
                      if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                         setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
