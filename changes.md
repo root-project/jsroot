@@ -28,15 +28,15 @@
 25. Support InstancedMesh for TGeo drawing, let show really large geometries
 26. Implement 'inject=path/script_name.js' url option to inject scripts without emulating of v6
 27. Exclude 'HEAD' http request when reading ROOT file, all info can be get from first real HTTP request
-28. Provide makeImage function for generation of svg, png and jpeg images in batch and interactively
+28. Provide makeImage function for generation of svg, png and jpeg images in batch and interactively (#257)
 29. Implement interactive zoom shifting when middle-mouse button down or single-touch moving
 30. Several improvements for touch devices or devices with small displays
 31. Remove settings.FrameNDC, use Style.fPad[Left/Right/Top/Bottom]Margin values instead
 32. Fix - rescan sumw2 when update TH1
 33. Fix - correct placing for TLegend header
 34. Fix - correctly align sub/super scripts in complex TLatex
-35. Fix - correctly set visibility level for geo drawing
-36. Fix - use more factor for number of nodes in geo drawing
+35. Fix - correctly set visibility level for geo drawing (#258)
+36. Fix - use more factor for number of nodes in geo drawing (#258)
 
 
 ## Changes in 7.3.4
