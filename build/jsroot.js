@@ -88052,10 +88052,10 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.more = 1;
 
          selection.add(this.ctrl, 'vislevel', 1, 99, 1)
-                     .name('fVisLevel')
+                     .name('Visibility level')
                      .listen().onChange(() => this.startRedraw(500));
          selection.add(this.ctrl, 'maxnodes', 0, 500000, 1000)
-                  .name('fMaxVisNodes')
+                  .name('Visible nodes')
                   .listen().onChange(() => this.startRedraw(500));
          selection.add(this.ctrl, 'maxfaces', 0, 5000000, 100000)
                   .name('Max faces')
