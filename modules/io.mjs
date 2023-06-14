@@ -2822,10 +2822,16 @@ class TFile {
 
       read_callback = function(res) {
 
-         if (!res && file.fUseStampPar && first_block) {
+         if (!res && first_block) {
             // if fail to read file with stamp parameter, try once again without it
-            file.fUseStampPar = false;
-            return send_new_request();
+            if (file.fUseStampPar) {
+               file.fUseStampPar = false;
+               return send_new_request();
+            }
+            if (file.fAcceptRanges) {
+               file.fAcceptRanges = false;
+               return send_new_request();
+            }
          }
 
          if (res && first_req) {
