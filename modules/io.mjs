@@ -2815,7 +2815,7 @@ class TFile {
                });
             } else if (first_block_retry && isFunc(xhr.addEventListener)) {
                xhr.addEventListener('progress', oEvent => {
-                  if (!oEvent.total || oEvent.total > 3e7) {
+                  if (!oEvent.total || oEvent.total > 5e7) {
                      console.error(`Try to load very large file ${oEvent.total} at once - abort`);
                      xhr.abort();
                   }
@@ -2844,10 +2844,13 @@ class TFile {
 
          if (res && first_req) {
             if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
-               if (res?.byteLength === place[1])
-                  console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to continue as is`);
-               else
-                  file.fAcceptRanges = false;
+               file.fAcceptRanges = false;
+               if (res?.byteLength === place[1]) {
+                  // special case with cernbox, let try to get full size content 
+                  console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to read full file`);
+                  first_block_retry = true;
+                  return send_new_request();
+               }
             }
 
             const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
