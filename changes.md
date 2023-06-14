@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 7.3.x
+1. Fix - correctly set visibility level for geo drawing
+2. Fix - use more factor for number of nodes in geo drawing
+
+
 ## Changes in 7.3.4
 1. Fix - do not allow move float browser too far left/top
 
