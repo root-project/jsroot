@@ -2339,8 +2339,10 @@ class ClonedNodes {
    }
 
    /** @summary Set maximal number of visible nodes */
-   setMaxVisNodes(v) {
+   setMaxVisNodes(v, more) {
       this.maxnodes = Number.isFinite(v) ? v : 10000;
+      if (more && Number.isFinite(more))
+         this.maxnodes *= more;
    }
 
    /** @summary Returns configured maximal number of visible nodes */
