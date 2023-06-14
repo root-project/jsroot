@@ -2843,8 +2843,13 @@ class TFile {
          }
 
          if (res && first_req) {
-            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges'))
-               file.fAcceptRanges = false;
+            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
+               if (res?.byteLength === place[1])
+                  console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to continue as is`);
+               else
+                  file.fAcceptRanges = false;
+            }
+
             const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
             if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
                file.fMaxRanges = 1;
@@ -3759,11 +3764,13 @@ class TNodejsFile extends TFile {
 /**
   * @summary Proxy to read file contenxt
   *
-  * @desc Should implement followinf methods
-  *        openFile() - return Promise with true when file can be open normally
-  *        getFileName() - returns string with file name
-  *        getFileSize() - returns size of file
-  *        readBuffer(pos, len) - return promise with DataView for requested position and length
+  * @desc Should implement following methods:
+  *
+  * - openFile() - return Promise with true when file can be open normally
+  * - getFileName() - returns string with file name
+  * - getFileSize() - returns size of file
+  * - readBuffer(pos, len) - return promise with DataView for requested position and length
+  *
   * @private
   */
 
