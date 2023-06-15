@@ -288,7 +288,11 @@ function getDrawSettings(kind, selector) {
    return res;
 }
 
-/** @summary Set default draw option for provided class */
+/** @summary Set default draw option for provided class
+  * @example
+  import { setDefaultDrawOpt } from 'https://root.cern/js/latest/modules/draw.mjs';
+  setDefaultDrawOpt('TH1', 'text');
+  setDefaultDrawOpt('TH2', 'col');  */
 function setDefaultDrawOpt(classname, opt) {
    let handle = getDrawHandle(prROOT + classname, 0);
    if (handle)
@@ -422,7 +426,18 @@ async function draw(dom, obj, opt) {
   * @return {Promise} with painter object
   * @desc If drawing was not done before, it will be performed with {@link draw}.
   * Otherwise drawing content will be updated
-  * @public */
+  * @public
+  * @example
+  * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
+  * import { draw, redraw } from 'https://root.cern/js/latest/modules/draw.mjs';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let obj = await file.readObject('hpxpy;1');
+  * await draw('drawing', obj, 'colz');
+  * let cnt = 0;
+  * setInterval(() => {
+  *    obj.fTitle = `Next iteration ${cnt++}`;
+  *    redraw('drawing', obj, 'colz');
+  * }, 1000); */
 async function redraw(dom, obj, opt) {
 
    if (!isObject(obj))
@@ -531,8 +546,8 @@ function addStreamerInfosForPainter(lst) {
   * import { openFile, makeImage } from 'jsroot';
   * let file = await openFile('https://root.cern/js/files/hsimple.root');
   * let object = await file.readObject('hpxpy;1');
-  * let png64 = await makeImage({ format: 'png', object, option: 'lego2,pal67', width: 1200, height: 800 });
-  * let pngbuf = await makeImage({ format: 'png', as_buffer: true, object, option: 'lego2,pal67', width: 1200, height: 800 }); */
+  * let png64 = await makeImage({ format: 'png', object, option: 'colz', width: 1200, height: 800 });
+  * let pngbuf = await makeImage({ format: 'png', as_buffer: true, object, option: 'colz', width: 1200, height: 800 }); */
 async function makeImage(args) {
    if (!args) args = {};
 

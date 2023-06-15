@@ -5,7 +5,7 @@ let version_id = '7.4.0';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '14/06/2023';
+let version_date = '15/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -736,7 +736,13 @@ function parseMulti(json) {
   * Or one can again parse json with {@link parse} function
   * @param {object} obj - JavaScript object to convert
   * @param {number} [spacing] - optional line spacing in JSON
-  * @return {string} produced JSON code */
+  * @return {string} produced JSON code
+  * @example
+  * import { openFile, draw, toJSON } from 'https://root.cern/js/latest/modules/main.mjs';
+  * let file = await openFile('https://root.cern/js/files/hsimple.root');
+  * let obj = await file.readObject('hpxpy;1');
+  * obj.fTitle = 'New histogram title';
+  * let json = toJSON(obj); */
 function toJSON(obj, spacing) {
    if (!isObject(obj)) return '';
 
