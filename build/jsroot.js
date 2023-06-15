@@ -13203,8 +13203,6 @@ class EventDispatcher {
 
 const _lut = [ '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '0a', '0b', '0c', '0d', '0e', '0f', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '1a', '1b', '1c', '1d', '1e', '1f', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '2a', '2b', '2c', '2d', '2e', '2f', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '3a', '3b', '3c', '3d', '3e', '3f', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '4a', '4b', '4c', '4d', '4e', '4f', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '5a', '5b', '5c', '5d', '5e', '5f', '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '6a', '6b', '6c', '6d', '6e', '6f', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '7a', '7b', '7c', '7d', '7e', '7f', '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', '8a', '8b', '8c', '8d', '8e', '8f', '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', '9a', '9b', '9c', '9d', '9e', '9f', 'a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'd0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'da', 'db', 'dc', 'dd', 'de', 'df', 'e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'ea', 'eb', 'ec', 'ed', 'ee', 'ef', 'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'fa', 'fb', 'fc', 'fd', 'fe', 'ff' ];
 
-let _seed = 1234567;
-
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -13240,119 +13238,10 @@ function euclideanModulo( n, m ) {
 
 }
 
-// Linear mapping from range <a1, a2> to range <b1, b2>
-function mapLinear( x, a1, a2, b1, b2 ) {
-
-	return b1 + ( x - a1 ) * ( b2 - b1 ) / ( a2 - a1 );
-
-}
-
-// https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/inverse-lerp-a-super-useful-yet-often-overlooked-function-r5230/
-function inverseLerp( x, y, value ) {
-
-	if ( x !== y ) {
-
-		return ( value - x ) / ( y - x );
-
-	} else {
-
-		return 0;
-
-	}
-
-}
-
 // https://en.wikipedia.org/wiki/Linear_interpolation
 function lerp( x, y, t ) {
 
 	return ( 1 - t ) * x + t * y;
-
-}
-
-// http://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/
-function damp( x, y, lambda, dt ) {
-
-	return lerp( x, y, 1 - Math.exp( - lambda * dt ) );
-
-}
-
-// https://www.desmos.com/calculator/vcsjnyz7x4
-function pingpong( x, length = 1 ) {
-
-	return length - Math.abs( euclideanModulo( x, length * 2 ) - length );
-
-}
-
-// http://en.wikipedia.org/wiki/Smoothstep
-function smoothstep( x, min, max ) {
-
-	if ( x <= min ) return 0;
-	if ( x >= max ) return 1;
-
-	x = ( x - min ) / ( max - min );
-
-	return x * x * ( 3 - 2 * x );
-
-}
-
-function smootherstep( x, min, max ) {
-
-	if ( x <= min ) return 0;
-	if ( x >= max ) return 1;
-
-	x = ( x - min ) / ( max - min );
-
-	return x * x * x * ( x * ( x * 6 - 15 ) + 10 );
-
-}
-
-// Random integer from <low, high> interval
-function randInt( low, high ) {
-
-	return low + Math.floor( Math.random() * ( high - low + 1 ) );
-
-}
-
-// Random float from <low, high> interval
-function randFloat( low, high ) {
-
-	return low + Math.random() * ( high - low );
-
-}
-
-// Random float from <-range/2, range/2> interval
-function randFloatSpread( range ) {
-
-	return range * ( 0.5 - Math.random() );
-
-}
-
-// Deterministic pseudo-random float in the interval [ 0, 1 ]
-function seededRandom( s ) {
-
-	if ( s !== undefined ) _seed = s;
-
-	// Mulberry32 generator
-
-	let t = _seed += 0x6D2B79F5;
-
-	t = Math.imul( t ^ t >>> 15, t | 1 );
-
-	t ^= t + Math.imul( t ^ t >>> 7, t | 61 );
-
-	return ( ( t ^ t >>> 14 ) >>> 0 ) / 4294967296;
-
-}
-
-function degToRad( degrees ) {
-
-	return degrees * DEG2RAD;
-
-}
-
-function radToDeg( radians ) {
-
-	return radians * RAD2DEG;
 
 }
 
@@ -13362,71 +13251,9 @@ function isPowerOfTwo( value ) {
 
 }
 
-function ceilPowerOfTwo( value ) {
-
-	return Math.pow( 2, Math.ceil( Math.log( value ) / Math.LN2 ) );
-
-}
-
 function floorPowerOfTwo( value ) {
 
 	return Math.pow( 2, Math.floor( Math.log( value ) / Math.LN2 ) );
-
-}
-
-function setQuaternionFromProperEuler( q, a, b, c, order ) {
-
-	// Intrinsic Proper Euler Angles - see https://en.wikipedia.org/wiki/Euler_angles
-
-	// rotations are applied to the axes in the order specified by 'order'
-	// rotation by angle 'a' is applied first, then by angle 'b', then by angle 'c'
-	// angles are in radians
-
-	const cos = Math.cos;
-	const sin = Math.sin;
-
-	const c2 = cos( b / 2 );
-	const s2 = sin( b / 2 );
-
-	const c13 = cos( ( a + c ) / 2 );
-	const s13 = sin( ( a + c ) / 2 );
-
-	const c1_3 = cos( ( a - c ) / 2 );
-	const s1_3 = sin( ( a - c ) / 2 );
-
-	const c3_1 = cos( ( c - a ) / 2 );
-	const s3_1 = sin( ( c - a ) / 2 );
-
-	switch ( order ) {
-
-		case 'XYX':
-			q.set( c2 * s13, s2 * c1_3, s2 * s1_3, c2 * c13 );
-			break;
-
-		case 'YZY':
-			q.set( s2 * s1_3, c2 * s13, s2 * c1_3, c2 * c13 );
-			break;
-
-		case 'ZXZ':
-			q.set( s2 * c1_3, s2 * s1_3, c2 * s13, c2 * c13 );
-			break;
-
-		case 'XZX':
-			q.set( c2 * s13, s2 * s3_1, s2 * c3_1, c2 * c13 );
-			break;
-
-		case 'YXY':
-			q.set( s2 * c3_1, c2 * s13, s2 * s3_1, c2 * c13 );
-			break;
-
-		case 'ZYZ':
-			q.set( s2 * s3_1, s2 * c3_1, c2 * s13, c2 * c13 );
-			break;
-
-		default:
-			console.warn( 'THREE.MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: ' + order );
-
-	}
 
 }
 
@@ -13493,62 +13320,6 @@ function normalize( value, array ) {
 	}
 
 }
-
-const MathUtils = {
-	DEG2RAD: DEG2RAD,
-	RAD2DEG: RAD2DEG,
-	generateUUID: generateUUID,
-	clamp: clamp,
-	euclideanModulo: euclideanModulo,
-	mapLinear: mapLinear,
-	inverseLerp: inverseLerp,
-	lerp: lerp,
-	damp: damp,
-	pingpong: pingpong,
-	smoothstep: smoothstep,
-	smootherstep: smootherstep,
-	randInt: randInt,
-	randFloat: randFloat,
-	randFloatSpread: randFloatSpread,
-	seededRandom: seededRandom,
-	degToRad: degToRad,
-	radToDeg: radToDeg,
-	isPowerOfTwo: isPowerOfTwo,
-	ceilPowerOfTwo: ceilPowerOfTwo,
-	floorPowerOfTwo: floorPowerOfTwo,
-	setQuaternionFromProperEuler: setQuaternionFromProperEuler,
-	normalize: normalize,
-	denormalize: denormalize
-};
-
-var MathUtils$1 = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	DEG2RAD: DEG2RAD,
-	MathUtils: MathUtils,
-	RAD2DEG: RAD2DEG,
-	ceilPowerOfTwo: ceilPowerOfTwo,
-	clamp: clamp,
-	damp: damp,
-	degToRad: degToRad,
-	denormalize: denormalize,
-	euclideanModulo: euclideanModulo,
-	floorPowerOfTwo: floorPowerOfTwo,
-	generateUUID: generateUUID,
-	inverseLerp: inverseLerp,
-	isPowerOfTwo: isPowerOfTwo,
-	lerp: lerp,
-	mapLinear: mapLinear,
-	normalize: normalize,
-	pingpong: pingpong,
-	radToDeg: radToDeg,
-	randFloat: randFloat,
-	randFloatSpread: randFloatSpread,
-	randInt: randInt,
-	seededRandom: seededRandom,
-	setQuaternionFromProperEuler: setQuaternionFromProperEuler,
-	smootherstep: smootherstep,
-	smoothstep: smoothstep
-});
 
 class Vector2 {
 
@@ -17017,9 +16788,9 @@ class Vector3 {
 
 	projectOnPlane( planeNormal ) {
 
-		_vector$b.copy( this ).projectOnVector( planeNormal );
+		_vector$7.copy( this ).projectOnVector( planeNormal );
 
-		return this.sub( _vector$b );
+		return this.sub( _vector$7 );
 
 	}
 
@@ -17028,7 +16799,7 @@ class Vector3 {
 		// reflect incident vector off plane orthogonal to normal
 		// normal is assumed to have unit length
 
-		return this.sub( _vector$b.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
+		return this.sub( _vector$7.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
 
 	}
 
@@ -17230,7 +17001,7 @@ class Vector3 {
 
 }
 
-const _vector$b = /*@__PURE__*/ new Vector3();
+const _vector$7 = /*@__PURE__*/ new Vector3();
 const _quaternion$2 = /*@__PURE__*/ new Quaternion();
 
 class Box3 {
@@ -17259,7 +17030,7 @@ class Box3 {
 
 		for ( let i = 0, il = array.length; i < il; i += 3 ) {
 
-			this.expandByPoint( _vector$a.fromArray( array, i ) );
+			this.expandByPoint( _vector$6.fromArray( array, i ) );
 
 		}
 
@@ -17273,7 +17044,7 @@ class Box3 {
 
 		for ( let i = 0, il = attribute.count; i < il; i ++ ) {
 
-			this.expandByPoint( _vector$a.fromBufferAttribute( attribute, i ) );
+			this.expandByPoint( _vector$6.fromBufferAttribute( attribute, i ) );
 
 		}
 
@@ -17297,7 +17068,7 @@ class Box3 {
 
 	setFromCenterAndSize( center, size ) {
 
-		const halfSize = _vector$a.copy( size ).multiplyScalar( 0.5 );
+		const halfSize = _vector$6.copy( size ).multiplyScalar( 0.5 );
 
 		this.min.copy( center ).sub( halfSize );
 		this.max.copy( center ).add( halfSize );
@@ -17400,10 +17171,10 @@ class Box3 {
 
 			}
 
-			_box$3.copy( object.boundingBox );
-			_box$3.applyMatrix4( object.matrixWorld );
+			_box$2.copy( object.boundingBox );
+			_box$2.applyMatrix4( object.matrixWorld );
 
-			this.union( _box$3 );
+			this.union( _box$2 );
 
 		} else {
 
@@ -17416,8 +17187,8 @@ class Box3 {
 					const position = geometry.attributes.position;
 					for ( let i = 0, l = position.count; i < l; i ++ ) {
 
-						_vector$a.fromBufferAttribute( position, i ).applyMatrix4( object.matrixWorld );
-						this.expandByPoint( _vector$a );
+						_vector$6.fromBufferAttribute( position, i ).applyMatrix4( object.matrixWorld );
+						this.expandByPoint( _vector$6 );
 
 					}
 
@@ -17429,10 +17200,10 @@ class Box3 {
 
 					}
 
-					_box$3.copy( geometry.boundingBox );
-					_box$3.applyMatrix4( object.matrixWorld );
+					_box$2.copy( geometry.boundingBox );
+					_box$2.applyMatrix4( object.matrixWorld );
 
-					this.union( _box$3 );
+					this.union( _box$2 );
 
 				}
 
@@ -17493,10 +17264,10 @@ class Box3 {
 	intersectsSphere( sphere ) {
 
 		// Find the point on the AABB closest to the sphere center.
-		this.clampPoint( sphere.center, _vector$a );
+		this.clampPoint( sphere.center, _vector$6 );
 
 		// If that point is inside the sphere, the AABB and sphere intersect.
-		return _vector$a.distanceToSquared( sphere.center ) <= ( sphere.radius * sphere.radius );
+		return _vector$6.distanceToSquared( sphere.center ) <= ( sphere.radius * sphere.radius );
 
 	}
 
@@ -17561,13 +17332,13 @@ class Box3 {
 
 		// translate triangle to aabb origin
 		_v0$2.subVectors( triangle.a, _center );
-		_v1$8.subVectors( triangle.b, _center );
-		_v2$5.subVectors( triangle.c, _center );
+		_v1$6.subVectors( triangle.b, _center );
+		_v2$3.subVectors( triangle.c, _center );
 
 		// compute edge vectors for triangle
-		_f0.subVectors( _v1$8, _v0$2 );
-		_f1.subVectors( _v2$5, _v1$8 );
-		_f2.subVectors( _v0$2, _v2$5 );
+		_f0.subVectors( _v1$6, _v0$2 );
+		_f1.subVectors( _v2$3, _v1$6 );
+		_f2.subVectors( _v0$2, _v2$3 );
 
 		// test against axes that are given by cross product combinations of the edges of the triangle and the edges of the aabb
 		// make an axis testing of each of the 3 sides of the aabb against each of the 3 sides of the triangle = 9 axis of separation
@@ -17577,7 +17348,7 @@ class Box3 {
 			_f0.z, 0, - _f0.x, _f1.z, 0, - _f1.x, _f2.z, 0, - _f2.x,
 			- _f0.y, _f0.x, 0, - _f1.y, _f1.x, 0, - _f2.y, _f2.x, 0
 		];
-		if ( ! satForAxes( axes, _v0$2, _v1$8, _v2$5, _extents ) ) {
+		if ( ! satForAxes( axes, _v0$2, _v1$6, _v2$3, _extents ) ) {
 
 			return false;
 
@@ -17585,7 +17356,7 @@ class Box3 {
 
 		// test 3 face normals from the aabb
 		axes = [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ];
-		if ( ! satForAxes( axes, _v0$2, _v1$8, _v2$5, _extents ) ) {
+		if ( ! satForAxes( axes, _v0$2, _v1$6, _v2$3, _extents ) ) {
 
 			return false;
 
@@ -17596,7 +17367,7 @@ class Box3 {
 		_triangleNormal.crossVectors( _f0, _f1 );
 		axes = [ _triangleNormal.x, _triangleNormal.y, _triangleNormal.z ];
 
-		return satForAxes( axes, _v0$2, _v1$8, _v2$5, _extents );
+		return satForAxes( axes, _v0$2, _v1$6, _v2$3, _extents );
 
 	}
 
@@ -17608,7 +17379,7 @@ class Box3 {
 
 	distanceToPoint( point ) {
 
-		return this.clampPoint( point, _vector$a ).distanceTo( point );
+		return this.clampPoint( point, _vector$6 ).distanceTo( point );
 
 	}
 
@@ -17622,7 +17393,7 @@ class Box3 {
 
 			this.getCenter( target.center );
 
-			target.radius = this.getSize( _vector$a ).length() * 0.5;
+			target.radius = this.getSize( _vector$6 ).length() * 0.5;
 
 		}
 
@@ -17700,15 +17471,15 @@ const _points = [
 	/*@__PURE__*/ new Vector3()
 ];
 
-const _vector$a = /*@__PURE__*/ new Vector3();
+const _vector$6 = /*@__PURE__*/ new Vector3();
 
-const _box$3 = /*@__PURE__*/ new Box3();
+const _box$2 = /*@__PURE__*/ new Box3();
 
 // triangle centered vertices
 
 const _v0$2 = /*@__PURE__*/ new Vector3();
-const _v1$8 = /*@__PURE__*/ new Vector3();
-const _v2$5 = /*@__PURE__*/ new Vector3();
+const _v1$6 = /*@__PURE__*/ new Vector3();
+const _v2$3 = /*@__PURE__*/ new Vector3();
 
 // triangle edge vectors
 
@@ -17747,9 +17518,9 @@ function satForAxes( axes, v0, v1, v2, extents ) {
 
 }
 
-const _box$2 = /*@__PURE__*/ new Box3();
-const _v1$7 = /*@__PURE__*/ new Vector3();
-const _v2$4 = /*@__PURE__*/ new Vector3();
+const _box$1 = /*@__PURE__*/ new Box3();
+const _v1$5 = /*@__PURE__*/ new Vector3();
+const _v2$2 = /*@__PURE__*/ new Vector3();
 
 class Sphere {
 
@@ -17779,7 +17550,7 @@ class Sphere {
 
 		} else {
 
-			_box$2.setFromPoints( points ).getCenter( center );
+			_box$1.setFromPoints( points ).getCenter( center );
 
 		}
 
@@ -17916,9 +17687,9 @@ class Sphere {
 
 		}
 
-		_v1$7.subVectors( point, this.center );
+		_v1$5.subVectors( point, this.center );
 
-		const lengthSq = _v1$7.lengthSq();
+		const lengthSq = _v1$5.lengthSq();
 
 		if ( lengthSq > ( this.radius * this.radius ) ) {
 
@@ -17928,7 +17699,7 @@ class Sphere {
 
 			const delta = ( length - this.radius ) * 0.5;
 
-			this.center.addScaledVector( _v1$7, delta / length );
+			this.center.addScaledVector( _v1$5, delta / length );
 
 			this.radius += delta;
 
@@ -17960,11 +17731,11 @@ class Sphere {
 
 		} else {
 
-			_v2$4.subVectors( sphere.center, this.center ).setLength( sphere.radius );
+			_v2$2.subVectors( sphere.center, this.center ).setLength( sphere.radius );
 
-			this.expandByPoint( _v1$7.copy( sphere.center ).add( _v2$4 ) );
+			this.expandByPoint( _v1$5.copy( sphere.center ).add( _v2$2 ) );
 
-			this.expandByPoint( _v1$7.copy( sphere.center ).sub( _v2$4 ) );
+			this.expandByPoint( _v1$5.copy( sphere.center ).sub( _v2$2 ) );
 
 		}
 
@@ -18188,7 +17959,7 @@ class Plane {
 }
 
 const _sphere$4 = /*@__PURE__*/ new Sphere();
-const _vector$9 = /*@__PURE__*/ new Vector3();
+const _vector$5 = /*@__PURE__*/ new Vector3();
 
 class Frustum {
 
@@ -18311,11 +18082,11 @@ class Frustum {
 
 			// corner at max distance
 
-			_vector$9.x = plane.normal.x > 0 ? box.max.x : box.min.x;
-			_vector$9.y = plane.normal.y > 0 ? box.max.y : box.min.y;
-			_vector$9.z = plane.normal.z > 0 ? box.max.z : box.min.z;
+			_vector$5.x = plane.normal.x > 0 ? box.max.x : box.min.x;
+			_vector$5.y = plane.normal.y > 0 ? box.max.y : box.min.y;
+			_vector$5.z = plane.normal.z > 0 ? box.max.z : box.min.z;
 
-			if ( plane.distanceToPoint( _vector$9 ) < 0 ) {
+			if ( plane.distanceToPoint( _vector$5 ) < 0 ) {
 
 				return false;
 
@@ -18477,9 +18248,9 @@ class Matrix4 {
 		const te = this.elements;
 		const me = m.elements;
 
-		const scaleX = 1 / _v1$6.setFromMatrixColumn( m, 0 ).length();
-		const scaleY = 1 / _v1$6.setFromMatrixColumn( m, 1 ).length();
-		const scaleZ = 1 / _v1$6.setFromMatrixColumn( m, 2 ).length();
+		const scaleX = 1 / _v1$4.setFromMatrixColumn( m, 0 ).length();
+		const scaleY = 1 / _v1$4.setFromMatrixColumn( m, 1 ).length();
+		const scaleZ = 1 / _v1$4.setFromMatrixColumn( m, 2 ).length();
 
 		te[ 0 ] = me[ 0 ] * scaleX;
 		te[ 1 ] = me[ 1 ] * scaleX;
@@ -19064,9 +18835,9 @@ class Matrix4 {
 
 		const te = this.elements;
 
-		let sx = _v1$6.set( te[ 0 ], te[ 1 ], te[ 2 ] ).length();
-		const sy = _v1$6.set( te[ 4 ], te[ 5 ], te[ 6 ] ).length();
-		const sz = _v1$6.set( te[ 8 ], te[ 9 ], te[ 10 ] ).length();
+		let sx = _v1$4.set( te[ 0 ], te[ 1 ], te[ 2 ] ).length();
+		const sy = _v1$4.set( te[ 4 ], te[ 5 ], te[ 6 ] ).length();
+		const sz = _v1$4.set( te[ 8 ], te[ 9 ], te[ 10 ] ).length();
 
 		// if determine is negative, we need to invert one scale
 		const det = this.determinant();
@@ -19202,7 +18973,7 @@ class Matrix4 {
 
 }
 
-const _v1$6 = /*@__PURE__*/ new Vector3();
+const _v1$4 = /*@__PURE__*/ new Vector3();
 const _m1$2 = /*@__PURE__*/ new Matrix4();
 const _zero = /*@__PURE__*/ new Vector3( 0, 0, 0 );
 const _one = /*@__PURE__*/ new Vector3( 1, 1, 1 );
@@ -19455,7 +19226,7 @@ function WebGLAttributes( gl, capabilities ) {
 
 }
 
-const _vector$8 = /*@__PURE__*/ new Vector3();
+const _vector$4 = /*@__PURE__*/ new Vector3();
 const _vector2 = /*@__PURE__*/ new Vector2();
 
 class BufferAttribute {
@@ -19554,10 +19325,10 @@ class BufferAttribute {
 
 			for ( let i = 0, l = this.count; i < l; i ++ ) {
 
-				_vector$8.fromBufferAttribute( this, i );
-				_vector$8.applyMatrix3( m );
+				_vector$4.fromBufferAttribute( this, i );
+				_vector$4.applyMatrix3( m );
 
-				this.setXYZ( i, _vector$8.x, _vector$8.y, _vector$8.z );
+				this.setXYZ( i, _vector$4.x, _vector$4.y, _vector$4.z );
 
 			}
 
@@ -19571,11 +19342,11 @@ class BufferAttribute {
 
 		for ( let i = 0, l = this.count; i < l; i ++ ) {
 
-			_vector$8.fromBufferAttribute( this, i );
+			_vector$4.fromBufferAttribute( this, i );
 
-			_vector$8.applyMatrix4( m );
+			_vector$4.applyMatrix4( m );
 
-			this.setXYZ( i, _vector$8.x, _vector$8.y, _vector$8.z );
+			this.setXYZ( i, _vector$4.x, _vector$4.y, _vector$4.z );
 
 		}
 
@@ -19587,11 +19358,11 @@ class BufferAttribute {
 
 		for ( let i = 0, l = this.count; i < l; i ++ ) {
 
-			_vector$8.fromBufferAttribute( this, i );
+			_vector$4.fromBufferAttribute( this, i );
 
-			_vector$8.applyNormalMatrix( m );
+			_vector$4.applyNormalMatrix( m );
 
-			this.setXYZ( i, _vector$8.x, _vector$8.y, _vector$8.z );
+			this.setXYZ( i, _vector$4.x, _vector$4.y, _vector$4.z );
 
 		}
 
@@ -19603,11 +19374,11 @@ class BufferAttribute {
 
 		for ( let i = 0, l = this.count; i < l; i ++ ) {
 
-			_vector$8.fromBufferAttribute( this, i );
+			_vector$4.fromBufferAttribute( this, i );
 
-			_vector$8.transformDirection( m );
+			_vector$4.transformDirection( m );
 
-			this.setXYZ( i, _vector$8.x, _vector$8.y, _vector$8.z );
+			this.setXYZ( i, _vector$4.x, _vector$4.y, _vector$4.z );
 
 		}
 
@@ -20222,7 +19993,7 @@ class Layers {
 
 let _object3DId = 0;
 
-const _v1$5 = /*@__PURE__*/ new Vector3();
+const _v1$3 = /*@__PURE__*/ new Vector3();
 const _q1 = /*@__PURE__*/ new Quaternion();
 const _m1$1 = /*@__PURE__*/ new Matrix4();
 const _target = /*@__PURE__*/ new Vector3();
@@ -20432,9 +20203,9 @@ class Object3D extends EventDispatcher {
 		// translate object by distance along axis in object space
 		// axis is assumed to be normalized
 
-		_v1$5.copy( axis ).applyQuaternion( this.quaternion );
+		_v1$3.copy( axis ).applyQuaternion( this.quaternion );
 
-		this.position.add( _v1$5.multiplyScalar( distance ) );
+		this.position.add( _v1$3.multiplyScalar( distance ) );
 
 		return this;
 
@@ -21186,9 +20957,9 @@ let _id$1 = 0;
 const _m1 = /*@__PURE__*/ new Matrix4();
 const _obj = /*@__PURE__*/ new Object3D();
 const _offset = /*@__PURE__*/ new Vector3();
-const _box$1 = /*@__PURE__*/ new Box3();
+const _box = /*@__PURE__*/ new Box3();
 const _boxMorphTargets = /*@__PURE__*/ new Box3();
-const _vector$7 = /*@__PURE__*/ new Vector3();
+const _vector$3 = /*@__PURE__*/ new Vector3();
 
 class BufferGeometry extends EventDispatcher {
 
@@ -21493,20 +21264,20 @@ class BufferGeometry extends EventDispatcher {
 				for ( let i = 0, il = morphAttributesPosition.length; i < il; i ++ ) {
 
 					const morphAttribute = morphAttributesPosition[ i ];
-					_box$1.setFromBufferAttribute( morphAttribute );
+					_box.setFromBufferAttribute( morphAttribute );
 
 					if ( this.morphTargetsRelative ) {
 
-						_vector$7.addVectors( this.boundingBox.min, _box$1.min );
-						this.boundingBox.expandByPoint( _vector$7 );
+						_vector$3.addVectors( this.boundingBox.min, _box.min );
+						this.boundingBox.expandByPoint( _vector$3 );
 
-						_vector$7.addVectors( this.boundingBox.max, _box$1.max );
-						this.boundingBox.expandByPoint( _vector$7 );
+						_vector$3.addVectors( this.boundingBox.max, _box.max );
+						this.boundingBox.expandByPoint( _vector$3 );
 
 					} else {
 
-						this.boundingBox.expandByPoint( _box$1.min );
-						this.boundingBox.expandByPoint( _box$1.max );
+						this.boundingBox.expandByPoint( _box.min );
+						this.boundingBox.expandByPoint( _box.max );
 
 					}
 
@@ -21555,7 +21326,7 @@ class BufferGeometry extends EventDispatcher {
 
 			const center = this.boundingSphere.center;
 
-			_box$1.setFromBufferAttribute( position );
+			_box.setFromBufferAttribute( position );
 
 			// process morph attributes if present
 
@@ -21568,16 +21339,16 @@ class BufferGeometry extends EventDispatcher {
 
 					if ( this.morphTargetsRelative ) {
 
-						_vector$7.addVectors( _box$1.min, _boxMorphTargets.min );
-						_box$1.expandByPoint( _vector$7 );
+						_vector$3.addVectors( _box.min, _boxMorphTargets.min );
+						_box.expandByPoint( _vector$3 );
 
-						_vector$7.addVectors( _box$1.max, _boxMorphTargets.max );
-						_box$1.expandByPoint( _vector$7 );
+						_vector$3.addVectors( _box.max, _boxMorphTargets.max );
+						_box.expandByPoint( _vector$3 );
 
 					} else {
 
-						_box$1.expandByPoint( _boxMorphTargets.min );
-						_box$1.expandByPoint( _boxMorphTargets.max );
+						_box.expandByPoint( _boxMorphTargets.min );
+						_box.expandByPoint( _boxMorphTargets.max );
 
 					}
 
@@ -21585,7 +21356,7 @@ class BufferGeometry extends EventDispatcher {
 
 			}
 
-			_box$1.getCenter( center );
+			_box.getCenter( center );
 
 			// second, try to find a boundingSphere with a radius smaller than the
 			// boundingSphere of the boundingBox: sqrt(3) smaller in the best case
@@ -21594,9 +21365,9 @@ class BufferGeometry extends EventDispatcher {
 
 			for ( let i = 0, il = position.count; i < il; i ++ ) {
 
-				_vector$7.fromBufferAttribute( position, i );
+				_vector$3.fromBufferAttribute( position, i );
 
-				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector$7 ) );
+				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector$3 ) );
 
 			}
 
@@ -21611,16 +21382,16 @@ class BufferGeometry extends EventDispatcher {
 
 					for ( let j = 0, jl = morphAttribute.count; j < jl; j ++ ) {
 
-						_vector$7.fromBufferAttribute( morphAttribute, j );
+						_vector$3.fromBufferAttribute( morphAttribute, j );
 
 						if ( morphTargetsRelative ) {
 
 							_offset.fromBufferAttribute( position, j );
-							_vector$7.add( _offset );
+							_vector$3.add( _offset );
 
 						}
 
-						maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector$7 ) );
+						maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector$3 ) );
 
 					}
 
@@ -21910,11 +21681,11 @@ class BufferGeometry extends EventDispatcher {
 
 		for ( let i = 0, il = normals.count; i < il; i ++ ) {
 
-			_vector$7.fromBufferAttribute( normals, i );
+			_vector$3.fromBufferAttribute( normals, i );
 
-			_vector$7.normalize();
+			_vector$3.normalize();
 
-			normals.setXYZ( i, _vector$7.x, _vector$7.y, _vector$7.z );
+			normals.setXYZ( i, _vector$3.x, _vector$3.y, _vector$3.z );
 
 		}
 
@@ -23911,7 +23682,7 @@ const _color = /*@__PURE__*/ new Color$1();
 
 Color$1.NAMES = _colorKeywords;
 
-const _vector$6 = /*@__PURE__*/ new Vector3();
+const _vector$2 = /*@__PURE__*/ new Vector3();
 const _segCenter = /*@__PURE__*/ new Vector3();
 const _segDir = /*@__PURE__*/ new Vector3();
 const _diff = /*@__PURE__*/ new Vector3();
@@ -23963,7 +23734,7 @@ class Ray {
 
 	recast( t ) {
 
-		this.origin.copy( this.at( t, _vector$6 ) );
+		this.origin.copy( this.at( t, _vector$2 ) );
 
 		return this;
 
@@ -23993,7 +23764,7 @@ class Ray {
 
 	distanceSqToPoint( point ) {
 
-		const directionDistance = _vector$6.subVectors( point, this.origin ).dot( this.direction );
+		const directionDistance = _vector$2.subVectors( point, this.origin ).dot( this.direction );
 
 		// point behind the ray
 
@@ -24003,9 +23774,9 @@ class Ray {
 
 		}
 
-		_vector$6.copy( this.origin ).addScaledVector( this.direction, directionDistance );
+		_vector$2.copy( this.origin ).addScaledVector( this.direction, directionDistance );
 
-		return _vector$6.distanceToSquared( point );
+		return _vector$2.distanceToSquared( point );
 
 	}
 
@@ -24130,9 +23901,9 @@ class Ray {
 
 	intersectSphere( sphere, target ) {
 
-		_vector$6.subVectors( sphere.center, this.origin );
-		const tca = _vector$6.dot( this.direction );
-		const d2 = _vector$6.dot( _vector$6 ) - tca * tca;
+		_vector$2.subVectors( sphere.center, this.origin );
+		const tca = _vector$2.dot( this.direction );
+		const d2 = _vector$2.dot( _vector$2 ) - tca * tca;
 		const radius2 = sphere.radius * sphere.radius;
 
 		if ( d2 > radius2 ) return null;
@@ -24299,7 +24070,7 @@ class Ray {
 
 	intersectsBox( box ) {
 
-		return this.intersectBox( box, _vector$6 ) !== null;
+		return this.intersectBox( box, _vector$2 ) !== null;
 
 	}
 
@@ -24402,9 +24173,9 @@ class Ray {
 }
 
 const _v0$1 = /*@__PURE__*/ new Vector3();
-const _v1$4 = /*@__PURE__*/ new Vector3();
-const _v2$3 = /*@__PURE__*/ new Vector3();
-const _v3$2 = /*@__PURE__*/ new Vector3();
+const _v1$2 = /*@__PURE__*/ new Vector3();
+const _v2$1 = /*@__PURE__*/ new Vector3();
+const _v3 = /*@__PURE__*/ new Vector3();
 
 const _vab = /*@__PURE__*/ new Vector3();
 const _vac = /*@__PURE__*/ new Vector3();
@@ -24447,14 +24218,14 @@ class Triangle {
 	static getBarycoord( point, a, b, c, target ) {
 
 		_v0$1.subVectors( c, a );
-		_v1$4.subVectors( b, a );
-		_v2$3.subVectors( point, a );
+		_v1$2.subVectors( b, a );
+		_v2$1.subVectors( point, a );
 
 		const dot00 = _v0$1.dot( _v0$1 );
-		const dot01 = _v0$1.dot( _v1$4 );
-		const dot02 = _v0$1.dot( _v2$3 );
-		const dot11 = _v1$4.dot( _v1$4 );
-		const dot12 = _v1$4.dot( _v2$3 );
+		const dot01 = _v0$1.dot( _v1$2 );
+		const dot02 = _v0$1.dot( _v2$1 );
+		const dot11 = _v1$2.dot( _v1$2 );
+		const dot12 = _v1$2.dot( _v2$1 );
 
 		const denom = ( dot00 * dot11 - dot01 * dot01 );
 
@@ -24478,9 +24249,9 @@ class Triangle {
 
 	static containsPoint( point, a, b, c ) {
 
-		this.getBarycoord( point, a, b, c, _v3$2 );
+		this.getBarycoord( point, a, b, c, _v3 );
 
-		return ( _v3$2.x >= 0 ) && ( _v3$2.y >= 0 ) && ( ( _v3$2.x + _v3$2.y ) <= 1 );
+		return ( _v3.x >= 0 ) && ( _v3.y >= 0 ) && ( ( _v3.x + _v3.y ) <= 1 );
 
 	}
 
@@ -24500,12 +24271,12 @@ class Triangle {
 
 	static getInterpolation( point, p1, p2, p3, v1, v2, v3, target ) {
 
-		this.getBarycoord( point, p1, p2, p3, _v3$2 );
+		this.getBarycoord( point, p1, p2, p3, _v3 );
 
 		target.setScalar( 0 );
-		target.addScaledVector( v1, _v3$2.x );
-		target.addScaledVector( v2, _v3$2.y );
-		target.addScaledVector( v3, _v3$2.z );
+		target.addScaledVector( v1, _v3.x );
+		target.addScaledVector( v2, _v3.y );
+		target.addScaledVector( v3, _v3.z );
 
 		return target;
 
@@ -24514,10 +24285,10 @@ class Triangle {
 	static isFrontFacing( a, b, c, direction ) {
 
 		_v0$1.subVectors( c, b );
-		_v1$4.subVectors( a, b );
+		_v1$2.subVectors( a, b );
 
 		// strictly front facing
-		return ( _v0$1.cross( _v1$4 ).dot( direction ) < 0 ) ? true : false;
+		return ( _v0$1.cross( _v1$2 ).dot( direction ) < 0 ) ? true : false;
 
 	}
 
@@ -24570,9 +24341,9 @@ class Triangle {
 	getArea() {
 
 		_v0$1.subVectors( this.c, this.b );
-		_v1$4.subVectors( this.a, this.b );
+		_v1$2.subVectors( this.a, this.b );
 
-		return _v0$1.cross( _v1$4 ).length() * 0.5;
+		return _v0$1.cross( _v1$2 ).length() * 0.5;
 
 	}
 
@@ -43061,24 +42832,6 @@ function testPoint( point, index, localThresholdSq, matrixWorld, raycaster, inte
 
 }
 
-class DataTexture extends Texture {
-
-	constructor( data = null, width = 1, height = 1, format, type, mapping, wrapS, wrapT, magFilter = NearestFilter, minFilter = NearestFilter, anisotropy, encoding ) {
-
-		super( null, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, encoding );
-
-		this.isDataTexture = true;
-
-		this.image = { data: data, width: width, height: height };
-
-		this.generateMipmaps = false;
-		this.flipY = false;
-		this.unpackAlignment = 1;
-
-	}
-
-}
-
 class CanvasTexture extends Texture {
 
 	constructor( canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy ) {
@@ -45088,598 +44841,6 @@ class CircleGeometry extends BufferGeometry {
 
 }
 
-class CylinderGeometry extends BufferGeometry {
-
-	constructor( radiusTop = 1, radiusBottom = 1, height = 1, radialSegments = 32, heightSegments = 1, openEnded = false, thetaStart = 0, thetaLength = Math.PI * 2 ) {
-
-		super();
-
-		this.type = 'CylinderGeometry';
-
-		this.parameters = {
-			radiusTop: radiusTop,
-			radiusBottom: radiusBottom,
-			height: height,
-			radialSegments: radialSegments,
-			heightSegments: heightSegments,
-			openEnded: openEnded,
-			thetaStart: thetaStart,
-			thetaLength: thetaLength
-		};
-
-		const scope = this;
-
-		radialSegments = Math.floor( radialSegments );
-		heightSegments = Math.floor( heightSegments );
-
-		// buffers
-
-		const indices = [];
-		const vertices = [];
-		const normals = [];
-		const uvs = [];
-
-		// helper variables
-
-		let index = 0;
-		const indexArray = [];
-		const halfHeight = height / 2;
-		let groupStart = 0;
-
-		// generate geometry
-
-		generateTorso();
-
-		if ( openEnded === false ) {
-
-			if ( radiusTop > 0 ) generateCap( true );
-			if ( radiusBottom > 0 ) generateCap( false );
-
-		}
-
-		// build geometry
-
-		this.setIndex( indices );
-		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-		function generateTorso() {
-
-			const normal = new Vector3();
-			const vertex = new Vector3();
-
-			let groupCount = 0;
-
-			// this will be used to calculate the normal
-			const slope = ( radiusBottom - radiusTop ) / height;
-
-			// generate vertices, normals and uvs
-
-			for ( let y = 0; y <= heightSegments; y ++ ) {
-
-				const indexRow = [];
-
-				const v = y / heightSegments;
-
-				// calculate the radius of the current row
-
-				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
-
-				for ( let x = 0; x <= radialSegments; x ++ ) {
-
-					const u = x / radialSegments;
-
-					const theta = u * thetaLength + thetaStart;
-
-					const sinTheta = Math.sin( theta );
-					const cosTheta = Math.cos( theta );
-
-					// vertex
-
-					vertex.x = radius * sinTheta;
-					vertex.y = - v * height + halfHeight;
-					vertex.z = radius * cosTheta;
-					vertices.push( vertex.x, vertex.y, vertex.z );
-
-					// normal
-
-					normal.set( sinTheta, slope, cosTheta ).normalize();
-					normals.push( normal.x, normal.y, normal.z );
-
-					// uv
-
-					uvs.push( u, 1 - v );
-
-					// save index of vertex in respective row
-
-					indexRow.push( index ++ );
-
-				}
-
-				// now save vertices of the row in our index array
-
-				indexArray.push( indexRow );
-
-			}
-
-			// generate indices
-
-			for ( let x = 0; x < radialSegments; x ++ ) {
-
-				for ( let y = 0; y < heightSegments; y ++ ) {
-
-					// we use the index array to access the correct indices
-
-					const a = indexArray[ y ][ x ];
-					const b = indexArray[ y + 1 ][ x ];
-					const c = indexArray[ y + 1 ][ x + 1 ];
-					const d = indexArray[ y ][ x + 1 ];
-
-					// faces
-
-					indices.push( a, b, d );
-					indices.push( b, c, d );
-
-					// update group counter
-
-					groupCount += 6;
-
-				}
-
-			}
-
-			// add a group to the geometry. this will ensure multi material support
-
-			scope.addGroup( groupStart, groupCount, 0 );
-
-			// calculate new start value for groups
-
-			groupStart += groupCount;
-
-		}
-
-		function generateCap( top ) {
-
-			// save the index of the first center vertex
-			const centerIndexStart = index;
-
-			const uv = new Vector2();
-			const vertex = new Vector3();
-
-			let groupCount = 0;
-
-			const radius = ( top === true ) ? radiusTop : radiusBottom;
-			const sign = ( top === true ) ? 1 : - 1;
-
-			// first we generate the center vertex data of the cap.
-			// because the geometry needs one set of uvs per face,
-			// we must generate a center vertex per face/segment
-
-			for ( let x = 1; x <= radialSegments; x ++ ) {
-
-				// vertex
-
-				vertices.push( 0, halfHeight * sign, 0 );
-
-				// normal
-
-				normals.push( 0, sign, 0 );
-
-				// uv
-
-				uvs.push( 0.5, 0.5 );
-
-				// increase index
-
-				index ++;
-
-			}
-
-			// save the index of the last center vertex
-			const centerIndexEnd = index;
-
-			// now we generate the surrounding vertices, normals and uvs
-
-			for ( let x = 0; x <= radialSegments; x ++ ) {
-
-				const u = x / radialSegments;
-				const theta = u * thetaLength + thetaStart;
-
-				const cosTheta = Math.cos( theta );
-				const sinTheta = Math.sin( theta );
-
-				// vertex
-
-				vertex.x = radius * sinTheta;
-				vertex.y = halfHeight * sign;
-				vertex.z = radius * cosTheta;
-				vertices.push( vertex.x, vertex.y, vertex.z );
-
-				// normal
-
-				normals.push( 0, sign, 0 );
-
-				// uv
-
-				uv.x = ( cosTheta * 0.5 ) + 0.5;
-				uv.y = ( sinTheta * 0.5 * sign ) + 0.5;
-				uvs.push( uv.x, uv.y );
-
-				// increase index
-
-				index ++;
-
-			}
-
-			// generate indices
-
-			for ( let x = 0; x < radialSegments; x ++ ) {
-
-				const c = centerIndexStart + x;
-				const i = centerIndexEnd + x;
-
-				if ( top === true ) {
-
-					// face top
-
-					indices.push( i, i + 1, c );
-
-				} else {
-
-					// face bottom
-
-					indices.push( i + 1, i, c );
-
-				}
-
-				groupCount += 3;
-
-			}
-
-			// add a group to the geometry. this will ensure multi material support
-
-			scope.addGroup( groupStart, groupCount, top === true ? 1 : 2 );
-
-			// calculate new start value for groups
-
-			groupStart += groupCount;
-
-		}
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.parameters = Object.assign( {}, source.parameters );
-
-		return this;
-
-	}
-
-	static fromJSON( data ) {
-
-		return new CylinderGeometry( data.radiusTop, data.radiusBottom, data.height, data.radialSegments, data.heightSegments, data.openEnded, data.thetaStart, data.thetaLength );
-
-	}
-
-}
-
-class PolyhedronGeometry extends BufferGeometry {
-
-	constructor( vertices = [], indices = [], radius = 1, detail = 0 ) {
-
-		super();
-
-		this.type = 'PolyhedronGeometry';
-
-		this.parameters = {
-			vertices: vertices,
-			indices: indices,
-			radius: radius,
-			detail: detail
-		};
-
-		// default buffer data
-
-		const vertexBuffer = [];
-		const uvBuffer = [];
-
-		// the subdivision creates the vertex buffer data
-
-		subdivide( detail );
-
-		// all vertices should lie on a conceptual sphere with a given radius
-
-		applyRadius( radius );
-
-		// finally, create the uv data
-
-		generateUVs();
-
-		// build non-indexed geometry
-
-		this.setAttribute( 'position', new Float32BufferAttribute( vertexBuffer, 3 ) );
-		this.setAttribute( 'normal', new Float32BufferAttribute( vertexBuffer.slice(), 3 ) );
-		this.setAttribute( 'uv', new Float32BufferAttribute( uvBuffer, 2 ) );
-
-		if ( detail === 0 ) {
-
-			this.computeVertexNormals(); // flat normals
-
-		} else {
-
-			this.normalizeNormals(); // smooth normals
-
-		}
-
-		// helper functions
-
-		function subdivide( detail ) {
-
-			const a = new Vector3();
-			const b = new Vector3();
-			const c = new Vector3();
-
-			// iterate over all faces and apply a subdivision with the given detail value
-
-			for ( let i = 0; i < indices.length; i += 3 ) {
-
-				// get the vertices of the face
-
-				getVertexByIndex( indices[ i + 0 ], a );
-				getVertexByIndex( indices[ i + 1 ], b );
-				getVertexByIndex( indices[ i + 2 ], c );
-
-				// perform subdivision
-
-				subdivideFace( a, b, c, detail );
-
-			}
-
-		}
-
-		function subdivideFace( a, b, c, detail ) {
-
-			const cols = detail + 1;
-
-			// we use this multidimensional array as a data structure for creating the subdivision
-
-			const v = [];
-
-			// construct all of the vertices for this subdivision
-
-			for ( let i = 0; i <= cols; i ++ ) {
-
-				v[ i ] = [];
-
-				const aj = a.clone().lerp( c, i / cols );
-				const bj = b.clone().lerp( c, i / cols );
-
-				const rows = cols - i;
-
-				for ( let j = 0; j <= rows; j ++ ) {
-
-					if ( j === 0 && i === cols ) {
-
-						v[ i ][ j ] = aj;
-
-					} else {
-
-						v[ i ][ j ] = aj.clone().lerp( bj, j / rows );
-
-					}
-
-				}
-
-			}
-
-			// construct all of the faces
-
-			for ( let i = 0; i < cols; i ++ ) {
-
-				for ( let j = 0; j < 2 * ( cols - i ) - 1; j ++ ) {
-
-					const k = Math.floor( j / 2 );
-
-					if ( j % 2 === 0 ) {
-
-						pushVertex( v[ i ][ k + 1 ] );
-						pushVertex( v[ i + 1 ][ k ] );
-						pushVertex( v[ i ][ k ] );
-
-					} else {
-
-						pushVertex( v[ i ][ k + 1 ] );
-						pushVertex( v[ i + 1 ][ k + 1 ] );
-						pushVertex( v[ i + 1 ][ k ] );
-
-					}
-
-				}
-
-			}
-
-		}
-
-		function applyRadius( radius ) {
-
-			const vertex = new Vector3();
-
-			// iterate over the entire buffer and apply the radius to each vertex
-
-			for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
-
-				vertex.x = vertexBuffer[ i + 0 ];
-				vertex.y = vertexBuffer[ i + 1 ];
-				vertex.z = vertexBuffer[ i + 2 ];
-
-				vertex.normalize().multiplyScalar( radius );
-
-				vertexBuffer[ i + 0 ] = vertex.x;
-				vertexBuffer[ i + 1 ] = vertex.y;
-				vertexBuffer[ i + 2 ] = vertex.z;
-
-			}
-
-		}
-
-		function generateUVs() {
-
-			const vertex = new Vector3();
-
-			for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
-
-				vertex.x = vertexBuffer[ i + 0 ];
-				vertex.y = vertexBuffer[ i + 1 ];
-				vertex.z = vertexBuffer[ i + 2 ];
-
-				const u = azimuth( vertex ) / 2 / Math.PI + 0.5;
-				const v = inclination( vertex ) / Math.PI + 0.5;
-				uvBuffer.push( u, 1 - v );
-
-			}
-
-			correctUVs();
-
-			correctSeam();
-
-		}
-
-		function correctSeam() {
-
-			// handle case when face straddles the seam, see #3269
-
-			for ( let i = 0; i < uvBuffer.length; i += 6 ) {
-
-				// uv data of a single face
-
-				const x0 = uvBuffer[ i + 0 ];
-				const x1 = uvBuffer[ i + 2 ];
-				const x2 = uvBuffer[ i + 4 ];
-
-				const max = Math.max( x0, x1, x2 );
-				const min = Math.min( x0, x1, x2 );
-
-				// 0.9 is somewhat arbitrary
-
-				if ( max > 0.9 && min < 0.1 ) {
-
-					if ( x0 < 0.2 ) uvBuffer[ i + 0 ] += 1;
-					if ( x1 < 0.2 ) uvBuffer[ i + 2 ] += 1;
-					if ( x2 < 0.2 ) uvBuffer[ i + 4 ] += 1;
-
-				}
-
-			}
-
-		}
-
-		function pushVertex( vertex ) {
-
-			vertexBuffer.push( vertex.x, vertex.y, vertex.z );
-
-		}
-
-		function getVertexByIndex( index, vertex ) {
-
-			const stride = index * 3;
-
-			vertex.x = vertices[ stride + 0 ];
-			vertex.y = vertices[ stride + 1 ];
-			vertex.z = vertices[ stride + 2 ];
-
-		}
-
-		function correctUVs() {
-
-			const a = new Vector3();
-			const b = new Vector3();
-			const c = new Vector3();
-
-			const centroid = new Vector3();
-
-			const uvA = new Vector2();
-			const uvB = new Vector2();
-			const uvC = new Vector2();
-
-			for ( let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6 ) {
-
-				a.set( vertexBuffer[ i + 0 ], vertexBuffer[ i + 1 ], vertexBuffer[ i + 2 ] );
-				b.set( vertexBuffer[ i + 3 ], vertexBuffer[ i + 4 ], vertexBuffer[ i + 5 ] );
-				c.set( vertexBuffer[ i + 6 ], vertexBuffer[ i + 7 ], vertexBuffer[ i + 8 ] );
-
-				uvA.set( uvBuffer[ j + 0 ], uvBuffer[ j + 1 ] );
-				uvB.set( uvBuffer[ j + 2 ], uvBuffer[ j + 3 ] );
-				uvC.set( uvBuffer[ j + 4 ], uvBuffer[ j + 5 ] );
-
-				centroid.copy( a ).add( b ).add( c ).divideScalar( 3 );
-
-				const azi = azimuth( centroid );
-
-				correctUV( uvA, j + 0, a, azi );
-				correctUV( uvB, j + 2, b, azi );
-				correctUV( uvC, j + 4, c, azi );
-
-			}
-
-		}
-
-		function correctUV( uv, stride, vector, azimuth ) {
-
-			if ( ( azimuth < 0 ) && ( uv.x === 1 ) ) {
-
-				uvBuffer[ stride ] = uv.x - 1;
-
-			}
-
-			if ( ( vector.x === 0 ) && ( vector.z === 0 ) ) {
-
-				uvBuffer[ stride ] = azimuth / 2 / Math.PI + 0.5;
-
-			}
-
-		}
-
-		// Angle around the Y axis, counter-clockwise when looking from above.
-
-		function azimuth( vector ) {
-
-			return Math.atan2( vector.z, - vector.x );
-
-		}
-
-
-		// Angle above the XZ plane.
-
-		function inclination( vector ) {
-
-			return Math.atan2( - vector.y, Math.sqrt( ( vector.x * vector.x ) + ( vector.z * vector.z ) ) );
-
-		}
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.parameters = Object.assign( {}, source.parameters );
-
-		return this;
-
-	}
-
-	static fromJSON( data ) {
-
-		return new PolyhedronGeometry( data.vertices, data.indices, data.radius, data.details );
-
-	}
-
-}
-
 class Shape extends Path {
 
 	constructor( points ) {
@@ -47459,40 +46620,6 @@ function toJSON$1( shapes, options, data ) {
 
 }
 
-class OctahedronGeometry extends PolyhedronGeometry {
-
-	constructor( radius = 1, detail = 0 ) {
-
-		const vertices = [
-			1, 0, 0, 	- 1, 0, 0,	0, 1, 0,
-			0, - 1, 0, 	0, 0, 1,	0, 0, - 1
-		];
-
-		const indices = [
-			0, 2, 4,	0, 4, 3,	0, 3, 5,
-			0, 5, 2,	1, 2, 5,	1, 5, 3,
-			1, 3, 4,	1, 4, 2
-		];
-
-		super( vertices, indices, radius, detail );
-
-		this.type = 'OctahedronGeometry';
-
-		this.parameters = {
-			radius: radius,
-			detail: detail
-		};
-
-	}
-
-	static fromJSON( data ) {
-
-		return new OctahedronGeometry( data.radius, data.detail );
-
-	}
-
-}
-
 class SphereGeometry extends BufferGeometry {
 
 	constructor( radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI ) {
@@ -47620,318 +46747,6 @@ class SphereGeometry extends BufferGeometry {
 	static fromJSON( data ) {
 
 		return new SphereGeometry( data.radius, data.widthSegments, data.heightSegments, data.phiStart, data.phiLength, data.thetaStart, data.thetaLength );
-
-	}
-
-}
-
-class TorusGeometry extends BufferGeometry {
-
-	constructor( radius = 1, tube = 0.4, radialSegments = 12, tubularSegments = 48, arc = Math.PI * 2 ) {
-
-		super();
-
-		this.type = 'TorusGeometry';
-
-		this.parameters = {
-			radius: radius,
-			tube: tube,
-			radialSegments: radialSegments,
-			tubularSegments: tubularSegments,
-			arc: arc
-		};
-
-		radialSegments = Math.floor( radialSegments );
-		tubularSegments = Math.floor( tubularSegments );
-
-		// buffers
-
-		const indices = [];
-		const vertices = [];
-		const normals = [];
-		const uvs = [];
-
-		// helper variables
-
-		const center = new Vector3();
-		const vertex = new Vector3();
-		const normal = new Vector3();
-
-		// generate vertices, normals and uvs
-
-		for ( let j = 0; j <= radialSegments; j ++ ) {
-
-			for ( let i = 0; i <= tubularSegments; i ++ ) {
-
-				const u = i / tubularSegments * arc;
-				const v = j / radialSegments * Math.PI * 2;
-
-				// vertex
-
-				vertex.x = ( radius + tube * Math.cos( v ) ) * Math.cos( u );
-				vertex.y = ( radius + tube * Math.cos( v ) ) * Math.sin( u );
-				vertex.z = tube * Math.sin( v );
-
-				vertices.push( vertex.x, vertex.y, vertex.z );
-
-				// normal
-
-				center.x = radius * Math.cos( u );
-				center.y = radius * Math.sin( u );
-				normal.subVectors( vertex, center ).normalize();
-
-				normals.push( normal.x, normal.y, normal.z );
-
-				// uv
-
-				uvs.push( i / tubularSegments );
-				uvs.push( j / radialSegments );
-
-			}
-
-		}
-
-		// generate indices
-
-		for ( let j = 1; j <= radialSegments; j ++ ) {
-
-			for ( let i = 1; i <= tubularSegments; i ++ ) {
-
-				// indices
-
-				const a = ( tubularSegments + 1 ) * j + i - 1;
-				const b = ( tubularSegments + 1 ) * ( j - 1 ) + i - 1;
-				const c = ( tubularSegments + 1 ) * ( j - 1 ) + i;
-				const d = ( tubularSegments + 1 ) * j + i;
-
-				// faces
-
-				indices.push( a, b, d );
-				indices.push( b, c, d );
-
-			}
-
-		}
-
-		// build geometry
-
-		this.setIndex( indices );
-		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.parameters = Object.assign( {}, source.parameters );
-
-		return this;
-
-	}
-
-	static fromJSON( data ) {
-
-		return new TorusGeometry( data.radius, data.tube, data.radialSegments, data.tubularSegments, data.arc );
-
-	}
-
-}
-
-class WireframeGeometry extends BufferGeometry {
-
-	constructor( geometry = null ) {
-
-		super();
-
-		this.type = 'WireframeGeometry';
-
-		this.parameters = {
-			geometry: geometry
-		};
-
-		if ( geometry !== null ) {
-
-			// buffer
-
-			const vertices = [];
-			const edges = new Set();
-
-			// helper variables
-
-			const start = new Vector3();
-			const end = new Vector3();
-
-			if ( geometry.index !== null ) {
-
-				// indexed BufferGeometry
-
-				const position = geometry.attributes.position;
-				const indices = geometry.index;
-				let groups = geometry.groups;
-
-				if ( groups.length === 0 ) {
-
-					groups = [ { start: 0, count: indices.count, materialIndex: 0 } ];
-
-				}
-
-				// create a data structure that contains all edges without duplicates
-
-				for ( let o = 0, ol = groups.length; o < ol; ++ o ) {
-
-					const group = groups[ o ];
-
-					const groupStart = group.start;
-					const groupCount = group.count;
-
-					for ( let i = groupStart, l = ( groupStart + groupCount ); i < l; i += 3 ) {
-
-						for ( let j = 0; j < 3; j ++ ) {
-
-							const index1 = indices.getX( i + j );
-							const index2 = indices.getX( i + ( j + 1 ) % 3 );
-
-							start.fromBufferAttribute( position, index1 );
-							end.fromBufferAttribute( position, index2 );
-
-							if ( isUniqueEdge( start, end, edges ) === true ) {
-
-								vertices.push( start.x, start.y, start.z );
-								vertices.push( end.x, end.y, end.z );
-
-							}
-
-						}
-
-					}
-
-				}
-
-			} else {
-
-				// non-indexed BufferGeometry
-
-				const position = geometry.attributes.position;
-
-				for ( let i = 0, l = ( position.count / 3 ); i < l; i ++ ) {
-
-					for ( let j = 0; j < 3; j ++ ) {
-
-						// three edges per triangle, an edge is represented as (index1, index2)
-						// e.g. the first triangle has the following edges: (0,1),(1,2),(2,0)
-
-						const index1 = 3 * i + j;
-						const index2 = 3 * i + ( ( j + 1 ) % 3 );
-
-						start.fromBufferAttribute( position, index1 );
-						end.fromBufferAttribute( position, index2 );
-
-						if ( isUniqueEdge( start, end, edges ) === true ) {
-
-							vertices.push( start.x, start.y, start.z );
-							vertices.push( end.x, end.y, end.z );
-
-						}
-
-					}
-
-				}
-
-			}
-
-			// build geometry
-
-			this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-
-		}
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.parameters = Object.assign( {}, source.parameters );
-
-		return this;
-
-	}
-
-}
-
-function isUniqueEdge( start, end, edges ) {
-
-	const hash1 = `${start.x},${start.y},${start.z}-${end.x},${end.y},${end.z}`;
-	const hash2 = `${end.x},${end.y},${end.z}-${start.x},${start.y},${start.z}`; // coincident edge
-
-	if ( edges.has( hash1 ) === true || edges.has( hash2 ) === true ) {
-
-		return false;
-
-	} else {
-
-		edges.add( hash1 );
-		edges.add( hash2 );
-		return true;
-
-	}
-
-}
-
-class MeshNormalMaterial extends Material {
-
-	constructor( parameters ) {
-
-		super();
-
-		this.isMeshNormalMaterial = true;
-
-		this.type = 'MeshNormalMaterial';
-
-		this.bumpMap = null;
-		this.bumpScale = 1;
-
-		this.normalMap = null;
-		this.normalMapType = TangentSpaceNormalMap;
-		this.normalScale = new Vector2( 1, 1 );
-
-		this.displacementMap = null;
-		this.displacementScale = 1;
-		this.displacementBias = 0;
-
-		this.wireframe = false;
-		this.wireframeLinewidth = 1;
-
-		this.flatShading = false;
-
-		this.setValues( parameters );
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.bumpMap = source.bumpMap;
-		this.bumpScale = source.bumpScale;
-
-		this.normalMap = source.normalMap;
-		this.normalMapType = source.normalMapType;
-		this.normalScale.copy( source.normalScale );
-
-		this.displacementMap = source.displacementMap;
-		this.displacementScale = source.displacementScale;
-		this.displacementBias = source.displacementBias;
-
-		this.wireframe = source.wireframe;
-		this.wireframeLinewidth = source.wireframeLinewidth;
-
-		this.flatShading = source.flatShading;
-
-		return this;
 
 	}
 
@@ -49088,7 +47903,7 @@ class Spherical {
 
 }
 
-const _vector$4 = /*@__PURE__*/ new Vector2();
+const _vector = /*@__PURE__*/ new Vector2();
 
 class Box2 {
 
@@ -49126,7 +47941,7 @@ class Box2 {
 
 	setFromCenterAndSize( center, size ) {
 
-		const halfSize = _vector$4.copy( size ).multiplyScalar( 0.5 );
+		const halfSize = _vector.copy( size ).multiplyScalar( 0.5 );
 		this.min.copy( center ).sub( halfSize );
 		this.max.copy( center ).add( halfSize );
 
@@ -49248,7 +48063,7 @@ class Box2 {
 
 	distanceToPoint( point ) {
 
-		return this.clampPoint( point, _vector$4 ).distanceTo( point );
+		return this.clampPoint( point, _vector ).distanceTo( point );
 
 	}
 
@@ -49395,219 +48210,6 @@ class Line3 {
 	clone() {
 
 		return new this.constructor().copy( this );
-
-	}
-
-}
-
-class GridHelper extends LineSegments {
-
-	constructor( size = 10, divisions = 10, color1 = 0x444444, color2 = 0x888888 ) {
-
-		color1 = new Color$1( color1 );
-		color2 = new Color$1( color2 );
-
-		const center = divisions / 2;
-		const step = size / divisions;
-		const halfSize = size / 2;
-
-		const vertices = [], colors = [];
-
-		for ( let i = 0, j = 0, k = - halfSize; i <= divisions; i ++, k += step ) {
-
-			vertices.push( - halfSize, 0, k, halfSize, 0, k );
-			vertices.push( k, 0, - halfSize, k, 0, halfSize );
-
-			const color = i === center ? color1 : color2;
-
-			color.toArray( colors, j ); j += 3;
-			color.toArray( colors, j ); j += 3;
-			color.toArray( colors, j ); j += 3;
-			color.toArray( colors, j ); j += 3;
-
-		}
-
-		const geometry = new BufferGeometry();
-		geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-		geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-		const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
-
-		super( geometry, material );
-
-		this.type = 'GridHelper';
-
-	}
-
-	dispose() {
-
-		this.geometry.dispose();
-		this.material.dispose();
-
-	}
-
-}
-
-const _box = /*@__PURE__*/ new Box3();
-
-class BoxHelper extends LineSegments {
-
-	constructor( object, color = 0xffff00 ) {
-
-		const indices = new Uint16Array( [ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 ] );
-		const positions = new Float32Array( 8 * 3 );
-
-		const geometry = new BufferGeometry();
-		geometry.setIndex( new BufferAttribute( indices, 1 ) );
-		geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-
-		super( geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
-
-		this.object = object;
-		this.type = 'BoxHelper';
-
-		this.matrixAutoUpdate = false;
-
-		this.update();
-
-	}
-
-	update( object ) {
-
-		if ( object !== undefined ) {
-
-			console.warn( 'THREE.BoxHelper: .update() has no longer arguments.' );
-
-		}
-
-		if ( this.object !== undefined ) {
-
-			_box.setFromObject( this.object );
-
-		}
-
-		if ( _box.isEmpty() ) return;
-
-		const min = _box.min;
-		const max = _box.max;
-
-		/*
-			5____4
-		1/___0/|
-		| 6__|_7
-		2/___3/
-
-		0: max.x, max.y, max.z
-		1: min.x, max.y, max.z
-		2: min.x, min.y, max.z
-		3: max.x, min.y, max.z
-		4: max.x, max.y, min.z
-		5: min.x, max.y, min.z
-		6: min.x, min.y, min.z
-		7: max.x, min.y, min.z
-		*/
-
-		const position = this.geometry.attributes.position;
-		const array = position.array;
-
-		array[ 0 ] = max.x; array[ 1 ] = max.y; array[ 2 ] = max.z;
-		array[ 3 ] = min.x; array[ 4 ] = max.y; array[ 5 ] = max.z;
-		array[ 6 ] = min.x; array[ 7 ] = min.y; array[ 8 ] = max.z;
-		array[ 9 ] = max.x; array[ 10 ] = min.y; array[ 11 ] = max.z;
-		array[ 12 ] = max.x; array[ 13 ] = max.y; array[ 14 ] = min.z;
-		array[ 15 ] = min.x; array[ 16 ] = max.y; array[ 17 ] = min.z;
-		array[ 18 ] = min.x; array[ 19 ] = min.y; array[ 20 ] = min.z;
-		array[ 21 ] = max.x; array[ 22 ] = min.y; array[ 23 ] = min.z;
-
-		position.needsUpdate = true;
-
-		this.geometry.computeBoundingSphere();
-
-	}
-
-	setFromObject( object ) {
-
-		this.object = object;
-		this.update();
-
-		return this;
-
-	}
-
-	copy( source, recursive ) {
-
-		super.copy( source, recursive );
-
-		this.object = source.object;
-
-		return this;
-
-	}
-
-	dispose() {
-
-		this.geometry.dispose();
-		this.material.dispose();
-
-	}
-
-}
-
-class AxesHelper extends LineSegments {
-
-	constructor( size = 1 ) {
-
-		const vertices = [
-			0, 0, 0,	size, 0, 0,
-			0, 0, 0,	0, size, 0,
-			0, 0, 0,	0, 0, size
-		];
-
-		const colors = [
-			1, 0, 0,	1, 0.6, 0,
-			0, 1, 0,	0.6, 1, 0,
-			0, 0, 1,	0, 0.6, 1
-		];
-
-		const geometry = new BufferGeometry();
-		geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-		geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-		const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
-
-		super( geometry, material );
-
-		this.type = 'AxesHelper';
-
-	}
-
-	setColors( xAxisColor, yAxisColor, zAxisColor ) {
-
-		const color = new Color$1();
-		const array = this.geometry.attributes.color.array;
-
-		color.set( xAxisColor );
-		color.toArray( array, 0 );
-		color.toArray( array, 3 );
-
-		color.set( yAxisColor );
-		color.toArray( array, 6 );
-		color.toArray( array, 9 );
-
-		color.set( zAxisColor );
-		color.toArray( array, 12 );
-		color.toArray( array, 15 );
-
-		this.geometry.attributes.color.needsUpdate = true;
-
-		return this;
-
-	}
-
-	dispose() {
-
-		this.geometry.dispose();
-		this.material.dispose();
 
 	}
 
@@ -50117,7 +48719,7 @@ function createPath( char, scale, offsetX, offsetY, data ) {
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
 //    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
 
-const _changeEvent$1 = { type: 'change' };
+const _changeEvent = { type: 'change' };
 const _startEvent = { type: 'start' };
 const _endEvent = { type: 'end' };
 
@@ -50248,7 +48850,7 @@ class OrbitControls extends EventDispatcher {
 			scope.object.zoom = scope.zoom0;
 
 			scope.object.updateProjectionMatrix();
-			scope.dispatchEvent( _changeEvent$1 );
+			scope.dispatchEvent( _changeEvent );
 
 			scope.update();
 
@@ -50389,7 +48991,7 @@ class OrbitControls extends EventDispatcher {
 					lastPosition.distanceToSquared( scope.object.position ) > EPS ||
 					8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
 
-					scope.dispatchEvent( _changeEvent$1 );
+					scope.dispatchEvent( _changeEvent );
 
 					lastPosition.copy( scope.object.position );
 					lastQuaternion.copy( scope.object.quaternion );
@@ -51368,1540 +49970,6 @@ class OrbitControls extends EventDispatcher {
 
 }
 
-const _raycaster = new Raycaster();
-
-const _tempVector = new Vector3();
-const _tempVector2 = new Vector3();
-const _tempQuaternion = new Quaternion();
-const _unit = {
-	X: new Vector3( 1, 0, 0 ),
-	Y: new Vector3( 0, 1, 0 ),
-	Z: new Vector3( 0, 0, 1 )
-};
-
-const _changeEvent = { type: 'change' };
-const _mouseDownEvent = { type: 'mouseDown' };
-const _mouseUpEvent = { type: 'mouseUp', mode: null };
-const _objectChangeEvent = { type: 'objectChange' };
-
-class TransformControls extends Object3D {
-
-	constructor( camera, domElement ) {
-
-		super();
-
-		if ( domElement === undefined ) {
-
-			console.warn( 'THREE.TransformControls: The second parameter "domElement" is now mandatory.' );
-			domElement = document;
-
-		}
-
-		this.isTransformControls = true;
-
-		this.visible = false;
-		this.domElement = domElement;
-		this.domElement.style.touchAction = 'none'; // disable touch scroll
-
-		const _gizmo = new TransformControlsGizmo();
-		this._gizmo = _gizmo;
-		this.add( _gizmo );
-
-		const _plane = new TransformControlsPlane();
-		this._plane = _plane;
-		this.add( _plane );
-
-		const scope = this;
-
-		// Defined getter, setter and store for a property
-		function defineProperty( propName, defaultValue ) {
-
-			let propValue = defaultValue;
-
-			Object.defineProperty( scope, propName, {
-
-				get: function () {
-
-					return propValue !== undefined ? propValue : defaultValue;
-
-				},
-
-				set: function ( value ) {
-
-					if ( propValue !== value ) {
-
-						propValue = value;
-						_plane[ propName ] = value;
-						_gizmo[ propName ] = value;
-
-						scope.dispatchEvent( { type: propName + '-changed', value: value } );
-						scope.dispatchEvent( _changeEvent );
-
-					}
-
-				}
-
-			} );
-
-			scope[ propName ] = defaultValue;
-			_plane[ propName ] = defaultValue;
-			_gizmo[ propName ] = defaultValue;
-
-		}
-
-		// Define properties with getters/setter
-		// Setting the defined property will automatically trigger change event
-		// Defined properties are passed down to gizmo and plane
-
-		defineProperty( 'camera', camera );
-		defineProperty( 'object', undefined );
-		defineProperty( 'enabled', true );
-		defineProperty( 'axis', null );
-		defineProperty( 'mode', 'translate' );
-		defineProperty( 'translationSnap', null );
-		defineProperty( 'rotationSnap', null );
-		defineProperty( 'scaleSnap', null );
-		defineProperty( 'space', 'world' );
-		defineProperty( 'size', 1 );
-		defineProperty( 'dragging', false );
-		defineProperty( 'showX', true );
-		defineProperty( 'showY', true );
-		defineProperty( 'showZ', true );
-
-		// Reusable utility variables
-
-		const worldPosition = new Vector3();
-		const worldPositionStart = new Vector3();
-		const worldQuaternion = new Quaternion();
-		const worldQuaternionStart = new Quaternion();
-		const cameraPosition = new Vector3();
-		const cameraQuaternion = new Quaternion();
-		const pointStart = new Vector3();
-		const pointEnd = new Vector3();
-		const rotationAxis = new Vector3();
-		const rotationAngle = 0;
-		const eye = new Vector3();
-
-		// TODO: remove properties unused in plane and gizmo
-
-		defineProperty( 'worldPosition', worldPosition );
-		defineProperty( 'worldPositionStart', worldPositionStart );
-		defineProperty( 'worldQuaternion', worldQuaternion );
-		defineProperty( 'worldQuaternionStart', worldQuaternionStart );
-		defineProperty( 'cameraPosition', cameraPosition );
-		defineProperty( 'cameraQuaternion', cameraQuaternion );
-		defineProperty( 'pointStart', pointStart );
-		defineProperty( 'pointEnd', pointEnd );
-		defineProperty( 'rotationAxis', rotationAxis );
-		defineProperty( 'rotationAngle', rotationAngle );
-		defineProperty( 'eye', eye );
-
-		this._offset = new Vector3();
-		this._startNorm = new Vector3();
-		this._endNorm = new Vector3();
-		this._cameraScale = new Vector3();
-
-		this._parentPosition = new Vector3();
-		this._parentQuaternion = new Quaternion();
-		this._parentQuaternionInv = new Quaternion();
-		this._parentScale = new Vector3();
-
-		this._worldScaleStart = new Vector3();
-		this._worldQuaternionInv = new Quaternion();
-		this._worldScale = new Vector3();
-
-		this._positionStart = new Vector3();
-		this._quaternionStart = new Quaternion();
-		this._scaleStart = new Vector3();
-
-		this._getPointer = getPointer.bind( this );
-		this._onPointerDown = onPointerDown.bind( this );
-		this._onPointerHover = onPointerHover.bind( this );
-		this._onPointerMove = onPointerMove.bind( this );
-		this._onPointerUp = onPointerUp.bind( this );
-
-		this.domElement.addEventListener( 'pointerdown', this._onPointerDown );
-		this.domElement.addEventListener( 'pointermove', this._onPointerHover );
-		this.domElement.addEventListener( 'pointerup', this._onPointerUp );
-
-	}
-
-	// updateMatrixWorld  updates key transformation variables
-	updateMatrixWorld() {
-
-		if ( this.object !== undefined ) {
-
-			this.object.updateMatrixWorld();
-
-			if ( this.object.parent === null ) {
-
-				console.error( 'TransformControls: The attached 3D object must be a part of the scene graph.' );
-
-			} else {
-
-				this.object.parent.matrixWorld.decompose( this._parentPosition, this._parentQuaternion, this._parentScale );
-
-			}
-
-			this.object.matrixWorld.decompose( this.worldPosition, this.worldQuaternion, this._worldScale );
-
-			this._parentQuaternionInv.copy( this._parentQuaternion ).invert();
-			this._worldQuaternionInv.copy( this.worldQuaternion ).invert();
-
-		}
-
-		this.camera.updateMatrixWorld();
-		this.camera.matrixWorld.decompose( this.cameraPosition, this.cameraQuaternion, this._cameraScale );
-
-		if ( this.camera.isOrthographicCamera ) {
-
-			this.camera.getWorldDirection( this.eye ).negate();
-
-		} else {
-
-			this.eye.copy( this.cameraPosition ).sub( this.worldPosition ).normalize();
-
-		}
-
-		super.updateMatrixWorld( this );
-
-	}
-
-	pointerHover( pointer ) {
-
-		if ( this.object === undefined || this.dragging === true ) return;
-
-		_raycaster.setFromCamera( pointer, this.camera );
-
-		const intersect = intersectObjectWithRay( this._gizmo.picker[ this.mode ], _raycaster );
-
-		if ( intersect ) {
-
-			this.axis = intersect.object.name;
-
-		} else {
-
-			this.axis = null;
-
-		}
-
-	}
-
-	pointerDown( pointer ) {
-
-		if ( this.object === undefined || this.dragging === true || pointer.button !== 0 ) return;
-
-		if ( this.axis !== null ) {
-
-			_raycaster.setFromCamera( pointer, this.camera );
-
-			const planeIntersect = intersectObjectWithRay( this._plane, _raycaster, true );
-
-			if ( planeIntersect ) {
-
-				this.object.updateMatrixWorld();
-				this.object.parent.updateMatrixWorld();
-
-				this._positionStart.copy( this.object.position );
-				this._quaternionStart.copy( this.object.quaternion );
-				this._scaleStart.copy( this.object.scale );
-
-				this.object.matrixWorld.decompose( this.worldPositionStart, this.worldQuaternionStart, this._worldScaleStart );
-
-				this.pointStart.copy( planeIntersect.point ).sub( this.worldPositionStart );
-
-			}
-
-			this.dragging = true;
-			_mouseDownEvent.mode = this.mode;
-			this.dispatchEvent( _mouseDownEvent );
-
-		}
-
-	}
-
-	pointerMove( pointer ) {
-
-		const axis = this.axis;
-		const mode = this.mode;
-		const object = this.object;
-		let space = this.space;
-
-		if ( mode === 'scale' ) {
-
-			space = 'local';
-
-		} else if ( axis === 'E' || axis === 'XYZE' || axis === 'XYZ' ) {
-
-			space = 'world';
-
-		}
-
-		if ( object === undefined || axis === null || this.dragging === false || pointer.button !== - 1 ) return;
-
-		_raycaster.setFromCamera( pointer, this.camera );
-
-		const planeIntersect = intersectObjectWithRay( this._plane, _raycaster, true );
-
-		if ( ! planeIntersect ) return;
-
-		this.pointEnd.copy( planeIntersect.point ).sub( this.worldPositionStart );
-
-		if ( mode === 'translate' ) {
-
-			// Apply translate
-
-			this._offset.copy( this.pointEnd ).sub( this.pointStart );
-
-			if ( space === 'local' && axis !== 'XYZ' ) {
-
-				this._offset.applyQuaternion( this._worldQuaternionInv );
-
-			}
-
-			if ( axis.indexOf( 'X' ) === - 1 ) this._offset.x = 0;
-			if ( axis.indexOf( 'Y' ) === - 1 ) this._offset.y = 0;
-			if ( axis.indexOf( 'Z' ) === - 1 ) this._offset.z = 0;
-
-			if ( space === 'local' && axis !== 'XYZ' ) {
-
-				this._offset.applyQuaternion( this._quaternionStart ).divide( this._parentScale );
-
-			} else {
-
-				this._offset.applyQuaternion( this._parentQuaternionInv ).divide( this._parentScale );
-
-			}
-
-			object.position.copy( this._offset ).add( this._positionStart );
-
-			// Apply translation snap
-
-			if ( this.translationSnap ) {
-
-				if ( space === 'local' ) {
-
-					object.position.applyQuaternion( _tempQuaternion.copy( this._quaternionStart ).invert() );
-
-					if ( axis.search( 'X' ) !== - 1 ) {
-
-						object.position.x = Math.round( object.position.x / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					if ( axis.search( 'Y' ) !== - 1 ) {
-
-						object.position.y = Math.round( object.position.y / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					if ( axis.search( 'Z' ) !== - 1 ) {
-
-						object.position.z = Math.round( object.position.z / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					object.position.applyQuaternion( this._quaternionStart );
-
-				}
-
-				if ( space === 'world' ) {
-
-					if ( object.parent ) {
-
-						object.position.add( _tempVector.setFromMatrixPosition( object.parent.matrixWorld ) );
-
-					}
-
-					if ( axis.search( 'X' ) !== - 1 ) {
-
-						object.position.x = Math.round( object.position.x / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					if ( axis.search( 'Y' ) !== - 1 ) {
-
-						object.position.y = Math.round( object.position.y / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					if ( axis.search( 'Z' ) !== - 1 ) {
-
-						object.position.z = Math.round( object.position.z / this.translationSnap ) * this.translationSnap;
-
-					}
-
-					if ( object.parent ) {
-
-						object.position.sub( _tempVector.setFromMatrixPosition( object.parent.matrixWorld ) );
-
-					}
-
-				}
-
-			}
-
-		} else if ( mode === 'scale' ) {
-
-			if ( axis.search( 'XYZ' ) !== - 1 ) {
-
-				let d = this.pointEnd.length() / this.pointStart.length();
-
-				if ( this.pointEnd.dot( this.pointStart ) < 0 ) d *= - 1;
-
-				_tempVector2.set( d, d, d );
-
-			} else {
-
-				_tempVector.copy( this.pointStart );
-				_tempVector2.copy( this.pointEnd );
-
-				_tempVector.applyQuaternion( this._worldQuaternionInv );
-				_tempVector2.applyQuaternion( this._worldQuaternionInv );
-
-				_tempVector2.divide( _tempVector );
-
-				if ( axis.search( 'X' ) === - 1 ) {
-
-					_tempVector2.x = 1;
-
-				}
-
-				if ( axis.search( 'Y' ) === - 1 ) {
-
-					_tempVector2.y = 1;
-
-				}
-
-				if ( axis.search( 'Z' ) === - 1 ) {
-
-					_tempVector2.z = 1;
-
-				}
-
-			}
-
-			// Apply scale
-
-			object.scale.copy( this._scaleStart ).multiply( _tempVector2 );
-
-			if ( this.scaleSnap ) {
-
-				if ( axis.search( 'X' ) !== - 1 ) {
-
-					object.scale.x = Math.round( object.scale.x / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
-
-				}
-
-				if ( axis.search( 'Y' ) !== - 1 ) {
-
-					object.scale.y = Math.round( object.scale.y / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
-
-				}
-
-				if ( axis.search( 'Z' ) !== - 1 ) {
-
-					object.scale.z = Math.round( object.scale.z / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
-
-				}
-
-			}
-
-		} else if ( mode === 'rotate' ) {
-
-			this._offset.copy( this.pointEnd ).sub( this.pointStart );
-
-			const ROTATION_SPEED = 20 / this.worldPosition.distanceTo( _tempVector.setFromMatrixPosition( this.camera.matrixWorld ) );
-
-			if ( axis === 'E' ) {
-
-				this.rotationAxis.copy( this.eye );
-				this.rotationAngle = this.pointEnd.angleTo( this.pointStart );
-
-				this._startNorm.copy( this.pointStart ).normalize();
-				this._endNorm.copy( this.pointEnd ).normalize();
-
-				this.rotationAngle *= ( this._endNorm.cross( this._startNorm ).dot( this.eye ) < 0 ? 1 : - 1 );
-
-			} else if ( axis === 'XYZE' ) {
-
-				this.rotationAxis.copy( this._offset ).cross( this.eye ).normalize();
-				this.rotationAngle = this._offset.dot( _tempVector.copy( this.rotationAxis ).cross( this.eye ) ) * ROTATION_SPEED;
-
-			} else if ( axis === 'X' || axis === 'Y' || axis === 'Z' ) {
-
-				this.rotationAxis.copy( _unit[ axis ] );
-
-				_tempVector.copy( _unit[ axis ] );
-
-				if ( space === 'local' ) {
-
-					_tempVector.applyQuaternion( this.worldQuaternion );
-
-				}
-
-				this.rotationAngle = this._offset.dot( _tempVector.cross( this.eye ).normalize() ) * ROTATION_SPEED;
-
-			}
-
-			// Apply rotation snap
-
-			if ( this.rotationSnap ) this.rotationAngle = Math.round( this.rotationAngle / this.rotationSnap ) * this.rotationSnap;
-
-			// Apply rotate
-			if ( space === 'local' && axis !== 'E' && axis !== 'XYZE' ) {
-
-				object.quaternion.copy( this._quaternionStart );
-				object.quaternion.multiply( _tempQuaternion.setFromAxisAngle( this.rotationAxis, this.rotationAngle ) ).normalize();
-
-			} else {
-
-				this.rotationAxis.applyQuaternion( this._parentQuaternionInv );
-				object.quaternion.copy( _tempQuaternion.setFromAxisAngle( this.rotationAxis, this.rotationAngle ) );
-				object.quaternion.multiply( this._quaternionStart ).normalize();
-
-			}
-
-		}
-
-		this.dispatchEvent( _changeEvent );
-		this.dispatchEvent( _objectChangeEvent );
-
-	}
-
-	pointerUp( pointer ) {
-
-		if ( pointer.button !== 0 ) return;
-
-		if ( this.dragging && ( this.axis !== null ) ) {
-
-			_mouseUpEvent.mode = this.mode;
-			this.dispatchEvent( _mouseUpEvent );
-
-		}
-
-		this.dragging = false;
-		this.axis = null;
-
-	}
-
-	dispose() {
-
-		this.domElement.removeEventListener( 'pointerdown', this._onPointerDown );
-		this.domElement.removeEventListener( 'pointermove', this._onPointerHover );
-		this.domElement.removeEventListener( 'pointermove', this._onPointerMove );
-		this.domElement.removeEventListener( 'pointerup', this._onPointerUp );
-
-		this.traverse( function ( child ) {
-
-			if ( child.geometry ) child.geometry.dispose();
-			if ( child.material ) child.material.dispose();
-
-		} );
-
-	}
-
-	// Set current object
-	attach( object ) {
-
-		this.object = object;
-		this.visible = true;
-
-		return this;
-
-	}
-
-	// Detach from object
-	detach() {
-
-		this.object = undefined;
-		this.visible = false;
-		this.axis = null;
-
-		return this;
-
-	}
-
-	reset() {
-
-		if ( ! this.enabled ) return;
-
-		if ( this.dragging ) {
-
-			this.object.position.copy( this._positionStart );
-			this.object.quaternion.copy( this._quaternionStart );
-			this.object.scale.copy( this._scaleStart );
-
-			this.dispatchEvent( _changeEvent );
-			this.dispatchEvent( _objectChangeEvent );
-
-			this.pointStart.copy( this.pointEnd );
-
-		}
-
-	}
-
-	getRaycaster() {
-
-		return _raycaster;
-
-	}
-
-	// TODO: deprecate
-
-	getMode() {
-
-		return this.mode;
-
-	}
-
-	setMode( mode ) {
-
-		this.mode = mode;
-
-	}
-
-	setTranslationSnap( translationSnap ) {
-
-		this.translationSnap = translationSnap;
-
-	}
-
-	setRotationSnap( rotationSnap ) {
-
-		this.rotationSnap = rotationSnap;
-
-	}
-
-	setScaleSnap( scaleSnap ) {
-
-		this.scaleSnap = scaleSnap;
-
-	}
-
-	setSize( size ) {
-
-		this.size = size;
-
-	}
-
-	setSpace( space ) {
-
-		this.space = space;
-
-	}
-
-}
-
-// mouse / touch event handlers
-
-function getPointer( event ) {
-
-	if ( this.domElement.ownerDocument.pointerLockElement ) {
-
-		return {
-			x: 0,
-			y: 0,
-			button: event.button
-		};
-
-	} else {
-
-		const rect = this.domElement.getBoundingClientRect();
-
-		return {
-			x: ( event.clientX - rect.left ) / rect.width * 2 - 1,
-			y: - ( event.clientY - rect.top ) / rect.height * 2 + 1,
-			button: event.button
-		};
-
-	}
-
-}
-
-function onPointerHover( event ) {
-
-	if ( ! this.enabled ) return;
-
-	switch ( event.pointerType ) {
-
-		case 'mouse':
-		case 'pen':
-			this.pointerHover( this._getPointer( event ) );
-			break;
-
-	}
-
-}
-
-function onPointerDown( event ) {
-
-	if ( ! this.enabled ) return;
-
-	if ( ! document.pointerLockElement ) {
-
-		this.domElement.setPointerCapture( event.pointerId );
-
-	}
-
-	this.domElement.addEventListener( 'pointermove', this._onPointerMove );
-
-	this.pointerHover( this._getPointer( event ) );
-	this.pointerDown( this._getPointer( event ) );
-
-}
-
-function onPointerMove( event ) {
-
-	if ( ! this.enabled ) return;
-
-	this.pointerMove( this._getPointer( event ) );
-
-}
-
-function onPointerUp( event ) {
-
-	if ( ! this.enabled ) return;
-
-	this.domElement.releasePointerCapture( event.pointerId );
-
-	this.domElement.removeEventListener( 'pointermove', this._onPointerMove );
-
-	this.pointerUp( this._getPointer( event ) );
-
-}
-
-function intersectObjectWithRay( object, raycaster, includeInvisible ) {
-
-	const allIntersections = raycaster.intersectObject( object, true );
-
-	for ( let i = 0; i < allIntersections.length; i ++ ) {
-
-		if ( allIntersections[ i ].object.visible || includeInvisible ) {
-
-			return allIntersections[ i ];
-
-		}
-
-	}
-
-	return false;
-
-}
-
-//
-
-// Reusable utility variables
-
-const _tempEuler = new Euler();
-const _alignVector = new Vector3( 0, 1, 0 );
-const _zeroVector = new Vector3( 0, 0, 0 );
-const _lookAtMatrix = new Matrix4();
-const _tempQuaternion2 = new Quaternion();
-const _identityQuaternion = new Quaternion();
-const _dirVector = new Vector3();
-const _tempMatrix = new Matrix4();
-
-const _unitX = new Vector3( 1, 0, 0 );
-const _unitY = new Vector3( 0, 1, 0 );
-const _unitZ = new Vector3( 0, 0, 1 );
-
-const _v1 = new Vector3();
-const _v2 = new Vector3();
-const _v3 = new Vector3();
-
-class TransformControlsGizmo extends Object3D {
-
-	constructor() {
-
-		super();
-
-		this.isTransformControlsGizmo = true;
-
-		this.type = 'TransformControlsGizmo';
-
-		// shared materials
-
-		const gizmoMaterial = new MeshBasicMaterial( {
-			depthTest: false,
-			depthWrite: false,
-			fog: false,
-			toneMapped: false,
-			transparent: true
-		} );
-
-		const gizmoLineMaterial = new LineBasicMaterial( {
-			depthTest: false,
-			depthWrite: false,
-			fog: false,
-			toneMapped: false,
-			transparent: true
-		} );
-
-		// Make unique material for each axis/color
-
-		const matInvisible = gizmoMaterial.clone();
-		matInvisible.opacity = 0.15;
-
-		const matHelper = gizmoLineMaterial.clone();
-		matHelper.opacity = 0.5;
-
-		const matRed = gizmoMaterial.clone();
-		matRed.color.setHex( 0xff0000 );
-
-		const matGreen = gizmoMaterial.clone();
-		matGreen.color.setHex( 0x00ff00 );
-
-		const matBlue = gizmoMaterial.clone();
-		matBlue.color.setHex( 0x0000ff );
-
-		const matRedTransparent = gizmoMaterial.clone();
-		matRedTransparent.color.setHex( 0xff0000 );
-		matRedTransparent.opacity = 0.5;
-
-		const matGreenTransparent = gizmoMaterial.clone();
-		matGreenTransparent.color.setHex( 0x00ff00 );
-		matGreenTransparent.opacity = 0.5;
-
-		const matBlueTransparent = gizmoMaterial.clone();
-		matBlueTransparent.color.setHex( 0x0000ff );
-		matBlueTransparent.opacity = 0.5;
-
-		const matWhiteTransparent = gizmoMaterial.clone();
-		matWhiteTransparent.opacity = 0.25;
-
-		const matYellowTransparent = gizmoMaterial.clone();
-		matYellowTransparent.color.setHex( 0xffff00 );
-		matYellowTransparent.opacity = 0.25;
-
-		const matYellow = gizmoMaterial.clone();
-		matYellow.color.setHex( 0xffff00 );
-
-		const matGray = gizmoMaterial.clone();
-		matGray.color.setHex( 0x787878 );
-
-		// reusable geometry
-
-		const arrowGeometry = new CylinderGeometry( 0, 0.04, 0.1, 12 );
-		arrowGeometry.translate( 0, 0.05, 0 );
-
-		const scaleHandleGeometry = new BoxGeometry( 0.08, 0.08, 0.08 );
-		scaleHandleGeometry.translate( 0, 0.04, 0 );
-
-		const lineGeometry = new BufferGeometry();
-		lineGeometry.setAttribute( 'position', new Float32BufferAttribute( [ 0, 0, 0,	1, 0, 0 ], 3 ) );
-
-		const lineGeometry2 = new CylinderGeometry( 0.0075, 0.0075, 0.5, 3 );
-		lineGeometry2.translate( 0, 0.25, 0 );
-
-		function CircleGeometry( radius, arc ) {
-
-			const geometry = new TorusGeometry( radius, 0.0075, 3, 64, arc * Math.PI * 2 );
-			geometry.rotateY( Math.PI / 2 );
-			geometry.rotateX( Math.PI / 2 );
-			return geometry;
-
-		}
-
-		// Special geometry for transform helper. If scaled with position vector it spans from [0,0,0] to position
-
-		function TranslateHelperGeometry() {
-
-			const geometry = new BufferGeometry();
-
-			geometry.setAttribute( 'position', new Float32BufferAttribute( [ 0, 0, 0, 1, 1, 1 ], 3 ) );
-
-			return geometry;
-
-		}
-
-		// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
-
-		const gizmoTranslate = {
-			X: [
-				[ new Mesh( arrowGeometry, matRed ), [ 0.5, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-				[ new Mesh( arrowGeometry, matRed ), [ - 0.5, 0, 0 ], [ 0, 0, Math.PI / 2 ]],
-				[ new Mesh( lineGeometry2, matRed ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ]]
-			],
-			Y: [
-				[ new Mesh( arrowGeometry, matGreen ), [ 0, 0.5, 0 ]],
-				[ new Mesh( arrowGeometry, matGreen ), [ 0, - 0.5, 0 ], [ Math.PI, 0, 0 ]],
-				[ new Mesh( lineGeometry2, matGreen ) ]
-			],
-			Z: [
-				[ new Mesh( arrowGeometry, matBlue ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ]],
-				[ new Mesh( arrowGeometry, matBlue ), [ 0, 0, - 0.5 ], [ - Math.PI / 2, 0, 0 ]],
-				[ new Mesh( lineGeometry2, matBlue ), null, [ Math.PI / 2, 0, 0 ]]
-			],
-			XYZ: [
-				[ new Mesh( new OctahedronGeometry( 0.1, 0 ), matWhiteTransparent.clone() ), [ 0, 0, 0 ]]
-			],
-			XY: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matBlueTransparent.clone() ), [ 0.15, 0.15, 0 ]]
-			],
-			YZ: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matRedTransparent.clone() ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]]
-			],
-			XZ: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matGreenTransparent.clone() ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]]
-			]
-		};
-
-		const pickerTranslate = {
-			X: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0.3, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ - 0.3, 0, 0 ], [ 0, 0, Math.PI / 2 ]]
-			],
-			Y: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0.3, 0 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, - 0.3, 0 ], [ 0, 0, Math.PI ]]
-			],
-			Z: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0, 0.3 ], [ Math.PI / 2, 0, 0 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0, - 0.3 ], [ - Math.PI / 2, 0, 0 ]]
-			],
-			XYZ: [
-				[ new Mesh( new OctahedronGeometry( 0.2, 0 ), matInvisible ) ]
-			],
-			XY: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0.15, 0.15, 0 ]]
-			],
-			YZ: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]]
-			],
-			XZ: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]]
-			]
-		};
-
-		const helperTranslate = {
-			START: [
-				[ new Mesh( new OctahedronGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
-			],
-			END: [
-				[ new Mesh( new OctahedronGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
-			],
-			DELTA: [
-				[ new Line( TranslateHelperGeometry(), matHelper ), null, null, null, 'helper' ]
-			],
-			X: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ - 1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
-			],
-			Y: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ 0, - 1e3, 0 ], [ 0, 0, Math.PI / 2 ], [ 1e6, 1, 1 ], 'helper' ]
-			],
-			Z: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ 0, 0, - 1e3 ], [ 0, - Math.PI / 2, 0 ], [ 1e6, 1, 1 ], 'helper' ]
-			]
-		};
-
-		const gizmoRotate = {
-			XYZE: [
-				[ new Mesh( CircleGeometry( 0.5, 1 ), matGray ), null, [ 0, Math.PI / 2, 0 ]]
-			],
-			X: [
-				[ new Mesh( CircleGeometry( 0.5, 0.5 ), matRed ) ]
-			],
-			Y: [
-				[ new Mesh( CircleGeometry( 0.5, 0.5 ), matGreen ), null, [ 0, 0, - Math.PI / 2 ]]
-			],
-			Z: [
-				[ new Mesh( CircleGeometry( 0.5, 0.5 ), matBlue ), null, [ 0, Math.PI / 2, 0 ]]
-			],
-			E: [
-				[ new Mesh( CircleGeometry( 0.75, 1 ), matYellowTransparent ), null, [ 0, Math.PI / 2, 0 ]]
-			]
-		};
-
-		const helperRotate = {
-			AXIS: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ - 1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
-			]
-		};
-
-		const pickerRotate = {
-			XYZE: [
-				[ new Mesh( new SphereGeometry( 0.25, 10, 8 ), matInvisible ) ]
-			],
-			X: [
-				[ new Mesh( new TorusGeometry( 0.5, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, - Math.PI / 2, - Math.PI / 2 ]],
-			],
-			Y: [
-				[ new Mesh( new TorusGeometry( 0.5, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ]],
-			],
-			Z: [
-				[ new Mesh( new TorusGeometry( 0.5, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-			],
-			E: [
-				[ new Mesh( new TorusGeometry( 0.75, 0.1, 2, 24 ), matInvisible ) ]
-			]
-		};
-
-		const gizmoScale = {
-			X: [
-				[ new Mesh( scaleHandleGeometry, matRed ), [ 0.5, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-				[ new Mesh( lineGeometry2, matRed ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-				[ new Mesh( scaleHandleGeometry, matRed ), [ - 0.5, 0, 0 ], [ 0, 0, Math.PI / 2 ]],
-			],
-			Y: [
-				[ new Mesh( scaleHandleGeometry, matGreen ), [ 0, 0.5, 0 ]],
-				[ new Mesh( lineGeometry2, matGreen ) ],
-				[ new Mesh( scaleHandleGeometry, matGreen ), [ 0, - 0.5, 0 ], [ 0, 0, Math.PI ]],
-			],
-			Z: [
-				[ new Mesh( scaleHandleGeometry, matBlue ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ]],
-				[ new Mesh( lineGeometry2, matBlue ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ]],
-				[ new Mesh( scaleHandleGeometry, matBlue ), [ 0, 0, - 0.5 ], [ - Math.PI / 2, 0, 0 ]]
-			],
-			XY: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matBlueTransparent ), [ 0.15, 0.15, 0 ]]
-			],
-			YZ: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matRedTransparent ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]]
-			],
-			XZ: [
-				[ new Mesh( new BoxGeometry( 0.15, 0.15, 0.01 ), matGreenTransparent ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]]
-			],
-			XYZ: [
-				[ new Mesh( new BoxGeometry( 0.1, 0.1, 0.1 ), matWhiteTransparent.clone() ) ],
-			]
-		};
-
-		const pickerScale = {
-			X: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0.3, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ - 0.3, 0, 0 ], [ 0, 0, Math.PI / 2 ]]
-			],
-			Y: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0.3, 0 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, - 0.3, 0 ], [ 0, 0, Math.PI ]]
-			],
-			Z: [
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0, 0.3 ], [ Math.PI / 2, 0, 0 ]],
-				[ new Mesh( new CylinderGeometry( 0.2, 0, 0.6, 4 ), matInvisible ), [ 0, 0, - 0.3 ], [ - Math.PI / 2, 0, 0 ]]
-			],
-			XY: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0.15, 0.15, 0 ]],
-			],
-			YZ: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]],
-			],
-			XZ: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.01 ), matInvisible ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]],
-			],
-			XYZ: [
-				[ new Mesh( new BoxGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 0, 0 ]],
-			]
-		};
-
-		const helperScale = {
-			X: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ - 1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
-			],
-			Y: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ 0, - 1e3, 0 ], [ 0, 0, Math.PI / 2 ], [ 1e6, 1, 1 ], 'helper' ]
-			],
-			Z: [
-				[ new Line( lineGeometry, matHelper.clone() ), [ 0, 0, - 1e3 ], [ 0, - Math.PI / 2, 0 ], [ 1e6, 1, 1 ], 'helper' ]
-			]
-		};
-
-		// Creates an Object3D with gizmos described in custom hierarchy definition.
-
-		function setupGizmo( gizmoMap ) {
-
-			const gizmo = new Object3D();
-
-			for ( const name in gizmoMap ) {
-
-				for ( let i = gizmoMap[ name ].length; i --; ) {
-
-					const object = gizmoMap[ name ][ i ][ 0 ].clone();
-					const position = gizmoMap[ name ][ i ][ 1 ];
-					const rotation = gizmoMap[ name ][ i ][ 2 ];
-					const scale = gizmoMap[ name ][ i ][ 3 ];
-					const tag = gizmoMap[ name ][ i ][ 4 ];
-
-					// name and tag properties are essential for picking and updating logic.
-					object.name = name;
-					object.tag = tag;
-
-					if ( position ) {
-
-						object.position.set( position[ 0 ], position[ 1 ], position[ 2 ] );
-
-					}
-
-					if ( rotation ) {
-
-						object.rotation.set( rotation[ 0 ], rotation[ 1 ], rotation[ 2 ] );
-
-					}
-
-					if ( scale ) {
-
-						object.scale.set( scale[ 0 ], scale[ 1 ], scale[ 2 ] );
-
-					}
-
-					object.updateMatrix();
-
-					const tempGeometry = object.geometry.clone();
-					tempGeometry.applyMatrix4( object.matrix );
-					object.geometry = tempGeometry;
-					object.renderOrder = Infinity;
-
-					object.position.set( 0, 0, 0 );
-					object.rotation.set( 0, 0, 0 );
-					object.scale.set( 1, 1, 1 );
-
-					gizmo.add( object );
-
-				}
-
-			}
-
-			return gizmo;
-
-		}
-
-		// Gizmo creation
-
-		this.gizmo = {};
-		this.picker = {};
-		this.helper = {};
-
-		this.add( this.gizmo[ 'translate' ] = setupGizmo( gizmoTranslate ) );
-		this.add( this.gizmo[ 'rotate' ] = setupGizmo( gizmoRotate ) );
-		this.add( this.gizmo[ 'scale' ] = setupGizmo( gizmoScale ) );
-		this.add( this.picker[ 'translate' ] = setupGizmo( pickerTranslate ) );
-		this.add( this.picker[ 'rotate' ] = setupGizmo( pickerRotate ) );
-		this.add( this.picker[ 'scale' ] = setupGizmo( pickerScale ) );
-		this.add( this.helper[ 'translate' ] = setupGizmo( helperTranslate ) );
-		this.add( this.helper[ 'rotate' ] = setupGizmo( helperRotate ) );
-		this.add( this.helper[ 'scale' ] = setupGizmo( helperScale ) );
-
-		// Pickers should be hidden always
-
-		this.picker[ 'translate' ].visible = false;
-		this.picker[ 'rotate' ].visible = false;
-		this.picker[ 'scale' ].visible = false;
-
-	}
-
-	// updateMatrixWorld will update transformations and appearance of individual handles
-
-	updateMatrixWorld( force ) {
-
-		const space = ( this.mode === 'scale' ) ? 'local' : this.space; // scale always oriented to local rotation
-
-		const quaternion = ( space === 'local' ) ? this.worldQuaternion : _identityQuaternion;
-
-		// Show only gizmos for current transform mode
-
-		this.gizmo[ 'translate' ].visible = this.mode === 'translate';
-		this.gizmo[ 'rotate' ].visible = this.mode === 'rotate';
-		this.gizmo[ 'scale' ].visible = this.mode === 'scale';
-
-		this.helper[ 'translate' ].visible = this.mode === 'translate';
-		this.helper[ 'rotate' ].visible = this.mode === 'rotate';
-		this.helper[ 'scale' ].visible = this.mode === 'scale';
-
-
-		let handles = [];
-		handles = handles.concat( this.picker[ this.mode ].children );
-		handles = handles.concat( this.gizmo[ this.mode ].children );
-		handles = handles.concat( this.helper[ this.mode ].children );
-
-		for ( let i = 0; i < handles.length; i ++ ) {
-
-			const handle = handles[ i ];
-
-			// hide aligned to camera
-
-			handle.visible = true;
-			handle.rotation.set( 0, 0, 0 );
-			handle.position.copy( this.worldPosition );
-
-			let factor;
-
-			if ( this.camera.isOrthographicCamera ) {
-
-				factor = ( this.camera.top - this.camera.bottom ) / this.camera.zoom;
-
-			} else {
-
-				factor = this.worldPosition.distanceTo( this.cameraPosition ) * Math.min( 1.9 * Math.tan( Math.PI * this.camera.fov / 360 ) / this.camera.zoom, 7 );
-
-			}
-
-			handle.scale.set( 1, 1, 1 ).multiplyScalar( factor * this.size / 4 );
-
-			// TODO: simplify helpers and consider decoupling from gizmo
-
-			if ( handle.tag === 'helper' ) {
-
-				handle.visible = false;
-
-				if ( handle.name === 'AXIS' ) {
-
-					handle.visible = !! this.axis;
-
-					if ( this.axis === 'X' ) {
-
-						_tempQuaternion.setFromEuler( _tempEuler.set( 0, 0, 0 ) );
-						handle.quaternion.copy( quaternion ).multiply( _tempQuaternion );
-
-						if ( Math.abs( _alignVector.copy( _unitX ).applyQuaternion( quaternion ).dot( this.eye ) ) > 0.9 ) {
-
-							handle.visible = false;
-
-						}
-
-					}
-
-					if ( this.axis === 'Y' ) {
-
-						_tempQuaternion.setFromEuler( _tempEuler.set( 0, 0, Math.PI / 2 ) );
-						handle.quaternion.copy( quaternion ).multiply( _tempQuaternion );
-
-						if ( Math.abs( _alignVector.copy( _unitY ).applyQuaternion( quaternion ).dot( this.eye ) ) > 0.9 ) {
-
-							handle.visible = false;
-
-						}
-
-					}
-
-					if ( this.axis === 'Z' ) {
-
-						_tempQuaternion.setFromEuler( _tempEuler.set( 0, Math.PI / 2, 0 ) );
-						handle.quaternion.copy( quaternion ).multiply( _tempQuaternion );
-
-						if ( Math.abs( _alignVector.copy( _unitZ ).applyQuaternion( quaternion ).dot( this.eye ) ) > 0.9 ) {
-
-							handle.visible = false;
-
-						}
-
-					}
-
-					if ( this.axis === 'XYZE' ) {
-
-						_tempQuaternion.setFromEuler( _tempEuler.set( 0, Math.PI / 2, 0 ) );
-						_alignVector.copy( this.rotationAxis );
-						handle.quaternion.setFromRotationMatrix( _lookAtMatrix.lookAt( _zeroVector, _alignVector, _unitY ) );
-						handle.quaternion.multiply( _tempQuaternion );
-						handle.visible = this.dragging;
-
-					}
-
-					if ( this.axis === 'E' ) {
-
-						handle.visible = false;
-
-					}
-
-
-				} else if ( handle.name === 'START' ) {
-
-					handle.position.copy( this.worldPositionStart );
-					handle.visible = this.dragging;
-
-				} else if ( handle.name === 'END' ) {
-
-					handle.position.copy( this.worldPosition );
-					handle.visible = this.dragging;
-
-				} else if ( handle.name === 'DELTA' ) {
-
-					handle.position.copy( this.worldPositionStart );
-					handle.quaternion.copy( this.worldQuaternionStart );
-					_tempVector.set( 1e-10, 1e-10, 1e-10 ).add( this.worldPositionStart ).sub( this.worldPosition ).multiplyScalar( - 1 );
-					_tempVector.applyQuaternion( this.worldQuaternionStart.clone().invert() );
-					handle.scale.copy( _tempVector );
-					handle.visible = this.dragging;
-
-				} else {
-
-					handle.quaternion.copy( quaternion );
-
-					if ( this.dragging ) {
-
-						handle.position.copy( this.worldPositionStart );
-
-					} else {
-
-						handle.position.copy( this.worldPosition );
-
-					}
-
-					if ( this.axis ) {
-
-						handle.visible = this.axis.search( handle.name ) !== - 1;
-
-					}
-
-				}
-
-				// If updating helper, skip rest of the loop
-				continue;
-
-			}
-
-			// Align handles to current local or world rotation
-
-			handle.quaternion.copy( quaternion );
-
-			if ( this.mode === 'translate' || this.mode === 'scale' ) {
-
-				// Hide translate and scale axis facing the camera
-
-				const AXIS_HIDE_THRESHOLD = 0.99;
-				const PLANE_HIDE_THRESHOLD = 0.2;
-
-				if ( handle.name === 'X' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitX ).applyQuaternion( quaternion ).dot( this.eye ) ) > AXIS_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-				if ( handle.name === 'Y' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitY ).applyQuaternion( quaternion ).dot( this.eye ) ) > AXIS_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-				if ( handle.name === 'Z' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitZ ).applyQuaternion( quaternion ).dot( this.eye ) ) > AXIS_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-				if ( handle.name === 'XY' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitZ ).applyQuaternion( quaternion ).dot( this.eye ) ) < PLANE_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-				if ( handle.name === 'YZ' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitX ).applyQuaternion( quaternion ).dot( this.eye ) ) < PLANE_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-				if ( handle.name === 'XZ' ) {
-
-					if ( Math.abs( _alignVector.copy( _unitY ).applyQuaternion( quaternion ).dot( this.eye ) ) < PLANE_HIDE_THRESHOLD ) {
-
-						handle.scale.set( 1e-10, 1e-10, 1e-10 );
-						handle.visible = false;
-
-					}
-
-				}
-
-			} else if ( this.mode === 'rotate' ) {
-
-				// Align handles to current local or world rotation
-
-				_tempQuaternion2.copy( quaternion );
-				_alignVector.copy( this.eye ).applyQuaternion( _tempQuaternion.copy( quaternion ).invert() );
-
-				if ( handle.name.search( 'E' ) !== - 1 ) {
-
-					handle.quaternion.setFromRotationMatrix( _lookAtMatrix.lookAt( this.eye, _zeroVector, _unitY ) );
-
-				}
-
-				if ( handle.name === 'X' ) {
-
-					_tempQuaternion.setFromAxisAngle( _unitX, Math.atan2( - _alignVector.y, _alignVector.z ) );
-					_tempQuaternion.multiplyQuaternions( _tempQuaternion2, _tempQuaternion );
-					handle.quaternion.copy( _tempQuaternion );
-
-				}
-
-				if ( handle.name === 'Y' ) {
-
-					_tempQuaternion.setFromAxisAngle( _unitY, Math.atan2( _alignVector.x, _alignVector.z ) );
-					_tempQuaternion.multiplyQuaternions( _tempQuaternion2, _tempQuaternion );
-					handle.quaternion.copy( _tempQuaternion );
-
-				}
-
-				if ( handle.name === 'Z' ) {
-
-					_tempQuaternion.setFromAxisAngle( _unitZ, Math.atan2( _alignVector.y, _alignVector.x ) );
-					_tempQuaternion.multiplyQuaternions( _tempQuaternion2, _tempQuaternion );
-					handle.quaternion.copy( _tempQuaternion );
-
-				}
-
-			}
-
-			// Hide disabled axes
-			handle.visible = handle.visible && ( handle.name.indexOf( 'X' ) === - 1 || this.showX );
-			handle.visible = handle.visible && ( handle.name.indexOf( 'Y' ) === - 1 || this.showY );
-			handle.visible = handle.visible && ( handle.name.indexOf( 'Z' ) === - 1 || this.showZ );
-			handle.visible = handle.visible && ( handle.name.indexOf( 'E' ) === - 1 || ( this.showX && this.showY && this.showZ ) );
-
-			// highlight selected axis
-
-			handle.material._color = handle.material._color || handle.material.color.clone();
-			handle.material._opacity = handle.material._opacity || handle.material.opacity;
-
-			handle.material.color.copy( handle.material._color );
-			handle.material.opacity = handle.material._opacity;
-
-			if ( this.enabled && this.axis ) {
-
-				if ( handle.name === this.axis ) {
-
-					handle.material.color.setHex( 0xffff00 );
-					handle.material.opacity = 1.0;
-
-				} else if ( this.axis.split( '' ).some( function ( a ) {
-
-					return handle.name === a;
-
-				} ) ) {
-
-					handle.material.color.setHex( 0xffff00 );
-					handle.material.opacity = 1.0;
-
-				}
-
-			}
-
-		}
-
-		super.updateMatrixWorld( force );
-
-	}
-
-}
-
-//
-
-class TransformControlsPlane extends Mesh {
-
-	constructor() {
-
-		super(
-			new PlaneGeometry( 100000, 100000, 2, 2 ),
-			new MeshBasicMaterial( { visible: false, wireframe: true, side: DoubleSide, transparent: true, opacity: 0.1, toneMapped: false } )
-		);
-
-		this.isTransformControlsPlane = true;
-
-		this.type = 'TransformControlsPlane';
-
-	}
-
-	updateMatrixWorld( force ) {
-
-		let space = this.space;
-
-		this.position.copy( this.worldPosition );
-
-		if ( this.mode === 'scale' ) space = 'local'; // scale always oriented to local rotation
-
-		_v1.copy( _unitX ).applyQuaternion( space === 'local' ? this.worldQuaternion : _identityQuaternion );
-		_v2.copy( _unitY ).applyQuaternion( space === 'local' ? this.worldQuaternion : _identityQuaternion );
-		_v3.copy( _unitZ ).applyQuaternion( space === 'local' ? this.worldQuaternion : _identityQuaternion );
-
-		// Align the plane for current transform mode, axis and space.
-
-		_alignVector.copy( _v2 );
-
-		switch ( this.mode ) {
-
-			case 'translate':
-			case 'scale':
-				switch ( this.axis ) {
-
-					case 'X':
-						_alignVector.copy( this.eye ).cross( _v1 );
-						_dirVector.copy( _v1 ).cross( _alignVector );
-						break;
-					case 'Y':
-						_alignVector.copy( this.eye ).cross( _v2 );
-						_dirVector.copy( _v2 ).cross( _alignVector );
-						break;
-					case 'Z':
-						_alignVector.copy( this.eye ).cross( _v3 );
-						_dirVector.copy( _v3 ).cross( _alignVector );
-						break;
-					case 'XY':
-						_dirVector.copy( _v3 );
-						break;
-					case 'YZ':
-						_dirVector.copy( _v1 );
-						break;
-					case 'XZ':
-						_alignVector.copy( _v3 );
-						_dirVector.copy( _v2 );
-						break;
-					case 'XYZ':
-					case 'E':
-						_dirVector.set( 0, 0, 0 );
-						break;
-
-				}
-
-				break;
-			case 'rotate':
-			default:
-				// special case for rotate
-				_dirVector.set( 0, 0, 0 );
-
-		}
-
-		if ( _dirVector.length() === 0 ) {
-
-			// If in rotate mode, make the plane parallel to camera
-			this.quaternion.copy( this.cameraQuaternion );
-
-		} else {
-
-			_tempMatrix.lookAt( _tempVector.set( 0, 0, 0 ), _dirVector, _alignVector );
-
-			this.quaternion.setFromRotationMatrix( _tempMatrix );
-
-		}
-
-		super.updateMatrixWorld( force );
-
-	}
-
-}
-
 /**
  * Full-screen textured quad shader
  */
@@ -53478,1137 +50546,6 @@ class RenderPass extends Pass {
 	}
 
 }
-
-/**
- * References:
- * http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
- * https://learnopengl.com/Advanced-Lighting/SSAO
- * https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl
- */
-
-const SSAOShader = {
-
-	defines: {
-		'PERSPECTIVE_CAMERA': 1,
-		'KERNEL_SIZE': 32
-	},
-
-	uniforms: {
-
-		'tDiffuse': { value: null },
-		'tNormal': { value: null },
-		'tDepth': { value: null },
-		'tNoise': { value: null },
-		'kernel': { value: null },
-		'cameraNear': { value: null },
-		'cameraFar': { value: null },
-		'resolution': { value: new Vector2() },
-		'cameraProjectionMatrix': { value: new Matrix4() },
-		'cameraInverseProjectionMatrix': { value: new Matrix4() },
-		'kernelRadius': { value: 8 },
-		'minDistance': { value: 0.005 },
-		'maxDistance': { value: 0.05 },
-
-	},
-
-	vertexShader: /* glsl */`
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
-
-	fragmentShader: /* glsl */`
-
-		uniform sampler2D tDiffuse;
-		uniform sampler2D tNormal;
-		uniform sampler2D tDepth;
-		uniform sampler2D tNoise;
-
-		uniform vec3 kernel[ KERNEL_SIZE ];
-
-		uniform vec2 resolution;
-
-		uniform float cameraNear;
-		uniform float cameraFar;
-		uniform mat4 cameraProjectionMatrix;
-		uniform mat4 cameraInverseProjectionMatrix;
-
-		uniform float kernelRadius;
-		uniform float minDistance; // avoid artifacts caused by neighbour fragments with minimal depth difference
-		uniform float maxDistance; // avoid the influence of fragments which are too far away
-
-		varying vec2 vUv;
-
-		#include <packing>
-
-		float getDepth( const in vec2 screenPosition ) {
-
-			return texture2D( tDepth, screenPosition ).x;
-
-		}
-
-		float getLinearDepth( const in vec2 screenPosition ) {
-
-			#if PERSPECTIVE_CAMERA == 1
-
-				float fragCoordZ = texture2D( tDepth, screenPosition ).x;
-				float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-				return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
-
-			#else
-
-				return texture2D( tDepth, screenPosition ).x;
-
-			#endif
-
-		}
-
-		float getViewZ( const in float depth ) {
-
-			#if PERSPECTIVE_CAMERA == 1
-
-				return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );
-
-			#else
-
-				return orthographicDepthToViewZ( depth, cameraNear, cameraFar );
-
-			#endif
-
-		}
-
-		vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {
-
-			float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];
-
-			vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );
-
-			clipPosition *= clipW; // unprojection.
-
-			return ( cameraInverseProjectionMatrix * clipPosition ).xyz;
-
-		}
-
-		vec3 getViewNormal( const in vec2 screenPosition ) {
-
-			return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );
-
-		}
-
-		void main() {
-
-			float depth = getDepth( vUv );
-			float viewZ = getViewZ( depth );
-
-			vec3 viewPosition = getViewPosition( vUv, depth, viewZ );
-			vec3 viewNormal = getViewNormal( vUv );
-
-			vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );
-			vec3 random = vec3( texture2D( tNoise, vUv * noiseScale ).r );
-
-			// compute matrix used to reorient a kernel vector
-
-			vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );
-			vec3 bitangent = cross( viewNormal, tangent );
-			mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );
-
-		 float occlusion = 0.0;
-
-		 for ( int i = 0; i < KERNEL_SIZE; i ++ ) {
-
-				vec3 sampleVector = kernelMatrix * kernel[ i ]; // reorient sample vector in view space
-				vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius ); // calculate sample point
-
-				vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 ); // project point and calculate NDC
-				samplePointNDC /= samplePointNDC.w;
-
-				vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5; // compute uv coordinates
-
-				float realDepth = getLinearDepth( samplePointUv ); // get linear depth from depth texture
-				float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar ); // compute linear depth of the sample view Z value
-				float delta = sampleDepth - realDepth;
-
-				if ( delta > minDistance && delta < maxDistance ) { // if fragment is before sample point, increase occlusion
-
-					occlusion += 1.0;
-
-				}
-
-			}
-
-			occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );
-
-			gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );
-
-		}`
-
-};
-
-const SSAODepthShader = {
-
-	defines: {
-		'PERSPECTIVE_CAMERA': 1
-	},
-
-	uniforms: {
-
-		'tDepth': { value: null },
-		'cameraNear': { value: null },
-		'cameraFar': { value: null },
-
-	},
-
-	vertexShader:
-
-		`varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
-
-	fragmentShader:
-
-		`uniform sampler2D tDepth;
-
-		uniform float cameraNear;
-		uniform float cameraFar;
-
-		varying vec2 vUv;
-
-		#include <packing>
-
-		float getLinearDepth( const in vec2 screenPosition ) {
-
-			#if PERSPECTIVE_CAMERA == 1
-
-				float fragCoordZ = texture2D( tDepth, screenPosition ).x;
-				float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-				return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
-
-			#else
-
-				return texture2D( tDepth, screenPosition ).x;
-
-			#endif
-
-		}
-
-		void main() {
-
-			float depth = getLinearDepth( vUv );
-			gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );
-
-		}`
-
-};
-
-const SSAOBlurShader = {
-
-	uniforms: {
-
-		'tDiffuse': { value: null },
-		'resolution': { value: new Vector2() }
-
-	},
-
-	vertexShader:
-
-		`varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
-
-	fragmentShader:
-
-		`uniform sampler2D tDiffuse;
-
-		uniform vec2 resolution;
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vec2 texelSize = ( 1.0 / resolution );
-			float result = 0.0;
-
-			for ( int i = - 2; i <= 2; i ++ ) {
-
-				for ( int j = - 2; j <= 2; j ++ ) {
-
-					vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;
-					result += texture2D( tDiffuse, vUv + offset ).r;
-
-				}
-
-			}
-
-			gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );
-
-		}`
-
-};
-
-// Ported from Stefan Gustavson's java implementation
-// http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-// Read Stefan's excellent paper for details on how this code works.
-//
-// Sean McCullough banksean@gmail.com
-//
-// Added 4D noise
-
-/**
- * You can pass in a random number generator object if you like.
- * It is assumed to have a random() method.
- */
-class SimplexNoise {
-
-	constructor( r = Math ) {
-
-		this.grad3 = [[ 1, 1, 0 ], [ - 1, 1, 0 ], [ 1, - 1, 0 ], [ - 1, - 1, 0 ],
-			[ 1, 0, 1 ], [ - 1, 0, 1 ], [ 1, 0, - 1 ], [ - 1, 0, - 1 ],
-			[ 0, 1, 1 ], [ 0, - 1, 1 ], [ 0, 1, - 1 ], [ 0, - 1, - 1 ]];
-
-		this.grad4 = [[ 0, 1, 1, 1 ], [ 0, 1, 1, - 1 ], [ 0, 1, - 1, 1 ], [ 0, 1, - 1, - 1 ],
-			[ 0, - 1, 1, 1 ], [ 0, - 1, 1, - 1 ], [ 0, - 1, - 1, 1 ], [ 0, - 1, - 1, - 1 ],
-			[ 1, 0, 1, 1 ], [ 1, 0, 1, - 1 ], [ 1, 0, - 1, 1 ], [ 1, 0, - 1, - 1 ],
-			[ - 1, 0, 1, 1 ], [ - 1, 0, 1, - 1 ], [ - 1, 0, - 1, 1 ], [ - 1, 0, - 1, - 1 ],
-			[ 1, 1, 0, 1 ], [ 1, 1, 0, - 1 ], [ 1, - 1, 0, 1 ], [ 1, - 1, 0, - 1 ],
-			[ - 1, 1, 0, 1 ], [ - 1, 1, 0, - 1 ], [ - 1, - 1, 0, 1 ], [ - 1, - 1, 0, - 1 ],
-			[ 1, 1, 1, 0 ], [ 1, 1, - 1, 0 ], [ 1, - 1, 1, 0 ], [ 1, - 1, - 1, 0 ],
-			[ - 1, 1, 1, 0 ], [ - 1, 1, - 1, 0 ], [ - 1, - 1, 1, 0 ], [ - 1, - 1, - 1, 0 ]];
-
-		this.p = [];
-
-		for ( let i = 0; i < 256; i ++ ) {
-
-			this.p[ i ] = Math.floor( r.random() * 256 );
-
-		}
-
-		// To remove the need for index wrapping, double the permutation table length
-		this.perm = [];
-
-		for ( let i = 0; i < 512; i ++ ) {
-
-			this.perm[ i ] = this.p[ i & 255 ];
-
-		}
-
-		// A lookup table to traverse the simplex around a given point in 4D.
-		// Details can be found where this table is used, in the 4D noise method.
-		this.simplex = [
-			[ 0, 1, 2, 3 ], [ 0, 1, 3, 2 ], [ 0, 0, 0, 0 ], [ 0, 2, 3, 1 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 1, 2, 3, 0 ],
-			[ 0, 2, 1, 3 ], [ 0, 0, 0, 0 ], [ 0, 3, 1, 2 ], [ 0, 3, 2, 1 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 1, 3, 2, 0 ],
-			[ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
-			[ 1, 2, 0, 3 ], [ 0, 0, 0, 0 ], [ 1, 3, 0, 2 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 2, 3, 0, 1 ], [ 2, 3, 1, 0 ],
-			[ 1, 0, 2, 3 ], [ 1, 0, 3, 2 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 2, 0, 3, 1 ], [ 0, 0, 0, 0 ], [ 2, 1, 3, 0 ],
-			[ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
-			[ 2, 0, 1, 3 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 3, 0, 1, 2 ], [ 3, 0, 2, 1 ], [ 0, 0, 0, 0 ], [ 3, 1, 2, 0 ],
-			[ 2, 1, 0, 3 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 3, 1, 0, 2 ], [ 0, 0, 0, 0 ], [ 3, 2, 0, 1 ], [ 3, 2, 1, 0 ]];
-
-	}
-
-	dot( g, x, y ) {
-
-		return g[ 0 ] * x + g[ 1 ] * y;
-
-	}
-
-	dot3( g, x, y, z ) {
-
-		return g[ 0 ] * x + g[ 1 ] * y + g[ 2 ] * z;
-
-	}
-
-	dot4( g, x, y, z, w ) {
-
-		return g[ 0 ] * x + g[ 1 ] * y + g[ 2 ] * z + g[ 3 ] * w;
-
-	}
-
-	noise( xin, yin ) {
-
-		let n0; // Noise contributions from the ../../../src/Three_jsroot.js corners
-		let n1;
-		let n2;
-		// Skew the input space to determine which simplex cell we're in
-		const F2 = 0.5 * ( Math.sqrt( 3.0 ) - 1.0 );
-		const s = ( xin + yin ) * F2; // Hairy factor for 2D
-		const i = Math.floor( xin + s );
-		const j = Math.floor( yin + s );
-		const G2 = ( 3.0 - Math.sqrt( 3.0 ) ) / 6.0;
-		const t = ( i + j ) * G2;
-		const X0 = i - t; // Unskew the cell origin back to (x,y) space
-		const Y0 = j - t;
-		const x0 = xin - X0; // The x,y distances from the cell origin
-		const y0 = yin - Y0;
-
-		// For the 2D case, the simplex shape is an equilateral triangle.
-		// Determine which simplex we are in.
-		let i1; // Offsets for second (middle) corner of simplex in (i,j) coords
-
-		let j1;
-		if ( x0 > y0 ) {
-
-			i1 = 1; j1 = 0;
-
-			// lower triangle, XY order: (0,0)->(1,0)->(1,1)
-
-		}	else {
-
-			i1 = 0; j1 = 1;
-
-		} // upper triangle, YX order: (0,0)->(0,1)->(1,1)
-
-		// A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
-		// a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
-		// c = (3-sqrt(3))/6
-		const x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-		const y1 = y0 - j1 + G2;
-		const x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
-		const y2 = y0 - 1.0 + 2.0 * G2;
-		// Work out the hashed gradient indices of the three simplex corners
-		const ii = i & 255;
-		const jj = j & 255;
-		const gi0 = this.perm[ ii + this.perm[ jj ] ] % 12;
-		const gi1 = this.perm[ ii + i1 + this.perm[ jj + j1 ] ] % 12;
-		const gi2 = this.perm[ ii + 1 + this.perm[ jj + 1 ] ] % 12;
-		// Calculate the contribution from the three corners
-		let t0 = 0.5 - x0 * x0 - y0 * y0;
-		if ( t0 < 0 ) n0 = 0.0;
-		else {
-
-			t0 *= t0;
-			n0 = t0 * t0 * this.dot( this.grad3[ gi0 ], x0, y0 ); // (x,y) of grad3 used for 2D gradient
-
-		}
-
-		let t1 = 0.5 - x1 * x1 - y1 * y1;
-		if ( t1 < 0 ) n1 = 0.0;
-		else {
-
-			t1 *= t1;
-			n1 = t1 * t1 * this.dot( this.grad3[ gi1 ], x1, y1 );
-
-		}
-
-		let t2 = 0.5 - x2 * x2 - y2 * y2;
-		if ( t2 < 0 ) n2 = 0.0;
-		else {
-
-			t2 *= t2;
-			n2 = t2 * t2 * this.dot( this.grad3[ gi2 ], x2, y2 );
-
-		}
-
-		// Add contributions from each corner to get the final noise value.
-		// The result is scaled to return values in the interval [-1,1].
-		return 70.0 * ( n0 + n1 + n2 );
-
-	}
-
-	// 3D simplex noise
-	noise3d( xin, yin, zin ) {
-
-		let n0; // Noise contributions from the four corners
-		let n1;
-		let n2;
-		let n3;
-		// Skew the input space to determine which simplex cell we're in
-		const F3 = 1.0 / 3.0;
-		const s = ( xin + yin + zin ) * F3; // Very nice and simple skew factor for 3D
-		const i = Math.floor( xin + s );
-		const j = Math.floor( yin + s );
-		const k = Math.floor( zin + s );
-		const G3 = 1.0 / 6.0; // Very nice and simple unskew factor, too
-		const t = ( i + j + k ) * G3;
-		const X0 = i - t; // Unskew the cell origin back to (x,y,z) space
-		const Y0 = j - t;
-		const Z0 = k - t;
-		const x0 = xin - X0; // The x,y,z distances from the cell origin
-		const y0 = yin - Y0;
-		const z0 = zin - Z0;
-
-		// For the 3D case, the simplex shape is a slightly irregular tetrahedron.
-		// Determine which simplex we are in.
-		let i1; // Offsets for second corner of simplex in (i,j,k) coords
-
-		let j1;
-		let k1;
-		let i2; // Offsets for third corner of simplex in (i,j,k) coords
-		let j2;
-		let k2;
-		if ( x0 >= y0 ) {
-
-			if ( y0 >= z0 ) {
-
-				i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
-
-				// X Y Z order
-
-			} else if ( x0 >= z0 ) {
-
-				i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1;
-
-				// X Z Y order
-
-			} else {
-
-				i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1;
-
-			} // Z X Y order
-
-		} else { // x0<y0
-
-			if ( y0 < z0 ) {
-
-				i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1;
-
-				// Z Y X order
-
-			} else if ( x0 < z0 ) {
-
-				i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1;
-
-				// Y Z X order
-
-			} else {
-
-				i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
-
-			} // Y X Z order
-
-		}
-
-		// A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
-		// a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
-		// a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
-		// c = 1/6.
-		const x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-		const y1 = y0 - j1 + G3;
-		const z1 = z0 - k1 + G3;
-		const x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
-		const y2 = y0 - j2 + 2.0 * G3;
-		const z2 = z0 - k2 + 2.0 * G3;
-		const x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
-		const y3 = y0 - 1.0 + 3.0 * G3;
-		const z3 = z0 - 1.0 + 3.0 * G3;
-		// Work out the hashed gradient indices of the four simplex corners
-		const ii = i & 255;
-		const jj = j & 255;
-		const kk = k & 255;
-		const gi0 = this.perm[ ii + this.perm[ jj + this.perm[ kk ] ] ] % 12;
-		const gi1 = this.perm[ ii + i1 + this.perm[ jj + j1 + this.perm[ kk + k1 ] ] ] % 12;
-		const gi2 = this.perm[ ii + i2 + this.perm[ jj + j2 + this.perm[ kk + k2 ] ] ] % 12;
-		const gi3 = this.perm[ ii + 1 + this.perm[ jj + 1 + this.perm[ kk + 1 ] ] ] % 12;
-		// Calculate the contribution from the four corners
-		let t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-		if ( t0 < 0 ) n0 = 0.0;
-		else {
-
-			t0 *= t0;
-			n0 = t0 * t0 * this.dot3( this.grad3[ gi0 ], x0, y0, z0 );
-
-		}
-
-		let t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-		if ( t1 < 0 ) n1 = 0.0;
-		else {
-
-			t1 *= t1;
-			n1 = t1 * t1 * this.dot3( this.grad3[ gi1 ], x1, y1, z1 );
-
-		}
-
-		let t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-		if ( t2 < 0 ) n2 = 0.0;
-		else {
-
-			t2 *= t2;
-			n2 = t2 * t2 * this.dot3( this.grad3[ gi2 ], x2, y2, z2 );
-
-		}
-
-		let t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-		if ( t3 < 0 ) n3 = 0.0;
-		else {
-
-			t3 *= t3;
-			n3 = t3 * t3 * this.dot3( this.grad3[ gi3 ], x3, y3, z3 );
-
-		}
-
-		// Add contributions from each corner to get the final noise value.
-		// The result is scaled to stay just inside [-1,1]
-		return 32.0 * ( n0 + n1 + n2 + n3 );
-
-	}
-
-	// 4D simplex noise
-	noise4d( x, y, z, w ) {
-
-		// For faster and easier lookups
-		const grad4 = this.grad4;
-		const simplex = this.simplex;
-		const perm = this.perm;
-
-		// The skewing and unskewing factors are hairy again for the 4D case
-		const F4 = ( Math.sqrt( 5.0 ) - 1.0 ) / 4.0;
-		const G4 = ( 5.0 - Math.sqrt( 5.0 ) ) / 20.0;
-		let n0; // Noise contributions from the five corners
-		let n1;
-		let n2;
-		let n3;
-		let n4;
-		// Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
-		const s = ( x + y + z + w ) * F4; // Factor for 4D skewing
-		const i = Math.floor( x + s );
-		const j = Math.floor( y + s );
-		const k = Math.floor( z + s );
-		const l = Math.floor( w + s );
-		const t = ( i + j + k + l ) * G4; // Factor for 4D unskewing
-		const X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
-		const Y0 = j - t;
-		const Z0 = k - t;
-		const W0 = l - t;
-		const x0 = x - X0; // The x,y,z,w distances from the cell origin
-		const y0 = y - Y0;
-		const z0 = z - Z0;
-		const w0 = w - W0;
-
-		// For the 4D case, the simplex is a 4D shape I won't even try to describe.
-		// To find out which of the 24 possible simplices we're in, we need to
-		// determine the magnitude ordering of x0, y0, z0 and w0.
-		// The method below is a good way of finding the ordering of x,y,z,w and
-		// then find the correct traversal order for the simplex we’re in.
-		// First, six pair-wise comparisons are performed between each possible pair
-		// of the four coordinates, and the results are used to add up binary bits
-		// for an integer index.
-		const c1 = ( x0 > y0 ) ? 32 : 0;
-		const c2 = ( x0 > z0 ) ? 16 : 0;
-		const c3 = ( y0 > z0 ) ? 8 : 0;
-		const c4 = ( x0 > w0 ) ? 4 : 0;
-		const c5 = ( y0 > w0 ) ? 2 : 0;
-		const c6 = ( z0 > w0 ) ? 1 : 0;
-		const c = c1 + c2 + c3 + c4 + c5 + c6;
-
-		// simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
-		// Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
-		// impossible. Only the 24 indices which have non-zero entries make any sense.
-		// We use a thresholding to set the coordinates in turn from the largest magnitude.
-		// The number 3 in the "simplex" array is at the position of the largest coordinate.
-		const i1 = simplex[ c ][ 0 ] >= 3 ? 1 : 0;
-		const j1 = simplex[ c ][ 1 ] >= 3 ? 1 : 0;
-		const k1 = simplex[ c ][ 2 ] >= 3 ? 1 : 0;
-		const l1 = simplex[ c ][ 3 ] >= 3 ? 1 : 0;
-		// The number 2 in the "simplex" array is at the second largest coordinate.
-		const i2 = simplex[ c ][ 0 ] >= 2 ? 1 : 0;
-		const j2 = simplex[ c ][ 1 ] >= 2 ? 1 : 0;
-		const k2 = simplex[ c ][ 2 ] >= 2 ? 1 : 0;
-		const l2 = simplex[ c ][ 3 ] >= 2 ? 1 : 0;
-		// The number 1 in the "simplex" array is at the second smallest coordinate.
-		const i3 = simplex[ c ][ 0 ] >= 1 ? 1 : 0;
-		const j3 = simplex[ c ][ 1 ] >= 1 ? 1 : 0;
-		const k3 = simplex[ c ][ 2 ] >= 1 ? 1 : 0;
-		const l3 = simplex[ c ][ 3 ] >= 1 ? 1 : 0;
-		// The fifth corner has all coordinate offsets = 1, so no need to look that up.
-		const x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
-		const y1 = y0 - j1 + G4;
-		const z1 = z0 - k1 + G4;
-		const w1 = w0 - l1 + G4;
-		const x2 = x0 - i2 + 2.0 * G4; // Offsets for third corner in (x,y,z,w) coords
-		const y2 = y0 - j2 + 2.0 * G4;
-		const z2 = z0 - k2 + 2.0 * G4;
-		const w2 = w0 - l2 + 2.0 * G4;
-		const x3 = x0 - i3 + 3.0 * G4; // Offsets for fourth corner in (x,y,z,w) coords
-		const y3 = y0 - j3 + 3.0 * G4;
-		const z3 = z0 - k3 + 3.0 * G4;
-		const w3 = w0 - l3 + 3.0 * G4;
-		const x4 = x0 - 1.0 + 4.0 * G4; // Offsets for last corner in (x,y,z,w) coords
-		const y4 = y0 - 1.0 + 4.0 * G4;
-		const z4 = z0 - 1.0 + 4.0 * G4;
-		const w4 = w0 - 1.0 + 4.0 * G4;
-		// Work out the hashed gradient indices of the five simplex corners
-		const ii = i & 255;
-		const jj = j & 255;
-		const kk = k & 255;
-		const ll = l & 255;
-		const gi0 = perm[ ii + perm[ jj + perm[ kk + perm[ ll ] ] ] ] % 32;
-		const gi1 = perm[ ii + i1 + perm[ jj + j1 + perm[ kk + k1 + perm[ ll + l1 ] ] ] ] % 32;
-		const gi2 = perm[ ii + i2 + perm[ jj + j2 + perm[ kk + k2 + perm[ ll + l2 ] ] ] ] % 32;
-		const gi3 = perm[ ii + i3 + perm[ jj + j3 + perm[ kk + k3 + perm[ ll + l3 ] ] ] ] % 32;
-		const gi4 = perm[ ii + 1 + perm[ jj + 1 + perm[ kk + 1 + perm[ ll + 1 ] ] ] ] % 32;
-		// Calculate the contribution from the five corners
-		let t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
-		if ( t0 < 0 ) n0 = 0.0;
-		else {
-
-			t0 *= t0;
-			n0 = t0 * t0 * this.dot4( grad4[ gi0 ], x0, y0, z0, w0 );
-
-		}
-
-		let t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
-		if ( t1 < 0 ) n1 = 0.0;
-		else {
-
-			t1 *= t1;
-			n1 = t1 * t1 * this.dot4( grad4[ gi1 ], x1, y1, z1, w1 );
-
-		}
-
-		let t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
-		if ( t2 < 0 ) n2 = 0.0;
-		else {
-
-			t2 *= t2;
-			n2 = t2 * t2 * this.dot4( grad4[ gi2 ], x2, y2, z2, w2 );
-
-		}
-
-		let t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
-		if ( t3 < 0 ) n3 = 0.0;
-		else {
-
-			t3 *= t3;
-			n3 = t3 * t3 * this.dot4( grad4[ gi3 ], x3, y3, z3, w3 );
-
-		}
-
-		let t4 = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
-		if ( t4 < 0 ) n4 = 0.0;
-		else {
-
-			t4 *= t4;
-			n4 = t4 * t4 * this.dot4( grad4[ gi4 ], x4, y4, z4, w4 );
-
-		}
-
-		// Sum up and scale the result to cover the range [-1,1]
-		return 27.0 * ( n0 + n1 + n2 + n3 + n4 );
-
-	}
-
-}
-
-class SSAOPass extends Pass {
-
-	constructor( scene, camera, width, height ) {
-
-		super();
-
-		this.width = ( width !== undefined ) ? width : 512;
-		this.height = ( height !== undefined ) ? height : 512;
-
-		this.clear = true;
-
-		this.camera = camera;
-		this.scene = scene;
-
-		this.kernelRadius = 8;
-		this.kernelSize = 32;
-		this.kernel = [];
-		this.noiseTexture = null;
-		this.output = 0;
-
-		this.minDistance = 0.005;
-		this.maxDistance = 0.1;
-
-		this._visibilityCache = new Map();
-
-		//
-
-		this.generateSampleKernel();
-		this.generateRandomKernelRotations();
-
-		// beauty render target
-
-		const depthTexture = new DepthTexture();
-		depthTexture.format = DepthStencilFormat;
-		depthTexture.type = UnsignedInt248Type;
-
-		this.beautyRenderTarget = new WebGLRenderTarget( this.width, this.height );
-
-		// normal render target with depth buffer
-
-		this.normalRenderTarget = new WebGLRenderTarget( this.width, this.height, {
-			minFilter: NearestFilter,
-			magFilter: NearestFilter,
-			depthTexture: depthTexture
-		} );
-
-		// ssao render target
-
-		this.ssaoRenderTarget = new WebGLRenderTarget( this.width, this.height );
-
-		this.blurRenderTarget = this.ssaoRenderTarget.clone();
-
-		// ssao material
-
-		this.ssaoMaterial = new ShaderMaterial( {
-			defines: Object.assign( {}, SSAOShader.defines ),
-			uniforms: UniformsUtils.clone( SSAOShader.uniforms ),
-			vertexShader: SSAOShader.vertexShader,
-			fragmentShader: SSAOShader.fragmentShader,
-			blending: NoBlending
-		} );
-
-		this.ssaoMaterial.uniforms[ 'tDiffuse' ].value = this.beautyRenderTarget.texture;
-		this.ssaoMaterial.uniforms[ 'tNormal' ].value = this.normalRenderTarget.texture;
-		this.ssaoMaterial.uniforms[ 'tDepth' ].value = this.normalRenderTarget.depthTexture;
-		this.ssaoMaterial.uniforms[ 'tNoise' ].value = this.noiseTexture;
-		this.ssaoMaterial.uniforms[ 'kernel' ].value = this.kernel;
-		this.ssaoMaterial.uniforms[ 'cameraNear' ].value = this.camera.near;
-		this.ssaoMaterial.uniforms[ 'cameraFar' ].value = this.camera.far;
-		this.ssaoMaterial.uniforms[ 'resolution' ].value.set( this.width, this.height );
-		this.ssaoMaterial.uniforms[ 'cameraProjectionMatrix' ].value.copy( this.camera.projectionMatrix );
-		this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.copy( this.camera.projectionMatrixInverse );
-
-		// normal material
-
-		this.normalMaterial = new MeshNormalMaterial();
-		this.normalMaterial.blending = NoBlending;
-
-		// blur material
-
-		this.blurMaterial = new ShaderMaterial( {
-			defines: Object.assign( {}, SSAOBlurShader.defines ),
-			uniforms: UniformsUtils.clone( SSAOBlurShader.uniforms ),
-			vertexShader: SSAOBlurShader.vertexShader,
-			fragmentShader: SSAOBlurShader.fragmentShader
-		} );
-		this.blurMaterial.uniforms[ 'tDiffuse' ].value = this.ssaoRenderTarget.texture;
-		this.blurMaterial.uniforms[ 'resolution' ].value.set( this.width, this.height );
-
-		// material for rendering the depth
-
-		this.depthRenderMaterial = new ShaderMaterial( {
-			defines: Object.assign( {}, SSAODepthShader.defines ),
-			uniforms: UniformsUtils.clone( SSAODepthShader.uniforms ),
-			vertexShader: SSAODepthShader.vertexShader,
-			fragmentShader: SSAODepthShader.fragmentShader,
-			blending: NoBlending
-		} );
-		this.depthRenderMaterial.uniforms[ 'tDepth' ].value = this.normalRenderTarget.depthTexture;
-		this.depthRenderMaterial.uniforms[ 'cameraNear' ].value = this.camera.near;
-		this.depthRenderMaterial.uniforms[ 'cameraFar' ].value = this.camera.far;
-
-		// material for rendering the content of a render target
-
-		this.copyMaterial = new ShaderMaterial( {
-			uniforms: UniformsUtils.clone( CopyShader.uniforms ),
-			vertexShader: CopyShader.vertexShader,
-			fragmentShader: CopyShader.fragmentShader,
-			transparent: true,
-			depthTest: false,
-			depthWrite: false,
-			blendSrc: DstColorFactor,
-			blendDst: ZeroFactor,
-			blendEquation: AddEquation,
-			blendSrcAlpha: DstAlphaFactor,
-			blendDstAlpha: ZeroFactor,
-			blendEquationAlpha: AddEquation
-		} );
-
-		this.fsQuad = new FullScreenQuad( null );
-
-		this.originalClearColor = new Color$1();
-
-	}
-
-	dispose() {
-
-		// dispose render targets
-
-		this.beautyRenderTarget.dispose();
-		this.normalRenderTarget.dispose();
-		this.ssaoRenderTarget.dispose();
-		this.blurRenderTarget.dispose();
-
-		// dispose materials
-
-		this.normalMaterial.dispose();
-		this.blurMaterial.dispose();
-		this.copyMaterial.dispose();
-		this.depthRenderMaterial.dispose();
-
-		// dipsose full screen quad
-
-		this.fsQuad.dispose();
-
-	}
-
-	render( renderer, writeBuffer /*, readBuffer, deltaTime, maskActive */ ) {
-
-		if ( renderer.capabilities.isWebGL2 === false ) this.noiseTexture.format = LuminanceFormat;
-
-		// render beauty
-
-		renderer.setRenderTarget( this.beautyRenderTarget );
-		renderer.clear();
-		renderer.render( this.scene, this.camera );
-
-		// render normals and depth (honor only meshes, points and lines do not contribute to SSAO)
-
-		this.overrideVisibility();
-		this.renderOverride( renderer, this.normalMaterial, this.normalRenderTarget, 0x7777ff, 1.0 );
-		this.restoreVisibility();
-
-		// render SSAO
-
-		this.ssaoMaterial.uniforms[ 'kernelRadius' ].value = this.kernelRadius;
-		this.ssaoMaterial.uniforms[ 'minDistance' ].value = this.minDistance;
-		this.ssaoMaterial.uniforms[ 'maxDistance' ].value = this.maxDistance;
-		this.renderPass( renderer, this.ssaoMaterial, this.ssaoRenderTarget );
-
-		// render blur
-
-		this.renderPass( renderer, this.blurMaterial, this.blurRenderTarget );
-
-		// output result to screen
-
-		switch ( this.output ) {
-
-			case SSAOPass.OUTPUT.SSAO:
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.ssaoRenderTarget.texture;
-				this.copyMaterial.blending = NoBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			case SSAOPass.OUTPUT.Blur:
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.blurRenderTarget.texture;
-				this.copyMaterial.blending = NoBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			case SSAOPass.OUTPUT.Beauty:
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.beautyRenderTarget.texture;
-				this.copyMaterial.blending = NoBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			case SSAOPass.OUTPUT.Depth:
-
-				this.renderPass( renderer, this.depthRenderMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			case SSAOPass.OUTPUT.Normal:
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.normalRenderTarget.texture;
-				this.copyMaterial.blending = NoBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			case SSAOPass.OUTPUT.Default:
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.beautyRenderTarget.texture;
-				this.copyMaterial.blending = NoBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				this.copyMaterial.uniforms[ 'tDiffuse' ].value = this.blurRenderTarget.texture;
-				this.copyMaterial.blending = CustomBlending;
-				this.renderPass( renderer, this.copyMaterial, this.renderToScreen ? null : writeBuffer );
-
-				break;
-
-			default:
-				console.warn( 'THREE.SSAOPass: Unknown output type.' );
-
-		}
-
-	}
-
-	renderPass( renderer, passMaterial, renderTarget, clearColor, clearAlpha ) {
-
-		// save original state
-		renderer.getClearColor( this.originalClearColor );
-		const originalClearAlpha = renderer.getClearAlpha();
-		const originalAutoClear = renderer.autoClear;
-
-		renderer.setRenderTarget( renderTarget );
-
-		// setup pass state
-		renderer.autoClear = false;
-		if ( ( clearColor !== undefined ) && ( clearColor !== null ) ) {
-
-			renderer.setClearColor( clearColor );
-			renderer.setClearAlpha( clearAlpha || 0.0 );
-			renderer.clear();
-
-		}
-
-		this.fsQuad.material = passMaterial;
-		this.fsQuad.render( renderer );
-
-		// restore original state
-		renderer.autoClear = originalAutoClear;
-		renderer.setClearColor( this.originalClearColor );
-		renderer.setClearAlpha( originalClearAlpha );
-
-	}
-
-	renderOverride( renderer, overrideMaterial, renderTarget, clearColor, clearAlpha ) {
-
-		renderer.getClearColor( this.originalClearColor );
-		const originalClearAlpha = renderer.getClearAlpha();
-		const originalAutoClear = renderer.autoClear;
-
-		renderer.setRenderTarget( renderTarget );
-		renderer.autoClear = false;
-
-		clearColor = overrideMaterial.clearColor || clearColor;
-		clearAlpha = overrideMaterial.clearAlpha || clearAlpha;
-
-		if ( ( clearColor !== undefined ) && ( clearColor !== null ) ) {
-
-			renderer.setClearColor( clearColor );
-			renderer.setClearAlpha( clearAlpha || 0.0 );
-			renderer.clear();
-
-		}
-
-		this.scene.overrideMaterial = overrideMaterial;
-		renderer.render( this.scene, this.camera );
-		this.scene.overrideMaterial = null;
-
-		// restore original state
-
-		renderer.autoClear = originalAutoClear;
-		renderer.setClearColor( this.originalClearColor );
-		renderer.setClearAlpha( originalClearAlpha );
-
-	}
-
-	setSize( width, height ) {
-
-		this.width = width;
-		this.height = height;
-
-		this.beautyRenderTarget.setSize( width, height );
-		this.ssaoRenderTarget.setSize( width, height );
-		this.normalRenderTarget.setSize( width, height );
-		this.blurRenderTarget.setSize( width, height );
-
-		this.ssaoMaterial.uniforms[ 'resolution' ].value.set( width, height );
-		this.ssaoMaterial.uniforms[ 'cameraProjectionMatrix' ].value.copy( this.camera.projectionMatrix );
-		this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.copy( this.camera.projectionMatrixInverse );
-
-		this.blurMaterial.uniforms[ 'resolution' ].value.set( width, height );
-
-	}
-
-	generateSampleKernel() {
-
-		const kernelSize = this.kernelSize;
-		const kernel = this.kernel;
-
-		for ( let i = 0; i < kernelSize; i ++ ) {
-
-			const sample = new Vector3();
-			sample.x = ( Math.random() * 2 ) - 1;
-			sample.y = ( Math.random() * 2 ) - 1;
-			sample.z = Math.random();
-
-			sample.normalize();
-
-			let scale = i / kernelSize;
-			scale = lerp( 0.1, 1, scale * scale );
-			sample.multiplyScalar( scale );
-
-			kernel.push( sample );
-
-		}
-
-	}
-
-	generateRandomKernelRotations() {
-
-		const width = 4, height = 4;
-
-		const simplex = new SimplexNoise();
-
-		const size = width * height;
-		const data = new Float32Array( size );
-
-		for ( let i = 0; i < size; i ++ ) {
-
-			const x = ( Math.random() * 2 ) - 1;
-			const y = ( Math.random() * 2 ) - 1;
-			const z = 0;
-
-			data[ i ] = simplex.noise3d( x, y, z );
-
-		}
-
-		this.noiseTexture = new DataTexture( data, width, height, RedFormat, FloatType );
-		this.noiseTexture.wrapS = RepeatWrapping;
-		this.noiseTexture.wrapT = RepeatWrapping;
-		this.noiseTexture.needsUpdate = true;
-
-	}
-
-	overrideVisibility() {
-
-		const scene = this.scene;
-		const cache = this._visibilityCache;
-
-		scene.traverse( function ( object ) {
-
-			cache.set( object, object.visible );
-
-			if ( object.isPoints || object.isLine ) object.visible = false;
-
-		} );
-
-	}
-
-	restoreVisibility() {
-
-		const scene = this.scene;
-		const cache = this._visibilityCache;
-
-		scene.traverse( function ( object ) {
-
-			const visible = cache.get( object );
-			object.visible = visible;
-
-		} );
-
-		cache.clear();
-
-	}
-
-}
-
-SSAOPass.OUTPUT = {
-	'Default': 0,
-	'SSAO': 1,
-	'Blur': 2,
-	'Beauty': 3,
-	'Depth': 4,
-	'Normal': 5
-};
 
 /**
  * Luminosity
@@ -87173,17 +83110,6 @@ class TGeoPainter extends ObjectPainter {
          clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
-         ssao: {
-            enabled: false, output: SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1,
-            outputItems: [
-               { name: 'Default', value: SSAOPass.OUTPUT.Default },
-               { name: 'SSAO Only', value: SSAOPass.OUTPUT.SSAO },
-               { name: 'SSAO Only + Blur', value: SSAOPass.OUTPUT.Blur },
-               { name: 'Beauty', value: SSAOPass.OUTPUT.Beauty },
-               { name: 'Depth', value: SSAOPass.OUTPUT.Depth },
-               { name: 'Normal', value: SSAOPass.OUTPUT.Normal }
-            ]
-         },
          bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          highlight: false,
@@ -87502,8 +83428,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.superimpose && (opt.indexOf('same') == 0))
          opt = opt.slice(4);
 
-      let res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: 0, instancing: 0,
+      let res = { _axis: 0, instancing: 0,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxfaces: 0,
@@ -87513,16 +83438,9 @@ class TGeoPainter extends ObjectPainter {
                    project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
                    camera_kind: 'perspective', camera_overlay: 'gridb',
-                   clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
+                   clipx: false, clipy: false, clipz: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
-
-      let dd = decodeUrl();
-      if (dd.get('_grid') == 'true') res._grid = true;
-      let _opt = dd.get('_debug');
-      if (_opt == 'true') { res._debug = true; res._grid = true; }
-      if (_opt == 'bound') { res._debug = true; res._grid = true; res._bound = true; }
-      if (_opt == 'full') { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
       let macro = opt.indexOf('macro:');
       if (macro >= 0) {
@@ -87631,7 +83549,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('PROJZ', true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
 
       if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
-      if (d.check('SSAO')) res.usessao = true;
+      d.check('SSAO'); // deprecated
       if (d.check('NOBLOOM')) res.usebloom = false;
       if (d.check('BLOOM')) res.usebloom = true;
       if (d.check('OUTLINE')) res.outline = true;
@@ -87661,17 +83579,13 @@ class TGeoPainter extends ObjectPainter {
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
+      if (d.check('AXIS') || d.check('A')) res._axis = 1;
 
-      if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
-      if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
+      if (d.check('TRR', true)) res.trans_radial = d.partAsInt()/100;
+      if (d.check('TRZ', true)) res.trans_z = d.partAsInt()/100;
 
-      if (d.check('AXIS') || d.check('A')) res._axis = true;
 
-      if (d.check('D')) res._debug = true;
-      if (d.check('G')) res._grid = true;
-      if (d.check('B')) res._bound = true;
       if (d.check('W')) res.wireframe = true;
-      if (d.check('F')) res._full = true;
       if (d.check('Y')) res._yup = true;
       if (d.check('Z')) res._yup = false;
 
@@ -87979,28 +83893,6 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Method called when SSAO configuration changed via GUI */
-   changedSSAO() {
-      if (!this.ctrl.ssao.enabled) {
-         this.removeSSAO();
-      } else {
-         this.createSSAO();
-
-         this._ssaoPass.output = parseInt(this.ctrl.ssao.output);
-         this._ssaoPass.kernelRadius = this.ctrl.ssao.kernelRadius;
-         this._ssaoPass.minDistance = this.ctrl.ssao.minDistance;
-         this._ssaoPass.maxDistance = this.ctrl.ssao.maxDistance;
-      }
-
-      this.updateClipping();
-
-      if (this._slave_painters)
-         this._slave_painters.forEach(p => {
-            Object.assign(p.ctrl.ssao, this.ctrl.ssao);
-            p.changedSSAO();
-         });
-   }
-
    /** @summary Display control GUI */
    showControlOptions(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
@@ -88179,37 +84071,13 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      // no SSAO folder if outline is enabled
-      if (this.ctrl.outline) return;
-
-      let ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
-          ssao_handler = () => this.changedSSAO(), ssaocfg = {};
-
-      this.ctrl.ssao.outputItems.forEach(i => { ssaocfg[i.name] = i.value; });
-
-      ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'output', ssaocfg)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'kernelRadius', 0, 32)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'minDistance', 0.001, 0.02)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
-                .listen().onChange(ssao_handler);
-
-      let blooming = this._datgui.addFolder('Unreal Bloom'),
-          bloom_handler = () => this.changedBloomSettings();
+      let blooming = this._datgui.addFolder('Unreal Bloom');
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-              .listen().onChange(bloom_handler);
+              .listen().onChange(() => this.changedBloomSettings());
 
       blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
-               .listen().onChange(bloom_handler);
+               .listen().onChange(() => this.changedBloomSettings());
    }
 
    /** @summary Method called when bloom configuration changed via GUI */
@@ -88221,11 +84089,10 @@ class TGeoPainter extends ObjectPainter {
          this.removeBloom();
       }
 
-      if (this._slave_painters)
-         this._slave_painters.forEach(p => {
-            Object.assign(p.ctrl.bloom, this.ctrl.bloom);
-            p.changedBloomSettings();
-         });
+      this._slave_painters?.forEach(p => {
+         Object.assign(p.ctrl.bloom, this.ctrl.bloom);
+         p.changedBloomSettings();
+      });
    }
 
    /** @summary Handle change of can rotate */
@@ -88245,7 +84112,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       this.removeBloom();
-      this.removeSSAO();
 
       // recreate camera
       this.createCamera();
@@ -88288,36 +84154,9 @@ class TGeoPainter extends ObjectPainter {
       if (!this._bloomPass) return;
       delete this._bloomPass;
       delete this._bloomComposer;
-      this._renderer.autoClear = true;
-      this._camera.layers.disable( _BLOOM_SCENE );
-   }
-
-   /** @summary Remove composer */
-   removeSSAO() {
-      // we cannot remove pass from composer - just disable it
-      delete this._ssaoPass;
-      delete this._effectComposer;
-   }
-
-   /** @summary create SSAO */
-   createSSAO() {
-      if (!this._webgl) return;
-
-      // this._depthRenderTarget = new WebGLRenderTarget(this._scene_width, this._scene_height, { minFilter: LinearFilter, magFilter: LinearFilter });
-      // Setup SSAO pass
-      if (!this._ssaoPass) {
-         if (!this._effectComposer) {
-            this._effectComposer = new EffectComposer( this._renderer );
-            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
-         }
-
-         this._ssaoPass = new SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
-         this._ssaoPass.kernelRadius = 16;
-         this._ssaoPass.renderToScreen = true;
-
-         // Add pass to effect composer
-         this._effectComposer.addPass( this._ssaoPass );
-      }
+      if(this._renderer)
+         this._renderer.autoClear = true;
+      this._camera?.layers.disable( _BLOOM_SCENE);
    }
 
    /** @summary Show context menu for orbit control
@@ -88769,53 +84608,6 @@ class TGeoPainter extends ObjectPainter {
       };
    }
 
-   /** @summary add transformation control */
-   addTransformControl() {
-      if (this._tcontrols || this.superimpose || !this._webgl || this.isBatchMode()) return;
-
-      if (!this.ctrl._debug && !this.ctrl._grid) return;
-
-      this._tcontrols = new TransformControls(this._camera, this._renderer.domElement);
-      this._scene.add(this._tcontrols);
-      this._tcontrols.attach(this._toplevel);
-      //this._tcontrols.setSize( 1.1 );
-
-      window.addEventListener( 'keydown', event => {
-         switch ( event.key ) {
-         case 'q':
-            this._tcontrols.setSpace( this._tcontrols.space === 'local' ? 'world' : 'local' );
-            break;
-         case 'Control':
-            this._tcontrols.setTranslationSnap(Math.ceil(this._overall_size) / 50);
-            this._tcontrols.setRotationSnap(MathUtils$1.degToRad(15));
-            break;
-         case 't': // Translate
-            this._tcontrols.setMode( 'translate' );
-            break;
-         case 'r': // Rotate
-            this._tcontrols.setMode( 'rotate' );
-            break;
-         case 's': // Scale
-            this._tcontrols.setMode( 'scale' );
-            break;
-         case '+':
-            this._tcontrols.setSize(this._tcontrols.size + 0.1);
-            break;
-         case '-':
-            this._tcontrols.setSize(Math.max(this._tcontrols.size - 0.1, 0.1));
-            break;
-         }
-      });
-      window.addEventListener( 'keyup', event => {
-         if (event.key == 'Control') {
-            this._tcontrols.setTranslationSnap(null);
-            this._tcontrols.setRotationSnap(null);
-         }
-      });
-
-      this._tcontrols.addEventListener('change', () => this.render3D(0));
-   }
-
    /** @summary Main function in geometry creation loop
      * @desc Returns:
      * - false when nothing todo
@@ -89073,19 +84865,7 @@ class TGeoPainter extends ObjectPainter {
             entry.custom_color = 'blue';
       }
 
-      let mesh = this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
-
-      if (mesh && (this.ctrl._debug || this.ctrl._full)) {
-         let wfg = new WireframeGeometry( mesh.geometry ),
-             wfm = new LineBasicMaterial({ color: mesh.material.color, linewidth: 1 }),
-             helper = new LineSegments(wfg, wfm);
-         mesh.parent.add(helper);
-      }
-
-      if (mesh && (this.ctrl._bound || this.ctrl._full)) {
-         let boxHelper = new BoxHelper( mesh );
-         mesh.parent.add(boxHelper);
-      }
+      this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
 
       return true;
    }
@@ -89321,18 +85101,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create special effects */
    createSpecialEffects() {
-      // Smooth Lighting Shader (Screen Space Ambient Occlusion)
-      // http://threejs.org/examples/webgl_postprocessing_ssao.html
-
-      if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
-
-         if (this.ctrl.outline && isFunc(this.createOutline)) {
-            this._effectComposer = new EffectComposer(this._renderer);
-            this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
-            this.createOutline(this._scene_width, this._scene_height);
-         } else if (this.ctrl.ssao.enabled) {
-            this.createSSAO();
-         }
+      if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
+         // code used with jsroot-based geometry drawing in EVE7, not important any longer
+         this._effectComposer = new EffectComposer(this._renderer);
+         this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
+         this.createOutline(this._scene_width, this._scene_height);
       }
 
       if (this._webgl && this.ctrl.bloom.enabled)
@@ -89472,11 +85245,8 @@ class TGeoPainter extends ObjectPainter {
       this.continueDraw();
    }
 
-   /** @summary reset all kind of advanced features like SSAO or depth test changes */
+   /** @summary reset all kind of advanced features like depth test */
    resetAdvanced() {
-      this.ctrl.ssao.kernelRadius = 16;
-      this.ctrl.ssao.output = SSAOPass.OUTPUT.Default;
-
       this.ctrl.depthTest = true;
       this.ctrl.clipIntersect = true;
       this.ctrl.depthMethod = 'ray';
@@ -89950,20 +85720,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary called at the end of scene drawing */
    completeScene() {
-
-      if ( this.ctrl._debug || this.ctrl._grid ) {
-         if ( this.ctrl._full ) {
-            let boxHelper = new BoxHelper(this._toplevel);
-            this._scene.add( boxHelper );
-         }
-         this._scene.add(new AxesHelper(2 * this._overall_size));
-         this._scene.add(new GridHelper(Math.ceil(this._overall_size), Math.ceil(this._overall_size)/50));
-         this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
-               "'T' translate | 'R' rotate | 'S' scale<br>" +
-               "'+' increase size | '-' decrease size<br>" +
-               "'W' toggle wireframe/solid display<br>"+
-               "keep 'Ctrl' down to snap to grid</center></font>");
-      }
    }
 
    /** @summary Drawing with 'count' option
@@ -90078,8 +85834,6 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl) return; // protection for cleaned-up painter
 
       let obj = hitem._obj;
-      if (this.ctrl._debug)
-         console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
       if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
@@ -91511,18 +87265,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Should be called when configuration of particular axis is changed */
    changedClipping(naxis) {
-      let clip = this.ctrl.clip;
-
-      if ((naxis !== undefined) && (naxis >= 0)) {
-         if (!clip[naxis].enabled) return;
-      }
-
-      if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
-         this.ctrl.ssao.enabled = false;
-         this.removeSSAO();
-      }
-
-      this.updateClipping(false, true);
+      if ((naxis !== undefined) && (naxis >= 0) && this.ctrl.clip[naxis]?.enabled)
+         this.updateClipping(false, true);
    }
 
    /** @summary Should be called when depth test flag is changed */
@@ -91573,17 +87317,14 @@ class TGeoPainter extends ObjectPainter {
             if (clip[k].enabled) changed = true;
             this._clipPlanes[k].constant = clip_constants[k];
          }
+         if (clip[k].enabled)
+            panels.push(this._clipPlanes[k]);
       }
+      if (panels.length == 0)
+         panels = null;
 
-      if (!this.ctrl.ssao.enabled) {
-         if (clip[0].enabled) panels.push(this._clipPlanes[0]);
-         if (clip[1].enabled) panels.push(this._clipPlanes[1]);
-         if (clip[2].enabled) panels.push(this._clipPlanes[2]);
-         clip_cfg += panels.length*1000;
-      }
-      if (panels.length == 0) panels = null;
-
-      if (this._clipCfg !== clip_cfg) changed = true;
+      if (this._clipCfg !== clip_cfg)
+         changed = true;
 
       this._clipCfg = clip_cfg;
 
@@ -91701,8 +87442,6 @@ class TGeoPainter extends ObjectPainter {
 
          this.addOrbitControls();
 
-         this.addTransformControl();
-
          if (first_time) {
 
             // after first draw check if highlight can be enabled
@@ -91768,8 +87507,6 @@ class TGeoPainter extends ObjectPainter {
 
       if (!first_time) {
 
-         this.removeSSAO();
-
          let can3d = 0;
 
          if (!this.superimpose) {
@@ -91790,16 +87527,12 @@ class TGeoPainter extends ObjectPainter {
 
          this._toolbar?.cleanup(); // remove toolbar
 
-         this.helpText();
-
          disposeThreejsObject(this._full_geom);
-
-         this._tcontrols?.dispose();
 
          this._controls?.cleanup();
 
          if (this._context_menu)
-            this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
+            this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
          this._datgui?.destroy();
 
@@ -91856,6 +87589,9 @@ class TGeoPainter extends ObjectPainter {
       if (!this.superimpose)
          cleanupRender3D(this._renderer);
 
+      this.removeBloom();
+      delete this._effectComposer;
+
       delete this._scene;
       delete this._scene_size;
       this._scene_width = 0;
@@ -91888,16 +87624,9 @@ class TGeoPainter extends ObjectPainter {
       delete this._datgui;
       delete this._controls;
       delete this._context_menu;
-      delete this._tcontrols;
       delete this._toolbar;
 
       delete this._worker;
-   }
-
-   /** @summary show message in progress area
-     * @private */
-   helpText(msg) {
-      showProgress(msg);
    }
 
    /** @summary perform resize */
@@ -91944,22 +87673,11 @@ class TGeoPainter extends ObjectPainter {
         this.checkResize();
    }
 
-   /** @summary check if element belongs to trnasform control
-     * @private */
-   ownedByTransformControls(child) {
-      let obj = child.parent;
-      while (obj && !(obj instanceof TransformControls))
-         obj = obj.parent;
-      return obj && (obj instanceof TransformControls);
-   }
-
    /** @summary either change mesh wireframe or return current value
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj.hasOwnProperty('material') || (obj instanceof GridHelper)) return;
-
-      if (this.ownedByTransformControls(obj)) return;
+      if (!obj.hasOwnProperty('material')) return;
 
       if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;
@@ -92211,7 +87929,6 @@ function createGeoPainter(dom, obj, opt) {
    // copy all attributes from options to control
    Object.assign(painter.ctrl, painter.options);
 
-   painter.ctrl.ssao.enabled = painter.options.usessao;
    painter.ctrl.bloom.enabled = painter.options.usebloom;
 
    // special handling for array of clips
