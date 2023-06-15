@@ -1,8 +1,8 @@
 {
   "name": "jsroot",
-  "version": "7.4.0",
+  "version": "7.4.99",
   "engines": {
-    "node": ">=0.14.8"
+    "node": ">=0.18.0"
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
