@@ -1019,7 +1019,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
   * @desc Supported classes: `TObject`, `TNamed`, `TList`, `TAxis`, `TLine`, `TText`, `TLatex`, `TPad`, `TCanvas`
   * @param {string} typename - ROOT class name
   * @example
-  * import { create } from 'path_to_jsroot/modules/core.mjs';
+  * import { create } from 'https://root.cern/js/latest/modules/core.mjs';
   * let obj = create('TNamed');
   * obj.fName = 'name';
   * obj.fTitle = 'title'; */

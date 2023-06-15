@@ -1369,7 +1369,7 @@ class StandaloneMenu extends JSRootMenu {
   * @param {object} [handler] - object with handling function, in this case one not need to bind function
   * @param {string} [menuname] - optional menu name
   * @example
-  * import { createMenu } from 'path_to_jsroot/modules/gui/menu.mjs';
+  * import { createMenu } from 'https://root.cern/js/latest/modules/gui/menu.mjs';
   * let menu = await createMenu());
   * menu.add('First', () => console.log('Click first'));
   * let flag = true;

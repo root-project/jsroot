@@ -146,7 +146,7 @@ function readStyleFromURL(url) {
   * @param {String} gui_kind - either 'online', 'nobrowser', 'draw'
   * @return {Promise} with {@link HierarchyPainter} instance
   * @example
-  * import { buildGUI } from '/path_to_jsroot/modules/gui.mjs';
+  * import { buildGUI } from 'https://root.cern/js/latest/modules/gui.mjs';
   * buildGUI('guiDiv'); */
 async function buildGUI(gui_element, gui_kind = '') {
    let myDiv = d3_select(isStr(gui_element) ? `#${gui_element}` : gui_element);

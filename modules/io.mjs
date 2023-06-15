@@ -3853,7 +3853,7 @@ class TProxyFile extends TFile {
   * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *
-  * import { openFile } from '/path_to_jsroot/modules/io.mjs';
+  * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {

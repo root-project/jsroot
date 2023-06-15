@@ -699,7 +699,8 @@ function makeTranslate(x,y) {
    return null;
 }
 
-/** @summary Configure special style used for highlight or dragging elements */
+/** @summary Configure special style used for highlight or dragging elements
+  * @private */
 function addHighlightStyle(elem, drag) {
    if (drag)
       elem.style('stroke', 'steelblue')
