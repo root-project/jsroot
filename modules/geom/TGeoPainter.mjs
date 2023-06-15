@@ -7,7 +7,7 @@ import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
          Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
-         TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
+         TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
@@ -2298,13 +2298,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       let mesh = this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
-
-      if (mesh && (this.ctrl._debug || this.ctrl._full)) {
-         let wfg = new WireframeGeometry( mesh.geometry ),
-             wfm = new LineBasicMaterial({ color: mesh.material.color, linewidth: 1 }),
-             helper = new LineSegments(wfg, wfm);
-         mesh.parent.add(helper);
-      }
 
       if (mesh && (this.ctrl._bound || this.ctrl._full)) {
          let boxHelper = new BoxHelper( mesh );
