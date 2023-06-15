@@ -5,12 +5,11 @@ import { httpRequest, decodeUrl, browser, source_dir,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
-         Euler, Quaternion, MathUtils,
-         Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
+         Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
-         TransformControls, PointLight, AmbientLight, HemisphereLight,
+         PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
@@ -2039,53 +2038,6 @@ class TGeoPainter extends ObjectPainter {
          }
          this.render3D();
       }
-   }
-
-   /** @summary add transformation control */
-   addTransformControl() {
-      if (this._tcontrols || this.superimpose || !this._webgl || this.isBatchMode()) return;
-
-      if (!this.ctrl._debug && !this.ctrl._grid) return;
-
-      this._tcontrols = new TransformControls(this._camera, this._renderer.domElement);
-      this._scene.add(this._tcontrols);
-      this._tcontrols.attach(this._toplevel);
-      //this._tcontrols.setSize( 1.1 );
-
-      window.addEventListener( 'keydown', event => {
-         switch ( event.key ) {
-         case 'q':
-            this._tcontrols.setSpace( this._tcontrols.space === 'local' ? 'world' : 'local' );
-            break;
-         case 'Control':
-            this._tcontrols.setTranslationSnap(Math.ceil(this._overall_size) / 50);
-            this._tcontrols.setRotationSnap(MathUtils.degToRad(15));
-            break;
-         case 't': // Translate
-            this._tcontrols.setMode( 'translate' );
-            break;
-         case 'r': // Rotate
-            this._tcontrols.setMode( 'rotate' );
-            break;
-         case 's': // Scale
-            this._tcontrols.setMode( 'scale' );
-            break;
-         case '+':
-            this._tcontrols.setSize(this._tcontrols.size + 0.1);
-            break;
-         case '-':
-            this._tcontrols.setSize(Math.max(this._tcontrols.size - 0.1, 0.1));
-            break;
-         }
-      });
-      window.addEventListener( 'keyup', event => {
-         if (event.key == 'Control') {
-            this._tcontrols.setTranslationSnap(null);
-            this._tcontrols.setRotationSnap(null);
-         }
-      });
-
-      this._tcontrols.addEventListener('change', () => this.render3D(0));
    }
 
    /** @summary Main function in geometry creation loop
@@ -4953,8 +4905,6 @@ class TGeoPainter extends ObjectPainter {
 
          this.addOrbitControls();
 
-         this.addTransformControl();
-
          if (first_time) {
 
             // after first draw check if highlight can be enabled
@@ -5043,8 +4993,6 @@ class TGeoPainter extends ObjectPainter {
          this.helpText();
 
          disposeThreejsObject(this._full_geom);
-
-         this._tcontrols?.dispose();
 
          this._controls?.cleanup();
 
@@ -5141,7 +5089,6 @@ class TGeoPainter extends ObjectPainter {
       delete this._datgui;
       delete this._controls;
       delete this._context_menu;
-      delete this._tcontrols;
       delete this._toolbar;
 
       delete this._worker;
@@ -5197,22 +5144,11 @@ class TGeoPainter extends ObjectPainter {
         this.checkResize();
    }
 
-   /** @summary check if element belongs to trnasform control
-     * @private */
-   ownedByTransformControls(child) {
-      let obj = child.parent;
-      while (obj && !(obj instanceof TransformControls))
-         obj = obj.parent;
-      return obj && (obj instanceof TransformControls);
-   }
-
    /** @summary either change mesh wireframe or return current value
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
       if (!obj.hasOwnProperty('material') || (obj instanceof GridHelper)) return;
-
-      if (this.ownedByTransformControls(obj)) return;
 
       if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;
