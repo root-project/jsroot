@@ -9,6 +9,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { translateLaTeX } from '../base/latex.mjs';
+import { buildHist2dContour } from '../hist2d/TH2Painter.mjs';
 
 
 /** @summary Text 3d axis visibility
@@ -1603,7 +1604,7 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
        palette = painter.getHistPalette(),
        layerz = 2*main.size_z3d, pnts = [];
 
-   painter.buildContour(handle, levels, palette,
+   buildHist2dContour(histo, handle, levels, palette,
       (colindx, xp, yp, iminus, iplus, ilevel) => {
           // ignore less than three points
           if (iplus - iminus < 3) return;
@@ -1987,7 +1988,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
           palette = painter.getHistPalette(),
           lastcolindx = -1, layerz = 2*main.size_z3d;
 
-      painter.buildContour(handle, levels, palette,
+      buildHist2dContour(histo, handle, levels, palette,
          (colindx,xp,yp,iminus,iplus) => {
              // no need for duplicated point
              if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus])) iplus--;

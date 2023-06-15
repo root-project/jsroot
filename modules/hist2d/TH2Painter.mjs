@@ -7,6 +7,220 @@ import { TRandom, floatToString, makeTranslate, addHighlightStyle } from '../bas
 import { EAxisBits } from '../base/ObjectPainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
 
+/** @summary Build histogram contour lines
+  * @private */
+function buildHist2dContour(histo, handle, levels, palette, contour_func) {
+
+   const kMAXCONTOUR = 2004,
+         kMAXCOUNT = 2000,
+         // arguments used in the PaintContourLine
+         xarr = new Float32Array(2*kMAXCONTOUR),
+         yarr = new Float32Array(2*kMAXCONTOUR),
+         itarr = new Int32Array(2*kMAXCONTOUR),
+         nlevels = levels.length;
+   let lj = 0, ipoly, poly, polys = [], np, npmax = 0,
+       x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
+       i, j, k, n, m, ljfill, count,
+       xsave, ysave, itars, ix, jx;
+
+   const BinarySearch = zc => {
+      for (let kk = 0; kk < nlevels; ++kk)
+         if (zc < levels[kk])
+            return kk-1;
+      return nlevels-1;
+   }, PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
+      /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
+      let vert = (x1 === x2),
+          tlen = vert ? (y2 - y1) : (x2 - x1),
+          n = icont1 +1,
+          tdif = elev2 - elev1,
+          ii = lj-1,
+          maxii = kMAXCONTOUR/2 -3 + lj,
+          icount = 0,
+          xlen, pdif, diff, elev;
+
+      while (n <= icont2 && ii <= maxii) {
+         // elev = fH->GetContourLevel(n);
+         elev = levels[n];
+         diff = elev - elev1;
+         pdif = diff/tdif;
+         xlen = tlen*pdif;
+         if (vert) {
+            xarr[ii] = x1;
+            yarr[ii] = y1 + xlen;
+         } else {
+            xarr[ii] = x1 + xlen;
+            yarr[ii] = y1;
+         }
+         itarr[ii] = n;
+         icount++;
+         ii += 2;
+         n++;
+      }
+      return icount;
+   };
+
+   let arrx = handle.original ? handle.origx : handle.grx,
+       arry = handle.original ? handle.origy : handle.gry;
+
+   for (j = handle.j1; j < handle.j2-1; ++j) {
+
+      y[1] = y[0] = (arry[j] + arry[j+1])/2;
+      y[3] = y[2] = (arry[j+1] + arry[j+2])/2;
+
+      for (i = handle.i1; i < handle.i2-1; ++i) {
+
+         zc[0] = histo.getBinContent(i+1, j+1);
+         zc[1] = histo.getBinContent(i+2, j+1);
+         zc[2] = histo.getBinContent(i+2, j+2);
+         zc[3] = histo.getBinContent(i+1, j+2);
+
+         for (k = 0; k < 4; k++)
+            ir[k] = BinarySearch(zc[k]);
+
+         if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
+            x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
+            x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
+
+            if (zc[0] <= zc[1]) n = 0; else n = 1;
+            if (zc[2] <= zc[3]) m = 2; else m = 3;
+            if (zc[n] > zc[m]) n = m;
+            n++;
+            lj=1;
+            for (ix=1;ix<=4;ix++) {
+               m = n%4 + 1;
+               ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
+               lj += 2*ljfill;
+               n = m;
+            }
+
+            if (zc[0] <= zc[1]) n = 0; else n = 1;
+            if (zc[2] <= zc[3]) m = 2; else m = 3;
+            if (zc[n] > zc[m]) n = m;
+            n++;
+            lj=2;
+            for (ix=1;ix<=4;ix++) {
+               if (n == 1) m = 4;
+               else        m = n-1;
+               ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
+               lj += 2*ljfill;
+               n = m;
+            }
+            //     Re-order endpoints
+
+            count = 0;
+            for (ix = 1; ix <= lj - 5; ix += 2) {
+               //count = 0;
+               while (itarr[ix-1] != itarr[ix]) {
+                  xsave = xarr[ix];
+                  ysave = yarr[ix];
+                  itars = itarr[ix];
+                  for (jx=ix; jx<=lj-5; jx +=2) {
+                     xarr[jx]  = xarr[jx+2];
+                     yarr[jx]  = yarr[jx+2];
+                     itarr[jx] = itarr[jx+2];
+                  }
+                  xarr[lj-3]  = xsave;
+                  yarr[lj-3]  = ysave;
+                  itarr[lj-3] = itars;
+                  if (count > kMAXCOUNT) break;
+                  count++;
+               }
+            }
+
+            if (count > kMAXCOUNT) continue;
+
+            for (ix = 1; ix <= lj - 2; ix += 2) {
+
+               ipoly = itarr[ix-1];
+
+               if ((ipoly >= 0) && (ipoly < levels.length)) {
+                  poly = polys[ipoly];
+                  if (!poly)
+                     poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
+
+                  np = poly.fLastPoint;
+                  if (np < poly.fN-2) {
+                     poly.fX[np+1] = Math.round(xarr[ix-1]); poly.fY[np+1] = Math.round(yarr[ix-1]);
+                     poly.fX[np+2] = Math.round(xarr[ix]); poly.fY[np+2] = Math.round(yarr[ix]);
+                     poly.fLastPoint = np+2;
+                     npmax = Math.max(npmax, poly.fLastPoint+1);
+                  } else {
+                     // console.log(`reject point ${poly.fLastPoint}`);
+                  }
+               }
+            }
+         } // end of if (ir[0]
+      } // end of j
+   } // end of i
+
+   let polysort = new Int32Array(levels.length), first = 0;
+   //find first positive contour
+   for (ipoly = 0; ipoly < levels.length; ipoly++) {
+      if (levels[ipoly] >= 0) { first = ipoly; break; }
+   }
+   //store negative contours from 0 to minimum, then all positive contours
+   k = 0;
+   for (ipoly = first-1; ipoly >= 0; ipoly--) { polysort[k] = ipoly; k++; }
+   for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
+
+   let xp = new Float32Array(2*npmax),
+       yp = new Float32Array(2*npmax);
+
+   for (k = 0; k < levels.length; ++k) {
+
+      ipoly = polysort[k];
+      poly = polys[ipoly];
+      if (!poly) continue;
+
+      let colindx = palette.calcColorIndex(ipoly, levels.length),
+          xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
+          istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
+
+      while (true) {
+
+         iminus = npmax;
+         iplus  = iminus+1;
+         xp[iminus]= xx[istart];   yp[iminus] = yy[istart];
+         xp[iplus] = xx[istart+1]; yp[iplus]  = yy[istart+1];
+         xx[istart] = xx[istart+1] = xmin;
+         yy[istart] = yy[istart+1] = ymin;
+         while (true) {
+            nadd = 0;
+            for (i=2;i<np;i+=2) {
+               if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
+                  iplus++;
+                  xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
+                  xx[i] = xx[i+1] = xmin;
+                  yy[i] = yy[i+1] = ymin;
+                  nadd++;
+               }
+               if ((iminus > 0) && (xx[i+1] === xp[iminus]) && (yy[i+1] === yp[iminus])) {
+                  iminus--;
+                  xp[iminus] = xx[i]; yp[iminus] = yy[i];
+                  xx[i] = xx[i+1] = xmin;
+                  yy[i] = yy[i+1] = ymin;
+                  nadd++;
+               }
+            }
+            if (nadd == 0) break;
+         }
+
+         if ((iminus+1 < iplus) && (iminus >= 0))
+            contour_func(colindx, xp, yp, iminus, iplus, ipoly);
+
+         istart = 0;
+         for (i = 2; i < np; i += 2) {
+            if (xx[i] !== xmin && yy[i] !== ymin) {
+               istart = i;
+               break;
+            }
+         }
+
+         if (istart === 0) break;
+      }
+   }
+}
 
 /**
  * @summary Painter for TH2 classes
@@ -683,221 +897,6 @@ class TH2Painter extends THistPainter {
       return handle;
    }
 
-   /** @summary Build histogram contour lines */
-   buildContour(handle, levels, palette, contour_func) {
-
-      const histo = this.getObject(),
-            kMAXCONTOUR = 2004,
-            kMAXCOUNT = 2000,
-            // arguments used in the PaintContourLine
-            xarr = new Float32Array(2*kMAXCONTOUR),
-            yarr = new Float32Array(2*kMAXCONTOUR),
-            itarr = new Int32Array(2*kMAXCONTOUR),
-            nlevels = levels.length;
-      let lj = 0, ipoly, poly, polys = [], np, npmax = 0,
-          x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
-          i, j, k, n, m, ljfill, count,
-          xsave, ysave, itars, ix, jx;
-
-      const BinarySearch = zc => {
-         for (let kk = 0; kk < nlevels; ++kk)
-            if (zc < levels[kk])
-               return kk-1;
-         return nlevels-1;
-      }, PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
-         /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
-         let vert = (x1 === x2),
-             tlen = vert ? (y2 - y1) : (x2 - x1),
-             n = icont1 +1,
-             tdif = elev2 - elev1,
-             ii = lj-1,
-             maxii = kMAXCONTOUR/2 -3 + lj,
-             icount = 0,
-             xlen, pdif, diff, elev;
-
-         while (n <= icont2 && ii <= maxii) {
-//          elev = fH->GetContourLevel(n);
-            elev = levels[n];
-            diff = elev - elev1;
-            pdif = diff/tdif;
-            xlen = tlen*pdif;
-            if (vert) {
-               xarr[ii] = x1;
-               yarr[ii] = y1 + xlen;
-            } else {
-               xarr[ii] = x1 + xlen;
-               yarr[ii] = y1;
-            }
-            itarr[ii] = n;
-            icount++;
-            ii += 2;
-            n++;
-         }
-         return icount;
-      };
-
-      let arrx = handle.original ? handle.origx : handle.grx,
-          arry = handle.original ? handle.origy : handle.gry;
-
-      for (j = handle.j1; j < handle.j2-1; ++j) {
-
-         y[1] = y[0] = (arry[j] + arry[j+1])/2;
-         y[3] = y[2] = (arry[j+1] + arry[j+2])/2;
-
-         for (i = handle.i1; i < handle.i2-1; ++i) {
-
-            zc[0] = histo.getBinContent(i+1, j+1);
-            zc[1] = histo.getBinContent(i+2, j+1);
-            zc[2] = histo.getBinContent(i+2, j+2);
-            zc[3] = histo.getBinContent(i+1, j+2);
-
-            for (k = 0; k < 4; k++)
-               ir[k] = BinarySearch(zc[k]);
-
-            if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
-               x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
-               x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
-
-               if (zc[0] <= zc[1]) n = 0; else n = 1;
-               if (zc[2] <= zc[3]) m = 2; else m = 3;
-               if (zc[n] > zc[m]) n = m;
-               n++;
-               lj=1;
-               for (ix=1;ix<=4;ix++) {
-                  m = n%4 + 1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
-                  lj += 2*ljfill;
-                  n = m;
-               }
-
-               if (zc[0] <= zc[1]) n = 0; else n = 1;
-               if (zc[2] <= zc[3]) m = 2; else m = 3;
-               if (zc[n] > zc[m]) n = m;
-               n++;
-               lj=2;
-               for (ix=1;ix<=4;ix++) {
-                  if (n == 1) m = 4;
-                  else        m = n-1;
-                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1], zc[m-1],ir[m-1],x[m-1],y[m-1]);
-                  lj += 2*ljfill;
-                  n = m;
-               }
-               //     Re-order endpoints
-
-               count = 0;
-               for (ix = 1; ix <= lj - 5; ix += 2) {
-                  //count = 0;
-                  while (itarr[ix-1] != itarr[ix]) {
-                     xsave = xarr[ix];
-                     ysave = yarr[ix];
-                     itars = itarr[ix];
-                     for (jx=ix; jx<=lj-5; jx +=2) {
-                        xarr[jx]  = xarr[jx+2];
-                        yarr[jx]  = yarr[jx+2];
-                        itarr[jx] = itarr[jx+2];
-                     }
-                     xarr[lj-3]  = xsave;
-                     yarr[lj-3]  = ysave;
-                     itarr[lj-3] = itars;
-                     if (count > kMAXCOUNT) break;
-                     count++;
-                  }
-               }
-
-               if (count > kMAXCOUNT) continue;
-
-               for (ix = 1; ix <= lj - 2; ix += 2) {
-
-                  ipoly = itarr[ix-1];
-
-                  if ((ipoly >= 0) && (ipoly < levels.length)) {
-                     poly = polys[ipoly];
-                     if (!poly)
-                        poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
-
-                     np = poly.fLastPoint;
-                     if (np < poly.fN-2) {
-                        poly.fX[np+1] = Math.round(xarr[ix-1]); poly.fY[np+1] = Math.round(yarr[ix-1]);
-                        poly.fX[np+2] = Math.round(xarr[ix]); poly.fY[np+2] = Math.round(yarr[ix]);
-                        poly.fLastPoint = np+2;
-                        npmax = Math.max(npmax, poly.fLastPoint+1);
-                     } else {
-                        // console.log(`reject point ${poly.fLastPoint}`);
-                     }
-                  }
-               }
-            } // end of if (ir[0]
-         } // end of j
-      } // end of i
-
-      let polysort = new Int32Array(levels.length), first = 0;
-      //find first positive contour
-      for (ipoly = 0; ipoly < levels.length; ipoly++) {
-         if (levels[ipoly] >= 0) { first = ipoly; break; }
-      }
-      //store negative contours from 0 to minimum, then all positive contours
-      k = 0;
-      for (ipoly = first-1; ipoly >= 0; ipoly--) { polysort[k] = ipoly; k++; }
-      for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
-
-      let xp = new Float32Array(2*npmax),
-          yp = new Float32Array(2*npmax);
-
-      for (k = 0; k < levels.length; ++k) {
-
-         ipoly = polysort[k];
-         poly = polys[ipoly];
-         if (!poly) continue;
-
-         let colindx = palette.calcColorIndex(ipoly, levels.length),
-             xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
-             istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
-
-         while (true) {
-
-            iminus = npmax;
-            iplus  = iminus+1;
-            xp[iminus]= xx[istart];   yp[iminus] = yy[istart];
-            xp[iplus] = xx[istart+1]; yp[iplus]  = yy[istart+1];
-            xx[istart] = xx[istart+1] = xmin;
-            yy[istart] = yy[istart+1] = ymin;
-            while (true) {
-               nadd = 0;
-               for (i=2;i<np;i+=2) {
-                  if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
-                     iplus++;
-                     xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
-                     xx[i] = xx[i+1] = xmin;
-                     yy[i] = yy[i+1] = ymin;
-                     nadd++;
-                  }
-                  if ((iminus > 0) && (xx[i+1] === xp[iminus]) && (yy[i+1] === yp[iminus])) {
-                     iminus--;
-                     xp[iminus] = xx[i]; yp[iminus] = yy[i];
-                     xx[i] = xx[i+1] = xmin;
-                     yy[i] = yy[i+1] = ymin;
-                     nadd++;
-                  }
-               }
-               if (nadd == 0) break;
-            }
-
-            if ((iminus+1 < iplus) && (iminus >= 0))
-               contour_func(colindx, xp, yp, iminus, iplus, ipoly);
-
-            istart = 0;
-            for (i = 2; i < np; i += 2) {
-               if (xx[i] !== xmin && yy[i] !== ymin) {
-                  istart = i;
-                  break;
-               }
-            }
-
-            if (istart === 0) break;
-         }
-      }
-   }
-
    /** @summary Draw histogram bins as contour */
    drawBinsContour() {
       let handle = this.prepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
@@ -1032,7 +1031,7 @@ class TH2Painter extends THistPainter {
              .style('fill', palette.calcColor(0, levels.length));
       }
 
-      this.buildContour(handle, levels, palette, (colindx,xp,yp,iminus,iplus,ipoly) => {
+      buildHist2dContour(this.getHisto(), handle, levels, palette, (colindx,xp,yp,iminus,iplus,ipoly) => {
          let icol = palette.getColor(colindx),
              fillcolor = icol, lineatt;
 
@@ -2791,4 +2790,4 @@ class TH2Painter extends THistPainter {
 
 } // class TH2Painter
 
-export { TH2Painter };
+export { TH2Painter, buildHist2dContour };
