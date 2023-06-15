@@ -619,6 +619,7 @@ const FrameInteractive = {
 
       if (!this._frame_rotate && !this._frame_fixpos)
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
+                                is_disabled: kind => { return (kind == 'move') && this.mode3d; },
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
 
       let main_svg = this.draw_g.select('.main_layer');
