@@ -27,8 +27,6 @@ let internals = {
    id_counter: 1          ///< unique id contner, starts from 1
 };
 
-//openuicfg // DO NOT DELETE, used to configure openui5 usage like internals.openui5src = 'nojsroot';
-
 const src = import.meta?.url;
 if (src && isStr(src)) {
    const pos = src.indexOf('modules/core.mjs');
