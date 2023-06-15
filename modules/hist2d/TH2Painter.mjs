@@ -165,7 +165,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
 
    let xp = new Float32Array(2*npmax),
-       yp = new Float32Array(2*npmax);
+       yp = new Float32Array(2*npmax),
+       has_func = isFunc(palette.calcColorIndex); // rcanvas for v7
 
    for (k = 0; k < levels.length; ++k) {
 
@@ -173,7 +174,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       poly = polys[ipoly];
       if (!poly) continue;
 
-      let colindx = palette.calcColorIndex(ipoly, levels.length),
+      let colindx = has_func ? palette.calcColorIndex(ipoly, levels.length) : ipoly,
           xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
           istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
