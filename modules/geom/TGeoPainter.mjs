@@ -8,7 +8,7 @@ import { REVISION, DoubleSide, FrontSide,
          Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
-         Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
+         Scene, Fog, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
@@ -2297,12 +2297,7 @@ class TGeoPainter extends ObjectPainter {
             entry.custom_color = 'blue';
       }
 
-      let mesh = this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
-
-      if (mesh && (this.ctrl._bound || this.ctrl._full)) {
-         let boxHelper = new BoxHelper( mesh );
-         mesh.parent.add(boxHelper);
-      }
+      this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
 
       return true;
    }
@@ -3159,10 +3154,6 @@ class TGeoPainter extends ObjectPainter {
    completeScene() {
 
       if ( this.ctrl._debug || this.ctrl._grid ) {
-         if ( this.ctrl._full ) {
-            let boxHelper = new BoxHelper(this._toplevel);
-            this._scene.add( boxHelper );
-         }
          this._scene.add(new AxesHelper(2 * this._overall_size));
          this._scene.add(new GridHelper(Math.ceil(this._overall_size), Math.ceil(this._overall_size)/50));
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
