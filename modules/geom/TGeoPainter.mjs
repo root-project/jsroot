@@ -8,7 +8,7 @@ import { REVISION, DoubleSide, FrontSide,
          Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
-         Scene, Fog, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
+         Scene, Fog, OrthographicCamera, PerspectiveCamera,
          PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
@@ -848,8 +848,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.superimpose && (opt.indexOf('same') == 0))
          opt = opt.slice(4);
 
-      let res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: 0, instancing: 0,
+      let res = { _axis: 0, instancing: 0,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxfaces: 0,
@@ -862,13 +861,6 @@ class TGeoPainter extends ObjectPainter {
                    clipx: false, clipy: false, clipz: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
-
-      let dd = decodeUrl();
-      if (dd.get('_grid') == 'true') res._grid = true;
-      let _opt = dd.get('_debug');
-      if (_opt == 'true') { res._debug = true; res._grid = true; }
-      if (_opt == 'bound') { res._debug = true; res._grid = true; res._bound = true; }
-      if (_opt == 'full') { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
       let macro = opt.indexOf('macro:');
       if (macro >= 0) {
@@ -1007,17 +999,13 @@ class TGeoPainter extends ObjectPainter {
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
+      if (d.check('AXIS') || d.check('A')) res._axis = 1;
 
-      if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
-      if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
+      if (d.check('TRR', true)) res.trans_radial = d.partAsInt()/100;
+      if (d.check('TRZ', true)) res.trans_z = d.partAsInt()/100;
 
-      if (d.check('AXIS') || d.check('A')) res._axis = true;
 
-      if (d.check('D')) res._debug = true;
-      if (d.check('G')) res._grid = true;
-      if (d.check('B')) res._bound = true;
       if (d.check('W')) res.wireframe = true;
-      if (d.check('F')) res._full = true;
       if (d.check('Y')) res._yup = true;
       if (d.check('Z')) res._yup = false;
 
@@ -3152,16 +3140,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary called at the end of scene drawing */
    completeScene() {
-
-      if ( this.ctrl._debug || this.ctrl._grid ) {
-         this._scene.add(new AxesHelper(2 * this._overall_size));
-         this._scene.add(new GridHelper(Math.ceil(this._overall_size), Math.ceil(this._overall_size)/50));
-         this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
-               "'T' translate | 'R' rotate | 'S' scale<br>" +
-               "'+' increase size | '-' decrease size<br>" +
-               "'W' toggle wireframe/solid display<br>"+
-               "keep 'Ctrl' down to snap to grid</center></font>");
-      }
    }
 
    /** @summary Drawing with 'count' option
@@ -3276,8 +3254,6 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl) return; // protection for cleaned-up painter
 
       let obj = hitem._obj;
-      if (this.ctrl._debug)
-         console.log(`Mouse over ${on} ${itemname} ${obj?._typename}`);
 
       // let's highlight tracks and hits only for the time being
       if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
@@ -4974,14 +4950,12 @@ class TGeoPainter extends ObjectPainter {
 
          this._toolbar?.cleanup(); // remove toolbar
 
-         this.helpText();
-
          disposeThreejsObject(this._full_geom);
 
          this._controls?.cleanup();
 
          if (this._context_menu)
-            this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
+            this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
          this._datgui?.destroy();
 
@@ -5078,12 +5052,6 @@ class TGeoPainter extends ObjectPainter {
       delete this._worker;
    }
 
-   /** @summary show message in progress area
-     * @private */
-   helpText(msg) {
-      showProgress(msg);
-   }
-
    /** @summary perform resize */
    performResize(width, height) {
       if ((this._scene_width === width) && (this._scene_height === height)) return false;
@@ -5132,7 +5100,7 @@ class TGeoPainter extends ObjectPainter {
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj.hasOwnProperty('material') || (obj instanceof GridHelper)) return;
+      if (!obj.hasOwnProperty('material')) return;
 
       if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;
