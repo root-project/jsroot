@@ -17,17 +17,38 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          xarr = new Float32Array(2*kMAXCONTOUR),
          yarr = new Float32Array(2*kMAXCONTOUR),
          itarr = new Int32Array(2*kMAXCONTOUR),
-         nlevels = levels.length;
+         nlevels = levels.length,
+         first_level = levels[0], last_level = levels[nlevels - 1];
    let lj = 0, ipoly, poly, polys = [], np, npmax = 0,
        x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
        i, j, k, n, m, ljfill, count,
        xsave, ysave, itars, ix, jx;
 
-   const BinarySearch = zc => {
+   const /* BinarySearchLinear = zc => {
+
+      if (zc >= last_level)
+         return nlevels-1;
+
       for (let kk = 0; kk < nlevels; ++kk)
          if (zc < levels[kk])
             return kk-1;
       return nlevels-1;
+   }, */ BinarySearch = zc => {
+
+      if (zc < first_level)
+         return -1;
+      if (zc >= last_level)
+         return nlevels - 1;
+
+      let l = 0, r = nlevels - 1, m;
+      while (r - l > 1) {
+        m = Math.round((r + l) / 2);
+        if (zc < levels[m])
+           r = m;
+        else
+           l = m;
+      }
+      return l;
    }, PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
       /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
       let vert = (x1 === x2),
