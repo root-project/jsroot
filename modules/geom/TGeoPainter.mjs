@@ -11,7 +11,7 @@ import { REVISION, DoubleSide, FrontSide,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry, WireframeGeometry,
          Scene, Fog, BoxHelper, AxesHelper, GridHelper, OrthographicCamera, PerspectiveCamera,
          TransformControls, PointLight, AmbientLight, HemisphereLight,
-         EffectComposer, RenderPass, SSAOPass, UnrealBloomPass } from '../three.mjs';
+         EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
@@ -531,17 +531,6 @@ class TGeoPainter extends ObjectPainter {
          clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
-         ssao: {
-            enabled: false, output: SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1,
-            outputItems: [
-               { name: 'Default', value: SSAOPass.OUTPUT.Default },
-               { name: 'SSAO Only', value: SSAOPass.OUTPUT.SSAO },
-               { name: 'SSAO Only + Blur', value: SSAOPass.OUTPUT.Blur },
-               { name: 'Beauty', value: SSAOPass.OUTPUT.Beauty },
-               { name: 'Depth', value: SSAOPass.OUTPUT.Depth },
-               { name: 'Normal', value: SSAOPass.OUTPUT.Normal }
-            ]
-         },
          bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          highlight: false,
@@ -871,7 +860,7 @@ class TGeoPainter extends ObjectPainter {
                    project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
                    camera_kind: 'perspective', camera_overlay: 'gridb',
-                   clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
+                   clipx: false, clipy: false, clipz: false, usebloom: true, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
@@ -989,7 +978,7 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('PROJZ', true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
 
       if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
-      if (d.check('SSAO')) res.usessao = true;
+      d.check('SSAO'); // deprecated
       if (d.check('NOBLOOM')) res.usebloom = false;
       if (d.check('BLOOM')) res.usebloom = true;
       if (d.check('OUTLINE')) res.outline = true;
@@ -1337,28 +1326,6 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Method called when SSAO configuration changed via GUI */
-   changedSSAO() {
-      if (!this.ctrl.ssao.enabled) {
-         this.removeSSAO();
-      } else {
-         this.createSSAO();
-
-         this._ssaoPass.output = parseInt(this.ctrl.ssao.output);
-         this._ssaoPass.kernelRadius = this.ctrl.ssao.kernelRadius;
-         this._ssaoPass.minDistance = this.ctrl.ssao.minDistance;
-         this._ssaoPass.maxDistance = this.ctrl.ssao.maxDistance;
-      }
-
-      this.updateClipping();
-
-      if (this._slave_painters)
-         this._slave_painters.forEach(p => {
-            Object.assign(p.ctrl.ssao, this.ctrl.ssao);
-            p.changedSSAO();
-         });
-   }
-
    /** @summary Display control GUI */
    showControlOptions(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
@@ -1537,37 +1504,13 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      // no SSAO folder if outline is enabled
-      if (this.ctrl.outline) return;
-
-      let ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
-          ssao_handler = () => this.changedSSAO(), ssaocfg = {};
-
-      this.ctrl.ssao.outputItems.forEach(i => { ssaocfg[i.name] = i.value; });
-
-      ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'output', ssaocfg)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'kernelRadius', 0, 32)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'minDistance', 0.001, 0.02)
-                .listen().onChange(ssao_handler);
-
-      ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
-                .listen().onChange(ssao_handler);
-
-      let blooming = this._datgui.addFolder('Unreal Bloom'),
-          bloom_handler = () => this.changedBloomSettings();
+      let blooming = this._datgui.addFolder('Unreal Bloom');
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-              .listen().onChange(bloom_handler);
+              .listen().onChange(() => this.changedBloomSettings());
 
       blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
-               .listen().onChange(bloom_handler);
+               .listen().onChange(() => this.changedBloomSettings());
    }
 
    /** @summary Method called when bloom configuration changed via GUI */
@@ -1579,11 +1522,10 @@ class TGeoPainter extends ObjectPainter {
          this.removeBloom();
       }
 
-      if (this._slave_painters)
-         this._slave_painters.forEach(p => {
-            Object.assign(p.ctrl.bloom, this.ctrl.bloom);
-            p.changedBloomSettings();
-         });
+      this._slave_painters?.forEach(p => {
+         Object.assign(p.ctrl.bloom, this.ctrl.bloom);
+         p.changedBloomSettings();
+      });
    }
 
    /** @summary Handle change of can rotate */
@@ -1603,7 +1545,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       this.removeBloom();
-      this.removeSSAO();
 
       // recreate camera
       this.createCamera();
@@ -1646,36 +1587,9 @@ class TGeoPainter extends ObjectPainter {
       if (!this._bloomPass) return;
       delete this._bloomPass;
       delete this._bloomComposer;
-      this._renderer.autoClear = true;
-      this._camera.layers.disable( _BLOOM_SCENE );
-   }
-
-   /** @summary Remove composer */
-   removeSSAO() {
-      // we cannot remove pass from composer - just disable it
-      delete this._ssaoPass;
-      delete this._effectComposer;
-   }
-
-   /** @summary create SSAO */
-   createSSAO() {
-      if (!this._webgl) return;
-
-      // this._depthRenderTarget = new WebGLRenderTarget(this._scene_width, this._scene_height, { minFilter: LinearFilter, magFilter: LinearFilter });
-      // Setup SSAO pass
-      if (!this._ssaoPass) {
-         if (!this._effectComposer) {
-            this._effectComposer = new EffectComposer( this._renderer );
-            this._effectComposer.addPass(new RenderPass( this._scene, this._camera));
-         }
-
-         this._ssaoPass = new SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
-         this._ssaoPass.kernelRadius = 16;
-         this._ssaoPass.renderToScreen = true;
-
-         // Add pass to effect composer
-         this._effectComposer.addPass( this._ssaoPass );
-      }
+      if(this._renderer)
+         this._renderer.autoClear = true;
+      this._camera?.layers.disable( _BLOOM_SCENE);
    }
 
    /** @summary Show context menu for orbit control
@@ -2679,18 +2593,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create special effects */
    createSpecialEffects() {
-      // Smooth Lighting Shader (Screen Space Ambient Occlusion)
-      // http://threejs.org/examples/webgl_postprocessing_ssao.html
-
-      if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
-
-         if (this.ctrl.outline && isFunc(this.createOutline)) {
-            this._effectComposer = new EffectComposer(this._renderer);
-            this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
-            this.createOutline(this._scene_width, this._scene_height);
-         } else if (this.ctrl.ssao.enabled) {
-            this.createSSAO();
-         }
+      if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
+         // code used with jsroot-based geometry drawing in EVE7, not important any longer
+         this._effectComposer = new EffectComposer(this._renderer);
+         this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
+         this.createOutline(this._scene_width, this._scene_height);
       }
 
       if (this._webgl && this.ctrl.bloom.enabled)
@@ -2830,11 +2737,8 @@ class TGeoPainter extends ObjectPainter {
       this.continueDraw();
    }
 
-   /** @summary reset all kind of advanced features like SSAO or depth test changes */
+   /** @summary reset all kind of advanced features like depth test */
    resetAdvanced() {
-      this.ctrl.ssao.kernelRadius = 16;
-      this.ctrl.ssao.output = SSAOPass.OUTPUT.Default;
-
       this.ctrl.depthTest = true;
       this.ctrl.clipIntersect = true;
       this.ctrl.depthMethod = 'ray';
@@ -4872,18 +4776,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Should be called when configuration of particular axis is changed */
    changedClipping(naxis) {
-      let clip = this.ctrl.clip;
-
-      if ((naxis !== undefined) && (naxis >= 0)) {
-         if (!clip[naxis].enabled) return;
-      }
-
-      if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
-         this.ctrl.ssao.enabled = false;
-         this.removeSSAO();
-      }
-
-      this.updateClipping(false, true);
+      if ((naxis !== undefined) && (naxis >= 0) && this.ctrl.clip[naxis]?.enabled)
+         this.updateClipping(false, true);
    }
 
    /** @summary Should be called when depth test flag is changed */
@@ -4934,17 +4828,14 @@ class TGeoPainter extends ObjectPainter {
             if (clip[k].enabled) changed = true;
             this._clipPlanes[k].constant = clip_constants[k];
          }
+         if (clip[k].enabled)
+            panels.push(this._clipPlanes[k]);
       }
+      if (panels.length == 0)
+         panels = null;
 
-      if (!this.ctrl.ssao.enabled) {
-         if (clip[0].enabled) panels.push(this._clipPlanes[0]);
-         if (clip[1].enabled) panels.push(this._clipPlanes[1]);
-         if (clip[2].enabled) panels.push(this._clipPlanes[2]);
-         clip_cfg += panels.length*1000;
-      }
-      if (panels.length == 0) panels = null;
-
-      if (this._clipCfg !== clip_cfg) changed = true;
+      if (this._clipCfg !== clip_cfg)
+         changed = true;
 
       this._clipCfg = clip_cfg;
 
@@ -5129,8 +5020,6 @@ class TGeoPainter extends ObjectPainter {
 
       if (!first_time) {
 
-         this.removeSSAO();
-
          let can3d = 0;
 
          if (!this.superimpose) {
@@ -5216,6 +5105,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (!this.superimpose)
          cleanupRender3D(this._renderer);
+
+      this.removeBloom();
+      delete this._effectComposer;
 
       delete this._scene;
       delete this._scene_size;
@@ -5572,7 +5464,6 @@ function createGeoPainter(dom, obj, opt) {
    // copy all attributes from options to control
    Object.assign(painter.ctrl, painter.options);
 
-   painter.ctrl.ssao.enabled = painter.options.usessao;
    painter.ctrl.bloom.enabled = painter.options.usebloom;
 
    // special handling for array of clips
