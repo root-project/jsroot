@@ -1726,19 +1726,21 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (handle.donormals && (lvl === 1))
          RecalculateNormals(geometry.getAttribute('normal').array, normindx);
 
-      let fcolor, material;
+      let color, material;
       if (is_v7) {
-         fcolor = palette ? palette.getColor(lvl-1) : painter.getColor(5);
+         color = palette?.getColor(lvl-1) ?? painter.getColor(5);
       } else if (palette) {
-         fcolor = palette.calcColor(lvl, levels.length);
+         color = palette.calcColor(lvl, levels.length);
       } else {
-         fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
-         if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) fcolor = painter.getColor(48);
+         color = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
+         if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) color = painter.getColor(48);
       }
+
+      if (!color) color = 'white';
       if (painter.options.Surf === 14)
-         material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+         material = new MeshLambertMaterial({ color, side: DoubleSide, vertexColors: false });
       else
-         material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+         material = new MeshBasicMaterial({ color, side: DoubleSide, vertexColors: false });
 
       let mesh = new Mesh(geometry, material);
 
@@ -1746,14 +1748,16 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
-      let material;
+      let material, color = painter.getColor(histo.fLineColor) ?? 'white';
+
       if (isgrid) {
          material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) });
+                      : new LineBasicMaterial({ color });
       } else {
-         material = new LineBasicMaterial({ color: painter.getColor(histo.fLineColor), linewidth: histo.fLineWidth });
+         material = new LineBasicMaterial({ color, linewidth: histo.fLineWidth });
       }
+
       let line = createLineSegments(lpos, material);
       line.painter = painter;
       main.toplevel.add(line);
