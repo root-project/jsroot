@@ -1638,7 +1638,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    // first adjust ranges
 
-   let main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value);
+   let main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value),
+       main_grz_min = 0, main_grz_max = 2*main.size_z3d;
 
    if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
@@ -1682,7 +1683,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       for (let ll = 0; ll < ilevels.length; ++ll)
          levels[ll] = main_grz(ilevels[ll]);
    } else {
-      levels = [0, 2*main.size_z3d]; // just cut top/bottom parts
+      levels = [main_grz_min, main_grz_max]; // just cut top/bottom parts
    }
 
    let loop, nfaces = [], pos = [], indx = [],    // buffers for faces
@@ -1690,28 +1691,26 @@ function drawBinsSurf3D(painter, is_v7 = false) {
        ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
        normindx = [];                             // buffer to remember place of vertex for each bin
 
-   function CheckSide(z,level1, level2) {
-      if (z<level1) return -1;
-      if (z>level2) return 1;
-      return 0;
+   function CheckSide(z, level1, level2) {
+      return (z < level1) ? -1 : (z > level2 ? 1 : 0);
    }
 
    function AddLineSegment(x1,y1,z1, x2,y2,z2) {
       if (!dolines) return;
-      let side1 = CheckSide(z1,0,2*main.size_z3d),
-          side2 = CheckSide(z2,0,2*main.size_z3d);
+      let side1 = CheckSide(z1, main_grz_min, main_grz_max),
+          side2 = CheckSide(z2, main_grz_min, main_grz_max);
       if ((side1 === side2) && (side1 !== 0)) return;
       if (!loop) return ++nsegments;
 
       if (side1 !== 0) {
          let diff = z2 - z1;
-         z1 = (side1 < 0) ? 0 : 2*main.size_z3d;
+         z1 = (side1 < 0) ? main_grz_min : main_grz_max;
          x1 = x2 - (x2 - x1) / diff * (z2 - z1);
          y1 = y2 - (y2 - y1) / diff * (z2 - z1);
       }
       if (side2 !== 0) {
          let diff = z1 - z2;
-         z2 = (side2 < 0) ? 0 : 2*main.size_z3d;
+         z2 = (side2 < 0) ? main_grz_min : main_grz_max;
          x2 = x1 - (x1 - x2) / diff * (z1 - z2);
          y2 = y1 - (y1 - y2) / diff * (z1 - z2);
       }
@@ -1802,7 +1801,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              side_sum = side1 + side2 + side3;
 
          // always show top segments
-         if (ilevels && (lvl === levels.length - 1) && (side_sum === 3) && (z1 <= 2*main.size_z3d)) {
+         if (ilevels && (lvl === levels.length - 1) && (side_sum === 3) && (z1 <= main_grz_max)) {
             side1 = side2 =  side3 = side_sum = 0;
          }
 
@@ -1865,14 +1864,13 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          if (grid && (gridcnt === 6)) {
             for (let jj = 0; jj < 6; ++jj)
                grid[gindx+jj] = gridpnts[jj];
-            gindx+=6;
+            gindx += 6;
          }
-
 
          // if three points and surf == 14, remember vertex for each point
 
          let buf = pos[lvl], s = indx[lvl];
-         if (donormals && (k===9)) {
+         if (donormals && (k === 9)) {
             RememberVertex(s, i, j);
             RememberVertex(s+3, i+1, is_first ? j+1 : j);
             RememberVertex(s+6, is_first ? i : i+1, j+1);
@@ -1987,12 +1985,12 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if (painter.options.Surf === 13) {
 
-      handle = painter.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0 });
+      handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 100, middle: 0 });
 
       // get levels
       let levels = painter.getContourLevels(), // init contour
           palette = painter.getHistPalette(),
-          lastcolindx = -1, layerz = 2*main.size_z3d;
+          lastcolindx = -1, layerz = main_grz_max;
 
       buildHist2dContour(histo, handle, levels, palette,
          (colindx,xp,yp,iminus,iplus) => {
@@ -2016,7 +2014,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
                 lastcolindx = colindx;
-                layerz += 0.0001 * main.size_z3d; // change layers Z
+                layerz += 5e-5 * main_grz_max; // change layers Z
              }
 
              const pos = new Float32Array(faces.length*9),
@@ -2034,7 +2032,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                    norm[indx+1] = 0;
                    norm[indx+2] = 1;
 
-                   indx+=3;
+                   indx += 3;
                 }
              }
 
