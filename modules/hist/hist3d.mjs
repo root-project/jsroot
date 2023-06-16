@@ -1800,6 +1800,11 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
              side_sum = side1 + side2 + side3;
 
+         // always show top segments
+         if ((lvl === levels.length - 1) && (side_sum === 3)) {
+            side1 = side2 =  side3 = side_sum = 0;
+         }
+
          if (side_sum === 3) continue;
          if (side_sum === -3) return;
 
