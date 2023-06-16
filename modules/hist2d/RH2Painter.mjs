@@ -449,7 +449,7 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Draw histogram bins as contour */
    drawBinsContour(funcs, frame_w,frame_h) {
-      let handle = this.prepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      let handle = this.prepareDraw({ rounding: false, extra: 100 }),
           main = this.getFramePainter(),
           palette = main.getHistPalette(),
           levels = palette.getContour(),
@@ -483,25 +483,11 @@ class RH2Painter extends RHistPainter {
          return cmd;
       };
 
-      if (this.options.Contour === 14) {
-         let dd = `M0,0h${frame_w}v${frame_h}h${-frame_w}z`;
-         if (this.options.Proj) {
-            let dj = handle.stepj, sz = parseInt((handle.j2 - handle.j1)/dj),
-                xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
-            for (let i=0;i<sz;++i) {
-               xd[i] = handle.origx[handle.i1];
-               yd[i] = (handle.origy[handle.j1]*(i*dj+0.5) + handle.origy[handle.j2]*(sz-0.5-i*dj))/sz;
-               xd[i+sz] = handle.origx[handle.i2];
-               yd[i+sz] = (handle.origy[handle.j2]*(i*dj+0.5) + handle.origy[handle.j1]*(sz-0.5-i*dj))/sz;
-            }
-            dd = BuildPath(xd,yd,0,2*sz-1,true);
-         }
-
+      if (this.options.Contour === 14)
          this.draw_g
              .append('svg:path')
-             .attr('d', dd)
+             .attr('d', `M0,0h${frame_w}v${frame_h}h${-frame_w}z`)
              .style('fill', palette.getColor(0));
-      }
 
       buildHist2dContour(this.getHisto(), handle, levels, palette,
          (colindx,xp,yp,iminus,iplus) => {

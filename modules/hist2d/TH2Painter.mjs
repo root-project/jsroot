@@ -386,7 +386,7 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
          k = 0;
          if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k += 3; }
 
-         if (side1!==side2) {
+         if (side1 !== side2) {
             // order is important, should move from 1->2 point, checked via lastpart
             lastpart = 0;
             if ((side1 < 0) || (side2 < 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
@@ -395,7 +395,7 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
 
          if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k += 3; }
 
-         if (side2!==side3) {
+         if (side2 !== side3) {
             // order is important, should move from 2->3 point, checked via lastpart
             lastpart = 0;
             if ((side2 < 0) || (side3 < 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
@@ -473,8 +473,8 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
             AddLineSegment(x1,y2,z12, x1,y1,z11);
             AddLineSegment(x1,y1,z11, x2,y1,z21);
 
-            if (i===handle.i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
-            if (j===handle.j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
+            if (i === handle.i2 - 2) AddLineSegment(x2,y1,z21, x2,y2,z22);
+            if (j === handle.j2 - 2) AddLineSegment(x1,y2,z12, x2,y2,z22);
          }
       }
    }
@@ -1175,7 +1175,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw histogram bins with projection function */
    drawBinsProjected() {
-      let handle = this.prepareDraw({ rounding: false, extra: 100, original: true }),
+      let handle = this.prepareDraw({ rounding: false, nozoom: true, extra: 100, original: true }),
           main = this.getFramePainter(),
           funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
           ilevels = this.getContourLevels(),
@@ -1324,21 +1324,9 @@ class TH2Painter extends THistPainter {
       };
 
       if (this.options.Contour === 14) {
-         let dd = `M0,0h${frame_w}v${frame_h}h${-frame_w}z`;
-         if (this.options.Proj) {
-            let sz = handle.j2 - handle.j1, xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
-            for (let i = 0; i < sz; ++i) {
-               xd[i] = handle.origx[handle.i1];
-               yd[i] = (handle.origy[handle.j1]*(i+0.5) + handle.origy[handle.j2]*(sz-0.5-i))/sz;
-               xd[i+sz] = handle.origx[handle.i2];
-               yd[i+sz] = (handle.origy[handle.j2]*(i+0.5) + handle.origy[handle.j1]*(sz-0.5-i))/sz;
-            }
-            dd = buildPath(xd, yd, 0, 2*sz-1, true);
-         }
-
          this.draw_g
              .append('svg:path')
-             .attr('d', dd)
+             .attr('d', `M0,0h${frame_w}v${frame_h}h${-frame_w}z`)
              .style('fill', palette.calcColor(0, levels.length));
       }
 

@@ -1436,7 +1436,10 @@ class THistPainter extends ObjectPainter {
             indx = taxis.FindBin(min, add || 0);
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         if (indx < 0) indx = 0; else if (indx > nbin) indx = nbin;
+         if (indx < 0)
+            indx = 0; else
+         if (indx > nbin)
+            indx = nbin;
       } else {
          indx = (side == 'left') ? 0 : nbin;
       }
@@ -2067,10 +2070,10 @@ class THistPainter extends ObjectPainter {
           hdim = this.getDimension(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.getSelectIndex('x', 'left', 0 - args.extra),
-             i2: this.getSelectIndex('x', 'right', 1 + args.extra),
-             j1: (hdim === 1) ? 0 : this.getSelectIndex('y', 'left', 0 - args.extra),
-             j2: (hdim === 1) ? 1 : this.getSelectIndex('y', 'right', 1 + args.extra),
+             i1: args.nozoom ? 0 : this.getSelectIndex('x', 'left', 0 - args.extra),
+             i2: args.nozoom ? this.nbinsx : this.getSelectIndex('x', 'right', 1 + args.extra),
+             j1: (hdim === 1) ? 0 : (args.nozoom ? 0 : this.getSelectIndex('y', 'left', 0 - args.extra)),
+             j2: (hdim === 1) ? 1 : (args.nozoom ? this.nbinsy : this.getSelectIndex('y', 'right', 1 + args.extra)),
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
