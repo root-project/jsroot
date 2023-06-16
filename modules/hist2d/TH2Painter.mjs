@@ -56,7 +56,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
           n = icont1 +1,
           tdif = elev2 - elev1,
           ii = lj-1,
-          maxii = kMAXCONTOUR/2 -3 + lj,
+          maxii = ii + kMAXCONTOUR/2 -3,
           icount = 0,
           xlen, pdif, diff, elev;
 
@@ -149,7 +149,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                }
             }
 
-            if (count > kMAXCOUNT) continue;
+            if (count > 100) continue;
 
             for (ix = 1; ix <= lj - 2; ix += 2) {
 
@@ -162,8 +162,10 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
 
                   np = poly.fLastPoint;
                   if (np < poly.fN-2) {
-                     poly.fX[np+1] = Math.round(xarr[ix-1]); poly.fY[np+1] = Math.round(yarr[ix-1]);
-                     poly.fX[np+2] = Math.round(xarr[ix]); poly.fY[np+2] = Math.round(yarr[ix]);
+                     poly.fX[np+1] = Math.round(xarr[ix-1]);
+                     poly.fY[np+1] = Math.round(yarr[ix-1]);
+                     poly.fX[np+2] = Math.round(xarr[ix]);
+                     poly.fY[np+2] = Math.round(yarr[ix]);
                      poly.fLastPoint = np+2;
                      npmax = Math.max(npmax, poly.fLastPoint+1);
                   } else {
@@ -928,9 +930,10 @@ class TH2Painter extends THistPainter {
           funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
           levels = this.getContourLevels(),
           palette = this.getHistPalette(),
-          func = main.getProjectionFunc();
+          func = main.getProjectionFunc(),
+          can_try_closure_repair = !func || this.options.Proj == 2; // only mercator can be repaired
 
-      const buildPath = (xp,yp,iminus,iplus,do_close) => {
+      const buildPath = (xp,yp,iminus,iplus,do_close,check_rapair) => {
          let cmd = '', lastx, lasty, x0, y0, isany = false, matched, x, y;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
@@ -960,9 +963,10 @@ class TH2Painter extends THistPainter {
             lastx = x; lasty = y;
          }
 
-         if (do_close && !matched && !func)
+         if (do_close && !matched && check_rapair && can_try_closure_repair)
             return '<failed>';
          if (do_close) cmd += 'z';
+
          return cmd;
 
       }, get_segm_intersection = (segm1, segm2) => {
@@ -1032,6 +1036,62 @@ class TH2Painter extends THistPainter {
          }
 
          return dd + `L${pnt1.x},${pnt1.y}z`;
+
+      }, buildPathOutsideFunc = (xp,yp,iminus,iplus,side) => {
+
+         // try to build path which fills area to outside borders
+
+         let minx = handle.origx[handle.i1],
+             maxx = handle.origx[handle.i2],
+             miny = handle.origy[handle.j1],
+             maxy = handle.origy[handle.j2];
+
+         const points = [{x: minx, y: maxy}, {x: maxx, y: maxy}, {x: maxx, y: miny}, {x: minx, y: miny}];
+
+         const get_intersect = (i, di) => {
+            let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
+            for (let i = 0; i < 4; ++i) {
+               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
+               if (res) {
+                  res.indx = i + 0.5;
+                  return res;
+               }
+            }
+            return null;
+         };
+
+         let pnt1, pnt2;
+         iminus--;
+         while ((iminus < iplus - 1) && !pnt1)
+            pnt1 = get_intersect(++iminus, 1);
+         iplus++;
+         while ((iminus < iplus - 1) && pnt1 && !pnt2)
+            pnt2 = get_intersect(--iplus, -1);
+         if (!pnt1 || !pnt2) return '';
+
+         // TODO: now side is always same direction, could be that side should be checked more precise
+
+         let dd = buildPath(xp,yp,iminus,iplus),
+             indx = pnt2.indx, step = side*0.5;
+
+         const add = pnt => {
+            let tr = func(pnt.x, pnt.y),
+               x = Math.round(funcs.grx(tr.x)),
+               y = Math.round(funcs.gry(tr.y));
+            dd += `L${x},${y}`;
+         }
+
+         add(pnt2);
+
+         while (Math.abs(indx - pnt1.indx) > 0.1) {
+            indx = Math.round(indx + step) % 4;
+            add(points[indx]);
+            indx += step;
+         }
+
+         add(pnt1);
+
+         return dd;
       };
 
       if (this.options.Contour === 14) {
@@ -1044,7 +1104,7 @@ class TH2Painter extends THistPainter {
                xd[i+sz] = handle.origx[handle.i2];
                yd[i+sz] = (handle.origy[handle.j2]*(i+0.5) + handle.origy[handle.j1]*(sz-0.5-i))/sz;
             }
-            dd = buildPath(xd,yd,0,2*sz-1, true);
+            dd = buildPath(xd, yd, 0, 2*sz-1, true);
          }
 
          this.draw_g
@@ -1065,9 +1125,9 @@ class TH2Painter extends THistPainter {
             case 14: break;
          }
 
-         let dd = buildPath(xp, yp, iminus, iplus, fillcolor != 'none');
+         let dd = buildPath(xp, yp, iminus, iplus, fillcolor != 'none', true);
          if (dd == '<failed>')
-            dd = buildPathOutside(xp, yp, iminus, iplus, 1);
+            dd = func ? buildPathOutsideFunc(xp, yp, iminus, iplus, 1) : buildPathOutside(xp, yp, iminus, iplus, 1);
          if (!dd) return;
 
          let elem = this.draw_g
