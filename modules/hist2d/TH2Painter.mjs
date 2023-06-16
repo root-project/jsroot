@@ -933,7 +933,32 @@ class TH2Painter extends THistPainter {
           func = main.getProjectionFunc(),
           can_try_closure_repair = !func || (this.options.Proj == 2); // only mercator can be repaired
 
-      const buildPath = (xp,yp,iminus,iplus,do_close,check_rapair) => {
+      const get_segm_intersection = (segm1, segm2) => {
+          let s10_x = segm1.x2 - segm1.x1,
+              s10_y = segm1.y2 - segm1.y1,
+              s32_x = segm2.x2 - segm2.x1,
+              s32_y = segm2.y2 - segm2.y1,
+              denom = s10_x * s32_y - s32_x * s10_y;
+
+          if (denom == 0)
+              return 0; // Collinear
+          let denomPositive = denom > 0,
+              s02_x = segm1.x1 - segm2.x1,
+              s02_y = segm1.y1 - segm2.y1,
+              s_numer = s10_x * s02_y - s10_y * s02_x;
+          if ((s_numer < 0) == denomPositive)
+              return null; // No collision
+
+          let t_numer = s32_x * s02_y - s32_y * s02_x;
+          if ((t_numer < 0) == denomPositive)
+              return null; // No collision
+
+          if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
+              return null; // No collision
+          // Collision detected
+          let t = t_numer / denom;
+          return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
+      }, buildPath = (xp,yp,iminus,iplus,do_close,check_rapair) => {
          let cmd = '', lastx, lasty, x0, y0, isany = false, matched, x, y;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
@@ -963,42 +988,14 @@ class TH2Painter extends THistPainter {
             lastx = x; lasty = y;
          }
 
-         if (do_close && !matched && check_rapair && can_try_closure_repair)
-            return '<failed>';
-         if (do_close) cmd += 'z';
-
-         return cmd;
-      }, get_segm_intersection = (segm1, segm2) => {
-          let s10_x = segm1.x2 - segm1.x1,
-              s10_y = segm1.y2 - segm1.y1,
-              s32_x = segm2.x2 - segm2.x1,
-              s32_y = segm2.y2 - segm2.y1,
-              denom = s10_x * s32_y - s32_x * s10_y;
-
-          if (denom == 0)
-              return 0; // Collinear
-          let denomPositive = denom > 0,
-              s02_x = segm1.x1 - segm2.x1,
-              s02_y = segm1.y1 - segm2.y1,
-              s_numer = s10_x * s02_y - s10_y * s02_x;
-          if ((s_numer < 0) == denomPositive)
-              return null; // No collision
-
-          let t_numer = s32_x * s02_y - s32_y * s02_x;
-          if ((t_numer < 0) == denomPositive)
-              return null; // No collision
-
-          if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
-              return null; // No collision
-          // Collision detected
-          let t = t_numer / denom;
-          return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
-
-      }, buildPathOutside = (xp,yp,iminus,iplus,side) => {
+         if (!do_close || matched || !check_rapair || !can_try_closure_repair) {
+            if (do_close) cmd += 'z';
+            return cmd;
+         }
 
          // try to build path which fills area to outside borders
 
-         let points;
+         let side = 1, points;
 
          if (func) {
             let minx = handle.origx[handle.i1],
@@ -1054,7 +1051,7 @@ class TH2Painter extends THistPainter {
          }
          add(pnt1);
 
-         return dd;
+         return dd + 'z';
       };
 
       if (this.options.Contour === 14) {
@@ -1089,8 +1086,6 @@ class TH2Painter extends THistPainter {
          }
 
          let dd = buildPath(xp, yp, iminus, iplus, fillcolor != 'none', true);
-         if (dd == '<failed>')
-            dd = buildPathOutside(xp, yp, iminus, iplus, 1);
          if (!dd) return;
 
          let elem = this.draw_g
