@@ -1679,7 +1679,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    if (ilevels) {
       // recalculate levels into graphical coordinates
       levels = new Float32Array(ilevels.length);
-      for (let ll=0;ll<ilevels.length;++ll)
+      for (let ll = 0; ll < ilevels.length; ++ll)
          levels[ll] = main_grz(ilevels[ll]);
    } else {
       levels = [0, 2*main.size_z3d]; // just cut top/bottom parts
@@ -1706,14 +1706,14 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (side1 !== 0) {
          let diff = z2 - z1;
          z1 = (side1 < 0) ? 0 : 2*main.size_z3d;
-         x1 = x2 - (x2-x1)/diff*(z2-z1);
-         y1 = y2 - (y2-y1)/diff*(z2-z1);
+         x1 = x2 - (x2 - x1) / diff * (z2 - z1);
+         y1 = y2 - (y2 - y1) / diff * (z2 - z1);
       }
       if (side2 !== 0) {
          let diff = z1 - z2;
          z2 = (side2 < 0) ? 0 : 2*main.size_z3d;
-         x2 = x1 - (x1-x2)/diff*(z1-z2);
-         y2 = y1 - (y1-y2)/diff*(z1-z2);
+         x2 = x1 - (x1 - x2) / diff * (z1 - z2);
+         y2 = y1 - (y1 - y2) / diff * (z1 - z2);
       }
 
       lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
@@ -1724,7 +1724,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
        gridpnts = new Float32Array(2*3), gridcnt = 0;
 
    function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
-      if (k>=pntbuf.length) console.log('more than 6 points???');
+      if (k >= pntbuf.length)
+         console.log('more than 6 points???');
 
       let part = (crossz - zz1) / (zz2 - zz1), shift = 3;
       if ((lastpart !== 0) && (Math.abs(part) < Math.abs(lastpart))) {
@@ -1793,7 +1794,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3, is_first) {
 
-      for (let lvl=1;lvl<levels.length;++lvl) {
+      for (let lvl = 1; lvl < levels.length; ++lvl) {
 
          let side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
              side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
@@ -1801,7 +1802,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              side_sum = side1 + side2 + side3;
 
          // always show top segments
-         if ((lvl === levels.length - 1) && (side_sum === 3)) {
+         if (ilevels && (lvl === levels.length - 1) && (side_sum === 3) && (z1 <= 2*main.size_z3d)) {
             side1 = side2 =  side3 = side_sum = 0;
          }
 
