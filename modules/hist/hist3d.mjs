@@ -9,7 +9,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { translateLaTeX } from '../base/latex.mjs';
-import { buildHist2dContour } from '../hist2d/TH2Painter.mjs';
+import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
 /** @summary Text 3d axis visibility
@@ -1625,14 +1625,12 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    main.toplevel.add(lines);
 }
 
-
 /** @summary Draw TH2 histograms in surf mode
   * @private */
 function drawBinsSurf3D(painter, is_v7 = false) {
    let histo = painter.getHisto(),
        main = painter.getFramePainter(),
-       handle = painter.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5}),
-       i,j, x1, y1, x2, y2, z11, z12, z21, z22,
+       handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5 }),
        axis_zmin = main.z_handle.getScaleMin();
        // axis_zmax = main.z_handle.getScaleMax();
 
@@ -1643,8 +1641,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
-   let ilevels = null, levels = null, dolines = true, dogrid = false,
-       donormals = false, palette = null;
+   let ilevels = null, levels = null, palette = null;
+
+   handle.dolines = true;
 
    if (is_v7) {
       let need_palette = 0;
@@ -1652,10 +1651,10 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          case 11: need_palette = 2; break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: need_palette = 2; dolines = false; break;
-         case 14: dolines = false; donormals = true; break;
-         case 16: need_palette = 1; dogrid = true; dolines = false; break;
-         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
+         case 17: need_palette = 2; handle.dolines = false; break;
+         case 14: handle.dolines = false; handle.donormals = true; break;
+         case 16: need_palette = 1; handle.dogrid = true; handle.dolines = false; break;
+         default: ilevels = main.z_handle.createTicks(true); handle.dogrid = true; break;
       }
 
       if (need_palette > 0) {
@@ -1670,10 +1669,10 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          case 11: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); dolines = false; break;
-         case 14: dolines = false; donormals = true; break;
-         case 16: ilevels = painter.getContourLevels(); dogrid = true; dolines = false; break;
-         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
+         case 17: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); handle.dolines = false; break;
+         case 14: handle.dolines = false; handle.donormals = true; break;
+         case 16: ilevels = painter.getContourLevels(); handle.dogrid = true; handle.dolines = false; break;
+         default: ilevels = main.z_handle.createTicks(true); handle.dogrid = true; break;
       }
    }
 
@@ -1686,84 +1685,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       levels = [main_grz_min, main_grz_max]; // just cut top/bottom parts
    }
 
-   let loop, nfaces = [], pos = [], indx = [],    // buffers for faces
-       nsegments = 0, lpos = null, lindx = 0,     // buffer for lines
-       ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
-       normindx = [];                             // buffer to remember place of vertex for each bin
-
-   function CheckSide(z, level1, level2) {
-      return (z < level1) ? -1 : (z > level2 ? 1 : 0);
-   }
-
-   function AddLineSegment(x1,y1,z1, x2,y2,z2) {
-      if (!dolines) return;
-      let side1 = CheckSide(z1, main_grz_min, main_grz_max),
-          side2 = CheckSide(z2, main_grz_min, main_grz_max);
-      if ((side1 === side2) && (side1 !== 0)) return;
-      if (!loop) return ++nsegments;
-
-      if (side1 !== 0) {
-         let diff = z2 - z1;
-         z1 = (side1 < 0) ? main_grz_min : main_grz_max;
-         x1 = x2 - (x2 - x1) / diff * (z2 - z1);
-         y1 = y2 - (y2 - y1) / diff * (z2 - z1);
-      }
-      if (side2 !== 0) {
-         let diff = z1 - z2;
-         z2 = (side2 < 0) ? main_grz_min : main_grz_max;
-         x2 = x1 - (x1 - x2) / diff * (z1 - z2);
-         y2 = y1 - (y1 - y2) / diff * (z1 - z2);
-      }
-
-      lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
-      lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
-   }
-
-   let pntbuf = new Float32Array(6*3), k = 0, lastpart = 0, // maximal 6 points
-       gridpnts = new Float32Array(2*3), gridcnt = 0;
-
-   function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
-      if (k >= pntbuf.length)
-         console.log('more than 6 points???');
-
-      let part = (crossz - zz1) / (zz2 - zz1), shift = 3;
-      if ((lastpart !== 0) && (Math.abs(part) < Math.abs(lastpart))) {
-         // while second crossing point closer than first to original, move it in memory
-         pntbuf[k] = pntbuf[k-3];
-         pntbuf[k+1] = pntbuf[k-2];
-         pntbuf[k+2] = pntbuf[k-1];
-         k-=3; shift = 6;
-      }
-
-      pntbuf[k] = xx1 + part*(xx2-xx1);
-      pntbuf[k+1] = yy1 + part*(yy2-yy1);
-      pntbuf[k+2] = crossz;
-
-      if (with_grid && grid) {
-         gridpnts[gridcnt] = pntbuf[k];
-         gridpnts[gridcnt+1] = pntbuf[k+1];
-         gridpnts[gridcnt+2] = pntbuf[k+2];
-         gridcnt+=3;
-      }
-
-      k += shift;
-      lastpart = part;
-   }
-
-   function RememberVertex(indx, ii,jj) {
-      let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
-
-      if (normindx[bin] >= 0)
-         return console.error('More than 8 vertexes for the bin');
-
-      let pos = bin+8+normindx[bin]; // position where write index
-      normindx[bin]--;
-      normindx[pos] = indx; // at this moment index can be overwritten, means all 8 position are there
-   }
-
-   function RecalculateNormals(arr) {
-      for (let ii=handle.i1;ii<handle.i2;++ii) {
-         for (let jj=handle.j1;jj<handle.j2;++jj) {
+   function RecalculateNormals(arr, normindx) {
+      for (let ii = handle.i1; ii < handle.i2; ++ii) {
+         for (let jj = handle.j1; jj < handle.j2; ++jj) {
             let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1)) * 8;
 
             if (normindx[bin] === -1) continue; // nothing there
@@ -1791,194 +1715,49 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       }
    }
 
-   function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3, is_first) {
+   handle.grz = main_grz;
+   handle.grz_min = main_grz_min;
+   handle.grz_max = main_grz_max;
 
-      for (let lvl = 1; lvl < levels.length; ++lvl) {
+   buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
+      let geometry = new BufferGeometry();
+      geometry.setAttribute('position', new BufferAttribute(pos, 3));
+      geometry.computeVertexNormals();
+      if (handle.donormals && (lvl === 1))
+         RecalculateNormals(geometry.getAttribute('normal').array, normindx);
 
-         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
-             side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
-             side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
-             side_sum = side1 + side2 + side3;
-
-         // always show top segments
-         if (ilevels && (lvl === levels.length - 1) && (side_sum === 3) && (z1 <= main_grz_max)) {
-            side1 = side2 =  side3 = side_sum = 0;
-         }
-
-         if (side_sum === 3) continue;
-         if (side_sum === -3) return;
-
-         if (!loop) {
-            let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
-            if (side1 === 0) ++npnts;
-            if (side2 === 0) ++npnts;
-            if (side3 === 0) ++npnts;
-
-            if ((npnts === 1) || (npnts === 2)) console.error(`FOUND npnts = ${npnts}`);
-
-            if (npnts > 2) {
-               if (nfaces[lvl] === undefined) nfaces[lvl] = 0;
-               nfaces[lvl] += npnts-2;
-            }
-
-            // check if any(contours for given level exists
-            if (((side1 > 0) || (side2 > 0) || (side3 > 0)) &&
-                ((side1!==side2) || (side2!==side3) || (side3!==side1))) ++ngridsegments;
-
-            continue;
-         }
-
-         gridcnt = 0;
-
-         k = 0;
-         if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k += 3; }
-
-         if (side1!==side2) {
-            // order is important, should move from 1->2 point, checked via lastpart
-            lastpart = 0;
-            if ((side1 < 0) || (side2 < 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
-            if ((side1 > 0) || (side2 > 0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
-         }
-
-         if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k += 3; }
-
-         if (side2!==side3) {
-            // order is important, should move from 2->3 point, checked via lastpart
-            lastpart = 0;
-            if ((side2 < 0) || (side3 < 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
-            if ((side2 > 0) || (side3 > 0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
-         }
-
-         if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
-
-         if (side3 !== side1) {
-            // order is important, should move from 3->1 point, checked via lastpart
-            lastpart = 0;
-            if ((side3 < 0) || (side1 < 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-            if ((side3 > 0) || (side1 > 0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
-         }
-
-         if (k === 0) continue;
-         if (k < 9) { console.log('found less than 3 points', k/3); continue; }
-
-         if (grid && (gridcnt === 6)) {
-            for (let jj = 0; jj < 6; ++jj)
-               grid[gindx+jj] = gridpnts[jj];
-            gindx += 6;
-         }
-
-         // if three points and surf == 14, remember vertex for each point
-
-         let buf = pos[lvl], s = indx[lvl];
-         if (donormals && (k === 9)) {
-            RememberVertex(s, i, j);
-            RememberVertex(s+3, i+1, is_first ? j+1 : j);
-            RememberVertex(s+6, is_first ? i : i+1, j+1);
-         }
-
-         for (let k1 = 3; k1 < k-3; k1 += 3) {
-            buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
-            buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
-            buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
-         }
-         indx[lvl] = s;
-
+      let fcolor, material;
+      if (is_v7) {
+         fcolor = palette ? palette.getColor(lvl-1) : painter.getColor(5);
+      } else if (palette) {
+         fcolor = palette.calcColor(lvl, levels.length);
+      } else {
+         fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
+         if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) fcolor = painter.getColor(48);
       }
-   }
+      if (painter.options.Surf === 14)
+         material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+      else
+         material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
 
-   if (donormals)
-      // for each bin maximal 8 points reserved
-      normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8).fill(-1);
+      let mesh = new Mesh(geometry, material);
 
-   for (loop = 0; loop < 2; ++loop) {
-      if (loop) {
-         for (let lvl = 1; lvl < levels.length; ++lvl)
-            if (nfaces[lvl]) {
-               pos[lvl] = new Float32Array(nfaces[lvl] * 9);
-               indx[lvl] = 0;
-            }
-         if (dolines && (nsegments > 0))
-            lpos = new Float32Array(nsegments * 6);
-         if (dogrid && (ngridsegments > 0))
-            grid = new Float32Array(ngridsegments * 6);
-      }
-      for (i = handle.i1;i < handle.i2-1; ++i) {
-         x1 = handle.grx[i];
-         x2 = handle.grx[i+1];
-         for (j = handle.j1; j < handle.j2-1; ++j) {
-            y1 = handle.gry[j];
-            y2 = handle.gry[j+1];
-            z11 = main_grz(histo.getBinContent(i+1, j+1));
-            z12 = main_grz(histo.getBinContent(i+1, j+2));
-            z21 = main_grz(histo.getBinContent(i+2, j+1));
-            z22 = main_grz(histo.getBinContent(i+2, j+2));
+      main.toplevel.add(mesh);
 
-            AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12, true);
-
-            AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22, false);
-
-            AddLineSegment(x1,y2,z12, x1,y1,z11);
-            AddLineSegment(x1,y1,z11, x2,y1,z21);
-
-            if (i===handle.i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
-            if (j===handle.j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
-         }
-      }
-   }
-
-   for (let lvl = 1; lvl < levels.length; ++lvl)
-      if (pos[lvl]) {
-         if (indx[lvl] !== nfaces[lvl]*9)
-              console.error(`SURF faces missmatch lvl=${lvl} faces=${nfaces[lvl]} index=${indx[lvl]} check=${nfaces[lvl]*9 - indx[lvl]}`);
-         let geometry = new BufferGeometry();
-         geometry.setAttribute('position', new BufferAttribute(pos[lvl], 3));
-         geometry.computeVertexNormals();
-         if (donormals && (lvl === 1)) RecalculateNormals(geometry.getAttribute('normal').array);
-
-         let fcolor, material;
-         if (is_v7) {
-            fcolor = palette ? palette.getColor(lvl-1) : painter.getColor(5);
-         } else if (palette) {
-            fcolor = palette.calcColor(lvl, levels.length);
-         } else {
-            fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
-            if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) fcolor = painter.getColor(48);
-         }
-         if (painter.options.Surf === 14)
-            material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
-         else
-            material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
-
-         let mesh = new Mesh(geometry, material);
-
-         main.toplevel.add(mesh);
-
-         mesh.painter = painter; // to let use it with context menu
-      }
-
-
-   if (lpos) {
-      if (nsegments*6 !== lindx)
-         console.error(`SURF lines mismmatch nsegm=${nsegments} lindx=${lindx} diff=${nsegments*6 - lindx}`);
-
-      const lcolor = painter.getColor(histo.fLineColor),
-            material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: histo.fLineWidth }),
-            line = createLineSegments(lpos, material);
-      line.painter = painter;
-      main.toplevel.add(line);
-   }
-
-   if (grid) {
-      if (ngridsegments*6 !== gindx)
-         console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments*6 - gindx}`);
-
-      const material = (painter.options.Surf === 1)
+      mesh.painter = painter; // to let use it with context menu
+   }, (isgrid, lpos) => {
+      let material;
+      if (isgrid) {
+         material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) }),
-           line = createLineSegments(grid, material);
+                      : new LineBasicMaterial({ color: new Color(painter.getColor(histo.fLineColor)) });
+      } else {
+         material = new LineBasicMaterial({ color: painter.getColor(histo.fLineColor), linewidth: histo.fLineWidth });
+      }
+      let line = createLineSegments(lpos, material);
       line.painter = painter;
       main.toplevel.add(line);
-   }
+   });
 
    if (painter.options.Surf === 17)
       drawBinsContour3D(painter, false, is_v7);
