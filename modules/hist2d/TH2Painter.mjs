@@ -23,7 +23,9 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    let lj = 0, ipoly, poly, polys = [], np, npmax = 0,
        x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
        i, j, k, n, m, ljfill, count,
-       xsave, ysave, itars, ix, jx;
+       xsave, ysave, itars, ix, jx,
+       arrx = handle.grx,
+       arry = handle.gry;
 
    const LinearSearch = zc => {
 
@@ -82,9 +84,6 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       }
       return icount;
    };
-
-   let arrx = handle.original ? handle.origx : handle.grx,
-       arry = handle.original ? handle.origy : handle.gry;
 
    for (j = handle.j1; j < handle.j2-1; ++j) {
 
@@ -1188,7 +1187,7 @@ class TH2Painter extends THistPainter {
       handle.grz_max = ilevels[ilevels.length - 1];
 
       buildSurf3D(this.getHisto(), handle, ilevels, (lvl, pos) => {
-         let dd = '', lastx = -1e10, lasty = -1e100;
+         let dd = '', lastx, lasty;
 
          for (let i = 0; i < pos.length; i += 3) {
             let pnt = func(pos[i], pos[i + 1]),
@@ -1224,15 +1223,13 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw histogram bins as contour */
    drawBinsContour() {
-      let handle = this.prepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      let handle = this.prepareDraw({ rounding: false, extra: 100 }),
           main = this.getFramePainter(),
           frame_w = main.getFrameWidth(),
           frame_h = main.getFrameHeight(),
           funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
           levels = this.getContourLevels(),
-          palette = this.getHistPalette(),
-          func = main.getProjectionFunc(),
-          can_try_closure_repair = !func || (this.options.Proj == 2); // only mercator can be repaired
+          palette = this.getHistPalette();
 
       const get_segm_intersection = (segm1, segm2) => {
           let s10_x = segm1.x2 - segm1.x1,
@@ -1262,14 +1259,8 @@ class TH2Painter extends THistPainter {
       }, buildPath = (xp,yp,iminus,iplus,do_close,check_rapair) => {
          let cmd = '', lastx, lasty, x0, y0, isany = false, matched, x, y;
          for (let i = iminus; i <= iplus; ++i) {
-            if (func) {
-               let pnt = func(xp[i], yp[i]);
-               x = Math.round(funcs.grx(pnt.x));
-               y = Math.round(funcs.gry(pnt.y));
-            } else {
-               x = Math.round(xp[i]);
-               y = Math.round(yp[i]);
-            }
+            x = Math.round(xp[i]);
+            y = Math.round(yp[i]);
             if (!cmd) {
                cmd = `M${x},${y}`; x0 = x; y0 = y;
             } else if ((i == iplus) && (iminus !== iplus) && (x == x0) && (y == y0)) {
@@ -1289,22 +1280,12 @@ class TH2Painter extends THistPainter {
             lastx = x; lasty = y;
          }
 
-         if (!do_close || matched || !check_rapair || !can_try_closure_repair)
+         if (!do_close || matched || !check_rapair)
             return do_close ? cmd + 'z' : cmd;
 
          // try to build path which fills area to outside borders
 
-         let points;
-
-         if (func) {
-            let minx = handle.origx[handle.i1],
-                maxx = handle.origx[handle.i2],
-                miny = handle.origy[handle.j1],
-                maxy = handle.origy[handle.j2];
-            points = [{x: minx, y: maxy}, {x: maxx, y: maxy}, {x: maxx, y: miny}, {x: minx, y: miny}];
-         } else {
-            points = [{x: 0, y: 0}, {x: frame_w, y: 0}, {x: frame_w, y: frame_h}, {x: 0, y: frame_h}];
-         }
+         let points = [{x: 0, y: 0}, {x: frame_w, y: 0}, {x: frame_w, y: frame_h}, {x: 0, y: frame_h}];
 
          const get_intersect = (i, di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
@@ -1332,25 +1313,14 @@ class TH2Painter extends THistPainter {
          let dd = buildPath(xp,yp,iminus,iplus),
              indx = pnt2.indx, side = 1, step = side*0.5;
 
-         const add = pnt => {
-            if (func) {
-               pnt = func(pnt.x, pnt.y);
-               pnt.x = Math.round(funcs.grx(pnt.x));
-               pnt.y = Math.round(funcs.gry(pnt.y));
-            }
-            dd += `L${pnt.x},${pnt.y}`;
-         }
-
-         add(pnt2);
+         dd += `L${pnt2.x},${pnt2.y}`;
 
          while (Math.abs(indx - pnt1.indx) > 0.1) {
             indx = Math.round(indx + step) % 4;
-            add(points[indx]);
+            dd += `L${points[indx].x},${points[indx].y}`;
             indx += step;
          }
-         add(pnt1);
-
-         return dd + 'z';
+         return dd + `L${pnt1.x},${pnt1.y}z`;
       };
 
       if (this.options.Contour === 14) {
