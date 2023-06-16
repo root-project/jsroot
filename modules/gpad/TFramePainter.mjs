@@ -701,7 +701,7 @@ const FrameInteractive = {
          this.zoom_curr = null;    // current point for zooming
       }
 
-      if (settings.Zooming && !this.projection) {
+      if (settings.Zooming) {
          if (settings.ZoomMouse) {
             svg.on('mousedown', evnt => this.startRectSel(evnt));
             svg.on('dblclick', evnt => this.mouseDoubleClick(evnt));
@@ -710,7 +710,7 @@ const FrameInteractive = {
             svg.on('wheel', evnt => this.mouseWheel(evnt));
       }
 
-      if (browser.touches && ((settings.Zooming && settings.ZoomTouch && !this.projection) || settings.ContextMenu))
+      if (browser.touches && ((settings.Zooming && settings.ZoomTouch) || settings.ContextMenu))
          svg.on('touchstart', evnt => this.startTouchZoom(evnt));
 
       if (settings.ContextMenu) {
@@ -1603,7 +1603,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Rcalculate frame ranges using specified projection functions */
-   recalculateRange(Proj) {
+   recalculateRange(Proj, change_x, change_y) {
       this.projection = Proj || 0;
 
       if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >= 90))) {
@@ -1632,14 +1632,20 @@ class TFramePainter extends ObjectPainter {
       this.original_ymin = this.scale_ymin;
       this.original_ymax = this.scale_ymax;
 
-      this.scale_xmin = this.scale_xmax = pnts[0].x;
-      this.scale_ymin = this.scale_ymax = pnts[0].y;
+      if (change_x)
+         this.scale_xmin = this.scale_xmax = pnts[0].x;
+      if (change_y)
+         this.scale_ymin = this.scale_ymax = pnts[0].y;
 
       for (let n = 1; n < pnts.length; ++n) {
-         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
-         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
-         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
-         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+         if (change_x) {
+            this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
+            this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
+         }
+         if (change_y) {
+            this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
+            this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+         }
       }
    }
 
@@ -1831,18 +1837,22 @@ class TFramePainter extends ObjectPainter {
          this.zoom_ymax = opts.zoom_ymax;
       }
 
+      let orig_x = true, orig_y = true;
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
+         orig_x = false;
       }
 
       if (this.zoom_ymin != this.zoom_ymax) {
          this.scale_ymin = this.zoom_ymin;
          this.scale_ymax = this.zoom_ymax;
+         orig_y = false;
       }
 
       // projection should be assigned
-      this.recalculateRange(opts.Proj);
+      this.recalculateRange(opts.Proj, orig_x, orig_y);
 
       this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -2685,9 +2695,6 @@ class TFramePainter extends ObjectPainter {
       * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
-      // disable zooming when axis conversion is enabled
-      if (this.projection) return false;
-
       if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin === 'y') { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
       if (xmin === 'z') { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
@@ -2781,8 +2788,7 @@ class TFramePainter extends ObjectPainter {
      * @desc One can specify names like x/y/z but also second axis x2 or y2
      * @private */
    async zoomSingle(name, vmin, vmax) {
-      // disable zooming when axis conversion is enabled
-      if (this.projection || !this[name+'_handle'])
+      if (!this[name+'_handle'])
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;

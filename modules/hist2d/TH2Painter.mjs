@@ -3010,7 +3010,8 @@ class TH2Painter extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
 
-      if (axis == 'z') return true;
+      if ((axis == 'z') || this.options.Proj)
+         return true;
 
       let obj = this.getHisto();
       if (obj) obj = (axis == 'y') ? obj.fYaxis : obj.fXaxis;
