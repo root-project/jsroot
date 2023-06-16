@@ -7,6 +7,7 @@ import { TRandom, floatToString, makeTranslate, addHighlightStyle } from '../bas
 import { EAxisBits } from '../base/ObjectPainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
 
+
 /** @summary Build histogram contour lines
   * @private */
 function buildHist2dContour(histo, handle, levels, palette, contour_func) {
@@ -24,7 +25,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
        i, j, k, n, m, ljfill, count,
        xsave, ysave, itars, ix, jx;
 
-   const /* BinarySearchLinear = zc => {
+   const LinearSearch = zc => {
 
       if (zc >= last_level)
          return nlevels-1;
@@ -33,7 +34,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          if (zc < levels[kk])
             return kk-1;
       return nlevels-1;
-   }, */ BinarySearch = zc => {
+   },  BinarySearch = zc => {
 
       if (zc < first_level)
          return -1;
@@ -49,7 +50,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
            l = m;
       }
       return l;
-   }, PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
+   },  LevelSearch = nlevels < 10 ? LinearSearch : BinarySearch
+    ,  PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
       /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
       let vert = (x1 === x2),
           tlen = vert ? (y2 - y1) : (x2 - x1),
@@ -97,7 +99,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          zc[3] = histo.getBinContent(i+1, j+2);
 
          for (k = 0; k < 4; k++)
-            ir[k] = BinarySearch(zc[k]);
+            ir[k] = LevelSearch(zc[k]);
 
          if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
             x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
@@ -988,14 +990,12 @@ class TH2Painter extends THistPainter {
             lastx = x; lasty = y;
          }
 
-         if (!do_close || matched || !check_rapair || !can_try_closure_repair) {
-            if (do_close) cmd += 'z';
-            return cmd;
-         }
+         if (!do_close || matched || !check_rapair || !can_try_closure_repair)
+            return do_close ? cmd + 'z' : cmd;
 
          // try to build path which fills area to outside borders
 
-         let side = 1, points;
+         let points;
 
          if (func) {
             let minx = handle.origx[handle.i1],
@@ -1004,7 +1004,7 @@ class TH2Painter extends THistPainter {
                 maxy = handle.origy[handle.j2];
             points = [{x: minx, y: maxy}, {x: maxx, y: maxy}, {x: maxx, y: miny}, {x: minx, y: miny}];
          } else {
-           points = [{x: 0, y: 0}, {x: frame_w, y: 0}, {x: frame_w, y: frame_h}, {x: 0, y: frame_h}];
+            points = [{x: 0, y: 0}, {x: frame_w, y: 0}, {x: frame_w, y: frame_h}, {x: 0, y: frame_h}];
          }
 
          const get_intersect = (i, di) => {
@@ -1031,7 +1031,7 @@ class TH2Painter extends THistPainter {
          // TODO: now side is always same direction, could be that side should be checked more precise
 
          let dd = buildPath(xp,yp,iminus,iplus),
-             indx = pnt2.indx, step = side*0.5;
+             indx = pnt2.indx, side = 1, step = side*0.5;
 
          const add = pnt => {
             if (func) {
