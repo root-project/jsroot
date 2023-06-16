@@ -272,16 +272,17 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
        normindx = [],                             // buffer to remember place of vertex for each bin
        arrx = handle.original ? handle.origx : handle.grx,
        arry = handle.original ? handle.origy : handle.gry,
-       i, j, x1, x2, y1, y2, z11, z12, z21, z22;
+       i, j, x1, x2, y1, y2, z11, z12, z21, z22,
+       levels_eps = (levels[levels.length-1] - levels[0]) / levels.length / 1e2;
 
-   function CheckSide(z, level1, level2) {
-      return (z < level1) ? -1 : (z > level2 ? 1 : 0);
+   function CheckSide(z, level1, level2, eps) {
+      return (z < level1 - eps) ? -1 : (z > level2 + eps ? 1 : 0);
    }
 
    function AddLineSegment(x1,y1,z1, x2,y2,z2) {
       if (!handle.dolines) return;
-      let side1 = CheckSide(z1, main_grz_min, main_grz_max),
-          side2 = CheckSide(z2, main_grz_min, main_grz_max);
+      let side1 = CheckSide(z1, main_grz_min, main_grz_max, 0),
+          side2 = CheckSide(z2, main_grz_min, main_grz_max, 0);
       if ((side1 === side2) && (side1 !== 0)) return;
       if (!loop) return ++nsegments;
 
@@ -348,9 +349,9 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
 
       for (let lvl = 1; lvl < levels.length; ++lvl) {
 
-         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
-             side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
-             side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
+         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl], levels_eps),
+             side2 = CheckSide(z2, levels[lvl-1], levels[lvl], levels_eps),
+             side3 = CheckSide(z3, levels[lvl-1], levels[lvl], levels_eps),
              side_sum = side1 + side2 + side3;
 
          // always show top segments
@@ -461,6 +462,7 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
          for (j = handle.j1; j < handle.j2-1; ++j) {
             y1 = handle.original ? 0.5 * (arry[j] + arry[j+1]) : arry[j];
             y2 = handle.original ? 0.5 * (arry[j+1] + arry[j+2]) : arry[j+1];
+
             z11 = main_grz(histo.getBinContent(i+1, j+1));
             z12 = main_grz(histo.getBinContent(i+1, j+2));
             z21 = main_grz(histo.getBinContent(i+2, j+1));
