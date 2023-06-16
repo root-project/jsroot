@@ -1187,29 +1187,36 @@ class TH2Painter extends THistPainter {
       handle.grz_min = ilevels[0];
       handle.grz_max = ilevels[ilevels.length - 1];
 
-      // console.log('draw projected', ilevels, handle);
-
       buildSurf3D(this.getHisto(), handle, ilevels, (lvl, pos) => {
-         let fcolor = palette.calcColor(lvl, ilevels.length), dd = '', cnt = 0;
-
-         // console.log('has data for lvl', lvl, fcolor, 'numfaces', pos.length / 9);
+         let dd = '', lastx = -1e10, lasty = -1e100;
 
          for (let i = 0; i < pos.length; i += 3) {
             let pnt = func(pos[i], pos[i + 1]),
                 x = Math.round(funcs.grx(pnt.x)),
                 y = Math.round(funcs.gry(pnt.y));
 
-            // if (i < 10) console.log(` ${pos[i]} ${pos[i+1]}`);
+            if (i === 0) {
+               dd = `M${x},${y}`;
+             } else {
+               if ((x === lastx) && (y === lasty))
+                  continue;
+               if (i % 9 === 0)
+                  dd += `m${x-lastx},${y-lasty}`;
+               else if (y === lasty)
+                  dd += `h${x-lastx}`;
+               else if (x === lastx)
+                  dd += `v${y-lasty}`;
+               else
+                  dd += `l${x-lastx},${y-lasty}`;
+            }
 
-            dd += (cnt % 3) ? 'L' : 'M';
-            dd += `${x},${y}`;
-            cnt++;
+            lastx = x; lasty = y;
          }
 
          this.draw_g
              .append('svg:path')
              .attr('d', dd)
-             .style('fill', fcolor);
+             .style('fill', palette.calcColor(lvl, ilevels.length));
       });
 
       return handle;
