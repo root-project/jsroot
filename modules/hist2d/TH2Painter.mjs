@@ -271,6 +271,8 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
        nsegments = 0, lpos = null, lindx = 0,     // buffer for lines
        ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
        normindx = [],                             // buffer to remember place of vertex for each bin
+       arrx = handle.original ? handle.origx : handle.grx,
+       arry = handle.original ? handle.origy : handle.gry,
        i, j, x1, x2, y1, y2, z11, z12, z21, z22;
 
    function CheckSide(z, level1, level2) {
@@ -455,11 +457,11 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
             grid = new Float32Array(ngridsegments * 6);
       }
       for (i = handle.i1;i < handle.i2-1; ++i) {
-         x1 = handle.grx[i];
-         x2 = handle.grx[i+1];
+         x1 = handle.original ? 0.5 * (arrx[i] + arrx[i+1]) : arrx[i];
+         x2 = handle.original ? 0.5 * (arrx[i+1] + arrx[i+2]) : arrx[i+1];
          for (j = handle.j1; j < handle.j2-1; ++j) {
-            y1 = handle.gry[j];
-            y2 = handle.gry[j+1];
+            y1 = handle.original ? 0.5 * (arry[j] + arry[j+1]) : arry[j];
+            y2 = handle.original ? 0.5 * (arry[j+1] + arry[j+2]) : arry[j+1];
             z11 = main_grz(histo.getBinContent(i+1, j+1));
             z12 = main_grz(histo.getBinContent(i+1, j+2));
             z21 = main_grz(histo.getBinContent(i+2, j+1));
@@ -1167,6 +1169,47 @@ class TH2Painter extends THistPainter {
                .append('svg:path')
                .attr('fill', palette.getColor(colindx))
                .attr('d', entry.path);
+      });
+
+      return handle;
+   }
+
+   /** @summary Draw histogram bins with projection function */
+   drawBinsProjected() {
+      let handle = this.prepareDraw({ rounding: false, extra: 100, original: true }),
+          main = this.getFramePainter(),
+          funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
+          ilevels = this.getContourLevels(),
+          palette = this.getHistPalette(),
+          func = main.getProjectionFunc();
+
+      handle.grz = z => z;
+      handle.grz_min = ilevels[0];
+      handle.grz_max = ilevels[ilevels.length - 1];
+
+      // console.log('draw projected', ilevels, handle);
+
+      buildSurf3D(this.getHisto(), handle, ilevels, (lvl, pos) => {
+         let fcolor = palette.calcColor(lvl, ilevels.length), dd = '', cnt = 0;
+
+         // console.log('has data for lvl', lvl, fcolor, 'numfaces', pos.length / 9);
+
+         for (let i = 0; i < pos.length; i += 3) {
+            let pnt = func(pos[i], pos[i + 1]),
+                x = Math.round(funcs.grx(pnt.x)),
+                y = Math.round(funcs.gry(pnt.y));
+
+            // if (i < 10) console.log(` ${pos[i]} ${pos[i+1]}`);
+
+            dd += (cnt % 3) ? 'L' : 'M';
+            dd += `${x},${y}`;
+            cnt++;
+         }
+
+         this.draw_g
+             .append('svg:path')
+             .attr('d', dd)
+             .style('fill', fcolor);
       });
 
       return handle;
@@ -2396,6 +2439,8 @@ class TH2Painter extends THistPainter {
             handle = this.drawBinsBox();
          else if (this.options.Arrow)
             handle = this.drawBinsArrow();
+         else if (this.options.Proj)
+            handle = this.drawBinsProjected();
          else if (this.options.Contour)
             handle = this.drawBinsContour();
          else if (this.options.Candle || this.options.Violin)
