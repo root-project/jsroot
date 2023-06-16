@@ -1227,7 +1227,6 @@ class TH2Painter extends THistPainter {
           main = this.getFramePainter(),
           frame_w = main.getFrameWidth(),
           frame_h = main.getFrameHeight(),
-          funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
           levels = this.getContourLevels(),
           palette = this.getHistPalette();
 
@@ -1323,12 +1322,11 @@ class TH2Painter extends THistPainter {
          return dd + `L${pnt1.x},${pnt1.y}z`;
       };
 
-      if (this.options.Contour === 14) {
+      if (this.options.Contour === 14)
          this.draw_g
              .append('svg:path')
              .attr('d', `M0,0h${frame_w}v${frame_h}h${-frame_w}z`)
              .style('fill', palette.calcColor(0, levels.length));
-      }
 
       buildHist2dContour(this.getHisto(), handle, levels, palette, (colindx,xp,yp,iminus,iplus,ipoly) => {
          let icol = palette.getColor(colindx),
