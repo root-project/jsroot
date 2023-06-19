@@ -536,6 +536,12 @@ class TGeoPainter extends ObjectPainter {
          highlight_scene: 0,
          highlight_color: '#00ff00',
          bloom_strength: 1.5,
+         more: 1,
+         maxfaces: 0,
+         vislevel: undefined,
+         maxnodes: undefined,
+         dflt_colors: false,
+
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          depthTest: true,
          depthMethod: 'dflt',
@@ -868,20 +874,6 @@ class TGeoPainter extends ObjectPainter {
 
       let res = this.ctrl;
 
-/*      let res = { _axis: 0, instancing: 0,
-                  _count: false, wireframe: false,
-                   scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxfaces: 0,
-                   vislevel: undefined, maxnodes: undefined, dflt_colors: false,
-                   use_worker: false, show_controls: false,
-                   highlight: 0, highlight_scene: 0, highlight_bloom: 0,
-                   no_screen: false, project: '', projectPos: undefined,
-                   is_main: false, tracks: false, showtop: false, can_rotate: true,
-                   outline: false,
-                   script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
-                   depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
-*/
-
       let macro = opt.indexOf('macro:');
       if (macro >= 0) {
          let separ = opt.indexOf(';', macro+6);
@@ -1202,7 +1194,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Method used to set transparency for all geometrical shapes
      * @param {number|Function} transparency - one could provide function
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
-   changedGlobalTransparency(transparency, skip_render) {
+   changedGlobalTransparency(transparency) {
       let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
          transparency = this.ctrl.material.transparency;
@@ -1221,8 +1213,8 @@ class TGeoPainter extends ObjectPainter {
          node.material.depthWrite = node.material.opacity == 1;
          node.material.transparent = node.material.opacity < 1;
       });
-      if (!skip_render)
-         this.render3D(-1);
+
+      this.render3D();
    }
 
    /** @summary Method used to interactively change material kinds */
